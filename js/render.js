@@ -27,13 +27,17 @@ const TEX={
   plank:canvasTex((g,s)=>{g.fillStyle='#8a5a32';g.fillRect(0,0,s,s);for(let y=0;y<s;y+=16){g.fillStyle='#5e3b1f';g.fillRect(0,y,s,2);for(let i=0;i<40;i++){g.fillStyle=texR()<.5?'#97653b':'#7b4f2b';g.fillRect(texR()*s|0,y+2+(texR()*13|0),4+texR()*10|0,1);} g.fillStyle='#5e3b1f';g.fillRect(((y/16)%2)*30+10,y,2,16);}}),
   stone:canvasTex((g,s)=>{g.fillStyle='#4d4b47';g.fillRect(0,0,s,s);for(let y=0;y<s;y+=16){const off=(y/16)%2*16;for(let x=-16;x<s;x+=32){const v=110+texR()*30|0;g.fillStyle=`rgb(${v},${v-2},${v-6})`;g.fillRect(x+off+1,y+1,30,14);}}}),
   thatch:canvasTex((g,s)=>{g.fillStyle='#a8873f';g.fillRect(0,0,s,s);for(let i=0;i<260;i++){g.fillStyle=texR()<.5?'#c3a252':'#8a6b2c';g.fillRect(texR()*s|0,texR()*s|0,1,3+texR()*6|0);}}),
+  // Olkikaton karhea reuna: alapuoli kiinteää olkea, yläpuolella eripituisia olkia (läpinäkyvä tausta).
+  thatchFringe:canvasTex((g,s)=>{g.fillStyle='#a8873f';g.fillRect(0,s/2,s,s/2);for(let x=0;x<s;x+=2){const len=6+texR()*(s/2-6)|0;g.fillStyle=texR()<.5?'#c3a252':'#8a6b2c';g.fillRect(x,s/2-len,2,len+2);}for(let i=0;i<70;i++){g.fillStyle=texR()<.5?'#c3a252':'#8a6b2c';g.fillRect(texR()*s|0,s/2+texR()*s/2|0,1,3+texR()*6|0);}}),
 };
+TEX.thatchFringe.repeat.set(5,1);
 const matCache={};
 function mat(c,o){const k=c+JSON.stringify(o||{});if(!o&&matCache[k])return matCache[k];const m=new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.92,metalness:0,flatShading:true},o||{}));if(!o)matCache[k]=m;return m;}
 const MAT={
   wood:new THREE.MeshStandardMaterial({map:TEX.plank,roughness:.9}),
   stone:new THREE.MeshStandardMaterial({map:TEX.stone,roughness:1}),
   thatch:new THREE.MeshStandardMaterial({map:TEX.thatch,roughness:1}),
+  thatchFringe:new THREE.MeshStandardMaterial({map:TEX.thatchFringe,roughness:1,alphaTest:.5,side:THREE.DoubleSide}),
   flame:new THREE.MeshBasicMaterial({color:0xffa53a}),
   flame2:new THREE.MeshBasicMaterial({color:0xffe08a}),
   glow:new THREE.MeshBasicMaterial({color:0x8fffee}),

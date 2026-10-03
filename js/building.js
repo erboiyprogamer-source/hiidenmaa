@@ -40,9 +40,11 @@ function validPlace(t,x,y,z,rot){
   const def=PIECES[t];lastInvalid='';
   if(P.inDun){lastInvalid='Täällä ei voi rakentaa.';return false;}
   for(const [id,n] of Object.entries(def.req))if(invCount(id)<n){lastInvalid=`Tarvitset: ${reqText(def.req)}`;return false;}
-  if(!def.noBench&&!nearPiece('tyopenkki',x,z,20)){lastInvalid='Työpenkki ei ole lähellä.';return false;}
+  if(!def.noBench&&!nearPiece('tyopenkki',x,z,BENCH_R)){lastInvalid=pieces.some(p=>p.t==='tyopenkki')?'Rakenna työpenkin alueelle (oranssi raja).':'Rakenna ensin työpenkki.';return false;}
   if(y<-.4&&t!=='lattia'&&t!=='pylvas'){lastInvalid='Liian syvällä vedessä.';return false;}
-  if(t==='katto'){for(const p of pieces)if(p.t==='katto'&&Math.abs(p.x-x)<.1&&Math.abs(p.z-z)<.1&&Math.abs(p.y-y)<.5){lastInvalid='Paikalla on jo katto.';return false;}return true;}
+  if(t==='katto'){for(const p of pieces)if(p.t==='katto'&&Math.abs(p.x-x)<.1&&Math.abs(p.z-z)<.1&&Math.abs(p.y-y)<.5){lastInvalid='Paikalla on jo katto.';return false;}
+    for(const b of worldBoxes(t,x,y,z,rot)){const px=clamp(P.pos.x,b.minX,b.maxX),pz=clamp(P.pos.z,b.minZ,b.maxZ);if(dist2(px,pz,P.pos.x,P.pos.z)<.16&&b.maxY>P.pos.y+.3&&b.minY<P.pos.y+1.8){lastInvalid='Seisot tiellä.';return false;}}
+    return true;}
   for(const b of worldBoxes(t,x,y,z,rot)){const s=.2;gridQuery((b.minX+b.maxX)/2,(b.minZ+b.maxZ)/2,Math.max(b.maxX-b.minX,b.maxZ-b.minZ),_cl);
     for(const c of _cl){if(c.maxY<=b.minY+s||c.minY>=b.maxY-s)continue;
       if(c.t==='c'){const cx=clamp(c.x,b.minX,b.maxX),cz=clamp(c.z,b.minZ,b.maxZ);if(dist2(cx,cz,c.x,c.z)<(c.r-.05)**2){lastInvalid='Tiellä on jotain.';return false;}}
@@ -66,5 +68,5 @@ function removeLooked(){
   if(p.t==='sulatin'){if(p.data.ore)giveOrDrop('malmi',p.data.ore,p.x,p.y+1,p.z);if(p.data.done)giveOrDrop('kupari',p.data.done,p.x,p.y+1,p.z);}
   removePiece(p);sfx('build');burst(p.x,p.y+.5,p.z,0x8a5a32,8,3);
 }
-function damagePiece(p,d){p.hp-=d;burst(p.x,p.y+1,p.z,0x8a5a32,4,2);if(p.hp<=0){removePiece(p);msg(`${PIECES[p.t].n} tuhoutui!`,'warn');if(p.t==='arkku')p.data.items.forEach(s=>s&&spawnDrop(s.id,s.n,p.x,p.y+.5,p.z,s.q));}}
+function damagePiece(p,d,src){if(src==='mob'&&PIECES[p.t].mobProof)return;p.hp-=d;burst(p.x,p.y+1,p.z,0x8a5a32,4,2);if(p.hp>0)setPieceDamage(p);if(p.hp<=0){removePiece(p);msg(`${PIECES[p.t].n} tuhoutui!`,'warn');if(p.t==='arkku')p.data.items.forEach(s=>s&&spawnDrop(s.id,s.n,p.x,p.y+.5,p.z,s.q));}}
 function reqText(req){return Object.entries(req).map(([id,n])=>`${n} ${ITEMS[id].n.toLowerCase()}`).join(', ');}
