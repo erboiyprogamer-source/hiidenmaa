@@ -16,8 +16,8 @@ function updateMobs(dt){
     if(d.ai==='boss'){bossAI(m,dt,dx,dz,dist);continue;}
     const night=isNight()&&!P.inDun;
     const hostile=d.ai==='hostile'||(d.ai==='neutral'&&m.angry);
-    const aggroR=(d.aggro||12)*(night?1.35:1)*(P.inDun?1:1);
-    if(d.ai==='flee'){if((dist<11&&!P.dead)||playTime-m.lastHit<6){m.state='flee';}else if(m.state==='flee'&&dist>22)m.state='idle';}
+    const aggroR=(d.aggro||12)*(night?1.35:1)*(P.crouch?.5:1);
+    if(d.ai==='flee'){if((dist<(P.crouch?3:9)&&!P.dead)||playTime-m.lastHit<6){m.state='flee';}else if(m.state==='flee'&&dist>22)m.state='idle';}
     else if(hostile&&!P.dead&&(dist<aggroR||playTime-m.lastHit<10)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
     else if(m.state==='chase'&&(dist>aggroR*1.6||P.dead))m.state='idle';
     if(m.state==='flee'){tx=-dx;tz=-dz;spd=d.run;}

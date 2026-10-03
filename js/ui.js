@@ -31,7 +31,7 @@ function updateHUD(dt){
   if(t&&!P.dead){const l=t.kind==='it'?t.it.label():t.label;pr.innerHTML=`<kbd>E</kbd>${l}`;}else pr.innerHTML='';
   // status chips
   const ch=[];
-  if(shelterCache&&!P.inDun)ch.push(['Suojassa','neu']);if(fireCache)ch.push(['Lämmin','good']);
+  if(P.crouch)ch.push(['Hiipii','neu']);if(shelterCache&&!P.inDun)ch.push(['Suojassa','neu']);if(fireCache)ch.push(['Lämmin','good']);
   if(P.buffs.levannyt)ch.push([`Levännyt ${Math.ceil(P.buffs.levannyt/60)} min`,'good']);
   if(P.buffs.voima)ch.push([`Voimistunut ${Math.ceil(P.buffs.voima/60)} min`,'good']);
   if(P.wetT>0)ch.push(['Märkä','bad']);if(P.cold)ch.push(['Kylmä','bad']);if(P.hunger<=0)ch.push(['Nälkä','bad']);

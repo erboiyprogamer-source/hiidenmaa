@@ -12,10 +12,11 @@ function updatePlayer(dt){
   let dx=fwd.x*mx+right.x*mz,dz=fwd.z*mx+right.z*mz;const dl=Math.hypot(dx,dz);if(dl>0){dx/=dl;dz/=dl;}
   P.blocking=state==='play'&&mouseR&&w.cat!=='hammer'&&w.cat!=='bow'&&P.stam>0&&!P.atk;
   const armor=equipped('armor');
-  let speed=4.6;const wantRun=keys.ShiftLeft||keys.ShiftRight;
+  P.crouch=state==='play'&&!!keys.KeyC&&P.onGround&&!P.swim;
+  let speed=4.6;const wantRun=(keys.ShiftLeft||keys.ShiftRight)&&!P.crouch;
   P.running=false;
   if(wantRun&&dl>0&&!over&&P.stam>0&&!P.blocking&&!P.drawing){speed=8;P.running=true;P.stam-=13*dt;P.stamDelay=.8;}
-  if(P.blocking||P.drawing)speed=2.4;if(over)speed*=.55;if(armor&&ITEMS[armor.id].slow)speed*=1-ITEMS[armor.id].slow;if(P.atk)speed*=.45;
+  if(P.blocking||P.drawing)speed=2.4;if(over)speed*=.55;if(armor&&ITEMS[armor.id].slow)speed*=1-ITEMS[armor.id].slow;if(P.atk)speed*=.45;if(P.crouch)speed=Math.min(speed,2.3);
   P.inWater=P.pos.y<-.9&&!P.inDun;P.swim=P.pos.y<-1.3&&!P.inDun;
   if(P.swim){speed=2.6;P.stam-=(dl>0?6:2)*dt;P.stamDelay=.6;if(P.stam<=0){P.hp-=4*dt;if(P.hp<=0)playerDie();}}
   // stamina regen
@@ -48,30 +49,41 @@ function updatePlayer(dt){
   const hv=Math.hypot(P.vel.x,P.vel.z);P.walkPh+=hv*dt*1.9;
   const sw=Math.sin(P.walkPh)*Math.min(1,hv/4)*.75;
   fig.g.position.copy(P.pos);if(P.swim)fig.g.position.y=P.pos.y-.2;fig.g.rotation.y=P.yaw;
-  fig.legL.rotation.x=sw;fig.legR.rotation.x=-sw;fig.armL.rotation.x=-sw*.7;fig.armR.rotation.x=sw*.7;fig.armR.rotation.z=0;fig.armL.rotation.z=0;fig.armL.position.x=.44;fig.armR.position.x=-.44;
+  P.crouchK=lerp(P.crouchK,P.crouch?1:0,Math.min(1,dt*10));fig.g.scale.y=1-.16*P.crouchK;
+  fig.legL.rotation.x=sw;fig.legR.rotation.x=-sw;
   if(!P.onGround&&!P.swim){fig.legL.rotation.x=-.5;fig.legR.rotation.x=.3;}
+  // Kädet: lasketaan tavoitekulmat ja siirrytään niihin pehmeästi (ei äkillisiä hyppyjä).
+  let tRx=sw*.7,tRz=0,tLx=-sw*.7,tLz=0,tSh=.44,rate=14,grip=false;
+  const hold=mouseL&&state==='play';
   if(P.atk){const k=P.atk.t/P.atk.dur,hk=P.atk.hitAt/P.atk.dur,two=P.atk.w.chop&&!P.atk.offBusy;
-    const [ax,az]=two?swingPose(k,hk,-2.6,.35,-.7,-.35):swingPose(k,hk,-2.4,.5,-.9,-.4);
-    fig.armR.rotation.x=ax;fig.armR.rotation.z=az;
-    if(two&&k<hk+.3){fig.armL.position.x=.2;fig.armR.position.x=-.2;gripWithLeft();}}
-  if(P.blocking){fig.armL.rotation.x=lerpAngle(fig.armL.rotation.x,-1.3+Math.sin(playTime*3)*.04,Math.min(1,dt*10));fig.armL.rotation.z=lerpAngle(fig.armL.rotation.z,-.3,Math.min(1,dt*10));}
-  if(P.drawing){fig.armL.rotation.x=-1.5;fig.armR.rotation.x=-1.5;fig.armR.rotation.z=.5;}
-  if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(0,0,0);if(P.drawing){fig.armL.rotation.z=-.1;}}
+    [tRx,tRz]=two?swingPose(k,hk,-2.6,.35,-.7,-.35,hold):swingPose(k,hk,-2.4,.5,-.9,-.4,hold);
+    rate=32;if(two&&(k<hk+.3||hold)){grip=true;tSh=.2;}}
+  if(P.blocking){tLx=-1.3+Math.sin(playTime*3)*.04;tLz=-.3;}
+  if(P.drawing){tLx=-1.5;tRx=-1.5;tRz=.5;}
+  if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(0,0,0);if(P.drawing)tLz=-.1;}
+  const e=Math.min(1,dt*rate);
+  armSh+=(tSh-armSh)*e;fig.armL.position.x=armSh;fig.armR.position.x=-armSh;
+  fig.armR.rotation.x=lerpAngle(fig.armR.rotation.x,tRx,e);fig.armR.rotation.z=lerpAngle(fig.armR.rotation.z,tRz,e);
+  if(grip&&heldMesh){const g=gripAngles();tLx=g[0];tLz=g[1];}
+  fig.armL.rotation.x=lerpAngle(fig.armL.rotation.x,tLx,e);fig.armL.rotation.z=lerpAngle(fig.armL.rotation.z,tLz,e);
   fig.g.visible=camDist>1.8;
   // torch light
   const torch=offId==='soihtu';torchLight.intensity=torch?2.1+Math.sin(playTime*17)*.25:0;if(torch){fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;}
 }
-// Isku: nosto ylävasemmalle, isku alaoikealle (osuma iskun lopussa), palautus lepoon.
-function swingPose(k,hk,hx,hz,lx,lz){const wk=hk*.55;let t;
+// Isku: nosto ylävasemmalle, isku alaoikealle (osuma iskun lopussa). Palautus lepoon, tai jos
+// lyöntinappi on pohjassa, suoraan seuraavan iskun nostoasentoon (käsi pysyy aseessa).
+let armSh=.44;
+function swingPose(k,hk,hx,hz,lx,lz,hold){const wk=hk*.55;let t;
   if(k<wk){t=sstep(0,1,k/wk);return[lerp(-.2,hx,t),lerp(0,hz,t)];}
   if(k<hk){t=sstep(0,1,(k-wk)/(hk-wk));return[lerp(hx,lx,t),lerp(hz,lz,t)];}
+  if(hold){t=sstep(0,1,(k-hk)/(1-hk));return[lerp(lx,-.2,t),lerp(lz,0,t)];}
   t=Math.min(1,(k-hk)/.3);return[lerp(lx,0,t),lerp(lz,0,t)];}
-// Vasen käsi tarttuu kirveen varteen: osoita käsivarsi varren kohtaan.
+// Vasemman käsivarren kulmat niin, että se osoittaa kirveen varteen.
 const _gp=new V3();
-function gripWithLeft(){if(!heldMesh)return;fig.g.updateMatrixWorld(true);
+function gripAngles(){fig.g.updateMatrixWorld(true);
   _gp.set(0,0,.35);heldMesh.localToWorld(_gp);fig.g.worldToLocal(_gp);
   _gp.x-=fig.armL.position.x;_gp.y-=fig.armL.position.y;_gp.z-=fig.armL.position.z;_gp.normalize();
-  fig.armL.rotation.z=Math.asin(clamp(_gp.x,-1,1));fig.armL.rotation.x=Math.atan2(-_gp.z,-_gp.y);}
+  return[Math.atan2(-_gp.z,-_gp.y),Math.asin(clamp(_gp.x,-1,1))];}
 function lerpAngle(a,b,t){let d=((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;return a+d*t;}
 function playerDie(){
   if(P.dead)return;P.dead=true;P.deaths++;P.hp=0;sfx('die');

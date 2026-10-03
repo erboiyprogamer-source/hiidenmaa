@@ -9,7 +9,7 @@ addEventListener('keydown',e=>{
   if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')return;
   keys[e.code]=true;
   if(e.code==='Tab'){e.preventDefault();}
-  if(e.code==='KeyF'&&!e.repeat&&(state==='play'||state==='ui'||state==='paused'))toggleFullscreen();
+  if(e.code==='KeyK'&&!e.repeat&&(state==='play'||state==='ui'||state==='paused'))toggleFullscreen();
   if(state==='paused'&&e.code==='Escape'&&!e.repeat&&performance.now()-pausedAt>400){if(!$('#opts').hidden)$('#opts').hidden=true;else $('#bResume').click();return;}
   if(state!=='play'&&state!=='ui')return;
   if(e.repeat)return;
