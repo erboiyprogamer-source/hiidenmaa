@@ -28,10 +28,13 @@ function doMeleeHit(w){
   for(const m of mobs){if(m.dead)continue;const dx=m.pos.x-P.pos.x,dz=m.pos.z-P.pos.z,d=Math.hypot(dx,dz);
     if(d>w.range+m.def.r)continue;if(Math.abs(m.pos.y-P.pos.y)>3+(m.type==='vartija'?3:0))continue;
     if(d>m.def.r+.4&&(dx*fx+dz*fz)/d<.45)continue;
-    damageMob(m,dmg,w.dt,dx,dz);hitMob=true;}
+    if(!losClear(P.pos.x,P.pos.y+1.3,P.pos.z,m.pos.x,mobEyeY(m),m.pos.z))continue;
+    const sneak=P.crouch&&m.def.ai!=='boss'&&m.state!=='chase'&&m.state!=='flee';
+    if(sneak)floatText('Hiiviskelyisku!',m.pos.x,m.pos.y+2.6,m.pos.z,'#ffd36a');
+    damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz);hitMob=true;}
   if(hitMob&&!w.chop&&!w.pick)return;
   const list=nodesNear(P.pos.x+fx*1.2,P.pos.z+fz*1.2,w.range+1.4,_nl);let best=null,bd=1e9;
-  for(const n of list){if(n.def.kind==='pick')continue;const dx=n.x-P.pos.x,dz=n.z-P.pos.z,d=Math.hypot(dx,dz)-n.def.r*n.s;if(d>w.range+.2)continue;if((dx*fx+dz*fz)/Math.max(.01,Math.hypot(dx,dz))<.3)continue;if(d<bd){bd=d;best=n;}}
+  for(const n of list){if(n.def.kind==='pick')continue;const dx=n.x-P.pos.x,dz=n.z-P.pos.z,d=Math.hypot(dx,dz)-n.def.r*n.s;if(d>w.range+.2)continue;if((dx*fx+dz*fz)/Math.max(.01,Math.hypot(dx,dz))<.3)continue;if(d<bd&&losClear(P.pos.x,P.pos.y+1.3,P.pos.z,n.x,n.y+1,n.z)){bd=d;best=n;}}
   if(!best)return;
   const n=best;
   if(n.def.kind==='tree'){if(!w.chop){if(!hitMob){msg('Tarvitset kirveen kaataaksesi puun.','warn');sfx('hit');}return;}

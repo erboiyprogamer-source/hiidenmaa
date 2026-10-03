@@ -31,4 +31,7 @@ function collideXZ(p,r,h,feet,hitList){
   }
 }
 function ceilingAt(x,z,r,head){let m=Infinity;gridQuery(x,z,r,_cl);for(const c of _cl){if(c.t!=='b')continue;if(c.minY>=head-.3&&c.minY<m){const cx=clamp(x,c.minX,c.maxX),cz=clamp(z,c.minZ,c.maxZ);if(dist2(x,z,cx,cz)<r*r*.5)m=c.minY;}}return m;}
+// Näköyhteys pisteestä A pisteeseen B: ei rakenteita välissä (päiden .4 m ohitetaan).
+function losClear(ax,ay,az,bx,by,bz){const dx=bx-ax,dy=by-ay,dz=bz-az,L=Math.hypot(dx,dy,dz);
+  for(let t=.4;t<L-.4;t+=.3){const k=t/L;if(pointBlocked(ax+dx*k,ay+dy*k,az+dz*k))return false;}return true;}
 function pointBlocked(x,y,z){gridQuery(x,z,.2,_cl);for(const c of _cl){if(c.t!=='b')continue;if(x>c.minX-.15&&x<c.maxX+.15&&z>c.minZ-.15&&z<c.maxZ+.15&&y>c.minY-.15&&y<c.maxY+.15)return true;}return false;}

@@ -48,6 +48,24 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.8 (erä 9)
+- **Näköyhteys:** `losClear(ax,ay,az,bx,by,bz)` (collision.js): askel .3 m, `pointBlocked`, päiden .4 m
+  ohitetaan. Silmäkorkeudet: mob `mobEyeY(m)` = y+1.2 (pomo +4), pelaaja y+1.3.
+- **Jahti vaatii näköyhteyden:** `updateMobs` laskee `m.los` ~5 kertaa sekunnissa (välimuisti, ei
+  joka kehyksellä). Jahti alkaa vain näköyhteydellä; ilman sitä jahti päättyy 3 s kuluttua (`m.noLos`)
+  ja viha nollataan (`angry=false`, `lastHit=-99`) vaikka mobia olisi lyöty. Seurauksena mobit
+  eivät enää jää hakkaamaan seinää loputtomiin. Pomo (`bossAI`) ennallaan.
+- **Mobin isku:** osuu vain jos `losClear` JA keskipisteiden etäisyys < `range+.25` (ennen
+  `range+r+.4`) JA katse f > .5 (ennen .3). Ei koskaan seinän läpi.
+- **Pelaajan isku** (`doMeleeHit`): mobit sekä puut/kivet ohitetaan ilman näköyhteyttä.
+- **Eläimet:** kyykyssä (`P.crouch`) peura ei säiky lainkaan (säikkyy vain lyönnistä, pystyssä < 9 m).
+- **Hiiviskelyisku:** kyykyssä lähitaistelu mobiin, joka ei ole chase/flee-tilassa (ei pomo) = vahinko
+  ×2 ja keltainen "Hiiviskelyisku!". Koskee vain lähitaistelua, ei jousta.
+- Testi (Playwright): seinä katkaisee näköyhteyden, mob seinän takana ei jahtaa, isku seinän läpi
+  ei osu (kumpaankaan suuntaan), jahti katkeaa 3 s jälkeen ja viha nollautuu, sneak 16 vs 8
+  vahinkoa, peura ei säiky kyykyssä, ei konsolivirheitä.
+
+
 ### v0.7 (erä 7)
 - **Kyykky (C, pidä pohjassa):** nopeus max 2,3 m/s, ei juoksua, hahmo madaltuu (`fig.g.scale.y`) ja
   kamera laskee (`P.crouchK`), HUDissa "Hiipii". Törmäyskorkeus pysyy ennallaan. Hiipiessä
@@ -152,7 +170,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 - Välimuistin ohitus, kädet oikein päin, kirveen kahden käden ote, iskun suunta ja ajoitus, ESC,
   koko näyttö (F). Tallennusilmoitus oli jo koodissa (näkyi vasta kun välimuisti päivittyi).
 
-### Erä 8 – rakentaminen (TEE SEURAAVAKSI)
+### Erä 8 – rakentaminen (EI TEHTY VIELÄ, tee seuraavaksi)
 1. Kiinteä olkikatto: pieceBoxes('katto') = 8 porrasviipaletta rinteen suuntaan (paikallinen +z
    matala pää, -z korkea), viipaleen i yläpinta G/8*(i+1), pohja max(0, yläpinta-.3). Tällöin
    pelaaja ei kävele läpi, kamera pysähtyy (camera.js käyttää pointBlocked) ja katolla voi kävellä.
@@ -177,7 +195,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
      olkia), `alphaTest:.5`, `DoubleSide`. Kaistale katon matalaan ja korkeaan reunaan
      (poikittaiset päät), ulottuu ~.3 m reunan yli.
 
-### Erä 9 – taistelu, näköyhteys ja hiipiminen
+### Erä 9 – taistelu, näköyhteys ja hiipiminen – TEHTY (ks. versioloki v0.8)
 1. collision.js: losClear(ax,ay,az,bx,by,bz) – askel .3 m, pointBlocked, ohita päiden .4 m.
    Silmäkorkeudet: mob y+1.2 (pomo +4), pelaaja y+1.3.
 2. ai.js aggro: chase vaatii näköyhteyden. Ilman näköyhteyttä 3 s (m.noLos) → idle, viha

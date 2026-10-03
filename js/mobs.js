@@ -13,6 +13,7 @@ const MOBDEF={
   vartija:{n:'Kalmanvartija',hp:900,r:1.6,ai:'boss',walk:2.2,run:3.6,aggro:60,dmg:24,range:4.2,cd:2,wind:.8,weak:{blunt:1.3,pierce:.75,fire:1},drops:[['sydan',1,1],['kupari',6,8],['hiidenkivi',0,0]],fig:()=>{const f=makeBiped({s:3.1,body:0x5d5a54,skin:0x6f6b63,legs:0x4a4742,eyes:0x7ffff0,wide:1.15});const rm=MAT.glow;f.torso.add(bx(.06,.6,.05,rm,0,0,.6),bx(.5,.06,.05,rm,0,.15,.6));f.armL.add(bx(.8,.5,.8,mat(0x4a4742),0,.2,0));f.armR.add(bx(.8,.5,.8,mat(0x4a4742),0,.2,0));f.head.add(bx(.5,.35,.35,mat(0x6f6b63),-.95,1.6,0),bx(.5,.35,.35,mat(0x6f6b63),.95,1.6,0));return f;}},
 };
 let mobs=[], boss=null;
+function mobEyeY(m){return m.pos.y+(m.type==='vartija'?4:1.2);}
 function spawnMob(type,x,z,opts={}){
   const def=MOBDEF[type],f=def.fig();const y=opts.y??terrainH(x,z);
   f.g.position.set(x,y,z);scene.add(f.g);
