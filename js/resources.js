@@ -8,10 +8,11 @@ const NODE={
   kuusi:{kind:'tree',hp:30,drops:[['puu',3,5],['pihka',0,1]],r:.38,respawn:1500},
   koivu:{kind:'tree',hp:24,drops:[['puu',3,4]],r:.3,respawn:1500},
   kelo:{kind:'tree',hp:18,drops:[['puu',2,3]],r:.32,respawn:1500},
-  aarnipuu:{kind:'tree',hp:120,drops:[['puu',4,6]],r:.66,respawn:3000,tier:3,big:1},
+  aarnipuu:{kind:'tree',hp:220,drops:[['pihka',1,2]],r:.66,respawn:3000,tier:3},
   tukki:{kind:'log',hp:20,drops:[['puu',3,4]],r:0},
-  lohkare:{kind:'rock',hp:45,drops:[['kivi',5,8]],r:1.05,respawn:1800},
-  kuparisuoni:{kind:'rock',hp:70,drops:[['malmi',3,5],['kivi',1,3]],r:1.1,respawn:2400},
+  lohkare:{kind:'rock',hp:45,drops:[['kivi',5,8]],r:1.05,respawn:1800,tier:1},
+  kuparisuoni:{kind:'rock',hp:70,drops:[['malmi',3,5],['kivi',1,3]],r:1.1,respawn:2400,tier:1},
+  rautasuoni:{kind:'rock',hp:120,drops:[['rautamalmi',2,4],['kivi',1,2]],r:1.15,respawn:3600,tier:2},
   oksa:{kind:'pick',item:'puu',n:[1,1],respawn:300,label:'Oksa'},
   kivikasa:{kind:'pick',item:'kivi',n:[1,1],respawn:300,label:'Kivi'},
   piikivi:{kind:'pick',item:'piikivi',n:[1,2],respawn:420,label:'Piikivi'},
@@ -25,6 +26,7 @@ const NGEO={
   aarnipuu:mergeParts([part(new THREE.BoxGeometry(1.3,19,1.3),0x4a3524,0,9.5,0),part(new THREE.BoxGeometry(2,1.2,.5),0x3e2c1e,0,.5,0,0,.4),part(new THREE.BoxGeometry(.5,1.2,2),0x3e2c1e,0,.5,0,0,.4),part(new THREE.ConeGeometry(4.6,5.5,8),0x1d3a22,0,13.5,0),part(new THREE.ConeGeometry(3.6,5,8),0x22432a,0,16.5,0),part(new THREE.ConeGeometry(2.5,4.5,8),0x274b2e,0,19.5,0)]),
   lohkare:mergeParts([part(new THREE.IcosahedronGeometry(1.2,0),0x85837d,0,.55,0,0,0,0,1,.75,1),part(new THREE.IcosahedronGeometry(.7,0),0x77756f,.7,.35,.3)]),
   kuparisuoni:mergeParts([part(new THREE.IcosahedronGeometry(1.25,0),0x66605a,0,.6,0,0,0,0,1,.8,1),part(new THREE.BoxGeometry(.3,.3,.3),0xd9874a,.6,.9,.6,.5,.5),part(new THREE.BoxGeometry(.28,.28,.28),0xd9874a,-.7,.6,.5,.3,.8),part(new THREE.BoxGeometry(.25,.25,.25),0xe39a5a,.1,1.3,-.5,.2,.4),part(new THREE.BoxGeometry(.3,.3,.3),0xd9874a,-.3,.8,-.8)]),
+  rautasuoni:mergeParts([part(new THREE.IcosahedronGeometry(1.3,0),0x4f4a47,0,.6,0,0,0,0,1,.8,1),part(new THREE.BoxGeometry(.32,.32,.32),0x8a4f3c,.6,.9,.6,.5,.5),part(new THREE.BoxGeometry(.3,.3,.3),0x9a5c46,-.7,.6,.5,.3,.8),part(new THREE.BoxGeometry(.26,.26,.26),0x7d4636,.1,1.3,-.5,.2,.4),part(new THREE.BoxGeometry(.3,.3,.3),0x8a4f3c,-.3,.8,-.8)]),
   oksa:mergeParts([part(new THREE.BoxGeometry(.08,.08,1),0x6b4527,0,.05,0),part(new THREE.BoxGeometry(.05,.05,.4),0x6b4527,.12,.05,.2,0,.8)]),
   kivikasa:mergeParts([part(new THREE.IcosahedronGeometry(.22,0),0x8f8d86,0,.12,0),part(new THREE.IcosahedronGeometry(.15,0),0x7a7872,.25,.08,.1)]),
   piikivi:mergeParts([part(new THREE.TetrahedronGeometry(.22,0),0x40464f,0,.12,0),part(new THREE.TetrahedronGeometry(.16,0),0x50565f,.22,.08,-.1)]),
@@ -77,6 +79,8 @@ function chunkOf(x,z){return clamp(Math.floor((z+HALF)/CHS),0,CHN-1)*CHN+clamp(M
     else if(b==='mountain'){if(r<.3)add('lohkare',px,pz,1+rng()*.8);else if(r<.38)add('kuparisuoni',px,pz,1);else if(r<.5)add('kivikasa',px,pz);}
     else if(b==='moor'){if(r<.15)add('kivikasa',px,pz);else if(r<.25)add('lohkare',px,pz,.8+rng()*.4);}
   }
+  // rautasuonet: harvinaisia (~25) korkealla vuorilla
+  for(let i=0,c=0;i<40000&&c<25;i++){const px=(rng()-.5)*AR,pz=(rng()-.5)*AR,h=terrainH(px,pz);if(h<=22||biomeAt(px,pz,h)!=='mountain'||!clear(px,pz))continue;add('rautasuoni',px,pz,1+rng()*.25);c++;}
   // varmistetaan aloitusalueelle tarvikkeet
   const S0=LOC.spawn;
   for(let i=0;i<14;i++){const a=rng()*TAU,d=7+rng()*14;add(i%2?'oksa':'kivikasa',S0.x+Math.cos(a)*d,S0.z+Math.sin(a)*d);}

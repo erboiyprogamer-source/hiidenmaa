@@ -21,7 +21,7 @@ function updateGear(){
   const o=equipped('offhand'),oid=o?o.id:null;
   if(oid!==offId){if(offMesh)fig.handL.remove(offMesh);offMesh=null;offId=oid;if(oid){offMesh=ITEMS[oid].cat==='shield'?makeShield(oid):makeHeld(oid);fig.handL.add(offMesh);}}
   const a=equipped('armor'),aid=a?a.id:null;
-  if(aid!==armorId){armorId=aid;const c=aid==='kuparipanssari'?0xc07a40:aid==='nahkavaatteet'?0x8a6040:0x5a6e7a;fig.torso.material=mat(c);fig.armL.children[0].material=mat(c);fig.armR.children[0].material=mat(c);}
+  if(aid!==armorId){armorId=aid;const c=aid==='rautapanssari'?0x7d8894:aid==='kuparipanssari'?0xc07a40:aid==='nahkavaatteet'?0x8a6040:0x5a6e7a;fig.torso.material=mat(c);fig.armL.children[0].material=mat(c);fig.armR.children[0].material=mat(c);}
 }
 
 /* ---------------- INVENTORY ---------------- */

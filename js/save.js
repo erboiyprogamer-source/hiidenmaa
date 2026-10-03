@@ -5,7 +5,7 @@
 /* ---------------- SAVE / LOAD ---------------- */
 const SKEY='hiidenmaa_save_v1';
 function serialize(){return{v:3,bossPending:!!(boss&&!boss.dead&&!flags.boss),playTime,dayT,dayN,weather,flags,P:{x:P.pos.x,y:P.pos.y,z:P.pos.z,hp:P.hp,stam:P.stam,hunger:P.hunger,buffs:P.buffs,spawn:P.spawn,deaths:P.deaths,kills:P.kills,inDun:P.inDun},cam:[camYaw,camPitch],inv,
-  pieces:pieces.map(p=>({t:p.t,x:p.x,y:p.y,z:p.z,r:p.rot,hp:p.hp,d:p.t==='arkku'?{items:p.data.items}:p.t==='nuotio'?{fuel:p.data.fuel}:p.t==='sulatin'?{ore:p.data.ore,wood:p.data.wood,done:p.data.done}:p.t==='ovi'?{open:p.data.open}:{}})),
+  pieces:pieces.map(p=>({t:p.t,x:p.x,y:p.y,z:p.z,r:p.rot,hp:p.hp,d:p.t==='arkku'?{items:p.data.items}:p.t==='nuotio'?{fuel:p.data.fuel}:p.t==='sulatin'?{ore:p.data.ore,iore:p.data.iore,wood:p.data.wood,done:p.data.done,idone:p.data.idone}:p.t==='ovi'?{open:p.data.open}:{}})),
   planted:nodes.filter(n=>n.planted).map(n=>[n.type,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
   nodes:nodes.filter(n=>!n.alive).map(n=>[n.id,Math.round(n.respawnAt-playTime)]),graves:graves.map(g=>({x:g.x,y:g.y,z:g.z,items:g.items})),dk:dunKilled,
   explored:btoa(String.fromCharCode.apply(null,packBits(explored)))};}

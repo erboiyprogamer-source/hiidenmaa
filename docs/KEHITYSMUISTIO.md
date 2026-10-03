@@ -48,6 +48,23 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.12 (erä 12)
+- **Työkalutasot:** `pick`/`chop`-arvo on taso. Hakut: piikivi 1, kupari 2 (uusi, ahjo: kupari 6, puu 3),
+  rauta 3. Kirveet: kivi 1, kupari 2, rauta 3. `NODE.tier`: lohkare 1, kuparisuoni 1, rautasuoni 2,
+  puut 1, aarnipuu 3. Liian heikko → "Tarvitset paremman hakun." / "Tarvitset vahvemman kirveen."
+- **Rautasuoni:** 25 kpl vuorilla (h>22), hp 120, tier 2, antaa rautamalmia 2–4 + kiveä.
+- **Sulatusuuni** sulattaa myös rautamalmin (oma jono `iore`/`idone`, 10 s/harkko, kupari ensin, 7 s).
+  Uunin teksti näyttää molemmat; tallennus ja purku käsittelevät uudet kentät.
+- **Rautavarusteet ahjoon:** rautakirves (chop 3, dmg 18; rauta 4, puu 3), rautahakku (pick 3, dmg 12;
+  rauta 5, puu 3), rautamiekka (dmg 34; rauta 6, puu 2, nahka 2), rautapanssari (arm 22, slow .08;
+  rauta 12, nahka 6). Kuvakkeet ja kädessä pidettävät mallit.
+- **Aarnipuu** (hp 220·s²) vaatii rautakirveen; tukit antavat **tervaspuuta**. Uudet osat
+  **tervaslattia** (hp 240) ja **tervasseinä** (hp 300), kumpikin tervaspuu 2, tumma `MAT.tarwood`,
+  vauriotekstuurit toimivat (vauriomateriaali säilyttää sävyn).
+- Testi: piikivihakku ei pure rautaan, kuparihakku louhii (8 iskua), uuni tuottaa 2 harkkoa,
+  rautakirves kaataa aarnipuun → 2 tukkia → tervaspuuta, tervasseinä hp 300, tallennus/lataus ok.
+
+
 ### v0.11 (erä 11)
 - **Kartta 3×:** `WS=1.75`, `HALF` 200→350, `GN` 350 (`GS`=2). Isot muodot lasketaan yksikkökoordinaateissa
   (x/WS), pienet yksityiskohdat metreinä; `LOC` kerrotaan WS:llä, reunan meri alkaa ~297 m. Luolasto
@@ -299,7 +316,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
    säteellä ei ole rakennusta, ja istuta enintään 40 uutta puuta metsäbiomeihin (varaa
    instanssipooli, esim. 400 paikkaa per puulaji).
 
-### Erä 12 – malmit, työkalut ja aarnipuu
+### Erä 12 – malmit, työkalut ja aarnipuu – TEHTY (ks. versioloki v0.12)
 1. Työkalutasot: ITEMS-aseille pick/chop-taso (piikivihakku 1, UUSI kuparihakku 2 ahjosta:
    kupari 6, puu 3, rautahakku 3; kivikirves 1, kuparikirves 2, rautakirves 3). NODE:lle `tier`.
    Liian heikko työkalu → "Tarvitset paremman hakun/kirveen".

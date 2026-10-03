@@ -36,11 +36,11 @@ function makeHeld(id){
   const g=new THREE.Group(),W=mat(0x7b4f2b);
   const h=(len)=>{g.add(bx(.07,.07,len,W,0,0,len/2-.1,true));};
   switch(id){
-    case 'kirves':case 'kuparikirves':h(.85);g.add(bx(.06,.32,.2,mat(id==='kirves'?0x8f8d86:0xd98a4e,{metalness:id==='kirves'?0:.5,roughness:.5}),0,-.1,.68));break;
+    case 'kirves':case 'kuparikirves':case 'rautakirves':h(.85);g.add(bx(.06,.32,.2,mat(id==='kirves'?0x8f8d86:id==='rautakirves'?0x9aa6b3:0xd98a4e,{metalness:id==='kirves'?0:.5,roughness:.5}),0,-.1,.68));break;
     case 'nuija':h(.6);g.add(bx(.2,.2,.42,mat(0x6b4527),0,0,.62));break;
-    case 'hakku':h(.85);{const p=bx(.06,.07,.7,mat(0x58606b),0,0,.7);p.rotation.x=Math.PI/2;g.add(p);}break;
+    case 'hakku':case 'kuparihakku':case 'rautahakku':h(.85);{const p=bx(.06,.07,.7,mat(id==='hakku'?0x58606b:id==='kuparihakku'?0xd98a4e:0x9aa6b3,{metalness:id==='hakku'?0:.5,roughness:.5}),0,0,.7);p.rotation.x=Math.PI/2;g.add(p);}break;
     case 'keihas':h(1.7);g.add(bx(.05,.1,.25,mat(0x66707a),0,0,1.65));g.position.z=-.3;break;
-    case 'miekka':g.add(bx(.06,.06,.25,mat(0x4a2f18),0,0,.02));g.add(bx(.28,.05,.06,mat(0x8f5326),0,0,.16));g.add(bx(.04,.09,.85,mat(0xe9a46a,{metalness:.6,roughness:.4}),0,0,.6));break;
+    case 'miekka':case 'rautamiekka':{const L=id==='miekka'?.85:1;g.add(bx(.06,.06,.25,mat(0x4a2f18),0,0,.02));g.add(bx(.28,.05,.06,mat(0x8f5326),0,0,.16));g.add(bx(.04,.09,L,mat(id==='miekka'?0xe9a46a:0xc8d2dc,{metalness:.6,roughness:.4}),0,0,.18+L/2));break;}
     case 'soihtu':h(.6);g.add(bx(.12,.12,.16,MAT.flame,0,0,.56,false));g.add(bx(.07,.07,.1,MAT.flame2,0,.06,.6,false));break;
     case 'vasara':h(.6);g.add(bx(.14,.14,.3,mat(0x7c6a52),0,0,.52));g.children[1].rotation.x=Math.PI/2;break;
     case 'jousi':{const m=mat(0x8a5a32);const a=bx(.06,.6,.06,m,0,.27,0),b=bx(.06,.6,.06,m,0,-.27,0);a.rotation.x=.35;b.rotation.x=-.35;a.position.z=.1;b.position.z=.1;g.add(a,b,bx(.01,1.05,.01,mat(0xe7e1cf),0,0,-.02,false));g.rotation.x=0;break;}

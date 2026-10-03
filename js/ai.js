@@ -113,7 +113,7 @@ function updateStations(dt){
   for(const p of pieces){
     if(p.t==='nuotio'){const f=p.mesh.userData.flame;const lit=p.data.fuel>0;f[0].visible=f[1].visible=lit;if(lit){f[0].scale.y=1+Math.sin(playTime*12+p.x)*.15;p.data.burn+=dt;if(p.data.burn>=90){p.data.burn=0;p.data.fuel--;}
       for(let i=p.data.cook.length-1;i>=0;i--){p.data.cook[i]-=dt;if(p.data.cook[i]<=0){p.data.cook.splice(i,1);if(dist2(p.x,p.z,P.pos.x,P.pos.z)<36){giveOrDrop('paisti',1,p.x,p.y+.8,p.z);}else spawnDrop('paisti',1,p.x,p.y+.8,p.z);sfx('pickup');}}}}
-    if(p.t==='sulatin'){const run=p.data.ore>0&&p.data.wood>0;p.mesh.userData.glow.visible=run;if(run){p.data.t+=dt;if(p.data.t>=7){p.data.t=0;p.data.ore--;p.data.wood--;p.data.done++;}}}
+    if(p.t==='sulatin'){const run=(p.data.ore>0||p.data.iore>0)&&p.data.wood>0;p.mesh.userData.glow.visible=run;if(run){p.data.t+=dt;const iron=p.data.ore<=0;if(p.data.t>=(iron?10:7)){p.data.t=0;p.data.wood--;if(iron){p.data.iore--;p.data.idone++;}else{p.data.ore--;p.data.done++;}}}}
   }
   for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i];if(l.userData.base)l.intensity=l.userData.base*(.85+Math.sin(playTime*(9+i)+i*3)*.08+Math.sin(playTime*23+i)*.05);}
 }
