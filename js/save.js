@@ -1,0 +1,44 @@
+/* Hiidenmaa – save.js
+   Tallennus ja lataus (localStorage + tallennuskoodi) */
+'use strict';
+
+/* ---------------- SAVE / LOAD ---------------- */
+const SKEY='hiidenmaa_save_v1';
+function serialize(){return{v:1,bossPending:!!(boss&&!boss.dead&&!flags.boss),playTime,dayT,dayN,weather,flags,P:{x:P.pos.x,y:P.pos.y,z:P.pos.z,hp:P.hp,stam:P.stam,hunger:P.hunger,buffs:P.buffs,spawn:P.spawn,deaths:P.deaths,kills:P.kills,inDun:P.inDun},cam:[camYaw,camPitch],inv,
+  pieces:pieces.map(p=>({t:p.t,x:p.x,y:p.y,z:p.z,r:p.rot,hp:p.hp,d:p.t==='arkku'?{items:p.data.items}:p.t==='nuotio'?{fuel:p.data.fuel}:p.t==='sulatin'?{ore:p.data.ore,wood:p.data.wood,done:p.data.done}:p.t==='ovi'?{open:p.data.open}:{}})),
+  nodes:nodes.filter(n=>!n.alive).map(n=>[n.id,Math.round(n.respawnAt-playTime)]),graves:graves.map(g=>({x:g.x,y:g.y,z:g.z,items:g.items})),dk:dunKilled,
+  explored:btoa(String.fromCharCode.apply(null,packBits(explored)))};}
+function packBits(a){const o=new Uint8Array(Math.ceil(a.length/8));for(let i=0;i<a.length;i++)if(a[i])o[i>>3]|=1<<(i&7);return Array.from(o);}
+function saveGame(silent){try{localStorage.setItem(SKEY,JSON.stringify(serialize()));if(!silent)msg('Peli tallennettu.','loot');return true;}catch(e){if(!silent)msg('Tallennus selaimeen ei onnistunut. Käytä tallennuskoodia valikossa.','warn');return false;}}
+function loadData(s){
+  resetWorld();
+  playTime=s.playTime||0;dayT=s.dayT??.3;dayN=s.dayN||1;weather=s.weather||weather;weather.until=Math.min(weather.until,playTime+300);
+  flags=Object.assign({disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{}},s.flags||{});
+  const q=s.P;P.pos.set(q.x,q.y,q.z);P.hp=q.hp;P.stam=q.stam;P.hunger=q.hunger;P.buffs=q.buffs||{};P.spawn=q.spawn;P.deaths=q.deaths||0;P.kills=q.kills||0;P.inDun=false;
+  if(q.inDun){P.inDun=false;const L=LOC.barrow;P.pos.set(L.x+12.5,terrainH(L.x+12.5,L.z),L.z);}
+  if(s.cam){camYaw=s.cam[0];camPitch=s.cam[1];}
+  inv=(s.inv||[]).slice(0,32);while(inv.length<32)inv.push(null);
+  for(const p of s.pieces||[])addPiece(p.t,p.x,p.y,p.z,p.r,p.hp,p.d);
+  const byId=new Map(nodes.map(n=>[n.id,n]));for(const [id,left] of s.nodes||[]){const n=byId.get(id);if(n){killNode(n);n.respawnAt=playTime+left;}}
+  for(const g of s.graves||[])makeGrave(g);
+  Object.assign(dunKilled,s.dk||{});
+  if(s.explored){const b=atob(s.explored);for(let i=0;i<explored.length;i++)explored[i]=(b.charCodeAt(i>>3)>>(i&7))&1;}
+  for(let i=0;i<3;i++)if(flags.sarc[i]){sarcs[i].lid.position.x=.7;sarcs[i].lid.rotation.z=.3;}
+  if(s.bossPending)invAdd('hiidenkivi',3);
+  resetFog();invDirty=true;updateGear();goalShown=-1;
+}
+function resetWorld(){
+  for(const p of [...pieces])removePiece(p);for(const m of [...mobs])mobRemove(m);for(const d of drops)scene.remove(d.mesh);drops=[];for(const g of graves)scene.remove(g.mesh);graves=[];
+  for(const n of nodes)if(!n.alive)reviveNode(n);for(const k in dunKilled)delete dunKilled[k];explored.fill(0);
+  for(const p of projs)scene.remove(p.m);projs.length=0;
+  circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));sarcs.forEach(s=>{s.lid.position.x=0;s.lid.rotation.z=0;});
+  $('#bossbar').hidden=true;
+}
+function newGame(){
+  resetWorld();playTime=0;dayT=.28;dayN=1;weather={cur:'selkea',until:240};flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{}};
+  inv=new Array(32).fill(null);P.pos.set(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z);P.hp=60;P.stam=100;P.hunger=80;P.buffs={};P.spawn=null;P.deaths=0;P.kills=0;P.inDun=false;P.dead=false;P.heal=0;P.wetT=0;
+  camYaw=Math.PI*1.1;camPitch=.3;P.yaw=camYaw+Math.PI;fig.g.rotation.x=0;resetFog();invDirty=true;updateGear();goalShown=-1;
+  // start with a few mobs around
+  for(let i=0;i<3;i++){const a=i*2.1,d=30+i*6;spawnMob('peura',Math.cos(a)*d,6+Math.sin(a)*d);}
+  setTimeout(()=>{msg('Rannalla seisoo riimukivi. Lue se (E).');},800);
+}

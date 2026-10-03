@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hiidenmaa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700;800&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="game"></div>
+<div id="hurt"></div>
+<div id="fade"></div>
+<div id="hud" hidden>
+  <div id="cross"></div>
+  <div id="goal"><div class="eyebrow">Tavoite</div><div id="goalT"></div><div id="goalD"></div></div>
+  <div id="status"></div>
+  <div id="topright"><canvas id="mini" width="150" height="150"></canvas><div id="clock" class="num"></div></div>
+  <div id="bars">
+    <div class="bar hp"><i></i><span class="num"></span></div>
+    <div class="bar st"><i></i><span class="num"></span></div>
+    <div class="bar hu"><i></i><span class="num"></span></div>
+  </div>
+  <div id="msgs"></div>
+  <div id="hotbar"></div>
+  <div id="weight" class="num"></div>
+  <div id="prompt"></div>
+  <div id="buildhint" hidden></div>
+  <div id="lockhint" hidden>Napsauta ruutua ohjataksesi kameraa</div>
+  <div id="bossbar" hidden><div class="name">Kalmanvartija</div><div class="track"><i></i></div></div>
+  <div id="floaters"></div>
+</div>
+
+<div id="inv" class="panel" hidden>
+  <button class="close" data-close="1" aria-label="Sulje">✕</button>
+  <div>
+    <div id="invHead"><h2>Reppu</h2><span id="invW" class="num note"></span></div>
+    <div id="invGrid" class="grid"></div>
+    <div id="detail"></div>
+  </div>
+  <div>
+    <h2>Valmistus</h2>
+    <div id="stationLine"></div>
+    <div id="craftList"></div>
+  </div>
+</div>
+
+<div id="build" class="panel" hidden>
+  <button class="close" data-close="1" aria-label="Sulje">✕</button>
+  <h2>Rakenna</h2>
+  <p class="note" style="margin:0 0 10px">Rakentaminen vaatii työpenkin 20 metrin säteellä (paitsi työpenkki ja nuotio). <span class="kb">R</span> kääntää, <span class="kb">X</span> purkaa.</p>
+  <div class="cards" id="buildCards"></div>
+</div>
+
+<div id="chest" class="panel" hidden>
+  <button class="close" data-close="1" aria-label="Sulje">✕</button>
+  <div><h2 id="chestTitle">Arkku</h2><div id="chestGrid" class="grid"></div></div>
+  <div><h2>Reppu</h2><div id="chestInv" class="grid"></div><p class="note">Napsauta esinettä siirtääksesi sen.</p></div>
+</div>
+
+<div id="mapP" class="panel" hidden>
+  <button class="close" data-close="1" aria-label="Sulje">✕</button>
+  <canvas id="bigmap" width="640" height="640"></canvas>
+  <div class="legend"><span>▲ sinä</span><span style="color:#e8893b">■ työpenkki/sänky</span><span style="color:#8fd8cf">◆ löydetyt paikat</span><span style="color:#c8463b">✚ hauta</span></div>
+</div>
+
+<div id="menu" class="screen">
+  <div class="inner">
+    <h1 class="title"><small>Selviytymispeli · versio 0.1</small>Hiidenmaa</h1>
+    <p class="lede">Haaksirikko jätti sinut saarelle, jota yhdeksän talven ajan on hallinnut kivinen Kalmanvartija. Kaada puita, rakenna suoja ennen yötä, takoa kuparista ase ja herätä vartija kivikehässä.</p>
+    <div class="menuBtns">
+      <button class="mbtn" id="bContinue" hidden>Jatka matkaa<small id="saveInfo"></small></button>
+      <button class="mbtn" id="bNew">Uusi peli<small>Aloita rannalta ilman mitään</small></button>
+      <button class="mbtn" id="bResume" hidden>Palaa peliin</button>
+      <button class="mbtn" id="bSave" hidden>Tallenna nyt</button>
+      <button class="mbtn" id="bMenuToggle">Ohjaimet ja asetukset</button>
+    </div>
+    <div id="opts" hidden>
+      <div class="keys">
+        <span class="kb">WASD</span><span>liiku · <b>Shift</b> juokse · <b>Välilyönti</b> hyppää</span>
+        <span class="kb">Hiiri</span><span>vasen lyö / jousella pidä ja päästä · oikea torju kilvellä</span>
+        <span class="kb">E</span><span>poimi, avaa, käytä</span>
+        <span class="kb">Tab</span><span>reppu ja valmistus</span>
+        <span class="kb">1–8</span><span>pikapaikat (varusta / syö)</span>
+        <span class="kb">B</span><span>rakennusvalikko (vasara kädessä)</span>
+        <span class="kb">R · X</span><span>käännä rakennusta · pura</span>
+        <span class="kb">M</span><span>kartta · <b>Esc</b> tauko</span>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label class="toggle"><input type="checkbox" id="optShadow" checked> Varjot</label>
+        <label class="toggle"><input type="checkbox" id="optSound" checked> Äänet</label>
+        <label class="toggle"><input type="checkbox" id="optInvY"> Käännä pystyhiiri</label>
+      </div>
+      <div style="margin-top:10px">
+        <div class="note" style="margin-bottom:4px">Tallennuskoodi (siirrä peli toiselle koneelle tai varmuuskopioi):</div>
+        <textarea id="saveCode" spellcheck="false"></textarea>
+        <div class="row" style="margin-top:6px"><button class="btn" id="bExport">Näytä koodi</button><button class="btn" id="bCopy">Kopioi</button><button class="btn" id="bImport">Lataa koodista</button></div>
+        <div class="note" id="ioMsg"></div>
+      </div>
+    </div>
+    <p class="note">Toimii parhaiten tietokoneella hiirellä ja näppäimistöllä.</p>
+  </div>
+</div>
+
+<div id="deadS" class="screen" hidden>
+  <div class="inner">
+    <h1 class="title" style="font-size:56px">Kaaduit</h1>
+    <p class="lede">Tavarasi jäivät hautakasaan kuolinpaikalle. Hae ne takaisin – kasa näkyy kartalla.</p>
+    <div class="menuBtns"><button class="mbtn" id="bRespawn">Herää uudelleen</button></div>
+  </div>
+</div>
+
+<div id="winS" class="screen" hidden>
+  <div class="inner">
+    <h1 class="title" style="font-size:58px"><small>Kalmanvartija on kaatunut</small>Hiidenmaa on vapaa</h1>
+    <p class="lede" id="winStats"></p>
+    <div class="menuBtns"><button class="mbtn" id="bWinCont">Jatka tutkimista</button></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- Tavalliset skriptit jakavat saman globaalin näkyvyysalueen. Järjestyksellä on väliä. -->
+<script src="js/core.js"></script>
+<script src="js/world.js"></script>
+<script src="js/render.js"></script>
+<script src="js/collision.js"></script>
+<script src="js/items.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/models.js"></script>
+<script src="js/resources.js"></script>
+<script src="js/landmarks.js"></script>
+<script src="js/pieces.js"></script>
+<script src="js/mobs.js"></script>
+<script src="js/state.js"></script>
+<script src="js/input.js"></script>
+<script src="js/actions.js"></script>
+<script src="js/building.js"></script>
+<script src="js/environment.js"></script>
+<script src="js/player.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/camera.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/save.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
