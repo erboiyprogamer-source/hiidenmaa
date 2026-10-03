@@ -22,14 +22,19 @@ function updateGhost(){
   if(!hit||dist2(hit.pt.x,hit.pt.z,P.pos.x,P.pos.z)>9*9){ghost.visible=false;ghostPos=null;return;}
   ghost.visible=true;const t=buildSel,def=PIECES[t];let x,y,z;const hx=hit.pt.x,hz=hit.pt.z;
   let baseY=hit.n.y>.6?hit.pt.y:(hit.piece?hit.piece.y:hit.pt.y);
-  if(def.snap==='floor'){x=Math.floor(hx/2)*2+1;z=Math.floor(hz/2)*2+1;y=hit.piece?baseY:Math.round(baseY*4)/4+.1;}
-  else if(def.snap==='wall'){if(buildRot%2===0){x=Math.floor(hx/2)*2+1;z=Math.round(hz/2)*2;}else{x=Math.round(hx/2)*2;z=Math.floor(hz/2)*2+1;}y=hit.piece?baseY:Math.min(terrainH(x-1,z),terrainH(x+1,z),terrainH(x,z-1),terrainH(x,z+1))-.05;}
-  else if(def.snap==='cell'){x=Math.floor(hx/2)*2+1;z=Math.floor(hz/2)*2+1;y=hit.piece?baseY:baseY;}
+  const cell=v=>Math.floor(v/G)*G+G/2, edge=v=>Math.round(v/G)*G;
+  if(def.snap==='floor'){x=cell(hx);z=cell(hz);y=hit.piece?baseY:Math.round(baseY*4)/4+.1;}
+  else if(def.snap==='wall'){if(buildRot%2===0){x=cell(hx);z=edge(hz);}else{x=edge(hx);z=cell(hz);}
+    y=hit.piece?baseY:Math.min(terrainH(x-G/2,z),terrainH(x+G/2,z),terrainH(x,z-G/2),terrainH(x,z+G/2))-.05;
+    // Seinä ja ovi asettuvat viereisen lattian pintaan, ettei aukko jää lattiaa matalammaksi.
+    const fl=floorAtEdge(x,z,y);if(fl!==null)y=fl;}
+  else if(def.snap==='cell'){x=cell(hx);z=cell(hz);y=baseY;}
   else{x=Math.round(hx*4)/4;z=Math.round(hz*4)/4;y=hit.piece?baseY:terrainH(x,z);}
   ghost.position.set(x,y,z);ghost.rotation.y=buildRot*Math.PI/2;ghostPos={x,y,z};
   ghostOk=validPlace(t,x,y,z,buildRot);
   const m=ghostOk?MAT.ghostOk:MAT.ghostBad;ghost.traverse(o=>{if(o.isMesh)o.material=m;});
 }
+function floorAtEdge(x,z,y){let best=null;for(const p of pieces){if(p.t!=='lattia')continue;if(Math.abs(p.y-y)>1.3)continue;if(dist2(p.x,p.z,x,z)<=(G/2+.05)**2&&(best===null||p.y>best))best=p.y;}return best;}
 let lastInvalid='';
 function validPlace(t,x,y,z,rot){
   const def=PIECES[t];lastInvalid='';
