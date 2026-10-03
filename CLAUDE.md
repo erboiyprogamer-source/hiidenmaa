@@ -90,5 +90,9 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 
 ## Julkaisu
 
-- Repo: `erboiyprogamer-source/hiidenmaa`, GitHub Pages haarasta `main` (juuri).
-- Peli: https://erboiyprogamer-source.github.io/hiidenmaa/
+- Repo: `erboiyprogamer-source/hiidenmaa`, GitHub Pages haarasta `main` (juuri), `.nojekyll` käytössä.
+- Peli: https://erboiyprogamer-source.github.io/hiidenmaa/ (päivittyy noin minuutissa, kun `main` muuttuu).
+- Käyttäjä työskentelee yleensä pilvisessiossa. Kun erä on valmis ja testattu: commit, push ja
+  pull request `main`-haaraan. Kerro käyttäjälle lyhyesti mitä muuttui ja muistuta yhdistämään PR
+  (Merge), jos et voi tehdä sitä itse.
+- Päivitä valikon versionumero (`index.html`, "Selviytymispeli · versio X") ja versioloki samalla.
