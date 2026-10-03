@@ -96,3 +96,5 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
   pull request `main`-haaraan. Kerro käyttäjälle lyhyesti mitä muuttui ja muistuta yhdistämään PR
   (Merge), jos et voi tehdä sitä itse.
 - Päivitä valikon versionumero (`index.html`, "Selviytymispeli · versio X") ja versioloki samalla.
+- **Välimuisti:** nosta samalla `index.html`:n kaikkien `<script src>`- ja `css`-linkkien `?v=X`, muuten
+  raw.githack/selain voi näyttää vanhoja JS-tiedostoja. Anna testilinkki myös commit-SHA:lla.

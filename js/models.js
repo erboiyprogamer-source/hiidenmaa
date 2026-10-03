@@ -12,7 +12,7 @@ function makeBiped(o){
   const torso=bx(.64*s*(o.wide||1),.76*s,.38*s,mB,0,hip+.38*s,0);g.add(torso);
   const head=new THREE.Group();head.position.set(0,hip+.76*s,0);const hb=bx(.46*s*(o.headS||1),.46*s*(o.headS||1),.46*s*(o.headS||1),mS,0,.23*s*(o.headS||1),0);head.add(hb);g.add(head);
   const arm=(x)=>{const p=new THREE.Group();p.position.set(x,hip+.7*s,0);p.add(bx(.22*s*th,.72*s,.24*s*th,o.armMat?mat(o.armMat):mB,0,-.33*s,0));g.add(p);return p;};
-  const armL=arm(-.44*s*(o.wide||1)),armR=arm(.44*s*(o.wide||1));
+  const armL=arm(.44*s*(o.wide||1)),armR=arm(-.44*s*(o.wide||1)); // hahmo katsoo +z:aan, joten +x on vasen
   const hand=new THREE.Group();hand.position.set(0,-.66*s,.02);armR.add(hand);
   const handL=new THREE.Group();handL.position.set(0,-.62*s,.02);armL.add(handL);
   if(o.eyes){const em=new THREE.MeshBasicMaterial({color:o.eyes});const hs=(o.headS||1)*s;head.add(bx(.09*hs,.07*hs,.02,em,-.11*hs,.27*hs,.235*hs,false));head.add(bx(.09*hs,.07*hs,.02,em,.11*hs,.27*hs,.235*hs,false));}
@@ -48,4 +48,4 @@ function makeHeld(id){
   g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
   return g;
 }
-function makeShield(id){const g=new THREE.Group();g.add(bx(.08,.75,.62,id==='kilpi'?MAT.wood:mat(0xc87a3e,{metalness:.5,roughness:.45}),-.08,0,.1));g.add(bx(.1,.16,.16,mat(0xb8b0a0),-.12,0,.1));return g;}
+function makeShield(id){const g=new THREE.Group();g.add(bx(.08,.75,.62,id==='kilpi'?MAT.wood:mat(0xc87a3e,{metalness:.5,roughness:.45}),.08,0,.1));g.add(bx(.1,.16,.16,mat(0xb8b0a0),.12,0,.1));return g;}

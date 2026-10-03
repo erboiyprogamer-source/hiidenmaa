@@ -48,20 +48,30 @@ function updatePlayer(dt){
   const hv=Math.hypot(P.vel.x,P.vel.z);P.walkPh+=hv*dt*1.9;
   const sw=Math.sin(P.walkPh)*Math.min(1,hv/4)*.75;
   fig.g.position.copy(P.pos);if(P.swim)fig.g.position.y=P.pos.y-.2;fig.g.rotation.y=P.yaw;
-  fig.legL.rotation.x=sw;fig.legR.rotation.x=-sw;fig.armL.rotation.x=-sw*.7;fig.armR.rotation.x=sw*.7;fig.armR.rotation.z=0;fig.armL.rotation.z=0;
+  fig.legL.rotation.x=sw;fig.legR.rotation.x=-sw;fig.armL.rotation.x=-sw*.7;fig.armR.rotation.x=sw*.7;fig.armR.rotation.z=0;fig.armL.rotation.z=0;fig.armL.position.x=.44;fig.armR.position.x=-.44;
   if(!P.onGround&&!P.swim){fig.legL.rotation.x=-.5;fig.legR.rotation.x=.3;}
-  if(P.atk){const k=P.atk.t/P.atk.dur,hk=P.atk.hitAt/P.atk.dur;
-    if(P.atk.w.chop&&!P.atk.offBusy){
-      let ax,az;if(k<hk){const t=sstep(0,1,k/hk);ax=lerp(-.2,-2.4,t);az=lerp(.85,-.5,t);}else{const t=Math.min(1,(k-hk)/.25);ax=lerp(-2.4,-.3,t);az=lerp(-.5,-.15,t);}
-      fig.armR.rotation.x=ax;fig.armR.rotation.z=az;fig.armL.rotation.x=ax;fig.armL.rotation.z=az;
-    }else{let ax,az;if(k<hk){const t=sstep(0,1,k/hk);ax=lerp(-.15,-2.7,t);az=lerp(.5,-.35,t);}else{const t=Math.min(1,(k-hk)/.25);ax=lerp(-2.7,-.3,t);az=lerp(-.35,-.15,t);}fig.armR.rotation.x=ax;fig.armR.rotation.z=az;}}
-  if(P.blocking){fig.armL.rotation.x=lerpAngle(fig.armL.rotation.x,-1.3+Math.sin(playTime*3)*.04,Math.min(1,dt*10));fig.armL.rotation.z=lerpAngle(fig.armL.rotation.z,-.5,Math.min(1,dt*10));}
+  if(P.atk){const k=P.atk.t/P.atk.dur,hk=P.atk.hitAt/P.atk.dur,two=P.atk.w.chop&&!P.atk.offBusy;
+    const [ax,az]=two?swingPose(k,hk,-2.6,.35,-.7,-.35):swingPose(k,hk,-2.4,.5,-.9,-.4);
+    fig.armR.rotation.x=ax;fig.armR.rotation.z=az;
+    if(two&&k<hk+.3){fig.armL.position.x=.2;fig.armR.position.x=-.2;gripWithLeft();}}
+  if(P.blocking){fig.armL.rotation.x=lerpAngle(fig.armL.rotation.x,-1.3+Math.sin(playTime*3)*.04,Math.min(1,dt*10));fig.armL.rotation.z=lerpAngle(fig.armL.rotation.z,-.3,Math.min(1,dt*10));}
   if(P.drawing){fig.armL.rotation.x=-1.5;fig.armR.rotation.x=-1.5;fig.armR.rotation.z=.5;}
   if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(0,0,0);if(P.drawing){fig.armL.rotation.z=-.1;}}
   fig.g.visible=camDist>1.8;
   // torch light
   const torch=offId==='soihtu';torchLight.intensity=torch?2.1+Math.sin(playTime*17)*.25:0;if(torch){fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;}
 }
+// Isku: nosto ylävasemmalle, isku alaoikealle (osuma iskun lopussa), palautus lepoon.
+function swingPose(k,hk,hx,hz,lx,lz){const wk=hk*.55;let t;
+  if(k<wk){t=sstep(0,1,k/wk);return[lerp(-.2,hx,t),lerp(0,hz,t)];}
+  if(k<hk){t=sstep(0,1,(k-wk)/(hk-wk));return[lerp(hx,lx,t),lerp(hz,lz,t)];}
+  t=Math.min(1,(k-hk)/.3);return[lerp(lx,0,t),lerp(lz,0,t)];}
+// Vasen käsi tarttuu kirveen varteen: osoita käsivarsi varren kohtaan.
+const _gp=new V3();
+function gripWithLeft(){if(!heldMesh)return;fig.g.updateMatrixWorld(true);
+  _gp.set(0,0,.35);heldMesh.localToWorld(_gp);fig.g.worldToLocal(_gp);
+  _gp.x-=fig.armL.position.x;_gp.y-=fig.armL.position.y;_gp.z-=fig.armL.position.z;_gp.normalize();
+  fig.armL.rotation.z=Math.asin(clamp(_gp.x,-1,1));fig.armL.rotation.x=Math.atan2(-_gp.z,-_gp.y);}
 function lerpAngle(a,b,t){let d=((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;return a+d*t;}
 function playerDie(){
   if(P.dead)return;P.dead=true;P.deaths++;P.hp=0;sfx('die');
