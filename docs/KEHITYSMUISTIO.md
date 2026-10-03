@@ -48,6 +48,20 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.10 (erä 10)
+- **Pehmeä valon vaihto:** taivaan valo `light=sstep(-.4,.45,el)` (hämärä/aamunkoitto ~1,5 min),
+  aurinko `sunK=sstep(-.12,.08,el)`, kuu `moonK=sstep(-.12,-.32,el)`. Valon suunta vaihtuu kuuhun
+  vasta kun voimakkuus on 0 (testi: vaihto dayT .819, intensiteetti 0; suurin hyppy .043/askel).
+- **Kuu:** `moon` (render.js) auringon vastapuolella, läikkäinen canvas-tekstuuri, `fog:false`.
+  Kirkkaus ja kuunvalo `moonPhase()` = 8 päivän kierto (.2 uusikuu … 1 täysikuu).
+- **Uudet säät** (`WEATHERS`): tuulinen (`tuuli`), tihku, myrsky (rankkasade, salama = taivas ja valot
+  välähtävät, jyrinä `sfx('thunder')` .5–2 s viiveellä), lumisade (`lumi`, valitaan sateen sijaan kun
+  pelaaja on vuorella tai y>20; hiutaleet näkyvät y>10, lumisade kylmettää ilman suojaa).
+  Todennäköisyydet: selkeä 34 %, pilvi 20, tuuli 10, tihku 10, sade 12, myrsky 6, sumu 8. Tihku ei kastele.
+- **Puut huojuvat:** puiden instanssimateriaali `treeMat` (vertex-shader, `SWAY.uWind`): kevyt huojunta
+  aina, voimakas tuulella ja myrskyssä. Varjot eivät huoju.
+
+
 ### v0.9 (erä 8)
 - **Kiinteä olkikatto:** `pieceBoxes('katto')` = 8 porrasviipaletta (viipaleen yläpinta G/8·(i+1), pohja
   max(0, yläpinta−.3), askel .31 m < `STEPUP`). Katolla voi kävellä (testi: nousu 2,5 m = G), katto
@@ -233,7 +247,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
    lyönnistä). Hiiviskelyisku: P.crouch ja mob ei ole chase/flee-tilassa → vahinko ×2, keltainen
    "Hiiviskelyisku!"-teksti.
 
-### Erä 10 – taivas ja sää (TEE SEURAAVAKSI)
+### Erä 10 – taivas ja sää – TEHTY (ks. versioloki v0.10)
 1. Pehmeä valon vaihto (environment.js n. rivi 26): nyt aurinko vaihtuu kuuksi hetkessä. Tee
    sunK=sstep(-.12,.08,el) ja moonK yöllä. Valon voimakkuus laskee nollaan horisontissa ja suunta
    vaihtuu vasta nollassa. Hämärä ja aamunkoitto noin 1,5 min peliaikaa. Laajenna light-käyrää

@@ -29,6 +29,18 @@ const NGEO={
   sieni:mergeParts([part(new THREE.BoxGeometry(.12,.25,.12),0xefe6d2,0,.12,0),part(new THREE.ConeGeometry(.24,.18,6),0x9b6a3a,0,.3,0)]),
 };
 const nodes=[]; const nodeIM={};
+// Puiden latvat huojuvat tuulessa (vahvemmin tuulisella säällä ja myrskyssä).
+const SWAY={uTime:{value:0},uWind:{value:.15}};
+const treeMat=vcMat.clone();
+treeMat.onBeforeCompile=sh=>{sh.uniforms.uTime=SWAY.uTime;sh.uniforms.uWind=SWAY.uWind;
+  sh.vertexShader='uniform float uTime;uniform float uWind;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+  #ifdef USE_INSTANCING
+  float swPh=instanceMatrix[3].x*.13+instanceMatrix[3].z*.11;
+  #else
+  float swPh=0.;
+  #endif
+  float swH=max(0.,position.y-1.5);
+  transformed.x+=sin(uTime*1.7+swPh)*uWind*swH*.05;transformed.z+=cos(uTime*1.3+swPh)*uWind*swH*.035;`);};
 (function placeNodes(){
   const tmp={};for(const k in NGEO)tmp[k]=[];
   const add=(type,x,z,s=1,rot)=>{const y=terrainH(x,z);tmp[type].push({type,x,z,y,s,rot:rot??rng()*TAU});};
@@ -57,7 +69,7 @@ const nodes=[]; const nodeIM={};
   let id=0;
   for(const type in tmp){
     const list=tmp[type];if(!list.length)continue;
-    const im=new THREE.InstancedMesh(NGEO[type],vcMat,list.length);im.castShadow=NODE[type].kind!=='pick';im.receiveShadow=true;
+    const im=new THREE.InstancedMesh(NGEO[type],NODE[type].kind==='tree'?treeMat:vcMat,list.length);im.castShadow=NODE[type].kind!=='pick';im.receiveShadow=true;
     nodeIM[type]=im;scene.add(im);
     list.forEach((n,i)=>{n.id=id++;n.idx=i;n.def=NODE[type];n.hp=n.def.hp||1;n.alive=true;n.respawnAt=0;
       setNodeMatrix(n,true);
