@@ -104,13 +104,55 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
-### Erä 6 – maailman sisältö (ei tehty vielä)
+### Erä 6 – korjauserä: v0.5:n muutokset eivät näkyneet (TEE SEURAAVAKSI)
+Syyt selvitetty (Opus-suunnitelma). Testaajalle päivittyi vain `index.html` (versio + valikko).
+- **Välimuisti:** raw.githack ja selain välimuistittavat jokaisen JS-tiedoston erikseen. Lisää
+  `index.html`:ssä kaikkiin omiin `<script src>`- ja `css`-linkkeihin `?v=0.6` ja nosta se
+  joka erässä versionumeron mukana. Kirjaa sääntö CLAUDE.md:n Julkaisu-osioon. Anna testilinkki
+  myös commit-SHA:lla.
+- **Kädet peilikuvana (todellinen bugi):** `makeBiped` sijoittaa `armR`:n kohtaan +x, mutta hahmo
+  katsoo +z-suuntaan, joten +x on hahmon VASEN puoli. Ase on siis näkyvästi vasemmassa kädessä ja
+  kilpi/soihtu oikeassa. Korjaus: `makeBiped`issa `armL=arm(+.44…)`, `armR=arm(-.44…)` (ja jalat
+  samoin). Koskee myös vihollisia (oikein niillekin). Tarkista sen jälkeen `rotation.z`-merkit:
+  +z vie riippuvan käden kohti +x (hahmon vasen).
+- **Kirveen ote kahdella kädellä:** nyt molemmat kädet kopioivat saman kulman, joten kädet ovat
+  0,9 m erillään eivätkä varressa. Korjaus: aseta ensin `armR`, päivitä matriisit, ota kohde
+  `heldMesh.localToWorld(0,0,.3)` (varren kohta), muunna `fig.g`-koordinaatteihin, laske suunta
+  `d` vasemmasta olkapäästä ja aseta `armL.rotation.z=asin(d.x)`, `armL.rotation.x=atan2(-d.z,-d.y)`
+  (Euler XYZ: Rz ensin, sitten Rx). Vain jos `!P.atk.offBusy`.
+- **Iskun suunta ja ajoitus:** nyt käsi nousee ylös-oikealle ja osuma tulee käden ollessa
+  ylhäällä. Uusi kaari: 0–45 % `hitAt`:sta nosto ylävasemmalle (ax≈-2.6, az≈+.6), 45–100 % isku
+  alaoikealle (ax≈-.7, az≈-.7) niin että osuma osuu iskun loppuun, sen jälkeen palautus lepoon.
+- **ESC:** Esc ei ole selaimelle "käyttäjän ele", joten `requestLock()` Esc-käsittelijässä
+  epäonnistuu tai lukko otetaan ja menetetään heti → `pointerlockchange` → `pauseGame()`. Korjaus:
+  paneelin sulku Escillä EI pyydä lukkoa (seuraava klikkaus lukitsee, `#lockhint` näkyy), ja
+  `pauseGame` ohitetaan 0,5 s paneelin sulkemisen jälkeen (`panelClosedAt`). Lisäksi valinnainen
+  koko näyttö (F-näppäin / valikkonappi): `requestFullscreen()` + `navigator.keyboard?.lock(['Escape'])`,
+  jolloin Chromessa Esc tulee pelille eikä poistu koko näytöstä. Taukovalikossa Esc sulkee ensin
+  `#opts`-paneelin.
+- **Tallennusilmoitus:** koodi on jo olemassa (main.js), tarkista välimuistikorjauksen jälkeen.
+
+### Erä 7 – rakentaminen
+- **Työpenkin alue näkyviin:** sääntö on jo olemassa (`validPlace`: 20 m). Tee vakio `BENCH_R=20`
+  (pieces.js). `addPiece('tyopenkki')` luo maaston mukaan kulkevan rengasnauhan (128 segm.,
+  y = `terrainH`+.05…+.45, läpikuultava oranssi `MeshBasicMaterial`, `depthWrite:false`),
+  `removePiece` poistaa sen. Renkaat näkyvät vain kun vasara on kädessä. Virheviesti:
+  "Rakenna työpenkin alueelle (oranssi raja)."
+- **Olkikaton päällä voi kävellä:** `pieceBoxes('katto')` = 8 ohutta porrasviipaletta rinteen
+  suuntaan (paikallinen +z on matala pää, -z korkea): viipaleen i yläpinta `G/8*(i+1)`, pohja
+  `max(0, yläpinta-.3)`. Askel .31 m < `STEPUP`, joten rinnettä voi kävellä; talon sisällä viipaleet
+  ovat seinän yläpuolella eivätkä estä liikettä. Tarkista `validPlace`-poikkeus katolle.
+- **Olkikaton karhea reuna:** canvas-tekstuuri `thatchFringe` (läpinäkyvä tausta, eripituisia
+  olkia), `alphaTest:.5`, `DoubleSide`. Kaistale katon matalaan ja korkeaan reunaan (poikittaiset
+  päät), ulottuu ~.3 m reunan yli.
+
+### Erä 8 – maailman sisältö
 - Lisää puita niin että pellot/niittyaukeamat ovat pienempiä (tiheämpi metsä, kutistaa avoimia
   niittyalueita).
 - Uusi biomi: hyvin korkeita ja tuuheita puita, lehvästö/havusto korkealla latvoissa, pelaaja
   kävelee runkojen alla. Biomi on tunnelmaltaan sumuinen, pimeä ja pelottava.
 
-### Erä 5 – tehty (ks. versioloki v0.5)
+### Erä 5 – tehty osittain (ks. versioloki v0.5 ja erä 6)
 - Toisen käden varustepaikka (kilpi/soihtu) oikean käden aseen/työkalun rinnalle.
 - Kirves vaatii oikeasti kaksi kättä (yksin käsin jos toinen käsi on varattu).
 - Oikea käsi on päätyökäsi, vasen käsi on toisen käden varustepaikka.
