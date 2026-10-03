@@ -3,8 +3,11 @@
 'use strict';
 
 /* ---------------- WORLD LAYOUT ---------------- */
-const HALF=200, GN=200, GS=HALF*2/GN, HN=GN+1;
-const DUN={x:700,y:60,z:700}; // hautakummun sisätila (erillinen tila)
+// Maailma on suunniteltu "yksikkökoordinaatteihin" (vanha ±200 m kartta) ja skaalataan kertoimella WS.
+// Isot muodot (vuoret, nummi, järvi, biomit) skaalautuvat, pienet yksityiskohdat pysyvät metreinä.
+const WS=1.75;
+const HALF=350, GN=350, GS=HALF*2/GN, HN=GN+1;
+const DUN={x:900,y:60,z:900}; // hautakummun sisätila (erillinen tila, kartan ulkopuolella)
 const LOC={
   spawn:{x:0,z:6},
   barrow:{x:-118,z:92,name:'Hautakumpu'},
@@ -14,21 +17,24 @@ const LOC={
   ruinC:{x:150,z:24,name:'Rantaraunio'},
   rune1:{x:5,z:0}, rune2:{x:-64,z:48}, rune3:{x:22,z:-92},
 };
+for(const k in LOC){LOC[k].x*=WS;LOC[k].z*=WS;}
+// Aarnimetsät (yksikkökoordinaatit): korkeat, tuuheat ja synkät metsät.
+const AARNI=[{x:95,z:-22,r:30},{x:-78,z:-12,r:26}];
 const FLATS=[
   {x:LOC.barrow.x,z:LOC.barrow.z,r:18,h:4},
   {x:LOC.circle.x,z:LOC.circle.z,r:15,h:6},
 ];
 function baseHeight(x,z){
-  const d=Math.hypot(x,z);
-  let h=3.5+(fbm(x*.011+31,z*.011-17,5)-.5)*24;
+  const u=x/WS,v=z/WS,d=Math.hypot(u,v);
+  let h=3.5+(fbm(u*.011+31,v*.011-17,5)-.5)*24;
   h+=(fbm(x*.045,z*.045,2)-.5)*2.5;
-  const m=sstep(-55,-125,z);
-  if(m>0)h+=m*(12+ridge(x*.018+3,z*.018)*36);
-  const md=Math.hypot(x+108,z-112);
-  h=lerp(h,2.8+(fbm(x*.03,z*.03,3)-.5)*7,sstep(85,40,md)*.85);
-  const ld=Math.hypot(x-58,z-48); h-=sstep(42,12,ld)*13;
-  h=lerp(h,5+(fbm(x*.03,z*.03,2)-.5)*3,sstep(46,14,d));
-  h-=sstep(110,175,x)*7;
+  const m=sstep(-55,-125,v);
+  if(m>0)h+=m*(12+ridge(u*.018+3,v*.018)*36);
+  const md=Math.hypot(u+108,v-112);
+  h=lerp(h,2.8+(fbm(u*.03,v*.03,3)-.5)*7,sstep(85,40,md)*.85);
+  const ld=Math.hypot(u-58,v-48); h-=sstep(42,12,ld)*13;
+  h=lerp(h,5+(fbm(u*.03,v*.03,2)-.5)*3,sstep(46,14,d));
+  h-=sstep(110,175,u)*7;
   h=lerp(h,-14,sstep(170,198,d));
   return h;
 }
@@ -39,13 +45,16 @@ function heightFn(x,z){
   const bd=Math.hypot(x-LOC.barrow.x,z-LOC.barrow.z); if(bd<10)h+=6.5*(1-(bd/10)**2);
   return h;
 }
+function inAarni(x,z){const u=x/WS,v=z/WS;for(const A of AARNI)if(Math.hypot(u-A.x,v-A.z)<A.r+(fbm(u*.06+5,v*.06,2)-.5)*16)return true;return false;}
 function biomeAt(x,z,h){
   if(h<1.1)return h<-.4?'sea':'beach';
-  if(Math.hypot(x+108,z-112)<68+(fbm(x*.05,z*.05,2)-.5)*24)return 'moor';
+  const u=x/WS,v=z/WS;
+  if(Math.hypot(u+108,v-112)<68+(fbm(u*.05,v*.05,2)-.5)*24)return 'moor';
   if(h>23)return 'mountain';
-  const d=Math.hypot(x,z);
-  if(d<46+(fbm(x*.04+9,z*.04,2)-.5)*30)return 'meadow';
-  if(fbm(x*.02-40,z*.02+12,3)<.4)return 'meadow';
+  if(h>1.6&&h<20&&inAarni(x,z))return 'aarni';
+  const d=Math.hypot(u,v);
+  if(d<40+(fbm(u*.04+9,v*.04,2)-.5)*26)return 'meadow';
+  if(fbm(u*.02-40,v*.02+12,3)<.33)return 'meadow';
   return 'forest';
 }
 const HGT=new Float32Array(HN*HN);

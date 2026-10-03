@@ -73,6 +73,7 @@ const terrainColors=new Float32Array(HN*HN*3);
     else if(b==='beach')c=[.78,.7,.5];
     else if(b==='meadow')c=[.43+n,.6+n,.24];
     else if(b==='forest')c=[.25+n,.42+n,.17];
+    else if(b==='aarni')c=[.15+n*.6,.25+n*.6,.12];
     else if(b==='moor')c=[.36+n,.32+n,.3+n*.5];
     else c=[.48+n,.47+n,.44+n];
     if(h>33){const t=sstep(33,38,h);c=[lerp(c[0],.92,t),lerp(c[1],.94,t),lerp(c[2],.96,t)];}

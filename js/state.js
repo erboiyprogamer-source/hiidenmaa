@@ -7,7 +7,8 @@ const P={pos:new V3(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z),v
 let inv=new Array(32).fill(null);
 let playTime=0, dayT=.3, dayN=1, weather={cur:'selkea',until:200}, flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{}}, graves=[], drops=[];
 let camYaw=Math.PI, camPitch=.35, camDist=6;
-const explored=new Uint8Array(100*100);
+const EXN=Math.ceil(HALF/2); // tutkimusruudukko 4 m ruuduin
+const explored=new Uint8Array(EXN*EXN);
 let state='menu';
 
 const fig=makeBiped({s:1,body:0x5a6e7a,skin:0xe2b48c,legs:0x4a3b2c,eyes:0x1a1a1a});
@@ -69,7 +70,7 @@ function updateFx(dt){
 }
 function fallTree(n){const g=new THREE.Group();const m=new THREE.Mesh(NGEO[n.type],vcMat);m.scale.setScalar(n.s);g.add(m);g.position.set(n.x,n.y,n.z);scene.add(g);
   const a=Math.atan2(n.x-P.pos.x,n.z-P.pos.z);
-  fx.push({obj:g,t:0,update:(f,dt)=>{const k=Math.min(1,f.t/1.2);g.rotation.set(0,0,0);g.rotateOnWorldAxis(_tmpV.set(Math.cos(a),0,-Math.sin(a)),k*k*Math.PI/2);if(f.t>1.2&&!f.dropped){f.dropped=1;sfx('chop');burst(n.x+Math.sin(a)*3,n.y+.5,n.z+Math.cos(a)*3,0x6b4527,10,4);for(const [id,lo,hi] of n.def.drops){const c=rint(rng,lo,hi);for(let j=0;j<c;j++){const t=1+j*1.2;spawnDrop(id,1,n.x+Math.sin(a)*t,n.y+1,n.z+Math.cos(a)*t);}}}return f.t>1.6;}});}
+  fx.push({obj:g,t:0,update:(f,dt)=>{const k=Math.min(1,f.t/1.2);g.rotation.set(0,0,0);g.rotateOnWorldAxis(_tmpV.set(Math.cos(a),0,-Math.sin(a)),k*k*Math.PI/2);if(f.t>1.2&&!f.dropped){f.dropped=1;sfx('chop');burst(n.x+Math.sin(a)*3,n.y+.5,n.z+Math.cos(a)*3,0x6b4527,10,4);for(const [id,lo,hi] of n.def.drops){if(id==='puu')continue;const c=Math.round(rint(rng,lo,hi)*n.s);for(let j=0;j<c;j++){const t=1+j*1.2;spawnDrop(id,1,n.x+Math.sin(a)*t,n.y+1,n.z+Math.cos(a)*t);}}spawnLogs(n,a);}return f.t>1.6;}});}
 function shockwave(x,y,z,r,color=0x8ffff0){const m=new THREE.Mesh(new THREE.RingGeometry(.8,1,32),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.8,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.set(x,y+.15,z);scene.add(m);fx.push({obj:m,t:0,update:(f)=>{const k=f.t/.5;m.scale.setScalar(.5+k*r);m.material.opacity=.8*(1-k);return k>=1;}});}
 
 /* ---------------- PROJECTILES ---------------- */

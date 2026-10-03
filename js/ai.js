@@ -96,6 +96,7 @@ const SPAWN={
   moor:{day:[['kalmo',.9],['karju',.1]],night:[['kalmo',.7],['susi',.3]]},
   mountain:{day:[['susi',.5],['peura',.5]],night:[['susi',1]]},
   beach:{day:[['karju',.5],['peura',.5]],night:[['susi',.6],['hiisi',.4]]},
+  aarni:{day:[['hiisi',.5],['susi',.3],['peura',.2]],night:[['susi',.5],['hiisi',.5]]},
 };
 function spawner(dt){
   spawnT-=dt;if(spawnT>0||P.inDun||P.dead)return;spawnT=2.5;

@@ -8,6 +8,8 @@ const NODE={
   kuusi:{kind:'tree',hp:30,drops:[['puu',3,5],['pihka',0,1]],r:.38,respawn:1500},
   koivu:{kind:'tree',hp:24,drops:[['puu',3,4]],r:.3,respawn:1500},
   kelo:{kind:'tree',hp:18,drops:[['puu',2,3]],r:.32,respawn:1500},
+  aarnipuu:{kind:'tree',hp:120,drops:[['puu',4,6]],r:.66,respawn:3000,tier:3,big:1},
+  tukki:{kind:'log',hp:20,drops:[['puu',3,4]],r:0},
   lohkare:{kind:'rock',hp:45,drops:[['kivi',5,8]],r:1.05,respawn:1800},
   kuparisuoni:{kind:'rock',hp:70,drops:[['malmi',3,5],['kivi',1,3]],r:1.1,respawn:2400},
   oksa:{kind:'pick',item:'puu',n:[1,1],respawn:300,label:'Oksa'},
@@ -20,6 +22,7 @@ const NGEO={
   kuusi:mergeParts([part(new THREE.BoxGeometry(.4,2.2,.4),0x5a3a22,0,1.1,0),part(new THREE.ConeGeometry(1.7,2.5,7),0x2e5a2e,0,2.7,0),part(new THREE.ConeGeometry(1.3,2.1,7),0x356836,0,3.9,0),part(new THREE.ConeGeometry(.85,1.7,7),0x3b7440,0,5,0)]),
   koivu:mergeParts([part(new THREE.BoxGeometry(.32,4.6,.32),0xe9e6dc,0,2.3,0),part(new THREE.BoxGeometry(.34,.1,.2),0x222222,0,1.4,.02),part(new THREE.BoxGeometry(.34,.08,.2),0x222222,0,2.6,-.02),part(new THREE.IcosahedronGeometry(1.7,0),0x7aa641,0,4.7,0),part(new THREE.IcosahedronGeometry(1.2,0),0x8bb84c,.6,5.5,.3)]),
   kelo:mergeParts([part(new THREE.BoxGeometry(.36,4.2,.36),0x6d665c,0,2.1,0),part(new THREE.BoxGeometry(.16,1.4,.16),0x6d665c,.5,3,0,0,0,-.8),part(new THREE.BoxGeometry(.14,1.1,.14),0x6d665c,-.4,3.6,.1,0,0,.9)]),
+  aarnipuu:mergeParts([part(new THREE.BoxGeometry(1.3,19,1.3),0x4a3524,0,9.5,0),part(new THREE.BoxGeometry(2,1.2,.5),0x3e2c1e,0,.5,0,0,.4),part(new THREE.BoxGeometry(.5,1.2,2),0x3e2c1e,0,.5,0,0,.4),part(new THREE.ConeGeometry(4.6,5.5,8),0x1d3a22,0,13.5,0),part(new THREE.ConeGeometry(3.6,5,8),0x22432a,0,16.5,0),part(new THREE.ConeGeometry(2.5,4.5,8),0x274b2e,0,19.5,0)]),
   lohkare:mergeParts([part(new THREE.IcosahedronGeometry(1.2,0),0x85837d,0,.55,0,0,0,0,1,.75,1),part(new THREE.IcosahedronGeometry(.7,0),0x77756f,.7,.35,.3)]),
   kuparisuoni:mergeParts([part(new THREE.IcosahedronGeometry(1.25,0),0x66605a,0,.6,0,0,0,0,1,.8,1),part(new THREE.BoxGeometry(.3,.3,.3),0xd9874a,.6,.9,.6,.5,.5),part(new THREE.BoxGeometry(.28,.28,.28),0xd9874a,-.7,.6,.5,.3,.8),part(new THREE.BoxGeometry(.25,.25,.25),0xe39a5a,.1,1.3,-.5,.2,.4),part(new THREE.BoxGeometry(.3,.3,.3),0xd9874a,-.3,.8,-.8)]),
   oksa:mergeParts([part(new THREE.BoxGeometry(.08,.08,1),0x6b4527,0,.05,0),part(new THREE.BoxGeometry(.05,.05,.4),0x6b4527,.12,.05,.2,0,.8)]),
@@ -41,47 +44,105 @@ treeMat.onBeforeCompile=sh=>{sh.uniforms.uTime=SWAY.uTime;sh.uniforms.uWind=SWAY
   #endif
   float swH=max(0.,position.y-1.5);
   transformed.x+=sin(uTime*1.7+swPh)*uWind*swH*.05;transformed.z+=cos(uTime*1.3+swPh)*uWind*swH*.035;`);};
+// Puiden korkeus kertoimella s=1 (tukkien pituutta varten).
+const TREE_H={kuusi:5.8,koivu:6.2,kelo:4.8,aarnipuu:21};
+const POOL={kuusi:400,koivu:400,aarnipuu:60}; // varapaikat öisin kasvaville puille
+const treeS=()=>.6+Math.pow(rng(),1.6)*1.4;   // puun koko .6–2.0, pienet yleisimpiä
+let nodeIdN=0;
+const CHN=10,CHS=HALF*2/CHN,CHUNK_IMS=[];
+const VIS_R={tree:150,rock:120,pick:60}; // näkyvyysetäisyys lajeittain (sumu peittää kauempana)
+function chunkOf(x,z){return clamp(Math.floor((z+HALF)/CHS),0,CHN-1)*CHN+clamp(Math.floor((x+HALF)/CHS),0,CHN-1);}
 (function placeNodes(){
   const tmp={};for(const k in NGEO)tmp[k]=[];
   const add=(type,x,z,s=1,rot)=>{const y=terrainH(x,z);tmp[type].push({type,x,z,y,s,rot:rot??rng()*TAU});};
   const clear=(x,z)=>{for(const k in LOC){const L=LOC[k];if(dist2(x,z,L.x,L.z)<(k==='spawn'?14*14:(k.startsWith('rune')?4*4:20*20)))return false;}return true;};
-  for(let x=-196;x<196;x+=3.6)for(let z=-196;z<196;z+=3.6){
+  const E=HALF-4;
+  for(let x=-E;x<E;x+=3.6)for(let z=-E;z<E;z+=3.6){
     const px=x+(rng()-.5)*3,pz=z+(rng()-.5)*3,h=terrainH(px,pz);if(h<.8)continue;if(!clear(px,pz))continue;
     const b=biomeAt(px,pz,h),r=rng();
-    if(b==='forest'){if(r<.42)add(rng()<.82?'kuusi':'koivu',px,pz,.8+rng()*.55);}
-    else if(b==='meadow'){if(r<.035)add('koivu',px,pz,.8+rng()*.4);}
+    if(b==='forest'){if(r<.6)add(rng()<.8?'kuusi':'koivu',px,pz,treeS());}
+    else if(b==='aarni'){if(r<.13)add('aarnipuu',px,pz,.8+rng()*.35);else if(r<.2)add('kuusi',px,pz,.6+rng()*.4);}
+    else if(b==='meadow'){if(r<.035)add('koivu',px,pz,treeS());}
     else if(b==='moor'){if(r<.05)add('kelo',px,pz,.8+rng()*.4);}
-    else if(b==='mountain'){if(h<31&&r<.14)add('kuusi',px,pz,.7+rng()*.4);}
+    else if(b==='mountain'){if(h<31&&r<.14)add('kuusi',px,pz,.6+rng()*.6);}
   }
-  for(let i=0;i<2600;i++){
-    const px=(rng()-.5)*380,pz=(rng()-.5)*380,h=terrainH(px,pz);if(h<-.2||!clear(px,pz)&&Math.hypot(px,pz)>16)continue;
+  const AR=(HALF-10)*2;
+  for(let i=0;i<2600*WS*WS;i++){
+    const px=(rng()-.5)*AR,pz=(rng()-.5)*AR,h=terrainH(px,pz);if(h<-.2||!clear(px,pz)&&Math.hypot(px,pz)>16)continue;
     const b=biomeAt(px,pz,h),r=rng();
     if(h>.2&&h<2.4&&r<.5){add('piikivi',px,pz);continue;}
     if(h<1)continue;
     if(b==='meadow'){if(r<.22)add('oksa',px,pz);else if(r<.42)add('kivikasa',px,pz);else if(r<.56)add('marjat',px,pz);else if(r<.6)add('lohkare',px,pz,.8+rng()*.5);}
-    else if(b==='forest'){if(r<.2)add('oksa',px,pz);else if(r<.3)add('kivikasa',px,pz);else if(r<.42)add('sieni',px,pz);else if(r<.5)add('marjat',px,pz);else if(r<.58)add('lohkare',px,pz,.8+rng()*.6);else if(r<.625)add('kuparisuoni',px,pz,.9+rng()*.3);}
+    else if(b==='forest'||b==='aarni'){if(r<.2)add('oksa',px,pz);else if(r<.3)add('kivikasa',px,pz);else if(r<.42)add('sieni',px,pz);else if(r<.5)add('marjat',px,pz);else if(r<.58)add('lohkare',px,pz,.8+rng()*.6);else if(r<.625)add('kuparisuoni',px,pz,.9+rng()*.3);}
     else if(b==='mountain'){if(r<.3)add('lohkare',px,pz,1+rng()*.8);else if(r<.38)add('kuparisuoni',px,pz,1);else if(r<.5)add('kivikasa',px,pz);}
     else if(b==='moor'){if(r<.15)add('kivikasa',px,pz);else if(r<.25)add('lohkare',px,pz,.8+rng()*.4);}
   }
   // varmistetaan aloitusalueelle tarvikkeet
-  for(let i=0;i<14;i++){const a=rng()*TAU,d=7+rng()*14;add(i%2?'oksa':'kivikasa',Math.cos(a)*d,6+Math.sin(a)*d);}
-  for(let i=0;i<4;i++){const a=rng()*TAU,d=12+rng()*12;add('marjat',Math.cos(a)*d,6+Math.sin(a)*d);}
-  let id=0;
-  for(const type in tmp){
-    const list=tmp[type];if(!list.length)continue;
-    const im=new THREE.InstancedMesh(NGEO[type],NODE[type].kind==='tree'?treeMat:vcMat,list.length);im.castShadow=NODE[type].kind!=='pick';im.receiveShadow=true;
-    nodeIM[type]=im;scene.add(im);
-    list.forEach((n,i)=>{n.id=id++;n.idx=i;n.def=NODE[type];n.hp=n.def.hp||1;n.alive=true;n.respawnAt=0;
-      setNodeMatrix(n,true);
-      if(n.def.kind==='tree')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+6,n);
-      else if(n.def.kind==='rock')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+1.2*n.s,n);
-      nodes.push(n);});
-    im.instanceMatrix.needsUpdate=true;
-  }
+  const S0=LOC.spawn;
+  for(let i=0;i<14;i++){const a=rng()*TAU,d=7+rng()*14;add(i%2?'oksa':'kivikasa',S0.x+Math.cos(a)*d,S0.z+Math.sin(a)*d);}
+  for(let i=0;i<4;i++){const a=rng()*TAU,d=12+rng()*12;add('marjat',S0.x+Math.cos(a)*d,S0.z+Math.sin(a)*d);}
+  // Instanssit jaetaan CHN×CHN ruutuun: jokaisella oma rajauspallo, joten näkymättömät ruudut karsitaan.
+  for(const type in tmp){const per=new Map();for(const n of tmp[type]){const k=chunkOf(n.x,n.z);if(!per.has(k))per.set(k,[]);per.get(k).push(n);}
+    const pool=POOL[type]||0;nodeIM[type]=[];
+    for(let k=0;k<CHN*CHN;k++){const list=per.get(k)||[],extra=pool?Math.ceil(pool/(CHN*CHN))*2:0;if(!list.length&&!extra)continue;
+      const im=makeChunkIM(type,k,list.length+extra);im.userData.used=list.length;im.userData.base=list.length;im.count=list.length;im.visible=list.length>0;
+      list.forEach((n,i)=>{n.idx=i;n.im=im;initNode(n);});im.instanceMatrix.needsUpdate=true;}}
 })();
-function setNodeMatrix(n,vis){_q.setFromEuler(_e.set(0,n.rot,0));_s.setScalar(vis?n.s:0.0001);_p.set(n.x,n.y-(n.def.kind==='pick'?0:.05),n.z);_m4.compose(_p,_q,_s);nodeIM[n.type].setMatrixAt(n.idx,_m4);nodeIM[n.type].instanceMatrix.needsUpdate=true;}
+function makeChunkIM(type,k,cap){const cx=k%CHN,cz=(k/CHN)|0,x0=-HALF+cx*CHS,z0=-HALF+cz*CHS;
+  const geo=NGEO[type].clone();geo.boundingSphere=new THREE.Sphere(new V3(x0+CHS/2,10,z0+CHS/2),CHS*.71+30);
+  const im=new THREE.InstancedMesh(geo,NODE[type].kind==='tree'?treeMat:vcMat,cap);im.castShadow=NODE[type].kind!=='pick';im.receiveShadow=true;
+  im.userData.cx=x0+CHS/2;im.userData.cz=z0+CHS/2;im.userData.k=k;im.userData.vis=VIS_R[NODE[type].kind]||140;scene.add(im);nodeIM[type].push(im);CHUNK_IMS.push(im);return im;}
+// Kaukaiset ruudut piiloon (sumu peittää ne joka tapauksessa).
+function updateChunkVis(){const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far;
+  for(const im of CHUNK_IMS){const R=Math.min(f,im.userData.vis)+CHS*.72;im.visible=im.count>0&&!P.inDun&&dist2(cx,cz,im.userData.cx,im.userData.cz)<R*R;}}
+function initNode(n){n.id=nodeIdN++;n.def=NODE[n.type];n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?n.s*n.s:1);n.hp=n.maxHp;n.alive=true;n.respawnAt=0;
+  setNodeMatrix(n,true);
+  if(n.def.kind==='tree')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+6*n.s,n);
+  else if(n.def.kind==='rock')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+1.2*n.s,n);
+  nodes.push(n);}
+function setNodeMatrix(n,vis){_q.setFromEuler(_e.set(0,n.rot,0));_s.setScalar(vis?n.s:0.0001);_p.set(n.x,n.y-(n.def.kind==='pick'?0:.05),n.z);_m4.compose(_p,_q,_s);n.im.setMatrixAt(n.idx,_m4);n.im.instanceMatrix.needsUpdate=true;}
 const NGRID=new Map();
-nodes.forEach(n=>{const k=ck(Math.floor(n.x/CELL),Math.floor(n.z/CELL));let a=NGRID.get(k);if(!a)NGRID.set(k,a=[]);a.push(n);});
-function nodesNear(x,z,r,out){out.length=0;const x0=Math.floor((x-r)/CELL),x1=Math.floor((x+r)/CELL),z0=Math.floor((z-r)/CELL),z1=Math.floor((z+r)/CELL);for(let gx=x0;gx<=x1;gx++)for(let gz=z0;gz<=z1;gz++){const a=NGRID.get(ck(gx,gz));if(a)for(const n of a)if(n.alive&&dist2(x,z,n.x,n.z)<r*r)out.push(n);}return out;}
+function ngridAdd(n){const k=ck(Math.floor(n.x/CELL),Math.floor(n.z/CELL));let a=NGRID.get(k);if(!a)NGRID.set(k,a=[]);a.push(n);n.gk=[k];}
+function ngridRemove(n){for(const k of n.gk||[]){const a=NGRID.get(k);if(a){const i=a.indexOf(n);if(i>=0)a.splice(i,1);}}n.gk=[];}
+nodes.forEach(ngridAdd);
+// Etäisyys solmuun: tukeille janan lähin piste, muille keskipiste.
+function nodeDist(n,x,z){if(!n.isLog)return Math.hypot(x-n.x,z-n.z);const dx=n.bx-n.ax,dz=n.bz-n.az,t=clamp(((x-n.ax)*dx+(z-n.az)*dz)/(dx*dx+dz*dz),0,1);return Math.hypot(x-(n.ax+dx*t),z-(n.az+dz*t));}
+function nodesNear(x,z,r,out){out.length=0;const x0=Math.floor((x-r)/CELL),x1=Math.floor((x+r)/CELL),z0=Math.floor((z-r)/CELL),z1=Math.floor((z+r)/CELL);for(let gx=x0;gx<=x1;gx++)for(let gz=z0;gz<=z1;gz++){const a=NGRID.get(ck(gx,gz));if(a)for(const n of a)if(n.alive&&!out.includes(n)&&nodeDist(n,x,z)<r)out.push(n);}return out;}
 function killNode(n){n.alive=false;n.respawnAt=playTime+n.def.respawn;setNodeMatrix(n,false);if(n.col)n.col.off=true;}
-function reviveNode(n){n.alive=true;n.hp=n.def.hp||1;setNodeMatrix(n,true);if(n.col)n.col.off=false;}
+function reviveNode(n){n.alive=true;n.hp=n.maxHp;setNodeMatrix(n,true);if(n.col)n.col.off=false;}
+
+/* ---------------- TUKIT (kaatuneet puut) ---------------- */
+const logs=[];
+const logMat=mat(0x6b4a2e);
+function spawnLogs(n,a){
+  const H=(TREE_H[n.type]||5)*n.s,rad=(n.type==='aarnipuu'?.55:.2)*n.s,cnt=n.s>1.3||n.type==='aarnipuu'?2:1;
+  const dx=Math.sin(a),dz=Math.cos(a),L0=.5,L1=H*.85,seg=(L1-L0)/cnt;
+  for(let i=0;i<cnt;i++){const s0=L0+i*seg+.1,s1=L0+(i+1)*seg-.1,len=s1-s0;
+    const ax=n.x+dx*s0,az=n.z+dz*s0,bx=n.x+dx*s1,bz=n.z+dz*s1,cx=(ax+bx)/2,cz=(az+bz)/2,y=terrainH(cx,cz);
+    const geo=new THREE.CylinderGeometry(rad,rad*1.08,len,7);geo.rotateX(Math.PI/2);
+    const mesh=new THREE.Mesh(geo,logMat);mesh.position.set(cx,y+rad*.9,cz);mesh.rotation.y=a;mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);
+    const lg={type:'tukki',def:NODE.tukki,isLog:true,x:cx,z:cz,y,ax,az,bx,bz,rad,s:n.s,hp:20*n.s,maxHp:20*n.s,alive:true,mesh,cols:[],tier:n.def.tier||1,dropId:n.type==='aarnipuu'?'tervaspuu':'puu'};
+    for(let t=0;t<=len;t+=.9){const px=ax+(bx-ax)*t/len,pz=az+(bz-az)*t/len;lg.cols.push(addCircle(px,pz,rad,y-1,y+rad*1.8,lg));}
+    lg.gk=[];const ks=new Set();for(let t=0;t<=len;t+=2){ks.add(ck(Math.floor((ax+(bx-ax)*t/len)/CELL),Math.floor((az+(bz-az)*t/len)/CELL)));}ks.add(ck(Math.floor(bx/CELL),Math.floor(bz/CELL)));
+    for(const k of ks){let arr=NGRID.get(k);if(!arr)NGRID.set(k,arr=[]);arr.push(lg);lg.gk.push(k);}
+    logs.push(lg);}
+}
+function removeLog(lg){lg.alive=false;scene.remove(lg.mesh);lg.mesh.geometry.dispose();for(const c of lg.cols)gridRemove(c);ngridRemove(lg);const i=logs.indexOf(lg);if(i>=0)logs.splice(i,1);}
+function clearLogs(){for(const lg of [...logs])removeLog(lg);}
+
+/* ---------------- METSÄ KASVAA ---------------- */
+function plantTree(type,x,z,s){const k=chunkOf(x,z),im=(nodeIM[type]||[]).find(m=>m.userData.k===k);if(!im||im.userData.used>=im.instanceMatrix.count)return null;
+  const n={type,x,z,y:terrainH(x,z),s,rot:rng()*TAU,idx:im.userData.used++,im,planted:true};im.count=im.userData.used;initNode(n);ngridAdd(n);return n;}
+function unplantAll(){for(let i=nodes.length-1;i>=0;i--){const n=nodes[i];if(!n.planted)continue;setNodeMatrix(n,false);if(n.col)gridRemove(n.col);ngridRemove(n);nodes.splice(i,1);}
+  for(const k in nodeIM)for(const im of nodeIM[k]){im.userData.used=im.userData.base;im.count=im.userData.base;}nodeIdN=nodes.length?Math.max(...nodes.map(n=>n.id))+1:0;}
+function regrowForest(){
+  const nearBuild=(x,z)=>pieces.some(p=>dist2(p.x,p.z,x,z)<25*25);
+  let revived=0;for(const n of nodes)if(!n.alive&&n.def.kind==='tree'&&!nearBuild(n.x,n.z)){reviveNode(n);revived++;}
+  let planted=0;const tmpL=[];
+  for(let t=0;t<600&&planted<40;t++){const x=(rng()-.5)*(HALF-20)*2,z=(rng()-.5)*(HALF-20)*2,h=terrainH(x,z);if(h<1.2)continue;
+    const b=biomeAt(x,z,h);if(b!=='forest'&&b!=='aarni')continue;if(nearBuild(x,z))continue;
+    let ok=true;for(const k in LOC){const L=LOC[k];if(dist2(x,z,L.x,L.z)<20*20){ok=false;break;}}if(!ok)continue;
+    if(nodesNear(x,z,3,tmpL).length)continue;if(dist2(x,z,P.pos.x,P.pos.z)<6*6)continue;
+    const type=b==='aarni'?(rng()<.4?'aarnipuu':'kuusi'):(rng()<.8?'kuusi':'koivu');
+    if(plantTree(type,x,z,type==='aarnipuu'?.8:.6+rng()*.3))planted++;}
+  return{revived,planted};}

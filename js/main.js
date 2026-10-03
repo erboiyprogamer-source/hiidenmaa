@@ -32,7 +32,7 @@ function update(dt){
   playTime+=dt;dayT+=dt/DAY_LEN;if(dayT>=1){dayT-=1;dayN++;msg(`Päivä ${dayN}`);}
   const wasNight=isNight();
   updatePlayer(dt);updateMobs(dt);updateProjs(dt);updateDrops(dt);updateFx(dt);updateStations(dt);spawner(dt);survival(dt);updateWeather();
-  updateEnvironment(dt);updateCamera(dt);updateBenchRings();
+  updateEnvironment(dt);updateCamera(dt);updateBenchRings();updateChunkVis();
   if(state==='play'){lookTarget=findInteract();updateGhost();}else if(ghost)ghost.visible=false;
   lightT-=dt;if(lightT<=0){lightT=.4;updateLights();}
   slowT-=dt;if(slowT<=0){slowT=1;exploreTick();updateGoals();if(Math.floor(playTime)%5===0)respawnNodes();}
