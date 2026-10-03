@@ -1,0 +1,94 @@
+# Hiidenmaa – ohjeet Claudelle
+
+Hiidenmaa on selaimessa toimiva 3D-selviytymispeli: viikinkihenkinen saari, keräily, valmistus,
+rakentaminen, taistelu, luolasto ja yksi pomo. Valheim on inspiraatio, mutta peli on oma teos:
+**älä käytä Valheimin nimiä, hahmoja, grafiikkaa tai muuta suojattua sisältöä.**
+
+Lue tämän lisäksi aina `docs/KEHITYSMUISTIO.md`. Siinä ovat tehdyt päätökset, tasapainoarvot,
+versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
+
+## Käyttäjä ja työtapa
+
+- Kommunikoi suomeksi. Pelin kaikki tekstit ovat suomeksi.
+- Vie annettu tehtävä loppuun asti. Keksi ratkaisu itse, kysy vain jos eteenpäin ei pääse.
+- Älä tilaa tai ota käyttöön mitään maksullista ilman lupaa.
+- Muutokset tehdään erissä (3–6 toisiinsa liittyvää muutosta). Jokaisen erän jälkeen:
+  1. testaa (ks. Testaus),
+  2. päivitä `docs/KEHITYSMUISTIO.md` (versioloki, muuttuneet arvot, uudet päätökset, ideajono),
+  3. päivitä tämä tiedosto, jos rakenne tai säännöt muuttuivat,
+  4. tee commit suomenkielisellä viestillä. Pushaa, kun käyttäjä pyytää.
+- Pidä tämä tiedosto lyhyenä (alle 200 riviä). Yksityiskohdat kuuluvat kehitysmuistioon.
+
+## Tekniikka
+
+- Ei build-vaihetta eikä npm-riippuvuuksia. three.js **r128** ladataan cdnjs:stä `index.html`:ssä.
+- Skriptit ovat tavallisia `<script src>`-tiedostoja (ei ES-moduuleja). Ne jakavat saman globaalin
+  näkyvyysalueen, joten `index.html` aukeaa myös tuplaklikkaamalla ilman palvelinta.
+- **Latausjärjestys on tärkeä.** Tiedoston ylimmän tason koodi saa käyttää vain aiemmin ladattujen
+  tiedostojen muuttujia. Funktioiden sisällä saa viitata mihin tahansa. Uusi tiedosto lisätään
+  `index.html`:n skriptilistaan oikeaan kohtaan.
+- Jokainen JS-tiedosto alkaa `'use strict';`. Samaa ylimmän tason nimeä ei saa määritellä kahdesti.
+- Tyylit ovat tiedostossa `css/style.css`. Fontit: Uncial Antiqua (otsikot), Alegreya Sans (teksti).
+
+## Tiedostot (latausjärjestyksessä)
+
+| Tiedosto | Sisältö |
+| --- | --- |
+| `js/core.js` | `$`, `clamp`, `lerp`, `sstep`, kohina (`fbm`, `ridge`), `mulberry32` |
+| `js/world.js` | `HALF`, `LOC` (paikat), `DUN` (luolaston sijainti), `heightFn`, `biomeAt`, `terrainH` |
+| `js/render.js` | renderer, scene, camera, valot, tekstuurit, `MAT`, `mat()`, `bx()`, maasto, vesi, taivas, sade |
+| `js/collision.js` | törmäysruudukko: `addBox`, `addCircle`, `groundAt`, `collideXZ`, `pointBlocked`, `STEPUP` |
+| `js/items.js` | `ITEMS`, `RECIPES`, `RECIPE_BY`, `icon(id)` (canvas-kuvakkeet) |
+| `js/audio.js` | `sfx(nimi)` – proseduraaliset äänet |
+| `js/models.js` | `makeBiped`, `makeQuad`, `makeHeld`, `makeShield` |
+| `js/resources.js` | `NODE`, `NGEO`, resurssien sijoittelu, `nodes`, `killNode`, `reviveNode` |
+| `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`) |
+| `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, `PIECES`, `pieceBoxes`, `buildPieceMesh`, `addPiece`, `removePiece` |
+| `js/mobs.js` | `MOBDEF`, `spawnMob`, `mobs`, `boss` |
+| `js/state.js` | `P` (pelaaja), `inv`, `flags`, pelaajahahmo, reppu, maahan pudonneet esineet, partikkelit, ammukset |
+| `js/input.js` | näppäimet, hiiri, hiiren lukitus |
+| `js/actions.js` | hyökkäys, vahinko, syöminen, `interact()`, alttari, luolastoon meno |
+| `js/building.js` | rakennushaamu, ruudukkoon kohdistus, `validPlace`, purku |
+| `js/environment.js` | päivä/yö (`DAY_LEN`), sää, valot, selviytyminen (nälkä, kylmä, lepo) |
+| `js/player.js` | liike, fysiikka, animaatio, kuolema, uudelleensyntyminen, nukkuminen |
+| `js/ai.js` | vihollisten tekoäly, pomon hyökkäykset, `SPAWN`-taulukot, työpisteiden päivitys |
+| `js/camera.js` | kolmannen persoonan kamera |
+| `js/ui.js` | HUD, viestit, paneelit, kartta, `GOALS` |
+| `js/save.js` | `serialize`, `loadData`, `saveGame`, `SKEY` |
+| `js/main.js` | valikko, pääsilmukka `frame()`, testirajapinta `window.__game` |
+
+## Mittayksiköt ja sopimukset
+
+- Metrit ja sekunnit. Maailma on noin −200…200 m, luolasto on erillinen tila kohdassa `DUN`
+  (pelaaja siellä kun `P.inDun`).
+- Pelaaja: pituus 1,8 m, säde 0,38 m, kävely 4,6 m/s, juoksu 8 m/s, askelnousu `STEPUP` 0,55 m.
+- Rakennusosien mitat tulevat vakioista `G`, `WH`, `DOOR_W`, `DOOR_H`, `STEP_N` (`js/pieces.js`).
+  Älä kirjoita mittoja numeroina osien sisään.
+- Oviaukon on oltava vähintään 0,3 m pelaajaa korkeampi, ja portaiden askelman alle `STEPUP`.
+
+## Näin lisäät sisältöä
+
+- **Esine:** `ITEMS` (+ `food` tai `cat`), kuvake `icon()`-switchiin, resepti `RECIPES`-listaan.
+- **Rakennusosa:** `PIECES`, `pieceBoxes` (törmäys), `buildPieceMesh` (malli). Työpisteen
+  toiminta `actions.js`:n `pieceLabel`/`interact` ja `ai.js`:n `updateStations`.
+- **Vihollinen tai eläin:** `MOBDEF` (malli `fig`, `ai`: flee/neutral/hostile/boss) ja `ai.js`:n `SPAWN`.
+- **Tavoite:** `GOALS` (`ui.js`), järjestyksellä on väliä.
+
+## Tallennus
+
+- Tallennus menee `localStorage`-avaimeen `hiidenmaa_save_v1`, lisäksi valikossa on tallennuskoodi.
+- Kun tallennusmuoto muuttuu, nosta `serialize()`:n `v`-numeroa ja käsittele vanha versio
+  `loadData()`:ssa. Kirjaa muutos kehitysmuistioon.
+
+## Testaus
+
+- Nopein: avaa `index.html` selaimessa. Ei palvelinta tarvita.
+- Automaattinen: `window.__game` antaa pääsyn tilaan ja funktioihin (esim. `newGame()`,
+  `update(dt)`, `invAdd()`, `addPiece()`, `spawnMob()`, `serialize()`, `loadData()`, `keys`).
+  Headless-testissä (Playwright) korvaa `requestPointerLock` ja aja `update(1/30)` silmukassa.
+- Tarkista aina, ettei konsoliin tule virheitä, ja että tallennus + lataus toimii.
+
+## Julkaisu
+
+- Repo: `erboiyprogamer-source/hiidenmaa`, GitHub Pages haarasta `main` (juuri).
+- Peli: https://erboiyprogamer-source.github.io/hiidenmaa/

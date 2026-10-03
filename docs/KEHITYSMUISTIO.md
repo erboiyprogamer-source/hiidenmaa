@@ -1,0 +1,73 @@
+# Hiidenmaa – kehitysmuistio
+
+Tämä on projektin muisti. Päivitä se jokaisen muutoserän jälkeen: versioloki, muuttuneet arvot,
+uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
+
+## Peli lyhyesti
+
+- Pelaaja haaksirikkoutuu Hiidenmaan saarelle. Saarta hallitsee kivinen **Kalmanvartija**.
+- Pelattavaa noin 30–60 min: keräily → kivikirves → työpenkki → suoja ja nuotio → metsästys →
+  piikivihakku ja kupari → sulatusuuni ja ahjo → kuparivarusteet → kolme hiidenkiveä
+  Hautakummusta → pomotaistelu Kalmankehässä.
+- Biomit: niitty, metsä, vuori (lumihuiput), kalmanummi, ranta, järvi, meri.
+- Paikat (`LOC`): aloitusranta, kolme raunioita aarrearkkuineen, kolme riimukiveä (kertovat
+  tarinan ja merkitsevät paikkoja karttaan), Hautakumpu (luolasto), Kalmankehä (pomo).
+
+## Pysyvät päätökset
+
+- Oma alkuperäinen teos, ei Valheimin nimiä, hahmoja tai grafiikkaa. Nimistö on suomalaisesta
+  kansanperinteestä (hiisi, kalmo, hiidenkivi).
+- Yksi HTML-sivu + tavalliset skriptit, ei build-vaihetta. three.js r128 cdnjs:stä.
+- Grafiikka on laatikoista ja kaavoilla tehdystä maastosta, väliaikaiset assetit ovat ok.
+- Ulkoasu: tumma "veistetyt laudat" -tyyli, otsikot Uncial Antiqua, teksti Alegreya Sans,
+  korostusväri hiillos-oranssi `--ember`, hiidenkivien hehku `--frost`.
+- Kuolemassa koko reppu jää hautakasaan kuolinpaikalle (näkyy kartalla).
+- Sänky asettaa herätyspaikan. Nukkuminen vaatii yön, katon ja ettei vihollisia ole lähellä.
+- Pomo palaa maahan ja hiidenkivet jäävät alttarille, jos pelaaja poistuu yli 90 m päähän.
+
+## Tasapainoarvot (päivitä kun muutat)
+
+| Asia | Arvo |
+| --- | --- |
+| Pelaajan kävely / juoksu | 4,6 / 8 m/s |
+| Terveys / kestävyys / max paino | 60 / 100 / 160 |
+| Vuorokauden pituus `DAY_LEN` | 720 s (12 min) |
+| Rakennusruudukko `G` / seinän korkeus `WH` | 2,5 m / 2,6 m |
+| Oviaukko | 1,7 × 2,3 m |
+| Portaat | 6 askelmaa (0,43 m) |
+
+| Olento | HP | Juoksu m/s | Vahinko | Huom. |
+| --- | --- | --- | --- | --- |
+| Peura | 25 | 8,5 | – | pakenee |
+| Villikarju | 40 | 5,8 | 8 | hyökkää vain jos lyöty |
+| Sammalhiisi | 34 | 5,2 | 9 | |
+| Harmaasusi | 44 | 5,4 | 11 | öisin pareittain |
+| Kalmo | 50 | 4,6 | 13 | heikko murskaavalle |
+| Kalmon ylimys | 150 | 4,2 | 20 | luolaston miniboss |
+| Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
+
+## Versioloki
+
+### v0.2 (erä 1)
+- Peli jaettu tiedostoihin `css/` ja `js/`, lisätty `CLAUDE.md` ja tämä muistio.
+- Ovesta ei päässyt läpi: yläpalkki alkoi 1,7 m:ssä ja pelaaja on 1,8 m. Oviaukko nyt 1,7 × 2,3 m.
+- Rakennusosat isommiksi: ruudukko 2 → 2,5 m, seinät 2 → 2,6 m.
+- Seinä ja ovi asettuvat viereisen lattian pintaan.
+- Portaat 4 → 6 askelmaa, nousevat täyden kerroksen.
+- Harmaasuden juoksu 8 → 5,4 m/s (vähän kävelyä nopeampi, juosten pääsee karkuun).
+- Tallennusversio 2. Version 1 rakennukset latautuvat vanhoille paikoilleen, eivät osu uuteen ruudukkoon.
+
+### v0.1
+- Ensimmäinen pelattava versio yhtenä HTML-tiedostona.
+
+## Ideajono
+
+Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+- (tyhjä – odottaa käyttäjän listaa)
+
+## Tunnetut puutteet
+
+- Katossa ei ole törmäystä, ja katon reunat eivät liity siististi toisiinsa.
+- Huonekalut (työpenkki, sänky, arkku) eivät kohdistu ruudukkoon.
+- Hiiren lukitus voi olla estetty joissain upotetuissa näkymissä. Silloin kamera käännetään vetämällä.
