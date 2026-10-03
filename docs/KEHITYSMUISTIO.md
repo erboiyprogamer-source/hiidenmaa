@@ -41,12 +41,21 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Peura | 25 | 8,5 | – | pakenee |
 | Villikarju | 40 | 5,8 | 8 | hyökkää vain jos lyöty |
 | Sammalhiisi | 34 | 5,2 | 9 | |
-| Harmaasusi | 44 | 5,4 | 11 | öisin pareittain |
+| Harmaasusi | 44 | 4,6 | 11 | öisin pareittain, sama kuin pelaajan kävely |
 | Kalmo | 50 | 4,6 | 13 | heikko murskaavalle |
 | Kalmon ylimys | 150 | 4,2 | 20 | luolaston miniboss |
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
 
 ## Versioloki
+
+### v0.3 (erä 2)
+- Yläkulman/isoman kartan pelaajanuoli osoitti 180 astetta väärään suuntaan (suunta oli käännetty
+  ylimääräisellä puolikierroksella). `drawPlayerArrow()`:n kierto korjattu `-camYaw+Math.PI` →
+  `-camYaw`, nuoli osoittaa nyt oikeasti sinne minne katsoo.
+- Jokaisella lyöntiyrityksellä kuului terävä "swing"-ääni riippumatta siitä osuiko mihinkään.
+  Poistettu `startAttack()`:sta – ääni kuuluu edelleen kun oikeasti osuu puuhun, kiveen tai
+  olentoon (`chop`/`pick`/`hit`-äänet pysyvät).
+- Harmaasuden juoksunopeus 5,4 → 4,6 m/s, sama kuin pelaajan kävelynopeus.
 
 ### v0.2 (erä 1)
 - Peli jaettu tiedostoihin `css/` ja `js/`, lisätty `CLAUDE.md` ja tämä muistio.
@@ -64,7 +73,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
-- (tyhjä – odottaa käyttäjän listaa)
+### Erä 2 – tehty (ks. versioloki v0.3)
+- Kartan pelaajanuolen suuntavirhe (180°) korjattu.
+- Jatkuva lyönnin "swing"-ääni poistettu, osumaäänet jäljellä.
+- Harmaasuden juoksunopeus 4,6 m/s.
+
+- (ideajono muuten tyhjä – odottaa käyttäjän listaa)
 
 ## Tunnetut puutteet
 
