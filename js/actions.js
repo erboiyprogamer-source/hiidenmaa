@@ -18,7 +18,7 @@ function startAttack(){
   const w=curWeapon();
   if(P.stam<w.st){msg('Liian uupunut.','warn');return;}
   P.stam-=w.st;P.stamDelay=1;P.atk={t:0,dur:w.spd+.2,hitAt:w.spd*.55,done:false,w};
-  P.yaw=camYaw+Math.PI;sfx('swing');
+  P.yaw=camYaw+Math.PI;
 }
 function weaponDmg(w){return w.dmg*(1+.25*((w.q||1)-1))*(P.buffs.voima?1.15:1);}
 const _nl=[];

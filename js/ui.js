@@ -112,7 +112,7 @@ function mapMarkers(g,sx,ox,oz){
   for(const p of pieces)if(p.t==='tyopenkki'||p.t==='sanky'){const [x,y]=pt(p.x,p.z);g.fillStyle='#e8893b';g.fillRect(x-3,y-3,6,6);}
   for(const gr of graves){const [x,y]=pt(gr.x,gr.z);g.strokeStyle='#c8463b';g.lineWidth=2.5;g.beginPath();g.moveTo(x-5,y);g.lineTo(x+5,y);g.moveTo(x,y-5);g.lineTo(x,y+5);g.stroke();}
 }
-function drawPlayerArrow(g,x,y,s){g.save();g.translate(x,y);g.rotate(-camYaw+Math.PI);g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=1.5;g.beginPath();g.moveTo(0,-s);g.lineTo(s*.7,s*.8);g.lineTo(0,s*.4);g.lineTo(-s*.7,s*.8);g.closePath();g.fill();g.stroke();g.restore();}
+function drawPlayerArrow(g,x,y,s){g.save();g.translate(x,y);g.rotate(-camYaw);g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=1.5;g.beginPath();g.moveTo(0,-s);g.lineTo(s*.7,s*.8);g.lineTo(0,s*.4);g.lineTo(-s*.7,s*.8);g.closePath();g.fill();g.stroke();g.restore();}
 function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),S=c.width/400;g.imageSmoothingEnabled=true;g.drawImage(MAPC,0,0,c.width,c.height);g.imageSmoothingEnabled=false;g.globalAlpha=.94;g.drawImage(FOGC,0,0,c.width,c.height);g.globalAlpha=1;mapMarkers(g,S,200,200);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+200)*S,(P.pos.z+200)*S,9);}
 function drawMinimap(){const c=$('#mini'),g=c.getContext('2d'),W=c.width,R=60,S=W/(R*2);g.save();g.clearRect(0,0,W,W);g.beginPath();g.arc(W/2,W/2,W/2,0,TAU);g.clip();g.fillStyle='#1d1a16';g.fillRect(0,0,W,W);
   if(!P.inDun){const sx=P.pos.x+200-R,sz=P.pos.z+200-R;g.drawImage(MAPC,sx,sz,R*2,R*2,0,0,W,W);g.imageSmoothingEnabled=false;g.globalAlpha=.94;g.drawImage(FOGC,sx/4,sz/4,R*2/4,R*2/4,0,0,W,W);g.globalAlpha=1;mapMarkers(g,S,-(P.pos.x-R),-(P.pos.z-R));
