@@ -50,7 +50,11 @@ function updatePlayer(dt){
   fig.g.position.copy(P.pos);if(P.swim)fig.g.position.y=P.pos.y-.2;fig.g.rotation.y=P.yaw;
   fig.legL.rotation.x=sw;fig.legR.rotation.x=-sw;fig.armL.rotation.x=-sw*.7;fig.armR.rotation.x=sw*.7;fig.armR.rotation.z=0;fig.armL.rotation.z=0;
   if(!P.onGround&&!P.swim){fig.legL.rotation.x=-.5;fig.legR.rotation.x=.3;}
-  if(P.atk){const k=P.atk.t/P.atk.dur,hk=P.atk.hitAt/P.atk.dur;let a;if(k<hk)a=lerp(0,-2.7,sstep(0,1,k/hk));else a=lerp(-2.7,-.3,Math.min(1,(k-hk)/.25));fig.armR.rotation.x=a;fig.armR.rotation.z=-.15;}
+  if(P.atk){const k=P.atk.t/P.atk.dur,hk=P.atk.hitAt/P.atk.dur;
+    if(P.atk.w.chop){
+      let ax,az;if(k<hk){const t=sstep(0,1,k/hk);ax=lerp(-.2,-2.4,t);az=lerp(.85,-.5,t);}else{const t=Math.min(1,(k-hk)/.25);ax=lerp(-2.4,-.3,t);az=lerp(-.5,-.15,t);}
+      fig.armR.rotation.x=ax;fig.armR.rotation.z=az;fig.armL.rotation.x=ax;fig.armL.rotation.z=az;
+    }else{let a;if(k<hk)a=lerp(0,-2.7,sstep(0,1,k/hk));else a=lerp(-2.7,-.3,Math.min(1,(k-hk)/.25));fig.armR.rotation.x=a;fig.armR.rotation.z=-.15;}}
   if(P.blocking){fig.armL.rotation.x=-1.35;fig.armL.rotation.z=-.5;}
   if(P.drawing){fig.armL.rotation.x=-1.5;fig.armR.rotation.x=-1.5;fig.armR.rotation.z=.5;}
   if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(0,0,0);if(P.drawing){fig.armL.rotation.z=-.1;}}

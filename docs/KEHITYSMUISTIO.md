@@ -48,6 +48,16 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.4 (erä 3)
+- Kirveen puunhakkausanimaatio muutettu viistoksi iskuksi (ylävasen → alaoikea) suoran
+  pystyiskun sijaan. Molemmat kädet liikkuvat yhdessä (kaksin käsin kiinni kirveessä).
+  Koskee vain kirvestä/kuparikirvestä (`w.chop`), muut aseet iskevät kuten ennen.
+- "Liian uupunut" -viesti tulvi näytölle 30 kertaa sekunnissa, kun hyökkäysnappia pidettiin
+  pohjassa kestävyyden ollessa lopussa. Viestille 1,2 s cooldown (`lastStamMsgT`), ei enää
+  tulvi.
+- Kirveen terä osoitti kädessä ylöspäin; mallin pään tarjoaminen käännetty (`makeHeld()`:n
+  kirveen pään y-siirtymä .1 → -.1), terä roikkuu nyt alaspäin kuten oikealla kirveellä.
+
 ### v0.3 (erä 2)
 - Yläkulman/isoman kartan pelaajanuoli osoitti 180 astetta väärään suuntaan (suunta oli käännetty
   ylimääräisellä puolikierroksella). `drawPlayerArrow()`:n kierto korjattu `-camYaw+Math.PI` →
@@ -72,6 +82,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ## Ideajono
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+### Erä 3 – tehty (ks. versioloki v0.4)
+- Kirveen hakkausanimaatio viistoksi, kaksin käsin.
+- "Liian uupunut" -viestitulva korjattu cooldownilla.
+- Kirveen terän suunta kädessä käännetty.
 
 ### Erä 2 – tehty (ks. versioloki v0.3)
 - Kartan pelaajanuolen suuntavirhe (180°) korjattu.

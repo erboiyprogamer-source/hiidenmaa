@@ -36,7 +36,7 @@ function makeHeld(id){
   const g=new THREE.Group(),W=mat(0x7b4f2b);
   const h=(len)=>{g.add(bx(.07,.07,len,W,0,0,len/2-.1,true));};
   switch(id){
-    case 'kirves':case 'kuparikirves':h(.85);g.add(bx(.06,.32,.2,mat(id==='kirves'?0x8f8d86:0xd98a4e,{metalness:id==='kirves'?0:.5,roughness:.5}),0,.1,.68));break;
+    case 'kirves':case 'kuparikirves':h(.85);g.add(bx(.06,.32,.2,mat(id==='kirves'?0x8f8d86:0xd98a4e,{metalness:id==='kirves'?0:.5,roughness:.5}),0,-.1,.68));break;
     case 'nuija':h(.6);g.add(bx(.2,.2,.42,mat(0x6b4527),0,0,.62));break;
     case 'hakku':h(.85);{const p=bx(.06,.07,.7,mat(0x58606b),0,0,.7);p.rotation.x=Math.PI/2;g.add(p);}break;
     case 'keihas':h(1.7);g.add(bx(.05,.1,.25,mat(0x66707a),0,0,1.65));g.position.z=-.3;break;
