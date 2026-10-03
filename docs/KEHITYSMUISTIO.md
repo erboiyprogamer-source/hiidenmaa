@@ -48,6 +48,46 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.7 (erä 7)
+- **Kyykky (C, pidä pohjassa):** nopeus max 2,3 m/s, ei juoksua, hahmo madaltuu (`fig.g.scale.y`) ja
+  kamera laskee (`P.crouchK`), HUDissa "Hiipii". Törmäyskorkeus pysyy ennallaan. Hiipiessä
+  vihollisten huomaamisetäisyys (`aggroR`) puolittuu ja peura/eläimet säikkyvät vain alle 3 m:n
+  päästä (muuten 9 m). TULKINTA: käyttäjän viesti sanoi "kasvaa tuplasti", mutta tarkoitus oli
+  selvästi hiipimisen hyöty, joten huomaamisalue PIENENEE puoleen.
+- **Huomaamisalueet pienemmiksi** (viholliset juoksivat liian kaukaa): `aggro` hiisi 17→12,
+  susi 28→18, kalmo 20→14, ylimys 16→12; peuran pakenemisraja 11→9 m. Pomo ennallaan (60).
+- **`beforeunload`:** selain kysyy vahvistuksen ennen sivun sulkemista/päivitystä (Ctrl+W jne.),
+  kun peli on aloitettu (ei voiton jälkeen).
+- **Koko näyttö: F → K.**
+- **Kädet eivät enää teleporttaa:** käsien tavoitekulmat lasketaan joka kierroksella ja `armR`/`armL`
+  seuraavat niitä pehmeästi (`lerpAngle`, nopeus 14, iskun aikana 32). Harteiden siirtymä (`armSh`)
+  on myös pehmeä. Jos lyöntinappi on pohjassa, palautus menee suoraan seuraavan iskun
+  nostoasentoon (`swingPose(...,hold)`) eikä lepoon, ja vasen käsi pysyy kirveen varressa.
+  Selaintesti: suurin kulmamuutos 0,37 rad/kehys (60 fps), lepoasennossa vain 1 kehys / 240.
+
+
+### v0.6 (erä 6, korjauserä)
+- **Välimuisti:** `index.html`:n kaikki `<script src>`- ja `css`-linkit saavat `?v=0.6`. Nosta
+  numero joka erässä (sääntö CLAUDE.md:ssä), muuten raw.githack/selain näyttää vanhat JS-tiedostot.
+- **Kädet peilikuvana korjattu:** hahmo katsoo +z:aan, joten +x on vasen. `makeBiped`: `armL` on nyt
+  +x, `armR` -x. Ase on oikeassa kädessä, kilpi/soihtu vasemmassa. Kilpimalli peilattu (ulkopinta
+  +x), torjunta-asennon `rotation.z` -.5 → -.3. Koskee myös vihollisia.
+- **Iskukaari:** `swingPose()` (player.js): nosto ylävasemmalle (0–55 % `hitAt`:sta), isku alaoikealle
+  niin että osuma (`doMeleeHit`) tulee iskun LOPUSSA, palautus lepoon. Aiemmin osuma tuli käden
+  ollessa ylhäällä.
+- **Kirves kahdella kädellä:** `gripWithLeft()` osoittaa vasemman käsivarren varren kohtaan
+  (`heldMesh` z=.35), harteet vedetään iskun ajaksi lähemmäs (±.2), sivukaari ±.35. Testattu
+  selaimessa: kädet pysyvät .33–.39 m päässä toisistaan koko iskun. Jos vasemmassa kädessä on
+  kilpi/soihtu, isku on yhden käden isku (`offBusy`).
+- **ESC:** paneelin sulku Escillä ei enää pyydä hiiren lukitusta (`closePanels(keep,skipLock)`),
+  `pauseGame` ohitetaan 600 ms paneelin sulkemisen jälkeen (`panelClosedAt`). Taukovalikossa Esc
+  sulkee `#opts`-paneelin tai palaa peliin (400 ms viive `pausedAt`). Uusi **F**: koko näyttö +
+  `navigator.keyboard.lock(['Escape'])`, jolloin Esc ei poistu koko näytöstä; lukitun hiiren
+  aikana Esc pausettaa pelin itse.
+- Testaus: three.js r128 haetaan npm:stä (`npm install three@0.128.0`) ja Playwright ohjaa
+  cdnjs-pyynnön siihen (`page.route`), koska cdnjs on pilviympäristössä estetty.
+
+
 ### v0.5 (erä 5)
 - Toisen käden varustepaikka: kilpi ja soihtu ovat nyt omaa `offhand`-ryhmäänsä (ei enää
   `weapon`-ryhmässä). Oikea käsi pitää yhden aseen/työkalun (`weapon`/`bow`/`hammer`-ryhmä,
@@ -104,13 +144,35 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
-### Erä 6 – maailman sisältö (ei tehty vielä)
+### Erä 7 – ohjaus ja animaatio – tehty (ks. versioloki v0.7)
+- C = kyykky/hiipiminen, vihollisten huomaamisetäisyys pienemmäksi, eläimet eivät säiky.
+- `beforeunload`-vahvistus. Koko näyttö F → K. Käsien pehmeä siirtyminen, ketjuiskut.
+
+### Erä 6 – korjauserä – tehty (ks. versioloki v0.6)
+- Välimuistin ohitus, kädet oikein päin, kirveen kahden käden ote, iskun suunta ja ajoitus, ESC,
+  koko näyttö (F). Tallennusilmoitus oli jo koodissa (näkyi vasta kun välimuisti päivittyi).
+
+### Erä 8 – rakentaminen (TEE SEURAAVAKSI)
+- **Työpenkin alue näkyviin:** sääntö on jo olemassa (`validPlace`: 20 m). Tee vakio `BENCH_R=20`
+  (pieces.js). `addPiece('tyopenkki')` luo maaston mukaan kulkevan rengasnauhan (128 segm.,
+  y = `terrainH`+.05…+.45, läpikuultava oranssi `MeshBasicMaterial`, `depthWrite:false`),
+  `removePiece` poistaa sen. Renkaat näkyvät vain kun vasara on kädessä. Virheviesti:
+  "Rakenna työpenkin alueelle (oranssi raja)."
+- **Olkikaton päällä voi kävellä:** `pieceBoxes('katto')` = 8 ohutta porrasviipaletta rinteen
+  suuntaan (paikallinen +z on matala pää, -z korkea): viipaleen i yläpinta `G/8*(i+1)`, pohja
+  `max(0, yläpinta-.3)`. Askel .31 m < `STEPUP`, joten rinnettä voi kävellä; talon sisällä viipaleet
+  ovat seinän yläpuolella eivätkä estä liikettä. Tarkista `validPlace`-poikkeus katolle.
+- **Olkikaton karhea reuna:** canvas-tekstuuri `thatchFringe` (läpinäkyvä tausta, eripituisia
+  olkia), `alphaTest:.5`, `DoubleSide`. Kaistale katon matalaan ja korkeaan reunaan (poikittaiset
+  päät), ulottuu ~.3 m reunan yli.
+
+### Erä 9 – maailman sisältö
 - Lisää puita niin että pellot/niittyaukeamat ovat pienempiä (tiheämpi metsä, kutistaa avoimia
   niittyalueita).
 - Uusi biomi: hyvin korkeita ja tuuheita puita, lehvästö/havusto korkealla latvoissa, pelaaja
   kävelee runkojen alla. Biomi on tunnelmaltaan sumuinen, pimeä ja pelottava.
 
-### Erä 5 – tehty (ks. versioloki v0.5)
+### Erä 5 – tehty osittain (ks. versioloki v0.5 ja erä 6)
 - Toisen käden varustepaikka (kilpi/soihtu) oikean käden aseen/työkalun rinnalle.
 - Kirves vaatii oikeasti kaksi kättä (yksin käsin jos toinen käsi on varattu).
 - Oikea käsi on päätyökäsi, vasen käsi on toisen käden varustepaikka.

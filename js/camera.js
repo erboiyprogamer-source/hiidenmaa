@@ -6,7 +6,7 @@
 let shakeAmt=0;function shake(a){shakeAmt=Math.max(shakeAmt,a);}
 function updateCamera(dt){
   const aim=P.drawing;const dist=aim?2.4:camDist;
-  const tgt=_tmpV.set(P.pos.x,P.pos.y+1.65,P.pos.z);
+  const tgt=_tmpV.set(P.pos.x,P.pos.y+1.65-.45*P.crouchK,P.pos.z);
   const right=_tmpV2.set(Math.cos(camYaw),0,-Math.sin(camYaw));
   tgt.addScaledVector(right,aim?.75:.55);
   const dir=new V3(Math.sin(camYaw)*Math.cos(camPitch),Math.sin(camPitch),Math.cos(camYaw)*Math.cos(camPitch));

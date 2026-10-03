@@ -31,7 +31,7 @@ function updateHUD(dt){
   if(t&&!P.dead){const l=t.kind==='it'?t.it.label():t.label;pr.innerHTML=`<kbd>E</kbd>${l}`;}else pr.innerHTML='';
   // status chips
   const ch=[];
-  if(shelterCache&&!P.inDun)ch.push(['Suojassa','neu']);if(fireCache)ch.push(['Lämmin','good']);
+  if(P.crouch)ch.push(['Hiipii','neu']);if(shelterCache&&!P.inDun)ch.push(['Suojassa','neu']);if(fireCache)ch.push(['Lämmin','good']);
   if(P.buffs.levannyt)ch.push([`Levännyt ${Math.ceil(P.buffs.levannyt/60)} min`,'good']);
   if(P.buffs.voima)ch.push([`Voimistunut ${Math.ceil(P.buffs.voima/60)} min`,'good']);
   if(P.wetT>0)ch.push(['Märkä','bad']);if(P.cold)ch.push(['Kylmä','bad']);if(P.hunger<=0)ch.push(['Nälkä','bad']);
@@ -46,7 +46,7 @@ function updateHUD(dt){
 let openPanel=null,selSlot=-1,curChest=null;
 function togglePanel(name){if(openPanel===name){closePanels();return;}closePanels(true);openPanel=name;state='ui';releaseLock();mouseL=false;mouseR=false;P.drawing=false;
   if(name==='inv'){$('#inv').hidden=false;renderInv();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;drawBigMap();}if(name==='chest')$('#chest').hidden=false;}
-function closePanels(keep){for(const id of ['#inv','#build','#mapP','#chest'])$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;if(!keep){state='play';requestLock();}}
+function closePanels(keep,skipLock){if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest'])$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;if(!keep){state='play';if(!skipLock)requestLock();}}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
 function nearStations(){const s={};for(const p of pieces){if(['tyopenkki','nuotio','ahjo'].includes(p.t)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(p.t==='nuotio'?4:8)**2&&!P.inDun){if(p.t==='nuotio'&&p.data.fuel<=0)continue;s[p.t]=1;}}return s;}
 function renderInv(){
