@@ -17,12 +17,15 @@ function updateMobs(dt){
     const night=isNight()&&!P.inDun;
     const hostile=d.ai==='hostile'||(d.ai==='neutral'&&m.angry);
     const aggroR=(d.aggro||12)*(night?1.35:1)*(P.crouch?.5:1);
-    if(d.ai==='flee'){if((dist<(P.crouch?3:9)&&!P.dead)||playTime-m.lastHit<6){m.state='flee';}else if(m.state==='flee'&&dist>22)m.state='idle';}
-    else if(hostile&&!P.dead&&(dist<aggroR||playTime-m.lastHit<10)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
-    else if(m.state==='chase'&&(dist>aggroR*1.6||P.dead))m.state='idle';
+    // Näköyhteys (välimuistissa, tarkistus ~5 kertaa sekunnissa): ilman sitä ei aloiteta eikä jatketa jahtia.
+    m.losT=(m.losT||0)-dt;if(m.losT<=0){m.losT=.2+Math.random()*.1;m.los=d.ai!=='flee'&&dist<45&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z);}
+    m.noLos=m.state==='chase'&&!m.los?(m.noLos||0)+dt:0;
+    if(d.ai==='flee'){if((!P.crouch&&dist<9&&!P.dead)||playTime-m.lastHit<6){m.state='flee';}else if(m.state==='flee'&&dist>22)m.state='idle';}
+    else if(hostile&&!P.dead&&m.los&&(dist<aggroR||playTime-m.lastHit<10)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
+    else if(m.state==='chase'&&(dist>aggroR*1.6||P.dead||m.noLos>3)){m.state='idle';if(m.noLos>3){m.angry=false;m.lastHit=-99;}m.noLos=0;}
     if(m.state==='flee'){tx=-dx;tz=-dz;spd=d.run;}
     else if(m.state==='chase'){
-      if(m.wind>0){m.wind-=dt;if(m.wind<=0){if(dist<d.range+m.def.r+.4&&!P.dead){const f=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(f>.3)hurtPlayer(d.dmg,m.pos.x,m.pos.z);}m.atkCd=d.cd;}}
+      if(m.wind>0){m.wind-=dt;if(m.wind<=0){if(dist<d.range+.25&&!P.dead&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z)){const f=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(f>.5)hurtPlayer(d.dmg,m.pos.x,m.pos.z);}m.atkCd=d.cd;}}
       else if(dist<d.range+.2&&m.atkCd<=0){m.wind=d.wind;}
       else if(dist>d.range*.8){tx=dx;tz=dz;spd=d.run;}
       if(m.wind>0){spd=0;tx=dx;tz=dz;}

@@ -48,6 +48,24 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.8 (erä 9)
+- **Näköyhteys:** `losClear(ax,ay,az,bx,by,bz)` (collision.js): askel .3 m, `pointBlocked`, päiden .4 m
+  ohitetaan. Silmäkorkeudet: mob `mobEyeY(m)` = y+1.2 (pomo +4), pelaaja y+1.3.
+- **Jahti vaatii näköyhteyden:** `updateMobs` laskee `m.los` ~5 kertaa sekunnissa (välimuisti, ei
+  joka kehyksellä). Jahti alkaa vain näköyhteydellä; ilman sitä jahti päättyy 3 s kuluttua (`m.noLos`)
+  ja viha nollataan (`angry=false`, `lastHit=-99`) vaikka mobia olisi lyöty. Seurauksena mobit
+  eivät enää jää hakkaamaan seinää loputtomiin. Pomo (`bossAI`) ennallaan.
+- **Mobin isku:** osuu vain jos `losClear` JA keskipisteiden etäisyys < `range+.25` (ennen
+  `range+r+.4`) JA katse f > .5 (ennen .3). Ei koskaan seinän läpi.
+- **Pelaajan isku** (`doMeleeHit`): mobit sekä puut/kivet ohitetaan ilman näköyhteyttä.
+- **Eläimet:** kyykyssä (`P.crouch`) peura ei säiky lainkaan (säikkyy vain lyönnistä, pystyssä < 9 m).
+- **Hiiviskelyisku:** kyykyssä lähitaistelu mobiin, joka ei ole chase/flee-tilassa (ei pomo) = vahinko
+  ×2 ja keltainen "Hiiviskelyisku!". Koskee vain lähitaistelua, ei jousta.
+- Testi (Playwright): seinä katkaisee näköyhteyden, mob seinän takana ei jahtaa, isku seinän läpi
+  ei osu (kumpaankaan suuntaan), jahti katkeaa 3 s jälkeen ja viha nollautuu, sneak 16 vs 8
+  vahinkoa, peura ei säiky kyykyssä, ei konsolivirheitä.
+
+
 ### v0.7 (erä 7)
 - **Kyykky (C, pidä pohjassa):** nopeus max 2,3 m/s, ei juoksua, hahmo madaltuu (`fig.g.scale.y`) ja
   kamera laskee (`P.crouchK`), HUDissa "Hiipii". Törmäyskorkeus pysyy ennallaan. Hiipiessä
@@ -152,25 +170,90 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 - Välimuistin ohitus, kädet oikein päin, kirveen kahden käden ote, iskun suunta ja ajoitus, ESC,
   koko näyttö (F). Tallennusilmoitus oli jo koodissa (näkyi vasta kun välimuisti päivittyi).
 
-### Erä 8 – rakentaminen (TEE SEURAAVAKSI)
-- **Työpenkin alue näkyviin:** sääntö on jo olemassa (`validPlace`: 20 m). Tee vakio `BENCH_R=20`
-  (pieces.js). `addPiece('tyopenkki')` luo maaston mukaan kulkevan rengasnauhan (128 segm.,
-  y = `terrainH`+.05…+.45, läpikuultava oranssi `MeshBasicMaterial`, `depthWrite:false`),
-  `removePiece` poistaa sen. Renkaat näkyvät vain kun vasara on kädessä. Virheviesti:
-  "Rakenna työpenkin alueelle (oranssi raja)."
-- **Olkikaton päällä voi kävellä:** `pieceBoxes('katto')` = 8 ohutta porrasviipaletta rinteen
-  suuntaan (paikallinen +z on matala pää, -z korkea): viipaleen i yläpinta `G/8*(i+1)`, pohja
-  `max(0, yläpinta-.3)`. Askel .31 m < `STEPUP`, joten rinnettä voi kävellä; talon sisällä viipaleet
-  ovat seinän yläpuolella eivätkä estä liikettä. Tarkista `validPlace`-poikkeus katolle.
-- **Olkikaton karhea reuna:** canvas-tekstuuri `thatchFringe` (läpinäkyvä tausta, eripituisia
-  olkia), `alphaTest:.5`, `DoubleSide`. Kaistale katon matalaan ja korkeaan reunaan (poikittaiset
-  päät), ulottuu ~.3 m reunan yli.
+### Erä 8 – rakentaminen (EI TEHTY VIELÄ, tee seuraavaksi)
+1. Kiinteä olkikatto: pieceBoxes('katto') = 8 porrasviipaletta rinteen suuntaan (paikallinen +z
+   matala pää, -z korkea), viipaleen i yläpinta G/8*(i+1), pohja max(0, yläpinta-.3). Tällöin
+   pelaaja ei kävele läpi, kamera pysähtyy (camera.js käyttää pointBlocked) ja katolla voi kävellä.
+   Tarkista validPlace-poikkeus katolle ja ettei katto estä liikettä talon sisällä.
+2. Paaluaita kestää mobit: PIECES.aita.mobProof=1. damagePiece(p,d,src) saa lähteen; ai.js:n
+   jumittumiskohdassa (n. rivi 50) kutsu src='mob' ja ohita vahinko, jos PIECES[p.t].mobProof.
+   Piikkien vahinko mobille (damageMob 6) säilyy. Pelaaja purkaa vasaralla (X) kuten ennen.
+3. Vauriotekstuurit: 3 kuntotasoa hp/maxHp (>66 %, 33–66 %, <33 %). Tee canvas-tekstuureihin
+   halkeamat ja reiät (puu, kivi, olki), välimuistita materiaalit tasoittain. Funktio
+   setPieceDamage(p) pieces.js:ään, kutsu damagePiecessa ja addPiecessa (latauksen jälkeen oikea taso).
+4. Uudet osat (PIECES, pieceBoxes, buildPieceMesh, snap 'wall', R kääntää/peilaa):
+   - 'vinoseina' Vinoseinä: suorakulmainen kolmio G leveä, WH korkea (ylänurkasta vastakkaiseen
+     alanurkkaan), puu 1.
+   - 'kolmio' Päätykolmio: suorakulmainen kolmio G × G, sopii 45° katon päätyyn, puu 1.
+   Malli THREE.Shape + ExtrudeGeometry (paksuus .2). Törmäys 6 pystyviipaleena kolmion muodon mukaan.
+5. Työpenkin alue näkyviin (vanha suunnitelma): BENCH_R=20, oranssi maastoa seuraava rengas
+   näkyy vain vasara kädessä, virheviesti "Rakenna työpenkin alueelle (oranssi raja)."
+   - Toteutus: vakio `BENCH_R=20` (pieces.js). `addPiece('tyopenkki')` luo maaston mukaan kulkevan
+     rengasnauhan (128 segm., y = `terrainH`+.05…+.45, läpikuultava oranssi `MeshBasicMaterial`,
+     `depthWrite:false`), `removePiece` poistaa sen. `validPlace` käyttää samaa 20 m:n sääntöä.
+   - Olkikaton karhea reuna (`thatchFringe`): canvas-tekstuuri (läpinäkyvä tausta, eripituisia
+     olkia), `alphaTest:.5`, `DoubleSide`. Kaistale katon matalaan ja korkeaan reunaan
+     (poikittaiset päät), ulottuu ~.3 m reunan yli.
 
-### Erä 9 – maailman sisältö
-- Lisää puita niin että pellot/niittyaukeamat ovat pienempiä (tiheämpi metsä, kutistaa avoimia
-  niittyalueita).
-- Uusi biomi: hyvin korkeita ja tuuheita puita, lehvästö/havusto korkealla latvoissa, pelaaja
-  kävelee runkojen alla. Biomi on tunnelmaltaan sumuinen, pimeä ja pelottava.
+### Erä 9 – taistelu, näköyhteys ja hiipiminen – TEHTY (ks. versioloki v0.8)
+1. collision.js: losClear(ax,ay,az,bx,by,bz) – askel .3 m, pointBlocked, ohita päiden .4 m.
+   Silmäkorkeudet: mob y+1.2 (pomo +4), pelaaja y+1.3.
+2. ai.js aggro: chase vaatii näköyhteyden. Ilman näköyhteyttä 3 s (m.noLos) → idle, viha
+   lähtee, myös vaikka mobia olisi lyöty.
+3. Mobin isku (ai.js n. rivi 25): osuu vain jos losClear JA dist < d.range+.25 (keskipisteiden
+   etäisyys, nyt range+r+.4 = liian pitkä) JA katse f > .5. Isku ei koskaan mene seinän läpi.
+4. Pelaajan isku (actions.js doMeleeHit): ohita mobit ja puut/kivet ilman losClear-yhteyttä.
+5. Eläimet: kun P.crouch, flee-eläimet eivät säiky lainkaan (ai.js rivi 20: säikkyvät vain
+   lyönnistä). Hiiviskelyisku: P.crouch ja mob ei ole chase/flee-tilassa → vahinko ×2, keltainen
+   "Hiiviskelyisku!"-teksti.
+
+### Erä 10 – taivas ja sää
+1. Pehmeä valon vaihto (environment.js n. rivi 26): nyt aurinko vaihtuu kuuksi hetkessä. Tee
+   sunK=sstep(-.12,.08,el) ja moonK yöllä. Valon voimakkuus laskee nollaan horisontissa ja suunta
+   vaihtuu vasta nollassa. Hämärä ja aamunkoitto noin 1,5 min peliaikaa. Laajenna light-käyrää
+   pehmeämmäksi.
+2. Kuu: pallo auringon vastapuolella (fog:false), vaalea canvas-tekstuuri läikillä, heikko
+   sinertävä kuunvalo varjoineen, vaihe vaihtelee dayN:n mukaan (kirkkaus).
+3. Uudet säät WEATHERS-taulukkoon: myrsky (rankkasade, salamat = hetkellinen valon välähdys +
+   jyrinä audio.js:ään 0,5–2 s viiveellä), lumisade (vain vuorilla tai korkealla, hitaat valkoiset
+   hiutaleet), tihku, tuulinen (puiden latvat huojuvat). Todennäköisyydet updateWeatheriin, viestit
+   suomeksi, säätila näkyy kellossa.
+
+### Erä 11 – isompi maailma ja metsät
+1. Kartta noin 3× pinta-alaltaan: world.js HALF 200→350, GN 200→350 (GS pysyy 2). Skaalaa
+   LOC-paikat ×1.75, reunan meri (sstep(170,198,d)) ja biomien kohinat. Kartat: MAPC 400→700 px,
+   explored-ruudukko 100→175. Mittaa FPS ennen ja jälkeen ja kirjaa se.
+2. Tiheämpi metsä: niittyalueet selvästi pienemmiksi biomeAtissa, metsän puutiheys .42→.6.
+3. Puiden koko vaihtelee: s .6–2.0, hp ∝ s², saaliit ∝ s.
+4. Uusi biomi "Aarnimetsä" (1–2 isoa aluetta): 'aarnipuu', runko 1–1,6 m paksu, 14–22 m korkea,
+   havusto vasta 10 m:n yläpuolella. Tumma sammalmaa. Kun pelaaja on biomissa: tiheä sumu (near
+   6, far 60), valo ×.6, synkkä tunnelma. Aarnipuuta ei voi kaataa ennen erää 12 (viesti
+   "Tarvitset vahvemman kirveen").
+5. Kaatuneesta puusta jää tukki (state.js fallTree): uusi node kind 'log' vaakatasossa
+   rungon suuntaan, pituus ~ puun korkeus, hp 20*s, hakkaamalla saa puut. Isot puut = 2 tukkia.
+6. Metsä kasvaa öisin: sleepAtin fadeTo-callbackissa herätä kaadetut puut, joiden 25 m:n
+   säteellä ei ole rakennusta, ja istuta enintään 40 uutta puuta metsäbiomeihin (varaa
+   instanssipooli, esim. 400 paikkaa per puulaji).
+
+### Erä 12 – malmit, työkalut ja aarnipuu
+1. Työkalutasot: ITEMS-aseille pick/chop-taso (piikivihakku 1, UUSI kuparihakku 2 ahjosta:
+   kupari 6, puu 3, rautahakku 3; kivikirves 1, kuparikirves 2, rautakirves 3). NODE:lle `tier`.
+   Liian heikko työkalu → "Tarvitset paremman hakun/kirveen".
+2. Rautasuoni: harvinainen (~25 kpl) vuorilla h>22, hp 120, tier 2, antaa rautamalmia 2–4.
+   Sulatusuuni sulattaa myös rautamalmin rautaharkoksi (erillinen jono).
+3. Rautavarusteet ahjoon: rautakirves (chop 3), rautahakku, rautamiekka (dmg 34),
+   rautapanssari (arm 22). Kuvakkeet icon()-switchiin.
+4. Aarnipuu vaatii chop-tason 3 ja antaa tervaspuuta (uusi tumma puu). Uudet rakennusosat
+   tervasseinä ja tervaslattia: tumma väri, hp ×2.
+
+### Erä 13 – kolme karttaa
+1. world.js: MAPS = 3 esiasetusta (nimi, siemen, kohinan siirtymät, vuorten suunta, järvet,
+   LOC-paikat). Esim. Hiidenmaa (nykyinen), Kalmansaaret (saaristo), Tunturinniemi (iso vuoristo).
+2. Maailma rakennetaan skriptien latautuessa, joten Uusi peli arpoo kartan → localStorage
+   'hiidenmaa_map' → location.reload(). world.js lukee sen latautuessaan. Tallennukseen mapId;
+   jos ladattavan pelin mapId on eri → aseta ja lataa sivu uudelleen. Nosta tallennusversio.
+3. Valikko näyttää kartan nimen. Testaa jokainen kartta: aloitus maalla, kaikki paikat
+   saavutettavissa (ei vedessä), luolasto ja kehä toimivat.
 
 ### Erä 5 – tehty osittain (ks. versioloki v0.5 ja erä 6)
 - Toisen käden varustepaikka (kilpi/soihtu) oikean käden aseen/työkalun rinnalle.
