@@ -104,8 +104,10 @@ const MAPW=HALF*2,MAPC=document.createElement('canvas');MAPC.width=MAPC.height=M
     const o=(y*MAPW+x)*4;img.data[o]=r;img.data[o+1]=gg;img.data[o+2]=b;img.data[o+3]=255;}
   g.putImageData(img,0,0);})();
 const FOGC=document.createElement('canvas');FOGC.width=FOGC.height=EXN;const fogG=FOGC.getContext('2d');
-function resetFog(){fogG.fillStyle='#1d1a16';fogG.fillRect(0,0,EXN,EXN);for(let i=0;i<explored.length;i++)if(explored[i])fogG.clearRect(i%EXN,(i/EXN)|0,1,1);}
-function exploreTick(){if(P.inDun)return;const cx=Math.floor((P.pos.x+HALF)/4),cz=Math.floor((P.pos.z+HALF)/4);for(let z=cz-10;z<=cz+10;z++)for(let x=cx-10;x<=cx+10;x++){if(x<0||z<0||x>=EXN||z>=EXN)continue;if((x-cx)**2+(z-cz)**2>100)continue;const i=z*EXN+x;if(!explored[i]){explored[i]=1;fogG.clearRect(x,z,1,1);}}
+// Tuntematon alue on pilviverhon peitossa (läpinäkymätön), joten maastoa ei erota.
+const FOGIMG=(function(){const im=fogG.createImageData(EXN,EXN);for(let y=0;y<EXN;y++)for(let x=0;x<EXN;x++){const v=18+fbm(x*.09+3,y*.09-7,4)*40,o=(y*EXN+x)*4;im.data[o]=v;im.data[o+1]=v*.97;im.data[o+2]=v*.93;im.data[o+3]=255;}return im;})();
+function resetFog(){fogG.putImageData(FOGIMG,0,0);for(let i=0;i<explored.length;i++)if(explored[i])fogG.clearRect(i%EXN,(i/EXN)|0,1,1);}
+function exploreTick(){if(P.inDun)return;const cx=Math.floor((P.pos.x+HALF)/4),cz=Math.floor((P.pos.z+HALF)/4);for(let z=cz-6;z<=cz+6;z++)for(let x=cx-6;x<=cx+6;x++){if(x<0||z<0||x>=EXN||z>=EXN)continue;if((x-cx)**2+(z-cz)**2>36)continue;const i=z*EXN+x;if(!explored[i]){explored[i]=1;fogG.clearRect(x,z,1,1);}}
   for(const k of ['ruinF','ruinM','ruinC','barrow','circle']){const L=LOC[k];if(!flags.disc[k]&&dist2(L.x,L.z,P.pos.x,P.pos.z)<30*30){flags.disc[k]=1;msg(`Löysit paikan: ${L.name}`,'loot');}}}
 function mapMarkers(g,sx,ox,oz){
   const pt=(x,z)=>[(x+ox)*sx,(z+oz)*sx];
@@ -114,9 +116,9 @@ function mapMarkers(g,sx,ox,oz){
   for(const gr of graves){const [x,y]=pt(gr.x,gr.z);g.strokeStyle='#c8463b';g.lineWidth=2.5;g.beginPath();g.moveTo(x-5,y);g.lineTo(x+5,y);g.moveTo(x,y-5);g.lineTo(x,y+5);g.stroke();}
 }
 function drawPlayerArrow(g,x,y,s){g.save();g.translate(x,y);g.rotate(-camYaw);g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=1.5;g.beginPath();g.moveTo(0,-s);g.lineTo(s*.7,s*.8);g.lineTo(0,s*.4);g.lineTo(-s*.7,s*.8);g.closePath();g.fill();g.stroke();g.restore();}
-function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),S=c.width/MAPW;g.imageSmoothingEnabled=true;g.drawImage(MAPC,0,0,c.width,c.height);g.imageSmoothingEnabled=false;g.globalAlpha=.94;g.drawImage(FOGC,0,0,c.width,c.height);g.globalAlpha=1;mapMarkers(g,S,HALF,HALF);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF)*S,(P.pos.z+HALF)*S,9);}
+function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),S=c.width/MAPW;g.imageSmoothingEnabled=true;g.drawImage(MAPC,0,0,c.width,c.height);g.drawImage(FOGC,0,0,c.width,c.height);mapMarkers(g,S,HALF,HALF);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF)*S,(P.pos.z+HALF)*S,9);}
 function drawMinimap(){const c=$('#mini'),g=c.getContext('2d'),W=c.width,R=60,S=W/(R*2);g.save();g.clearRect(0,0,W,W);g.beginPath();g.arc(W/2,W/2,W/2,0,TAU);g.clip();g.fillStyle='#1d1a16';g.fillRect(0,0,W,W);
-  if(!P.inDun){const sx=P.pos.x+HALF-R,sz=P.pos.z+HALF-R;g.drawImage(MAPC,sx,sz,R*2,R*2,0,0,W,W);g.imageSmoothingEnabled=false;g.globalAlpha=.94;g.drawImage(FOGC,sx/4,sz/4,R*2/4,R*2/4,0,0,W,W);g.globalAlpha=1;mapMarkers(g,S,-(P.pos.x-R),-(P.pos.z-R));
+  if(!P.inDun){const sx=P.pos.x+HALF-R,sz=P.pos.z+HALF-R;g.drawImage(MAPC,sx,sz,R*2,R*2,0,0,W,W);g.imageSmoothingEnabled=true;g.drawImage(FOGC,sx/4,sz/4,R*2/4,R*2/4,0,0,W,W);mapMarkers(g,S,-(P.pos.x-R),-(P.pos.z-R));
     for(const m of mobs){if(m.dead||m.dun)continue;const x=(m.pos.x-P.pos.x+R)*S,y=(m.pos.z-P.pos.z+R)*S;if(m.state==='chase'||m===boss){g.fillStyle=m===boss?'#8fd8cf':'#c8463b';g.beginPath();g.arc(x,y,m===boss?5:2.5,0,TAU);g.fill();}}}
   else{g.fillStyle='#a99d89';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='center';g.fillText('Hautakumpu',W/2,W/2+30);}
   drawPlayerArrow(g,W/2,W/2,7);g.restore();

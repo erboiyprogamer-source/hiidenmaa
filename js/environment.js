@@ -25,7 +25,7 @@ function updateWeather(){if(playTime<weather.until)return;const r=Math.random(),
   if(highGround()&&(w==='sade'||w==='tihku'||w==='myrsky'))w='lumi';
   weather.cur=w;weather.until=playTime+(w==='myrsky'?90+Math.random()*90:150+Math.random()*180);
   if(w!==prev&&!P.inDun&&WMSG[w])msg(WMSG[w]);}
-const cSkyDay=new THREE.Color(0x8fbfe0),cSkyDusk=new THREE.Color(0xe39466),cSkyNight=new THREE.Color(0x0c1424),cGrey=new THREE.Color(0x7d858c),cFlash=new THREE.Color(0xe8f0ff),cTmp=new THREE.Color(),cSun=new THREE.Color(),cSunLow=new THREE.Color(0xffa060);
+const cSkyDay=new THREE.Color(0x87a9c2),cSkyDusk=new THREE.Color(0xc98a64),cSkyNight=new THREE.Color(0x070b14),cGrey=new THREE.Color(0x7d858c),cFlash=new THREE.Color(0xe8f0ff),cTmp=new THREE.Color(),cSun=new THREE.Color(),cSunLow=new THREE.Color(0xffa060);
 let wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0,thunderAt=-1,aarniK=0;
 const cAarni=new THREE.Color(0x26302a);
 // Kuun kirkkaus vaihtelee 8 päivän kierrossa (uusikuu .2 … täysikuu 1).
@@ -50,13 +50,14 @@ function updateEnvironment(dt){
   cTmp.lerp(cGrey,wDark*light*.8);cTmp.multiplyScalar(1-wDark*.35);cTmp.lerp(cFlash,flash*.55);
   cTmp.lerp(cAarni,aarniK*.75*Math.max(.3,light));
   scene.background.copy(cTmp);scene.fog.color.copy(cTmp);
-  scene.fog.near=lerp(lerp(8,60,wFog)*lerp(.4,1,light),6,aarniK);scene.fog.far=lerp(lerp(55,230,wFog)*lerp(.55,1,light),60,aarniK);
+  // Usvainen ja hämärä maailma; Aarnimetsässä sumu on sakeaa.
+  scene.fog.near=lerp(lerp(6,40,wFog)*lerp(.4,1,light),3,aarniK);scene.fog.far=lerp(lerp(45,165,wFog)*lerp(.5,1,light),38,aarniK);
   const ph=moonPhase();
-  if(sunK>0){cSun.setHex(0xfff1d6).lerp(cSunLow,1-sstep(.1,.6,el));sun.color.copy(cSun);sun.intensity=sunK*sstep(-.12,.45,el)*(1-wDark*.7);sun.position.set(P.pos.x+sd.x*120,P.pos.y+sd.y*120,P.pos.z+sd.z*120);}
-  else{sun.color.setHex(0x8aa2d8);sun.intensity=.26*moonK*ph*(1-wDark*.6);sun.position.set(P.pos.x-sd.x*120,P.pos.y+Math.abs(sd.y)*120+40,P.pos.z-sd.z*120);}
-  sun.intensity=sun.intensity*(1-.4*aarniK)+flash*.9;
+  if(sunK>0){cSun.setHex(0xfff1d6).lerp(cSunLow,1-sstep(.1,.6,el));sun.color.copy(cSun);sun.intensity=.85*sunK*sstep(-.12,.45,el)*(1-wDark*.7);sun.position.set(P.pos.x+sd.x*120,P.pos.y+sd.y*120,P.pos.z+sd.z*120);}
+  else{sun.color.setHex(0x8aa2d8);sun.intensity=.2*moonK*ph*(1-wDark*.6);sun.position.set(P.pos.x-sd.x*120,P.pos.y+Math.abs(sd.y)*120+40,P.pos.z-sd.z*120);}
+  sun.intensity=sun.intensity*(1-.45*aarniK)+flash*.9;
   sun.target.position.copy(P.pos);
-  hemi.intensity=(.16+.48*light*(1-wDark*.4))*(1-.4*aarniK)+flash*1.1;amb.intensity=.08+.06*light+flash*.5;
+  hemi.intensity=(.12+.4*light*(1-wDark*.4))*(1-.45*aarniK)+flash*1.1;amb.intensity=.06+.05*light+flash*.5;
   hemi.color.setHex(light>.3?0xcfe4ff:0x6a7fa8);
   stars.material.opacity=(1-light)*(1-wDark);stars.position.copy(camera.position);
   sunDisc.position.set(camera.position.x+sd.x*380,camera.position.y+sd.y*380,camera.position.z+sd.z*380);sunDisc.visible=el>-.1&&wDark<.3;
