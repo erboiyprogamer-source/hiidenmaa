@@ -35,13 +35,13 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 | Tiedosto | Sisältö |
 | --- | --- |
 | `js/core.js` | `$`, `clamp`, `lerp`, `sstep`, kohina (`fbm`, `ridge`), `mulberry32` |
-| `js/world.js` | `HALF`, `LOC` (paikat), `DUN` (luolaston sijainti), `heightFn`, `biomeAt`, `terrainH` |
+| `js/world.js` | `WS` (skaala), `MAPS`/`MAP`/`MAP_ID` (3 karttaa), `HALF`, `LOC`, `AARNI`, `DUN`, `heightFn`, `biomeAt`, `terrainH` |
 | `js/render.js` | renderer, scene, camera, valot, tekstuurit, `MAT`, `mat()`, `bx()`, maasto, vesi, taivas, sade |
 | `js/collision.js` | törmäysruudukko: `addBox`, `addCircle`, `groundAt`, `collideXZ`, `pointBlocked`, `STEPUP` |
 | `js/items.js` | `ITEMS`, `RECIPES`, `RECIPE_BY`, `icon(id)` (canvas-kuvakkeet) |
 | `js/audio.js` | `sfx(nimi)` – proseduraaliset äänet |
 | `js/models.js` | `makeBiped`, `makeQuad`, `makeHeld`, `makeShield` |
-| `js/resources.js` | `NODE`, `NGEO`, resurssien sijoittelu, `nodes`, `killNode`, `reviveNode` |
+| `js/resources.js` | `NODE`, `NGEO`, sijoittelu ruutuihin (`CHN`, `VIS_R`), `nodes`, tukit (`logs`), `regrowForest` |
 | `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`) |
 | `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, `PIECES`, `pieceBoxes`, `buildPieceMesh`, `addPiece`, `removePiece` |
 | `js/mobs.js` | `MOBDEF`, `spawnMob`, `mobs`, `boss` |
@@ -59,8 +59,9 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 
 ## Mittayksiköt ja sopimukset
 
-- Metrit ja sekunnit. Maailma on noin −200…200 m, luolasto on erillinen tila kohdassa `DUN`
-  (pelaaja siellä kun `P.inDun`).
+- Metrit ja sekunnit. Maailma on noin −350…350 m (`HALF`), suunniteltu yksikkökoordinaatteihin ja skaalattu
+  `WS`=1,75. Luolasto on erillinen tila kohdassa `DUN` (pelaaja siellä kun `P.inDun`).
+- Kartta valitaan ennen skriptien latausta (`localStorage['hiidenmaa_map']`); vaihto = sivun uudelleenlataus.
 - Pelaaja: pituus 1,8 m, säde 0,38 m, kävely 4,6 m/s, juoksu 8 m/s, askelnousu `STEPUP` 0,55 m.
 - Rakennusosien mitat tulevat vakioista `G`, `WH`, `DOOR_W`, `DOOR_H`, `STEP_N` (`js/pieces.js`).
   Älä kirjoita mittoja numeroina osien sisään.
@@ -86,6 +87,8 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 - Automaattinen: `window.__game` antaa pääsyn tilaan ja funktioihin (esim. `newGame()`,
   `update(dt)`, `invAdd()`, `addPiece()`, `spawnMob()`, `serialize()`, `loadData()`, `keys`).
   Headless-testissä (Playwright) korvaa `requestPointerLock` ja aja `update(1/30)` silmukassa.
+  Pilvisessiossa cdnjs on estetty: asenna `three@0.128.0` npm:stä testikansioon ja ohjaa
+  `**/three.min.js`-pyyntö siihen `page.route`:lla (vain testiä varten, ei peliin).
 - Tarkista aina, ettei konsoliin tule virheitä, ja että tallennus + lataus toimii.
 
 ## Julkaisu
