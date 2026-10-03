@@ -4,6 +4,7 @@
 
 /* ---------------- PLAYER ACTIONS ---------------- */
 function curWeapon(){const w=equipped('weapon');return w?{...ITEMS[w.id],id:w.id,q:w.q||1}:{n:'Nyrkit',dmg:3,dt:'blunt',range:1.8,st:4,spd:.45,id:null,q:1};}
+let lastStamMsgT=-99;
 function onPrimary(){
   if(P.dead||P.stagger>0)return;
   const w=curWeapon();
@@ -16,8 +17,8 @@ function onSecondary(){const w=curWeapon();if(w.cat==='hammer'){togglePanel('bui
 function startAttack(){
   if(P.atk||P.inWater&&P.swim)return;
   const w=curWeapon();
-  if(P.stam<w.st){msg('Liian uupunut.','warn');return;}
-  P.stam-=w.st;P.stamDelay=1;P.atk={t:0,dur:w.spd+.2,hitAt:w.spd*.55,done:false,w};
+  if(P.stam<w.st){if(playTime-lastStamMsgT>1.2){msg('Liian uupunut.','warn');lastStamMsgT=playTime;}return;}
+  P.stam-=w.st;P.stamDelay=1;P.atk={t:0,dur:w.spd+.2,hitAt:w.spd*.55,done:false,w,offBusy:!!equipped('offhand')};
   P.yaw=camYaw+Math.PI;
 }
 function weaponDmg(w){return w.dmg*(1+.25*((w.q||1)-1))*(P.buffs.voima?1.15:1);}

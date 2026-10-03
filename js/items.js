@@ -26,7 +26,7 @@ const ITEMS={
   hakku:{n:'Piikivihakku',w:3,s:1,c:'#58606b',cat:'weapon',dmg:6,dt:'pierce',pick:1,range:2.4,st:7,spd:.6,d:'Louhii lohkareita ja kupariesiintymiä.'},
   keihas:{n:'Piikivikeihäs',w:2,s:1,c:'#66707a',cat:'weapon',dmg:15,dt:'pierce',range:3.1,st:8,spd:.55,d:'Pitkä ulottuvuus.'},
   miekka:{n:'Kuparimiekka',w:2,s:1,c:'#e0904f',cat:'weapon',dmg:24,dt:'slash',range:2.6,st:8,spd:.44,d:'Nopea ja terävä.'},
-  soihtu:{n:'Soihtu',w:1,s:1,c:'#ff9a3a',cat:'weapon',dmg:5,dt:'fire',range:2,st:5,spd:.5,light:true,d:'Valaisee pimeässä. Polttaa vihollisia.'},
+  soihtu:{n:'Soihtu',w:1,s:1,c:'#ff9a3a',cat:'offhand',light:true,d:'Valaisee pimeässä. Pidä toisessa kädessä aseen tai työkalun rinnalla.'},
   jousi:{n:'Metsästysjousi',w:2,s:1,c:'#8a5a32',cat:'bow',dmg:16,dt:'pierce',st:4,d:'Pidä hiiren vasenta pohjassa jännittääksesi. Tarvitsee nuolia.'},
   vasara:{n:'Vasara',w:2,s:1,c:'#7c6a52',cat:'hammer',d:'Rakennustyökalu. B avaa rakennusvalikon.'},
   kilpi:{n:'Puukilpi',w:4,s:1,c:'#8a5a32',cat:'shield',block:.6,d:'Torju hiiren oikealla. Torjunta kuluttaa kestävyyttä.'},

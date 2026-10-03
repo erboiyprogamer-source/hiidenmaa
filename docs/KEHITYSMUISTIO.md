@@ -48,6 +48,37 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.5 (erä 5)
+- Toisen käden varustepaikka: kilpi ja soihtu ovat nyt omaa `offhand`-ryhmäänsä (ei enää
+  `weapon`-ryhmässä). Oikea käsi pitää yhden aseen/työkalun (`weapon`/`bow`/`hammer`-ryhmä,
+  ennallaan), vasen käsi voi samaan aikaan pitää kilpeä TAI soihtua (`equipGroup()`,
+  `equipped('offhand')` state.js:ssä). Jousi vaatii edelleen molemmat kädet, syrjäyttää
+  automaattisesti kilven/soihdun ja päinvastoin.
+- Soihtu ei enää ole käytettävä lähiaseena (menetti `dmg`/`dt`/`range`-kentät) – se on puhtaasti
+  valoa antava toisen käden tarvike, jota voi pitää yhdessä oikean käden aseen kanssa.
+- Kirveen kaksin käsin -hakkausanimaatio käytössä vain kun vasen käsi on vapaa. Jos vasemmassa
+  kädessä on kilpi tai soihtu, kirves iskee yksin käsin (`P.atk.offBusy`).
+- Yleistä lyöntianimaatiota parannettu: myös muut kuin kirves-iskut (miekka, nuija, keihäs,
+  nyrkit) tekevät nyt pienen viistoliikkeen suoran pystyiskun sijaan.
+- Puolustusanimaatio pehmeämmäksi: käsi liukuu torjunta-asentoon (`lerpAngle`) eikä hypähdä
+  suoraan paikalleen, ja asennossa on pieni jatkuva huojunta.
+- ESC ei enää voi vahingossa avata tauko/alkuvalikkoa kun jokin paneeli (reppu, rakennus,
+  kartta, arkku) on auki – Escape-näppäimen käsittelijä asettaa `suppressPause`-lipun ja
+  `pauseGame()` tarkistaa myös `openPanel`-tilan.
+- Päävalikko: "Palaa peliin" / "Jatka matkaa" on nyt ylimpänä, "Uusi peli" sen alla.
+- "Tallenna nyt" -painike näyttää nyt hetkeksi "Tallennettu ✓" -tekstin itsessään, ei vain
+  piilotetussa asetuspaneelissa.
+
+### v0.4 (erä 3)
+- Kirveen puunhakkausanimaatio muutettu viistoksi iskuksi (ylävasen → alaoikea) suoran
+  pystyiskun sijaan. Molemmat kädet liikkuvat yhdessä (kaksin käsin kiinni kirveessä).
+  Koskee vain kirvestä/kuparikirvestä (`w.chop`), muut aseet iskevät kuten ennen.
+- "Liian uupunut" -viesti tulvi näytölle 30 kertaa sekunnissa, kun hyökkäysnappia pidettiin
+  pohjassa kestävyyden ollessa lopussa. Viestille 1,2 s cooldown (`lastStamMsgT`), ei enää
+  tulvi.
+- Kirveen terä osoitti kädessä ylöspäin; mallin pään tarjoaminen käännetty (`makeHeld()`:n
+  kirveen pään y-siirtymä .1 → -.1), terä roikkuu nyt alaspäin kuten oikealla kirveellä.
+
 ### v0.3 (erä 2)
 - Yläkulman/isoman kartan pelaajanuoli osoitti 180 astetta väärään suuntaan (suunta oli käännetty
   ylimääräisellä puolikierroksella). `drawPlayerArrow()`:n kierto korjattu `-camYaw+Math.PI` →
@@ -72,6 +103,25 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ## Ideajono
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+### Erä 6 – maailman sisältö (ei tehty vielä)
+- Lisää puita niin että pellot/niittyaukeamat ovat pienempiä (tiheämpi metsä, kutistaa avoimia
+  niittyalueita).
+- Uusi biomi: hyvin korkeita ja tuuheita puita, lehvästö/havusto korkealla latvoissa, pelaaja
+  kävelee runkojen alla. Biomi on tunnelmaltaan sumuinen, pimeä ja pelottava.
+
+### Erä 5 – tehty (ks. versioloki v0.5)
+- Toisen käden varustepaikka (kilpi/soihtu) oikean käden aseen/työkalun rinnalle.
+- Kirves vaatii oikeasti kaksi kättä (yksin käsin jos toinen käsi on varattu).
+- Oikea käsi on päätyökäsi, vasen käsi on toisen käden varustepaikka.
+- Parempi lyönti- ja puolustusanimaatio.
+- ESC ei enää hypi vahingossa valikkoon paneelin ollessa auki.
+- Päävalikon järjestys ja "Tallenna nyt" -ilmoitus.
+
+### Erä 3 – tehty (ks. versioloki v0.4)
+- Kirveen hakkausanimaatio viistoksi, kaksin käsin.
+- "Liian uupunut" -viestitulva korjattu cooldownilla.
+- Kirveen terän suunta kädessä käännetty.
 
 ### Erä 2 – tehty (ks. versioloki v0.3)
 - Kartan pelaajanuolen suuntavirhe (180°) korjattu.

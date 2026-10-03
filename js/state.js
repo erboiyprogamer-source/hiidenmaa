@@ -12,13 +12,13 @@ let state='menu';
 
 const fig=makeBiped({s:1,body:0x5a6e7a,skin:0xe2b48c,legs:0x4a3b2c,eyes:0x1a1a1a});
 fig.head.add(bx(.48,.16,.1,mat(0xc98a3a),0,.06,.23));fig.head.add(bx(.5,.18,.5,mat(0x6b6b6b,{metalness:.4,roughness:.5}),0,.5,0));fig.head.add(bx(.08,.14,.08,mat(0x8a8a8a),0,.42,.25));
-scene.add(fig.g);let heldMesh=null,heldId=null,shieldMesh=null,shieldId=null,armorId=null;
+scene.add(fig.g);let heldMesh=null,heldId=null,offMesh=null,offId=null,armorId=null;
 function updateGear(){
   {const w0=equipped('weapon');if(!w0||w0.id!=='vasara')setBuildSel(null);}
   const w=equipped('weapon'),wid=w?w.id:null;
   if(wid!==heldId){if(heldMesh)heldMesh.parent.remove(heldMesh);heldMesh=null;heldId=wid;if(wid){heldMesh=makeHeld(wid);(ITEMS[wid].cat==='bow'?fig.handL:fig.hand).add(heldMesh);}}
-  const s=equipped('shield'),sid=s?s.id:null;
-  if(sid!==shieldId){if(shieldMesh)fig.handL.remove(shieldMesh);shieldMesh=null;shieldId=sid;if(sid){shieldMesh=makeShield(sid);fig.handL.add(shieldMesh);}}
+  const o=equipped('offhand'),oid=o?o.id:null;
+  if(oid!==offId){if(offMesh)fig.handL.remove(offMesh);offMesh=null;offId=oid;if(oid){offMesh=ITEMS[oid].cat==='shield'?makeShield(oid):makeHeld(oid);fig.handL.add(offMesh);}}
   const a=equipped('armor'),aid=a?a.id:null;
   if(aid!==armorId){armorId=aid;const c=aid==='kuparipanssari'?0xc07a40:aid==='nahkavaatteet'?0x8a6040:0x5a6e7a;fig.torso.material=mat(c);fig.armL.children[0].material=mat(c);fig.armR.children[0].material=mat(c);}
 }
@@ -33,11 +33,14 @@ function invAdd(id,n,q=1){const d=ITEMS[id];if(!d)return n;
 function invRemove(id,n){for(let i=inv.length-1;i>=0&&n>0;i--){const s=inv[i];if(s&&s.id===id){const k=Math.min(n,s.n);s.n-=k;n-=k;if(s.n<=0)inv[i]=null;}}invDirty=true;}
 function invWeight(){let w=0;for(const s of inv)if(s)w+=ITEMS[s.id].w*s.n;return w;}
 const MAXW=160;
-function equipped(cat){for(const s of inv)if(s&&s.eq&&(ITEMS[s.id].cat===cat||(cat==='weapon'&&['weapon','bow','hammer'].includes(ITEMS[s.id].cat))))return s;return null;}
+function equipGroup(cat){return ['weapon','bow','hammer'].includes(cat)?'weapon':['shield','offhand'].includes(cat)?'offhand':cat;}
+function equipped(cat){const grouped=cat==='weapon'||cat==='offhand';
+  for(const s of inv){if(!s||!s.eq)continue;const c=ITEMS[s.id].cat;if(grouped?equipGroup(c)===cat:c===cat)return s;}
+  return null;}
 function toggleEquip(s){const cat=ITEMS[s.id].cat;if(!cat)return;
-  if(s.eq){s.eq=false;}else{const g=['weapon','bow','hammer'].includes(cat)?'weapon':cat;for(const o of inv)if(o&&o.eq&&(['weapon','bow','hammer'].includes(ITEMS[o.id].cat)?'weapon':ITEMS[o.id].cat)===g)o.eq=false;s.eq=true;}
-  if(cat==='bow'&&s.eq){for(const o of inv)if(o&&o.eq&&ITEMS[o.id].cat==='shield')o.eq=false;}
-  if(cat==='shield'&&s.eq){const w=equipped('weapon');if(w&&ITEMS[w.id].cat==='bow')w.eq=false;}
+  if(s.eq){s.eq=false;}else{const g=equipGroup(cat);for(const o of inv)if(o&&o.eq&&equipGroup(ITEMS[o.id].cat)===g)o.eq=false;s.eq=true;}
+  if(cat==='bow'&&s.eq){for(const o of inv)if(o&&o.eq&&equipGroup(ITEMS[o.id].cat)==='offhand')o.eq=false;}
+  if(equipGroup(cat)==='offhand'&&s.eq){const w=equipped('weapon');if(w&&ITEMS[w.id].cat==='bow')w.eq=false;}
   invDirty=true;updateGear();if(cat!=='hammer'||!s.eq)setBuildSel(null);sfx('pickup');}
 function useSlot(i){const s=inv[i];if(!s)return;const d=ITEMS[s.id];if(d.food)eat(s);else if(d.cat)toggleEquip(s);}
 function giveOrDrop(id,n,x,y,z,q=1){const left=invAdd(id,n,q);if(left>0){spawnDrop(id,left,x,y,z,q);msg('Reppu on täynnä.','warn');}if(n-left>0){msg(`+${n-left} ${ITEMS[id].n}`,'loot');}}
