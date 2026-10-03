@@ -8,11 +8,12 @@ function refreshMenu(){const s=hasSave();const inGame=started;$('#bContinue').hi
   if(s&&!inGame){try{const d=JSON.parse(localStorage.getItem(SKEY));$('#saveInfo').textContent=`Päivä ${d.dayN} · ${Math.round(d.playTime/60)} min pelattu`;}catch(e){}}}
 let started=false,confirmNew=false;
 function startPlay(){started=true;state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();invDirty=true;}
-function pauseGame(){if(state!=='play')return;state='paused';$('#menu').hidden=false;$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
+function pauseGame(){if(state!=='play'||openPanel)return;state='paused';$('#menu').hidden=false;$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
 $('#bNew').onclick=()=>{if(started&&!confirmNew){confirmNew=true;$('#bNew').firstChild.textContent='Vahvista: uusi peli';setTimeout(()=>{confirmNew=false;$('#bNew').firstChild.textContent='Uusi peli';},4000);return;}confirmNew=false;$('#bNew').firstChild.textContent='Uusi peli';newGame();startPlay();};
 $('#bContinue').onclick=()=>{try{loadData(JSON.parse(localStorage.getItem(SKEY)));startPlay();msg('Tervetuloa takaisin.');}catch(e){$('#ioMsg').textContent='Tallennuksen lataus epäonnistui.';}};
 $('#bResume').onclick=()=>{state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();};
-$('#bSave').onclick=()=>{const ok=saveGame(true);$('#ioMsg').textContent=ok?'Tallennettu selaimeen.':'Selaimen tallennus ei ole käytössä – kopioi tallennuskoodi.';$('#opts').hidden=false;if(!ok)$('#bExport').click();};
+$('#bSave').onclick=()=>{const ok=saveGame(true);$('#ioMsg').textContent=ok?'Tallennettu selaimeen.':'Selaimen tallennus ei ole käytössä – kopioi tallennuskoodi.';$('#opts').hidden=false;if(!ok)$('#bExport').click();
+  const lbl=$('#bSave').firstChild,prevT=lbl.textContent;lbl.textContent=ok?'Tallennettu ✓':'Tallennus epäonnistui';setTimeout(()=>{lbl.textContent=prevT;},1800);};
 $('#bMenuToggle').onclick=()=>{$('#opts').hidden=!$('#opts').hidden;};
 $('#bExport').onclick=()=>{const j=JSON.stringify(serialize());$('#saveCode').value=btoa(unescape(encodeURIComponent(j)));$('#ioMsg').textContent='Koodi luotu nykyisestä pelistä.';};
 $('#bCopy').onclick=()=>{const t=$('#saveCode');if(!t.value)$('#bExport').click();navigator.clipboard.writeText(t.value).then(()=>$('#ioMsg').textContent='Kopioitu leikepöydälle.').catch(()=>{t.select();$('#ioMsg').textContent='Valittu – kopioi Ctrl+C:llä.';});};

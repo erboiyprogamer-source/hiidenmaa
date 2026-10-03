@@ -59,6 +59,7 @@ function renderInv(){
     if(d.cat==='weapon')stat=`Vahinko ${weaponDmg({...d,q}).toFixed(0)} (${{slash:'viiltävä',blunt:'murskaava',pierce:'pistävä',fire:'tuli'}[d.dt]}) · kestävyys/isku ${d.st}`+(d.chop?' · kaataa puita':'')+(d.pick?' · louhii':'');
     if(d.cat==='bow')stat=`Vahinko jopa ${weaponDmg({...d,q}).toFixed(0)}`;
     if(d.cat==='shield')stat=`Torjuu ${Math.round(Math.min(.95,d.block*(1+.1*(q-1)))*100)} %`;
+    if(d.cat==='offhand')stat='Toisen käden tarvike – voi pitää yhdessä aseen kanssa.';
     if(d.cat==='armor')stat=`Suoja ${(d.arm*(1+.2*(q-1))).toFixed(0)}${d.warm?' · lämmin':''}`;
     if(d.food)stat=`Kylläisyys +${d.food.h}${d.food.hp?` · terveys +${d.food.hp}`:''}${d.food.st?` · kestävyys +${d.food.st}`:''}`;
     const up=upgradeInfo(s);

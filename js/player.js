@@ -51,16 +51,16 @@ function updatePlayer(dt){
   fig.legL.rotation.x=sw;fig.legR.rotation.x=-sw;fig.armL.rotation.x=-sw*.7;fig.armR.rotation.x=sw*.7;fig.armR.rotation.z=0;fig.armL.rotation.z=0;
   if(!P.onGround&&!P.swim){fig.legL.rotation.x=-.5;fig.legR.rotation.x=.3;}
   if(P.atk){const k=P.atk.t/P.atk.dur,hk=P.atk.hitAt/P.atk.dur;
-    if(P.atk.w.chop){
+    if(P.atk.w.chop&&!P.atk.offBusy){
       let ax,az;if(k<hk){const t=sstep(0,1,k/hk);ax=lerp(-.2,-2.4,t);az=lerp(.85,-.5,t);}else{const t=Math.min(1,(k-hk)/.25);ax=lerp(-2.4,-.3,t);az=lerp(-.5,-.15,t);}
       fig.armR.rotation.x=ax;fig.armR.rotation.z=az;fig.armL.rotation.x=ax;fig.armL.rotation.z=az;
-    }else{let a;if(k<hk)a=lerp(0,-2.7,sstep(0,1,k/hk));else a=lerp(-2.7,-.3,Math.min(1,(k-hk)/.25));fig.armR.rotation.x=a;fig.armR.rotation.z=-.15;}}
-  if(P.blocking){fig.armL.rotation.x=-1.35;fig.armL.rotation.z=-.5;}
+    }else{let ax,az;if(k<hk){const t=sstep(0,1,k/hk);ax=lerp(-.15,-2.7,t);az=lerp(.5,-.35,t);}else{const t=Math.min(1,(k-hk)/.25);ax=lerp(-2.7,-.3,t);az=lerp(-.35,-.15,t);}fig.armR.rotation.x=ax;fig.armR.rotation.z=az;}}
+  if(P.blocking){fig.armL.rotation.x=lerpAngle(fig.armL.rotation.x,-1.3+Math.sin(playTime*3)*.04,Math.min(1,dt*10));fig.armL.rotation.z=lerpAngle(fig.armL.rotation.z,-.5,Math.min(1,dt*10));}
   if(P.drawing){fig.armL.rotation.x=-1.5;fig.armR.rotation.x=-1.5;fig.armR.rotation.z=.5;}
   if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(0,0,0);if(P.drawing){fig.armL.rotation.z=-.1;}}
   fig.g.visible=camDist>1.8;
   // torch light
-  const torch=heldId==='soihtu';torchLight.intensity=torch?2.1+Math.sin(playTime*17)*.25:0;if(torch){fig.hand.getWorldPosition(torchLight.position);torchLight.position.y+=.6;}
+  const torch=offId==='soihtu';torchLight.intensity=torch?2.1+Math.sin(playTime*17)*.25:0;if(torch){fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;}
 }
 function lerpAngle(a,b,t){let d=((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;return a+d*t;}
 function playerDie(){
