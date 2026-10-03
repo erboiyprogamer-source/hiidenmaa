@@ -34,7 +34,7 @@ function doMeleeHit(w){
     damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz);hitMob=true;}
   if(hitMob&&!w.chop&&!w.pick)return;
   const list=nodesNear(P.pos.x+fx*1.2,P.pos.z+fz*1.2,w.range+1.4,_nl);let best=null,bd=1e9;
-  for(const n of list){if(n.def.kind==='pick')continue;
+  for(const n of list){if(n.def.kind==='pick'||n.def.kind==='deco')continue;
     // tukki: lähin kohta janalla; muut: keskipiste
     let tx=n.x,tz=n.z;if(n.isLog){const ddx=n.bx-n.ax,ddz=n.bz-n.az,t=clamp(((P.pos.x-n.ax)*ddx+(P.pos.z-n.az)*ddz)/(ddx*ddx+ddz*ddz),0,1);tx=n.ax+ddx*t;tz=n.az+ddz*t;}
     const dx=tx-P.pos.x,dz=tz-P.pos.z,d=Math.hypot(dx,dz)-(n.isLog?n.rad:n.def.r*n.s);if(d>w.range+.2)continue;if(Math.hypot(dx,dz)>.5&&(dx*fx+dz*fz)/Math.max(.01,Math.hypot(dx,dz))<.3)continue;

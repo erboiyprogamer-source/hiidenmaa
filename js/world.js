@@ -13,15 +13,15 @@ const DUN={x:900,y:60,z:900}; // hautakummun sisätila (erillinen tila, kartan u
 const MAPS=[
   {name:'Hiidenmaa',ox:0,oz:0,
     loc:{spawn:[0,6],barrow:[-118,92],circle:[-92,138],ruinF:[52,-40],ruinM:[-34,-122],ruinC:[150,24],rune1:[5,0],rune2:[-64,48],rune3:[22,-92]},
-    center:[0,0],mtn:{dx:0,dz:-1,a:55,b:125,h:36},moor:[-108,112],lakes:[[58,48,42,13]],east:1,aarni:[[95,-22,30],[-78,-12,26]]},
+    center:[0,0],mtn:{dx:0,dz:-1,a:55,b:125,h:36},moor:[-108,112],lakes:[[58,48,42,13]],east:1,aarni:[[95,-22,46],[-78,-12,40]]},
   {name:'Kalmansaaret',ox:57,oz:-23,
     loc:{spawn:[4,10],barrow:[-112,98],circle:[-86,140],ruinF:[88,-52],ruinM:[-40,-118],ruinC:[150,28],rune1:[9,4],rune2:[-80,92],rune3:[-34,-92]},
-    mtn:null,peak:[-40,-128,48,34],moor:[-104,114],lakes:[],east:0,aarni:[[92,-58,24]],
+    mtn:null,peak:[-40,-128,48,34],moor:[-104,114],lakes:[],east:0,aarni:[[88,-52,40]],
     islands:[[0,8,74],[-100,112,72],[88,-52,64],[-40,-118,64],[150,28,42],[40,110,50]],
     bars:[[0,8,-100,112],[0,8,88,-52],[0,8,-40,-118],[88,-52,150,28],[0,8,40,110]]},
   {name:'Tunturinniemi',ox:-41,oz:88,
     loc:{spawn:[6,40],barrow:[-116,118],circle:[-88,150],ruinF:[78,52],ruinM:[-30,-62],ruinC:[152,74],rune1:[11,34],rune2:[-62,92],rune3:[18,-22]},
-    mtn:{dx:0,dz:-1,a:-5,b:70,h:52},moor:[-104,128],lakes:[[64,104,30,10]],east:1,aarni:[[95,40,26],[-80,40,24]]},
+    mtn:{dx:0,dz:-1,a:-5,b:70,h:52},moor:[-104,128],lakes:[[64,104,30,10]],east:1,aarni:[[95,40,42],[-80,40,38]]},
 ];
 const MAP_ID=(()=>{try{const v=+localStorage.getItem('hiidenmaa_map');return v>=0&&v<MAPS.length?v|0:0;}catch(e){return 0;}})();
 const MAP=MAPS[MAP_ID];

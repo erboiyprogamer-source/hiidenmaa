@@ -48,6 +48,22 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.14 (erä 14, käyttäjän toive)
+- **Aarnipuu uudelleen:** paksu runko ja 7 kerrosta leveitä, alaspäin roikkuvia havuoksia (`aarniGeo()`),
+  alimmat kärjet ~1,5–3 m korkeudessa; ~1270 kolmiota/puu. Tiheys .13→.085 (latvukset ovat leveitä).
+- **Aarnimetsä isommaksi** kaikilla kartoilla (säteet ~1,5×) ja täyteen pensaita: uusi koriste-solmu
+  `pensas` (kind 'deco', ei törmäystä eikä toimintoa, ei varjoa), aarnissa ~55 % ruuduista, metsässä 4 %.
+- **Sumuisempi ja pimeämpi:** sumu near 6–40 / far 45–165 (ennen 8–60 / 55–230), Aarnimetsässä near 3 /
+  far 38. Taivas harmaampi, yö tummempi, aurinko ×.85, kuunvalo .2, hemi .12+.40·valo, amb .06+.05·valo,
+  Aarnimetsän valo ×.55.
+- **Kartta:** tuntematon alue on läpinäkymätöntä pilviverhoa (`FOGIMG`, fbm-kohina), maastoa ei erota.
+  Paljastussäde 40 m → 24 m (6 ruutua).
+- **Näkyvyysetäisyydet** sumuun sopiviksi: `VIS_R` puut 130, kivet 110, poimittavat 60, pensaat 55.
+  Mittaus (swiftshader): ~610 k kolmiota (ennen erää 515 k), päivitys ~0,3 ms.
+- **Tallennusversio 5:** pensaat muuttivat solmujen numeroinnin, joten v<5 tallennuksen kaadettujen
+  solmujen lista ohitetaan (kaikki kasvaa takaisin); muu tila säilyy.
+
+
 ### v0.13 (erä 13)
 - **Kolme karttaa** (`MAPS` world.js): Hiidenmaa (alkuperäinen, maasto ennallaan), Kalmansaaret
   (saaristo, saaret yhdistetty matalilla hiekkasärkillä, vuori pohjoissaarella) ja Tunturinniemi
@@ -344,6 +360,9 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
    rautapanssari (arm 22). Kuvakkeet icon()-switchiin.
 4. Aarnipuu vaatii chop-tason 3 ja antaa tervaspuuta (uusi tumma puu). Uudet rakennusosat
    tervasseinä ja tervaslattia: tumma väri, hp ×2.
+
+### Erä 14 – Aarnimetsä, sumu ja kartan pilviverho – TEHTY (ks. versioloki v0.14)
+- Roikkuvat havuoksat, iso alue ja pensaat, sumuisempi ja pimeämpi peli, pimeä kartta.
 
 ### Erä 13 – kolme karttaa – TEHTY (ks. versioloki v0.13)
 1. world.js: MAPS = 3 esiasetusta (nimi, siemen, kohinan siirtymät, vuorten suunta, järvet,

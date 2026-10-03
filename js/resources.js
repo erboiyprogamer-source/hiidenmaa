@@ -9,6 +9,7 @@ const NODE={
   koivu:{kind:'tree',hp:24,drops:[['puu',3,4]],r:.3,respawn:1500},
   kelo:{kind:'tree',hp:18,drops:[['puu',2,3]],r:.32,respawn:1500},
   aarnipuu:{kind:'tree',hp:220,drops:[['pihka',1,2]],r:.66,respawn:3000,tier:3},
+  pensas:{kind:'deco',r:0},
   tukki:{kind:'log',hp:20,drops:[['puu',3,4]],r:0},
   lohkare:{kind:'rock',hp:45,drops:[['kivi',5,8]],r:1.05,respawn:1800,tier:1},
   kuparisuoni:{kind:'rock',hp:70,drops:[['malmi',3,5],['kivi',1,3]],r:1.1,respawn:2400,tier:1},
@@ -19,11 +20,25 @@ const NODE={
   marjat:{kind:'pick',item:'marjat',n:[2,3],respawn:480,label:'Puolukkamätäs'},
   sieni:{kind:'pick',item:'sieni',n:[1,1],respawn:480,label:'Herkkutatti'},
 };
+// Aarnipuu: paksu runko ja kerroksittain leveät havuoksat, jotka roikkuvat alaspäin; alimmat
+// oksat ulottuvat ~3 m korkeuteen, joten niiden alla voi kävellä.
+function aarniGeo(){const P=[],r=mulberry32(4242);
+  P.push(part(new THREE.BoxGeometry(1.3,21,1.3),0x4a3524,0,10.5,0));
+  P.push(part(new THREE.BoxGeometry(2.2,1.4,.6),0x3e2c1e,0,.6,0,0,.4),part(new THREE.BoxGeometry(.6,1.4,2.2),0x3e2c1e,0,.6,0,0,.4));
+  const tiers=[[5.8,6.2,8],[8,5.6,8],[10.2,4.8,7],[12.4,4,7],[14.6,3.2,6],[16.6,2.4,5],[18.4,1.6,4]];
+  tiers.forEach(([y,len,n],ti)=>{for(let i=0;i<n;i++){const a=i/n*TAU+ti*.37+r()*.2,c=Math.cos(a),s=Math.sin(a),droop=.28+r()*.12,col=[0x1c3a22,0x22432a,0x1a3520,0x274b2e][(i+ti)%4];
+    // oksa: kaltevasti alaspäin (paikallinen +x ulos), havukerros oksan päällä ja roikkuva kärki
+    const bx0=Math.cos(droop)*len/2,by0=-Math.sin(droop)*len/2;
+    P.push(part(new THREE.BoxGeometry(len*1.02,.35,len*.42),col,c*bx0,y+by0+.18,-s*bx0,0,a,-droop));
+    const tx=Math.cos(droop)*len,ty=-Math.sin(droop)*len;P.push(part(new THREE.ConeGeometry(len*.2,len*.35,5),col,c*tx,y+ty-len*.1,-s*tx,Math.PI,0,0));}});
+  P.push(part(new THREE.ConeGeometry(1.4,3.4,7),0x274b2e,0,21.5,0));
+  return mergeParts(P);}
 const NGEO={
   kuusi:mergeParts([part(new THREE.BoxGeometry(.4,2.2,.4),0x5a3a22,0,1.1,0),part(new THREE.ConeGeometry(1.7,2.5,7),0x2e5a2e,0,2.7,0),part(new THREE.ConeGeometry(1.3,2.1,7),0x356836,0,3.9,0),part(new THREE.ConeGeometry(.85,1.7,7),0x3b7440,0,5,0)]),
   koivu:mergeParts([part(new THREE.BoxGeometry(.32,4.6,.32),0xe9e6dc,0,2.3,0),part(new THREE.BoxGeometry(.34,.1,.2),0x222222,0,1.4,.02),part(new THREE.BoxGeometry(.34,.08,.2),0x222222,0,2.6,-.02),part(new THREE.IcosahedronGeometry(1.7,0),0x7aa641,0,4.7,0),part(new THREE.IcosahedronGeometry(1.2,0),0x8bb84c,.6,5.5,.3)]),
   kelo:mergeParts([part(new THREE.BoxGeometry(.36,4.2,.36),0x6d665c,0,2.1,0),part(new THREE.BoxGeometry(.16,1.4,.16),0x6d665c,.5,3,0,0,0,-.8),part(new THREE.BoxGeometry(.14,1.1,.14),0x6d665c,-.4,3.6,.1,0,0,.9)]),
-  aarnipuu:mergeParts([part(new THREE.BoxGeometry(1.3,19,1.3),0x4a3524,0,9.5,0),part(new THREE.BoxGeometry(2,1.2,.5),0x3e2c1e,0,.5,0,0,.4),part(new THREE.BoxGeometry(.5,1.2,2),0x3e2c1e,0,.5,0,0,.4),part(new THREE.ConeGeometry(4.6,5.5,8),0x1d3a22,0,13.5,0),part(new THREE.ConeGeometry(3.6,5,8),0x22432a,0,16.5,0),part(new THREE.ConeGeometry(2.5,4.5,8),0x274b2e,0,19.5,0)]),
+  aarnipuu:aarniGeo(),
+  pensas:mergeParts([part(new THREE.IcosahedronGeometry(.9,0),0x2a4a2a,0,.55,0,0,0,0,1.3,.75,1.2),part(new THREE.IcosahedronGeometry(.65,0),0x335a30,.7,.45,.3,0,0,0,1,.8,1),part(new THREE.IcosahedronGeometry(.6,0),0x24412a,-.6,.4,-.35,0,0,0,1.1,.7,1)]),
   lohkare:mergeParts([part(new THREE.IcosahedronGeometry(1.2,0),0x85837d,0,.55,0,0,0,0,1,.75,1),part(new THREE.IcosahedronGeometry(.7,0),0x77756f,.7,.35,.3)]),
   kuparisuoni:mergeParts([part(new THREE.IcosahedronGeometry(1.25,0),0x66605a,0,.6,0,0,0,0,1,.8,1),part(new THREE.BoxGeometry(.3,.3,.3),0xd9874a,.6,.9,.6,.5,.5),part(new THREE.BoxGeometry(.28,.28,.28),0xd9874a,-.7,.6,.5,.3,.8),part(new THREE.BoxGeometry(.25,.25,.25),0xe39a5a,.1,1.3,-.5,.2,.4),part(new THREE.BoxGeometry(.3,.3,.3),0xd9874a,-.3,.8,-.8)]),
   rautasuoni:mergeParts([part(new THREE.IcosahedronGeometry(1.3,0),0x4f4a47,0,.6,0,0,0,0,1,.8,1),part(new THREE.BoxGeometry(.32,.32,.32),0x8a4f3c,.6,.9,.6,.5,.5),part(new THREE.BoxGeometry(.3,.3,.3),0x9a5c46,-.7,.6,.5,.3,.8),part(new THREE.BoxGeometry(.26,.26,.26),0x7d4636,.1,1.3,-.5,.2,.4),part(new THREE.BoxGeometry(.3,.3,.3),0x8a4f3c,-.3,.8,-.8)]),
@@ -52,7 +67,7 @@ const POOL={kuusi:400,koivu:400,aarnipuu:60}; // varapaikat öisin kasvaville pu
 const treeS=()=>.6+Math.pow(rng(),1.6)*1.4;   // puun koko .6–2.0, pienet yleisimpiä
 let nodeIdN=0;
 const CHN=10,CHS=HALF*2/CHN,CHUNK_IMS=[];
-const VIS_R={tree:150,rock:120,pick:60}; // näkyvyysetäisyys lajeittain (sumu peittää kauempana)
+const VIS_R={tree:130,rock:110,pick:60,deco:55}; // näkyvyysetäisyys lajeittain (sumu peittää kauempana)
 function chunkOf(x,z){return clamp(Math.floor((z+HALF)/CHS),0,CHN-1)*CHN+clamp(Math.floor((x+HALF)/CHS),0,CHN-1);}
 (function placeNodes(){
   const tmp={};for(const k in NGEO)tmp[k]=[];
@@ -62,8 +77,8 @@ function chunkOf(x,z){return clamp(Math.floor((z+HALF)/CHS),0,CHN-1)*CHN+clamp(M
   for(let x=-E;x<E;x+=3.6)for(let z=-E;z<E;z+=3.6){
     const px=x+(rng()-.5)*3,pz=z+(rng()-.5)*3,h=terrainH(px,pz);if(h<.8)continue;if(!clear(px,pz))continue;
     const b=biomeAt(px,pz,h),r=rng();
-    if(b==='forest'){if(r<.6)add(rng()<.8?'kuusi':'koivu',px,pz,treeS());}
-    else if(b==='aarni'){if(r<.13)add('aarnipuu',px,pz,.8+rng()*.35);else if(r<.2)add('kuusi',px,pz,.6+rng()*.4);}
+    if(b==='forest'){if(r<.6)add(rng()<.8?'kuusi':'koivu',px,pz,treeS());if(rng()<.04)add('pensas',px+(rng()-.5)*2.5,pz+(rng()-.5)*2.5,.6+rng()*.5);}
+    else if(b==='aarni'){if(r<.085)add('aarnipuu',px,pz,.8+rng()*.35);else if(r<.14)add('kuusi',px,pz,.6+rng()*.4);if(rng()<.55)add('pensas',px+(rng()-.5)*2.5,pz+(rng()-.5)*2.5,.7+rng()*.7);}
     else if(b==='meadow'){if(r<.035)add('koivu',px,pz,treeS());}
     else if(b==='moor'){if(r<.05)add('kelo',px,pz,.8+rng()*.4);}
     else if(b==='mountain'){if(h<31&&r<.14)add('kuusi',px,pz,.6+rng()*.6);}
@@ -94,7 +109,7 @@ function chunkOf(x,z){return clamp(Math.floor((z+HALF)/CHS),0,CHN-1)*CHN+clamp(M
 })();
 function makeChunkIM(type,k,cap){const cx=k%CHN,cz=(k/CHN)|0,x0=-HALF+cx*CHS,z0=-HALF+cz*CHS;
   const geo=NGEO[type].clone();geo.boundingSphere=new THREE.Sphere(new V3(x0+CHS/2,10,z0+CHS/2),CHS*.71+30);
-  const im=new THREE.InstancedMesh(geo,NODE[type].kind==='tree'?treeMat:vcMat,cap);im.castShadow=NODE[type].kind!=='pick';im.receiveShadow=true;
+  const im=new THREE.InstancedMesh(geo,NODE[type].kind==='tree'?treeMat:vcMat,cap);im.castShadow=NODE[type].kind!=='pick'&&NODE[type].kind!=='deco';im.receiveShadow=true;
   im.userData.cx=x0+CHS/2;im.userData.cz=z0+CHS/2;im.userData.k=k;im.userData.vis=VIS_R[NODE[type].kind]||140;scene.add(im);nodeIM[type].push(im);CHUNK_IMS.push(im);return im;}
 // Kaukaiset ruudut piiloon (sumu peittää ne joka tapauksessa).
 function updateChunkVis(){const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far;
@@ -104,7 +119,7 @@ function initNode(n){n.id=nodeIdN++;n.def=NODE[n.type];n.maxHp=(n.def.hp||1)*(n.
   if(n.def.kind==='tree')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+6*n.s,n);
   else if(n.def.kind==='rock')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+1.2*n.s,n);
   nodes.push(n);}
-function setNodeMatrix(n,vis){_q.setFromEuler(_e.set(0,n.rot,0));_s.setScalar(vis?n.s:0.0001);_p.set(n.x,n.y-(n.def.kind==='pick'?0:.05),n.z);_m4.compose(_p,_q,_s);n.im.setMatrixAt(n.idx,_m4);n.im.instanceMatrix.needsUpdate=true;}
+function setNodeMatrix(n,vis){_q.setFromEuler(_e.set(0,n.rot,0));_s.setScalar(vis?n.s:0.0001);_p.set(n.x,n.y-(n.def.kind==='pick'||n.def.kind==='deco'?0:.05),n.z);_m4.compose(_p,_q,_s);n.im.setMatrixAt(n.idx,_m4);n.im.instanceMatrix.needsUpdate=true;}
 const NGRID=new Map();
 function ngridAdd(n){const k=ck(Math.floor(n.x/CELL),Math.floor(n.z/CELL));let a=NGRID.get(k);if(!a)NGRID.set(k,a=[]);a.push(n);n.gk=[k];}
 function ngridRemove(n){for(const k of n.gk||[]){const a=NGRID.get(k);if(a){const i=a.indexOf(n);if(i>=0)a.splice(i,1);}}n.gk=[];}
