@@ -12,6 +12,8 @@ const STEP_N=6;   // portaiden askelmat: WH/STEP_N pitää olla selvästi alle S
 const PIECES={
   lattia:{n:'Puulattia',req:{puu:2},hp:120,snap:'floor',tag:'Rakenne'},
   seina:{n:'Puuseinä',req:{puu:2},hp:150,snap:'wall',tag:'Rakenne'},
+  tervaslattia:{n:'Tervaslattia',req:{tervaspuu:2},hp:240,snap:'floor',tag:'Rakenne'},
+  tervasseina:{n:'Tervasseinä',req:{tervaspuu:2},hp:300,snap:'wall',tag:'Rakenne'},
   ovi:{n:'Puuovi',req:{puu:4},hp:130,snap:'wall',tag:'Rakenne'},
   katto:{n:'Olkikatto',req:{puu:2},hp:100,snap:'cell',tag:'Rakenne'},
   vinoseina:{n:'Vinoseinä',req:{puu:1},hp:90,snap:'wall',tag:'Rakenne'},
@@ -30,8 +32,8 @@ const PIECES={
 };
 // local AABBs: [cx,cy,cz,w,h,d]
 function pieceBoxes(t){switch(t){
-  case 'lattia':return[[0,-.1,0,G,.2,G]];
-  case 'seina':return[[0,WH/2,0,G,WH,.2]];
+  case 'lattia':case 'tervaslattia':return[[0,-.1,0,G,.2,G]];
+  case 'seina':case 'tervasseina':return[[0,WH/2,0,G,WH,.2]];
   case 'kiviseina':return[[0,WH/2,0,G,WH,.36]];
   case 'aita':return[[0,.8,0,G,1.6,.4]];
   case 'ovi':{const pw=(G-DOOR_W)/2,px=DOOR_W/2+pw/2;return[[-px,WH/2,0,pw,WH,.22],[px,WH/2,0,pw,WH,.22],[0,(DOOR_H+WH)/2,0,G,WH-DOOR_H,.22],[0,(DOOR_H-.05)/2,0,DOOR_W,DOOR_H-.05,.12,'door']];}
@@ -55,6 +57,8 @@ function buildPieceMesh(t){
   const g=new THREE.Group();
   switch(t){
     case 'lattia':g.add(bx(G,.2,G,MAT.wood,0,-.1,0));break;
+    case 'tervaslattia':g.add(bx(G,.2,G,MAT.tarwood,0,-.1,0));break;
+    case 'tervasseina':g.add(bx(G,WH,.2,MAT.tarwood,0,WH/2,0));g.add(bx(.22,WH,.24,mat(0x2e2016),-G/2+.11,WH/2,0));break;
     case 'seina':g.add(bx(G,WH,.2,MAT.wood,0,WH/2,0));g.add(bx(.22,WH,.24,mat(0x5e3b1f),-G/2+.11,WH/2,0));break;
     case 'kiviseina':g.add(bx(G,WH,.36,MAT.stone,0,WH/2,0));break;
     case 'aita':{const n=9;for(let i=0;i<n;i++){const x=-G/2+.12+i*(G-.24)/(n-1);g.add(bx(.18,1.5,.18,mat(0x7b5434),x,.75,0));const tip=new THREE.Mesh(new THREE.ConeGeometry(.12,.35,4),mat(0x9a7450));tip.position.set(x,1.65,0);tip.castShadow=true;g.add(tip);}g.add(bx(G,.14,.24,mat(0x5e3b1f),0,.7,.08));break;}
@@ -86,9 +90,9 @@ function damageMat(base,lv){const k=base.uuid+lv;let m=DMGMAT.get(k);if(m)return
   for(let i=0;i<(lv===1?3:7);i++){let x=r()*s,y=r()*s;g.beginPath();g.moveTo(x,y);for(let j=0;j<6;j++){x+=(r()-.5)*14;y+=(r()-.3)*12;g.lineTo(x,y);}g.stroke();}
   if(lv===2){g.globalCompositeOperation='destination-out';for(let i=0;i<4;i++)g.fillRect(r()*(s-8)|0,r()*(s-8)|0,4+r()*4|0,4+r()*4|0);}
   const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.wrapS=t.wrapT=THREE.RepeatWrapping;
-  m=new THREE.MeshStandardMaterial({map:t,roughness:base.roughness,alphaTest:lv===2?.5:0});DMGMAT.set(k,m);return m;}
+  m=new THREE.MeshStandardMaterial({map:t,color:base.color,roughness:base.roughness,alphaTest:lv===2?.5:0});DMGMAT.set(k,m);return m;}
 function setPieceDamage(p){const r=p.hp/PIECES[p.t].hp,lv=r>.66?0:r>.33?1:2;if(p.dmgLv===lv)return;p.dmgLv=lv;
-  p.mesh.traverse(o=>{if(!o.isMesh)return;const b=o.userData.baseMat||(o.userData.baseMat=o.material);if(b!==MAT.wood&&b!==MAT.stone&&b!==MAT.thatch)return;o.material=lv?damageMat(b,lv):b;});}
+  p.mesh.traverse(o=>{if(!o.isMesh)return;const b=o.userData.baseMat||(o.userData.baseMat=o.material);if(b!==MAT.wood&&b!==MAT.stone&&b!==MAT.thatch&&b!==MAT.tarwood)return;o.material=lv?damageMat(b,lv):b;});}
 // Työpenkin alueen raja: maastoa seuraava oranssi nauha, näkyy vain kun vasara on kädessä.
 const RING_MAT=new THREE.MeshBasicMaterial({color:0xff9a3a,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false});
 function makeBenchRing(x,z){const n=128,pos=new Float32Array((n+1)*6),idx=[];
@@ -105,7 +109,7 @@ function addPiece(t,x,y,z,rot,hp,data){
   for(const b of worldBoxes(t,x,y,z,rot)){const c=addBox(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ,p);c.door=b.door;p.cols.push(c);}
   if(t==='nuotio'){p.data.fuel=p.data.fuel??4;p.data.burn=p.data.burn??0;p.data.cook=p.data.cook||[];lightSources.push(p.light={x,y:y+.8,z,c:0xff8c3a,i:2,on:()=>p.data.fuel>0,piece:p});}
   if(t==='soihtuteline')lightSources.push(p.light={x,y:y+1.8,z,c:0xffa04a,i:1.5,on:()=>true,piece:p});
-  if(t==='sulatin'){p.data.ore=p.data.ore||0;p.data.wood=p.data.wood||0;p.data.done=p.data.done||0;p.data.t=0;lightSources.push(p.light={x,y:y+.6,z,c:0xff7a2a,i:1.2,on:()=>p.data.ore>0&&p.data.wood>0,piece:p});}
+  if(t==='sulatin'){p.data.ore=p.data.ore||0;p.data.iore=p.data.iore||0;p.data.wood=p.data.wood||0;p.data.done=p.data.done||0;p.data.idone=p.data.idone||0;p.data.t=0;lightSources.push(p.light={x,y:y+.6,z,c:0xff7a2a,i:1.2,on:()=>(p.data.ore>0||p.data.iore>0)&&p.data.wood>0,piece:p});}
   if(t==='tyopenkki')p.ring=makeBenchRing(x,z);
   if(t==='arkku')p.data.items=p.data.items||new Array(16).fill(null);
   if(t==='ovi'){p.data.open=!!p.data.open;setDoor(p,p.data.open);}

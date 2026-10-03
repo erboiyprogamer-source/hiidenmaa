@@ -48,6 +48,79 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.13 (erä 13)
+- **Kolme karttaa** (`MAPS` world.js): Hiidenmaa (alkuperäinen, maasto ennallaan), Kalmansaaret
+  (saaristo, saaret yhdistetty matalilla hiekkasärkillä, vuori pohjoissaarella) ja Tunturinniemi
+  (iso vuoristo pohjoispuoliskolla). Esiasetus: kohinan siirtymä, vuoret (`mtn` tai `peak`), nummi,
+  järvet, Aarnimetsät, saaret/särkät ja `LOC`-paikat. Hautakumpu on aina lounaassa ja vuoret
+  pohjoisessa, jotta riimukivien tekstit pitävät.
+- **Valinta:** maailma rakennetaan skriptien latautuessa, joten `MAP_ID` luetaan
+  `localStorage['hiidenmaa_map']`ista. Uusi peli arpoo kartan; jos se on eri kuin nykyinen →
+  `switchMap()` tallentaa valinnan, asettaa `sessionStorage['hiidenmaa_pending']` ('new'/'load',
+  ladattava peli `hiidenmaa_data`) ja lataa sivun; `main.js` jatkaa automaattisesti.
+  `beforeunload`-varmistus ohitetaan kartanvaihdossa (`reloading`).
+- **Tallennusversio 4:** `mapId`. Jatka/tuo koodista vaihtaa tarvittaessa kartan ennen latausta.
+  Valikko näyttää kartan nimen (`#mapName`) ja tallennuksen kartan.
+- Testit (jokainen kartta): kaikki paikat maalla (h>1,1), kaikki saavutettavissa kävellen
+  aloituspaikasta (3 m ruudukko, ei uintia), luolastoon meno ja paluu, alttarin teksti, tallennus
+  sisältää `mapId`:n, kartanvaihto latauksen kautta käynnistää pelin oikealla kartalla. Ei virheitä.
+
+
+### v0.12 (erä 12)
+- **Työkalutasot:** `pick`/`chop`-arvo on taso. Hakut: piikivi 1, kupari 2 (uusi, ahjo: kupari 6, puu 3),
+  rauta 3. Kirveet: kivi 1, kupari 2, rauta 3. `NODE.tier`: lohkare 1, kuparisuoni 1, rautasuoni 2,
+  puut 1, aarnipuu 3. Liian heikko → "Tarvitset paremman hakun." / "Tarvitset vahvemman kirveen."
+- **Rautasuoni:** 25 kpl vuorilla (h>22), hp 120, tier 2, antaa rautamalmia 2–4 + kiveä.
+- **Sulatusuuni** sulattaa myös rautamalmin (oma jono `iore`/`idone`, 10 s/harkko, kupari ensin, 7 s).
+  Uunin teksti näyttää molemmat; tallennus ja purku käsittelevät uudet kentät.
+- **Rautavarusteet ahjoon:** rautakirves (chop 3, dmg 18; rauta 4, puu 3), rautahakku (pick 3, dmg 12;
+  rauta 5, puu 3), rautamiekka (dmg 34; rauta 6, puu 2, nahka 2), rautapanssari (arm 22, slow .08;
+  rauta 12, nahka 6). Kuvakkeet ja kädessä pidettävät mallit.
+- **Aarnipuu** (hp 220·s²) vaatii rautakirveen; tukit antavat **tervaspuuta**. Uudet osat
+  **tervaslattia** (hp 240) ja **tervasseinä** (hp 300), kumpikin tervaspuu 2, tumma `MAT.tarwood`,
+  vauriotekstuurit toimivat (vauriomateriaali säilyttää sävyn).
+- Testi: piikivihakku ei pure rautaan, kuparihakku louhii (8 iskua), uuni tuottaa 2 harkkoa,
+  rautakirves kaataa aarnipuun → 2 tukkia → tervaspuuta, tervasseinä hp 300, tallennus/lataus ok.
+
+
+### v0.11 (erä 11)
+- **Kartta 3×:** `WS=1.75`, `HALF` 200→350, `GN` 350 (`GS`=2). Isot muodot lasketaan yksikkökoordinaateissa
+  (x/WS), pienet yksityiskohdat metreinä; `LOC` kerrotaan WS:llä, reunan meri alkaa ~297 m. Luolasto
+  `DUN` siirretty (900, 60, 900). Kartta `MAPC` 700 px, tutkimusruudukko `EXN`=175 (4 m ruudut),
+  maailman raja `HALF+15`.
+- **Tiheämpi metsä:** metsän puutiheys .42→.6, niityt pienemmiksi (spawnin niitty r 46→40, niittykohina
+  <.4 → <.33). Biomit näytteistettynä: metsä 1626, vuori 579, nummi 293, niitty 245, aarni 155 (/4900).
+- **Puiden koko:** `s` .6–2.0 (pienet yleisimpiä), hp ∝ s², törmäyssäde ∝ s, saaliit ∝ s.
+- **Aarnimetsä** (`AARNI`, 2 aluetta, `biomeAt`→'aarni'): `aarnipuu` runko 1–1,5 m, korkeus 17–23 m, havusto
+  ~10 m:stä ylöspäin, tumma sammalmaa. Biomissa sumu near 6 / far 60, valo ×.6 (`aarniK`). Aarnipuu
+  vaatii kirveen tason 3 (`NODE.tier`) → "Tarvitset vahvemman kirveen." Spawnitaulukko `SPAWN.aarni`.
+- **Tukit:** kaatunut puu jättää 1–2 tukkia (`spawnLogs`, iso puu s>1.3 tai aarnipuu = 2). Tukki on
+  hakattava (hp 20·s), antaa puuta (aarnipuu: tervaspuuta) ∝ s. Puu itse antaa vain sivusaaliit
+  (pihka). Tukit eivät tallennu (katoavat latauksessa).
+- **Metsä kasvaa öisin:** nukkuessa `regrowForest()` herättää kaadetut puut, joiden 25 m:n säteellä ei
+  ole rakennusta, ja istuttaa ≤40 uutta (instanssipooli `POOL`). Istutetut tallentuvat (`planted`).
+- **Suorituskyky:** maisemainstanssit jaettu 10×10 ruutuun (`CHN`), joilla oma rajauspallo, ja
+  lajikohtainen näkyvyys (`VIS_R` puut 150 m, kivet 120, poimittavat 60). Aiemmin instanssit piirrettiin
+  karsimatta. Mittaus (headless swiftshader, ei vastaa oikeaa GPU:ta): ennen 236 k kolmiota, 63 kutsua,
+  2566 solmua; jälkeen 515 k kolmiota, 157–168 kutsua, 10 945 solmua; päivitys 0,2–0,5 ms/kehys.
+- **Tallennusversio 3.** Versio <3 (vanha pieni maailma): tavarat, tila ja eteneminen säilyvät, rakennukset
+  ja hautakasat palautetaan tarvikkeina reppuun, pelaaja aloituspaikkaan.
+
+
+### v0.10 (erä 10)
+- **Pehmeä valon vaihto:** taivaan valo `light=sstep(-.4,.45,el)` (hämärä/aamunkoitto ~1,5 min),
+  aurinko `sunK=sstep(-.12,.08,el)`, kuu `moonK=sstep(-.12,-.32,el)`. Valon suunta vaihtuu kuuhun
+  vasta kun voimakkuus on 0 (testi: vaihto dayT .819, intensiteetti 0; suurin hyppy .043/askel).
+- **Kuu:** `moon` (render.js) auringon vastapuolella, läikkäinen canvas-tekstuuri, `fog:false`.
+  Kirkkaus ja kuunvalo `moonPhase()` = 8 päivän kierto (.2 uusikuu … 1 täysikuu).
+- **Uudet säät** (`WEATHERS`): tuulinen (`tuuli`), tihku, myrsky (rankkasade, salama = taivas ja valot
+  välähtävät, jyrinä `sfx('thunder')` .5–2 s viiveellä), lumisade (`lumi`, valitaan sateen sijaan kun
+  pelaaja on vuorella tai y>20; hiutaleet näkyvät y>10, lumisade kylmettää ilman suojaa).
+  Todennäköisyydet: selkeä 34 %, pilvi 20, tuuli 10, tihku 10, sade 12, myrsky 6, sumu 8. Tihku ei kastele.
+- **Puut huojuvat:** puiden instanssimateriaali `treeMat` (vertex-shader, `SWAY.uWind`): kevyt huojunta
+  aina, voimakas tuulella ja myrskyssä. Varjot eivät huoju.
+
+
 ### v0.9 (erä 8)
 - **Kiinteä olkikatto:** `pieceBoxes('katto')` = 8 porrasviipaletta (viipaleen yläpinta G/8·(i+1), pohja
   max(0, yläpinta−.3), askel .31 m < `STEPUP`). Katolla voi kävellä (testi: nousu 2,5 m = G), katto
@@ -233,7 +306,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
    lyönnistä). Hiiviskelyisku: P.crouch ja mob ei ole chase/flee-tilassa → vahinko ×2, keltainen
    "Hiiviskelyisku!"-teksti.
 
-### Erä 10 – taivas ja sää (TEE SEURAAVAKSI)
+### Erä 10 – taivas ja sää – TEHTY (ks. versioloki v0.10)
 1. Pehmeä valon vaihto (environment.js n. rivi 26): nyt aurinko vaihtuu kuuksi hetkessä. Tee
    sunK=sstep(-.12,.08,el) ja moonK yöllä. Valon voimakkuus laskee nollaan horisontissa ja suunta
    vaihtuu vasta nollassa. Hämärä ja aamunkoitto noin 1,5 min peliaikaa. Laajenna light-käyrää
@@ -245,7 +318,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
    hiutaleet), tihku, tuulinen (puiden latvat huojuvat). Todennäköisyydet updateWeatheriin, viestit
    suomeksi, säätila näkyy kellossa.
 
-### Erä 11 – isompi maailma ja metsät
+### Erä 11 – isompi maailma ja metsät – TEHTY (ks. versioloki v0.11)
 1. Kartta noin 3× pinta-alaltaan: world.js HALF 200→350, GN 200→350 (GS pysyy 2). Skaalaa
    LOC-paikat ×1.75, reunan meri (sstep(170,198,d)) ja biomien kohinat. Kartat: MAPC 400→700 px,
    explored-ruudukko 100→175. Mittaa FPS ennen ja jälkeen ja kirjaa se.
@@ -261,7 +334,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
    säteellä ei ole rakennusta, ja istuta enintään 40 uutta puuta metsäbiomeihin (varaa
    instanssipooli, esim. 400 paikkaa per puulaji).
 
-### Erä 12 – malmit, työkalut ja aarnipuu
+### Erä 12 – malmit, työkalut ja aarnipuu – TEHTY (ks. versioloki v0.12)
 1. Työkalutasot: ITEMS-aseille pick/chop-taso (piikivihakku 1, UUSI kuparihakku 2 ahjosta:
    kupari 6, puu 3, rautahakku 3; kivikirves 1, kuparikirves 2, rautakirves 3). NODE:lle `tier`.
    Liian heikko työkalu → "Tarvitset paremman hakun/kirveen".
@@ -272,7 +345,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 4. Aarnipuu vaatii chop-tason 3 ja antaa tervaspuuta (uusi tumma puu). Uudet rakennusosat
    tervasseinä ja tervaslattia: tumma väri, hp ×2.
 
-### Erä 13 – kolme karttaa
+### Erä 13 – kolme karttaa – TEHTY (ks. versioloki v0.13)
 1. world.js: MAPS = 3 esiasetusta (nimi, siemen, kohinan siirtymät, vuorten suunta, järvet,
    LOC-paikat). Esim. Hiidenmaa (nykyinen), Kalmansaaret (saaristo), Tunturinniemi (iso vuoristo).
 2. Maailma rakennetaan skriptien latautuessa, joten Uusi peli arpoo kartan → localStorage

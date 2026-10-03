@@ -24,6 +24,7 @@ function sfx(type){
     case 'bow':tone(300,120,.15,.18,'triangle');break;
     case 'roar':tone(110,45,1.2,.4,'sawtooth');break;
     case 'slam':noise(.5,300,60,.6,1);tone(80,30,.5,.4,'sine');break;
+    case 'thunder':noise(2.4,220,35,.8,.6);tone(70,28,2,.35,'sine');break;
     case 'die':tone(300,80,.4,.2,'triangle');break;
   }
 }

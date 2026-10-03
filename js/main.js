@@ -4,27 +4,38 @@
 
 /* ---------------- MENU ---------------- */
 function hasSave(){try{return!!localStorage.getItem(SKEY);}catch(e){return false;}}
-function refreshMenu(){const s=hasSave();const inGame=started;$('#bContinue').hidden=!s||inGame;$('#bResume').hidden=!inGame;$('#bSave').hidden=!inGame;$('#bNew').querySelector('small').textContent=inGame?'Aloittaa alusta – nykyinen eteneminen katoaa, ellei sitä ole tallennettu':'Aloita rannalta ilman mitään';
-  if(s&&!inGame){try{const d=JSON.parse(localStorage.getItem(SKEY));$('#saveInfo').textContent=`Päivä ${d.dayN} · ${Math.round(d.playTime/60)} min pelattu`;}catch(e){}}}
+function refreshMenu(){const s=hasSave();const inGame=started;$('#bContinue').hidden=!s||inGame;$('#bResume').hidden=!inGame;$('#bSave').hidden=!inGame;$('#bNew').querySelector('small').textContent=inGame?'Aloittaa alusta uudella arvotulla kartalla – nykyinen eteneminen katoaa, ellei sitä ole tallennettu':'Aloita rannalta ilman mitään – kartta arvotaan';
+  $('#mapName').textContent=`Kartta: ${MAP.name}`;
+  if(s&&!inGame){try{const d=JSON.parse(localStorage.getItem(SKEY));$('#saveInfo').textContent=`${(MAPS[d.mapId||0]||MAPS[0]).name} · päivä ${d.dayN} · ${Math.round(d.playTime/60)} min pelattu`;}catch(e){}}}
 let started=false,confirmNew=false;
 function startPlay(){started=true;state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();invDirty=true;}
 function pauseGame(){if(state!=='play'||openPanel)return;state='paused';pausedAt=performance.now();$('#menu').hidden=false;$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
-addEventListener('beforeunload',e=>{if(started&&!flags.won){e.preventDefault();e.returnValue='';}});
-$('#bNew').onclick=()=>{if(started&&!confirmNew){confirmNew=true;$('#bNew').firstChild.textContent='Vahvista: uusi peli';setTimeout(()=>{confirmNew=false;$('#bNew').firstChild.textContent='Uusi peli';},4000);return;}confirmNew=false;$('#bNew').firstChild.textContent='Uusi peli';newGame();startPlay();};
-$('#bContinue').onclick=()=>{try{loadData(JSON.parse(localStorage.getItem(SKEY)));startPlay();msg('Tervetuloa takaisin.');}catch(e){$('#ioMsg').textContent='Tallennuksen lataus epäonnistui.';}};
+addEventListener('beforeunload',e=>{if(started&&!flags.won&&!reloading){e.preventDefault();e.returnValue='';}});
+// Maailma rakennetaan skriptien latautuessa, joten kartan vaihto = sivun uudelleenlataus.
+let reloading=false;
+function switchMap(id,pending,data){try{localStorage.setItem('hiidenmaa_map',String(id));sessionStorage.setItem('hiidenmaa_pending',pending);if(data)sessionStorage.setItem('hiidenmaa_data',data);}catch(e){return false;}
+  reloading=true;$('#fade').style.opacity=1;location.reload();return true;}
+function startNewGame(){const id=Math.floor(Math.random()*MAPS.length);if(id!==MAP_ID&&switchMap(id,'new'))return;newGame();startPlay();msg(`Kartta: ${MAP.name}`);}
+function playSave(s,welcome){const mid=s.mapId||0;if(mid!==MAP_ID&&switchMap(mid,'load',JSON.stringify(s)))return;loadData(s);startPlay();msg(welcome,'loot');}
+$('#bNew').onclick=()=>{if(started&&!confirmNew){confirmNew=true;$('#bNew').firstChild.textContent='Vahvista: uusi peli';setTimeout(()=>{confirmNew=false;$('#bNew').firstChild.textContent='Uusi peli';},4000);return;}confirmNew=false;$('#bNew').firstChild.textContent='Uusi peli';startNewGame();};
+$('#bContinue').onclick=()=>{try{playSave(JSON.parse(localStorage.getItem(SKEY)),'Tervetuloa takaisin.');}catch(e){$('#ioMsg').textContent='Tallennuksen lataus epäonnistui.';}};
 $('#bResume').onclick=()=>{state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();};
 $('#bSave').onclick=()=>{const ok=saveGame(true);$('#ioMsg').textContent=ok?'Tallennettu selaimeen.':'Selaimen tallennus ei ole käytössä – kopioi tallennuskoodi.';$('#opts').hidden=false;if(!ok)$('#bExport').click();
   const lbl=$('#bSave').firstChild,prevT=lbl.textContent;lbl.textContent=ok?'Tallennettu ✓':'Tallennus epäonnistui';setTimeout(()=>{lbl.textContent=prevT;},1800);};
 $('#bMenuToggle').onclick=()=>{$('#opts').hidden=!$('#opts').hidden;};
 $('#bExport').onclick=()=>{const j=JSON.stringify(serialize());$('#saveCode').value=btoa(unescape(encodeURIComponent(j)));$('#ioMsg').textContent='Koodi luotu nykyisestä pelistä.';};
 $('#bCopy').onclick=()=>{const t=$('#saveCode');if(!t.value)$('#bExport').click();navigator.clipboard.writeText(t.value).then(()=>$('#ioMsg').textContent='Kopioitu leikepöydälle.').catch(()=>{t.select();$('#ioMsg').textContent='Valittu – kopioi Ctrl+C:llä.';});};
-$('#bImport').onclick=()=>{try{const s=JSON.parse(decodeURIComponent(escape(atob($('#saveCode').value.trim()))));loadData(s);startPlay();msg('Peli ladattu koodista.','loot');}catch(e){$('#ioMsg').textContent='Koodi ei kelpaa.';}};
+$('#bImport').onclick=()=>{try{const s=JSON.parse(decodeURIComponent(escape(atob($('#saveCode').value.trim()))));playSave(s,'Peli ladattu koodista.');}catch(e){$('#ioMsg').textContent='Koodi ei kelpaa.';}};
 $('#optShadow').onchange=e=>{renderer.shadowMap.enabled=e.target.checked;scene.traverse(o=>{if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true);}});};
 $('#optSound').onchange=e=>{soundOn=e.target.checked;};
 $('#optInvY').onchange=e=>{invertY=e.target.checked;};
 $('#bRespawn').onclick=respawn;
 $('#bWinCont').onclick=()=>{$('#winS').hidden=true;$('#hud').hidden=false;state='play';requestLock();};
 refreshMenu();
+// Kartanvaihdon jälkeinen jatko: aloita uusi peli tai lataa tallennus automaattisesti.
+(function(){let p=null,d=null;try{p=sessionStorage.getItem('hiidenmaa_pending');d=sessionStorage.getItem('hiidenmaa_data');sessionStorage.removeItem('hiidenmaa_pending');sessionStorage.removeItem('hiidenmaa_data');}catch(e){}
+  if(p==='new'){newGame();startPlay();setTimeout(()=>msg(`Kartta: ${MAP.name}`),300);}
+  else if(p==='load'&&d){try{loadData(JSON.parse(d));startPlay();setTimeout(()=>msg('Tervetuloa takaisin.','loot'),300);}catch(e){}}})();
 
 /* ---------------- MAIN LOOP ---------------- */
 let last=performance.now(),slowT=0,saveT=0,lightT=0,menuA=0;
@@ -32,7 +43,7 @@ function update(dt){
   playTime+=dt;dayT+=dt/DAY_LEN;if(dayT>=1){dayT-=1;dayN++;msg(`Päivä ${dayN}`);}
   const wasNight=isNight();
   updatePlayer(dt);updateMobs(dt);updateProjs(dt);updateDrops(dt);updateFx(dt);updateStations(dt);spawner(dt);survival(dt);updateWeather();
-  updateEnvironment(dt);updateCamera(dt);updateBenchRings();
+  updateEnvironment(dt);updateCamera(dt);updateBenchRings();updateChunkVis();
   if(state==='play'){lookTarget=findInteract();updateGhost();}else if(ghost)ghost.visible=false;
   lightT-=dt;if(lightT<=0){lightT=.4;updateLights();}
   slowT-=dt;if(slowT<=0){slowT=1;exploreTick();updateGoals();if(Math.floor(playTime)%5===0)respawnNodes();}

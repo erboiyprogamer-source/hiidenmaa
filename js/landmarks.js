@@ -60,7 +60,7 @@ const dunSpawns=[], sarcs=[]; let dunEntry=null;
 const dunCell=(ix,iz)=>({x:DUN.x+(ix-DW/2+.5)*DC,z:DUN.z+(iz-DH/2+.5)*DC});
 (function(){
   const wallGeo=new THREE.BoxGeometry(DC,4.2,DC);let cnt=0;DMAP.forEach(r=>{for(const c of r)if(c==='#')cnt++;});
-  const im=new THREE.InstancedMesh(wallGeo,new THREE.MeshStandardMaterial({map:TEX.stone,roughness:1,color:0x9a948a}),cnt);let i=0;im.receiveShadow=true;
+  const im=new THREE.InstancedMesh(wallGeo,new THREE.MeshStandardMaterial({map:TEX.stone,roughness:1,color:0x9a948a}),cnt);im.frustumCulled=false;let i=0;im.receiveShadow=true;
   DMAP.forEach((row,iz)=>[...row].forEach((ch,ix)=>{const p=dunCell(ix,iz);
     if(ch==='#'){_m4.makeTranslation(p.x,DUN.y+2.1,p.z);im.setMatrixAt(i++,_m4);addBox(p.x-DC/2,DUN.y,p.z-DC/2,p.x+DC/2,DUN.y+4.2,p.z+DC/2,'static');}
     if(ch==='E')dunEntry=p;

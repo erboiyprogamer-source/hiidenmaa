@@ -37,6 +37,7 @@ const MAT={
   wood:new THREE.MeshStandardMaterial({map:TEX.plank,roughness:.9}),
   stone:new THREE.MeshStandardMaterial({map:TEX.stone,roughness:1}),
   thatch:new THREE.MeshStandardMaterial({map:TEX.thatch,roughness:1}),
+  tarwood:new THREE.MeshStandardMaterial({map:TEX.plank,color:0x6a5444,roughness:.85}),
   thatchFringe:new THREE.MeshStandardMaterial({map:TEX.thatchFringe,roughness:1,alphaTest:.5,side:THREE.DoubleSide}),
   flame:new THREE.MeshBasicMaterial({color:0xffa53a}),
   flame2:new THREE.MeshBasicMaterial({color:0xffe08a}),
@@ -73,6 +74,7 @@ const terrainColors=new Float32Array(HN*HN*3);
     else if(b==='beach')c=[.78,.7,.5];
     else if(b==='meadow')c=[.43+n,.6+n,.24];
     else if(b==='forest')c=[.25+n,.42+n,.17];
+    else if(b==='aarni')c=[.15+n*.6,.25+n*.6,.12];
     else if(b==='moor')c=[.36+n,.32+n,.3+n*.5];
     else c=[.48+n,.47+n,.44+n];
     if(h>33){const t=sstep(33,38,h);c=[lerp(c[0],.92,t),lerp(c[1],.94,t),lerp(c[2],.96,t)];}
@@ -89,5 +91,9 @@ const terrainColors=new Float32Array(HN*HN*3);
 const water=new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),new THREE.MeshStandardMaterial({color:0x2c6474,transparent:true,opacity:.8,roughness:.25,metalness:.1}));
 water.rotation.x=-Math.PI/2;scene.add(water);
 const stars=(function(){const g=new THREE.BufferGeometry(),p=[];const r=mulberry32(5);for(let i=0;i<700;i++){const u=r()*TAU,v=r()*.9+.05;p.push(Math.cos(u)*Math.sin(Math.acos(1-v))*400,(1-v)*400,Math.sin(u)*Math.sin(Math.acos(1-v))*400);}g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));const m=new THREE.Points(g,new THREE.PointsMaterial({color:0xdde8ff,size:1.6,sizeAttenuation:false,transparent:true,opacity:0,fog:false}));scene.add(m);return m;})();
+const moonTex=canvasTex((g,s)=>{g.fillStyle='#dfe3ea';g.fillRect(0,0,s,s);const r=mulberry32(31);for(let i=0;i<14;i++){g.fillStyle=`rgba(120,128,145,${.25+r()*.3})`;g.beginPath();g.arc(r()*s,r()*s,2+r()*8,0,TAU);g.fill();}});
+const moon=new THREE.Mesh(new THREE.SphereGeometry(12,16,12),new THREE.MeshBasicMaterial({map:moonTex,fog:false}));scene.add(moon);
+const snow=(function(){const N=700,g=new THREE.BufferGeometry(),p=new Float32Array(N*3),r=mulberry32(13);for(let i=0;i<N;i++)p.set([(r()-.5)*50,r()*26,(r()-.5)*50],i*3);g.setAttribute('position',new THREE.BufferAttribute(p,3));
+  const m=new THREE.Points(g,new THREE.PointsMaterial({color:0xffffff,size:.14,transparent:true,opacity:.9}));m.frustumCulled=false;m.visible=false;scene.add(m);return m;})();
 const sunDisc=new THREE.Mesh(new THREE.SphereGeometry(9,12,8),new THREE.MeshBasicMaterial({color:0xfff2c8,fog:false}));scene.add(sunDisc);
 const rain=(function(){const N=900,g=new THREE.BufferGeometry(),p=new Float32Array(N*6);g.setAttribute('position',new THREE.BufferAttribute(p,3));const l=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0xaac4d8,transparent:true,opacity:.45}));l.frustumCulled=false;l.visible=false;scene.add(l);const r=mulberry32(9);for(let i=0;i<N;i++){const x=(r()-.5)*50,y=r()*30,z=(r()-.5)*50;p.set([x,y,z,x+.05,y+.7,z],i*6);}return l;})();
