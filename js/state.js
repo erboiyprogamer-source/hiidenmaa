@@ -83,13 +83,13 @@ function burst(x,y,z,color,n=8,sp=3){for(let i=0;i<n;i++){if(parts.length>90){co
 // Kipinät ja savu: kevyet, nousevat hiukkaset tulille ja soihduille (ei painovoimaa). kind: 'spark' | 'smoke'.
 const embers=[],emGeo=new THREE.SphereGeometry(1,5,4);
 function emitEmber(x,y,z,kind){if(embers.length>70)return;const sp=kind==='spark',c=sp?(Math.random()<.5?0xffb43a:0xff7a1a):0x6a6560;
-  const m=new THREE.Mesh(emGeo,new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:sp?1:.35,depthWrite:false,fog:false}));m.position.set(x,y,z);scene.add(m);
+  const m=new THREE.Mesh(emGeo,new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:sp?1:.35,depthWrite:false,fog:false}));m.position.set(x,y,z);m.scale.setScalar(.001);scene.add(m);
   embers.push({m,sp,t:0,life:sp?.5+Math.random()*.8:1.1+Math.random()*.9,vx:(Math.random()-.5)*(sp?.8:.3),vy:sp?.9+Math.random()*1.3:.5+Math.random()*.4,vz:(Math.random()-.5)*(sp?.8:.3),r:sp?.018+Math.random()*.014:.07});}
 function updateEmbers(dt){for(let i=embers.length-1;i>=0;i--){const e=embers[i];e.t+=dt;const k=e.t/e.life;if(k>=1){scene.remove(e.m);e.m.material.dispose();embers.splice(i,1);continue;}
   e.m.position.x+=(e.vx+Math.sin(e.t*7+i)*.25)*dt;e.m.position.y+=e.vy*dt;e.m.position.z+=e.vz*dt;
   e.m.scale.setScalar(e.sp?e.r*(1-k*.6):e.r*(1+k*2.6));e.m.material.opacity=e.sp?1-k:.35*(1-k);}}
-// Satunnaistettu välke: arvo hakeutuu satunnaisesti vaihtuvaan tavoitteeseen, joskus pieni "vajaus". Palauttaa kertoimen ~.55–1.1.
-function flick(u,dt){u.t-=dt;if(u.t<=0){u.t=.04+Math.random()*.16;u.target=.82+Math.random()*.28;if(Math.random()<.04)u.target=.55+Math.random()*.15;}u.cur+=(u.target-u.cur)*Math.min(1,dt*14);return u.cur;}
+// Satunnaistettu välke: arvo hakeutuu satunnaisesti vaihtuvaan tavoitteeseen, joskus pieni "vajaus". Palauttaa kertoimen ~.82–1.04 (vain vähän eloa).
+function flick(u,dt){u.t-=dt;if(u.t<=0){u.t=.04+Math.random()*.16;u.target=.82+Math.random()*.28;if(Math.random()<.04)u.target=.55+Math.random()*.15;}u.cur+=(u.target-u.cur)*Math.min(1,dt*14);return 1+(u.cur-1)*.4;}
 const fx=[];
 function updateFx(dt){updateEmbers(dt);
   for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.t-=dt;p.vy-=12*dt;p.m.position.x+=p.vx*dt;p.m.position.y+=p.vy*dt;p.m.position.z+=p.vz*dt;p.m.scale.setScalar(Math.max(.01,p.t));if(p.t<=0){scene.remove(p.m);parts.splice(i,1);}}

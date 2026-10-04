@@ -49,6 +49,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.30 (korjauserä)
+- **Iso vilkahtava objekti korjattu:** uusi kipinä/savuhiukkanen luotiin mittakaavassa 1 (1 m pallo) ja pieneni vasta seuraavassa päivityksessä → yhden kehyksen välähdys. Nyt mittakaava asetetaan heti (.001).
+- **Välke hillitympi:** `flick()` palauttaa kertoimen ~.82–1.04 (aiemmin ~.55–1.1), liekkien koon vaihtelu pienenee samalla.
+
 ### v0.29 (korjauserä)
 - **Käsisoihtu näyttävämmäksi:** kolmikerroksinen liekki (oranssi, keltainen, valkoinen) + himmeä hehku, liekit osoittavat aina ylös; liekki ja valo elävät satunnaisesti, kipinöitä ja savua lähtee kärjestä.
 - **Satunnaistettu välke kaikkiin valoihin:** `flick(u,dt)` (state.js) – arvo hakeutuu satunnaisesti vaihtuvaan tavoitteeseen (.82–1.1), harvoin pieni vajaus; käytössä pistevaloissa (`LIGHTS`), käsisoihdussa ja nuotioiden/grillien/seisovien soihtujen liekeissä.
