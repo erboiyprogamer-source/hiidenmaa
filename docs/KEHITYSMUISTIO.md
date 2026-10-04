@@ -49,6 +49,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.50 (ilmoitukset piiloon valikoiden ajaksi)
+- Ruudun ilmoitukset (`#msgs`) piilotetaan (`visibility:hidden`) kun mikä tahansa paneeli (reppu, rakennus, kartta, arkku, J, T) on auki tai peli ei ole `play`-tilassa; ne palaavat valikon sulkeuduttua (ajastimet jatkuvat) ja säilyvät T-lokissa.
+
 ### v0.49 (kiinteiden valojen varjot harvoin, muutoksessa heti)
 - Paikalle sijoitettujen valojen (`LIGHTS[0]`) varjokartta kauempana (> 9 m) vain joka 60. (pimeällä) / 120. (päivällä) kehys. **Ympäristön muuttuessa päivitys heti** (`markShadowDirty()` → `shDirty`): rakennuksen lisäys/purku/rikkoutuminen (`addPiece`, `removePiece`), oven liike (`setDoor`), puun/solmun kaato ja uusiutuminen (`killNode`, `reviveNode`). Lähellä (< 9 m) pelaajan varjon takia ennallaan (2./4. kehys). Lippu pysyy päällä kunnes valo palaa.
 
