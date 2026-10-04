@@ -139,5 +139,6 @@ function updateStations(dt){
     if(p.t==='soihtuteline'){const f=p.mesh.userData.flame,on=p.data.burn>0;f[0].visible=f[1].visible=on;if(on){p.data.burn=Math.max(0,p.data.burn-dt);f[0].scale.y=1+Math.sin(playTime*13+p.x)*.15;}}
     if(p.t==='sulatin'){const run=(p.data.ore>0||p.data.iore>0)&&p.data.wood>0;p.mesh.userData.glow.visible=run;if(run){p.data.t+=dt;const iron=p.data.ore<=0;if(p.data.t>=(iron?10:7)){p.data.t=0;p.data.wood--;if(iron){p.data.iore--;p.data.idone++;}else{p.data.ore--;p.data.done++;}}}}
   }
+  for(const g of graves){const near=dist2(g.x,g.z,P.pos.x,P.pos.z)<50*50&&!P.inDun;g.beam.visible=near;if(near)g.beam.material.opacity=.28+Math.sin(playTime*3)*.1;}
   for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i];if(l.userData.base)l.intensity=l.userData.base*(.85+Math.sin(playTime*(9+i)+i*3)*.08+Math.sin(playTime*23+i)*.05);}
 }

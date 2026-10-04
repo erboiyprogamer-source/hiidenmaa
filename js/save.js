@@ -41,7 +41,7 @@ function loadData(s){
   resetFog();invDirty=true;updateGear();goalShown=-1;
 }
 function resetWorld(){
-  for(const p of [...pieces])removePiece(p);for(const m of [...mobs])mobRemove(m);for(const d of drops)scene.remove(d.mesh);drops=[];for(const g of graves)scene.remove(g.mesh);graves=[];
+  for(const p of [...pieces])removePiece(p);for(const m of [...mobs])mobRemove(m);for(const d of drops)scene.remove(d.mesh);drops=[];for(const g of [...graves])removeGrave(g);graves=[];
   clearLogs();unplantAll();resetTerra();for(const n of nodes)restoreNode(n);for(const k in dunKilled)delete dunKilled[k];explored.fill(0);
   for(const p of projs)scene.remove(p.m);projs.length=0;
   circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));sarcs.forEach(s=>{s.lid.position.x=0;s.lid.rotation.z=0;});

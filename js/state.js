@@ -39,6 +39,10 @@ function invAdd(id,n,q=1){const d=ITEMS[id];if(!d)return n;
   if(!flags.seen[id])flags.seen[id]=1;
   invDirty=true;return n;}
 function invRemove(id,n){for(let i=inv.length-1;i>=0&&n>0;i--){const s=inv[i];if(s&&s.id===id){const k=Math.min(n,s.n);s.n-=k;n-=k;if(s.n<=0)inv[i]=null;}}invDirty=true;}
+// Mahtuvatko kaikki esineet reppuun (yhdistäminen pinoihin + vapaat paikat)? Ei muuta reppua.
+function fitsAll(list){const sim=inv.map(s=>s?{id:s.id,n:s.n}:null);
+  for(const it of list){if(!it)continue;let n=it.n;const d=ITEMS[it.id];if(d.s>1)for(const s of sim){if(n<=0)break;if(s&&s.id===it.id&&s.n<d.s){const k=Math.min(n,d.s-s.n);s.n+=k;n-=k;}}
+    for(let i=0;i<sim.length&&n>0;i++)if(!sim[i]){const k=Math.min(n,d.s);sim[i]={id:it.id,n:k};n-=k;}if(n>0)return false;}return true;}
 function invWeight(){let w=0;for(const s of inv)if(s)w+=ITEMS[s.id].w*s.n;return w;}
 let MAXW=160;
 const PACK_UP=[null,{nahka:6,puu:4},{nahka:12,kupari:4}];

@@ -131,7 +131,8 @@ function mapMarkers(g,sx,ox,oz){
   const pt=(x,z)=>[(x+ox)*sx,(z+oz)*sx];
   for(const k in flags.disc){const L=LOC[k];if(!L)continue;const [x,y]=pt(L.x,L.z);g.fillStyle='#8fd8cf';g.save();g.translate(x,y);g.rotate(Math.PI/4);g.fillRect(-4,-4,8,8);g.restore();if(sx>1){g.fillStyle='#eee5d3';g.font='600 12px Alegreya Sans, sans-serif';g.fillText(L.name,x+8,y+4);}}
   for(const p of pieces)if(p.t==='tyopenkki'||p.t==='sanky'){const [x,y]=pt(p.x,p.z);g.fillStyle='#e8893b';g.fillRect(x-3,y-3,6,6);}
-  for(const gr of graves){const [x,y]=pt(gr.x,gr.z);g.strokeStyle='#c8463b';g.lineWidth=2.5;g.beginPath();g.moveTo(x-5,y);g.lineTo(x+5,y);g.moveTo(x,y-5);g.lineTo(x,y+5);g.stroke();}
+  // Pääkallo näkyy kunnes hautakasan tavarat on kerätty.
+  for(const gr of graves){const [x,y]=pt(gr.x,gr.z),r=sx>1?8:6;g.save();g.translate(x,y);g.fillStyle='#f2ecdc';g.strokeStyle='#7a1a12';g.lineWidth=1.6;g.beginPath();g.arc(0,-r*.15,r*.8,0,TAU);g.fill();g.stroke();g.fillRect(-r*.45,r*.4,r*.9,r*.6);g.strokeRect(-r*.45,r*.4,r*.9,r*.6);g.fillStyle='#1a1410';g.beginPath();g.arc(-r*.33,-r*.2,r*.22,0,TAU);g.arc(r*.33,-r*.2,r*.22,0,TAU);g.fill();g.restore();}
 }
 function drawPlayerArrow(g,x,y,s){g.save();g.translate(x,y);g.rotate(-camYaw);g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=1.5;g.beginPath();g.moveTo(0,-s);g.lineTo(s*.7,s*.8);g.lineTo(0,s*.4);g.lineTo(-s*.7,s*.8);g.closePath();g.fill();g.stroke();g.restore();}
 function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),S=c.width/MAPW;g.imageSmoothingEnabled=true;g.drawImage(MAPC,0,0,c.width,c.height);g.drawImage(FOGC,0,0,c.width,c.height);mapMarkers(g,S,HALF,HALF);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF)*S,(P.pos.z+HALF)*S,9);}

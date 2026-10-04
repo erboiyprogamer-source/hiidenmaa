@@ -118,7 +118,7 @@ function findInteract(){
   for(const n of nodesNear(P.pos.x,P.pos.z,3.4,_nl))if(n.def.kind==='pick')consider(n.x,n.y+.3,n.z,{kind:'node',n,label:'Poimi '+n.def.label});
   for(const it of interactables)if(dist2(it.x,it.z,P.pos.x,P.pos.z)<it.r*it.r*1.6)consider(it.x,it.y,it.z,{kind:'it',it},it.r);
   for(const p of pieces){const l=pieceLabel(p);if(l&&dist2(p.x,p.z,P.pos.x,P.pos.z)<12)consider(p.x,p.y+.7,p.z,{kind:'piece',p,label:l},3);}
-  for(const g of graves)consider(g.x,g.y+.5,g.z,{kind:'grave',g,label:'Kerää tavarasi hautakasasta'});
+  for(const g of graves)consider(g.x,g.y+.5,g.z,{kind:'grave',g,label:fitsAll(g.items)?'Kerää tavarasi hautakasasta':'Reppuun ei mahdu kaikkea – tee tilaa'});
   return best;
 }
 function pieceLabel(p){if(PIECES[p.t].store)return 'Avaa '+PIECES[p.t].n.toLowerCase();if(bt(p.t)==='ovi')return p.data.open?'Sulje ovi':'Avaa ovi';switch(p.t){
@@ -137,8 +137,8 @@ function interact(){
   if(P.dead)return;const t=lookTarget;if(!t)return;
   if(t.kind==='node'){const n=t.n,d=n.def;const c=rint(rng,d.n[0],d.n[1]);const left=invAdd(d.item,c);if(left>=c){msg('Reppu on täynnä.','warn');return;}bump('picked');msg(`+${c-left} ${ITEMS[d.item].n}`,'loot');sfx('pickup');killNode(n);return;}
   if(t.kind==='it'){t.it.use();return;}
-  if(t.kind==='grave'){const g=t.g;for(let i=0;i<g.items.length;i++){const s=g.items[i];if(!s)continue;const left=invAdd(s.id,s.n,s.q||1);if(left===0)g.items[i]=null;else s.n=left;}
-    if(g.items.every(s=>!s)){scene.remove(g.mesh);graves.splice(graves.indexOf(g),1);msg('Sait tavarasi takaisin.','loot');}else msg('Reppu täyttyi – osa jäi kasaan.','warn');sfx('pickup');return;}
+  if(t.kind==='grave'){const g=t.g;if(!fitsAll(g.items)){msg('Reppuun ei mahdu kaikkea – tee tilaa ja yritä uudelleen.','warn');return;}
+    for(const s of g.items)if(s)invAdd(s.id,s.n,s.q||1);removeGrave(g);msg('Sait tavarasi takaisin.','loot');sfx('pickup');return;}
   if(t.kind==='piece'){const p=t.p;if(bt(p.t)==='ovi'){const a=p.rot*Math.PI/4,lz=(P.pos.x-p.x)*Math.sin(a)+(P.pos.z-p.z)*Math.cos(a);setDoor(p,!p.data.open,p.data.open?p.data.dir:(lz>0?1:-1));sfx('build');return;}if(PIECES[p.t].store){openChest(p);return;}switch(p.t){
     case 'nuotio':case 'grilli':fireInteract(p);break;
     case 'soihtuteline':{const b=p.data.burn;if(torchPct(p)>50){msg(`Soihdussa on jo tarpeeksi polttoainetta (${torchPct(p)} %).`);break;}if(invCount('puu')>0&&b<600){invRemove('puu',1);p.data.burn=600;msg('Soihtu palaa 10 min.');sfx('build');}else if(invCount('hiili')>0&&b<1800){invRemove('hiili',1);p.data.burn=1800;msg('Hiili: soihtu palaa 30 min.');sfx('build');}else msg(invCount('puu')>0||invCount('hiili')>0?'Soihdussa on jo tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');break;}

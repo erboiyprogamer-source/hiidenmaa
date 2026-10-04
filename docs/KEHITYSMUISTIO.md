@@ -49,6 +49,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.26 (korjauserä)
+- **Hautakasa:** pieni valomajakka (läpikuultava valopylväs `g.beam` + himmeä pistevalo `g.light`), pylväs näkyy alle 50 m päästä. Kartalle (iso kartta ja minikartta) **pääkallo** kunnes tavarat kerätty.
+  Keräys vaatii, että kaikki mahtuu reppuun (`fitsAll()`); muuten ei voi poimia ja kehote kertoo sen. `removeGrave()` siivoaa mallin, valon ja listan.
+
 ### v0.25 (korjauserä)
 - **Tulen palamisaika prosentteina** (`firePct`, `torchPct`) kehotteessa; kun yli 50 % jäljellä, polttoainetta ei voi lisätä (nuotio, grilli, seisova soihtu). Puu antaa +1 yksikköä, hiili +10.
 
