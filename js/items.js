@@ -89,7 +89,7 @@ function recipeCat(r){const d=ITEMS[r.id];if(d.food)return 'ruoka';if(d.cat==='a
 const ICON={};
 function icon(id){
   if(ICON[id])return ICON[id];
-  const c=document.createElement('canvas');c.width=c.height=48;const g=c.getContext('2d');const d=ITEMS[id];g.lineCap='round';g.lineJoin='round';
+  const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.scale(64/48,64/48);const d=ITEMS[id];g.lineCap='round';g.lineJoin='round';
   const line=(x1,y1,x2,y2,w,col)=>{g.strokeStyle=col;g.lineWidth=w;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();};
   const poly=(pts,col,out)=>{g.fillStyle=col;g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();g.fill();if(out){g.strokeStyle=out;g.lineWidth=1.5;g.stroke();}};
   const circ=(x,y,r,col,out)=>{g.fillStyle=col;g.beginPath();g.arc(x,y,r,0,TAU);g.fill();if(out){g.strokeStyle=out;g.lineWidth=1.5;g.stroke();}};
@@ -115,19 +115,36 @@ function icon(id){
     case 'nuolet':for(let i=0;i<3;i++){line(10+i*5,40,32+i*5,10,2,'#c9b48a');poly([[32+i*5,10],[36+i*5,6],[34+i*5,14]],'#4d535c');}break;
     case 'hiili':poly([[10,34],[16,18],[28,14],[38,24],[34,38],[16,40]],'#2a2623','#0f0d0c');poly([[18,22],[26,18],[24,26]],'#4a4540');circ(30,30,2.5,'#ff7a2a');break;
     case 'sienipaisti':g.fillStyle='#e4d4b2';g.fillRect(20,24,8,16);poly([[8,26],[14,12],[24,8],[34,12],[40,26]],'#7a4a22','#3a2210');break;
-    case 'kilpi':case 'kuparikilpi':case 'rautakilpi':circ(24,24,17,id==='kilpi'?'#8a5a32':id==='rautakilpi'?'#8a96a3':'#c87a3e',id==='kilpi'?'#4a2f18':id==='rautakilpi'?'#4a525c':'#e9b07a');line(24,8,24,40,2,'#00000044');circ(24,24,5,'#b8b0a0');break;
+    case 'kilpi':case 'kuparikilpi':case 'rautakilpi':{const T={kilpi:['#8a5a32','#b88652','#6e7680','#3a3f45'],kuparikilpi:['#c87a3e','#f0a868','#e9b07a','#7a4318'],rautakilpi:['#8c97a4','#c3cdd8','#d6dee8','#454d58']}[id];
+      circ(24,24,19.5,T[3]);circ(24,24,17.5,T[0]);
+      g.save();g.beginPath();g.arc(24,24,17,0,TAU);g.clip();
+      if(id==='kilpi'){for(let x=8;x<42;x+=6){g.fillStyle=(x/6|0)%2?'#7a4d28':'#97663a';g.fillRect(x,4,6,40);}for(let y of[16,32])line(4,y,44,y,2.5,T[2]);}
+      else{const gr=g.createRadialGradient(18,16,2,24,24,20);gr.addColorStop(0,T[1]);gr.addColorStop(1,T[0]);g.fillStyle=gr;g.fillRect(0,0,48,48);
+        line(24,5,24,43,5,T[2]);line(5,24,43,24,5,T[2]);for(let a=0;a<8;a++){const x=24+Math.cos(a*.785+.39)*12,y=24+Math.sin(a*.785+.39)*12;circ(x,y,1.5,T[3]);}}
+      g.restore();g.strokeStyle=T[2];g.lineWidth=3;g.beginPath();g.arc(24,24,17.5,0,TAU);g.stroke();
+      circ(24,24,7,T[3]);circ(24,24,5.5,T[2]);circ(22.5,22.5,2,'#fff8');for(let a=0;a<12;a++)circ(24+Math.cos(a*.5236)*17.5,24+Math.sin(a*.5236)*17.5,1.1,T[3]);break;}
     case 'nahkavaatteet':case 'kuparipanssari':case 'rautapanssari':case 'hiidenpanssari':poly([[14,10],[20,8],[24,12],[28,8],[34,10],[42,18],[36,22],[34,40],[14,40],[12,22],[6,18]],d.c,'#3b2a1a');if(id==='kuparipanssari'||id==='rautapanssari'||id==='hiidenpanssari')for(let y=16;y<38;y+=6)line(16,y,32,y,1.5,id==='rautapanssari'?'#4a525c':'#8f5326');break;
-    case 'jousi':case 'hiidenjousi':g.strokeStyle=id==='jousi'?W:'#5fe6d9';g.lineWidth=4;g.beginPath();g.arc(36,24,20,Math.PI*.65,Math.PI*1.35);g.stroke();line(20,10,20,38,1.2,'#e7e1cf');break;
+    case 'jousi':case 'hiidenjousi':{const col=id==='jousi'?'#8a5a32':'#5fe6d9';g.strokeStyle='#3b2a1a';g.lineWidth=6;g.beginPath();g.arc(38,24,22,Math.PI*.62,Math.PI*1.38);g.stroke();g.strokeStyle=col;g.lineWidth=4;g.beginPath();g.arc(38,24,22,Math.PI*.62,Math.PI*1.38);g.stroke();
+      line(25,6,25,42,1.2,'#f1ecdc');line(15,24,38,24,1.6,'#c9b48a');poly([[38,24],[33,21],[33,27]],'#8f8d86');for(const y of[17,31])line(17,y,19,y,2,'#3b2a1a');if(id!=='jousi'){circ(16,24,3,'#c9fff8');}break;}
     default:{
-      line(12,40,32,14,4.5,id==='miekka'||id==='rautamiekka'||id==='hiidenmiekka'?'#4a2f18':W);
-      if(id==='kirves'||id==='kuparikirves'||id==='rautakirves')poly([[28,10],[40,6],[42,22],[32,20]],id==='kirves'?'#8f8d86':id==='rautakirves'?'#9aa6b3':'#e0904f','#3b2a1a');
-      if(id==='nuija')poly([[26,6],[40,12],[36,26],[24,20]],'#6b4527','#3b2a1a');
-      if(id==='hakku'||id==='kuparihakku'||id==='rautahakku'){g.strokeStyle=id==='hakku'?'#58606b':id==='kuparihakku'?'#d98a4e':'#9aa6b3';g.lineWidth=5;g.beginPath();g.arc(32,30,18,-Math.PI*.95,-Math.PI*.35);g.stroke();}
-      if(id==='keihas')poly([[30,16],[42,4],[36,18]],'#66707a','#2b2f35');
-      if(id==='miekka'||id==='rautamiekka'||id==='hiidenmiekka'){line(18,32,40,8,6,id==='miekka'?'#e9a46a':id==='hiidenmiekka'?'#7fe9dd':'#c8d2dc');line(14,28,24,38,3,'#8f5326');}
-      if(id==='soihtu'){circ(34,12,7,'#ff9a3a');circ(34,11,3.5,'#ffe08a');}
-      if(id==='lapio')poly([[26,16],[44,6],[46,20],[34,26]],'#8a96a3','#3b2a1a');
-      if(id==='vasara')poly([[24,8],[38,14],[34,22],[20,16]],'#7c6a52','#3b2a1a');
+      // Työkalut piirretään vinoon: origo kahvan alapäässä, +x kahvaa pitkin ylös oikealle, +y kohtisuoraan (alas oikealle).
+      const tier=/rauta/.test(id)?['#aab6c4','#e4ecf5','#4a525c']:/kupari|^miekka$/.test(id)?['#e0904f','#ffc58f','#8f5326']:/hiiden/.test(id)?['#5fe6d9','#d2fffb','#1f7f78']:['#8f8d86','#c7c5bd','#4e4c48'];
+      const wd=(len,w)=>{const gr=g.createLinearGradient(0,-w/2,0,w/2);gr.addColorStop(0,'#b07a46');gr.addColorStop(1,'#5a3a1c');g.fillStyle=gr;g.fillRect(0,-w/2,len,w);g.strokeStyle='#2e1d0e';g.lineWidth=1;g.strokeRect(0,-w/2,len,w);};
+      const metal=(pts)=>{const gr=g.createLinearGradient(0,-8,0,10);gr.addColorStop(0,tier[1]);gr.addColorStop(.5,tier[0]);gr.addColorStop(1,tier[2]);g.fillStyle=gr;g.beginPath();pts.forEach((q,i)=>i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]));g.closePath();g.fill();g.strokeStyle='#1f1a16';g.lineWidth=1.3;g.stroke();};
+      g.save();g.translate(6,43);g.rotate(-Math.PI/4);
+      if(/kirves/.test(id)){wd(46,4.4);metal([[29,-3],[44,-4],[46,2],[43,13],[35,9],[29,3]]);line(44,-3,45,12,1.4,'#fff');for(const x of[30,32])line(x,-3,x,3,1.5,'#2e1d0e');}
+      else if(/hakku/.test(id)){wd(46,4.4);g.lineCap='butt';for(const [w,c] of[[8,'#1f1a16'],[5.5,tier[0]]]){g.strokeStyle=c;g.lineWidth=w;g.beginPath();g.moveTo(35,-17);g.quadraticCurveTo(49,0,35,17);g.stroke();}
+        poly([[33,-19],[38,-17],[36,-13]],tier[1]);poly([[33,19],[38,17],[36,13]],tier[1]);g.fillStyle='#3a3a3a';g.fillRect(38,-3.5,6,7);}
+      else if(id==='lapio'){wd(37,4);g.fillStyle='#6b4527';g.fillRect(-1,-7,5,14);g.strokeStyle='#2e1d0e';g.strokeRect(-1,-7,5,14);metal([[33,-8],[43,-9],[50,0],[43,9],[33,8]]);line(36,0,47,0,1.5,'#fff9');}
+      else if(id==='keihas'){wd(40,3.2);metal([[38,0],[41,-5],[52,0],[41,5]]);line(38,0,51,0,1,'#fff9');for(let k=0;k<3;k++)line(33+k*2,-3,35+k*2,3,1.5,'#7a2a22');}
+      else if(id==='nuija'){wd(30,5);g.fillStyle='#7a5230';g.strokeStyle='#2e1d0e';g.lineWidth=1.3;g.beginPath();g.moveTo(26,-2.5);g.lineTo(34,-5);g.quadraticCurveTo(48,-10,48,0);g.quadraticCurveTo(48,10,34,5);g.lineTo(26,2.5);g.closePath();g.fill();g.stroke();for(const [x,y] of[[38,-5],[42,0],[38,5],[34,0]])circ(x,y,1.6,'#9a9a92');}
+      else if(id==='vasara'){wd(40,4.4);g.fillStyle='#7c6a52';g.strokeStyle='#1f1a16';g.lineWidth=1.3;g.fillRect(36,-10,9,20);g.strokeRect(36,-10,9,20);g.fillStyle='#4b4338';g.fillRect(36,-10,2.5,20);g.fillRect(42.5,-10,2.5,20);line(39,-8,39,8,1.2,'#fff6');}
+      else if(/miekka/.test(id)){const gr=g.createLinearGradient(0,-3,0,3);gr.addColorStop(0,tier[1]);gr.addColorStop(1,tier[2]);g.fillStyle=gr;g.beginPath();g.moveTo(13,-3);g.lineTo(40,-3);g.lineTo(49,0);g.lineTo(40,3);g.lineTo(13,3);g.closePath();g.fill();g.strokeStyle='#1f1a16';g.lineWidth=1.2;g.stroke();line(14,0,40,0,1,'#fff8');
+        g.fillStyle='#8f5326';g.fillRect(10,-8,4,16);g.strokeRect(10,-8,4,16);g.fillStyle='#4a2f18';g.fillRect(1,-2,9,4);circ(0,0,3.2,'#c9a24a','#3b2a1a');for(const x of[3,5.5,8])line(x,-2,x,2,1,'#1f1a16');}
+      else if(id==='soihtu'){wd(38,4.6);circ(42,0,8,'#ff7a1a');circ(44,0,5.5,'#ffb43a');circ(46,0,3,'#fff0a8');}
+      else if(id==='vasara_'){}
+      else{wd(44,4);metal([[30,-4],[44,-4],[44,4],[30,4]]);}
+      g.restore();
     }
   }
   return ICON[id]=c.toDataURL();

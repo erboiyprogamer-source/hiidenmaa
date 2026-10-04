@@ -49,6 +49,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.24 (korjauserä)
+- **Ovi tummemmaksi:** `MAT.doorwood` (plank-tekstuuri, väri 0xa58468) oven lehdelle ja karmille (kiviovi säilyttää kiven).
+- **Vasara:** pää poikittain varteen nähden (aiemmin pystyssä), reunarenkaat.
+- **Kilpi eeppisemmäksi:** `makeShield` uusiksi: pyöreä levy, metallireunus, pultit, keskinasta + piikki, puukilvessä laudat ja vanteet, kupari/rauta ristivahvikkeet ja kultarengas.
+- **Selkäkantaminen:** repussa olevat käyttämättömät kilpi, jousi ja aseet/työkalut näkyvät selässä (`updateBack()` state.js; kilpi keskellä, jousi vinossa, enintään 3 työkalua varret ylöspäin).
+- **Esinekuvakkeet** (64 px, `icon()`): kaikki työkalut piirretään omalla muodollaan ja materiaalitason värillä (kivi/kupari/rauta/hiiden): kirves, hakku (kaareva, kärjet), lapio (T-kahva), keihäs (lehtiterä + tupsu), nuija (nastat), vasara, miekat, soihtu, jouset, kilvet.
+
 ### v0.23 (korjauserä)
 - **Jousi:** malli käännetty 180° pystyakselin ympäri (`makeHeld` jousi: sisäryhmä `rotation.y=π`), jänne ja nuoli venyvät oikeaan suuntaan.
 - **Tikkaat:** Shift+R vaihtaa kaltevuutta (`poses:3`: pysty, nojaa 15°, nojaa 30°); yläpää pysyy WH:n korkeudella, törmäys ja kiipeäminen (`ladderAt`) seuraavat kallistusta.

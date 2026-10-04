@@ -136,8 +136,8 @@ function buildPieceMesh(t,f=0){
       g.add(bxw(ww+.12,.07,.3,W,0,y0+.035,0));break;}
     case 'kiviseina':g.add(bxw(G+.02,WH,.36,MAT.stone,0,WH/2,0));break;
     case 'aita':{const n=9;for(let i=0;i<n;i++){const x=-G/2+.12+i*(G-.24)/(n-1);g.add(bxw(.18,1.5,.18,MAT.wood,x,.75,0));const tip=new THREE.Mesh(new THREE.ConeGeometry(.12,.35,4),MAT.wood);tip.position.set(x,1.65,0);tip.castShadow=true;g.add(tip);}g.add(bxw(G,.14,.24,MAT.wood,0,.7,.08));break;}
-    case 'ovi':{const pw=(G-DOOR_W)/2,px=DOOR_W/2+pw/2;g.add(bxw(pw,WH,.22,W,-px,WH/2,0),bxw(pw,WH,.22,W,px,WH/2,0),bxw(G,WH-DOOR_H,.22,W,0,(DOOR_H+WH)/2,0));
-      const piv=new THREE.Group();piv.position.set(-DOOR_W/2,0,0);piv.add(bxw(DOOR_W,DOOR_H-.05,.1,MAT.wood,DOOR_W/2,(DOOR_H-.05)/2,0));
+    case 'ovi':{const pw=(G-DOOR_W)/2,px=DOOR_W/2+pw/2,DW=def.stone?W:MAT.doorwood;g.add(bxw(pw,WH,.22,DW,-px,WH/2,0),bxw(pw,WH,.22,DW,px,WH/2,0),bxw(G,WH-DOOR_H,.22,DW,0,(DOOR_H+WH)/2,0));
+      const piv=new THREE.Group();piv.position.set(-DOOR_W/2,0,0);piv.add(bxw(DOOR_W,DOOR_H-.05,.1,MAT.doorwood,DOOR_W/2,(DOOR_H-.05)/2,0));
       const hm=mat(0x3a3a3a);for(const sd of[-1,1]){piv.add(bx(.05,.05,.1,hm,DOOR_W-.2,1.05,sd*.08),bx(.2,.045,.045,hm,DOOR_W-.28,1.05,sd*.125));}
       g.add(piv);g.userData.leaf=piv;break;}
     case 'katto':g.add(roofSlope(G,G,true,def.stone));break;
@@ -180,7 +180,7 @@ function damageMat(base,lv){const k=base.uuid+lv;let m=DMGMAT.get(k);if(m)return
   const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.wrapS=t.wrapT=THREE.RepeatWrapping;
   m=new THREE.MeshStandardMaterial({map:t,color:base.color,roughness:base.roughness,alphaTest:lv===2?.5:0});DMGMAT.set(k,m);return m;}
 function setPieceDamage(p){const r=p.hp/PIECES[p.t].hp,lv=r>.66?0:r>.33?1:2;if(p.dmgLv===lv)return;p.dmgLv=lv;
-  p.mesh.traverse(o=>{if(!o.isMesh)return;const b=o.userData.baseMat||(o.userData.baseMat=o.material);if(b!==MAT.wood&&b!==MAT.stone&&b!==MAT.thatch&&b!==MAT.tarwood)return;o.material=lv?damageMat(b,lv):b;});}
+  p.mesh.traverse(o=>{if(!o.isMesh)return;const b=o.userData.baseMat||(o.userData.baseMat=o.material);if(b!==MAT.wood&&b!==MAT.doorwood&&b!==MAT.stone&&b!==MAT.thatch&&b!==MAT.tarwood)return;o.material=lv?damageMat(b,lv):b;});}
 // Työpenkin alueen raja: maastoa seuraava oranssi nauha, näkyy vain kun vasara on kädessä.
 const RING_MAT=new THREE.MeshBasicMaterial({color:0xff9a3a,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false});
 function makeBenchRing(x,z){const n=128,pos=new Float32Array((n+1)*6),idx=[];

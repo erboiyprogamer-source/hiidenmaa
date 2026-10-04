@@ -37,6 +37,7 @@ const MAT={
   wood:new THREE.MeshStandardMaterial({map:TEX.plank,roughness:.9}),
   stone:new THREE.MeshStandardMaterial({map:TEX.stone,roughness:1}),
   thatch:new THREE.MeshStandardMaterial({map:TEX.thatch,roughness:1}),
+  doorwood:new THREE.MeshStandardMaterial({map:TEX.plank,color:0xa58468,roughness:.9}),
   tarwood:new THREE.MeshStandardMaterial({map:TEX.plank,color:0x6a5444,roughness:.85}),
   thatchFringe:new THREE.MeshStandardMaterial({map:TEX.thatchFringe,roughness:1,alphaTest:.5,side:THREE.DoubleSide}),
   flame:new THREE.MeshBasicMaterial({color:0xffa53a}),
