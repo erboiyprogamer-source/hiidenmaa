@@ -27,6 +27,8 @@ for(const l of [LIGHTS[0],torchLight]){l.castShadow=true;l.shadow.mapSize.set(38
 // Mukautuva laatu: jos kehysaika on pitkään liian korkea, laatua lasketaan (1: harvemmat pistevalovarjot, 2: aurinkovarjokartta 1024 px, 3: pistevalovarjot pois). Palautuu kun peli sujuu.
 // Käsisoihdun varjo: pieni (kantama 3.2 m), matalaresoluutioinen (64 px) ja pehmeä läntti, päivittyy joka kehys (halpa, koska kamera näkee vain lähimmät esineet).
 torchLight.shadow.mapSize.set(40,40);torchLight.shadow.camera.far=3.2;torchLight.shadow.camera.near=.25;torchLight.shadow.radius=3;torchLight.shadow.bias=-.01;
+// Kiinteiden valojen varjokartta päivitetään harvoin; ympäristön muuttuessa (rakennus lisätty/purettu/rikottu, ovi liikkuu, puu kaatuu) lippu nostetaan ja päivitys tehdään heti.
+let shDirty=true;const markShadowDirty=()=>{shDirty=true;};
 const QUAL={lvl:0,pointShadow:true,sunSize:2048,max:3};
 function setQuality(l){QUAL.lvl=l;QUAL.pointShadow=l<3;const ss=l>=2?1024:2048;if(ss!==QUAL.sunSize){QUAL.sunSize=ss;sun.shadow.mapSize.set(ss,ss);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}}
 

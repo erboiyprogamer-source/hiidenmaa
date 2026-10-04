@@ -49,6 +49,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.49 (kiinteiden valojen varjot harvoin, muutoksessa heti)
+- Paikalle sijoitettujen valojen (`LIGHTS[0]`) varjokartta kauempana (> 9 m) vain joka 60. (pimeällä) / 120. (päivällä) kehys. **Ympäristön muuttuessa päivitys heti** (`markShadowDirty()` → `shDirty`): rakennuksen lisäys/purku/rikkoutuminen (`addPiece`, `removePiece`), oven liike (`setDoor`), puun/solmun kaato ja uusiutuminen (`killNode`, `reviveNode`). Lähellä (< 9 m) pelaajan varjon takia ennallaan (2./4. kehys). Lippu pysyy päällä kunnes valo palaa.
+
 ### v0.48 (ilmoitusten näkyvyysaika)
 - Ilmoituksen näkyvyysaika pituuden mukaan: 3 s + 70 ms / merkki, rajattuna 4–13 s (aiemmin aina 4,5 s). Pitkät ohjeviestit (esim. soihdun loppuminen) ehtii lukea; kaikki pysyy myös T-lokissa.
 

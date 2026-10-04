@@ -221,11 +221,11 @@ function addPiece(t,x,y,z,rot,hp,data,f=0){
   if(t==='tyopenkki')p.ring=makeBenchRing(x,z);
   if(def.store){p.data.lv=p.data.lv||0;p.data.items=p.data.items||[];while(p.data.items.length<storeSlots(p))p.data.items.push(null);}
   if(bt(t)==='ovi'){p.data.open=!!p.data.open;setDoor(p,p.data.open,p.data.dir||1);}
-  pieces.push(p);pieceRoots.push(mesh);setPieceDamage(p);return p;
+  pieces.push(p);pieceRoots.push(mesh);setPieceDamage(p);markShadowDirty();return p;
 }
-function removePiece(p){scene.remove(p.mesh);if(p.ring){scene.remove(p.ring);p.ring.geometry.dispose();}for(const c of p.cols)gridRemove(c);pieces.splice(pieces.indexOf(p),1);pieceRoots.splice(pieceRoots.indexOf(p.mesh),1);if(p.light){const i=lightSources.indexOf(p.light);if(i>=0)lightSources.splice(i,1);}}
+function removePiece(p){markShadowDirty();scene.remove(p.mesh);if(p.ring){scene.remove(p.ring);p.ring.geometry.dispose();}for(const c of p.cols)gridRemove(c);pieces.splice(pieces.indexOf(p),1);pieceRoots.splice(pieceRoots.indexOf(p.mesh),1);if(p.light){const i=lightSources.indexOf(p.light);if(i>=0)lightSources.splice(i,1);}}
 // Ovi aukeaa pelaajasta poispäin (dir ±1 = kummalle puolelle lehti kääntyy), sarana pysyy samassa kohdassa.
 const STORE_UP=[null,{tervaspuu:6},{kupari:6,nahka:4}];
 function storeSlots(p){return PIECES[p.t].store+8*(p.data.lv||0);}
-function setDoor(p,open,dir){if(dir)p.data.dir=dir;p.data.open=open;p.mesh.userData.leaf.rotation.y=open?(p.data.dir||1)*Math.PI/2*.95:0;for(const c of p.cols)if(c.door)c.off=open;}
+function setDoor(p,open,dir){markShadowDirty();if(dir)p.data.dir=dir;p.data.open=open;p.mesh.userData.leaf.rotation.y=open?(p.data.dir||1)*Math.PI/2*.95:0;for(const c of p.cols)if(c.door)c.off=open;}
 function nearPiece(t,x,z,r){for(const p of pieces)if(p.t===t&&dist2(p.x,p.z,x,z)<r*r)return p;return null;}

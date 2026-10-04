@@ -127,8 +127,8 @@ nodes.forEach(ngridAdd);
 // Etäisyys solmuun: tukeille janan lähin piste, muille keskipiste.
 function nodeDist(n,x,z){if(!n.isLog)return Math.hypot(x-n.x,z-n.z);const dx=n.bx-n.ax,dz=n.bz-n.az,t=clamp(((x-n.ax)*dx+(z-n.az)*dz)/(dx*dx+dz*dz),0,1);return Math.hypot(x-(n.ax+dx*t),z-(n.az+dz*t));}
 function nodesNear(x,z,r,out){out.length=0;const x0=Math.floor((x-r)/CELL),x1=Math.floor((x+r)/CELL),z0=Math.floor((z-r)/CELL),z1=Math.floor((z+r)/CELL);for(let gx=x0;gx<=x1;gx++)for(let gz=z0;gz<=z1;gz++){const a=NGRID.get(ck(gx,gz));if(a)for(const n of a)if(n.alive&&!out.includes(n)&&nodeDist(n,x,z)<r)out.push(n);}return out;}
-function killNode(n){n.alive=false;n.respawnAt=playTime+n.def.respawn;setNodeMatrix(n,false);if(n.col)n.col.off=true;}
-function reviveNode(n){n.alive=true;n.hp=n.maxHp;setNodeMatrix(n,true);if(n.col)n.col.off=false;}
+function killNode(n){markShadowDirty();n.alive=false;n.respawnAt=playTime+n.def.respawn;setNodeMatrix(n,false);if(n.col)n.col.off=true;}
+function reviveNode(n){markShadowDirty();n.alive=true;n.hp=n.maxHp;setNodeMatrix(n,true);if(n.col)n.col.off=false;}
 // Siirtää puun/kasvin uuteen paikkaan (törmäys, ruudukko, korkeus, koko).
 function moveNode(n,x,z,s){n.x=x;n.z=z;n.s=s;n.y=terrainH(x,z);n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?s*s*1.2:1);
   if(n.col){gridRemove(n.col);const off=n.col.off;if(n.def.kind==='tree')n.col=addCircle(x,z,n.def.r*s,n.y-1,n.y+6*s,n);else n.col=addCircle(x,z,n.def.r*s,n.y-1,n.y+1.2*s,n);n.col.off=off;}
