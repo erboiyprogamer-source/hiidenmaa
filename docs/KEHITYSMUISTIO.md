@@ -49,6 +49,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.33 (korjauserä)
+- **Käsisoihtu hengittää hieman enemmän ja satunnaisemmin:** satunnaisvälke ×.55 + hidas, satunnaisvaiheinen "hengitys" (kaksi siniä, ±5 %).
+
 ### v0.32 (korjauserä)
 - **Käsisoihdun elävyys vielä hillitympi:** valon ja liekin vaihtelu ~40 % aiemmasta (`1+(flick−1)·.4`), liekin ja hehkun koonvaihtelu pieni.
 

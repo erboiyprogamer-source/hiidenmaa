@@ -6,7 +6,7 @@
 // Tikkaat: pelaaja kiipeää, kun hän on tikkaiden edessä (±.6 m sivusuunnassa, .9 m syvyyssuunnassa).
 function ladderAt(pos){for(const p of pieces){if(bt(p.t)!=='tikkaat')continue;const dx=pos.x-p.x,dz=pos.z-p.z;if(dx*dx+dz*dz>5)continue;const a=p.rot*Math.PI/4,lx=dx*Math.cos(a)-dz*Math.sin(a),lz=dx*Math.sin(a)+dz*Math.cos(a),zc=-Math.max(0,pos.y-p.y)*Math.tan((p.f%3)*Math.PI/12);
   if(Math.abs(lx)<.65&&Math.abs(lz-zc)<.95&&pos.y>p.y-.3&&pos.y<p.y+WH-.05)return p;}return null;}
-let torchFl=null;
+let torchFl=null;const torchPh=[Math.random()*TAU,Math.random()*TAU];
 function updatePlayer(dt){
   if(P.dead)return;
   P.invul=Math.max(0,P.invul-dt);P.stagger=Math.max(0,P.stagger-dt);P.hurtFlash=Math.max(0,P.hurtFlash-dt);
@@ -80,7 +80,7 @@ function updatePlayer(dt){
   fig.g.visible=camDist>1.8;
   // torch light
   const torch=offId==='soihtu';
-  if(torch){const u=torchFl||(torchFl={cur:1,target:1,t:0}),s=1+(flick(u,dt)-1)*.4;torchLight.intensity=2.6*s;fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;
+  if(torch){const u=torchFl||(torchFl={cur:1,target:1,t:0}),s=1+(flick(u,dt)-1)*.55+(Math.sin(playTime*1.7+torchPh[0])+Math.sin(playTime*3.1+torchPh[1]))*.025;torchLight.intensity=2.6*s;fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;
     // Liekit elävät, kipinöitä ja savua lähtee satunnaisesti kärjestä
     const fl=offMesh&&offMesh.userData.flame;if(fl){fl[0].scale.set(.95+s*.05,.9+s*.2,.95+s*.05);fl[1].scale.set(1,.9+s*.15,1);fl[2].scale.set(1,.85+s*.2,1);fl[3].material.opacity=.2+s*.06;fl[3].scale.setScalar(.92+s*.12);offMesh.rotation.z=Math.sin(playTime*3.1)*.04;}
     if(fig.g.visible){_tmpV.set(0,.4,.62);if(offMesh)offMesh.localToWorld(_tmpV);if(Math.random()<dt*7)emitEmber(_tmpV.x+(Math.random()-.5)*.08,_tmpV.y,_tmpV.z+(Math.random()-.5)*.08,'spark');if(Math.random()<dt*1.6)emitEmber(_tmpV.x,_tmpV.y+.1,_tmpV.z,'smoke');}}
