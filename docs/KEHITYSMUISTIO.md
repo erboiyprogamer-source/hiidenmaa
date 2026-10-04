@@ -49,6 +49,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.34 (korjauserä)
+- **Käsisoihdun elävyys säädetty ~30 % seisovaa soihtua elävämmäksi:** välkekerroin .52 (seisova .4) + hengitys ±4 %.
+
 ### v0.33 (korjauserä)
 - **Käsisoihtu hengittää hieman enemmän ja satunnaisemmin:** satunnaisvälke ×.55 + hidas, satunnaisvaiheinen "hengitys" (kaksi siniä, ±5 %).
 
