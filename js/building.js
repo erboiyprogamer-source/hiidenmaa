@@ -3,9 +3,12 @@
 'use strict';
 
 /* ---------------- BUILDING ---------------- */
-let buildSel=null,buildRot=0,ghost=null,ghostOk=false,ghostPos=null;
+let buildSel=null,buildRot=0,buildPose=0,ghost=null,ghostOk=false,ghostPos=null;
+const poseOf=t=>PIECES[t]&&PIECES[t].flip?buildPose:0;
+// Shift+R: kolmion/vinoseinän asento (normaali, peilattu, ylösalaisin, ylösalaisin peilattu).
+function cyclePose(){if(!buildSel||!PIECES[buildSel].flip){msg('Asento vaihtuu vain kolmiolla ja vinoseinällä.');return;}buildPose=(buildPose+1)%4;setBuildSel(buildSel);msg(`Asento ${buildPose+1}/4`);}
 const raycaster=new THREE.Raycaster();
-function setBuildSel(t){buildSel=t;if(ghost){scene.remove(ghost);ghost=null;}if(typeof gridHelper!=='undefined'&&gridHelper)gridHelper.visible=false;if(t){ghost=buildPieceMesh(t);ghost.traverse(m=>{if(m.isMesh){m.material=MAT.ghostOk;m.castShadow=false;m.receiveShadow=false;}});scene.add(ghost);}}
+function setBuildSel(t){buildSel=t;if(ghost){scene.remove(ghost);ghost=null;}if(typeof gridHelper!=='undefined'&&gridHelper)gridHelper.visible=false;if(t){ghost=buildPieceMesh(t,poseOf(t));ghost.traverse(m=>{if(m.isMesh){m.material=MAT.ghostOk;m.castShadow=false;m.receiveShadow=false;}});scene.add(ghost);}}
 function camRay(){const o=camera.position.clone(),d=new V3();camera.getWorldDirection(d);return{o,d};}
 function marchTerrain(o,d,max){if(P.inDun)return null;let prev=0;for(let t=0;t<max;t+=.25){const x=o.x+d.x*t,y=o.y+d.y*t,z=o.z+d.z*t;if(y<terrainH(x,z)){let a=prev,b=t;for(let i=0;i<8;i++){const m=(a+b)/2;if(o.y+d.y*m<terrainH(o.x+d.x*m,o.z+d.z*m))b=m;else a=m;}return b;}prev=t;}return null;}
 function camRayPoint(max){const {o,d}=camRay();let t=marchTerrain(o,d,max);raycaster.set(o,d);raycaster.far=max;const hits=raycaster.intersectObjects(pieceRoots.concat(statics.children),true);if(hits.length&&(t===null||hits[0].distance<t))t=hits[0].distance;if(t===null)t=max;return o.addScaledVector(d,t);}
@@ -63,24 +66,24 @@ function updateGhost(){
     const fl=floorAtEdge(x,z,y);if(fl!==null)y=fl;}
   else{x=hf?half(hx,ox):cell(hx,ox);z=hf?half(hz,oz):cell(hz,oz);if(def.snap==='free'&&!hf){x=fr(hx);z=fr(hz);}y=hit.piece?baseY:terrainH(x,z);}
   ghost.position.set(x,y,z);ghost.rotation.y=rot*Math.PI/4;ghostPos={x,y,z};ghostRot=rot;
-  ghostOk=validPlace(t,x,y,z,rot);
+  ghostOk=validPlace(t,x,y,z,rot,poseOf(t));
   const m=ghostOk?MAT.ghostOk:MAT.ghostBad;ghost.traverse(o=>{if(o.isMesh)o.material=m;});
   const step=hf?G/2:G;updateGrid(mode==='ruudukko'||hf,ox+Math.round((x-ox)/step)*step,y,oz+Math.round((z-oz)/step)*step);
 }
 function floorAtEdge(x,z,y){let best=null;for(const p of pieces){if(p.t!=='lattia'&&p.t!=='tervaslattia')continue;if(Math.abs(p.y-y)>1.3)continue;if(dist2(p.x,p.z,x,z)<=(G/2+.05)**2&&(best===null||p.y>best))best=p.y;}return best;}
 let lastInvalid='';
-function validPlace(t,x,y,z,rot){
+function validPlace(t,x,y,z,rot,f=0){
   const def=PIECES[t];lastInvalid='';
   if(P.inDun){lastInvalid='Täällä ei voi rakentaa.';return false;}
   for(const [id,n] of Object.entries(def.req))if(invCount(id)<n){lastInvalid=`Tarvitset: ${reqText(def.req)}`;return false;}
   if(!def.noBench&&!nearPiece('tyopenkki',x,z,BENCH_R)){lastInvalid=pieces.some(p=>p.t==='tyopenkki')?'Rakenna työpenkin alueelle (oranssi raja).':'Rakenna ensin työpenkki.';return false;}
   if(y<-.4&&t!=='lattia'&&t!=='tervaslattia'&&t!=='pylvas'){lastInvalid='Liian syvällä vedessä.';return false;}
-  if(t==='katto'){for(const p of pieces)if(p.t==='katto'&&Math.abs(p.x-x)<.1&&Math.abs(p.z-z)<.1&&Math.abs(p.y-y)<.5){lastInvalid='Paikalla on jo katto.';return false;}
-    for(const b of worldBoxes(t,x,y,z,rot)){const px=clamp(P.pos.x,b.minX,b.maxX),pz=clamp(P.pos.z,b.minZ,b.maxZ);if(dist2(px,pz,P.pos.x,P.pos.z)<.16&&b.maxY>P.pos.y+.3&&b.minY<P.pos.y+1.8){lastInvalid='Seisot tiellä.';return false;}}
+  if(def.roof){for(const p of pieces)if(PIECES[p.t].roof&&Math.abs(p.x-x)<.1&&Math.abs(p.z-z)<.1&&Math.abs(p.y-y)<.5){lastInvalid='Paikalla on jo katto.';return false;}
+    for(const b of worldBoxes(t,x,y,z,rot,f)){const px=clamp(P.pos.x,b.minX,b.maxX),pz=clamp(P.pos.z,b.minZ,b.maxZ);if(dist2(px,pz,P.pos.x,P.pos.z)<.16&&b.maxY>P.pos.y+.3&&b.minY<P.pos.y+1.8){lastInvalid='Seisot tiellä.';return false;}}
     return true;}
   // Sama osa samaan paikkaan (myös kääntämällä) on kielletty.
   for(const p of pieces)if(p.t===t&&Math.abs(p.x-x)<.3&&Math.abs(p.z-z)<.3&&Math.abs(p.y-y)<.3&&(def.snap==='floor'||def.snap==='cell'||(p.rot-rot)%4===0)){lastInvalid='Paikalla on jo sama rakennus.';return false;}
-  for(const b of worldBoxes(t,x,y,z,rot)){const s=.2;gridQuery((b.minX+b.maxX)/2,(b.minZ+b.maxZ)/2,Math.max(b.maxX-b.minX,b.maxZ-b.minZ),_cl);
+  for(const b of worldBoxes(t,x,y,z,rot,f)){const s=.2;gridQuery((b.minX+b.maxX)/2,(b.minZ+b.maxZ)/2,Math.max(b.maxX-b.minX,b.maxZ-b.minZ),_cl);
     for(const c of _cl){const sy=Math.min(s,(b.maxY-b.minY)*.3,(c.maxY-c.minY)*.3);if(c.maxY<=b.minY+sy||c.minY>=b.maxY-sy)continue;
       if(c.t==='c'){const cx=clamp(c.x,b.minX,b.maxX),cz=clamp(c.z,b.minZ,b.maxZ);if(dist2(cx,cz,c.x,c.z)<(c.r-.05)**2){lastInvalid='Tiellä on jotain.';return false;}}
       else if(c.minX<b.maxX-s&&c.maxX>b.minX+s&&c.minZ<b.maxZ-s&&c.maxZ>b.minZ+s){lastInvalid='Päällekkäin toisen rakenteen kanssa.';return false;}}
@@ -92,7 +95,7 @@ function placeBuild(){
   if(!ghostPos||!ghost||!ghost.visible)return;
   if(!ghostOk){msg(lastInvalid||'Ei voi rakentaa tähän.','warn');return;}
   const def=PIECES[buildSel];for(const [id,n] of Object.entries(def.req))invRemove(id,n);
-  addPiece(buildSel,ghostPos.x,ghostPos.y,ghostPos.z,ghostRot);sfx('build');burst(ghostPos.x,ghostPos.y+.5,ghostPos.z,0x8a5a32,6,2);
+  addPiece(buildSel,ghostPos.x,ghostPos.y,ghostPos.z,ghostRot,undefined,undefined,poseOf(buildSel));sfx('build');burst(ghostPos.x,ghostPos.y+.5,ghostPos.z,0x8a5a32,6,2);
 }
 // Vasaralla korjaus: kuluma pois, maksaa vauriota vastaavan osuuden rakennusaineista (vähintään 1).
 function lookedPiece(){const {o,d}=camRay();raycaster.set(o,d);raycaster.far=camDist+7;const hits=raycaster.intersectObjects(pieceRoots,true);return hits.length?hits[0].object.userData.piece:null;}
