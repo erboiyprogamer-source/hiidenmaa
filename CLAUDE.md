@@ -35,7 +35,7 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 | Tiedosto | Sisältö |
 | --- | --- |
 | `js/core.js` | `$`, `clamp`, `lerp`, `sstep`, kohina (`fbm`, `ridge`), `mulberry32` |
-| `js/world.js` | `WS` (skaala), `MAPS`/`MAP`/`MAP_ID` (3 karttaa), `HALF`, `LOC`, `AARNI`, `DUN`, `heightFn`, `biomeAt`, `terrainH` |
+| `js/world.js` | `WS` (skaala), `MAPS`/`MAP`/`MAP_ID` (3 karttaa), `HALF`, `LOC` (+ arvotut `SITE_DEFS`-paikat), `AARNI`, `DUN`, `heightFn`, `biomeAt`, `terrainH` |
 | `js/render.js` | renderer, scene, camera, valot, tekstuurit, `MAT`, `mat()`, `bx()`, maasto, vesi, taivas, sade |
 | `js/collision.js` | törmäysruudukko: `addBox`, `addCircle`, `groundAt`, `collideXZ`, `pointBlocked`, `STEPUP` |
 | `js/items.js` | `ITEMS`, `RECIPES`, `RECIPE_BY`, `icon(id)` (canvas-kuvakkeet) |
@@ -45,6 +45,8 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 | `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`) |
 | `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, `PIECES`, `pieceBoxes`, `buildPieceMesh`, `addPiece`, `removePiece` |
 | `js/mobs.js` | `MOBDEF`, `spawnMob`, `mobs`, `boss` |
+| `js/dungeons.js` | `REALMS` (3 ulottuvuutta), generaattorit, `ensureRealm`, portaalit (`PORTALS`), `realmBossAI`, `P.spawnProt`, `fo(k)` |
+| `js/story.js` | löytöpaikat (`SITE_KEYS`, rauniot, arkkukivet), vartijat (`GUARDS`), lisäriimukivet (`XRUNES`), tehtävät (`QUESTS`) |
 | `js/state.js` | `P` (pelaaja), `inv`, `flags`, pelaajahahmo, reppu, maahan pudonneet esineet, partikkelit, ammukset |
 | `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET` (asetukset), `applyGfx()`, asetusvalikko |
 | `js/input.js` | näppäimet, hiiri, hiiren lukitus |

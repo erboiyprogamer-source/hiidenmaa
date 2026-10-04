@@ -25,6 +25,7 @@ function updateMobs(dt){
     m.atkCd-=dt;
     let tx=0,tz=0,spd=0;
     if(d.ai==='boss'){bossAI(m,dt,dx,dz,dist);continue;}
+    if(d.ai==='rboss'){realmBossAI(m,dt,dx,dz,dist);continue;}
     const night=isNight()&&!P.inDun;
     const hostile=d.ai==='hostile'||(d.ai==='neutral'&&m.angry);
     const aggroR=(d.aggro||12)*(night?1.35:1)*(P.crouch?.5:1);
@@ -36,13 +37,16 @@ function updateMobs(dt){
       if(fs){m.fearT=1;m.siege=null;}}
     if(m.fearT>0){m.fearT-=dt;m.wind=0;m.state='flee';let fx=m.pos.x,fz=m.pos.z,fd=1e9;for(const s of fireSrc){const dd=dist2(s.x,s.z,m.pos.x,m.pos.z);if(dd<fd){fd=dd;fx=s.x;fz=s.z;}}
       moveMob(m,m.pos.x-fx,m.pos.z-fz,d.run,dt);animMob(m,dt);if(m.fearT<=0)m.state='idle';continue;}
+    // Vartijat pysyvät paikallaan: jos ne ajautuvat liian kauas (säde guard.r), ne palaavat takaisin ja paranevat.
+    if(m.guard){const gx=m.guard.x-m.pos.x,gz=m.guard.z-m.pos.z,gd=Math.hypot(gx,gz);if(gd>m.guard.r)m.ret=true;
+      if(m.ret){m.state='idle';m.wind=0;if(gd<3)m.ret=false;else{moveMob(m,gx,gz,d.run,dt);animMob(m,dt);m.hp=Math.min(m.maxHp,m.hp+m.maxHp*.05*dt);continue;}}}
     const hurt=playTime-m.lastHit<10;
     // Paikallaan oleville vaikeille vihollisille: iskuttomana 30 s → parantuvat hitaasti (1 %/s).
     if((MOB_SKULL[m.type]||0)>=3&&playTime-m.lastHit>30&&m.hp<m.maxHp)m.hp=Math.min(m.maxHp,m.hp+m.maxHp*.01*dt);
     if(d.ai==='flee'){// säikähdysetäisyys: kävely 7 m, juoksu 16 m, ase kädessä ×1.4, kyykyssä 3.5 m. Vahingoitettu pelkää 10 s.
       const w=curWeapon(),armed=(w.cat==='weapon'||w.cat==='bow')&&!P.crouch;let sr=P.crouch?3.5:P.running?16:7;if(armed)sr*=1.4;
       if(hurt||(!P.dead&&dist<sr&&(m.los||dist<4))){if(m.state!=='flee'){m.state='flee';m.fleeT=0;}}else if(m.state==='flee'&&dist>28)m.state='idle';}
-    else if(hostile&&!P.dead&&((m.los&&dist<aggroR)||hurt)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
+    else if(hostile&&!P.dead&&!(P.spawnProt>0)&&((m.los&&dist<aggroR)||hurt)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
     else if(m.state==='chase'&&!hurt&&(dist>aggroR*1.6||P.dead||m.noLos>3)){m.state='idle';if(m.noLos>3){m.angry=false;m.lastHit=-99;}m.noLos=0;}
     if(m.state==='flee'){// pakosuunta pois pelaajasta satunnaisella poikkeamalla, vaihtuu 1.2–3 s välein
       m.fleeT=(m.fleeT||0)-dt;if(m.fleeT<=0){m.fleeT=1.2+Math.random()*1.8;m.fleeA=Math.atan2(-dx,-dz)+(Math.random()-.5)*(hurt?1.6:.8);}
@@ -132,11 +136,11 @@ const SPAWN={
 };
 function spawner(dt){
   spawnT-=dt;if(spawnT>0||P.inDun||P.dead)return;spawnT=2.5;
-  const night=isNight();const alive=mobs.filter(m=>!m.dun&&!m.dead&&m!==boss);const cap=night?14:10;
+  const night=isNight();const alive=mobs.filter(m=>!m.dun&&!m.dead&&m!==boss&&!m.guard);const cap=night?14:10;
   if(alive.length>=cap)return;
   for(let tries=0;tries<6;tries++){const a=Math.random()*TAU,d=38+Math.random()*30,x=P.pos.x+Math.cos(a)*d,z=P.pos.z+Math.sin(a)*d;const h=terrainH(x,z);if(h<.5)continue;
     const b=biomeAt(x,z,h);const tbl=SPAWN[b];if(!tbl)continue;const list=night?tbl.night:tbl.day;let r=Math.random(),type=list[0][0];for(const [t,p] of list){if(r<p){type=t;break;}r-=p;}
-    if(nearBase(x,z))continue;
+    if(nearBase(x,z)||nearSite(x,z,50))continue;
     if(dist2(x,z,LOC.spawn.x,LOC.spawn.z)<30*30&&MOBDEF[type].ai==='hostile'&&!night)continue;
     const pack=type==='susi'&&night?2:1;for(let k=0;k<pack;k++)spawnMob(type,x+k*1.5,z+k);return;}
 }

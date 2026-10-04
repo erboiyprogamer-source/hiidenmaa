@@ -76,7 +76,7 @@ function updateEnvironment(dt){
   // joten valon suunta vaihtuu vasta kun voimakkuus on nolla.
   const light=sstep(-.4,.45,el);lightK=light;const sunK=sstep(-.12,.08,el),moonK=sstep(-.12,-.32,el);
   const sd=_tmpV.set(Math.sin(ang)*.9,el,.35).normalize();
-  if(P.inDun){scene.background.setHex(0x050403);scene.fog.color.setHex(0x050403);scene.fog.near=3;scene.fog.far=28;hemi.intensity=.06;sun.intensity=0;amb.intensity=.05;stars.visible=false;sunDisc.visible=false;moon.visible=false;rain.visible=false;snow.visible=false;water.visible=false;return;}
+  if(P.inDun){const rf=P.realm?REALMS[P.realm].fog:0x050403;scene.background.setHex(rf);scene.fog.color.setHex(rf);scene.fog.near=3;scene.fog.far=28;hemi.intensity=.06;sun.intensity=0;amb.intensity=.05;stars.visible=false;sunDisc.visible=false;moon.visible=false;rain.visible=false;snow.visible=false;water.visible=false;return;}
   water.visible=true;stars.visible=true;
   // Aarnimetsässä tiheä sumu ja hämärä valo.
   aarniK=lerp(aarniK,biomeHere(P.pos.x,P.pos.z)==='aarni'?1:0,Math.min(1,dt*.8));

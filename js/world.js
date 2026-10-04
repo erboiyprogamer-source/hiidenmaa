@@ -89,3 +89,40 @@ function terrainH(x,z){
   return h11+(h01-h11)*(1-fx)+(h10-h11)*(1-fz);
 }
 function biomeHere(x,z){return biomeAt(x,z,terrainH(x,z));}
+
+/* ---------------- LÖYTÖPAIKAT: portaalit, rauniot, arkkukivet, lisäriimukivet ---------------- */
+// Sijainnit arvotaan kartan mukaan (sama joka kerta samalla kartalla), maasto tasoitetaan ja paikat lisätään LOC:iin,
+// jolloin metsä ja kivet väistävät niitä (resources.js) ja kartta osaa näyttää ne löydettyään.
+const SITE_DEFS=[
+  {k:'portal1',kind:'portal',name:'Routaportti',pref:'mountain'},
+  {k:'portal2',kind:'portal',name:'Kalmankammion portti',pref:'moor'},
+  {k:'portal3',kind:'portal',name:'Aarnihaudan portti',pref:'aarni'},
+  {k:'poiR1',kind:'ruin',name:'Sortunut talo'},{k:'poiR2',kind:'ruin',name:'Raunioitunut tupa'},
+  {k:'poiR3',kind:'ruin',name:'Hylätty talonpohja'},{k:'poiR4',kind:'ruin',name:'Murtunut linnake'},
+  {k:'poiK1',kind:'rock',name:'Arkkukivi'},{k:'poiK2',kind:'rock',name:'Hohtava arkkukivi'},{k:'poiK3',kind:'rock',name:'Sammaltunut arkkukivi'},
+  {k:'runeA',kind:'rune',name:'Riimukivi'},{k:'runeB',kind:'rune',name:'Riimukivi'},{k:'runeC',kind:'rune',name:'Riimukivi'},
+  {k:'runeD',kind:'rune',name:'Riimukivi'},{k:'runeE',kind:'rune',name:'Riimukivi'},{k:'runeF',kind:'rune',name:'Riimukivi'},
+];
+(function(){
+  const rg=mulberry32(9001+MAP_ID*77),S0=LOC.spawn;
+  const flatten=(x,z,r,h)=>{const R=r+10;for(let iz=Math.max(0,Math.floor((z-R+HALF)/GS));iz<=Math.min(GN,Math.ceil((z+R+HALF)/GS));iz++)for(let ix=Math.max(0,Math.floor((x-R+HALF)/GS));ix<=Math.min(GN,Math.ceil((x+R+HALF)/GS));ix++){
+    const d=Math.hypot(-HALF+ix*GS-x,-HALF+iz*GS-z),t=sstep(R,r,d);if(t>0){const i=iz*HN+ix;HGT[i]=lerp(HGT[i],h,t);HGT0[i]=HGT[i];}}};
+  for(const D of SITE_DEFS){
+    const rune=D.kind==='rune',minOther=rune?42:68,minSpawn=rune?(D.k==='runeA'?32:60):75;let best=null;
+    for(let t=0;t<6000&&!best;t++){
+      const x=(rg()*2-1)*HALF*.78,z=(rg()*2-1)*HALF*.78,h=terrainH(x,z);
+      if(h<2.2||h>(D.pref==='mountain'&&t<2500?60:22))continue;
+      if(Math.hypot(x-S0.x,z-S0.z)<minSpawn||(D.k==='runeA'&&Math.hypot(x-S0.x,z-S0.z)>110))continue;
+      let bad=false;for(const k in LOC){const L=LOC[k],m=(k==='spawn'||k==='barrow'||k==='circle')?Math.max(minOther,k==='spawn'?minSpawn:75):minOther;if(Math.hypot(x-L.x,z-L.z)<(L.kind==='rune'&&!rune?55:m)){bad=true;break;}}
+      if(bad)continue;
+      let lo=h,hi=h;for(let a=0;a<8;a++){const hh=terrainH(x+Math.cos(a*.785)*8,z+Math.sin(a*.785)*8);lo=Math.min(lo,hh);hi=Math.max(hi,hh);}
+      if(lo<1.3||hi-lo>(t<4000?4.5:7))continue;
+      if(D.pref&&t<2500){const b=biomeAt(x,z,h);if(b!==D.pref)continue;}
+      best={x,z};
+    }
+    if(!best){const a=rg()*TAU;best={x:S0.x+Math.cos(a)*150,z:S0.z+Math.sin(a)*150};}
+    const h=Math.max(2.2,terrainH(best.x,best.z));
+    if(!rune)flatten(best.x,best.z,D.kind==='portal'?9:8,h);
+    LOC[D.k]={x:best.x,z:best.z,name:D.name,kind:D.kind,ax:rg()<.5?'x':'z'};
+  }
+})();

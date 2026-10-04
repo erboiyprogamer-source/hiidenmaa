@@ -95,8 +95,8 @@ function damageMob(m,dmg,dt,kx,kz){
   if(m.dead)return;
   const mult=(m.def.weak&&m.def.weak[dt])||1;dmg*=mult;
   m.hp-=dmg;m.flash=.15;m.lastHit=playTime;m.angry=true;m.hurtT=playTime;
-  if(m.def.ai!=='boss'){const l=Math.hypot(kx,kz)||1;m.vel.x+=kx/l*4;m.vel.z+=kz/l*4;m.wind=0;}
-  floatText(Math.round(dmg)+'',m.pos.x,m.pos.y+(m.type==='vartija'?6:1.8),mult>1.2?'#ffd36a':mult<.9?'#a99d89':'#eee5d3');
+  if(m.def.ai!=='boss'&&m.def.ai!=='rboss'){const l=Math.hypot(kx,kz)||1;m.vel.x+=kx/l*4;m.vel.z+=kz/l*4;m.wind=0;}
+  floatText(Math.round(dmg)+'',m.pos.x,m.pos.y+(m.type==='vartija'?6:(m.def.fh||1.8)),mult>1.2?'#ffd36a':mult<.9?'#a99d89':'#eee5d3');
   sfx('hit');burst(m.pos.x,m.pos.y+1,m.pos.z,m.type==='kalmo'||m.type==='ylimys'?0xe6e0cf:m.type==='vartija'?0x5d5a54:0x9a2a22,6,3);
   if(m.hp<=0)killMob(m);
 }
@@ -104,6 +104,7 @@ function killMob(m){m.dead=true;m.deadT=0;sfx('die');P.kills++;bump('kills');bum
   for(const [id,lo,hi] of m.def.drops){const c=rint(rng,lo,hi);if(c>0)spawnDrop(id,c,m.pos.x,m.pos.y+1,m.pos.z);}
   if(m.type==='vartija'){flags.boss=1;$('#bossbar').hidden=true;bossDefeated();}
   if(m.dunIdx!==undefined)dunKilled[m.dunIdx]=1;
+  onMobKilled(m);
 }
 // Jousi: täysi vetoaika 1,6 s (laatu 2: 1,3 s, laatu 3: 1,07 s). Vajaa veto = vähemmän vahinkoa, hitaampi nuoli ja jyrkempi kaari; laatu suoristaa ja pidentää lentoa.
 function bowDrawTime(){const w=curWeapon();return 1.6/(1+.25*((w.q||1)-1));}
@@ -115,7 +116,7 @@ function fireBow(){
   const q=w.q||1;shootArrow(from,dir,(14+36*k)*(1+.1*(q-1)),weaponDmg(w)*(.2+.8*k),'player',7/(1+.3*(q-1)));sfx('bow');P.yaw=camYaw+Math.PI;
 }
 function hurtPlayer(dmg,fx,fz){
-  if(P.dead||P.invul>0)return;
+  if(P.dead||P.invul>0||P.spawnProt>0)return;
   let d=dmg;const dx=fx-P.pos.x,dz=fz-P.pos.z,l=Math.hypot(dx,dz)||1;
   if(P.blocking){const facing=(Math.sin(P.yaw)*dx+Math.cos(P.yaw)*dz)/l;const sh=equipped('shield');const blk=sh?ITEMS[sh.id].block*(1+.1*((sh.q||1)-1)):.3;
     if(facing>.2){const cost=d*.9;if(P.stam>=cost){P.stam-=cost;P.stamDelay=1;d*=1-Math.min(.95,blk);sfx('block');burst(P.pos.x+dx/l*.7,P.pos.y+1.2,P.pos.z+dz/l*.7,0xffe08a,6,3);}else{P.stam=0;P.stagger=1.2;msg('Torjunta murtui!','warn');}}}
@@ -220,7 +221,7 @@ function showLore(t,txt){const el=$('#msgs');const d=document.createElement('div
 /* ---------------- DUNGEON TRAVEL ---------------- */
 const dunKilled={};
 function fadeTo(cb){const f=$('#fade');f.style.opacity=1;setTimeout(()=>{cb();setTimeout(()=>f.style.opacity=0,120);},380);}
-function enterDungeon(){fadeTo(()=>{P.inDun=true;P.pos.set(dunEntry.x+.6,DUN.y+.05,dunEntry.z);P.vy=0;camYaw=-Math.PI/2;P.yaw=Math.PI/2;
+function enterDungeon(){fadeTo(()=>{P.inDun=true;P.realm=null;P.spawnProt=3.2;P.pos.set(dunEntry.x+.6,DUN.y+.05,dunEntry.z);P.vy=0;camYaw=-Math.PI/2;P.yaw=Math.PI/2;
   dunSpawns.forEach((s,i)=>{if(dunKilled[i])return;if(mobs.some(m=>m.dunIdx===i))return;const m=spawnMob(s.type,s.x,s.z,{y:DUN.y,dun:true});m.dunIdx=i;});
   msg('Hautakumpu. Ilma on kylmää ja seisovaa.');});}
-function exitDungeon(){fadeTo(()=>{P.inDun=false;const L=LOC.barrow;P.pos.set(L.x+12.5,terrainH(L.x+12.5,L.z),L.z);P.vy=0;camYaw=-Math.PI/2;for(const m of [...mobs])if(m.dun)mobRemove(m);});}
+function exitDungeon(){fadeTo(()=>{P.inDun=false;P.realm=null;P.spawnProt=3.2;const L=LOC.barrow;P.pos.set(L.x+12.5,terrainH(L.x+12.5,L.z),L.z);P.vy=0;camYaw=-Math.PI/2;for(const m of [...mobs])if(m.dun)mobRemove(m);});}

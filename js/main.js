@@ -40,7 +40,7 @@ let last=performance.now(),slowT=0,saveT=0,lightT=0,menuA=0;
 function update(dt){
   playTime+=dt;dayT+=dt/DAY_LEN;if(dayT>=1){dayT-=1;dayN++;msg(`Päivä ${dayN}`);}
   const wasNight=isNight();
-  updatePlayer(dt);updateMobs(dt);updateProjs(dt);updateDrops(dt);updateFx(dt);updateStations(dt);spawner(dt);survival(dt);updateWeather();
+  updatePlayer(dt);updateDungeons(dt);updateStory(dt);updateMobs(dt);updateProjs(dt);updateDrops(dt);updateFx(dt);updateStations(dt);spawner(dt);survival(dt);updateWeather();
   updateEnvironment(dt);updateCamera(dt);updateBenchRings();updateChunkVis();
   if(state==='play'){lookTarget=findInteract();updateGhost();}else if(ghost)ghost.visible=false;
   lightT-=dt;if(lightT<=0){lightT=.4;updateLights();}

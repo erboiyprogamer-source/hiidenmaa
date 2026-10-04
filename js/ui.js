@@ -15,7 +15,7 @@ const mobBars=[];for(let i=0;i<8;i++){const d=document.createElement('div');d.cl
 // Yksi kerros = pelaajan perusterveys (60); useampikerroksinen palkki on pidempi ja kerrokset eri värisiä. Alla pääkallot vaikeustasosta.
 const HP_LAYER=60,LAYER_C=['#c0392b','#e07a2a','#d9b43a','#7fae3a','#3a9ad9','#9a5ad9'],_cd=new V3();
 function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
-  for(const m of mobs){if(k>=mobBars.length)break;if(m.dead||m===boss||m.dun!==P.inDun)continue;
+  for(const m of mobs){if(k>=mobBars.length)break;if(m.dead||m===boss||m.def.ai==='rboss'||m.dun!==P.inDun)continue;
     const sk=MOB_SKULL[m.type]||0,d=Math.hypot(m.pos.x-P.pos.x,m.pos.z-P.pos.z),recent=playTime-m.hurtT<10;
     const ex=m.pos.x-camera.position.x,ey=m.pos.y+1-camera.position.y,ez=m.pos.z-camera.position.z,el=Math.hypot(ex,ey,ez)||1,look=(ex*_cd.x+ey*_cd.y+ez*_cd.z)/el>(sk>=3?.95:.93);
     if(!(recent||(look&&(d<12||(sk>=3&&d<70)))))continue;
@@ -50,7 +50,7 @@ function updateHUD(dt){
   const fxs=effects();$('#status').innerHTML=fxs.map(e=>`<div class="chip ${e.kind}" title="${e.desc}"><b></b>${e.name}${e.t?' '+fmtT(e.t):''}</div>`).join('');
   if(openPanel==='inv'&&performance.now()-fxAt>400){fxAt=performance.now();renderEffects(fxs);}
   // clock
-  const hh=Math.floor(dayT*24),mm=Math.floor((dayT*24-hh)*60/10)*10;$('#clock').innerHTML=`Päivä ${dayN} · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')} <span>· ${P.inDun?'Hautakumpu':WEATHERS[weather.cur].n}</span>`;
+  const hh=Math.floor(dayT*24),mm=Math.floor((dayT*24-hh)*60/10)*10;$('#clock').innerHTML=`Päivä ${dayN} · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')} <span>· ${P.inDun?(P.realm?REALMS[P.realm].n:'Hautakumpu'):WEATHERS[weather.cur].n}</span>`;
   if(invDirty){invDirty=false;updateBack();$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1).replace('class="slot','class="slot'+(i===hotSel?' hsel':''))).join('');if(openPanel==='inv')renderInv();if(openPanel==='chest')renderChest();if(openPanel==='build')renderBuild();}
   if(boss&&!boss.dead){$('#bossbar i').style.width=(boss.hp/boss.maxHp*100)+'%';}
   drawMinimap();

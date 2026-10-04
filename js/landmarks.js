@@ -7,6 +7,8 @@ const interactables=[]; // {x,y,z,r,label(),use(),...}
 const lightSources=[];  // {x,y,z,color,int,on()}
 const statics=new THREE.Group();scene.add(statics);
 function stoneBox(w,h,d,x,y,z,ry=0,m=MAT.stone,col=true){const me=bx(w,h,d,m,x,y,z);me.rotation.y=ry;statics.add(me);if(col){const hw=(Math.abs(Math.cos(ry))*w+Math.abs(Math.sin(ry))*d)/2,hd=(Math.abs(Math.sin(ry))*w+Math.abs(Math.cos(ry))*d)/2;addBox(x-hw,y-h/2,z-hd,x+hw,y+h/2,z+hd,'static');}return me;}
+// Kiven sävy: kerrotaan värin kanavat luvulla 0,85–1,15 (ei lisätä lukua, ettei kanavat vuoda toisiinsa)
+const rockC=(c,t)=>{const k=.85+t*.3,f=v=>Math.min(255,v*k|0);return(f(c>>16&255)<<16)|(f(c>>8&255)<<8)|f(c&255);};
 const RUNES=[
   {k:'rune1',t:'Riimukivi – Rannan kivi',txt:'”Merien yli tullut, kuule: tämä on Hiidenmaa. Kalmanvartija on pitänyt saarta otteessaan yhdeksän talvea. Kerää oksia ja kiviä, rakenna suoja ennen ensimmäistä yötä. Yöllä sudet laskeutuvat niityille.”',reveal:null},
   {k:'rune2',t:'Riimukivi – Nummen laita',txt:'”Lounaan kalmanummella nukkuvat vanhat päälliköt Hautakummussa. Heidän kirstuissaan lepää kolme hiidenkiveä. Ota tuli mukaasi, sillä kumpu on pimeä.”',reveal:'barrow'},
@@ -24,14 +26,23 @@ function buildRuin(L,seed){const r=mulberry32(seed),y=terrainH(L.x,L.z);
 const RUIN_LOOT={ruinF:{piikivi:6,nahka:3,nuolet:15},ruinM:{kupari:5,malmi:3,pihka:3},ruinC:{piikivi:8,pihka:4,kupari:3}};
 for(const k of ['ruinF','ruinM','ruinC']){const L=LOC[k],{chest,y}=buildRuin(L,k.length*31+L.x|0);
   interactables.push({x:L.x,y:y+.5,z:L.z,r:2.4,label:()=>flags.ruins[k]?'Tyhjä aarrearkku':'Avaa aarrearkku',use:()=>{if(flags.ruins[k])return;flags.ruins[k]=1;for(const [id,n] of Object.entries(RUIN_LOOT[k]))giveOrDrop(id,n,L.x,y+1,L.z);msg('Arkussa oli tarvikkeita!','loot');sfx('pickup');}});}
-// Barrow entrance
-(function(){const L=LOC.barrow,dx=10.5,ex=L.x+dx,ez=L.z,y=terrainH(ex,ez);
-  stoneBox(.8,3.4,.8,ex,y+1.5,ez-1.6);stoneBox(.8,3.4,.8,ex,y+1.5,ez+1.6);stoneBox(1,.7,4.2,ex,y+3.4,ez);
-  statics.add(bx(.2,3,2.4,new THREE.MeshBasicMaterial({color:0x050404}),ex-.3,y+1.4,ez));
-  addBox(ex-.5,y,ez-1.2,ex-.2,y+3,ez+1.2,'static');
-  interactables.push({x:ex+.4,y:y+1,z:ez,r:2.8,label:()=>'Astu Hautakumpuun',use:()=>enterDungeon()});
-  lightSources.push({x:ex+.8,y:y+2.6,z:ez-1.6,c:0xff9a40,i:1.4,on:()=>true});
-  statics.add(bx(.1,.5,.1,MAT.flame,ex+.6,y+2.6,ez-1.6,false));
+// Barrow entrance: luolamainen kivinen portti kummun kyljessä, ympärillä rosoisia lohkareita, soihtuja, kalloja ja riimulaattoja
+(function(){const L=LOC.barrow,dx=10.5,ex=L.x+dx,ez=L.z,y=terrainH(ex,ez),r=mulberry32(4242),dk=mat(0x6a665e),mos=mat(0x4d6a3a);
+  stoneBox(1.2,4.4,1.2,ex,y+2,ez-2.2,0,dk);stoneBox(1.2,4.4,1.2,ex,y+2,ez+2.2,0,dk);stoneBox(1.6,.9,6.2,ex,y+4.6,ez,0,dk);
+  for(let i=0;i<16;i++){const side=i%2?1:-1,k=(i>>1),zz=ez+side*(3.2+k*.55+r()*.8),h=1.6+r()*2.8+(k<3?1.5:0),w=1.4+r()*1.6,xx=ex-.2-k*.5-r()*.8;
+    const m=stoneBox(w,h,w*(.8+r()*.4),xx,y+h/2-.3,zz,r()*3,mat(rockC(0x6a675f,r())));if(r()<.6)m.add(bx(w*.9,.25,w*.8,mos,0,h/2,0,false));}
+  for(let i=0;i<5;i++){const w=1.5+r()*1.2,h=1.2+r()*1.4;stoneBox(w,h,w,ex-.5-r()*1.2,y+5.4+h/2-.3+r()*.4,ez+(r()-.5)*5,r()*3,mat(0x56534e));}
+  statics.add(bx(.2,3.4,2.6,new THREE.MeshBasicMaterial({color:0x050404}),ex-.3,y+1.7,ez,false));
+  for(let i=1;i<=3;i++)statics.add(bx(.1,3.4-i*.25,2.6-i*.3,new THREE.MeshBasicMaterial({color:0x0a0807-i*0x020201}),ex-.3-i*.6,y+1.7,ez,false));
+  addBox(ex-.5,y,ez-1.3,ex-.2,y+3.6,ez+1.3,'static');
+  for(let i=0;i<3;i++)stoneBox(1.4,.3*(3-i)+.15,5.2-i*.5,ex+1.2+i*1.1,y+(.3*(3-i)+.15)/2-.1,ez,0,mat(0x6a675f));
+  interactables.push({x:ex+.4,y:y+1,z:ez,r:3.2,label:()=>'Astu Hautakumpuun',use:()=>enterDungeon()});
+  for(const s of [-1,1]){const bz=ez+s*3.4;stoneBox(.7,1.1,.7,ex+3.2,y+.5,bz,0,dk);statics.add(bx(.3,.45,.3,MAT.flame,ex+3.2,y+1.3,bz,false));
+    lightSources.push({x:ex+3.2,y:y+1.8,z:bz,c:0xff9a40,i:1.5,on:()=>true});
+    const sl=stoneBox(.35,2.6,1.1,ex+2,y+1.2,ez+s*5,s*.35,mat(0x6a6c70));sl.add(bx(.04,1.5,.5,MAT.glow,.2,0,0,false));
+    for(let k=0;k<4;k++)statics.add(bx(.22,.2,.24,mat(0xe7e1cf),ex+4+r()*1.2,y+.1+k*.13,ez+s*(1.2+r()*.8),false));}
+  for(let i=0;i<6;i++){const a=i/6*TAU+.3,rx=L.x+Math.cos(a)*6.4,rz=L.z+Math.sin(a)*6.4,h=2+r()*1.4;if(Math.hypot(rx-ex,rz-ez)<5)continue;stoneBox(.9,h,.6,rx,terrainH(rx,rz)+h/2-.2,rz,-a+Math.PI/2,mat(0x5f5c57));}
+  stoneBox(1.6,1.1,1.6,L.x,terrainH(L.x,L.z)+.4,L.z,.5,dk);statics.add(bx(.35,.55,.35,MAT.glow,L.x,terrainH(L.x,L.z)+1.2,L.z,false));
 })();
 // Stone circle + altar
 const circleStones=[];
