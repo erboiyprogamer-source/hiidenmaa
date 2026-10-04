@@ -49,6 +49,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.47 (pelaajan varjo tulen vieressä)
+- Pelaajan varjo seisovan soihdun/nuotion vieressä päivittyy tiheään: kun pelaaja on < 9 m päässä `LIGHTS[0]`:sta, varjokarttaa päivitetään pimeällä joka 2. (päivällä joka 4.) kehys; kauempana 8./16. (kantama pysyy 15 m). Rajoitus: three.js r128:ssa päivitystiheys on valokohtainen eikä sitä voi säätää heittäjäkohtaisesti (pelaaja vs. kiinteät esineet), joten ratkaisu perustuu etäisyyteen.
+
 ### v0.46 (varjojen laatu liikkuvuuden mukaan)
 - **Liikkuvat varjot (käsisoihto, pelaaja) himeämmiksi ja sumeammiksi:** varjokartta 64 → 40 px (blobimaisempi), päivitys joka kehys. Uusi **täytevalo** `torchFill` (sama paikka, ei varjoa): soihdun intensiteetti jaetaan 55 % varjoa heittävälle ja 45 % täytevalolle, joten soihdun varjot jäävät himeiksi (varjoalue saa täytevalon). Laatutasolla 3 (pistevalovarjot pois) koko teho varjottomalle.
 - **Paikallaan olevat valot (seisova soihtu, nuotio = `LIGHTS[0]`) terävämmiksi, harvemmin:** varjokartta 192 → 384 px, päivitys pimeällä joka 8. (aiemmin 2.) ja päivällä joka 16. kehys (×2 laatutasolla ≥1); lähimmän valon vaihtuessa heti.
