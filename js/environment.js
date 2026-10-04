@@ -26,15 +26,14 @@ function updateWeather(){if(playTime<weather.until)return;const r=Math.random(),
   weather.cur=w;weather.until=playTime+(w==='myrsky'?90+Math.random()*90:150+Math.random()*180);
   if(w!==prev&&!P.inDun&&WMSG[w])msg(WMSG[w]);}
 const cSkyDay=new THREE.Color(0x87a9c2),cSkyDusk=new THREE.Color(0xc98a64),cSkyNight=new THREE.Color(0x070b14),cGrey=new THREE.Color(0x7d858c),cFlash=new THREE.Color(0xe8f0ff),cTmp=new THREE.Color(),cSun=new THREE.Color(),cSunLow=new THREE.Color(0xffa060);
-let wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0,thunderAt=-1,aarniK=0;
+let wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0,aarniK=0;
 const cAarni=new THREE.Color(0x26302a);
 // Kuun kirkkaus vaihtelee 8 päivän kierrossa (uusikuu .2 … täysikuu 1).
 function moonPhase(){return .2+.8*(.5-.5*Math.cos((dayN%8)/8*TAU));}
 function updateEnvironment(dt){
   const W=WEATHERS[weather.cur]||WEATHERS.selkea,k=Math.min(1,dt*.3);
   wDark=lerp(wDark,W.dark,k);wFog=lerp(wFog,W.fog,k);wRain=lerp(wRain,W.rain,Math.min(1,dt*.4));wSnow=lerp(wSnow,W.snow||0,Math.min(1,dt*.4));wWind=lerp(wWind,W.wind||0,k);
-  if(W.storm&&!P.inDun&&playTime>nextBolt){nextBolt=playTime+4+Math.random()*10;flash=1;thunderAt=playTime+.5+Math.random()*1.5;}
-  if(thunderAt>0&&playTime>=thunderAt){thunderAt=-1;sfx('thunder');}
+  if(W.storm&&!P.inDun&&playTime>nextBolt){nextBolt=playTime+4+Math.random()*10;flash=1;if(Math.random()<.12)stormFellTree();}
   flash=Math.max(0,flash-dt*4);
   SWAY.uTime.value=playTime;SWAY.uWind.value=.15+wWind*.85;
   const ang=(dayT-.5)*TAU,el=Math.cos(ang)+.3;
@@ -66,6 +65,10 @@ function updateEnvironment(dt){
   snow.visible=wSnow>.1&&P.pos.y>10;if(snow.visible){snow.material.opacity=.9*Math.min(1,wSnow);const a=snow.geometry.attributes.position.array;for(let i=0;i<a.length;i+=3){a[i+1]-=2.2*dt;a[i]+=Math.sin(playTime*.8+i)*.4*dt;if(a[i+1]<-4){a[i]=(Math.random()-.5)*50;a[i+1]=20+Math.random()*6;a[i+2]=(Math.random()-.5)*50;}}snow.geometry.attributes.position.needsUpdate=true;snow.position.set(camera.position.x,camera.position.y-8,camera.position.z);}
   water.position.y=Math.sin(playTime*.6)*.04;
 }
+// Myrsky kaataa harvoin puun pelaajan lähellä (3–40 m). Puun alle jäävä menettää 80 % terveydestä.
+const _sl=[];
+function stormFellTree(){const list=nodesNear(P.pos.x,P.pos.z,40,_sl).filter(n=>n.def.kind==='tree'&&dist2(n.x,n.z,P.pos.x,P.pos.z)>9);
+  if(!list.length)return;const n=list[Math.random()*list.length|0];killNode(n);fallTree(n,Math.random()*TAU,true);msg('Myrsky kaatoi puun!','warn');}
 function updateLights(){
   const src=lightSources.filter(s=>s.on()&&(!!s.dun===P.inDun)).sort((a,b)=>dist2(a.x,a.z,P.pos.x,P.pos.z)-dist2(b.x,b.z,P.pos.x,P.pos.z));
   for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=src[i];if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i;l.intensity=s.i;}else{l.intensity=0;l.userData.base=0;}}

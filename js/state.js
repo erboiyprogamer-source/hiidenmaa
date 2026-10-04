@@ -50,8 +50,10 @@ let invDirty=true;
 /* ---------------- DROPS ---------------- */
 const dropGeo=new THREE.BoxGeometry(.32,.32,.32);
 function spawnDrop(id,n,x,y,z,q=1,silent){const me=new THREE.Mesh(dropGeo,mat(new THREE.Color(ITEMS[id].c).getHex()));me.castShadow=true;me.position.set(x,y,z);scene.add(me);drops.push({id,n,q,mesh:me,vx:(Math.random()-.5)*3,vy:3+Math.random()*2,vz:(Math.random()-.5)*3,t:0,rest:false});}
+const DROP_LIFE=300; // maassa olevat esineet katoavat 5 min jälkeen
 function updateDrops(dt){
   for(let i=drops.length-1;i>=0;i--){const d=drops[i],m=d.mesh;d.t+=dt;
+    if(d.t>DROP_LIFE){scene.remove(m);drops.splice(i,1);continue;}m.visible=d.t<DROP_LIFE-15||((d.t*5)|0)%2===0;
     if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=groundAt(m.position.x,m.position.z,.2,m.position.y+.5)+.18;if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
     else{m.position.y=d.baseY+.12+Math.sin(d.t*3)*.06;m.rotation.y+=dt*1.5;}
     if(d.t>.5&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');}d.n=left;if(left<=0){scene.remove(m);drops.splice(i,1);}}
@@ -68,9 +70,11 @@ function updateFx(dt){
   for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.t-=dt;p.vy-=12*dt;p.m.position.x+=p.vx*dt;p.m.position.y+=p.vy*dt;p.m.position.z+=p.vz*dt;p.m.scale.setScalar(Math.max(.01,p.t));if(p.t<=0){scene.remove(p.m);parts.splice(i,1);}}
   for(let i=fx.length-1;i>=0;i--){const f=fx[i];f.t+=dt;if(f.update(f,dt)){scene.remove(f.obj);fx.splice(i,1);}}
 }
-function fallTree(n){const g=new THREE.Group();const m=new THREE.Mesh(NGEO[n.type],vcMat);m.scale.setScalar(n.s);g.add(m);g.position.set(n.x,n.y,n.z);scene.add(g);
-  const a=Math.atan2(n.x-P.pos.x,n.z-P.pos.z);
-  fx.push({obj:g,t:0,update:(f,dt)=>{const k=Math.min(1,f.t/1.2);g.rotation.set(0,0,0);g.rotateOnWorldAxis(_tmpV.set(Math.cos(a),0,-Math.sin(a)),k*k*Math.PI/2);if(f.t>1.2&&!f.dropped){f.dropped=1;sfx('chop');burst(n.x+Math.sin(a)*3,n.y+.5,n.z+Math.cos(a)*3,0x6b4527,10,4);for(const [id,lo,hi] of n.def.drops){if(id==='puu')continue;const c=Math.round(rint(rng,lo,hi)*n.s);for(let j=0;j<c;j++){const t=1+j*1.2;spawnDrop(id,1,n.x+Math.sin(a)*t,n.y+1,n.z+Math.cos(a)*t);}}spawnLogs(n,a);}return f.t>1.6;}});}
+function fallTree(n,dir,crush){const g=new THREE.Group();const m=new THREE.Mesh(NGEO[n.type],vcMat);m.scale.setScalar(n.s);g.add(m);g.position.set(n.x,n.y,n.z);scene.add(g);
+  const a=dir??Math.atan2(n.x-P.pos.x,n.z-P.pos.z);
+  fx.push({obj:g,t:0,update:(f,dt)=>{const k=Math.min(1,f.t/1.2);g.rotation.set(0,0,0);g.rotateOnWorldAxis(_tmpV.set(Math.cos(a),0,-Math.sin(a)),k*k*Math.PI/2);if(f.t>1.2&&!f.dropped){f.dropped=1;sfx('chop');if(crush)crushPlayer(n,a);burst(n.x+Math.sin(a)*3,n.y+.5,n.z+Math.cos(a)*3,0x6b4527,10,4);for(const [id,lo,hi] of n.def.drops){if(id==='puu')continue;const c=Math.round(rint(rng,lo,hi)*n.s);for(let j=0;j<c;j++){const t=1+j*1.2;spawnDrop(id,1,n.x+Math.sin(a)*t,n.y+1,n.z+Math.cos(a)*t);}}spawnLogs(n,a);}return f.t>1.6;}});}
+function crushPlayer(n,a){if(P.dead||P.inDun)return;const H=(TREE_H[n.type]||5)*n.s,dx=P.pos.x-n.x,dz=P.pos.z-n.z,along=dx*Math.sin(a)+dz*Math.cos(a),lat=Math.abs(dx*Math.cos(a)-dz*Math.sin(a));
+  if(along>0&&along<H&&lat<1.4*Math.max(1,n.s)&&Math.abs(P.pos.y-n.y)<3){const d=maxHp()*.8;P.hp-=d;P.hurtFlash=.8;shake(.6);sfx('hurt');floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,P.pos.z,'#e0614f');msg('Kaatuva puu osui sinuun!','warn');if(P.hp<=0)playerDie();}}
 function shockwave(x,y,z,r,color=0x8ffff0){const m=new THREE.Mesh(new THREE.RingGeometry(.8,1,32),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.8,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.set(x,y+.15,z);scene.add(m);fx.push({obj:m,t:0,update:(f)=>{const k=f.t/.5;m.scale.setScalar(.5+k*r);m.material.opacity=.8*(1-k);return k>=1;}});}
 
 /* ---------------- PROJECTILES ---------------- */

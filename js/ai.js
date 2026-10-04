@@ -18,15 +18,15 @@ function updateMobs(dt){
     const hostile=d.ai==='hostile'||(d.ai==='neutral'&&m.angry);
     const aggroR=(d.aggro||12)*(night?1.35:1)*(P.crouch?.5:1);
     // Näköyhteys (välimuistissa, tarkistus ~5 kertaa sekunnissa): ilman sitä ei aloiteta eikä jatketa jahtia.
-    m.losT=(m.losT||0)-dt;if(m.losT<=0){m.losT=.2+Math.random()*.1;m.los=d.ai!=='flee'&&dist<45&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z);}
+    m.losT=(m.losT||0)-dt;if(m.losT<=0){m.losT=.2+Math.random()*.1;m.los=dist<45&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z);}
     m.noLos=m.state==='chase'&&!m.los?(m.noLos||0)+dt:0;
-    if(d.ai==='flee'){if((!P.crouch&&dist<9&&!P.dead)||playTime-m.lastHit<6){m.state='flee';}else if(m.state==='flee'&&dist>22)m.state='idle';}
+    if(d.ai==='flee'){if((!P.crouch&&dist<9&&m.los&&!P.dead)||playTime-m.lastHit<6){m.state='flee';}else if(m.state==='flee'&&dist>22)m.state='idle';}
     else if(hostile&&!P.dead&&m.los&&(dist<aggroR||playTime-m.lastHit<10)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
     else if(m.state==='chase'&&(dist>aggroR*1.6||P.dead||m.noLos>3)){m.state='idle';if(m.noLos>3){m.angry=false;m.lastHit=-99;}m.noLos=0;}
     if(m.state==='flee'){tx=-dx;tz=-dz;spd=d.run;}
     else if(m.state==='chase'){
-      if(m.wind>0){m.wind-=dt;if(m.wind<=0){if(dist<d.range+.25&&!P.dead&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z)){const f=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(f>.5)hurtPlayer(d.dmg,m.pos.x,m.pos.z);}m.atkCd=d.cd;}}
-      else if(dist<d.range+.2&&m.atkCd<=0){m.wind=d.wind;}
+      if(m.wind>0){m.wind-=dt;if(m.wind<=0){if(mobReach(m,dist)<d.range+.25&&!P.dead&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z)){const f=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(f>.5)hurtPlayer(d.dmg,m.pos.x,m.pos.z);}m.atkCd=d.cd;}}
+      else if(mobReach(m,dist)<d.range+.2&&m.atkCd<=0){m.wind=d.wind;}
       else if(dist>d.range*.8){tx=dx;tz=dz;spd=d.run;}
       if(m.wind>0){spd=0;tx=dx;tz=dz;}
     }else{
@@ -39,6 +39,8 @@ function updateMobs(dt){
   // separation
   for(let i=0;i<mobs.length;i++)for(let j=i+1;j<mobs.length;j++){const a=mobs[i],b=mobs[j];if(a.dead||b.dead)continue;const dx=b.pos.x-a.pos.x,dz=b.pos.z-a.pos.z,d=Math.hypot(dx,dz),r=a.def.r+b.def.r;if(d<r&&d>.001){const k=(r-d)/2/d;a.pos.x-=dx*k;a.pos.z-=dz*k;b.pos.x+=dx*k;b.pos.z+=dz*k;}}
 }
+// Iskun ulottuvuus 3D:ssä: vaakaetäisyys + pystyväli mobin iskukohdasta pelaajan vartaloon (0–1,8 m).
+function mobReach(m,dist){const sy=m.pos.y+(m.f.biped?1:.6)*(m.f.s||1),gap=Math.max(0,sy-(P.pos.y+1.8),P.pos.y-sy);return Math.hypot(dist,gap);}
 function moveMob(m,tx,tz,spd,dt){
   const l=Math.hypot(tx,tz);
   if(l>.01){const ty=Math.atan2(tx,tz);m.yaw=lerpAngle(m.yaw,ty,Math.min(1,dt*8));}
@@ -104,11 +106,11 @@ function spawner(dt){
   if(alive.length>=cap)return;
   for(let tries=0;tries<6;tries++){const a=Math.random()*TAU,d=38+Math.random()*30,x=P.pos.x+Math.cos(a)*d,z=P.pos.z+Math.sin(a)*d;const h=terrainH(x,z);if(h<.5)continue;
     const b=biomeAt(x,z,h);const tbl=SPAWN[b];if(!tbl)continue;const list=night?tbl.night:tbl.day;let r=Math.random(),type=list[0][0];for(const [t,p] of list){if(r<p){type=t;break;}r-=p;}
-    if(MOBDEF[type].ai==='hostile'&&nearPiece('tyopenkki',x,z,28))continue;
+    if(nearBase(x,z))continue;
     if(dist2(x,z,LOC.spawn.x,LOC.spawn.z)<30*30&&MOBDEF[type].ai==='hostile'&&!night)continue;
     const pack=type==='susi'&&night?2:1;for(let k=0;k<pack;k++)spawnMob(type,x+k*1.5,z+k);return;}
 }
-function respawnNodes(){for(const n of nodes)if(!n.alive&&n.respawnAt<=playTime&&dist2(n.x,n.z,P.pos.x,P.pos.z)>40*40)reviveNode(n);}
+function respawnNodes(){for(const n of nodes)if(!n.alive&&n.respawnAt<=playTime&&dist2(n.x,n.z,P.pos.x,P.pos.z)>40*40&&!nearBase(n.x,n.z))reviveNode(n);}
 function updateStations(dt){
   for(const p of pieces){
     if(p.t==='nuotio'){const f=p.mesh.userData.flame;const lit=p.data.fuel>0;f[0].visible=f[1].visible=lit;if(lit){f[0].scale.y=1+Math.sin(playTime*12+p.x)*.15;p.data.burn+=dt;if(p.data.burn>=90){p.data.burn=0;p.data.fuel--;}
