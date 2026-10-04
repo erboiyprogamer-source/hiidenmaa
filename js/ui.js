@@ -3,8 +3,9 @@
 'use strict';
 
 /* ---------------- UI ---------------- */
+// Viestin näkyvyysaika riippuu pituudesta: 3 s + 70 ms / merkki, rajattuna 4–13 s.
 const msgEls=[],msgLog=[];
-function msg(t,cls=''){msgLog.push({t,cls,at:playTime});if(msgLog.length>10)msgLog.shift();const el=$('#msgs');const d=document.createElement('div');d.textContent=t;if(cls)d.className=cls;el.appendChild(d);d._life=4.5;msgEls.push(d);while(msgEls.length>7){const o=msgEls.shift();o.remove();}}
+function msg(t,cls=''){msgLog.push({t,cls,at:playTime});if(msgLog.length>10)msgLog.shift();const el=$('#msgs');const d=document.createElement('div');d.textContent=t;if(cls)d.className=cls;el.appendChild(d);d._life=clamp(3+t.length*.07,4,13);msgEls.push(d);while(msgEls.length>7){const o=msgEls.shift();o.remove();}}
 function updateMsgs(dt){for(let i=msgEls.length-1;i>=0;i--){const d=msgEls[i];d._life-=dt;if(d._life<1)d.style.opacity=Math.max(0,d._life);if(d._life<=0){d.remove();msgEls.splice(i,1);}}}
 const floaters=[];
 function floatText(t,x,y,z,color){const el=document.createElement('div');el.className='floater';el.textContent=t;el.style.color=color||'#eee';$('#floaters').appendChild(el);floaters.push({el,p:new V3(x,y,z),t:0});if(floaters.length>24){const o=floaters.shift();o.el.remove();}}
