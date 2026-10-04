@@ -20,25 +20,13 @@ function playSave(s,welcome){const mid=s.mapId||0;if(mid!==MAP_ID&&switchMap(mid
 $('#bNew').onclick=()=>{if(started&&!confirmNew){confirmNew=true;$('#bNew').firstChild.textContent='Vahvista: uusi peli';setTimeout(()=>{confirmNew=false;$('#bNew').firstChild.textContent='Uusi peli';},4000);return;}confirmNew=false;$('#bNew').firstChild.textContent='Uusi peli';startNewGame();};
 $('#bContinue').onclick=()=>{try{playSave(JSON.parse(localStorage.getItem(SKEY)),'Tervetuloa takaisin.');}catch(e){$('#ioMsg').textContent='Tallennuksen lataus epäonnistui.';}};
 $('#bResume').onclick=()=>{state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();};
-$('#bSave').onclick=()=>{const ok=saveGame(true);$('#ioMsg').textContent=ok?'Tallennettu selaimeen.':'Selaimen tallennus ei ole käytössä – kopioi tallennuskoodi.';$('#opts').hidden=false;if(!ok)$('#bExport').click();
-  const lbl=$('#bSave').firstChild,prevT=lbl.textContent;lbl.textContent=ok?'Tallennettu ✓':'Tallennus epäonnistui';setTimeout(()=>{lbl.textContent=prevT;},1800);};
-// Näppäinlista: isot kategoriat. Päivitä tätä kun näppäimiä lisätään.
-const KEYLIST=[
-  ['Liikkuminen',[['W A S D','liiku'],['Shift','juokse'],['Välilyönti','hyppää (tikkailla ylös)'],['C','kyykky / hiipiminen'],['S','tikkailla alas'],['Hiiri','kamera'],['Hiiren rulla','kameran etäisyys']]],
-  ['Toiminnot',[['Hiiren vasen','isku / jousen jännitys (pidä ja päästä) / lapio ja kuokka'],['Hiiren oikea','torju kilvellä (rakennusvalikko vasaralla)'],['E','poimi, avaa, käytä, nuku, paista'],['1–8','pikapaikat: varusta tai syö'],['Soihtu kädessä','sytytys: vie toisen liekin viereen ja odota 2,5 s']]],
-  ['Rakentaminen (vasara kädessä)',[['B','rakennusvalikko'],['Hiiren vasen','rakenna'],['R','käännä 45°'],['Shift + R','vaihda asentoa / kaltevuutta'],['G','sivuttaiskohdistus (ruudukko, puoli, vapaa, reuna)'],['H','pystykohdistus (auto, pysty, 3D)'],['Q / Z','nosta / laske haamua (pystykohdistuksessa)'],['X','pura'],['F','korjaa']]],
-  ['Valikot ja paneelit',[['Tab tai I','reppu ja valmistus'],['M','kartta'],['J','taso, saavutukset ja tavoitteet'],['T','viimeiset 10 ilmoitusta'],['Esc','sulje paneeli / pelitauko (kohdistin näkyviin)']]],
-  ['Näkymä',[['K','koko näyttö'],['Esc','pelitauko ja asetukset']]],
-];
-$('#bKeys').onclick=()=>{const b=$('#keysBox');if(!b.hidden){b.hidden=true;return;}
-  b.innerHTML='<div class="keysGrid">'+KEYLIST.map(([c,l])=>`<div class="keyCat"><h3>${c}</h3>${l.map(([k,d])=>`<div class="keyRow"><span class="kb">${k}</span><span>${d}</span></div>`).join('')}</div>`).join('')+'</div>';b.hidden=false;};
-$('#bMenuToggle').onclick=()=>{$('#opts').hidden=!$('#opts').hidden;};
-$('#bExport').onclick=()=>{const j=JSON.stringify(serialize());$('#saveCode').value=btoa(unescape(encodeURIComponent(j)));$('#ioMsg').textContent='Koodi luotu nykyisestä pelistä.';};
-$('#bCopy').onclick=()=>{const t=$('#saveCode');if(!t.value)$('#bExport').click();navigator.clipboard.writeText(t.value).then(()=>$('#ioMsg').textContent='Kopioitu leikepöydälle.').catch(()=>{t.select();$('#ioMsg').textContent='Valittu – kopioi Ctrl+C:llä.';});};
-$('#bImport').onclick=()=>{try{const s=JSON.parse(decodeURIComponent(escape(atob($('#saveCode').value.trim()))));playSave(s,'Peli ladattu koodista.');}catch(e){$('#ioMsg').textContent='Koodi ei kelpaa.';}};
-$('#optShadow').onchange=e=>{renderer.shadowMap.enabled=e.target.checked;scene.traverse(o=>{if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true);}});};
-$('#optSound').onchange=e=>{soundOn=e.target.checked;};
-$('#optInvY').onchange=e=>{invertY=e.target.checked;};
+// Tallenna: ei avaa asetuksia; ilmoitus näkyy painikkeessa ja valikon tilariviltä
+$('#bSave').onclick=()=>{const ok=saveGame(true);const lbl=$('#bSave').firstChild,prevT=lbl.textContent;
+  $('#saveMsg').textContent=ok?'Tallennettu selaimeen.':'Selaimen tallennus ei ole käytössä – avaa Asetukset › Tallennus ja tallenna koodi tai tiedosto.';
+  lbl.textContent=ok?'Tallennettu ✓':'Tallennus epäonnistui';setTimeout(()=>{lbl.textContent=prevT;$('#saveMsg').textContent='';},2200);};
+$('#bKeys').onclick=()=>{if(!$('#settings').hidden&&setTab==='keys'){$('#settings').hidden=true;return;}openSettings('keys');};
+$('#bMenuToggle').onclick=()=>{if(!$('#settings').hidden&&setTab!=='keys'){$('#settings').hidden=true;return;}openSettings(setTab==='keys'?'gfx':setTab);};
+$('#bSetClose').onclick=()=>{$('#settings').hidden=true;};
 $('#bRespawn').onclick=respawn;
 $('#bWinCont').onclick=()=>{$('#winS').hidden=true;$('#hud').hidden=false;state='play';requestLock();};
 refreshMenu();
@@ -69,7 +57,7 @@ function autoQuality(raw){if(raw>.5)return;fAvg+=(raw-fAvg)*.05;qCool-=raw;
 function frame(now){
   requestAnimationFrame(frame);
   const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;
-  if(state==='play')autoQuality(raw);
+  if(state==='play'&&SET.autoQ)autoQuality(raw);
   try{
     if(state==='play'||state==='ui')update(dt);
     else if(state==='menu')menuCam(dt);
@@ -78,6 +66,6 @@ function frame(now){
   }catch(err){console.error(err);}
   renderer.render(scene,camera);
 }
-updateLights();
+updateLights();applyGfx();
 requestAnimationFrame(frame);
 window.__game={renderer,keys,G,WH,get ghost(){return{sel:buildSel,ok:ghostOk,pos:ghostPos,why:lastInvalid}},placeBuild,openChest,scene,camera,P,get mobs(){return mobs},inv:()=>inv,pieces:()=>pieces,invAdd,addPiece,spawnMob,newGame,startPlay,flags:()=>flags,saveGame,serialize,loadData,setState:s=>state=s,get state(){return state},update,interact,togglePanel,useSlot,craft,RECIPE_BY,setBuildSel,enterDungeon,exitDungeon,camYaw:v=>camYaw=v,doMeleeHit,startAttack,nodes,setDay:v=>dayT=v};

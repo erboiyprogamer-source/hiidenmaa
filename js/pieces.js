@@ -71,6 +71,7 @@ const PIECES={
   kiviharjakatto:{n:'Kiviharjakatto',req:{kivi:5},hp:340,snap:'cell',cat:'kivikatot',roof:1,base:'harjakatto',stone:1},
 };
 const bt=t=>PIECES[t]&&PIECES[t].base||t;
+const DET=m=>{m.userData.detail=true;return m;}; // yksityiskohtameshit (asetus: rakennusten yksityiskohdat)
 const isFirePiece=t=>t==='nuotio'||t==='grilli';
 // Tulen jäljellä oleva palamisaika prosentteina täydestä (FUEL_MAX yksikköä × 90 s); yli 50 % ei voi lisätä.
 // 100 % = palamisaika heti viimeisen polttoaineen lisäyksen jälkeen (p.data.full, s). fireRem/torchRem = jäljellä olevat sekunnit.
@@ -140,24 +141,24 @@ function buildPieceMesh(t,f=0){
     case 'seina':g.add(bxw(G+.02,WH,.2,W,0,WH/2,0));break;
     case 'ikkunaseina':{const ww=1.1,y0=.95,y1=2.05,pw=(G-ww)/2,px=ww/2+pw/2;
       g.add(bxw(pw+.01,WH,.2,W,-px,WH/2,0),bxw(pw+.01,WH,.2,W,px,WH/2,0),bxw(ww,y0,.2,W,0,y0/2,0),bxw(ww,WH-y1,.2,W,0,(y1+WH)/2,0));
-      g.add(bxw(ww+.12,.07,.3,W,0,y0+.035,0));break;}
+      g.add(DET(bxw(ww+.12,.07,.3,W,0,y0+.035,0)));break;}
     case 'kiviseina':g.add(bxw(G+.02,WH,.36,MAT.stone,0,WH/2,0));break;
     case 'aita':{const n=9;for(let i=0;i<n;i++){const x=-G/2+.12+i*(G-.24)/(n-1);g.add(bxw(.18,1.5,.18,MAT.wood,x,.75,0));const tip=new THREE.Mesh(new THREE.ConeGeometry(.12,.35,4),MAT.wood);tip.position.set(x,1.65,0);tip.castShadow=true;g.add(tip);}g.add(bxw(G,.14,.24,MAT.wood,0,.7,.08));break;}
     case 'ovi':{const pw=(G-DOOR_W)/2,px=DOOR_W/2+pw/2,DW=def.stone?W:MAT.doorwood;g.add(bxw(pw,WH,.22,DW,-px,WH/2,0),bxw(pw,WH,.22,DW,px,WH/2,0),bxw(G,WH-DOOR_H,.22,DW,0,(DOOR_H+WH)/2,0));
       const piv=new THREE.Group();piv.position.set(-DOOR_W/2,0,0);piv.add(bxw(DOOR_W,DOOR_H-.05,.1,MAT.doorwood,DOOR_W/2,(DOOR_H-.05)/2,0));
-      const hm=mat(0x3a3a3a);for(const sd of[-1,1]){piv.add(bx(.05,.05,.1,hm,DOOR_W-.2,1.05,sd*.08),bx(.2,.045,.045,hm,DOOR_W-.28,1.05,sd*.125));}
+      const hm=mat(0x3a3a3a);for(const sd of[-1,1]){piv.add(DET(bx(.05,.05,.1,hm,DOOR_W-.2,1.05,sd*.08)),DET(bx(.2,.045,.045,hm,DOOR_W-.28,1.05,sd*.125)));}
       g.add(piv);g.userData.leaf=piv;break;}
     case 'katto':g.add(roofSlope(G,G,true,def.stone));break;
     case 'katto_loiva':g.add(roofSlope(G,G/2,true,def.stone));break;
     case 'harjakatto':{const a=roofSlope(G/2,G/2,false,def.stone),b2=new THREE.Group();b2.add(roofSlope(G/2,G/2,false,def.stone));a.position.z=G/4;b2.position.z=-G/4;b2.rotation.y=Math.PI;g.add(a,b2);break;}
     case 'vinoseina':case 'kolmio':g.add(triMesh(t,f,W));break;
     case 'palkki':case 'palkki2':{const L=BEAM_L(t),th=BEAM_TH(t),a=(f%5)*Math.PI/8,b=bxw(L,th,th,W,0,0,0);const grp=new THREE.Group();grp.add(b);grp.rotation.z=a;grp.position.y=L/2*Math.sin(a)+th/2*Math.cos(a);g.add(grp);break;}
-    case 'tikkaat':{const a=(f%3)*Math.PI/12,L=WH/Math.cos(a),lg=new THREE.Group();for(const x of[-.35,.35])lg.add(bxw(.08,L,.08,W,x,L/2,0));for(let y=.3;y<L-.1;y+=.36)lg.add(bxw(.7,.06,.06,W,0,y,.02));lg.rotation.x=-a;g.add(lg);break;}
+    case 'tikkaat':{const a=(f%3)*Math.PI/12,L=WH/Math.cos(a),lg=new THREE.Group();for(const x of[-.35,.35])lg.add(bxw(.08,L,.08,W,x,L/2,0));for(let y=.3;y<L-.1;y+=.36)lg.add(DET(bxw(.7,.06,.06,W,0,y,.02)));lg.rotation.x=-a;g.add(lg);break;}
     case 'portaat':{const d=G/STEP_N,h=WH/STEP_N;for(let i=0;i<STEP_N;i++)g.add(bxw(G,h*(i+1),d,W,0,h*(i+1)/2,G/2-d/2-i*d));break;}
     case 'portaat_ontelo':{const gm=stairGeom(f%3),d=gm.run/STEP_N,h=gm.rise/STEP_N,L=Math.hypot(gm.run,gm.rise),al=Math.atan2(gm.rise,gm.run);
       for(let i=0;i<STEP_N;i++)g.add(bxw(G,.1,d+.02,W,0,h*(i+1)-.05,G/2-d/2-i*d));
       for(const x of[-(G/2-.07),G/2-.07]){const sb=bxw(.12,.26,L,W,x,0,0);const gr=new THREE.Group();gr.add(sb);gr.rotation.x=al;gr.position.set(0,gm.rise/2-.22,G/2-gm.run/2);g.add(gr);}break;}
-    case 'tyopenkki':g.add(bxw(1.8,.14,.9,MAT.wood,0,.86,0));for(const [x,z] of [[-.8,-.35],[.8,-.35],[-.8,.35],[.8,.35]])g.add(bxw(.14,.8,.14,MAT.wood,x,.4,z));g.add(bx(.5,.08,.2,mat(0x8f8d86),.3,.98,0));g.add(bxw(.08,.06,.6,MAT.wood,-.4,.96,.1));break;
+    case 'tyopenkki':g.add(bxw(1.8,.14,.9,MAT.wood,0,.86,0));for(const [x,z] of [[-.8,-.35],[.8,-.35],[-.8,.35],[.8,.35]])g.add(bxw(.14,.8,.14,MAT.wood,x,.4,z));g.add(DET(bx(.5,.08,.2,mat(0x8f8d86),.3,.98,0)));g.add(DET(bxw(.08,.06,.6,MAT.wood,-.4,.96,.1)));break;
     case 'nuotio':for(let i=0;i<8;i++){const a=i/8*TAU;g.add(bx(.26,.2,.26,mat(0x6a6862),Math.cos(a)*.48,.1,Math.sin(a)*.48));}{const l1=bxw(.14,.14,.8,MAT.wood,0,.12,0);l1.rotation.y=.6;const l2=bxw(.14,.14,.8,MAT.wood,0,.16,0);l2.rotation.y=-.6;g.add(l1,l2);const f=new THREE.Mesh(new THREE.ConeGeometry(.28,.7,5),MAT.flame);f.position.y=.5;g.add(f);const f2=new THREE.Mesh(new THREE.ConeGeometry(.15,.45,5),MAT.flame2);f2.position.y=.45;g.add(f2);g.userData.flame=[f,f2];}break;
     case 'grilli':{for(let i=0;i<8;i++){const a=i/8*TAU;g.add(bx(.26,.2,.26,mat(0x6a6862),Math.cos(a)*.48,.1,Math.sin(a)*.48));}
       const l1=bxw(.14,.14,.8,MAT.wood,0,.12,0);l1.rotation.y=.6;const l2=bxw(.14,.14,.8,MAT.wood,0,.16,0);l2.rotation.y=-.6;g.add(l1,l2);
@@ -169,7 +170,7 @@ function buildPieceMesh(t,f=0){
     case 'sanky':g.add(bxw(1.1,.3,2.1,MAT.wood,0,.15,0),bx(1,.12,1.6,mat(0x8a6a4a),0,.36,.2),bx(.8,.14,.35,mat(0xd9cbb0),0,.38,-.8),bxw(1.1,.6,.12,MAT.wood,0,.3,-1.05));break;
     case 'arkku':g.add(bxw(1,.6,.65,W,0,.3,0),bxw(1.04,.14,.69,W,0,.66,0),bx(1.06,.06,.7,mat(0x444444),0,.45,0));break;
     case 'tynnyri':{const b=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,1,12),W);b.position.y=.5;g.add(b);const mid=new THREE.Mesh(new THREE.CylinderGeometry(.46,.46,.9,12),W);mid.position.y=.5;g.add(mid);
-      for(const y of[.18,.82]){const r=new THREE.Mesh(new THREE.CylinderGeometry(.47,.47,.07,12),mat(0x3a3a3a));r.position.y=y;g.add(r);}break;}
+      for(const y of[.18,.82]){const r=new THREE.Mesh(new THREE.CylinderGeometry(.47,.47,.07,12),mat(0x3a3a3a));r.position.y=y;g.add(DET(r));}break;}
     case 'soihtuteline':{g.add(bxw(.12,1.6,.12,MAT.wood,0,.8,0));const fa=bx(.2,.25,.2,MAT.flame,0,1.7,0,false),fb=bx(.1,.12,.1,MAT.flame2,0,1.84,0,false);g.add(fa,fb);g.userData.flame=[fa,fb];break;}
   }
   g.traverse(m=>{if(m.isMesh){m.castShadow=m.castShadow!==false;m.receiveShadow=true;}});
@@ -212,7 +213,7 @@ function addPiece(t,x,y,z,rot,hp,data,f=0){
   {let h=(Math.imul(Math.round(x*8),374761393)+Math.imul(Math.round(y*8),668265263)+Math.imul(Math.round(z*8),2147483629))|0;h=Math.imul(h^(h>>>13),1274126177);h^=h>>>16;const hs=h>>>0;mesh.scale.set(1+(hs%8)*.0006,1+((hs>>>3)%8)*.0006,1+((hs>>>6)%8)*.0006);}
   scene.add(mesh);
   const p={t,x,y,z,rot,f,hp:hp??def.hp,mesh,data:data||{},cols:[],dmgLv:0};
-  mesh.userData.piece=p;mesh.traverse(m=>{m.userData.piece=p;});
+  mesh.userData.piece=p;mesh.traverse(m=>{m.userData.piece=p;});if(typeof applyPieceDetail==='function')applyPieceDetail(mesh);
   for(const b of worldBoxes(t,x,y,z,rot,f)){const c=addBox(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ,p);c.door=b.door;p.cols.push(c);}
   if(isFirePiece(t)){p.data.fuel=p.data.fuel??4;p.data.burn=p.data.burn??0;if(!p.data.full)p.data.full=Math.max(90,fireRem(p));p.data.cook=(p.data.cook||[]).map(c=>typeof c==='number'?{id:'liha',t:0,need:10}:c);lightSources.push(p.light={x,y:y+.8,z,c:0xff8c3a,i:2,on:()=>p.data.fuel>0,piece:p});}
   // Seisova soihtu palaa p.data.burn sekuntia (5 min aluksi; puu nollaa 10 min, hiili 30 min).

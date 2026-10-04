@@ -177,3 +177,20 @@ textarea{width:100%;min-height:70px;background:rgba(0,0,0,.35);color:var(--bone)
 .keysGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
 .keyCat h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#e8a44a;margin:0 0 6px}
 .keyRow{display:flex;gap:10px;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.25);font-size:13px}.keyRow .kb{min-width:92px;text-align:center;flex:none}
+
+/* Erä 29: hotbarin valinta, valikko ja asetukset */
+#hotbar .slot.hsel{outline:2px solid #e8a44a;outline-offset:1px;box-shadow:0 0 10px rgba(232,164,74,.5)}
+.dlg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:60}
+.dlgBox{background:repeating-linear-gradient(180deg,#4a2e18 0,#4a2e18 22px,#3f2713 22px,#3f2713 24px),#47301a;border:3px solid #2a1a0c;box-shadow:inset 0 0 0 2px #6e4a28,0 20px 60px rgba(0,0,0,.7);padding:18px 22px;max-width:min(420px,92vw);font-size:15px}
+.setCard{position:relative;margin-top:6px;width:min(760px,calc(100vw - 40px));max-height:58vh;overflow:auto;background:repeating-linear-gradient(180deg,rgba(74,46,24,.94) 0,rgba(74,46,24,.94) 22px,rgba(63,39,19,.94) 22px,rgba(63,39,19,.94) 24px);border:3px solid #2a1a0c;box-shadow:inset 0 0 0 2px #6e4a28,0 14px 40px rgba(0,0,0,.6);padding:14px 16px;border-radius:3px}
+.setCard .close{position:absolute;right:8px;top:8px}
+.setTabs{display:flex;flex-wrap:wrap;gap:4px;margin:0 36px 10px 0}
+.setGrid{display:flex;flex-direction:column;gap:8px;font-size:14px}.setRow{display:grid;grid-template-columns:minmax(230px,1fr) 180px 1fr;gap:12px;align-items:center;padding:5px 8px;background:rgba(0,0,0,.2);border-radius:3px}.setRow .note{color:#cfc6b0}
+.setGrid label{color:var(--bone)}.setGrid select{background:#2f1d0e;color:var(--bone);border:1px solid #6e4a28;padding:4px 8px;border-radius:3px;font:inherit}
+.setGrid input[type=range]{width:180px}
+.keyRow .kn{flex:1}.kbtn{cursor:pointer;min-width:92px}.kbtn:hover{border-color:#e8a44a;background:#7a4b1c}.kbtn.chg{border-color:#e8a44a;color:#ffd28a}.kb.fixed{opacity:.8}
+.mbtn{background:linear-gradient(180deg,rgba(74,46,24,.92),rgba(47,29,14,.92));border:2px solid #2a1a0c;box-shadow:inset 0 0 0 1px #6e4a28;border-radius:4px;transition:transform .1s,box-shadow .1s}
+.mbtn:hover{border-color:#2a1a0c;box-shadow:inset 0 0 0 1px #e8a44a,0 0 14px rgba(232,164,74,.25);transform:translateX(3px);background:linear-gradient(180deg,rgba(122,75,28,.95),rgba(74,46,24,.95))}
+.title{letter-spacing:.01em}
+.title::after{content:"";display:block;height:3px;width:min(300px,60%);margin-top:12px;background:linear-gradient(90deg,#e8a44a,rgba(232,164,74,0))}
+#saveMsg{min-height:16px;color:#cfe8b0}

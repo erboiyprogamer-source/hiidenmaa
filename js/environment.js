@@ -70,7 +70,7 @@ function updateEnvironment(dt){
   wRain=lerp(wRain,W.rain*(W.dark>.4?sstep(.6,.92,wDark/W.dark):1),Math.min(1,dt*.4));wSnow=lerp(wSnow,W.snow||0,Math.min(1,dt*.4));wWind=lerp(wWind,W.wind||0,k);
   if(W.storm&&!P.inDun&&playTime>nextBolt){nextBolt=playTime+4+Math.random()*10;flash=1;if(Math.random()<.35)strikeBolt();if(Math.random()<.12)stormFellTree();}
   flash=Math.max(0,flash-dt*4);
-  SWAY.uTime.value=playTime;SWAY.uWind.value=.15+wWind*.85;
+  SWAY.uTime.value=playTime;SWAY.uWind.value=SET.sway?.15+wWind*.85:0;
   const ang=(dayT-.5)*TAU,el=Math.cos(ang)+.3;
   // Taivaan valo vaihtuu pehmeästi (hämärä ~1,5 min). Aurinko sammuu horisontissa ennen kuun syttymistä,
   // joten valon suunta vaihtuu vasta kun voimakkuus on nolla.
@@ -85,7 +85,7 @@ function updateEnvironment(dt){
   cTmp.lerp(cAarni,aarniK*.75*Math.max(.3,light));
   scene.background.copy(cTmp);scene.fog.color.copy(cTmp);
   // Usvainen ja hämärä maailma; Aarnimetsässä sumu on sakeaa.
-  scene.fog.near=lerp(lerp(6,40,wFog)*lerp(.4,1,light),3,aarniK);scene.fog.far=lerp(lerp(45,165,wFog)*lerp(.5,1,light),38,aarniK);
+  scene.fog.near=lerp(lerp(6,40,wFog)*lerp(.4,1,light)*RDK,3,aarniK);scene.fog.far=lerp(lerp(45,165,wFog)*lerp(.5,1,light)*RDK,38,aarniK);
   const ph=moonPhase();
   if(sunK>0){cSun.setHex(0xfff1d6).lerp(cSunLow,1-sstep(.1,.6,el));sun.color.copy(cSun);sun.intensity=1.4*sunK*sstep(-.12,.45,el)*(1-wDark*.7);sun.position.set(P.pos.x+sd.x*120,P.pos.y+sd.y*120,P.pos.z+sd.z*120);}
   else{sun.color.setHex(0x8aa2d8);sun.intensity=.2*moonK*ph*(1-wDark*.6);sun.position.set(P.pos.x-sd.x*120,P.pos.y+Math.abs(sd.y)*120+40,P.pos.z-sd.z*120);}
@@ -158,7 +158,7 @@ function survival(dt){
   for(const k in P.buffs){P.buffs[k]-=dt;if(P.buffs[k]<=0)delete P.buffs[k];}
   calcFx();
   P.crampT-=dt;if(P.buffs.vatsakipu&&P.crampT<=0){P.crampT=8+Math.random()*6;P.stam=Math.max(0,P.stam-12);P.stamDelay=Math.max(P.stamDelay,1);floatText('Auts!',P.pos.x,P.pos.y+2,P.pos.z,'#c9a66b');}
-  P.hunger=Math.max(0,P.hunger-dt*(100/1000)*(cold?1.3:1)*(P.atk||keys.ShiftLeft?1.15:1));
+  P.hunger=Math.max(0,P.hunger-dt*(100/1000)*(cold?1.3:1)*(P.atk||kd('run')?1.15:1));
   // regen
   let reg=P.hunger>35?.35:P.hunger>0?.15:0;if(P.buffs.levannyt)reg+=.6;reg*=P.fx.hpRegen;
   if(P.heal>0){const h=Math.min(P.heal,3*dt);P.heal-=h;P.hp+=h;}

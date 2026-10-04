@@ -55,3 +55,21 @@ function newGame(){
   for(let i=0;i<3;i++){const a=i*2.1,d=30+i*6;spawnMob('peura',LOC.spawn.x+Math.cos(a)*d,LOC.spawn.z+Math.sin(a)*d);}
   setTimeout(()=>{msg('Rannalla seisoo riimukivi. Lue se (E).');},800);
 }
+
+/* ---------------- TALLENNUSKOODI (pakattu) ---------------- */
+// Muoto "HM2:" + base64(deflate-raw(JSON)) – tyypillisesti 5–10× lyhyempi kuin pelkkä base64. Vanha muoto (pelkkä base64-JSON) latautuu edelleen.
+async function packSave(obj){const txt=JSON.stringify(obj);
+  try{if(typeof CompressionStream==='function'){const cs=new Blob([txt]).stream().pipeThrough(new CompressionStream('deflate-raw'));const buf=new Uint8Array(await new Response(cs).arrayBuffer());let s='';for(let i=0;i<buf.length;i+=0x8000)s+=String.fromCharCode.apply(null,buf.subarray(i,i+0x8000));return 'HM2:'+btoa(s);}}catch(e){}
+  return btoa(unescape(encodeURIComponent(txt)));}
+async function unpackSave(code){code=code.trim().replace(/\s+/g,'');
+  if(code.startsWith('HM2:')){const bin=atob(code.slice(4)),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+    const ds=new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw'));return JSON.parse(await new Response(ds).text());}
+  return JSON.parse(decodeURIComponent(escape(atob(code))));}
+function wireSaveIO(){const msgEl=$('#ioMsg'),say=t=>{msgEl.textContent=t;};
+  const make=async()=>{const c=await packSave(serialize());$('#saveCode').value=c;return c;};
+  $('#bExport').onclick=async()=>{if(!started){say('Aloita tai jatka peliä ensin.');return;}const c=await make();say(`Koodi luotu (${c.length} merkkiä).`);};
+  $('#bCopy').onclick=async()=>{if(!started&&!$('#saveCode').value){say('Aloita tai jatka peliä ensin.');return;}const t=$('#saveCode');const c=t.value||await make();navigator.clipboard.writeText(c).then(()=>say('Kopioitu leikepöydälle.')).catch(()=>{t.select();say('Valittu – kopioi Ctrl+C:llä.');});};
+  $('#bImport').onclick=async()=>{try{const s=await unpackSave($('#saveCode').value);playSave(s,'Peli ladattu koodista.');}catch(e){say('Koodi ei kelpaa.');}};
+  $('#bDownload').onclick=async()=>{if(!started){say('Aloita tai jatka peliä ensin.');return;}const c=await make();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/plain'}));
+    a.download=`hiidenmaa_paiva${dayN}_${new Date().toISOString().slice(0,10)}.txt`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);say('Tiedosto ladattu (tallennus: päivä '+dayN+').');};
+  $('#fUpload').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const s=await unpackSave(await f.text());playSave(s,'Peli ladattu tiedostosta.');}catch(err){say('Tiedosto ei kelpaa tallenteeksi.');}e.target.value='';};}

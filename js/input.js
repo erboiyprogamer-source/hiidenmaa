@@ -6,29 +6,31 @@
 const keys={};let mouseL=false,mouseR=false,locked=false,lockFailed=false,invertY=false;
 const canvas=renderer.domElement;
 addEventListener('keydown',e=>{
-  if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')return;
+  if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
   keys[e.code]=true;
   if(e.code==='Tab'){e.preventDefault();}
-  if(e.code==='KeyK'&&!e.repeat&&(state==='play'||state==='ui'||state==='paused'))toggleFullscreen();
-  if(state==='paused'&&e.code==='Escape'&&!e.repeat&&performance.now()-pausedAt>400){if(!$('#opts').hidden)$('#opts').hidden=true;else $('#bResume').click();return;}
+  if(e.code===BIND.full&&!e.repeat&&(state==='play'||state==='ui'||state==='paused'))toggleFullscreen();
+  if(state==='paused'&&e.code==='Escape'&&!e.repeat&&performance.now()-pausedAt>400){if(!$('#settings').hidden)$('#settings').hidden=true;else $('#bResume').click();return;}
   if(state!=='play'&&state!=='ui')return;
   if(e.repeat)return;
-  if(e.code==='Tab'||e.code==='KeyI')togglePanel('inv');
-  else if(e.code==='KeyM')togglePanel('map');
-  else if(e.code==='KeyJ')togglePanel('prog');
-  else if(e.code==='KeyT')togglePanel('log');
-  else if(e.code==='KeyB'){const w=equipped('weapon');if(w&&w.id==='vasara')togglePanel('build');else msg('Ota vasara käteen rakentaaksesi.','warn');}
-  else if(e.code==='Escape'){if(openPanel){e.preventDefault();closePanels(false,true);}else if(state==='play'&&locked){pauseGame();releaseLock();}}
+  const c=e.code;
+  if(c===BIND.inv||(c==='KeyI'&&BIND.inv==='Tab'))togglePanel('inv');
+  else if(c===BIND.map)togglePanel('map');
+  else if(c===BIND.prog)togglePanel('prog');
+  else if(c===BIND.log)togglePanel('log');
+  else if(c===BIND.build){const w=equipped('weapon');if(w&&w.id==='vasara')togglePanel('build');else msg('Ota vasara käteen rakentaaksesi.','warn');}
+  else if(c==='Escape'){if(openPanel){e.preventDefault();closePanels(false,true);}else if(state==='play'&&locked){pauseGame();releaseLock();}}
   else if(state==='play'){
-    if(e.code==='KeyE')interact();
-    else if(e.code==='KeyR'){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}
-    else if(e.code==='KeyG'){if(equipped('weapon')&&equipped('weapon').id==='vasara')cycleSnap();}
-    else if(e.code==='KeyH'){if(equipped('weapon')&&equipped('weapon').id==='vasara')cycleVMode();}
-    else if(e.code==='KeyQ')liftBuild(1);
-    else if(e.code==='KeyZ')liftBuild(-1);
-    else if(e.code==='KeyX')removeLooked();
-    else if(e.code==='KeyF')repairLooked();
-    else if(/^Digit[1-8]$/.test(e.code))useSlot(+e.code.slice(5)-1);
+    if(c===BIND.interact)interact();
+    else if(c===BIND.rot){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}
+    else if(c===BIND.snap){if(equipped('weapon')&&equipped('weapon').id==='vasara')cycleSnap();}
+    else if(c===BIND.vsnap){if(equipped('weapon')&&equipped('weapon').id==='vasara')cycleVMode();}
+    else if(c===BIND.up)liftBuild(1);
+    else if(c===BIND.down)liftBuild(-1);
+    else if(c===BIND.remove)removeLooked();
+    else if(c===BIND.repair)repairLooked();
+    else if(c===BIND.minizoom)cycleMiniZoom();
+    else if(/^Digit[1-8]$/.test(c)){hotSel=+c.slice(5)-1;invDirty=true;useSlot(hotSel);}
   }
 });
 addEventListener('keyup',e=>{keys[e.code]=false;});
@@ -50,7 +52,10 @@ addEventListener('mousemove',e=>{
   if(Math.abs(dx)>200||Math.abs(dy)>200)return;
   camYaw-=dx*.0028;camPitch=clamp(camPitch+dy*.0028*(invertY?-1:1),-.6,1.25);
 });
-canvas.addEventListener('wheel',e=>{if(state==='play'){camDist=clamp(camDist+Math.sign(e.deltaY)*.6,2.2,10);}},{passive:true});
+// Rulla: zoom tai (asetus) pikapaikan vaihto – valittu pikapaikka varustetaan heti jos esine on varustettava
+canvas.addEventListener('wheel',e=>{if(state!=='play')return;
+  if(SET.wheelHotbar){hotSel=((hotSel+Math.sign(e.deltaY))%8+8)%8;invDirty=true;const s=inv[hotSel];if(s&&ITEMS[s.id].cat&&!s.eq)toggleEquip(s);}
+  else camDist=clamp(camDist+Math.sign(e.deltaY)*.6,2.2,10);},{passive:true});
 let lockFails=0;
 function lockFail(fromClick){if(!fromClick)return;lockFails++;if(lockFails>=2&&!lockFailed){lockFailed=true;msg('Hiiren lukitus ei ole käytössä: käännä kameraa vetämällä hiirellä.','warn');}}
 function requestLock(fromClick){try{const r=canvas.requestPointerLock();if(r&&r.catch)r.catch(()=>lockFail(fromClick));}catch(e){lockFail(fromClick);}}

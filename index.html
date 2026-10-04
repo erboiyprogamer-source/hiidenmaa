@@ -6,7 +6,7 @@
 <title>Hiidenmaa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700;800&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=0.51">
+<link rel="stylesheet" href="css/style.css?v=0.52">
 </head>
 <body>
 
@@ -85,7 +85,7 @@
 
 <div id="menu" class="screen">
   <div class="inner">
-    <h1 class="title"><small>Selviytymispeli · versio 0.51</small>Hiidenmaa</h1>
+    <h1 class="title"><small>Selviytymispeli · versio 0.52</small>Hiidenmaa</h1>
     <p class="lede">Haaksirikko jätti sinut saarelle, jota yhdeksän talven ajan on hallinnut kivinen Kalmanvartija. Kaada puita, rakenna suoja ennen yötä, takoa kuparista ase ja herätä vartija kivikehässä.</p>
     <div class="menuBtns">
       <p class="note" id="mapName" style="margin:0 0 6px"></p>
@@ -93,38 +93,20 @@
       <button class="mbtn" id="bResume" hidden>Palaa peliin</button>
       <button class="mbtn" id="bNew">Uusi peli<small>Aloita rannalta ilman mitään</small></button>
       <button class="mbtn" id="bSave" hidden>Tallenna nyt</button>
-      <button class="mbtn" id="bKeys">Näppäimet<small>Kaikki toiminnot ja niiden näppäimet</small></button>
-      <button class="mbtn" id="bMenuToggle">Ohjaimet ja asetukset</button>
+      <button class="mbtn" id="bKeys">Näppäimet<small>Toiminnot ja niiden näppäimet – vaihdettavissa</small></button>
+      <button class="mbtn" id="bMenuToggle">Asetukset<small>Grafiikka, ohjaus, ääni ja tallennuskoodi</small></button>
     </div>
-    <div id="keysBox" hidden></div>
-    <div id="opts" hidden>
-      <div class="keys">
-        <span class="kb">WASD</span><span>liiku · <b>Shift</b> juokse · <b>Välilyönti</b> hyppää</span>
-        <span class="kb">Hiiri</span><span>vasen lyö / jousella pidä ja päästä · oikea torju kilvellä</span>
-        <span class="kb">E</span><span>poimi, avaa, käytä</span>
-        <span class="kb">Tab</span><span>reppu ja valmistus</span>
-        <span class="kb">1–8</span><span>pikapaikat (varusta / syö)</span>
-        <span class="kb">B</span><span>rakennusvalikko (vasara kädessä)</span>
-        <span class="kb">R · X · F</span><span>käännä rakennusta · pura · korjaa (vasara)</span>
-        <span class="kb">M</span><span>kartta · <b>J</b> taso, saavutukset ja tavoitteet · <b>T</b> viimeiset 10 ilmoitusta · <b>Esc</b> tauko / sulje paneeli</span>
-        <span class="kb">K</span><span>koko näyttö (Esc ei silloin poistu koko näytöstä)</span>
-        <span class="kb">C</span><span>kyykky / hiipiminen (hitaampi, viholliset huomaavat vasta lähempää, eläimet eivät säiky)</span>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <label class="toggle"><input type="checkbox" id="optShadow" checked> Varjot</label>
-        <label class="toggle"><input type="checkbox" id="optSound" checked> Äänet</label>
-        <label class="toggle"><input type="checkbox" id="optInvY"> Käännä pystyhiiri</label>
-      </div>
-      <div style="margin-top:10px">
-        <div class="note" style="margin-bottom:4px">Tallennuskoodi (siirrä peli toiselle koneelle tai varmuuskopioi):</div>
-        <textarea id="saveCode" spellcheck="false"></textarea>
-        <div class="row" style="margin-top:6px"><button class="btn" id="bExport">Näytä koodi</button><button class="btn" id="bCopy">Kopioi</button><button class="btn" id="bImport">Lataa koodista</button></div>
-        <div class="note" id="ioMsg"></div>
-      </div>
+    <div id="saveMsg" class="note"></div>
+    <div id="settings" class="setCard" hidden>
+      <button class="close" id="bSetClose" aria-label="Sulje">✕</button>
+      <div id="setTabs" class="setTabs"></div>
+      <div id="setBody"></div>
     </div>
     <p class="note">Toimii parhaiten tietokoneella hiirellä ja näppäimistöllä.</p>
   </div>
 </div>
+
+<div id="keyDlg" class="dlg" hidden><div class="dlgBox"><div id="keyDlgT"></div><div class="note" id="keyDlgN"></div><div class="row" id="keyDlgB" style="margin-top:10px"></div></div></div>
 
 <div id="deadS" class="screen" hidden>
   <div class="inner">
@@ -144,28 +126,29 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <!-- Tavalliset skriptit jakavat saman globaalin näkyvyysalueen. Järjestyksellä on väliä. -->
-<script src="js/core.js?v=0.51"></script>
-<script src="js/world.js?v=0.51"></script>
-<script src="js/render.js?v=0.51"></script>
-<script src="js/collision.js?v=0.51"></script>
-<script src="js/items.js?v=0.51"></script>
-<script src="js/audio.js?v=0.51"></script>
-<script src="js/models.js?v=0.51"></script>
-<script src="js/resources.js?v=0.51"></script>
-<script src="js/landmarks.js?v=0.51"></script>
-<script src="js/pieces.js?v=0.51"></script>
-<script src="js/mobs.js?v=0.51"></script>
-<script src="js/state.js?v=0.51"></script>
-<script src="js/input.js?v=0.51"></script>
-<script src="js/actions.js?v=0.51"></script>
-<script src="js/building.js?v=0.51"></script>
-<script src="js/environment.js?v=0.51"></script>
-<script src="js/player.js?v=0.51"></script>
-<script src="js/ai.js?v=0.51"></script>
-<script src="js/camera.js?v=0.51"></script>
-<script src="js/ui.js?v=0.51"></script>
-<script src="js/progress.js?v=0.51"></script>
-<script src="js/save.js?v=0.51"></script>
-<script src="js/main.js?v=0.51"></script>
+<script src="js/core.js?v=0.52"></script>
+<script src="js/world.js?v=0.52"></script>
+<script src="js/render.js?v=0.52"></script>
+<script src="js/collision.js?v=0.52"></script>
+<script src="js/items.js?v=0.52"></script>
+<script src="js/audio.js?v=0.52"></script>
+<script src="js/models.js?v=0.52"></script>
+<script src="js/resources.js?v=0.52"></script>
+<script src="js/landmarks.js?v=0.52"></script>
+<script src="js/pieces.js?v=0.52"></script>
+<script src="js/mobs.js?v=0.52"></script>
+<script src="js/state.js?v=0.52"></script>
+<script src="js/settings.js?v=0.52"></script>
+<script src="js/input.js?v=0.52"></script>
+<script src="js/actions.js?v=0.52"></script>
+<script src="js/building.js?v=0.52"></script>
+<script src="js/environment.js?v=0.52"></script>
+<script src="js/player.js?v=0.52"></script>
+<script src="js/ai.js?v=0.52"></script>
+<script src="js/camera.js?v=0.52"></script>
+<script src="js/ui.js?v=0.52"></script>
+<script src="js/progress.js?v=0.52"></script>
+<script src="js/save.js?v=0.52"></script>
+<script src="js/main.js?v=0.52"></script>
 </body>
 </html>

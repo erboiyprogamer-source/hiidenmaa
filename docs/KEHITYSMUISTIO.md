@@ -49,6 +49,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.52 (erä 29: valikko, asetukset ja tallennus)
+- **Uusi `js/settings.js`** (latautuu state.js:n jälkeen): `ACTIONS`/`BIND` (22 vaihdettavaa näppäintoimintoa, tallennus `hiidenmaa_keys`), `kd(action)` korvaa kovakoodatut `keys.KeyX`, `validateKey` (varatut: Esc, 1–8, F-näppäimet, erikoisnäppäimet; Shift vain juoksulle; ei jo käytössä olevia), vaihto kahdessa vaiheessa (paina näppäintä → vahvista pienessä ikkunassa `#keyDlg`), oletusten palautus; `SET` (grafiikka/ohjaus, tallennus `hiidenmaa_set`) ja `applyGfx()`.
+- **Pelivalikko uusiksi:** puuteemaiset painikkeet + otsikon korostusviiva; **Asetukset**-kortti välilehdin (Näppäimet, Grafiikka, Ohjaus ja ääni, Tallennus). **Tallenna nyt -bugi korjattu** (ei enää avaa asetuksia; tila näkyy painikkeessa ja rivillä).
+- **Tallennuskoodi pakattu:** `HM2:` + base64(deflate-raw JSON) (`packSave`/`unpackSave`, CompressionStream); testissä 5797 → 488 merkkiä. Vanha base64-koodi latautuu edelleen. **.txt-tiedosto:** "Tallenna .txt-tiedostoon" ja "Lataa .txt-tiedostosta".
+- **Hiiren rulla pikapaikkoihin** (asetus, `SET.wheelHotbar`): vaihtaa valittua pikapaikkaa (`hotSel`, korostus `.hsel`) ja varustaa varustettavan esineen; zoom säädetään liukusäätimellä (`SET.zoom`). Numeronäppäimet 1–8 asettavat myös valinnan.
+- **Grafiikka-asetukset:** varjot (hyvät/kevyet/pois), automaattinen laatu, puiden heiluminen (`SWAY.uWind`), hiukkaset (`PF` kerroin: `burst`, kipinät, sade/lumi `drawRange`), yksityiskohdat (`DETK`), rakennusten yksityiskohdat (`DET()`-merkityt meshit: ovenkahvat, tikkaiden puolat, ikkunalauta, tynnyrin vanteet, työpenkin työkalut), piirtoetäisyys (`RDK` = metrit/165: sumun `near/far` ja puiden/kivien näkyvyys).
+- **Minikartan zoom** (näppäin N, `MINI_R` 60/35/110 m).
+- **Kilpi torjunnassa:** vasen käsi koukussa oikealle ruumiin eteen (olka −.65, sisäänpäin −.8, kyynärpää −1.2) ja kilpi käännetään pehmeästi (`P.blockK`) osoittamaan eteenpäin (käden kierto kumotaan kvaternionilla).
+
 ### v0.51 (näppäinlista päävalikossa)
 - Päävalikkoon **Näppäimet**-painike (`#bKeys`): avaa/sulkee puuteemaisen listan jossa kaikki näppäimet isojen kategorioiden alla (Liikkuminen, Toiminnot, Rakentaminen, Valikot ja paneelit, Näkymä). Lista on taulukkona `KEYLIST` (main.js) – päivitä se kun näppäimiä lisätään (pohja myöhemmälle näppäinten vaihtovalikolle, erä 29).
 
@@ -576,7 +585,7 @@ Kirjattu v0.35:n jälkeen. Jokainen erä: testaa, päivitä muistio, versio+`?v=
 **Erä 28 – Maasto ja työkalut (1)** – TEHTY (v0.41)
 1. Lapio: vasen klikkaus tekee maasta multaisemman ja tummemman (polut). Uusi kuokka: nostaa maanmuotoja ja vähentää multaisuutta (palauttaa alkuperäiseksi).
 
-**Erä 29 – Valikko, asetukset ja tallennus (1.1, 1.2, 1.3, 9)**
+**Erä 29 – Valikko, asetukset ja tallennus (1.1, 1.2, 1.3, 9)** – TEHTY (v0.52)
 1. Asetuksiin lista kaikista näppäimistä; keybind-vaihtovalikko (oma pieni, varmistus, ei päällekkäisiä/kiellettyjä näppäimiä).
 2. Pelivalikko hienommaksi teemaan sopivaksi; BUG: Tallenna-nappi avaa asetusvalikon – korjaa; tallennuskoodi tiivistetympi (lyhyempi muoto) + lataus/tallennus .txt-tiedostona.
 3. Hiiren rulla hotbarin selaukseen (kuten Minecraft), zoom manuaalisesti jos toggle päällä.

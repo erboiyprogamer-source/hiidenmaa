@@ -46,6 +46,7 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 | `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, `PIECES`, `pieceBoxes`, `buildPieceMesh`, `addPiece`, `removePiece` |
 | `js/mobs.js` | `MOBDEF`, `spawnMob`, `mobs`, `boss` |
 | `js/state.js` | `P` (pelaaja), `inv`, `flags`, pelaajahahmo, reppu, maahan pudonneet esineet, partikkelit, ammukset |
+| `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET` (asetukset), `applyGfx()`, asetusvalikko |
 | `js/input.js` | näppäimet, hiiri, hiiren lukitus |
 | `js/actions.js` | hyökkäys, vahinko, syöminen, `interact()`, alttari, luolastoon meno |
 | `js/building.js` | rakennushaamu, ruudukkoon kohdistus, `validPlace`, purku |
@@ -56,7 +57,7 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 | `js/ui.js` | HUD, viestit, paneelit, kartta |
 | `js/progress.js` | `bump`, XP ja taso (`lvlInfo`), saavutukset (`ACH`, `BON`), `GOALS`, edistymispaneeli (J) |
 | `js/save.js` | `serialize`, `loadData`, `saveGame`, `SKEY` |
-| `js/main.js` | valikko, pääsilmukka `frame()`, testirajapinta `window.__game` |
+| `js/main.js` | valikko, pääsilmukka `frame()`, mukautuva laatu, testirajapinta `window.__game` |
 
 ## Mittayksiköt ja sopimukset
 

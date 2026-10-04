@@ -51,7 +51,7 @@ function updateHUD(dt){
   if(openPanel==='inv'&&performance.now()-fxAt>400){fxAt=performance.now();renderEffects(fxs);}
   // clock
   const hh=Math.floor(dayT*24),mm=Math.floor((dayT*24-hh)*60/10)*10;$('#clock').innerHTML=`Päivä ${dayN} · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')} <span>· ${P.inDun?'Hautakumpu':WEATHERS[weather.cur].n}</span>`;
-  if(invDirty){invDirty=false;updateBack();$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1)).join('');if(openPanel==='inv')renderInv();if(openPanel==='chest')renderChest();if(openPanel==='build')renderBuild();}
+  if(invDirty){invDirty=false;updateBack();$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1).replace('class="slot','class="slot'+(i===hotSel?' hsel':''))).join('');if(openPanel==='inv')renderInv();if(openPanel==='chest')renderChest();if(openPanel==='build')renderBuild();}
   if(boss&&!boss.dead){$('#bossbar i').style.width=(boss.hp/boss.maxHp*100)+'%';}
   drawMinimap();
 }
@@ -156,7 +156,10 @@ function mapMarkers(g,sx,ox,oz){
 }
 function drawPlayerArrow(g,x,y,s){g.save();g.translate(x,y);g.rotate(-camYaw);g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=1.5;g.beginPath();g.moveTo(0,-s);g.lineTo(s*.7,s*.8);g.lineTo(0,s*.4);g.lineTo(-s*.7,s*.8);g.closePath();g.fill();g.stroke();g.restore();}
 function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),S=c.width/MAPW;g.imageSmoothingEnabled=true;g.drawImage(MAPC,0,0,c.width,c.height);g.drawImage(FOGC,0,0,c.width,c.height);mapMarkers(g,S,HALF,HALF);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF)*S,(P.pos.z+HALF)*S,9);}
-function drawMinimap(){const c=$('#mini'),g=c.getContext('2d'),W=c.width,R=60,S=W/(R*2);g.save();g.clearRect(0,0,W,W);g.beginPath();g.arc(W/2,W/2,W/2,0,TAU);g.clip();g.fillStyle='#1d1a16';g.fillRect(0,0,W,W);
+// Minikartan zoomitasot (näppäin BIND.minizoom): 60 m (oletus), 35 m, 110 m säde
+const MINI_R=[60,35,110];let miniZ=0;
+function cycleMiniZoom(){miniZ=(miniZ+1)%MINI_R.length;msg(`Minikartta: ${MINI_R[miniZ]} m`);}
+function drawMinimap(){const c=$('#mini'),g=c.getContext('2d'),W=c.width,R=MINI_R[miniZ],S=W/(R*2);g.save();g.clearRect(0,0,W,W);g.beginPath();g.arc(W/2,W/2,W/2,0,TAU);g.clip();g.fillStyle='#1d1a16';g.fillRect(0,0,W,W);
   if(!P.inDun){const sx=P.pos.x+HALF-R,sz=P.pos.z+HALF-R;g.drawImage(MAPC,sx,sz,R*2,R*2,0,0,W,W);g.imageSmoothingEnabled=true;g.drawImage(FOGC,sx/4,sz/4,R*2/4,R*2/4,0,0,W,W);mapMarkers(g,S,-(P.pos.x-R),-(P.pos.z-R));
     for(const m of mobs){if(m.dead||m.dun)continue;const x=(m.pos.x-P.pos.x+R)*S,y=(m.pos.z-P.pos.z+R)*S;if(m.state==='chase'||m===boss){g.fillStyle=m===boss?'#8fd8cf':'#c8463b';g.beginPath();g.arc(x,y,m===boss?5:2.5,0,TAU);g.fill();}}}
   else{g.fillStyle='#a99d89';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='center';g.fillText('Hautakumpu',W/2,W/2+30);}
