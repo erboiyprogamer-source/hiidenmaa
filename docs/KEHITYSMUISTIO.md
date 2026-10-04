@@ -49,6 +49,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.39 (erä 26: taivas ja pilvet)
+- **Taivaskupoli** (`skyDome`, ShaderMaterial, `SKY_U`): liukuväri horisontista (= sumun väri) tummempaan zeniittiin + auringon hehku (heikkenee pilvisellä). `updateSky()` environment.js.
+- **Pilvet uusiksi:** 26 isoa, leveää ja litteäpohjaista pilvilauttaa (70–170 m, 26–40 palloa, korkeus 96–126 m eli aiempaa matalammalla, `CLOUD_R` 420). Peitto säästä (kynnys `th`), koko kasvaa peiton mukana (×.75–1.3). Kaukana pilvet häipyvät horisontin väriin (opasiteetti + väri, `far`) eivätkä piirry `CLOUD_R`:n takana.
+- **Pilvikansi** (`cloudDeck`): rankassa sateessa ja myrskyssä koko taivaan peittävä harmaa kerros (128 m), salama valaisee sen.
+- **Auringonsäteet** (`sunShafts`): selkeällä/puolipilvisellä säällä matalalla paistavasta auringosta läpikuultavia valokeiloja (additiivinen, opasiteetti ≤ .07), ei sisällä eikä Aarnimetsässä.
+
 ### v0.38 (erä 25: eläimet, viholliset ja terveyspalkit)
 - **Eläinten säikähdys:** kävellessä 7 m, juostessa 16 m, vahinkoa tekevä ase/jousi kädessä ×1.4, kyykyssä 3.5 m (näköyhteys tai < 4 m). Vahingoitettu eläin pelkää 10 s; pakosuunta pois pelaajasta satunnaisella poikkeamalla (±.4….8 rad), vaihtuu 1.2–3 s välein; rauhoittuu > 28 m päässä.
 - **Viholliset huomaavat iskun:** 10 s iskusta (myös nuoli) vihollinen jahtaa ilman näköyhteyttäkin eikä luovuta jahtia; sen jälkeen taas läheisyys + näköyhteys.
@@ -509,7 +515,7 @@ Kirjattu v0.35:n jälkeen. Jokainen erä: testaa, päivitä muistio, versio+`?v=
 2. Vahingoitetun eläimen/mobin terveyspalkki + numero (10 s iskusta; lähellä ja kun katsoo sitä; bossit ja vaikeat jo kaukaa katsottaessa), palkin alla pääkalloja vaikeustasosta, palkki pitenee/monikerroksinen (1 kerros ≈ pelaajan terveys), pahimmat bossit parantuvat 30 s iskuttomuuden jälkeen.
 3. Vihollinen huomaa pelaajan aina 10 s sen jälkeen kun pelaaja vahingoitti sitä (myös jousella), muuten tarvitaan läheisyys.
 
-**Erä 26 – Taivas ja pilvet (0)**
+**Erä 26 – Taivas ja pilvet (0)** – TEHTY (v0.39; grafiikka-asetukset erässä 29)
 1. Pilvet suuremmiksi, leveämmiksi ja realistisemmiksi (taivaalle levittäytyviä), koko säästä riippuen; kaukana sumeat/häipyvät (optimointi); pilviä hieman matalammalle; selkeällä säällä aurinko paistaa sumun/pilvien välistä; realistisempi taivas (asetuksiin myöhemmin yksinkertaistus).
 
 **Erä 27 – Valo ja soihtu (0.9, 0.99)**

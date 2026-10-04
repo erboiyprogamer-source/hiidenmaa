@@ -103,18 +103,36 @@ const moon=new THREE.Mesh(new THREE.SphereGeometry(12,16,12),new THREE.MeshBasic
 const snow=(function(){const N=700,g=new THREE.BufferGeometry(),p=new Float32Array(N*3),r=mulberry32(13);for(let i=0;i<N;i++)p.set([(r()-.5)*50,r()*26,(r()-.5)*50],i*3);g.setAttribute('position',new THREE.BufferAttribute(p,3));
   const m=new THREE.Points(g,new THREE.PointsMaterial({color:0xffffff,size:.14,transparent:true,opacity:.9}));m.frustumCulled=false;m.visible=false;scene.add(m);return m;})();
 const sunDisc=new THREE.Mesh(new THREE.SphereGeometry(9,12,8),new THREE.MeshBasicMaterial({color:0xfff2c8,fog:false}));scene.add(sunDisc);
-/* ---------------- PILVET JA SALAMAT ---------------- */
-// Pehmeät, liikkuvat pilvet (jokaisella oma materiaali, jotta sää, valo ja salamat värjäävät niitä erikseen). Pilvet ovat aurinkoa ja kuuta lähempänä,
-// joten ne peittävät ne luonnollisesti. Peitto (cover) riippuu säästä: pilvet ilmestyvät ja katoavat järjestyksessä (kynnys th).
-const CLOUD_R=340,CLOUDS=[];
+/* ---------------- TAIVAS, PILVET JA SALAMAT ---------------- */
+// Taivaskupoli: liukuväri horisontista (= sumun väri) zeniittiin + auringon hehku. Seuraa kameraa, piirretään ensimmäisenä.
+const SKY_U={uTop:{value:new THREE.Color(0x3d6fa8)},uHor:{value:new THREE.Color(0x8fbfe0)},uSun:{value:new THREE.Vector3(0,1,0)},uSunC:{value:new THREE.Color(0xfff1d6)},uGlow:{value:1}};
+const skyDome=new THREE.Mesh(new THREE.SphereGeometry(470,24,14),new THREE.ShaderMaterial({uniforms:SKY_U,side:THREE.BackSide,depthWrite:false,fog:false,
+  vertexShader:'varying vec3 vD;void main(){vD=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader:'uniform vec3 uTop,uHor,uSunC,uSun;uniform float uGlow;varying vec3 vD;void main(){float h=max(vD.y,0.);vec3 c=mix(uHor,uTop,pow(smoothstep(0.,1.,h),.55));float s=max(dot(vD,normalize(uSun)),0.);c+=uSunC*(pow(s,90.)*.55+pow(s,10.)*.16+pow(s,3.)*.05)*uGlow;gl_FragColor=vec4(c,1.);}'}));
+skyDome.renderOrder=-10;skyDome.frustumCulled=false;scene.add(skyDome);
+// Pilvet: isoja, leveitä ja litteäpohjaisia pilvilauttoja (70–170 m), jotka levittäytyvät taivaalle. Peitto (cover) riippuu säästä: pilvet
+// ilmestyvät järjestyksessä (kynnys th) ja kasvavat peiton mukana. Kaukana pilvet häipyvät horisontin väriin ja katoavat (ei piirretä R:n takana).
+// Pilvet ovat aurinkoa ja kuuta lähempänä, joten ne peittävät ne luonnollisesti.
+const CLOUD_R=420,CLOUDS=[];
 (function(){const r=mulberry32(77),sg=new THREE.SphereGeometry(1,10,7);
-  for(let i=0;i<46;i++){const parts=[],n=5+(r()*4|0),w=26+r()*34;
-    for(let k=0;k<n;k++){const px=(k/(n-1)-.5)*w*(.8+r()*.4),pr=w*(.16+r()*.14)*(1-Math.abs(k/(n-1)-.5)*.9),py=(r()-.3)*w*.07;
-      parts.push(part(sg,0xf2f4f8,px,py+pr*.15,(r()-.5)*w*.3,0,0,0,pr*1.25,pr*.72,pr));
-      parts.push(part(sg,0xc9ced6,px,py-pr*.3,(r()-.5)*w*.25,0,0,0,pr*1.1,pr*.45,pr*.9));}
-    const m=new THREE.Mesh(mergeParts(parts),new THREE.MeshLambertMaterial({vertexColors:true,flatShading:false,fog:false,transparent:true,opacity:.96}));
-    m.frustumCulled=false;m.userData={th:i/46,ox:(r()*2-1)*CLOUD_R,oz:(r()*2-1)*CLOUD_R,h:130+r()*55,sp:.7+r()*.6,sc:.8+r()*.7};m.scale.setScalar(m.userData.sc);scene.add(m);CLOUDS.push(m);}
+  for(let i=0;i<26;i++){const parts=[],w=70+r()*100,dpt=w*(.4+r()*.3),n=26+(r()*14|0);
+    for(let k=0;k<n;k++){const a=r()*TAU,rr=Math.sqrt(r()),px=Math.cos(a)*rr*w*.5,pz=Math.sin(a)*rr*dpt*.5,core=1-rr*.6,pr=w*(.055+r()*.05)*core;
+      parts.push(part(sg,0xf4f6fa,px,pr*.35+core*w*.05*r(),pz,0,0,0,pr*1.5,pr*.75*(.8+core*.7),pr*1.3));
+      parts.push(part(sg,0xb9bfc9,px*.95,-pr*.05,pz*.95,0,0,0,pr*1.45,pr*.22,pr*1.25));}
+    const m=new THREE.Mesh(mergeParts(parts),new THREE.MeshLambertMaterial({vertexColors:true,fog:false,transparent:true,opacity:.95,depthWrite:false}));
+    m.frustumCulled=false;m.renderOrder=-5;m.userData={th:i/26,ox:(r()*2-1)*CLOUD_R,oz:(r()*2-1)*CLOUD_R,h:96+r()*30,sp:.7+r()*.6,sc:.85+r()*.4};scene.add(m);CLOUDS.push(m);}
 })();
+// Pilvikansi: tasainen harmaa kerros koko taivaalla rankassa sateessa ja myrskyssä (läpikuultava, reunat häivytetty).
+const cloudDeck=(function(){const t=canvasTex((g,s)=>{const r=mulberry32(91);const im=g.createImageData(s,s);for(let y=0;y<s;y++)for(let x=0;x<s;x++){const dx=x/s-.5,dy=y/s-.5,d=Math.hypot(dx,dy)*2;
+    const n=.55+.45*Math.sin(x*.21+Math.sin(y*.13)*2)*Math.cos(y*.17+Math.sin(x*.09)*2)+(r()-.5)*.25,al=Math.max(0,1-d*d)*clamp(n,0,1);const i=(y*s+x)*4;im.data[i]=im.data[i+1]=im.data[i+2]=225;im.data[i+3]=al*255|0;}g.putImageData(im,0,0);},128);
+  t.magFilter=THREE.LinearFilter;const m=new THREE.Mesh(new THREE.PlaneGeometry(1100,1100),new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:0,depthWrite:false,fog:false,side:THREE.DoubleSide}));
+  m.rotation.x=-Math.PI/2;m.renderOrder=-6;m.frustumCulled=false;m.visible=false;scene.add(m);return m;})();
+// Auringonsäteet: selkeällä säällä kapeita läpikuultavia valokeiloja auringon suunnasta (additiivinen, häivytetyt päät).
+const sunShafts=(function(){const t=canvasTex((g,s)=>{const gr=g.createLinearGradient(0,0,0,s);gr.addColorStop(0,'rgba(255,240,200,0)');gr.addColorStop(.35,'rgba(255,240,200,1)');gr.addColorStop(1,'rgba(255,240,200,0)');g.fillStyle=gr;g.fillRect(0,0,s,s);
+    const gx=g.createLinearGradient(0,0,s,0);gx.addColorStop(0,'rgba(0,0,0,1)');gx.addColorStop(.5,'rgba(0,0,0,0)');gx.addColorStop(1,'rgba(0,0,0,1)');g.globalCompositeOperation='destination-out';g.fillStyle=gx;g.fillRect(0,0,s,s);},64);
+  t.magFilter=THREE.LinearFilter;const grp=new THREE.Group(),mt=new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide});
+  const r=mulberry32(55);for(let i=0;i<7;i++){const w=6+r()*12,L=260,off=(r()-.5)*90;for(const ry of[0,Math.PI/2]){const p=new THREE.Mesh(new THREE.PlaneGeometry(w,L),mt);p.position.set(off*Math.cos(ry),L/2,off*Math.sin(ry)+(r()-.5)*40);p.rotation.y=ry;grp.add(p);}}
+  grp.visible=false;grp.frustumCulled=false;grp.renderOrder=-4;scene.add(grp);grp.userData.mat=mt;return grp;})();
 // Salama: sahalaitainen valkoinen jono pilvestä maahan, näkyy lyhyen hetken (strikeBolt()).
 let boltGrp=null,boltT=0;
 function strikeBolt(){if(boltGrp){scene.remove(boltGrp);boltGrp=null;}

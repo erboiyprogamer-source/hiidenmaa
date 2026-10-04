@@ -39,15 +39,30 @@ const cCloudDay=new THREE.Color(0xffffff),cCloudNight=new THREE.Color(0x232a3a),
 function updateClouds(dt,cover,light,el){const vis=!P.inDun;let cx=camera.position.x,cz=camera.position.z;
   _cc.copy(cCloudNight).lerp(cCloudDay,light).lerp(cCloudGrey,Math.min(1,wDark/.6)*.85);
   const dusk=sstep(.5,.0,el)*sstep(-.3,0,el);_cc.lerp(cSunLow,dusk*.45);
-  const drift=dt*(2+wWind*7),R=CLOUD_R;
-  for(const c of CLOUDS){const u=c.userData;c.visible=vis;if(!vis)continue;
+  const drift=dt*(2+wWind*7),R=CLOUD_R,grow=.75+.55*cover,hor=scene.background;
+  for(const c of CLOUDS){const u=c.userData;if(!vis){c.visible=false;continue;}
     u.ox+=drift*u.sp;const mod=(v)=>((v%(2*R))+2*R)%(2*R);
     const dx=mod(u.ox-cx+R)-R,dz=mod(u.oz-cz+R)-R,d=Math.hypot(dx,dz);
     c.position.set(cx+dx,u.h,cz+dz);
-    const k=sstep(u.th,u.th+.12,cover)*sstep(R,R*.75,d);c.scale.setScalar(Math.max(.001,u.sc*k));c.visible=k>.02;
-    const m=c.material;m.color.copy(_cc);const near=sstep(240,60,d);m.emissive.copy(_cc).multiplyScalar(.42*light+.1);
-    if(flash>0)m.emissive.lerp(cFlash,Math.min(1,flash*(.5+.5*near)));}
+    // ilmestyminen peiton mukaan; kaukana häipyy (opasiteetti + väri kohti horisonttia) eikä piirry R:n takana
+    const k=sstep(u.th,u.th+.12,cover),far=sstep(R*.5,R*.97,d),op=.95*k*(1-far);c.visible=op>.03;if(!c.visible)continue;
+    c.scale.set(u.sc*grow,u.sc*(.8+.4*cover),u.sc*grow);
+    const m=c.material;m.opacity=op;m.color.copy(_cc).lerp(hor,far*.75);m.emissive.copy(m.color).multiplyScalar(.55*light+.12);
+    if(flash>0){const near=sstep(240,60,d);m.emissive.lerp(cFlash,Math.min(1,flash*(.5+.5*near)));}}
+  // pilvikansi rankassa säässä
+  const deck=sstep(.82,1,cover)*Math.min(1,wDark/.4);cloudDeck.visible=vis&&deck>.02;if(cloudDeck.visible){cloudDeck.position.set(cx,128,cz);cloudDeck.material.opacity=deck*.92;cloudDeck.material.color.copy(_cc);if(flash>0)cloudDeck.material.color.lerp(cFlash,flash*.6);
+    cloudDeck.material.map.offset.x+=drift*.0004;}
   if(boltGrp){boltT-=dt;boltGrp.visible=boltT>0&&((boltT*40|0)%3!==0);if(boltT<=0){scene.remove(boltGrp);boltGrp=null;}}}
+// Taivaskupoli ja auringonsäteet (vain selkeällä/puolipilvisellä säällä päivällä, ei sisällä).
+const _sky=new THREE.Color(),_skyS=new THREE.Vector3(),_up=new THREE.Vector3(0,1,0);
+function updateSky(light,sd0,el,sunK){const sd=_skyS.copy(sd0);skyDome.position.copy(camera.position);skyDome.visible=!P.inDun;
+  SKY_U.uHor.value.copy(scene.background);_sky.copy(scene.background).multiplyScalar(.62);_sky.b=Math.min(1,_sky.b*1.25+.03*light);SKY_U.uTop.value.copy(_sky);
+  SKY_U.uSun.value.set(sd.x,sd.y,sd.z);SKY_U.uSunC.value.copy(cSun);SKY_U.uGlow.value=sunK*(1-Math.min(1,wDark*1.4))*(1-aarniK*.7);
+  const clear=(1-sstep(.35,.7,wCloud))*(1-Math.min(1,wDark*3))*sstep(.05,.25,el)*sstep(.85,.45,el)*sunK*(1-indoorK)*(1-aarniK);
+  sunShafts.visible=!P.inDun&&clear>.02;if(sunShafts.visible){const hx=sd.x,hz=sd.z,hl=Math.hypot(hx,hz)||1;
+    sunShafts.position.set(camera.position.x+hx/hl*70,Math.max(0,camera.position.y-25),camera.position.z+hz/hl*70);
+    sunShafts.rotation.set(0,0,0);sunShafts.quaternion.setFromUnitVectors(_up,sd.normalize());
+    sunShafts.userData.mat.opacity=.07*clear*(.85+.15*Math.sin(playTime*.3));}}
 function updateEnvironment(dt){
   const W=WEATHERS[weather.cur]||WEATHERS.selkea,k=Math.min(1,dt*.3);
   // Pilvet tummuvat ensin (hitaasti), sade alkaa vasta kun taivas on tarpeeksi tumma.
@@ -82,7 +97,7 @@ function updateEnvironment(dt){
   stars.material.opacity=(1-light)*(1-wDark);stars.position.copy(camera.position);
   sunDisc.position.set(camera.position.x+sd.x*380,camera.position.y+sd.y*380,camera.position.z+sd.z*380);sunDisc.visible=el>-.1&&wDark<.3;
   moon.position.set(camera.position.x-sd.x*370,camera.position.y-sd.y*370,camera.position.z-sd.z*370);moon.visible=-sd.y>-.08&&wDark<.5;moon.material.color.setScalar(.35+.65*ph);
-  updateClouds(dt,wCloud,light,el);
+  updateClouds(dt,wCloud,light,el);updateSky(light,sd,el,sunK);
   rain.visible=wRain>.15;if(rain.visible){rain.material.opacity=.45*Math.min(1,wRain);updateRain(dt);}
   snow.visible=wSnow>.1&&P.pos.y>10;if(snow.visible){snow.material.opacity=.9*Math.min(1,wSnow);const a=snow.geometry.attributes.position.array;for(let i=0;i<a.length;i+=3){a[i+1]-=2.2*dt;a[i]+=Math.sin(playTime*.8+i)*.4*dt;if(a[i+1]<-4){a[i]=(Math.random()-.5)*50;a[i+1]=20+Math.random()*6;a[i+2]=(Math.random()-.5)*50;}}snow.geometry.attributes.position.needsUpdate=true;snow.position.set(camera.position.x,camera.position.y-8,camera.position.z);}
   water.position.y=Math.sin(playTime*.6)*.04;
