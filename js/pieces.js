@@ -72,6 +72,8 @@ const PIECES={
 };
 const bt=t=>PIECES[t]&&PIECES[t].base||t;
 const isFirePiece=t=>t==='nuotio'||t==='grilli';
+// Tulen jäljellä oleva palamisaika prosentteina täydestä (FUEL_MAX yksikköä × 90 s); yli 50 % ei voi lisätä.
+const firePct=p=>Math.max(0,Math.round((p.data.fuel*90-p.data.burn)/(FUEL_MAX*90)*100)),torchPct=p=>Math.round(p.data.burn/1800*100);
 const FUEL_MAX=40,COOKABLE={liha:'paisti',sieni:'sienipaisti'};
 for(const d of Object.values(PIECES))if(d.base){const b=PIECES[d.base];for(const k of ['poses','flip','span2','noBench','store','col','dim'])if(d[k]===undefined&&b[k]!==undefined)d[k]=b[k];}
 const BUILD_CATS=[['alku','Alkupeli'],['seinat','Seinät ja lattiat'],['katot','Katot'],['palkit','Palkit ja pylväät'],['portaat','Portaat ja tikkaat'],['kalusto','Kalusto'],['tyopisteet','Työpisteet'],['valo','Valo'],['puolustus','Puolustus'],['kivi','Kivirakennus'],['kivikatot','Kivikatot']];

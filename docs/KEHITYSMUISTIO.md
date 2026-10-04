@@ -49,6 +49,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.25 (korjauserä)
+- **Tulen palamisaika prosentteina** (`firePct`, `torchPct`) kehotteessa; kun yli 50 % jäljellä, polttoainetta ei voi lisätä (nuotio, grilli, seisova soihtu). Puu antaa +1 yksikköä, hiili +10.
+
 ### v0.24 (korjauserä)
 - **Ovi tummemmaksi:** `MAT.doorwood` (plank-tekstuuri, väri 0xa58468) oven lehdelle ja karmille (kiviovi säilyttää kiven).
 - **Vasara:** pää poikittain varteen nähden (aiemmin pystyssä), reunarenkaat.
