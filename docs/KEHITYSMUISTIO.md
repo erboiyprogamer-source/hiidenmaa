@@ -49,6 +49,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.36 (erä 23: hahmo ja animaatiot)
+- **Hahmo laihemmaksi ja litteäpintaiseksi:** `makePlayer` uusiksi (kapeampi vartalo, ohuemmat raajat, 8-sivuiset sylinterit + `flatShading`; pää/kiharat pehmeämmät). Nivelet: `elbowL/R` (olka–kyynärpää) ja `kneeL/R` (lonkka–polvi); koko keho `fig.rig`-ryhmässä (voi laskea ja kallistaa).
+- **Jalat joustavat:** kävelyssä polvet taipuvat, hypyssä polvet koukussa, laskeutumisessa joustaminen (`P.landT`, .25 s), iskussa askel ja pieni etukenoon (`lunge`). Kyykky (C): polvet syvälle (reisi −1.0, polvi 1.8), vartalo etukenoon, runko laskee .3 m, toinen käsi pitkällä eteen ja toinen sivulle.
+- **Kyynärpäät** taipuvat käsivarren noston mukaan (.14 + .28·kulma); jousella jousikäsi suorana, vetokäsi taipuu vedon mukaan.
+- **Käännösviive:** isku/toiminta alkaa vasta kun hahmo on kääntynyt kursorin suuntaan: `P.turnWait` (.08+ero·.1 s, max .28 s), iskun ajastin odottaa, kääntyminen hitaammin.
+- **Viistoiskut vuorotellen:** `P.swingSide` vaihtuu joka iskulla (vasen-ylhäältä → oikea-alas ja päinvastoin) kirveellä ja muilla aseilla (`swingPose` hz/lz).
+- **Keihäs:** kärki kohdistetaan kohteeseen (`P.atk.aimP`, lähin mobi edessä tai kameran osoittama piste); vedä taakse (kyynärpää taipuu) → työntö kohti kohdetta.
+- Olkapäiden etäisyys `armSh` .44 → .35 (grip .14).
+
 ### v0.35 (korjausversio)
 - **Käsisoihdun valo palautettu:** v0.34:n riville jäänyt `//`-kommentti kommentoi pois valon asettamisen (`torchLight.intensity=…`). Kommentti poistettu. Muista: älä kirjoita rivinloppukommenttia riville, jolla on lisää koodia.
 - **`LIGHT_CAP` 2.2 → 3.0**, koska 2.2 litisti yksittäisen käsisoihdun (max ~2.7) vakioksi eikä välkettä näkynyt. Yksittäinen valo ei enää kattoon osu; päällekkäiset valot rajataan edelleen.
@@ -467,6 +476,53 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ## Ideajono
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+### Käyttäjän ideat 0–11 (erät 23–31) – ryhmittely teemoittain
+Kirjattu v0.35:n jälkeen. Jokainen erä: testaa, päivitä muistio, versio+`?v=`, commit, push, PR. Järjestys on ehdotus; ensimmäinen on 23.
+
+**Erä 23 – Hahmo ja animaatiot (0.1, 0.2, 0.4, 0.8)** – TEHTY (v0.36)
+1. Hahmo laihemmaksi, vähemmän palloinen, litteämmät pinnat; kädet taittuvat kyynärpäästä (olkavarsi + kyynärvarsi), jalat polvesta (reisi + sääri); jalat joustavat hypyssä ja iskussa, käsi taittuu iskussa.
+2. Kääntyminen kursoria kohti ei ole hetkellinen: pieni viive (~.18 s) iskun alussa jonka aikana hahmo kääntyy. Kyykky (C) kunnolla: polvet koukussa, kädet levällään, toinen käsi pitkällä eteen (vaanimisasento, melkein polvistuminen).
+3. Kirveen isku viistoon, vuorotellen vasen-ylhäältä ja oikea-ylhäältä viistosti alas.
+4. Keihäs: isku kääntää kärjen kohti kohdetta (työntö kohti kohdetta, ei suoraan eteen).
+
+**Erä 24 – Puut ja hakkuu (0.3, 0.7)**
+1. Kaadettu runko saa alkuperäisen puun värin (kuori), oksat jäävät rungon sivuille ja irtoavat kaatuessa; oksat uppoavat hitaasti maahan ja katoavat.
+2. Kaadettua runkoa lyödessä sen pinnalle ilmestyy ruskeita (kuoren sisäväri) lohkeamia; joka iskulla puupartikkeleja ja isompi kolo.
+3. Mitä isompi puu, sitä kauemmin hakkuu; kaatuminen alkaa hitaana, kaatuessa lähellä pelaajaa ruutu tärähtää.
+
+**Erä 25 – Eläimet, viholliset ja terveyspalkit (0.5, 0.6, 4)**
+1. Eläimet säikähtävät jo kaukaa kun pelaaja juoksee kohti, vielä kauempaa jos kädessä vahinkoa tekevä ase/työkalu; kävellessä vasta lähempää. Vahingoitettu eläin pelkää 10 s ja juoksee satunnaisiin suuntiin kauemmas.
+2. Vahingoitetun eläimen/mobin terveyspalkki + numero (10 s iskusta; lähellä ja kun katsoo sitä; bossit ja vaikeat jo kaukaa katsottaessa), palkin alla pääkalloja vaikeustasosta, palkki pitenee/monikerroksinen (1 kerros ≈ pelaajan terveys), pahimmat bossit parantuvat 30 s iskuttomuuden jälkeen.
+3. Vihollinen huomaa pelaajan aina 10 s sen jälkeen kun pelaaja vahingoitti sitä (myös jousella), muuten tarvitaan läheisyys.
+
+**Erä 26 – Taivas ja pilvet (0)**
+1. Pilvet suuremmiksi, leveämmiksi ja realistisemmiksi (taivaalle levittäytyviä), koko säästä riippuen; kaukana sumeat/häipyvät (optimointi); pilviä hieman matalammalle; selkeällä säällä aurinko paistaa sumun/pilvien välistä; realistisempi taivas (asetuksiin myöhemmin yksinkertaistus).
+
+**Erä 27 – Valo ja soihtu (0.9, 0.99)**
+1. Tulet/valot heittävät varjoja ympäröivien esineiden taakse pimeällä (ei päivänvalossa ulkona).
+2. Käsisoihtu sammuu sateessa (sateen alla), syttyy kun vie toisen liekin viereen; soihtu kuluu käytettäessä (mittari, 1 min yhteensä, sateessa 20 % nopeammin), sammuessa liekki ja valo katoavat.
+
+**Erä 28 – Maasto ja työkalut (1)**
+1. Lapio: vasen klikkaus tekee maasta multaisemman ja tummemman (polut). Uusi kuokka: nostaa maanmuotoja ja vähentää multaisuutta (palauttaa alkuperäiseksi).
+
+**Erä 29 – Valikko, asetukset ja tallennus (1.1, 1.2, 1.3, 9)**
+1. Asetuksiin lista kaikista näppäimistä; keybind-vaihtovalikko (oma pieni, varmistus, ei päällekkäisiä/kiellettyjä näppäimiä).
+2. Pelivalikko hienommaksi teemaan sopivaksi; BUG: Tallenna-nappi avaa asetusvalikon – korjaa; tallennuskoodi tiivistetympi (lyhyempi muoto) + lataus/tallennus .txt-tiedostona.
+3. Hiiren rulla hotbarin selaukseen (kuten Minecraft), zoom manuaalisesti jos toggle päällä.
+4. Grafiikka-asetusvalikko joka muistaa valinnat (localStorage): varjot (siirretään), puiden heiluminen, partikkelien määrä, detaljien määrä, piirtoetäisyys, rakennusten detaljit.
+
+**Erä 30 – Kartta ja piirtoetäisyys (2, 8, 10)**
+1. Kartan löydetty alue sileämmäksi ja hienojakoisemmaksi; löytämättömät paikat piiloon (pilvisumu); karttanäkymässä pilvet liikkuvat (vain kun auki), kartan zoom, rakennukset ylhäältä pikseleinä.
+2. Minimapin 3 zoomitasoa näppäimellä (oletus nykyinen).
+3. Piirtoetäisyys (render distance) Minecraft-tyyliin: sumu piirtoalueen reunalla; etäisyyden päässä partikkelit/animaatiot/visuaalit pois.
+
+**Erä 31 – Maailma, ulottuvuudet ja tarina (3, 5, 6, 7)** (iso; jaetaan tarvittaessa 31a–c)
+1. Hautakumpu ja löydöt näyttävämmiksi; portti luolamaisesti kumpuun; uusia löytöpaikkoja (rakennuksen jäänteet, kivet+arkku) karttaan; kohteita suojelevia mobeja.
+2. Lisää labyrintti-ulottuvuuksia portteineen ja bosseineen; isoja, vaihtelevia pohjia (arvonta uuden pelin alussa, vanhoissa portaaliin mentäessä); portin spawn-suoja 3 s (ei iskuja), mobit eivät spawnaa portin lähelle.
+3. Tarina: riimukivien tekstit vaihtelevat ja antavat vihjeitä/tehtäviä (yläkulman tehtävä); osa portaaleista lukittu (avain/esine kartalta).
+
+**Raportti (11):** pelin ongelmat/rasitteet raportoidaan käyttäjälle erillisenä (tehty erän 23 yhteydessä).
 
 ### Käyttäjän 19 ideaa ryhmiteltynä kolmeen erään (tulkinnat sovittu käyttäjän kanssa)
 Tulkinnat: hahmo = pehmeä low-poly (sylinterit/pallot, ei ulkoisia malleja); taso kasvaa kokemuspisteistä (tavoitteet,
