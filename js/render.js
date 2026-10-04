@@ -20,11 +20,13 @@ sun.shadow.mapSize.set(2048,2048); const sc=sun.shadow.camera; sc.left=-55;sc.ri
 scene.add(sun); scene.add(sun.target);
 const LIGHTS=[]; for(let i=0;i<6;i++){const l=new THREE.PointLight(0xff9a40,0,17,1.5);scene.add(l);LIGHTS.push(l);}
 const torchLight=new THREE.PointLight(0xffa04a,0,18,1.4); scene.add(torchLight);
+// Käsisoihdun täytevalo: ei varjoa, samassa paikassa → soihdun varjot jäävät himmeiksi (varjoalueet saavat täytevalon osuuden)
+const torchFill=new THREE.PointLight(0xffa04a,0,18,1.4); scene.add(torchFill);
 // Pimeällä lähin tuli ja käsisoihtu heittävät varjoja (pistevalon varjokartta 512 px). Varjokartta päivitetään vain pimeällä (`updateLightShadows`).
-for(const l of [LIGHTS[0],torchLight]){l.castShadow=true;l.shadow.mapSize.set(192,192);l.shadow.radius=4;l.shadow.camera.near=.3;l.shadow.camera.far=15;l.shadow.bias=-.006;l.shadow.autoUpdate=false;l.shadow.needsUpdate=true;}
+for(const l of [LIGHTS[0],torchLight]){l.castShadow=true;l.shadow.mapSize.set(384,384);l.shadow.radius=2;l.shadow.camera.near=.3;l.shadow.camera.far=15;l.shadow.bias=-.006;l.shadow.autoUpdate=false;l.shadow.needsUpdate=true;}
 // Mukautuva laatu: jos kehysaika on pitkään liian korkea, laatua lasketaan (1: harvemmat pistevalovarjot, 2: aurinkovarjokartta 1024 px, 3: pistevalovarjot pois). Palautuu kun peli sujuu.
 // Käsisoihdun varjo: pieni (kantama 3.2 m), matalaresoluutioinen (64 px) ja pehmeä läntti, päivittyy joka kehys (halpa, koska kamera näkee vain lähimmät esineet).
-torchLight.shadow.mapSize.set(64,64);torchLight.shadow.camera.far=3.2;torchLight.shadow.camera.near=.25;torchLight.shadow.radius=3;torchLight.shadow.bias=-.01;
+torchLight.shadow.mapSize.set(40,40);torchLight.shadow.camera.far=3.2;torchLight.shadow.camera.near=.25;torchLight.shadow.radius=3;torchLight.shadow.bias=-.01;
 const QUAL={lvl:0,pointShadow:true,sunSize:2048,max:3};
 function setQuality(l){QUAL.lvl=l;QUAL.pointShadow=l<3;const ss=l>=2?1024:2048;if(ss!==QUAL.sunSize){QUAL.sunSize=ss;sun.shadow.mapSize.set(ss,ss);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}}
 
