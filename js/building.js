@@ -4,9 +4,9 @@
 
 /* ---------------- BUILDING ---------------- */
 let buildSel=null,buildRot=0,buildPose=0,ghost=null,ghostOk=false,ghostPos=null;
-const poseOf=t=>PIECES[t]&&PIECES[t].flip?buildPose:0;
+const poseOf=t=>{const d=PIECES[t];return d&&(d.flip||d.poses)?buildPose%(d.poses||4):0;};
 // Shift+R: kolmion/vinoseinän asento (normaali, peilattu, ylösalaisin, ylösalaisin peilattu).
-function cyclePose(){if(!buildSel||!PIECES[buildSel].flip){msg('Asento vaihtuu vain kolmiolla ja vinoseinällä.');return;}buildPose=(buildPose+1)%4;setBuildSel(buildSel);msg(`Asento ${buildPose+1}/4`);}
+function cyclePose(){const d=buildSel&&PIECES[buildSel];if(!d||!(d.flip||d.poses)){msg('Asento vaihtuu kolmiolla, vinoseinällä, palkilla ja portailla.');return;}const n=d.poses||4;buildPose=(buildPose+1)%n;setBuildSel(buildSel);msg(`Asento ${buildPose%n+1}/${n}`);}
 const raycaster=new THREE.Raycaster();
 function setBuildSel(t){buildSel=t;if(ghost){scene.remove(ghost);ghost=null;}if(typeof gridHelper!=='undefined'&&gridHelper)gridHelper.visible=false;if(t){ghost=buildPieceMesh(t,poseOf(t));ghost.traverse(m=>{if(m.isMesh){m.material=MAT.ghostOk;m.castShadow=false;m.receiveShadow=false;}});scene.add(ghost);}}
 function camRay(){const o=camera.position.clone(),d=new V3();camera.getWorldDirection(d);return{o,d};}
@@ -22,14 +22,20 @@ function buildRaycast(){
 }
 // Kohdistustilat (vaihto G): ruudukko, puoliruudukko, vapaa, reunajatko.
 const SNAP_NAMES=['ruudukko','puoli','vapaa','reuna'];
-let snapMode=0,ghostRot=0,gridHelper=null,gridDiv=0;
+let snapMode=0,ghostRot=0,gridHelper=null,gridDiv=0,gridHelper2=null;
+// Pystykohdistus (H): auto, pysty (korkeus .65 m:n portain, Q/Z nostaa/laskee) ja 3D (myös seuraava kerros näkyy ruudukkona).
+const VNAMES=['auto','pysty','3D'],VSTEP=WH/4;let vMode=0,buildLift=0;
+function cycleVMode(){vMode=(vMode+1)%3;buildLift=0;msg(`Pystykohdistus: ${VNAMES[vMode]}${vMode?' (Q nostaa, Z laskee)':''}`);}
+function liftBuild(d){if(!vMode)return;buildLift=clamp(buildLift+d,-8,12);}
 function cycleSnap(){snapMode=(snapMode+1)%SNAP_NAMES.length;msg(`Kohdistus: ${SNAP_NAMES[snapMode]}`);}
 // Läpinäkyvä ruudukko haamun ympärillä (ruudukko- ja puolitilassa).
 function updateGrid(on,cx,y,cz){const div=snapMode===1?20:10;
+  if(on&&vMode===2&&!gridHelper2){gridHelper2=new THREE.GridHelper(10*G,10,0xbfe6ff,0xbfe6ff);gridHelper2.material=new THREE.LineBasicMaterial({color:0xbfe6ff,transparent:true,opacity:.3,depthWrite:false});scene.add(gridHelper2);}
+  if(gridHelper2){gridHelper2.visible=on&&vMode===2;if(gridHelper2.visible)gridHelper2.position.set(cx,y+WH+.04,cz);}
   if(on&&(!gridHelper||gridDiv!==div)){if(gridHelper){scene.remove(gridHelper);gridHelper.geometry.dispose();}
     gridHelper=new THREE.GridHelper(10*G,div,0xffffff,0xffffff);gridHelper.material=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.42,depthWrite:false});gridDiv=div;scene.add(gridHelper);}
   if(gridHelper){gridHelper.visible=on;if(on)gridHelper.position.set(cx,y+.04,cz);}}
-const isFloor=p=>p.t==='lattia'||p.t==='tervaslattia';
+const isFloor=p=>{const b=bt(p.t);return b==='lattia'||b==='tervaslattia';};
 const sgn=v=>v<0?-1:1;
 // Reunajatko: katsottavan osan reunaan jatkoksi (seinän jatke, viereinen lattia, päälle pinoaminen).
 function edgeSnap(def,hit){const p=hit.piece,n=hit.n,pt=hit.pt,top=n.y>.6,fl=isFloor(p),wall=!fl&&PIECES[p.t].snap==='wall',dx=pt.x-p.x,dz=pt.z-p.z;
@@ -65,19 +71,20 @@ function updateGhost(){
     // Seinä ja ovi asettuvat viereisen lattian pintaan, ettei aukko jää lattiaa matalammaksi.
     const fl=floorAtEdge(x,z,y);if(fl!==null)y=fl;}
   else{x=hf?half(hx,ox):cell(hx,ox);z=hf?half(hz,oz):cell(hz,oz);if(def.snap==='free'&&!hf){x=fr(hx);z=fr(hz);}y=hit.piece?baseY:terrainH(x,z);}
+  if(vMode){const ref=hit.piece?hit.piece.y:0;y=ref+Math.round((y-ref)/VSTEP)*VSTEP+buildLift*VSTEP;}
   ghost.position.set(x,y,z);ghost.rotation.y=rot*Math.PI/4;ghostPos={x,y,z};ghostRot=rot;
   ghostOk=validPlace(t,x,y,z,rot,poseOf(t));
   const m=ghostOk?MAT.ghostOk:MAT.ghostBad;ghost.traverse(o=>{if(o.isMesh)o.material=m;});
   const step=hf?G/2:G;updateGrid(mode==='ruudukko'||hf,ox+Math.round((x-ox)/step)*step,y,oz+Math.round((z-oz)/step)*step);
 }
-function floorAtEdge(x,z,y){let best=null;for(const p of pieces){if(p.t!=='lattia'&&p.t!=='tervaslattia')continue;if(Math.abs(p.y-y)>1.3)continue;if(dist2(p.x,p.z,x,z)<=(G/2+.05)**2&&(best===null||p.y>best))best=p.y;}return best;}
+function floorAtEdge(x,z,y){let best=null;for(const p of pieces){if(!isFloor(p))continue;if(Math.abs(p.y-y)>1.3)continue;if(dist2(p.x,p.z,x,z)<=(G/2+.05)**2&&(best===null||p.y>best))best=p.y;}return best;}
 let lastInvalid='';
 function validPlace(t,x,y,z,rot,f=0){
   const def=PIECES[t];lastInvalid='';
   if(P.inDun){lastInvalid='Täällä ei voi rakentaa.';return false;}
   for(const [id,n] of Object.entries(def.req))if(invCount(id)<n){lastInvalid=`Tarvitset: ${reqText(def.req)}`;return false;}
   if(!def.noBench&&!nearPiece('tyopenkki',x,z,BENCH_R)){lastInvalid=pieces.some(p=>p.t==='tyopenkki')?'Rakenna työpenkin alueelle (oranssi raja).':'Rakenna ensin työpenkki.';return false;}
-  if(y<-.4&&t!=='lattia'&&t!=='tervaslattia'&&t!=='pylvas'){lastInvalid='Liian syvällä vedessä.';return false;}
+  if(y<-.4&&bt(t)!=='lattia'&&bt(t)!=='tervaslattia'&&!def.col){lastInvalid='Liian syvällä vedessä.';return false;}
   if(def.roof){for(const p of pieces)if(PIECES[p.t].roof&&Math.abs(p.x-x)<.1&&Math.abs(p.z-z)<.1&&Math.abs(p.y-y)<.5){lastInvalid='Paikalla on jo katto.';return false;}
     for(const b of worldBoxes(t,x,y,z,rot,f)){const px=clamp(P.pos.x,b.minX,b.maxX),pz=clamp(P.pos.z,b.minZ,b.maxZ);if(dist2(px,pz,P.pos.x,P.pos.z)<.16&&b.maxY>P.pos.y+.3&&b.minY<P.pos.y+1.8){lastInvalid='Seisot tiellä.';return false;}}
     return true;}
@@ -95,7 +102,7 @@ function placeBuild(){
   if(!ghostPos||!ghost||!ghost.visible)return;
   if(!ghostOk){msg(lastInvalid||'Ei voi rakentaa tähän.','warn');return;}
   const def=PIECES[buildSel];for(const [id,n] of Object.entries(def.req))invRemove(id,n);
-  addPiece(buildSel,ghostPos.x,ghostPos.y,ghostPos.z,ghostRot,undefined,undefined,poseOf(buildSel));sfx('build');burst(ghostPos.x,ghostPos.y+.5,ghostPos.z,0x8a5a32,6,2);
+  addPiece(buildSel,ghostPos.x,ghostPos.y,ghostPos.z,ghostRot,undefined,undefined,poseOf(buildSel));bump('built');xpFirst('b_'+buildSel,4);sfx('build');burst(ghostPos.x,ghostPos.y+.5,ghostPos.z,0x8a5a32,6,2);
 }
 // Vasaralla korjaus: kuluma pois, maksaa vauriota vastaavan osuuden rakennusaineista (vähintään 1).
 function lookedPiece(){const {o,d}=camRay();raycaster.set(o,d);raycaster.far=camDist+7;const hits=raycaster.intersectObjects(pieceRoots,true);return hits.length?hits[0].object.userData.piece:null;}
@@ -109,10 +116,11 @@ function removeLooked(){
   const w=curWeapon();if(w.cat!=='hammer'){return;}
   const {o,d}=camRay();raycaster.set(o,d);raycaster.far=camDist+7;const hits=raycaster.intersectObjects(pieceRoots,true);if(!hits.length)return;
   const p=hits[0].object.userData.piece;if(!p)return;
-  if(p.t==='arkku'&&p.data.items.some(Boolean)){msg('Tyhjennä arkku ensin.','warn');return;}
+  if(PIECES[p.t].store&&p.data.items.some(Boolean)){msg('Tyhjennä säiliö ensin.','warn');return;}
   for(const [id,n] of Object.entries(PIECES[p.t].req))giveOrDrop(id,n,p.x,p.y+1,p.z);
+  if(p.data.lv)for(let i=1;i<=p.data.lv;i++)for(const [id,n] of Object.entries(STORE_UP[i]))giveOrDrop(id,n,p.x,p.y+1,p.z);
   if(p.t==='sulatin'){if(p.data.ore)giveOrDrop('malmi',p.data.ore,p.x,p.y+1,p.z);if(p.data.iore)giveOrDrop('rautamalmi',p.data.iore,p.x,p.y+1,p.z);if(p.data.done)giveOrDrop('kupari',p.data.done,p.x,p.y+1,p.z);if(p.data.idone)giveOrDrop('rauta',p.data.idone,p.x,p.y+1,p.z);}
   removePiece(p);sfx('build');burst(p.x,p.y+.5,p.z,0x8a5a32,8,3);
 }
-function damagePiece(p,d,src){if(src==='mob'&&PIECES[p.t].mobProof)return;p.hp-=d;burst(p.x,p.y+1,p.z,0x8a5a32,4,2);if(p.hp>0)setPieceDamage(p);if(p.hp<=0){removePiece(p);msg(`${PIECES[p.t].n} tuhoutui!`,'warn');if(p.t==='arkku')p.data.items.forEach(s=>s&&spawnDrop(s.id,s.n,p.x,p.y+.5,p.z,s.q));}}
+function damagePiece(p,d,src){if(src==='mob'&&PIECES[p.t].mobProof)return;p.hp-=d;burst(p.x,p.y+1,p.z,0x8a5a32,4,2);if(p.hp>0)setPieceDamage(p);if(p.hp<=0){removePiece(p);msg(`${PIECES[p.t].n} tuhoutui!`,'warn');if(PIECES[p.t].store)p.data.items.forEach(s=>s&&spawnDrop(s.id,s.n,p.x,p.y+.5,p.z,s.q));}}
 function reqText(req){return Object.entries(req).map(([id,n])=>`${n} ${ITEMS[id].n.toLowerCase()}`).join(', ');}

@@ -6,21 +6,21 @@
 const DAY_LEN=720;
 function isNight(){return dayT<.21||dayT>.79;}
 function sheltered(x,y,z){if(P.inDun)return true;raycaster.set(_tmpV.set(x,y+1.7,z),_tmpV2.set(0,1,0));raycaster.far=14;return raycaster.intersectObjects(pieceRoots,true).length>0;}
-function nearFire(x,z,r=5.5){for(const p of pieces)if(p.t==='nuotio'&&p.data.fuel>0&&dist2(p.x,p.z,x,z)<r*r)return true;return false;}
+function nearFire(x,z,r=5.5){for(const p of pieces)if(isFirePiece(p.t)&&p.data.fuel>0&&dist2(p.x,p.z,x,z)<r*r)return true;return false;}
 let shelterCache=false,fireCache=false,envTick=0,indoorT=0,indoorK=0;
 const cIndoor=new THREE.Color(0x6a5a48);
 // Yksinkertainen valofysiikka: suojassa ja seinien ympäröimänä taivaanvalo himmenee ja sininen sävy poistuu.
 const _dirs=[];for(let i=0;i<8;i++){const a=i/8*TAU;_dirs.push(new THREE.Vector3(Math.cos(a),0,Math.sin(a)));}
 function indoorScore(){if(P.inDun||!shelterCache)return 0;let h=0;const o=new THREE.Vector3(P.pos.x,P.pos.y+1.1,P.pos.z);for(const d of _dirs){raycaster.set(o,d);raycaster.far=6;if(raycaster.intersectObjects(pieceRoots,true).length)h++;}return h>=5?1:h>=3?.5:0;}
 const WEATHERS={
-  selkea:{n:'Selkeää',fog:1,dark:0,rain:0},
-  pilvi:{n:'Pilvistä',fog:.85,dark:.25,rain:0},
-  tuuli:{n:'Tuulista',fog:.9,dark:.12,rain:0,wind:1},
-  tihku:{n:'Tihkusadetta',fog:.72,dark:.3,rain:.35},
-  sade:{n:'Sadetta',fog:.6,dark:.45,rain:1},
-  myrsky:{n:'Myrsky',fog:.45,dark:.65,rain:1.4,wind:1.6,storm:1},
-  lumi:{n:'Lumisadetta',fog:.5,dark:.35,rain:0,snow:1},
-  sumu:{n:'Sumua',fog:.3,dark:.2,rain:0},
+  selkea:{n:'Selkeää',fog:1,dark:0,rain:0,cloud:.2},
+  pilvi:{n:'Pilvistä',fog:.85,dark:.25,rain:0,cloud:.8},
+  tuuli:{n:'Tuulista',fog:.9,dark:.12,rain:0,wind:1,cloud:.5},
+  tihku:{n:'Tihkusadetta',fog:.72,dark:.3,rain:.35,cloud:.92},
+  sade:{n:'Sadetta',fog:.6,dark:.45,rain:1,cloud:1},
+  myrsky:{n:'Myrsky',fog:.45,dark:.65,rain:1.4,wind:1.6,storm:1,cloud:1},
+  lumi:{n:'Lumisadetta',fog:.5,dark:.35,rain:0,snow:1,cloud:.92},
+  sumu:{n:'Sumua',fog:.3,dark:.2,rain:0,cloud:.55},
 };
 const WMSG={sade:'Alkaa sataa.',tihku:'Alkaa tihuttaa.',myrsky:'Myrsky nousee!',lumi:'Alkaa sataa lunta.',sumu:'Sumu nousee.',tuuli:'Tuuli yltyy.'};
 function highGround(){return !P.inDun&&(P.pos.y>20||biomeHere(P.pos.x,P.pos.z)==='mountain');}
@@ -30,14 +30,30 @@ function updateWeather(){if(playTime<weather.until)return;const r=Math.random(),
   weather.cur=w;weather.until=playTime+(w==='myrsky'?90+Math.random()*90:150+Math.random()*180);
   if(w!==prev&&!P.inDun&&WMSG[w])msg(WMSG[w]);}
 const cSkyDay=new THREE.Color(0x87a9c2),cSkyDusk=new THREE.Color(0xc98a64),cSkyNight=new THREE.Color(0x070b14),cGrey=new THREE.Color(0x7d858c),cFlash=new THREE.Color(0xe8f0ff),cTmp=new THREE.Color(),cSun=new THREE.Color(),cSunLow=new THREE.Color(0xffa060);
-let wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0,aarniK=0;
+let wCloud=.2,wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0,aarniK=0;
 const cAarni=new THREE.Color(0x26302a);
 // Kuun kirkkaus vaihtelee 8 päivän kierrossa (uusikuu .2 … täysikuu 1).
 function moonPhase(){return .2+.8*(.5-.5*Math.cos((dayN%8)/8*TAU));}
+const cCloudDay=new THREE.Color(0xffffff),cCloudNight=new THREE.Color(0x232a3a),cCloudGrey=new THREE.Color(0x4b5058),_cc=new THREE.Color();
+// Pilvien liike, peitto, väri (valo, sää, ilta) ja salamoiden välke. cover 0–1.
+function updateClouds(dt,cover,light,el){const vis=!P.inDun;let cx=camera.position.x,cz=camera.position.z;
+  _cc.copy(cCloudNight).lerp(cCloudDay,light).lerp(cCloudGrey,Math.min(1,wDark/.6)*.85);
+  const dusk=sstep(.5,.0,el)*sstep(-.3,0,el);_cc.lerp(cSunLow,dusk*.45);
+  const drift=dt*(2+wWind*7),R=CLOUD_R;
+  for(const c of CLOUDS){const u=c.userData;c.visible=vis;if(!vis)continue;
+    u.ox+=drift*u.sp;const mod=(v)=>((v%(2*R))+2*R)%(2*R);
+    const dx=mod(u.ox-cx+R)-R,dz=mod(u.oz-cz+R)-R,d=Math.hypot(dx,dz);
+    c.position.set(cx+dx,u.h,cz+dz);
+    const k=sstep(u.th,u.th+.12,cover)*sstep(R,R*.75,d);c.scale.setScalar(Math.max(.001,u.sc*k));c.visible=k>.02;
+    const m=c.material;m.color.copy(_cc);const near=sstep(240,60,d);m.emissive.copy(_cc).multiplyScalar(.42*light+.1);
+    if(flash>0)m.emissive.lerp(cFlash,Math.min(1,flash*(.5+.5*near)));}
+  if(boltGrp){boltT-=dt;boltGrp.visible=boltT>0&&((boltT*40|0)%3!==0);if(boltT<=0){scene.remove(boltGrp);boltGrp=null;}}}
 function updateEnvironment(dt){
   const W=WEATHERS[weather.cur]||WEATHERS.selkea,k=Math.min(1,dt*.3);
-  wDark=lerp(wDark,W.dark,k);wFog=lerp(wFog,W.fog,k);wRain=lerp(wRain,W.rain,Math.min(1,dt*.4));wSnow=lerp(wSnow,W.snow||0,Math.min(1,dt*.4));wWind=lerp(wWind,W.wind||0,k);
-  if(W.storm&&!P.inDun&&playTime>nextBolt){nextBolt=playTime+4+Math.random()*10;flash=1;if(Math.random()<.12)stormFellTree();}
+  // Pilvet tummuvat ensin (hitaasti), sade alkaa vasta kun taivas on tarpeeksi tumma.
+  wDark=lerp(wDark,W.dark,Math.min(1,dt*.12));wFog=lerp(wFog,W.fog,k);wCloud=lerp(wCloud,W.cloud||0,Math.min(1,dt*.15));
+  wRain=lerp(wRain,W.rain*(W.dark>.4?sstep(.6,.92,wDark/W.dark):1),Math.min(1,dt*.4));wSnow=lerp(wSnow,W.snow||0,Math.min(1,dt*.4));wWind=lerp(wWind,W.wind||0,k);
+  if(W.storm&&!P.inDun&&playTime>nextBolt){nextBolt=playTime+4+Math.random()*10;flash=1;if(Math.random()<.35)strikeBolt();if(Math.random()<.12)stormFellTree();}
   flash=Math.max(0,flash-dt*4);
   SWAY.uTime.value=playTime;SWAY.uWind.value=.15+wWind*.85;
   const ang=(dayT-.5)*TAU,el=Math.cos(ang)+.3;
@@ -56,16 +72,17 @@ function updateEnvironment(dt){
   // Usvainen ja hämärä maailma; Aarnimetsässä sumu on sakeaa.
   scene.fog.near=lerp(lerp(6,40,wFog)*lerp(.4,1,light),3,aarniK);scene.fog.far=lerp(lerp(45,165,wFog)*lerp(.5,1,light),38,aarniK);
   const ph=moonPhase();
-  if(sunK>0){cSun.setHex(0xfff1d6).lerp(cSunLow,1-sstep(.1,.6,el));sun.color.copy(cSun);sun.intensity=.85*sunK*sstep(-.12,.45,el)*(1-wDark*.7);sun.position.set(P.pos.x+sd.x*120,P.pos.y+sd.y*120,P.pos.z+sd.z*120);}
+  if(sunK>0){cSun.setHex(0xfff1d6).lerp(cSunLow,1-sstep(.1,.6,el));sun.color.copy(cSun);sun.intensity=1.4*sunK*sstep(-.12,.45,el)*(1-wDark*.7);sun.position.set(P.pos.x+sd.x*120,P.pos.y+sd.y*120,P.pos.z+sd.z*120);}
   else{sun.color.setHex(0x8aa2d8);sun.intensity=.2*moonK*ph*(1-wDark*.6);sun.position.set(P.pos.x-sd.x*120,P.pos.y+Math.abs(sd.y)*120+40,P.pos.z-sd.z*120);}
   indoorK=lerp(indoorK,indoorT,Math.min(1,dt*2));
   sun.intensity=sun.intensity*(1-.45*aarniK)*(1-.7*indoorK)+flash*.9*(1-indoorK);
   sun.target.position.copy(P.pos);
-  hemi.intensity=((.12+.4*light*(1-wDark*.4))*(1-.45*aarniK)+flash*1.1)*(1-.6*indoorK);amb.intensity=(.06+.05*light+flash*.5)*(1-.5*indoorK);
+  hemi.intensity=((.07+.2*light*(1-wDark*.4))*(1-.45*aarniK)+flash*1.1)*(1-.6*indoorK);amb.intensity=(.03+.025*light+flash*.5)*(1-.5*indoorK);
   hemi.color.setHex(light>.3?0xcfe4ff:0x6a7fa8);hemi.color.lerp(cIndoor,indoorK);
   stars.material.opacity=(1-light)*(1-wDark);stars.position.copy(camera.position);
   sunDisc.position.set(camera.position.x+sd.x*380,camera.position.y+sd.y*380,camera.position.z+sd.z*380);sunDisc.visible=el>-.1&&wDark<.3;
   moon.position.set(camera.position.x-sd.x*370,camera.position.y-sd.y*370,camera.position.z-sd.z*370);moon.visible=-sd.y>-.08&&wDark<.5;moon.material.color.setScalar(.35+.65*ph);
+  updateClouds(dt,wCloud,light,el);
   rain.visible=wRain>.15;if(rain.visible){rain.material.opacity=.45*Math.min(1,wRain);updateRain(dt);}
   snow.visible=wSnow>.1&&P.pos.y>10;if(snow.visible){snow.material.opacity=.9*Math.min(1,wSnow);const a=snow.geometry.attributes.position.array;for(let i=0;i<a.length;i+=3){a[i+1]-=2.2*dt;a[i]+=Math.sin(playTime*.8+i)*.4*dt;if(a[i+1]<-4){a[i]=(Math.random()-.5)*50;a[i+1]=20+Math.random()*6;a[i+2]=(Math.random()-.5)*50;}}snow.geometry.attributes.position.needsUpdate=true;snow.position.set(camera.position.x,camera.position.y-8,camera.position.z);}
   water.position.y=Math.sin(playTime*.6)*.04;
@@ -87,8 +104,31 @@ function updateRain(dt){const a=rain.geometry.attributes.position.array,sp=26*(w
   rainInit=true;rain.geometry.attributes.position.needsUpdate=true;}
 function updateLights(){
   const src=lightSources.filter(s=>s.on()&&(!!s.dun===P.inDun)).sort((a,b)=>dist2(a.x,a.z,P.pos.x,P.pos.z)-dist2(b.x,b.z,P.pos.x,P.pos.z));
-  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=src[i];if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i;l.intensity=s.i;}else{l.intensity=0;l.userData.base=0;}}
+  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=src[i];if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;}else{l.intensity=0;l.userData.base=0;}}
 }
+// Tilat: jokaisella on vaikutus pelaajan kykyihin (P.fx), kuvaus ja halutessa ajastin (s). effects() kerää aktiiviset, calcFx() laskee kertoimet.
+function effects(){const e=[],wt=invWeight(),b=P.buffs,add=(key,name,kind,desc,t)=>e.push({key,name,kind,desc,t});
+  if(P.wetT>0)add('marka','Märkä','bad','Kylmettää: ilman tulta tai suojaa tulee kylmä. Kuivuu nuotion lähellä viisi kertaa nopeammin.',P.wetT);
+  if(P.cold)add('kylma','Kylmä','bad','Nälkä kuluu 30 % nopeammin, kestävyys palautuu 40 % hitaammin, kävely −7 %, isku −10 %. Lämpene tulella tai suojassa.');
+  if(P.hunger<=0)add('nalka','Nälkä','bad','Menetät terveyttä, kävely −15 %, isku −20 %, kestävyys palautuu puolet hitaammin. Syö!');
+  else if(P.hunger<25)add('nalkainen','Nälkäinen','bad','Isku −10 %, kestävyys palautuu 15 % ja terveys 50 % hitaammin. Syö pian.');
+  if(b.pahoinvointi)add('pahoinvointi','Pahoinvointi','bad','Raa\'asta lihasta: terveys ei palaudu itsestään, kestävyys palautuu puolet hitaammin.',b.pahoinvointi);
+  if(b.vatsakipu)add('vatsakipu','Vatsakipu','bad','Liiasta syömisestä: kävely −10 %, kestävyys palautuu 30 % hitaammin ja kramppi vie välillä kestävyyttä.',b.vatsakipu);
+  if(wt>MAXW)add('kuorma','Ylikuormitus','bad','Kävely −45 %, et voi juosta etkä hypätä. Pudota tavaroita tai päivitä reppu.');
+  if(b.levannyt)add('levannyt','Levännyt','good','Kestävyys palautuu 45 % nopeammin ja terveys palautuu nopeammin.',b.levannyt);
+  if(b.voima)add('voima','Voimistunut','good','Isku +15 %, enimmäisterveys +15, enimmäiskestävyys +25.',b.voima);
+  if(fireCache)add('lampo','Lämmin','good','Tulen lähellä et kylmety ja kuivut nopeasti.');
+  if(shelterCache&&!P.inDun)add('suoja','Suojassa','neu','Katon alla sade ja lumi eivät kastele.');
+  if(P.crouch)add('hiipii','Hiipii','neu','Hitaampi liike; viholliset huomaavat vasta lähempää, eläimet eivät säiky.');
+  if(P.restT>0&&!b.levannyt)add('lepaa','Lepää…','neu','Pysy tulen ja katon alla, niin tunnet olosi levänneeksi.',12-P.restT);
+  return e;}
+function calcFx(){const f=P.fx,b=P.buffs;f.speed=1;f.dmg=1;f.stamRegen=1;f.hpRegen=1;
+  if(P.cold){f.speed*=.93;f.dmg*=.9;f.stamRegen*=.6;}
+  if(P.hunger<=0){f.speed*=.85;f.dmg*=.8;f.stamRegen*=.5;f.hpRegen=0;}else if(P.hunger<25){f.dmg*=.9;f.stamRegen*=.85;f.hpRegen*=.5;}
+  if(b.pahoinvointi){f.stamRegen*=.5;f.hpRegen=0;}
+  if(b.vatsakipu){f.speed*=.9;f.stamRegen*=.7;}
+  if(b.levannyt)f.stamRegen*=1.45;f.speed*=1+BON.spd/100;}
+function fmtT(t){return t>=60?`${Math.ceil(t/60)} min`:`${Math.ceil(t)} s`;}
 function survival(dt){
   // statuses
   envTick-=dt;if(envTick<=0){envTick=.5;shelterCache=sheltered(P.pos.x,P.pos.y,P.pos.z);fireCache=nearFire(P.pos.x,P.pos.z);indoorT=indoorScore();}
@@ -99,11 +139,13 @@ function survival(dt){
   const snowing=wSnow>.5&&P.pos.y>10&&!P.inDun&&!shelterCache;
   const cold=!fireCache&&((P.wetT>0)||snowing||(isNight()&&!P.inDun&&!(armor&&ITEMS[armor.id].warm)&&!shelterCache));
   P.cold=cold;
-  if(fireCache&&shelterCache){P.restT+=dt;if(P.restT>12&&!P.buffs.levannyt){P.buffs.levannyt=360;msg('Olet levännyt. Kestävyys palautuu nopeammin.','loot');}}else P.restT=0;
+  if(fireCache&&shelterCache){P.restT+=dt;if(P.restT>12&&!P.buffs.levannyt){P.buffs.levannyt=360;flags.rested=1;msg('Olet levännyt. Kestävyys palautuu nopeammin.','loot');}}else P.restT=0;
   for(const k in P.buffs){P.buffs[k]-=dt;if(P.buffs[k]<=0)delete P.buffs[k];}
+  calcFx();
+  P.crampT-=dt;if(P.buffs.vatsakipu&&P.crampT<=0){P.crampT=8+Math.random()*6;P.stam=Math.max(0,P.stam-12);P.stamDelay=Math.max(P.stamDelay,1);floatText('Auts!',P.pos.x,P.pos.y+2,P.pos.z,'#c9a66b');}
   P.hunger=Math.max(0,P.hunger-dt*(100/1000)*(cold?1.3:1)*(P.atk||keys.ShiftLeft?1.15:1));
   // regen
-  let reg=P.hunger>35?.35:P.hunger>0?.15:0;if(P.buffs.levannyt)reg+=.6;if(P.buffs.pahoinvointi)reg=0;
+  let reg=P.hunger>35?.35:P.hunger>0?.15:0;if(P.buffs.levannyt)reg+=.6;reg*=P.fx.hpRegen;
   if(P.heal>0){const h=Math.min(P.heal,3*dt);P.heal-=h;P.hp+=h;}
   P.hp=Math.min(maxHp(),P.hp+reg*dt);
   if(P.hunger<=0){P.hp-=.5*dt;if(P.hp<=0)playerDie();}

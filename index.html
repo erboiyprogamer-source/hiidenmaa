@@ -6,7 +6,7 @@
 <title>Hiidenmaa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700;800&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=0.19">
+<link rel="stylesheet" href="css/style.css?v=0.35">
 </head>
 <body>
 
@@ -26,6 +26,7 @@
   <div id="msgs"></div>
   <div id="hotbar"></div>
   <div id="weight" class="num"></div>
+  <div id="lvlbox" class="num"></div>
   <div id="prompt"></div>
   <div id="buildhint" hidden></div>
   <div id="lockhint" hidden>Napsauta ruutua ohjataksesi kameraa</div>
@@ -37,11 +38,14 @@
   <button class="close" data-close="1" aria-label="Sulje">✕</button>
   <div>
     <div id="invHead"><h2>Reppu</h2><span id="invW" class="num note"></span></div>
+    <div id="invUp"></div>
     <div id="invGrid" class="grid"></div>
     <div id="detail"></div>
+    <div id="effects"></div>
   </div>
   <div>
     <h2>Valmistus</h2>
+    <div id="craftTabs"></div>
     <div id="stationLine"></div>
     <div id="craftList"></div>
   </div>
@@ -50,14 +54,21 @@
 <div id="build" class="panel" hidden>
   <button class="close" data-close="1" aria-label="Sulje">✕</button>
   <h2>Rakenna</h2>
-  <p class="note" style="margin:0 0 10px">Rakentaminen vaatii työpenkin 20 metrin säteellä (paitsi työpenkki ja nuotio). <span class="kb">R</span> kääntää, <span class="kb">X</span> purkaa.</p>
+  <div id="buildTabs"></div>
+  <p class="note" style="margin:0 0 10px">Rakentaminen vaatii työpenkin 20 metrin säteellä (paitsi työpenkki ja nuotio). <span class="kb">R</span> kääntää, <span class="kb">Shift+R</span> vaihtaa asentoa, <span class="kb">G</span> sivuttaiskohdistus, <span class="kb">H</span> pystykohdistus (<span class="kb">Q</span>/<span class="kb">Z</span> nostaa/laskee), <span class="kb">X</span> purkaa.</p>
   <div class="cards" id="buildCards"></div>
 </div>
 
 <div id="chest" class="panel" hidden>
   <button class="close" data-close="1" aria-label="Sulje">✕</button>
-  <div><h2 id="chestTitle">Arkku</h2><div id="chestGrid" class="grid"></div></div>
+  <div><h2 id="chestTitle">Arkku</h2><div id="chestGrid" class="grid"></div><div id="chestUp"></div></div>
   <div><h2>Reppu</h2><div id="chestInv" class="grid"></div><p class="note">Napsauta esinettä siirtääksesi sen.</p></div>
+</div>
+
+<div id="progP" class="panel" hidden>
+  <button class="close" data-close="1" aria-label="Sulje">✕</button>
+  <h2>Taso ja saavutukset</h2>
+  <div id="progBody"></div>
 </div>
 
 <div id="mapP" class="panel" hidden>
@@ -68,7 +79,7 @@
 
 <div id="menu" class="screen">
   <div class="inner">
-    <h1 class="title"><small>Selviytymispeli · versio 0.19</small>Hiidenmaa</h1>
+    <h1 class="title"><small>Selviytymispeli · versio 0.35</small>Hiidenmaa</h1>
     <p class="lede">Haaksirikko jätti sinut saarelle, jota yhdeksän talven ajan on hallinnut kivinen Kalmanvartija. Kaada puita, rakenna suoja ennen yötä, takoa kuparista ase ja herätä vartija kivikehässä.</p>
     <div class="menuBtns">
       <p class="note" id="mapName" style="margin:0 0 6px"></p>
@@ -87,7 +98,7 @@
         <span class="kb">1–8</span><span>pikapaikat (varusta / syö)</span>
         <span class="kb">B</span><span>rakennusvalikko (vasara kädessä)</span>
         <span class="kb">R · X · F</span><span>käännä rakennusta · pura · korjaa (vasara)</span>
-        <span class="kb">M</span><span>kartta · <b>Esc</b> tauko / sulje paneeli</span>
+        <span class="kb">M</span><span>kartta · <b>J</b> taso, saavutukset ja tavoitteet · <b>Esc</b> tauko / sulje paneeli</span>
         <span class="kb">K</span><span>koko näyttö (Esc ei silloin poistu koko näytöstä)</span>
         <span class="kb">C</span><span>kyykky / hiipiminen (hitaampi, viholliset huomaavat vasta lähempää, eläimet eivät säiky)</span>
       </div>
@@ -125,27 +136,28 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <!-- Tavalliset skriptit jakavat saman globaalin näkyvyysalueen. Järjestyksellä on väliä. -->
-<script src="js/core.js?v=0.19"></script>
-<script src="js/world.js?v=0.19"></script>
-<script src="js/render.js?v=0.19"></script>
-<script src="js/collision.js?v=0.19"></script>
-<script src="js/items.js?v=0.19"></script>
-<script src="js/audio.js?v=0.19"></script>
-<script src="js/models.js?v=0.19"></script>
-<script src="js/resources.js?v=0.19"></script>
-<script src="js/landmarks.js?v=0.19"></script>
-<script src="js/pieces.js?v=0.19"></script>
-<script src="js/mobs.js?v=0.19"></script>
-<script src="js/state.js?v=0.19"></script>
-<script src="js/input.js?v=0.19"></script>
-<script src="js/actions.js?v=0.19"></script>
-<script src="js/building.js?v=0.19"></script>
-<script src="js/environment.js?v=0.19"></script>
-<script src="js/player.js?v=0.19"></script>
-<script src="js/ai.js?v=0.19"></script>
-<script src="js/camera.js?v=0.19"></script>
-<script src="js/ui.js?v=0.19"></script>
-<script src="js/save.js?v=0.19"></script>
-<script src="js/main.js?v=0.19"></script>
+<script src="js/core.js?v=0.35"></script>
+<script src="js/world.js?v=0.35"></script>
+<script src="js/render.js?v=0.35"></script>
+<script src="js/collision.js?v=0.35"></script>
+<script src="js/items.js?v=0.35"></script>
+<script src="js/audio.js?v=0.35"></script>
+<script src="js/models.js?v=0.35"></script>
+<script src="js/resources.js?v=0.35"></script>
+<script src="js/landmarks.js?v=0.35"></script>
+<script src="js/pieces.js?v=0.35"></script>
+<script src="js/mobs.js?v=0.35"></script>
+<script src="js/state.js?v=0.35"></script>
+<script src="js/input.js?v=0.35"></script>
+<script src="js/actions.js?v=0.35"></script>
+<script src="js/building.js?v=0.35"></script>
+<script src="js/environment.js?v=0.35"></script>
+<script src="js/player.js?v=0.35"></script>
+<script src="js/ai.js?v=0.35"></script>
+<script src="js/camera.js?v=0.35"></script>
+<script src="js/ui.js?v=0.35"></script>
+<script src="js/progress.js?v=0.35"></script>
+<script src="js/save.js?v=0.35"></script>
+<script src="js/main.js?v=0.35"></script>
 </body>
 </html>

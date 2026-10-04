@@ -26,33 +26,35 @@ function updateHUD(dt){
   hp.firstChild.style.width=(P.hp/maxHp()*100)+'%';hp.lastChild.textContent=`TERVEYS ${Math.ceil(P.hp)}/${maxHp()}`;hp.classList.toggle('low',P.hp<maxHp()*.25);
   st.firstChild.style.width=(P.stam/maxStam()*100)+'%';st.lastChild.textContent=`KESTÄVYYS ${Math.floor(P.stam)}`;
   hu.firstChild.style.width=P.hunger+'%';hu.lastChild.textContent=`KYLLÄISYYS ${Math.floor(P.hunger)}`;hu.classList.toggle('low',P.hunger<15);
+  {const li=lvlInfo();$('#lvlbox').innerHTML=`Taso ${li.L}<span class="track"><i style="width:${li.need?li.xp/li.need*100:100}%"></i></span>`;}
   const wt=invWeight();const we=$('#weight');we.textContent=`Paino ${wt.toFixed(0)}/${MAXW}`;we.classList.toggle('over',wt>MAXW);
   const t=lookTarget,pr=$('#prompt');
   if(t&&!P.dead){const l=t.kind==='it'?t.it.label():t.label;pr.innerHTML=`<kbd>E</kbd>${l}`;}else pr.innerHTML='';
   // status chips
-  const ch=[];
-  if(P.crouch)ch.push(['Hiipii','neu']);if(shelterCache&&!P.inDun)ch.push(['Suojassa','neu']);if(fireCache)ch.push(['Lämmin','good']);
-  if(P.buffs.levannyt)ch.push([`Levännyt ${Math.ceil(P.buffs.levannyt/60)} min`,'good']);
-  if(P.buffs.voima)ch.push([`Voimistunut ${Math.ceil(P.buffs.voima/60)} min`,'good']);
-  if(P.wetT>0)ch.push(['Märkä','bad']);if(P.cold)ch.push(['Kylmä','bad']);if(P.hunger<=0)ch.push(['Nälkä','bad']);
-  if(P.buffs.pahoinvointi)ch.push(['Pahoinvointi','bad']);if(wt>MAXW)ch.push(['Ylikuormitus','bad']);if(P.restT>0&&!P.buffs.levannyt)ch.push([`Lepää… ${Math.ceil(12-P.restT)} s`,'neu']);
-  $('#status').innerHTML=ch.map(([t,c])=>`<div class="chip ${c}"><b></b>${t}</div>`).join('');
+  const fxs=effects();$('#status').innerHTML=fxs.map(e=>`<div class="chip ${e.kind}" title="${e.desc}"><b></b>${e.name}${e.t?' '+fmtT(e.t):''}</div>`).join('');
+  if(openPanel==='inv'&&performance.now()-fxAt>400){fxAt=performance.now();renderEffects(fxs);}
   // clock
   const hh=Math.floor(dayT*24),mm=Math.floor((dayT*24-hh)*60/10)*10;$('#clock').innerHTML=`Päivä ${dayN} · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')} <span>· ${P.inDun?'Hautakumpu':WEATHERS[weather.cur].n}</span>`;
-  if(invDirty){invDirty=false;$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1)).join('');if(openPanel==='inv')renderInv();if(openPanel==='chest')renderChest();if(openPanel==='build')renderBuild();}
+  if(invDirty){invDirty=false;updateBack();$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1)).join('');if(openPanel==='inv')renderInv();if(openPanel==='chest')renderChest();if(openPanel==='build')renderBuild();}
   if(boss&&!boss.dead){$('#bossbar i').style.width=(boss.hp/boss.maxHp*100)+'%';}
   drawMinimap();
 }
 let openPanel=null,selSlot=-1,curChest=null;
-function togglePanel(name){if(openPanel===name){closePanels();return;}closePanels(true);openPanel=name;state='ui';releaseLock();mouseL=false;mouseR=false;P.drawing=false;
-  if(name==='inv'){$('#inv').hidden=false;renderInv();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;drawBigMap();}if(name==='chest')$('#chest').hidden=false;}
-function closePanels(keep,skipLock){if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest'])$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;if(!keep){state='play';if(!skipLock)requestLock();}}
+let panelOpenedAt=0;
+function togglePanel(name){if(openPanel===name){closePanels();return;}panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';releaseLock();mouseL=false;mouseR=false;P.drawing=false;
+  if(name==='inv'){$('#inv').hidden=false;renderInv();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;drawBigMap();}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}}
+function closePanels(keep,skipLock){if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP'])$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;if(!keep){state='play';if(!skipLock)requestLock();}}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
-function nearStations(){const s={};for(const p of pieces){if(['tyopenkki','nuotio','ahjo'].includes(p.t)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(p.t==='nuotio'?4:8)**2&&!P.inDun){if(p.t==='nuotio'&&p.data.fuel<=0)continue;s[p.t]=1;}}return s;}
-function renderInv(){
+function nearStations(){const s={};for(const p of pieces){const k=isFirePiece(p.t)?'nuotio':p.t;if(['tyopenkki','nuotio','ahjo'].includes(k)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(k==='nuotio'?4:8)**2&&!P.inDun){if(k==='nuotio'&&p.data.fuel<=0)continue;s[k]=1;}}return s;}
+let fxAt=0;
+// Tilat repun vieressä: nimi, jäljellä oleva aika ja vaikutus (osoita hiirellä tai lue suoraan).
+function renderEffects(fxs){fxs=fxs||effects();$('#effects').innerHTML=`<h3>Tilat</h3>`+(fxs.length?fxs.map(e=>`<div class="fx ${e.kind}" title="${e.desc}"><b>${e.name}${e.t?' · '+fmtT(e.t):''}</b><span>${e.desc}</span></div>`).join(''):'<div class="s">Ei erityisiä tiloja.</div>');}
+let craftTab='alku';
+function renderInv(){renderEffects();
   const g=$('#invGrid');g.innerHTML=inv.map((s,i)=>slotHTML(s,i<8?i+1:'')).join('');
   [...g.children].forEach((el,i)=>{el.classList.toggle('sel',i===selSlot);el.onclick=e=>{if(selSlot>=0&&selSlot!==i&&e.shiftKey===false&&inv[selSlot]&&!inv[i]){inv[i]=inv[selSlot];inv[selSlot]=null;selSlot=i;invDirty=true;renderInv();return;}selSlot=i;renderInv();};el.ondblclick=()=>{useSlot(i);renderInv();};el.oncontextmenu=e=>{e.preventDefault();if(inv[i]){useSlot(i);renderInv();}};});
   $('#invW').textContent=`Paino ${invWeight().toFixed(0)} / ${MAXW}`;
+  upBtn($('#invUp'),PACK_UP[P.packLv+1],`Isompi reppu (taso ${P.packLv+2}: +8 paikkaa, +40 painoa)`,()=>{setPack(P.packLv+1);msg('Reppu kasvoi!','loot');});
   const det=$('#detail'),s=inv[selSlot];
   if(!s){det.innerHTML='<div class="s">Valitse esine. Kaksoisnapsautus tai hiiren oikea käyttää. Napsauta tyhjää paikkaa siirtääksesi valitun esineen.</div>';}
   else{const d=ITEMS[s.id];const q=s.q||1;let stat='';
@@ -74,24 +76,39 @@ function renderInv(){
   const st=nearStations();
   $('#stationLine').textContent='Lähellä: '+(Object.keys(st).map(k=>STATION_NAME[k]).join(', ')||'ei työpisteitä')+'. Uusia ohjeita aukeaa, kun löydät uusia aineita.';
   const cl=$('#craftList');cl.innerHTML='';
+  const tabs=$('#craftTabs');tabs.innerHTML='';
+  for(const [id,nm] of CRAFT_CATS){const b=document.createElement('button');b.className='tab'+(id===craftTab?' on':'');b.textContent=nm;b.onclick=()=>{craftTab=id;renderInv();};tabs.appendChild(b);}
   for(const r of RECIPES){const known=Object.keys(r.req).some(id=>flags.seen[id])||!r.st;if(!known)continue;
+    if(craftTab==='alku'?!r.alku:recipeCat(r)!==craftTab)continue;
+    const open=recipeOpen(r);
     const okSt=!r.st||st[r.st];const okMat=Object.entries(r.req).every(([id,n])=>invCount(id)>=n);
-    const el=document.createElement('div');el.className='rec'+(okSt&&okMat?'':' na');
-    el.innerHTML=`<div class="ic" style="background-image:url(${icon(r.id)})"></div><div><div class="nm">${ITEMS[r.id].n}${r.n?` ×${r.n}`:''}</div><div class="rq">${Object.entries(r.req).map(([id,n])=>`<span class="${invCount(id)>=n?'':'miss'}">${n} ${ITEMS[id].n.toLowerCase()}</span>`).join(', ')}${r.st?` · <span class="${okSt?'':'miss'}">${STATION_NAME[r.st]}</span>`:''}</div></div>`;
-    const b=document.createElement('button');b.className='btn pri';b.textContent='Valmista';b.disabled=!(okSt&&okMat);b.onclick=()=>craft(r);el.appendChild(b);cl.appendChild(el);}
+    const el=document.createElement('div');el.className='rec'+(okSt&&okMat&&open?'':' na');
+    el.innerHTML=`<div class="ic" style="background-image:url(${icon(r.id)})"></div><div><div class="nm">${ITEMS[r.id].n}${r.n?` ×${r.n}`:''}</div><div class="rq">${Object.entries(r.req).map(([id,n])=>`<span class="${invCount(id)>=n?'':'miss'}">${n} ${ITEMS[id].n.toLowerCase()}</span>`).join(', ')}${r.st?` · <span class="${okSt?'':'miss'}">${STATION_NAME[r.st]}</span>`:''}${open?'':` · <span class="miss">Taso ${r.lvl}</span>`}</div></div>`;
+    const b=document.createElement('button');b.className='btn pri';b.textContent=open?'Valmista':'Lukittu';b.disabled=!(okSt&&okMat&&open);b.onclick=()=>craft(r);el.appendChild(b);cl.appendChild(el);}
 }
 function upgradeInfo(s){const d=ITEMS[s.id];if(!d.cat||d.cat==='hammer')return null;const q=s.q||1;if(q>=3)return null;const r=RECIPE_BY[s.id];if(!r)return null;
   const req={};for(const [id,n] of Object.entries(r.req))req[id]=Math.ceil(n/2)*q;const st=r.st||'tyopenkki';const near=nearStations()[st];
   const ok=near&&Object.entries(req).every(([id,n])=>invCount(id)>=n);return{req,ok,why:near?'':`Tarvitset: ${STATION_NAME[st]}`};}
-function craft(r){for(const [id,n] of Object.entries(r.req))invRemove(id,n);const left=invAdd(r.id,r.n||1);if(left)spawnDrop(r.id,left,P.pos.x,P.pos.y+1,P.pos.z);sfx('craft');msg(`Valmistit: ${ITEMS[r.id].n}`,'loot');
+function craft(r){if(!recipeOpen(r))return;for(const [id,n] of Object.entries(r.req))invRemove(id,n);bump('crafted');xpFirst('c_'+r.id,6,'uusi esine');const left=invAdd(r.id,r.n||1);if(left)spawnDrop(r.id,left,P.pos.x,P.pos.y+1,P.pos.z);sfx('craft');msg(`Valmistit: ${ITEMS[r.id].n}`,'loot');
   if(ITEMS[r.id].cat&&!equipped(ITEMS[r.id].cat==='bow'||ITEMS[r.id].cat==='hammer'?'weapon':ITEMS[r.id].cat)){const s=inv.find(s=>s&&s.id===r.id&&!s.eq);if(s)toggleEquip(s);}
   invDirty=true;renderInv();}
+let buildTab='alku';
+const costChips=req=>Object.entries(req).map(([id,n])=>{const h=invCount(id);return `<span class="mat ${h>=n?'ok':'bad'}">${ITEMS[id].n} ${Math.min(h,999)}/${n}</span>`;}).join('');
 function renderBuild(){const c=$('#buildCards');c.innerHTML='';const hasBench=!!nearPiece('tyopenkki',P.pos.x,P.pos.z,20);
-  for(const [t,d] of Object.entries(PIECES)){const okMat=Object.entries(d.req).every(([id,n])=>invCount(id)>=n);const okB=d.noBench||hasBench;
-    const b=document.createElement('button');b.className='card'+(okMat&&okB?'':' na');b.innerHTML=`<div class="tag">${d.tag}</div><div class="nm">${d.n}</div><div class="rq">${reqText(d.req)}${okB?'':' · tarvitsee työpenkin'}</div>`;
-    b.onclick=()=>{setBuildSel(t);closePanels();};c.appendChild(b);}}
+  const tabs=$('#buildTabs');tabs.innerHTML='';
+  for(const [id,nm] of BUILD_CATS){const b=document.createElement('button');b.className='tab'+(id===buildTab?' on':'');b.textContent=nm;b.onclick=()=>{buildTab=id;renderBuild();};tabs.appendChild(b);}
+  for(const [t,d] of Object.entries(PIECES)){if(buildTab==='alku'?!d.alku:d.cat!==buildTab)continue;
+    const okMat=Object.entries(d.req).every(([id,n])=>invCount(id)>=n);const okB=d.noBench||hasBench;
+    const b=document.createElement('button');b.className='card'+(okMat&&okB?'':' na');b.innerHTML=`<div class="nm">${d.n}</div><div class="rq">${costChips(d.req)}</div>${okB?'':'<div class="rq"><span class="mat bad">tarvitsee työpenkin</span></div>'}`;
+    // Oikealla napilla avattu valikko ei saa valita korttia heti (hiiri on vielä alhaalla).
+    b.onclick=()=>{if(performance.now()-panelOpenedAt<400)return;setBuildSel(t);closePanels();};c.appendChild(b);}}
+// Päivityspainike: näyttää hinnan (punainen = puuttuu) ja tekee päivityksen napsautuksesta.
+function upBtn(el,cost,label,fn){if(!cost){el.innerHTML=`<div class="note">${label} on korkeimmalla tasollaan.</div>`;return;}
+  el.innerHTML=`<button class="btn pri">${label}</button> <span class="rq">${costChips(cost)}</span>`;
+  const ok=Object.entries(cost).every(([id,n])=>invCount(id)>=n);el.firstChild.disabled=!ok;el.firstChild.onclick=()=>{if(!Object.entries(cost).every(([id,n])=>invCount(id)>=n))return;for(const [id,n] of Object.entries(cost))invRemove(id,n);fn();sfx('craft');invDirty=true;};}
 function openChest(p){togglePanel('chest');curChest=p;renderChest();}
-function renderChest(){if(!curChest)return;const items=curChest.data.items;
+function renderChest(){if(!curChest)return;const items=curChest.data.items;$('#chestTitle').textContent=PIECES[curChest.t].n+(curChest.data.lv?` (taso ${curChest.data.lv+1})`:'');
+  upBtn($('#chestUp'),STORE_UP[(curChest.data.lv||0)+1],'Laajenna (+8 paikkaa)',()=>{curChest.data.lv=(curChest.data.lv||0)+1;while(items.length<storeSlots(curChest))items.push(null);msg('Säilytystila kasvoi.','loot');});
   $('#chestGrid').innerHTML=items.map(s=>slotHTML(s)).join('');$('#chestInv').innerHTML=inv.map(s=>slotHTML(s)).join('');
   [...$('#chestGrid').children].forEach((el,i)=>el.onclick=()=>{const s=items[i];if(!s)return;const left=invAdd(s.id,s.n,s.q||1);if(left===0)items[i]=null;else s.n=left;invDirty=true;renderChest();});
   [...$('#chestInv').children].forEach((el,i)=>el.onclick=()=>{const s=inv[i];if(!s)return;if(s.eq){s.eq=false;updateGear();}const j=items.findIndex(x=>!x);if(j<0)return;items[j]={id:s.id,n:s.n,q:s.q};inv[i]=null;invDirty=true;renderChest();});}
@@ -114,7 +131,8 @@ function mapMarkers(g,sx,ox,oz){
   const pt=(x,z)=>[(x+ox)*sx,(z+oz)*sx];
   for(const k in flags.disc){const L=LOC[k];if(!L)continue;const [x,y]=pt(L.x,L.z);g.fillStyle='#8fd8cf';g.save();g.translate(x,y);g.rotate(Math.PI/4);g.fillRect(-4,-4,8,8);g.restore();if(sx>1){g.fillStyle='#eee5d3';g.font='600 12px Alegreya Sans, sans-serif';g.fillText(L.name,x+8,y+4);}}
   for(const p of pieces)if(p.t==='tyopenkki'||p.t==='sanky'){const [x,y]=pt(p.x,p.z);g.fillStyle='#e8893b';g.fillRect(x-3,y-3,6,6);}
-  for(const gr of graves){const [x,y]=pt(gr.x,gr.z);g.strokeStyle='#c8463b';g.lineWidth=2.5;g.beginPath();g.moveTo(x-5,y);g.lineTo(x+5,y);g.moveTo(x,y-5);g.lineTo(x,y+5);g.stroke();}
+  // Pääkallo näkyy kunnes hautakasan tavarat on kerätty.
+  for(const gr of graves){const [x,y]=pt(gr.x,gr.z),r=sx>1?8:6;g.save();g.translate(x,y);g.fillStyle='#f2ecdc';g.strokeStyle='#7a1a12';g.lineWidth=1.6;g.beginPath();g.arc(0,-r*.15,r*.8,0,TAU);g.fill();g.stroke();g.fillRect(-r*.45,r*.4,r*.9,r*.6);g.strokeRect(-r*.45,r*.4,r*.9,r*.6);g.fillStyle='#1a1410';g.beginPath();g.arc(-r*.33,-r*.2,r*.22,0,TAU);g.arc(r*.33,-r*.2,r*.22,0,TAU);g.fill();g.restore();}
 }
 function drawPlayerArrow(g,x,y,s){g.save();g.translate(x,y);g.rotate(-camYaw);g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=1.5;g.beginPath();g.moveTo(0,-s);g.lineTo(s*.7,s*.8);g.lineTo(0,s*.4);g.lineTo(-s*.7,s*.8);g.closePath();g.fill();g.stroke();g.restore();}
 function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),S=c.width/MAPW;g.imageSmoothingEnabled=true;g.drawImage(MAPC,0,0,c.width,c.height);g.drawImage(FOGC,0,0,c.width,c.height);mapMarkers(g,S,HALF,HALF);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF)*S,(P.pos.z+HALF)*S,9);}
@@ -124,21 +142,3 @@ function drawMinimap(){const c=$('#mini'),g=c.getContext('2d'),W=c.width,R=60,S=
   else{g.fillStyle='#a99d89';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='center';g.fillText('Hautakumpu',W/2,W/2+30);}
   drawPlayerArrow(g,W/2,W/2,7);g.restore();
   g.fillStyle='#eee5d3';g.font='800 11px Alegreya Sans, sans-serif';g.textAlign='center';g.fillText('P',W/2,12);}
-
-/* ---------------- GOALS ---------------- */
-const GOALS=[
-  {t:'Poimi oksia ja kiviä',d:'Kävele niiden luo ja paina E. Tarvitset 3 puuta ja 2 kiveä.',ok:()=>invCount('puu')>=3&&invCount('kivi')>=2||invCount('kirves')},
-  {t:'Valmista kivikirves',d:'Avaa reppu Tab-näppäimellä ja valmista kirves.',ok:()=>invCount('kirves')||invCount('kuparikirves')},
-  {t:'Kaada puita ja tee vasara',d:'Kaada puita kirveellä. Valmista vasara ja rakenna työpenkki (10 puuta).',ok:()=>pieces.some(p=>p.t==='tyopenkki')},
-  {t:'Rakenna suoja ja nuotio',d:'Seinät, katto ja nuotio sisälle. Lepää tulen ääressä katon alla saadaksesi Levännyt-tilan.',ok:()=>pieces.some(p=>p.t==='nuotio')&&pieces.some(p=>p.t==='katto')},
-  {t:'Metsästä ja paista lihaa',d:'Peurat pakenevat – hiivi lähelle tai käytä keihästä tai jousta. Paista liha nuotiolla.',ok:()=>invCount('paisti')||invCount('varras')||flags.ate},
-  {t:'Etsi kuparia',d:'Valmista piikivihakku työpenkillä (piikiveä löytyy rannoilta) ja louhi oransseja kupariesiintymiä metsissä ja vuorten juurella.',ok:()=>invCount('malmi')||invCount('kupari')||pieces.some(p=>p.t==='ahjo')},
-  {t:'Sulata ja takoa',d:'Rakenna sulatusuuni, sulata malmi kupariksi ja rakenna ahjo.',ok:()=>pieces.some(p=>p.t==='ahjo')},
-  {t:'Varustaudu',d:'Takoa kuparimiekka tai kuparipanssari ahjolla. Nuija on hyvä kalmoja vastaan.',ok:()=>invCount('miekka')||invCount('kuparipanssari')||invCount('kuparikilpi')},
-  {t:'Hae kolme hiidenkiveä',d:'Hautakumpu on lounaassa kalmanummella. Ota soihtu mukaan.',ok:()=>invCount('hiidenkivi')>=3||boss||flags.boss},
-  {t:'Herätä Kalmanvartija',d:'Kalmankehä on nummen eteläreunalla. Aseta kivet alttarille ja voita vartija.',ok:()=>flags.boss},
-  {t:'Hiidenmaa on vapaa',d:'Jatka rakentamista ja tutkimista omaan tahtiisi.',ok:()=>false},
-];
-let goalShown=-1;
-function updateGoals(){while(flags.goal<GOALS.length-1&&GOALS[flags.goal].ok()){flags.goal++;if(flags.goal>0){msg('Tavoite saavutettu!','loot');sfx('craft');}}
-  if(goalShown!==flags.goal){goalShown=flags.goal;const g=GOALS[flags.goal];$('#goalT').textContent=g.t;$('#goalD').textContent=g.d;if(flags.goal===8){flags.disc.barrow=1;}if(flags.goal===9)flags.disc.circle=1;}}
