@@ -357,6 +357,45 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
+### Käyttäjän 19 ideaa ryhmiteltynä kolmeen erään (tulkinnat sovittu käyttäjän kanssa)
+Tulkinnat: hahmo = pehmeä low-poly (sylinterit/pallot, ei ulkoisia malleja); taso kasvaa kokemuspisteistä (tavoitteet,
+saavutukset ja teot), saavutukset antavat pysyviä pieniä bonuksia; "palkki" = rakennusosa.
+
+### Erä 20 – rakennus ja valikot (ideat 1,2,3,6,7,9,10,11) – KESKEN
+1. Puutekstuurit yhtenäisiksi: seinän tumma pylväs pois; kaikki puuosat `MAT.wood` ja UV:t metrisiksi (`bxw()`), aidat ja portaat
+   eivät enää tiheitä. Ovi kaksipuoleinen: ripa molemmilla puolilla, aukeaa pelaajasta poispäin, sarana pysyy samassa kohdassa.
+2. Pystykohdistus: H vaihtaa pysty-snappia (pois / pysty G/2-askelin / 3D-ruudukko = pystyviivat + kerrostasot).
+3. Hiiren oikean napin selainvalikko pois (`contextmenu` estetty kaikkialla) ja oikealla avattu B-valikko ei klikkaa korttia.
+4. Valikot puuteemaisiksi ja läpinäkymättömiksi; puuttuva aines punaisella "0/12"; kategoriat: valmistusvalikko (Alkupeli oletus,
+   Työkalut, Aseet, Varusteet, Ruoka, Muut) ja rakennusvalikko (Alkupeli oletus = vain puuosat, Puu, Kivi, Terva, Katot, Kivikatot,
+   Kalusto ja työpisteet, Valo ja puolustus).
+5. Tynnyri (säilytys 10 paikkaa) ja kehitysnappi: arkku 16→24→32, tynnyri 10→16→22, reppu 32→40→48→56 (aineet maksavat).
+6. Pylväät: ohut, lyhyt ja pitkä; ikkunaseinä (neliöreikä); puoli- ja neljännesseinät (matala G×WH/2, kapea G/2×WH, neljännes).
+7. Palkin Shift+R: 5 asentoa 0–90° (22,5° välein) kaiteita varten.
+8. Tikkaat (kiivettävät, 3 kaltevuutta Shift+R) ja uudet ontot portaat (vain askelmat ja sivupalkit, 3 jyrkkyyttä Shift+R);
+   nykyiset portaat nimeltään Raput. Kiviversiot järkevistä osista (`kivi_*`) ja kivikatot omaan kategoriaan.
+
+### Erä 21 – hahmo, taivas, valo ja tilat (ideat 4,5,8,12)
+1. Pelihahmo uusiksi pehmeällä low-polylla: pyöreät raajat, kiharat hiukset ja parta (ei hattua), alkuasukasvaatteet (nahka/turkki);
+   uudet työkalumallit (kirves, hakku, miekka, lapio, vasara, keihäs, nuija, soihtu, jousi, kilpi).
+2. Kontrastimpi valaistus: syvemmät varjot (matalampi hemi/amb, vahvempi aurinko), voimakkaammat valonlähteet.
+3. Tilaefektit (nälkä, kylmä, märkä, pahoinvointi, ylikuormitus, levännyt, voimistunut) vaikuttavat kykyihin (nopeus, kestävyyden ja
+   terveyden palautuminen, vahinko); lista repun Tilat-osiossa, hiirellä kohteen päällä lisätiedot ja jäljellä oleva aika.
+4. Taivas: liikkuvia, tuuheita pilviä sään mukaan, aurinko ja kuu pilvien takana, pilvet tummuvat ennen myrskyä (pilvi → sade →
+   myrsky), pilvet välkkyvät, harvinaiset näkyvät salamat.
+
+### Erä 22 – ruoka, tuli, viholliset, jousi, saavutukset ja taso (ideat 12b,13–19)
+1. Uudet esineet ja monipuolisemmat reseptit (köysi, hiili, paistettu sieni, jne.).
+2. Grillinuotio: teline 4 ruoalle, jokaisella oma vaihteleva ajastin; kypsyy (liha → paisti), 2× ajalla ylipaistuu → hiili.
+3. Hiili polttoaineena (10× puu): nuotio, sulatin, pystysoihtu (aika 5 min, puu nollaa 10 min, hiili 30 min).
+4. Viholliset pelkäävät tulta (soihtu kädessä, palava nuotio/pystysoihtu) ja kävelevät pois päin.
+5. Viholliset murtavat ovia ja ikkunoita: ikkunat ja avoimet ovet eivät estä näköyhteyttä; vihainen mobi menee lähimmälle ovelle/ikkunalle
+   ja hajottaa sen (2× vahinko).
+6. Jousi: pidempi lataus, vajaalla latauksella vähemmän vahinkoa ja voimakkaampi kaari, laatu/kehitys nopeuttaa ja suoristaa;
+   jousimalli oikein päin (jänne pelaajaan päin, nuoli ja jänne näkyvät vedossa).
+7. Saavutukset (pysyvät bonukset: kantokyky, max terveys, kestävyys, pieni nopeus), pelaajan taso ja XP, paljon uusia yksinkertaisia
+   tavoitteita, reseptit ja harvinaiset esineet aukeavat tasoilla.
+
 ### Erä 16 – korjaukset ja ylläpito – TEHTY (ks. versioloki v0.16)
 - Putoamisvahinko ×2, maassa olevat esineet katoavat 5 min jälkeen, kaikki eläimet tarvitsevat
   näköyhteyden huomatakseen pelaajan, vasaralla korjaus (F), ei päällekkäisiä samoja rakennuksia.
