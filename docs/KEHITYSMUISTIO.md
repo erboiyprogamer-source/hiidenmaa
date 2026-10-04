@@ -49,6 +49,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.42 (korjauserä: varjot, hakkuu, soihtu, kyykky, kädet)
+- **Varjobugi korjattu:** v0.40:ssä pistevalon varjokartta (`shadow.autoUpdate=false`) päivittyi vain pimeällä → päivällä jäi vanha kartta (varjot "jäätyivät", sitten puuttuivat). Nyt `needsUpdate` nostetaan itse säännöllisesti kun valo palaa: pimeällä soihtu joka 2., tuli joka 3. kehys, päivällä 6./8.; lähimmän tulen vaihtuessa heti (`updateLights`). Kevyempi kuin autoUpdate (aiemmin 2×6 kuutiopassia joka kehys).
+- **Mukautuva laatu** (`QUAL`, `setQuality`, `autoQuality` main.js): kehysajan liukuva keskiarvo > 36 ms 3 s → laatu −1 taso (1: varjopäivitykset harvemmin, 2: aurinkovarjokartta 1024 px, 3: pistevalovarjot pois); < 18 ms 12 s → takaisin ylöspäin. Varjot säilyvät mahdollisimman pitkään.
+- **Tukkien lohkeamat pienemmiksi ja pinnassa kiinni:** litteät laastarit rungon pinnalla (`logPatch`, kulma θ poikkileikkauksessa) + tumma reunus; halkeamia kuoreen (`logCrack`, 3 tukin syntyessä + lisää iskuista). Puiden kestävyys +20 % (pystypuu ×1.2, tukki 24·s²).
+- **Käsisoihtu ei katoa:** palaessa loppuun vain pää sammuu (`fuel`=0, `lit`=false, mittari harmaa); pihkaa voi lisätä repun yksityiskohdista (+30 s / pihka). **Sammuu myös vedessä** (`P.inWater`), ei syty vedessä.
+- **Kyykky luonnollisemmaksi:** vartalon etukallistus .38 → .1, vasen käsi koukussa (kyynärpää −.95) sivulla ja alhaalla, oikea sivulla; kyykkykävely: iso hidas askel (reiden heilahdus ±.6, polvi nostaa jalan kun se tulee eteen, vartalo keinuu ±.035). **Selkätavarat** kuuluvat nyt `fig.rig`-ryhmään (seuraavat kyykkyä) ja ovat aivan selän pinnassa (kilpi z −.1, jousi −.19, työkalu −.17/−.29).
+- **Kädet palaavat pehmeästi:** isku ajastetusti: nopea vain osumaikkunassa (30), sen jälkeen 6, iskun jälkeen .55 s hidas palautus (5); kyynärpäät 20 → 8. **Hakkuussa olkapäät pysyvät kiinni paikoillaan** (`tSh` .14 → .31), kädet eivät enää katoa vartalon eteen.
+- Pieniä optimointeja: kipinöiden materiaalit poolissa (`emPool`), valolista ei luoda uudelleen joka kehys (`ALL_LIGHTS`).
+
 ### v0.41 (erä 28: maasto ja työkalut)
 - **Multaisuus** (`MUD`, resources.js): jokaisella maaston kärjellä arvo 0–1; väri sekoittuu alkuperäisestä (`TCOL0`) kohti tummaa multaa (`MUDC`). Tallentuu harvana listana (`mud:[[i,v]]`, `mudList`/`applyMud`), nollautuu uudessa pelissä (`resetMud` resetTerran yhteydessä).
 - **Lapio:** tasoittaa kuten ennen ja lisäksi tekee maasta multaisen ja tummemman (+.4 / käyttö keskellä) → polut.

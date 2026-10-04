@@ -186,13 +186,20 @@ function fireInteract(p){const cap=p.t==='grilli'?4:3,d=p.data;
   if(invCount('puu')>0){invRemove('puu',1);d.fuel++;markFull(p);sfx('build');return;}
   if(d.fuel<=FUEL_MAX-10&&invCount('hiili')>0){invRemove('hiili',1);d.fuel+=10;markFull(p);msg('Hiili palaa pitkään.');sfx('build');return;}
   msg(invCount('puu')>0||invCount('hiili')>0?'Tulessa on tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');}
-// Tukin hakkuu: osumakohtaan kuoren sisävärinen lohkeama, joka kasvaa isommaksi koloksi samaan kohtaan lyötäessä; puupartikkeleja joka iskulla.
+// Tukin hakkuu: osumakohtaan kuoren pintaa pitkin litteä, kuoren sisävärinen lohkeama (kasvaa samaan kohtaan lyötäessä, 4 tasoa) + halkeamia kuoreen;
+// puupartikkeleja joka iskulla. Lohkeamat ovat pieniä ja kiinni rungon pinnassa (litteät, kulma θ poikkileikkauksessa).
+function logPatch(lg,theta,z,sx,sy,sz,color){const r=lg.rad,m=new THREE.Mesh(new THREE.SphereGeometry(1,7,5),mat(color));m.castShadow=false;m.position.set(Math.cos(theta)*r*.985,Math.sin(theta)*r*.985,z);m.rotation.z=theta;m.scale.set(sx,sy,sz);lg.mesh.add(m);return m;}
+function logCrack(lg,theta,z,len){const r=lg.rad,m=new THREE.Mesh(new THREE.BoxGeometry(r*.05,r*(.04+Math.random()*.05),len),mat(0x241810));m.castShadow=false;
+  m.position.set(Math.cos(theta)*r*.99,Math.sin(theta)*r*.99,z);m.rotation.z=theta;m.rotation.x=(Math.random()-.5)*.1;lg.mesh.add(m);}
 function chopLog(lg){const dx=lg.bx-lg.ax,dz=lg.bz-lg.az,L2=dx*dx+dz*dz,t=clamp(((P.pos.x-lg.ax)*dx+(P.pos.z-lg.az)*dz)/L2,.06,.94),z=(t-.5)*lg.len;
   const side=Math.sign((P.pos.x-lg.ax)*dz-(P.pos.z-lg.az)*dx)||1; // kummalta puolelta lyödään (tukin paikallinen x)
-  let nt=lg.notches.find(o=>Math.abs(o.z-z)<.35&&o.side===side);
-  if(!nt){const m=new THREE.Mesh(new THREE.SphereGeometry(1,7,5),mat(WOOD_IN));m.castShadow=false;lg.mesh.add(m);nt={z,side,m,k:0};lg.notches.push(nt);}
-  nt.k=Math.min(4,nt.k+1);const r=lg.rad,s=.35+nt.k*.18;nt.m.scale.set(r*.35*nt.k/2+r*.15,r*s,r*(.3+nt.k*.12));nt.m.position.set(side*r*(.98-nt.k*.07),r*.15,nt.z);
-  const wx=lg.ax+dx*t,wz=lg.az+dz*t,wy=lg.y+lg.rad*1.2;burst(wx,wy,wz,WOOD_IN,7,4);burst(wx,wy,wz,TRUNK_C[lg.src]||0x6b4527,3,3);}
+  if(!lg.cracked){lg.cracked=1;for(let i=0;i<3;i++)logCrack(lg,Math.random()*TAU,(Math.random()-.5)*lg.len*.8,lg.len*(.15+Math.random()*.25));}
+  const th0=side>0?0:Math.PI;let nt=lg.notches.find(o=>Math.abs(o.z-z)<.3&&o.side===side);
+  if(!nt){const th=th0+side*Math.random()*.35,m=logPatch(lg,th,z,.1,.1,.1,WOOD_IN),rim=logPatch(lg,th,z,.07,.12,.12,0x6e4526);nt={z,side,m,rim,k:0,th};lg.notches.push(nt);logCrack(lg,th+(Math.random()-.5)*.6,z+(Math.random()-.5)*.2,lg.len*.12);}
+  nt.k=Math.min(4,nt.k+1);const r=lg.rad,k=nt.k;
+  nt.m.scale.set(r*(.07+.035*k),r*(.2+.07*k),r*(.3+.1*k));nt.rim.scale.set(r*(.05+.03*k),r*(.27+.08*k),r*(.38+.12*k));
+  if(k>=3)logCrack(lg,nt.th+(Math.random()-.5)*.8,nt.z+(Math.random()-.5)*.3,lg.len*(.08+Math.random()*.1));
+  const wx=lg.ax+dx*t,wz=lg.az+dz*t,wy=lg.y+lg.rad*1.2;burst(wx,wy,wz,WOOD_IN,6,4);burst(wx,wy,wz,TRUNK_C[lg.src]||0x6b4527,3,3);}
 function useAltar(){
   if(flags.boss){msg('Kehä on hiljainen. Vartija on poissa.');return;}
   if(boss)return;

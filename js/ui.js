@@ -84,6 +84,7 @@ function renderInv(){renderEffects();
     if(d.food){const x=document.createElement('button');x.className='btn pri';x.textContent='Syö';x.onclick=()=>{eat(s);renderInv();};b.appendChild(x);}
     if(d.cat){const x=document.createElement('button');x.className='btn pri';x.textContent=s.eq?'Riisu':'Varusta';x.onclick=()=>{toggleEquip(s);renderInv();};b.appendChild(x);}
     if(up){const x=document.createElement('button');x.className='btn';x.textContent=`Paranna ★${q+1} (${reqText(up.req)})`;x.disabled=!up.ok;x.title=up.why||'';x.onclick=()=>{for(const [id,n] of Object.entries(up.req))invRemove(id,n);s.q=q+1;sfx('craft');msg(`${d.n} paranneltu tasolle ${q+1}.`,'loot');invDirty=true;renderInv();};b.appendChild(x);}
+    if(s.id==='soihtu'&&(s.fuel??TORCH_T)<TORCH_T){const x=document.createElement('button');x.className='btn';x.textContent='Lisää pihkaa (+30 s)';x.disabled=invCount('pihka')<1;x.onclick=()=>{if(invCount('pihka')<1)return;invRemove('pihka',1);s.fuel=Math.min(TORCH_T,(s.fuel??0)+30);sfx('build');renderInv();};b.appendChild(x);}
     const dr=document.createElement('button');dr.className='btn';dr.textContent='Pudota';dr.onclick=()=>{inv[selSlot]=null;if(s.eq){s.eq=false;}spawnDrop(s.id,s.n,P.pos.x+Math.sin(P.yaw),P.pos.y+1,P.pos.z+Math.cos(P.yaw),s.q);invDirty=true;updateGear();selSlot=-1;renderInv();};b.appendChild(dr);}
   // crafting
   const st=nearStations();

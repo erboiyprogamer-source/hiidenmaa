@@ -18,13 +18,13 @@ let state='menu';
 const fig=makePlayer();
 scene.add(fig.g);let heldMesh=null,heldId=null,offMesh=null,offId=null,armorId=null;
 // Repussa olevat mutta käyttämättömät aseet, kilvet ja työkalut näkyvät pelaajan selässä (kilpi keskellä, jousi vinossa, työkalut varret ylöspäin).
-const backG=new THREE.Group();fig.g.add(backG);let backKey='';
+const backG=new THREE.Group();fig.rig.add(backG);let backKey='';
 function updateBack(){const items=inv.filter(s=>s&&!s.eq&&['weapon','bow','shield','shovel','hammer'].includes(ITEMS[s.id].cat));
   const sh=items.find(s=>ITEMS[s.id].cat==='shield'),one=items.find(s=>ITEMS[s.id].cat!=='shield'),bo=one&&ITEMS[one.id].cat==='bow'?one:null,tl=one&&!bo?[one]:[];
   const key=[sh,bo,...tl].map(s=>s?s.id:'-').join();if(key===backKey)return;backKey=key;while(backG.children.length)backG.remove(backG.children[0]);
-  if(sh){const m=makeShield(sh.id);const o=new THREE.Group();m.rotation.y=Math.PI/2;m.position.set(0,0,0);o.add(m);o.position.set(0,1.2,-.25);o.scale.setScalar(.85);backG.add(o);}
-  if(bo){const m=makeHeld(bo.id),o=new THREE.Group();o.add(m);o.position.set(.08,1.2,-.33);o.rotation.set(0,0,.5);o.scale.setScalar(.95);backG.add(o);}
-  tl.forEach((s,i)=>{const m=makeHeld(s.id),i2=new THREE.Group(),o=new THREE.Group();m.rotation.z=Math.PI/2;/* terät/piikit sivusuuntaan = selänmyötäisesti, ei selkää vasten */i2.rotation.x=-Math.PI/2;i2.add(m);o.add(i2);o.position.set(.12,.78,-.3-(sh?.06:0));o.rotation.z=-.12;o.scale.setScalar(.85);backG.add(o);});}
+  if(sh){const m=makeShield(sh.id);const o=new THREE.Group();m.rotation.y=Math.PI/2;m.position.set(0,0,0);o.add(m);o.position.set(0,1.2,-.1);o.scale.setScalar(.85);backG.add(o);}
+  if(bo){const m=makeHeld(bo.id),o=new THREE.Group();o.add(m);o.position.set(.08,1.2,-.19);o.rotation.set(0,0,.5);o.scale.setScalar(.95);backG.add(o);}
+  tl.forEach((s,i)=>{const m=makeHeld(s.id),i2=new THREE.Group(),o=new THREE.Group();m.rotation.z=Math.PI/2;/* terät/piikit sivusuuntaan = selänmyötäisesti, ei selkää vasten */i2.rotation.x=-Math.PI/2;i2.add(m);o.add(i2);o.position.set(.12,.78,sh?-.29:-.17);o.rotation.z=-.12;o.scale.setScalar(.85);backG.add(o);});}
 function updateGear(){updateBack();
   {const w0=equipped('weapon');if(!w0||w0.id!=='vasara')setBuildSel(null);}
   const w=equipped('weapon'),wid=w?w.id:null;
@@ -85,11 +85,11 @@ const _tmpV=new V3(),_tmpV2=new V3();
 const parts=[];const pGeo=new THREE.BoxGeometry(.12,.12,.12);
 function burst(x,y,z,color,n=8,sp=3){for(let i=0;i<n;i++){if(parts.length>90){const o=parts.shift();scene.remove(o.m);}const m=new THREE.Mesh(pGeo,mat(color));m.position.set(x,y,z);scene.add(m);parts.push({m,vx:(Math.random()-.5)*sp,vy:Math.random()*sp,vz:(Math.random()-.5)*sp,t:.6+Math.random()*.4});}}
 // Kipinät ja savu: kevyet, nousevat hiukkaset tulille ja soihduille (ei painovoimaa). kind: 'spark' | 'smoke'.
-const embers=[],emGeo=new THREE.SphereGeometry(1,5,4);
+const embers=[],emPool=[],emGeo=new THREE.SphereGeometry(1,5,4);
 function emitEmber(x,y,z,kind){if(embers.length>70)return;const sp=kind==='spark',c=sp?(Math.random()<.5?0xffb43a:0xff7a1a):0x6a6560;
-  const m=new THREE.Mesh(emGeo,new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:sp?1:.35,depthWrite:false,fog:false}));m.position.set(x,y,z);m.scale.setScalar(.001);scene.add(m);
+  let mt=emPool.pop();if(!mt)mt=new THREE.MeshBasicMaterial({transparent:true,depthWrite:false,fog:false});mt.color.setHex(c);mt.opacity=sp?1:.35;const m=new THREE.Mesh(emGeo,mt);m.position.set(x,y,z);m.scale.setScalar(.001);scene.add(m);
   embers.push({m,sp,t:0,life:sp?.5+Math.random()*.8:1.1+Math.random()*.9,vx:(Math.random()-.5)*(sp?.8:.3),vy:sp?.9+Math.random()*1.3:.5+Math.random()*.4,vz:(Math.random()-.5)*(sp?.8:.3),r:sp?.018+Math.random()*.014:.07});}
-function updateEmbers(dt){for(let i=embers.length-1;i>=0;i--){const e=embers[i];e.t+=dt;const k=e.t/e.life;if(k>=1){scene.remove(e.m);e.m.material.dispose();embers.splice(i,1);continue;}
+function updateEmbers(dt){for(let i=embers.length-1;i>=0;i--){const e=embers[i];e.t+=dt;const k=e.t/e.life;if(k>=1){scene.remove(e.m);emPool.push(e.m.material);embers.splice(i,1);continue;}
   e.m.position.x+=(e.vx+Math.sin(e.t*7+i)*.25)*dt;e.m.position.y+=e.vy*dt;e.m.position.z+=e.vz*dt;
   e.m.scale.setScalar(e.sp?e.r*(1-k*.6):e.r*(1+k*2.6));e.m.material.opacity=e.sp?1-k:.35*(1-k);}}
 // Satunnaistettu välke: arvo hakeutuu satunnaisesti vaihtuvaan tavoitteeseen, joskus pieni "vajaus". Palauttaa kertoimen ~.82–1.04 (vain vähän eloa).

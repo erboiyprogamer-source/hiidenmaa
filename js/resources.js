@@ -114,7 +114,7 @@ function makeChunkIM(type,k,cap){const cx=k%CHN,cz=(k/CHN)|0,x0=-HALF+cx*CHS,z0=
 // Kaukaiset ruudut piiloon (sumu peittää ne joka tapauksessa).
 function updateChunkVis(){const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far;
   for(const im of CHUNK_IMS){const R=Math.min(f,im.userData.vis)+CHS*.72;im.visible=im.count>0&&!P.inDun&&dist2(cx,cz,im.userData.cx,im.userData.cz)<R*R;}}
-function initNode(n){n.ox=n.x;n.oz=n.z;n.s0=n.s;n.id=nodeIdN++;n.def=NODE[n.type];n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?n.s*n.s:1);n.hp=n.maxHp;n.alive=true;n.respawnAt=0;
+function initNode(n){n.ox=n.x;n.oz=n.z;n.s0=n.s;n.id=nodeIdN++;n.def=NODE[n.type];n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?n.s*n.s*1.2:1);n.hp=n.maxHp;n.alive=true;n.respawnAt=0;
   setNodeMatrix(n,true);
   if(n.def.kind==='tree')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+6*n.s,n);
   else if(n.def.kind==='rock')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+1.2*n.s,n);
@@ -130,7 +130,7 @@ function nodesNear(x,z,r,out){out.length=0;const x0=Math.floor((x-r)/CELL),x1=Ma
 function killNode(n){n.alive=false;n.respawnAt=playTime+n.def.respawn;setNodeMatrix(n,false);if(n.col)n.col.off=true;}
 function reviveNode(n){n.alive=true;n.hp=n.maxHp;setNodeMatrix(n,true);if(n.col)n.col.off=false;}
 // Siirtää puun/kasvin uuteen paikkaan (törmäys, ruudukko, korkeus, koko).
-function moveNode(n,x,z,s){n.x=x;n.z=z;n.s=s;n.y=terrainH(x,z);n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?s*s:1);
+function moveNode(n,x,z,s){n.x=x;n.z=z;n.s=s;n.y=terrainH(x,z);n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?s*s*1.2:1);
   if(n.col){gridRemove(n.col);const off=n.col.off;if(n.def.kind==='tree')n.col=addCircle(x,z,n.def.r*s,n.y-1,n.y+6*s,n);else n.col=addCircle(x,z,n.def.r*s,n.y-1,n.y+1.2*s,n);n.col.off=off;}
   ngridRemove(n);ngridAdd(n);}
 function locMin(x,z){let m=1e9;for(const k in LOC)m=Math.min(m,Math.hypot(x-LOC[k].x,z-LOC[k].z));return m;}
@@ -173,7 +173,7 @@ function spawnLogs(n,a){
     const geo=new THREE.CylinderGeometry(rad,rad*1.08,len,7);geo.rotateX(Math.PI/2);
     const mesh=new THREE.Mesh(geo,logMatOf(n.type));mesh.position.set(cx,y+rad*.9,cz);
     if(n.type==='koivu')for(let k=0;k<3;k++){const st=new THREE.Mesh(new THREE.CylinderGeometry(rad*1.01,rad*1.01,.06,7),mat(0x222222));st.rotation.x=Math.PI/2;st.position.z=(k-1)*len*.28;mesh.add(st);}mesh.rotation.y=a;mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);
-    const lg={type:'tukki',def:NODE.tukki,isLog:true,x:cx,z:cz,y,ax,az,bx,bz,rad,s:n.s,hp:20*n.s*n.s,maxHp:20*n.s*n.s,alive:true,mesh,cols:[],len,a,notches:[],tier:n.def.tier||1,dropId:n.type==='aarnipuu'?'tervaspuu':'puu',src:n.type};
+    const lg={type:'tukki',def:NODE.tukki,isLog:true,x:cx,z:cz,y,ax,az,bx,bz,rad,s:n.s,hp:24*n.s*n.s,maxHp:24*n.s*n.s,alive:true,mesh,cols:[],len,a,notches:[],tier:n.def.tier||1,dropId:n.type==='aarnipuu'?'tervaspuu':'puu',src:n.type};
     for(let t=0;t<=len;t+=.9){const px=ax+(bx-ax)*t/len,pz=az+(bz-az)*t/len;lg.cols.push(addCircle(px,pz,rad,y-1,y+rad*1.8,lg));}
     lg.gk=[];const ks=new Set();for(let t=0;t<=len;t+=2){ks.add(ck(Math.floor((ax+(bx-ax)*t/len)/CELL),Math.floor((az+(bz-az)*t/len)/CELL)));}ks.add(ck(Math.floor(bx/CELL),Math.floor(bz/CELL)));
     for(const k of ks){let arr=NGRID.get(k);if(!arr)NGRID.set(k,arr=[]);arr.push(lg);lg.gk.push(k);}

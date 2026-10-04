@@ -61,14 +61,16 @@ function updatePlayer(dt){
   fig.g.position.copy(P.pos);if(P.swim)fig.g.position.y=P.pos.y-.2;fig.g.rotation.y=P.yaw;
   P.crouchK=lerp(P.crouchK,P.crouch?1:0,Math.min(1,dt*9));
   // Jalat: lonkka + polvi. Kävely, ilma (hyppy), laskeutumisen joustaminen, iskun askel ja kyykky (polvet syvälle koukkuun, vartalo etukenoon).
-  {const K=P.crouchK;P.landT=Math.max(0,(P.landT||0)-dt);const land=Math.min(1,P.landT/.25);
+  {let bobC=0;const K=P.crouchK;P.landT=Math.max(0,(P.landT||0)-dt);const land=Math.min(1,P.landT/.25);
    let thL=sw,thR=-sw,knL=.08+Math.max(0,-sw)*.9,knR=.08+Math.max(0,sw)*.9,lunge=0;
    if(!P.onGround&&!P.swim){thL=-.5;thR=.25;knL=.75;knR=.5;}
    if(land>0){thL=lerp(thL,-.55,land);thR=lerp(thR,-.55,land);knL=lerp(knL,1.0,land);knR=lerp(knR,1.0,land);}
    if(P.atk&&!(P.turnWait>0)){lunge=Math.sin(Math.PI*clamp(P.atk.t/P.atk.dur,0,1));thL-=.3*lunge;thR+=.2*lunge;knL+=.3*lunge;knR+=.15*lunge;}
-   if(K>0){const cw=Math.sin(P.walkPh)*Math.min(1,hv/3)*.25;thL=lerp(thL,-1.0+cw,K);thR=lerp(thR,-1.0-cw,K);knL=lerp(knL,1.8,K);knR=lerp(knR,1.8,K);}
+   // Kyykkykävely: isot, hitaat askeleet (reiden heilahdus ±.6, takajalka koukussa kun jalka nousee eteen), runko hieman keinuu
+   if(K>0){const mv=Math.min(1,hv/1.4),ph=P.walkPh*.75,cw=Math.sin(ph)*mv*.6,liftL=Math.max(0,-Math.cos(ph))*.55*mv,liftR=Math.max(0,Math.cos(ph))*.55*mv;
+     thL=lerp(thL,-1.0+cw,K);thR=lerp(thR,-1.0-cw,K);knL=lerp(knL,1.8-cw*.8+liftL,K);knR=lerp(knR,1.8+cw*.8+liftR,K);bobC=Math.abs(Math.sin(ph))*.035*mv*K;}
    fig.legL.rotation.x=thL;fig.legR.rotation.x=thR;fig.kneeL.rotation.x=knL;fig.kneeR.rotation.x=knR;
-   const drop=.3*K+.09*land+.05*lunge;fig.rig.position.y=-drop;fig.rig.rotation.x=.38*K+.07*lunge+.05*land;fig.head.rotation.x=-.28*K-.04*lunge;}
+   const drop=.3*K+.09*land+.05*lunge-bobC;fig.rig.position.y=-drop;fig.rig.rotation.x=.1*K+.07*lunge+.05*land;fig.head.rotation.x=-.12*K-.04*lunge;}
   // Kädet: lasketaan tavoitekulmat ja siirrytään niihin pehmeästi (ei äkillisiä hyppyjä).
   let tRx=sw*.7,tRz=0,tLx=-sw*.7,tLz=0,tSh=.35,rate=14,grip=false,eRo=null,eLo=null;
   const hold=mouseL&&state==='play';
@@ -79,12 +81,13 @@ function updatePlayer(dt){
     else{// viistoisku: vuorotellen vasen-ylhäältä → oikea-alas ja oikea-ylhäältä → vasen-alas
       const hz=sd>0?.62:-.7,lz=sd>0?-.55:.5;
       [tRx,tRz]=two?swingPose(k,hk,-2.6,hz,-.7,lz,hold):swingPose(k,hk,-2.4,hz*.9,-.9,lz*.9,hold);}
-    rate=32;if(two&&(k<hk+.3||hold)){grip=true;tSh=.14;}}
-  if(P.crouchK>.4&&!P.atk&&!P.blocking&&!P.drawing){const K=P.crouchK;tLx=lerp(tLx,-1.45,K);tLz=lerp(tLz,.12,K);tRx=lerp(tRx,-.35,K);tRz=lerp(tRz,-1.15,K);eLo=-.06*K;}// vaanimisasento: toinen käsi pitkällä eteen, toinen sivulle
+    rate=k<hk+.12?30:6;if(two&&(k<hk+.3||hold)){grip=true;tSh=.31;}}
+  if(P.crouchK>.4&&!P.atk&&!P.blocking&&!P.drawing){const K=P.crouchK;tLx=lerp(tLx,-.5,K);tLz=lerp(tLz,.85,K);tRx=lerp(tRx,-.25,K);tRz=lerp(tRz,-.75,K);eLo=-.95*K;}// kyykky: vasen käsi koukussa sivulla ja alhaalla, oikea sivulla
 
   if(P.blocking){tLx=-1.3+Math.sin(playTime*3)*.04;tLz=-.3;}
   if(P.drawing){tLx=-1.5;tRx=-1.5;tRz=.5;}
   if(heldMesh&&ITEMS[heldId].cat==='bow'){if(P.drawing)tLz=-.1;}
+  if(P.atk)P.recT=.55;else P.recT=Math.max(0,(P.recT||0)-dt);if(!P.atk&&P.recT>0&&!P.drawing&&!P.blocking)rate=Math.min(rate,5);// iskun jälkeen kädet palaavat lepoon pehmeästi
   const e=Math.min(1,dt*rate);
   armSh+=(tSh-armSh)*e;fig.armL.position.x=armSh;fig.armR.position.x=-armSh;
   fig.armR.rotation.x=lerpAngle(fig.armR.rotation.x,tRx,e);fig.armR.rotation.z=lerpAngle(fig.armR.rotation.z,tRz,e);
@@ -93,7 +96,7 @@ function updatePlayer(dt){
   // Kyynärpäät taipuvat sitä enemmän mitä korkeammalle käsivarsi nousee (jousella vetokäsi taipuu, jousikäsi suorana)
   {const bendR=-(.14+clamp(-fig.armR.rotation.x,0,2.8)*.28),bendL=-(.14+clamp(-fig.armL.rotation.x,0,2.8)*.28);
    let tR=eRo!==null?eRo:bendR,tL=eLo!==null?eLo:bendL;if(P.drawing){tL=-.05;tR=-(.5+P.bowDraw*.9);}
-   fig.elbowR.rotation.x=lerp(fig.elbowR.rotation.x,tR,Math.min(1,dt*20));fig.elbowL.rotation.x=lerp(fig.elbowL.rotation.x,tL,Math.min(1,dt*20));}
+   fig.elbowR.rotation.x=lerp(fig.elbowR.rotation.x,tR,Math.min(1,dt*(P.atk?20:8)));fig.elbowL.rotation.x=lerp(fig.elbowL.rotation.x,tL,Math.min(1,dt*(P.atk?20:8)));}
   // Jousi pysyy pystyssä (kämmenen kierto kumotaan käsivarren kulmalla); jänne ja nuoli seuraavat vetoa.
   if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-fig.armL.rotation.x,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
   fig.g.visible=camDist>1.8;
@@ -102,9 +105,10 @@ function updatePlayer(dt){
   if(ts){if(ts.fuel===undefined)ts.fuel=TORCH_T;if(ts.lit===undefined)ts.lit=true;
     if(ts.lit&&ts.fuel>0){ts.fuel-=dt*(P.running?1.2:1);
       if(wRain>.5&&!shelterCache&&!P.inDun){ts.lit=false;msg('Sade sammutti soihdun. Sytytä se toisen liekin vieressä.','warn');sfx('hit');}
-      else if(ts.fuel<=0){const i=inv.indexOf(ts);if(i>=0)inv[i]=null;msg('Soihtu paloi loppuun.','warn');invDirty=true;updateGear();}}
+      else if(P.inWater&&!P.inDun){ts.lit=false;msg('Vesi sammutti soihdun.','warn');sfx('hit');}
+      else if(ts.fuel<=0){ts.fuel=0;ts.lit=false;msg('Soihdun pää paloi loppuun. Lisää siihen pihkaa repusta.','warn');invDirty=true;}}
     else if(ts.fuel>0){let near=nearFire(P.pos.x,P.pos.z,2.5);if(!near)for(const p of pieces)if(p.t==='soihtuteline'&&p.data.burn>0&&dist2(p.x,p.z,P.pos.x,P.pos.z)<2.2*2.2){near=true;break;}
-      if(near&&!(wRain>.5&&!shelterCache&&!P.inDun)){ts.lit=true;msg('Sytytit soihdun.','loot');sfx('pickup');}}
+      if(near&&!P.inWater&&!(wRain>.5&&!shelterCache&&!P.inDun)){ts.lit=true;msg('Sytytit soihdun.','loot');sfx('pickup');}}
     torch=!!torchSlot()&&ts.lit&&ts.fuel>0;torchBarT-=dt;if(torchBarT<=0){torchBarT=1;invDirty=true;}
     const fl0=offMesh&&offMesh.userData.flame;if(fl0)for(const f of fl0)f.visible=torch;}
   if(torch){const u=torchFl||(torchFl={cur:1,target:1,t:0}),s=1+(flick(u,dt)-1)*.52+(Math.sin(playTime*1.7+torchPh[0])+Math.sin(playTime*3.1+torchPh[1]))*.02;torchLight.intensity=2.6*s;fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;
