@@ -49,6 +49,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.45 (ilmoituslokki)
+- **T avaa viimeiset 10 ilmoitusta** (`msgLog`, `renderLog`, paneeli `#logP`): uusin ylimpänä, pelin kellonaika, varoitukset punaisella ja löydöt vihreällä reunalla. Suljetaan T:llä/Esc:llä/✕:llä. Mainittu valikon ohjelistassa.
+
 ### v0.44 (korjaus: soihdun sytytys, ilmoitukset ja varjot)
 - **Uudelleensytytys:** sammunut soihtu (fuel > 0) syttyy kun pelaaja on toisen palavan liekin (nuotio, grilli, seisova soihtu) vieressä < 1.15 m ja odottaa **2.5 s** (`torchIgn`); poistuminen nollaa ajastimen; ei sateessa/vedessä.
 - **Ilmoitukset** (viestilokiin): loppuun palaessa "Soihtusi paloi loppuun! Avaa reppu (Tab) ja napsauta soihtua – sieltä voit lisätä siihen pihkaa…", sateen/veden sammuttaessa "…Sytytä se uudelleen viemällä se kiinni toiseen liekkiin ja odota hetki." ja "Soihtu syttyy… pysy liekin vieressä."

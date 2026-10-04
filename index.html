@@ -6,7 +6,7 @@
 <title>Hiidenmaa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700;800&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=0.44">
+<link rel="stylesheet" href="css/style.css?v=0.45">
 </head>
 <body>
 
@@ -71,6 +71,12 @@
   <div id="progBody"></div>
 </div>
 
+<div id="logP" class="panel" hidden>
+  <button class="close" data-close="1" aria-label="Sulje">✕</button>
+  <h2>Viimeisimmät ilmoitukset</h2>
+  <div id="logBody"></div>
+</div>
+
 <div id="mapP" class="panel" hidden>
   <button class="close" data-close="1" aria-label="Sulje">✕</button>
   <canvas id="bigmap" width="640" height="640"></canvas>
@@ -79,7 +85,7 @@
 
 <div id="menu" class="screen">
   <div class="inner">
-    <h1 class="title"><small>Selviytymispeli · versio 0.44</small>Hiidenmaa</h1>
+    <h1 class="title"><small>Selviytymispeli · versio 0.45</small>Hiidenmaa</h1>
     <p class="lede">Haaksirikko jätti sinut saarelle, jota yhdeksän talven ajan on hallinnut kivinen Kalmanvartija. Kaada puita, rakenna suoja ennen yötä, takoa kuparista ase ja herätä vartija kivikehässä.</p>
     <div class="menuBtns">
       <p class="note" id="mapName" style="margin:0 0 6px"></p>
@@ -98,7 +104,7 @@
         <span class="kb">1–8</span><span>pikapaikat (varusta / syö)</span>
         <span class="kb">B</span><span>rakennusvalikko (vasara kädessä)</span>
         <span class="kb">R · X · F</span><span>käännä rakennusta · pura · korjaa (vasara)</span>
-        <span class="kb">M</span><span>kartta · <b>J</b> taso, saavutukset ja tavoitteet · <b>Esc</b> tauko / sulje paneeli</span>
+        <span class="kb">M</span><span>kartta · <b>J</b> taso, saavutukset ja tavoitteet · <b>T</b> viimeiset 10 ilmoitusta · <b>Esc</b> tauko / sulje paneeli</span>
         <span class="kb">K</span><span>koko näyttö (Esc ei silloin poistu koko näytöstä)</span>
         <span class="kb">C</span><span>kyykky / hiipiminen (hitaampi, viholliset huomaavat vasta lähempää, eläimet eivät säiky)</span>
       </div>
@@ -136,28 +142,28 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <!-- Tavalliset skriptit jakavat saman globaalin näkyvyysalueen. Järjestyksellä on väliä. -->
-<script src="js/core.js?v=0.44"></script>
-<script src="js/world.js?v=0.44"></script>
-<script src="js/render.js?v=0.44"></script>
-<script src="js/collision.js?v=0.44"></script>
-<script src="js/items.js?v=0.44"></script>
-<script src="js/audio.js?v=0.44"></script>
-<script src="js/models.js?v=0.44"></script>
-<script src="js/resources.js?v=0.44"></script>
-<script src="js/landmarks.js?v=0.44"></script>
-<script src="js/pieces.js?v=0.44"></script>
-<script src="js/mobs.js?v=0.44"></script>
-<script src="js/state.js?v=0.44"></script>
-<script src="js/input.js?v=0.44"></script>
-<script src="js/actions.js?v=0.44"></script>
-<script src="js/building.js?v=0.44"></script>
-<script src="js/environment.js?v=0.44"></script>
-<script src="js/player.js?v=0.44"></script>
-<script src="js/ai.js?v=0.44"></script>
-<script src="js/camera.js?v=0.44"></script>
-<script src="js/ui.js?v=0.44"></script>
-<script src="js/progress.js?v=0.44"></script>
-<script src="js/save.js?v=0.44"></script>
-<script src="js/main.js?v=0.44"></script>
+<script src="js/core.js?v=0.45"></script>
+<script src="js/world.js?v=0.45"></script>
+<script src="js/render.js?v=0.45"></script>
+<script src="js/collision.js?v=0.45"></script>
+<script src="js/items.js?v=0.45"></script>
+<script src="js/audio.js?v=0.45"></script>
+<script src="js/models.js?v=0.45"></script>
+<script src="js/resources.js?v=0.45"></script>
+<script src="js/landmarks.js?v=0.45"></script>
+<script src="js/pieces.js?v=0.45"></script>
+<script src="js/mobs.js?v=0.45"></script>
+<script src="js/state.js?v=0.45"></script>
+<script src="js/input.js?v=0.45"></script>
+<script src="js/actions.js?v=0.45"></script>
+<script src="js/building.js?v=0.45"></script>
+<script src="js/environment.js?v=0.45"></script>
+<script src="js/player.js?v=0.45"></script>
+<script src="js/ai.js?v=0.45"></script>
+<script src="js/camera.js?v=0.45"></script>
+<script src="js/ui.js?v=0.45"></script>
+<script src="js/progress.js?v=0.45"></script>
+<script src="js/save.js?v=0.45"></script>
+<script src="js/main.js?v=0.45"></script>
 </body>
 </html>
