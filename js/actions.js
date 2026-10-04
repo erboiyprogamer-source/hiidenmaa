@@ -69,7 +69,8 @@ function doMeleeHit(w){
   const n=best;
   if(n.def.kind==='tree'||n.def.kind==='log'){if(!w.chop){if(!hitMob){msg('Tarvitset kirveen kaataaksesi puun.','warn');sfx('hit');}return;}
     const tier=n.isLog?n.tier:(n.def.tier||1);if(w.chop<tier){if(!hitMob){msg('Tarvitset vahvemman kirveen.','warn');sfx('hit');}return;}
-    n.hp-=(5+w.chop*4)*(1+.25*((w.q||1)-1));sfx('chop');burst(n.x,n.y+(n.isLog?.4:1.2),n.z,0x8a5a32,5,3);shake(.08);
+    n.hp-=(5+w.chop*4)*(1+.25*((w.q||1)-1));sfx('chop');shake(.08);
+    if(n.isLog)chopLog(n);else burst(n.x,n.y+1.2,n.z,0x8a5a32,5,3);
     if(n.hp<=0){if(n.isLog){removeLog(n);const c=Math.max(1,Math.round(rint(rng,3,4)*n.s));for(let j=0;j<c;j++){const t=(j+.5)/c;spawnDrop(n.dropId,1,n.ax+(n.bx-n.ax)*t,n.y+.8,n.az+(n.bz-n.az)*t);}burst(n.x,n.y+.4,n.z,0x6b4527,12,4);}
       else{killNode(n);fallTree(n);bump('trees');}}}
   else if(n.def.kind==='rock'){if(!w.pick){if(!hitMob){msg('Tarvitset hakun louhiaksesi kiveä.','warn');sfx('hit');}return;}
@@ -172,6 +173,13 @@ function fireInteract(p){const cap=p.t==='grilli'?4:3,d=p.data;
   if(invCount('puu')>0){invRemove('puu',1);d.fuel++;markFull(p);sfx('build');return;}
   if(d.fuel<=FUEL_MAX-10&&invCount('hiili')>0){invRemove('hiili',1);d.fuel+=10;markFull(p);msg('Hiili palaa pitkään.');sfx('build');return;}
   msg(invCount('puu')>0||invCount('hiili')>0?'Tulessa on tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');}
+// Tukin hakkuu: osumakohtaan kuoren sisävärinen lohkeama, joka kasvaa isommaksi koloksi samaan kohtaan lyötäessä; puupartikkeleja joka iskulla.
+function chopLog(lg){const dx=lg.bx-lg.ax,dz=lg.bz-lg.az,L2=dx*dx+dz*dz,t=clamp(((P.pos.x-lg.ax)*dx+(P.pos.z-lg.az)*dz)/L2,.06,.94),z=(t-.5)*lg.len;
+  const side=Math.sign((P.pos.x-lg.ax)*dz-(P.pos.z-lg.az)*dx)||1; // kummalta puolelta lyödään (tukin paikallinen x)
+  let nt=lg.notches.find(o=>Math.abs(o.z-z)<.35&&o.side===side);
+  if(!nt){const m=new THREE.Mesh(new THREE.SphereGeometry(1,7,5),mat(WOOD_IN));m.castShadow=false;lg.mesh.add(m);nt={z,side,m,k:0};lg.notches.push(nt);}
+  nt.k=Math.min(4,nt.k+1);const r=lg.rad,s=.35+nt.k*.18;nt.m.scale.set(r*.35*nt.k/2+r*.15,r*s,r*(.3+nt.k*.12));nt.m.position.set(side*r*(.98-nt.k*.07),r*.15,nt.z);
+  const wx=lg.ax+dx*t,wz=lg.az+dz*t,wy=lg.y+lg.rad*1.2;burst(wx,wy,wz,WOOD_IN,7,4);burst(wx,wy,wz,TRUNK_C[lg.src]||0x6b4527,3,3);}
 function useAltar(){
   if(flags.boss){msg('Kehä on hiljainen. Vartija on poissa.');return;}
   if(boss)return;

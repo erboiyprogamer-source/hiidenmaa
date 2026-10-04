@@ -155,15 +155,18 @@ function restoreNode(n){if(n.x!==n.ox||n.z!==n.oz||n.s!==n.s0)moveNode(n,n.ox,n.
 
 /* ---------------- TUKIT (kaatuneet puut) ---------------- */
 const logs=[];
-const logMat=mat(0x6b4a2e);
+// Rungon kuoren väri puulajeittain (tukit ja oksat saavat alkuperäisen puun värin) ja kuoren sisäväri (lohkeamat ja kolot).
+const TRUNK_C={kuusi:0x5a3a22,koivu:0xe9e6dc,kelo:0x6d665c,aarnipuu:0x4a3524},LEAF_C={kuusi:0x2e5a2e,koivu:0x7aa641,kelo:0,aarnipuu:0x1c3a22},WOOD_IN=0xc08a52;
+const logMats={};const logMatOf=t=>logMats[t]||(logMats[t]=mat(TRUNK_C[t]||0x6b4a2e));
 function spawnLogs(n,a){
   const H=(TREE_H[n.type]||5)*n.s,rad=(n.type==='aarnipuu'?.55:.2)*n.s,cnt=n.s>1.3||n.type==='aarnipuu'?2:1;
   const dx=Math.sin(a),dz=Math.cos(a),L0=.5,L1=H*.85,seg=(L1-L0)/cnt;
   for(let i=0;i<cnt;i++){const s0=L0+i*seg+.1,s1=L0+(i+1)*seg-.1,len=s1-s0;
     const ax=n.x+dx*s0,az=n.z+dz*s0,bx=n.x+dx*s1,bz=n.z+dz*s1,cx=(ax+bx)/2,cz=(az+bz)/2,y=terrainH(cx,cz);
     const geo=new THREE.CylinderGeometry(rad,rad*1.08,len,7);geo.rotateX(Math.PI/2);
-    const mesh=new THREE.Mesh(geo,logMat);mesh.position.set(cx,y+rad*.9,cz);mesh.rotation.y=a;mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);
-    const lg={type:'tukki',def:NODE.tukki,isLog:true,x:cx,z:cz,y,ax,az,bx,bz,rad,s:n.s,hp:20*n.s,maxHp:20*n.s,alive:true,mesh,cols:[],tier:n.def.tier||1,dropId:n.type==='aarnipuu'?'tervaspuu':'puu'};
+    const mesh=new THREE.Mesh(geo,logMatOf(n.type));mesh.position.set(cx,y+rad*.9,cz);
+    if(n.type==='koivu')for(let k=0;k<3;k++){const st=new THREE.Mesh(new THREE.CylinderGeometry(rad*1.01,rad*1.01,.06,7),mat(0x222222));st.rotation.x=Math.PI/2;st.position.z=(k-1)*len*.28;mesh.add(st);}mesh.rotation.y=a;mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);
+    const lg={type:'tukki',def:NODE.tukki,isLog:true,x:cx,z:cz,y,ax,az,bx,bz,rad,s:n.s,hp:20*n.s*n.s,maxHp:20*n.s*n.s,alive:true,mesh,cols:[],len,a,notches:[],tier:n.def.tier||1,dropId:n.type==='aarnipuu'?'tervaspuu':'puu',src:n.type};
     for(let t=0;t<=len;t+=.9){const px=ax+(bx-ax)*t/len,pz=az+(bz-az)*t/len;lg.cols.push(addCircle(px,pz,rad,y-1,y+rad*1.8,lg));}
     lg.gk=[];const ks=new Set();for(let t=0;t<=len;t+=2){ks.add(ck(Math.floor((ax+(bx-ax)*t/len)/CELL),Math.floor((az+(bz-az)*t/len)/CELL)));}ks.add(ck(Math.floor(bx/CELL),Math.floor(bz/CELL)));
     for(const k of ks){let arr=NGRID.get(k);if(!arr)NGRID.set(k,arr=[]);arr.push(lg);lg.gk.push(k);}

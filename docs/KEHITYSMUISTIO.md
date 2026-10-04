@@ -49,6 +49,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.37 (erä 24: puut ja hakkuu)
+- **Tukit alkuperäisen puun värisiä:** `TRUNK_C` (kuusi, koivu + mustat raidat, kelo, aarnipuu), `logMatOf(type)`; `LEAF_C` oksien lehville.
+- **Oksat:** kaatuvan puun rungon sivuilla 4 oksaa (aarnipuulla 7, lehvät lehtipuilla/havuilla); maahan osuessa ne irtoavat (`dropBranch`), putoavat ja vajoavat ~6 s maan alle (poistetaan 9 s).
+- **Lohkeamat ja kolot:** tukkia lyödessä (`chopLog`) osumakohtaan kuoren sisävärinen (`WOOD_IN` 0xc08a52) lohkeama sille puolelle josta lyödään; samaan kohtaan lyötäessä kolo kasvaa (4 tasoa). Joka iskulla puupartikkeleja (sisä- ja kuoriväri).
+- **Iso puu kestää kauemmin:** tukin kesto 20·s → 20·s² (pystypuu jo hp·s²). Kaatumisaika (1+.3·s) s (aarnipuu ×2), alku hidas (k^2.6).
+- **Ruutu tärähtää** kun puu kaatuu lähelle (etäisyys < pituus + 8 m, voimakkuus koon ja etäisyyden mukaan).
+
 ### v0.36 (erä 23: hahmo ja animaatiot)
 - **Hahmo laihemmaksi ja litteäpintaiseksi:** `makePlayer` uusiksi (kapeampi vartalo, ohuemmat raajat, 8-sivuiset sylinterit + `flatShading`; pää/kiharat pehmeämmät). Nivelet: `elbowL/R` (olka–kyynärpää) ja `kneeL/R` (lonkka–polvi); koko keho `fig.rig`-ryhmässä (voi laskea ja kallistaa).
 - **Jalat joustavat:** kävelyssä polvet taipuvat, hypyssä polvet koukussa, laskeutumisessa joustaminen (`P.landT`, .25 s), iskussa askel ja pieni etukenoon (`lunge`). Kyykky (C): polvet syvälle (reisi −1.0, polvi 1.8), vartalo etukenoon, runko laskee .3 m, toinen käsi pitkällä eteen ja toinen sivulle.
@@ -486,7 +493,7 @@ Kirjattu v0.35:n jälkeen. Jokainen erä: testaa, päivitä muistio, versio+`?v=
 3. Kirveen isku viistoon, vuorotellen vasen-ylhäältä ja oikea-ylhäältä viistosti alas.
 4. Keihäs: isku kääntää kärjen kohti kohdetta (työntö kohti kohdetta, ei suoraan eteen).
 
-**Erä 24 – Puut ja hakkuu (0.3, 0.7)**
+**Erä 24 – Puut ja hakkuu (0.3, 0.7)** – TEHTY (v0.37)
 1. Kaadettu runko saa alkuperäisen puun värin (kuori), oksat jäävät rungon sivuille ja irtoavat kaatuessa; oksat uppoavat hitaasti maahan ja katoavat.
 2. Kaadettua runkoa lyödessä sen pinnalle ilmestyy ruskeita (kuoren sisäväri) lohkeamia; joka iskulla puupartikkeleja ja isompi kolo.
 3. Mitä isompi puu, sitä kauemmin hakkuu; kaatuminen alkaa hitaana, kaatuessa lähellä pelaajaa ruutu tärähtää.
