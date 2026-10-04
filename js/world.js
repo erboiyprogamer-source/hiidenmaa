@@ -79,6 +79,7 @@ function biomeAt(x,z,h){
 }
 const HGT=new Float32Array(HN*HN);
 for(let iz=0;iz<HN;iz++)for(let ix=0;ix<HN;ix++)HGT[iz*HN+ix]=heightFn(-HALF+ix*GS,-HALF+iz*GS);
+const HGT0=HGT.slice(),TERRA={}; // alkuperäinen korkeuskartta ja lapiolla muokatut kärjet (indeksi → korkeus)
 function terrainH(x,z){
   const gx=(x+HALF)/GS,gz=(z+HALF)/GS;
   if(gx<0||gz<0||gx>=GN||gz>=GN)return -14;

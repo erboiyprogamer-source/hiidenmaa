@@ -44,6 +44,7 @@ function updatePlayer(dt){
   // attack
   if(P.atk){P.atk.t+=dt;if(!P.atk.done&&P.atk.t>=P.atk.hitAt){P.atk.done=true;doMeleeHit(P.atk.w);}if(P.atk.t>=P.atk.dur)P.atk=null;}
   if(!P.atk&&mouseL&&state==='play'&&w.cat==='weapon'&&locked)startAttack();
+  else if(mouseL&&state==='play'&&w.cat==='shovel'&&locked)useShovel();
   if(P.drawing){P.bowDraw=Math.min(1.2,P.bowDraw+dt*1.2);P.stam-=6*dt;P.stamDelay=.5;if(P.stam<=0){P.drawing=false;fireBow();}}
   // animate figure
   const hv=Math.hypot(P.vel.x,P.vel.z);P.walkPh+=hv*dt*1.9;

@@ -20,7 +20,7 @@ function updateHUD(dt){
   $('#cross').className=P.drawing?'aim':'';
   if(hudT>0)return;hudT=.1;
   const w=curWeapon();
-  if(w.cat==='hammer'){const bh=$('#buildhint');bh.hidden=false;const h=buildSel?`<b>${PIECES[buildSel].n}</b> · ${reqText(PIECES[buildSel].req)} · <span class="kb">Hiiri V</span>rakenna <span class="kb">R</span>käännä <span class="kb">X</span>pura <span class="kb">F</span>korjaa <span class="kb">B</span>valikko`+(ghost&&ghost.visible&&!ghostOk&&lastInvalid?` · <span style="color:var(--bad)">${lastInvalid}</span>`:''):`<span class="kb">B</span> tai hiiren oikea: valitse rakennus`;if(bh._h!==h){bh._h=h;bh.innerHTML=h;}}else $('#buildhint').hidden=true;
+  if(w.cat==='hammer'){const bh=$('#buildhint');bh.hidden=false;const h=buildSel?`<b>${PIECES[buildSel].n}</b> · ${reqText(PIECES[buildSel].req)} · <span class="kb">Hiiri V</span>rakenna <span class="kb">R</span>käännä 45° <span class="kb">Shift+R</span>asento <span class="kb">G</span>kohdistus: ${SNAP_NAMES[snapMode]} <span class="kb">X</span>pura <span class="kb">F</span>korjaa <span class="kb">B</span>valikko`+(ghost&&ghost.visible&&!ghostOk&&lastInvalid?` · <span style="color:var(--bad)">${lastInvalid}</span>`:''):`<span class="kb">B</span> tai hiiren oikea: valitse rakennus`;if(bh._h!==h){bh._h=h;bh.innerHTML=h;}}else $('#buildhint').hidden=true;
   $('#lockhint').hidden=!(state==='play'&&!locked&&!lockFailed&&!P.dead);
   const hp=$('.bar.hp'),st=$('.bar.st'),hu=$('.bar.hu');
   hp.firstChild.style.width=(P.hp/maxHp()*100)+'%';hp.lastChild.textContent=`TERVEYS ${Math.ceil(P.hp)}/${maxHp()}`;hp.classList.toggle('low',P.hp<maxHp()*.25);
@@ -59,6 +59,7 @@ function renderInv(){
     if(d.cat==='weapon')stat=`Vahinko ${weaponDmg({...d,q}).toFixed(0)} (${{slash:'viiltävä',blunt:'murskaava',pierce:'pistävä',fire:'tuli'}[d.dt]}) · kestävyys/isku ${d.st}`+(d.chop?' · kaataa puita':'')+(d.pick?' · louhii':'');
     if(d.cat==='bow')stat=`Vahinko jopa ${weaponDmg({...d,q}).toFixed(0)}`;
     if(d.cat==='shield')stat=`Torjuu ${Math.round(Math.min(.95,d.block*(1+.1*(q-1)))*100)} %`;
+    if(d.cat==='shovel')stat='Tasoittaa maata · kestävyys/käyttö 6';
     if(d.cat==='offhand')stat='Toisen käden tarvike – voi pitää yhdessä aseen kanssa.';
     if(d.cat==='armor')stat=`Suoja ${(d.arm*(1+.2*(q-1))).toFixed(0)}${d.warm?' · lämmin':''}`;
     if(d.food)stat=`Kylläisyys +${d.food.h}${d.food.hp?` · terveys +${d.food.hp}`:''}${d.food.st?` · kestävyys +${d.food.st}`:''}`;

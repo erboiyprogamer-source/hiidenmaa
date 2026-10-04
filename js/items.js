@@ -35,6 +35,7 @@ const ITEMS={
   miekka:{n:'Kuparimiekka',w:2,s:1,c:'#e0904f',cat:'weapon',dmg:24,dt:'slash',range:2.6,st:8,spd:.44,d:'Nopea ja terävä.'},
   soihtu:{n:'Soihtu',w:1,s:1,c:'#ff9a3a',cat:'offhand',light:true,d:'Valaisee pimeässä. Pidä toisessa kädessä aseen tai työkalun rinnalla.'},
   jousi:{n:'Metsästysjousi',w:2,s:1,c:'#8a5a32',cat:'bow',dmg:16,dt:'pierce',st:4,d:'Pidä hiiren vasenta pohjassa jännittääksesi. Tarvitsee nuolia.'},
+  lapio:{n:'Lapio',w:2.5,s:1,c:'#8a7a60',cat:'shovel',d:'Hiiren vasen tasoittaa maata pehmeästi kohti jalkojesi korkeutta (kestävyys −6). Ei rakennusten lähellä.'},
   vasara:{n:'Vasara',w:2,s:1,c:'#7c6a52',cat:'hammer',d:'Rakennustyökalu. B avaa rakennusvalikon.'},
   kilpi:{n:'Puukilpi',w:4,s:1,c:'#8a5a32',cat:'shield',block:.6,d:'Torju hiiren oikealla. Torjunta kuluttaa kestävyyttä.'},
   kuparikilpi:{n:'Kuparikilpi',w:5,s:1,c:'#d98a4e',cat:'shield',block:.8,d:'Raskas, mutta pitää.'},
@@ -45,6 +46,7 @@ const ITEMS={
 const RECIPES=[
   {id:'kirves',req:{puu:3,kivi:2}},
   {id:'vasara',req:{puu:3,kivi:1}},
+  {id:'lapio',req:{puu:4,kivi:2}},
   {id:'nuija',req:{puu:6}},
   {id:'soihtu',req:{puu:1,pihka:1}},
   {id:'kilpi',st:'tyopenkki',req:{puu:10,nahka:2}},
@@ -106,6 +108,7 @@ function icon(id){
       if(id==='keihas')poly([[30,16],[42,4],[36,18]],'#66707a','#2b2f35');
       if(id==='miekka'||id==='rautamiekka'){line(18,32,40,8,6,id==='miekka'?'#e9a46a':'#c8d2dc');line(14,28,24,38,3,'#8f5326');}
       if(id==='soihtu'){circ(34,12,7,'#ff9a3a');circ(34,11,3.5,'#ffe08a');}
+      if(id==='lapio')poly([[26,16],[44,6],[46,20],[34,26]],'#8a96a3','#3b2a1a');
       if(id==='vasara')poly([[24,8],[38,14],[34,22],[20,16]],'#7c6a52','#3b2a1a');
     }
   }

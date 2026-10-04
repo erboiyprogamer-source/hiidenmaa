@@ -34,7 +34,7 @@ function invAdd(id,n,q=1){const d=ITEMS[id];if(!d)return n;
 function invRemove(id,n){for(let i=inv.length-1;i>=0&&n>0;i--){const s=inv[i];if(s&&s.id===id){const k=Math.min(n,s.n);s.n-=k;n-=k;if(s.n<=0)inv[i]=null;}}invDirty=true;}
 function invWeight(){let w=0;for(const s of inv)if(s)w+=ITEMS[s.id].w*s.n;return w;}
 const MAXW=160;
-function equipGroup(cat){return ['weapon','bow','hammer'].includes(cat)?'weapon':['shield','offhand'].includes(cat)?'offhand':cat;}
+function equipGroup(cat){return ['weapon','bow','hammer','shovel'].includes(cat)?'weapon':['shield','offhand'].includes(cat)?'offhand':cat;}
 function equipped(cat){const grouped=cat==='weapon'||cat==='offhand';
   for(const s of inv){if(!s||!s.eq)continue;const c=ITEMS[s.id].cat;if(grouped?equipGroup(c)===cat:c===cat)return s;}
   return null;}

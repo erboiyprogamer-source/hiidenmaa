@@ -48,6 +48,57 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.19 (erä 19)
+- **Päätykolmio tasakylkiseksi:** `kolmio` = pohja G, kärki keskellä korkeudella G/2, sopii yhden ruudun harjakaton päähän
+  ja katon kääntökohtaan. **Vinoseinä pysyy** suorakulmaisena kolmiona (G × WH). Vanhat `kolmio`-tallennukset saavat uuden
+  muodon automaattisesti (sama tyyppi, törmäys lasketaan uudelleen).
+- **Kolmioiden tekstuuri:** `triMesh()` normalisoi UV:t (u = x/G, v = y/WH), joten lankkukuvio on yhtä harva kuin seinässä
+  (aiemmin ExtrudeGeometryn metriset UV:t tiheyttivät kuvion).
+- **Neljä asentoa:** `PIECES.kolmio/vinoseina` `flip:1`; **Shift+R** vaihtaa asentoa (normaali, peilattu, ylösalaisin,
+  ylösalaisin peilattu; `buildPose`, `cyclePose()`), R kääntää 45° ja G kohdistustilaa. Pose tallentuu (`p.f`, tallennuksessa `f`).
+  Haamu rakennetaan uudelleen asennon vaihtuessa; törmäysviipaleet lasketaan asennon mukaan (`pieceBoxes(t,f)`).
+- **Uudet katot:** `katto_loiva` (loivempi: nousu G/2 / G, ~27°) ja `harjakatto` (yksi ruutu, kaksi lappeita, harja G/2 korkeudessa
+  keskellä). Kaikki katot (`roof:1`) ovat kävelykelpoisia (portaat), vain yksi katto ruutua kohden. Testi: nousu 2,5 / 1,25 / 1,25 m.
+  Olkireunus matalissa päissä (`roofSlope()`).
+- Testi: kolmion/vinoseinän laatikot ja asennot, UV-alueet (vino u 0–1, v 0–1, kolmio v 0–.48), tallennus/lataus `f`,
+  Shift+R / R, katot, roof-duplikaatti estetty, vanha kolmio uuteen muotoon, ei konsolivirheitä.
+
+
+### v0.18 (erä 18)
+- **Kohdistustilat (G, vasara kädessä):** `snapMode` (building.js) = ruudukko (oletus), puoli (G/2-askeleet), vapaa
+  (.25 m), reuna (reunajatko). Tila näkyy rakennusvihjeessä. Ruudukko/puoli: läpinäkyvä `THREE.GridHelper`
+  (10×G, puolitilassa 20 jakoa) haamun ympärillä. Myös kalusteet (vapaat osat) kohdistuvat ruudukkoon.
+- **Kohdistus suosii rakennettua osaa:** `buildRaycast` valitsee osan, jos se on enintään 1 m maata kauempana.
+  Maahan tähdätessä viereinen lattia (≤1,6·G) määrää ruudukon paikan (`ox,oz`) ja korkeuden, eli uusi osa jatkaa
+  lattian ruudukkoa vaikka lattia olisi rakennettu vapaasti.
+- **Reunajatko** (`edgeSnap`): seinän sivusta → jatke samaan suuntaan; seinän päältä → pinoaminen; lattian päältä:
+  lattia → viereinen lattia, seinä → lattian lähin reuna (suunta automaattisesti); seinän sivusta lattia → viereen.
+- **R kääntää 45°:** `buildRot` 0–7, `p.rot` on nyt kahdeksasosakierroksia (`rotation.y=rot·π/4`). Parittomat kierrot:
+  `worldBoxes` jakaa laatikot ~.4 m paloihin ja kiertää ne (AABB-palat). **Tallennusversio 7:** v<7 → `r*2`.
+- **Palkit:** `palkki` (G pitkä, .22 m, puu 1) ja `palkki2` (2·G, .3 m, puu 2, päät ruudukon reunoihin `span2`),
+  snap 'wall': asettuvat maahan, seinän päälle tai lattian reunalle.
+- **Välkkymisen esto (z-fighting):** jokaiselle osalle hieman erilainen mittakaava (`hash(x,y,z)`, ≤.4 % / 8 askelta),
+  joten päällekkäiset, samassa tasossa olevat pinnat eivät enää taistele. Testi: 8 vierekkäistä seinää → 5 eri mittakaavaa.
+- Testit: ruudukko/puoli/vapaa-sijainnit, 45° seinä (7 laatikkoa, pelaaja ei kävele läpi), reunajatkot, ruudukon linjaus
+  viereiseen lattiaan, raycast suosii osaa, palkit, tallennus v7 ja v6→v7.
+
+
+### v0.17 (erä 17)
+- **Puu uusiutuu lähelle:** `respawnNode(n)` (resources.js): puu uusiutuu enintään 5 m, kasvi 3 m alkuperäisestä paikasta
+  (`n.ox,n.oz`), 10 yritystä, ehdot: sama biomi, maa (h>1), ei `nearBase`, ei toista solmua 2,5 m:ssä, ei lähempänä
+  `LOC`-paikkaa kuin alkuperäinen. Muuten alkuperäiseen paikkaan. Uusi satunnainen koko (`treeS()`), törmäys ja
+  ruudukko siirretään (`moveNode`), sama puu on täysin normaali (hakkuu, kaato, tukit, myrsky). Testi: 40 puusta 36
+  siirtyi, suurin siirto 4,93 m. Tallennus v6: `moved` (siirtyneet solmut), `terra`. Uusi peli palauttaa alkupaikat.
+- **Sade ei tule katon läpi:** sadepisarat ovat maailmakoordinaateissa ja pysähtyvät `roofTopAt(x,z)`:aan (maa tai
+  rakennuslaatikon yläpinta, lasketaan kun pisara syntyy); ei raycastia joka kehys.
+- **Sisävalo:** `indoorScore()` (8 sädettä 6 m, ≥5 osumaa = sisällä) 0,5 s välein; `indoorK` himmentää `hemi` (−60 %), `amb`
+  (−50 %), aurinko/kuu (−70 %) ja poistaa hemisfäärin sinisen sävyn. Testi: sisällä hemi 0,41×, aurinko 0,32×. Seinämeshit G+.02.
+- **Lapio:** `lapio` (`cat:'shovel'`, ryhmä 'weapon'), resepti puu 4 + kivi 2. Hiiren vasen (pohjassa toistuu .45 s välein)
+  tasoittaa maata katsottavassa kohdassa (≤6 m) kohti jalkojen korkeutta, säde 3,2 m, ±.4 m / käyttö, pehmeä reuna (`sstep`),
+  kestävyys −6. Päivittää `HGT`-ruudukon, maastoverkon ja solmujen korkeudet; ei rakennusten lähellä ("Rakennus on tiellä.").
+  Muokatut kärjet tallentuvat (`TERRA`, `HGT0`). Testi: 3,3 m kumpu tasoittui 14 käytöllä (≤.4 m/käyttö).
+
+
 ### v0.16 (erä 16)
 - **Putoamisvahinko ×2:** `(-vy-15)*6` (ennen ×3). 14 m pudotus ≈ 59 vahinkoa. Korjattu samalla
   vahinkonumeron puuttuva z-koordinaatti (`floatText`).
@@ -314,7 +365,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 - Ukkosen ääni pois, myrsky kaataa harvoin puita (alle jäävä −80 % HP), mobien ulottuvuus kaikkiin
   suuntiin, pehmeämpi kamera, kasvit/puut vain uusiutuvat eivätkä tukikohdan lähelle.
 
-### Erä 17 – maailma: puiden uusiutuminen paikalleen, sade, valo, lapio (TEE SEURAAVAKSI)
+### Erä 17 – maailma: puiden uusiutuminen paikalleen, sade, valo, lapio – TEHTY (ks. versioloki v0.17)
 Versio 0.17, `?v=0.17`, tallennusversio 6.
 1. **Kaadettu puu uusiutuu vain lähelle (≤5 m) kaatopaikkaa** ja on täysin normaali puu (törmäys, hakkuu,
    kaatuminen, tukit, myrsky). Tee `respawnTree(n)` (resources.js), jota sekä `respawnNodes()` (ai.js) että
@@ -345,7 +396,7 @@ Versio 0.17, `?v=0.17`, tallennusversio 6.
    `pointBlocked`/rakennuslaatikot alueella → "Rakennus on tiellä."). Tallennus: `terra:[[i,h]]` muutetut
    kärjet (v6). Kartta-kuvaa ei tarvitse päivittää.
 
-### Erä 18 – rakentamisen kohdistus
+### Erä 18 – rakentamisen kohdistus – TEHTY (ks. versioloki v0.18)
 Versio 0.18. Kohdistustila `snapMode` (building.js), vaihto **G**, tila näkyy `#buildhint`issä.
 1. **Kohdistus suosii rakennettua osaa:** `buildRaycast` – jos osa osuu ≤1 m kauempana kuin maa, valitse
    osa. Lattia/seinä maahan, kun vieressä (≤1,6·G, |Δy|<1,5) on lattia: käytä sen korkeutta ja kohdista
@@ -362,8 +413,9 @@ Versio 0.18. Kohdistustila `snapMode` (building.js), vaihto **G**, tila näkyy `
    akselin suuntaan ~0,4 m paloihin ja kierrä keskipisteet (AABB-palat). Tallennus v7: `r` kahdeksasosina,
    v<7 → `r*2`.
 
-### Erä 19 – katot ja kolmiot
-Versio 0.19.
+### Erä 19 – katot ja kolmiot – TEHTY (ks. versioloki v0.19)
+Versio 0.19. (Käyttäjän ideat 15–16 tehty tässä: kolmioiden tekstuuri samaan mittakaavaan kuin seinät, vinoseinä pysyy
+suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 1. **Päätykolmio tasakylkiseksi:** `kolmio` = pohja G, kärki keskellä korkeudella G/2 (sopii yhden ruudun
    harjakaton päätyyn ja parittoman talon katon kärkeen). Vanhat `kolmio`-tallennukset muuttuvat
    automaattisesti uuteen muotoon (sama tyyppi).

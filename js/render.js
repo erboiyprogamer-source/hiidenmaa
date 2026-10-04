@@ -61,7 +61,7 @@ const vcMat=new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,r
 
 /* ---------------- TERRAIN MESH ---------------- */
 const terrainColors=new Float32Array(HN*HN*3);
-(function buildTerrain(){
+const terrainMesh=(function buildTerrain(){
   const pos=new Float32Array(HN*HN*3);
   for(let iz=0;iz<HN;iz++)for(let ix=0;ix<HN;ix++){
     const i=iz*HN+ix,x=-HALF+ix*GS,z=-HALF+iz*GS,h=HGT[i];
@@ -86,7 +86,7 @@ const terrainColors=new Float32Array(HN*HN*3);
   const idx=new Uint32Array(GN*GN*6);let k=0;
   for(let iz=0;iz<GN;iz++)for(let ix=0;ix<GN;ix++){const a=iz*HN+ix,b=a+HN,c=a+1,d=b+1;idx[k++]=a;idx[k++]=b;idx[k++]=c;idx[k++]=c;idx[k++]=b;idx[k++]=d;}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(terrainColors,3));g.setIndex(new THREE.BufferAttribute(idx,1));g.computeVertexNormals();
-  const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:1}));m.receiveShadow=true;scene.add(m);
+  const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:1}));m.receiveShadow=true;scene.add(m);return m;
 })();
 const water=new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),new THREE.MeshStandardMaterial({color:0x2c6474,transparent:true,opacity:.8,roughness:.25,metalness:.1}));
 water.rotation.x=-Math.PI/2;scene.add(water);
