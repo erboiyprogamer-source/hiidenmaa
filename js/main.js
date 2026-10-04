@@ -7,6 +7,19 @@ function hasSave(){try{return!!localStorage.getItem(SKEY);}catch(e){return false
 function refreshMenu(){const s=hasSave();const inGame=started;$('#bContinue').hidden=!s||inGame;$('#bResume').hidden=!inGame;$('#bSave').hidden=!inGame;$('#bNew').querySelector('small').textContent=inGame?'Aloittaa alusta uudella arvotulla kartalla – nykyinen eteneminen katoaa, ellei sitä ole tallennettu':'Aloita rannalta ilman mitään – kartta arvotaan';
   $('#mapName').textContent=`Kartta: ${MAP.name}`;
   if(s&&!inGame){try{const d=JSON.parse(localStorage.getItem(SKEY));$('#saveInfo').textContent=`${(MAPS[d.mapId||0]||MAPS[0]).name} · päivä ${d.dayN} · ${Math.round(d.playTime/60)} min pelattu`;}catch(e){}}}
+// Valikon vierityksen vihjeet: ohuet, raaputetun näköiset tikkunuolet ylä- ja alareunassa, jotka sykkivät rauhallisesti,
+// kun sivua on piilossa ylhäällä tai alhaalla. Vierityspalkki on piilotettu CSS:llä.
+function scrollHints(el){
+  const svg=(up)=>`<svg viewBox="0 0 16 36" width="12" height="30" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path d="${up?'M8.2 34 L7.8 19 L8.3 3.2':'M7.8 2 L8.2 17 L7.7 32.8'}" stroke-width="1.3"/><path d="${up?'M8.6 33 L8.4 4.4':'M7.4 3 L7.6 31.6'}" stroke-width=".6" opacity=".6"/>
+    <path d="${up?'M2.6 9.4 L8.1 3 L13.6 9.8':'M2.4 26.6 L7.9 33 L13.4 26.2'}" stroke-width="1.3"/><path d="${up?'M3.4 10.2 L8.3 4.2':'M3.2 25.8 L8.1 31.8'}" stroke-width=".6" opacity=".6"/></g></svg>`;
+  const mk=(cls,up)=>{const d=document.createElement('div');d.className='scrollHint '+cls;d.innerHTML=svg(up);el.appendChild(d);return d;};
+  const u=mk('up',true),dn=mk('down',false);
+  const upd=()=>{u.classList.toggle('on',el.scrollTop>6);dn.classList.toggle('on',el.scrollTop+el.clientHeight<el.scrollHeight-6);};
+  el.addEventListener('scroll',upd,{passive:true});addEventListener('resize',upd);
+  if(window.ResizeObserver)new ResizeObserver(upd).observe(el.firstElementChild||el);
+  new MutationObserver(upd).observe(el,{subtree:true,attributes:true,attributeFilter:['hidden'],childList:true});
+  setTimeout(upd,50);return upd;}
 let started=false,confirmNew=false;
 function startPlay(){started=true;state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();invDirty=true;}
 function pauseGame(){if(state!=='play'||openPanel)return;state='paused';pausedAt=performance.now();$('#menu').hidden=false;$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
@@ -29,7 +42,7 @@ $('#bMenuToggle').onclick=()=>{if(!$('#settings').hidden&&setTab!=='keys'){$('#s
 $('#bSetClose').onclick=()=>{$('#settings').hidden=true;};
 $('#bRespawn').onclick=respawn;
 $('#bWinCont').onclick=()=>{$('#winS').hidden=true;$('#hud').hidden=false;state='play';requestLock();};
-refreshMenu();
+refreshMenu();scrollHints($("#menu"));
 // Kartanvaihdon jälkeinen jatko: aloita uusi peli tai lataa tallennus automaattisesti.
 (function(){let p=null,d=null;try{p=sessionStorage.getItem('hiidenmaa_pending');d=sessionStorage.getItem('hiidenmaa_data');sessionStorage.removeItem('hiidenmaa_pending');sessionStorage.removeItem('hiidenmaa_data');}catch(e){}
   if(p==='new'){newGame();startPlay();setTimeout(()=>msg(`Kartta: ${MAP.name}`),300);}

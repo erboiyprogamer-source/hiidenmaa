@@ -55,6 +55,14 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.57 (päävalikon vieritys)
+- Päävalikko (`.screen`) vierii pystysuunnassa hiiren rullalla ja kosketuksella, vierityspalkki piilotettu (`scrollbar-width:none`,
+  `::-webkit-scrollbar`). Asetus- ja näppäinkortit eivät enää vieri erikseen (max-height pois), vaan koko valikko vierii; sisältö
+  keskitetään pystysuunnassa, kun se mahtuu (`margin-block:auto`).
+- Vierityksen vihjeet (`scrollHints`, main.js): ohuet, raaputetun näköiset SVG-tikkunuolet sarakkeen vasemmassa reunuksessa;
+  ylänuoli näkyy kun yläpuolella on piilossa sisältöä, alanuoli kun alapuolella on lisää. Sykkivät rauhallisesti (2,6 s,
+  läpinäkyvyys 0,3–0,85, 2 px liike). Päivittyy vierityksessä, ikkunan koon muuttuessa ja kun kortteja avataan/suljetaan.
+
 ### v0.56 (erä 33: kolme uutta karttaa)
 - **Uudet kartat** (`MAPS` 3 → 6, uusi peli arpoo kartan kuten ennenkin):
   - **Routasaari** (id 3): vuoristo idässä (`mtn` dx 1), matala vuoriraja `mtnH` 18 → laajat tunturirinteet, nummi ja Hautakumpu
