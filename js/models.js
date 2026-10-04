@@ -94,7 +94,9 @@ function makeHeld(id){
       const bm=new THREE.Mesh(geo,smat(id==='jousi'?0x8a5a32:0x5fe6d9));bm.castShadow=true;g.add(bm);
       const tipY=R*Math.sin(arc/2),tipZ=.12-R+R*Math.cos(arc/2),sm=mat(0xe7e1cf),s1=bx(.012,1,.012,sm,0,0,0,false),s2=bx(.012,1,.012,sm,0,0,0,false);g.add(s1,s2);
       const ar=new THREE.Group();ar.add(bx(.025,.025,.8,mat(0xc9b48a),0,0,.4,false),bx(.05,.05,.1,mat(0x4d535c),0,0,.82,false));ar.visible=false;g.add(ar);
-      g.userData.bow={s1,s2,ar,tipY,tipZ};updateBowMesh(g,0);break;}
+      g.userData.bow={s1,s2,ar,tipY,tipZ};updateBowMesh(g,0);
+      // Käännetään koko jousi 180° pystyakselin ympäri: vatsa osoittaa pelaajaan päin ja jänne venyy ampumasuuntaan nähden oikein.
+      const inner=new THREE.Group();while(g.children.length)inner.add(g.children[0]);inner.rotation.y=Math.PI;g.add(inner);break;}
   }
   g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
   return g;

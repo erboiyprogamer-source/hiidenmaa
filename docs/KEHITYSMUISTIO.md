@@ -49,6 +49,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.23 (korjauserä)
+- **Jousi:** malli käännetty 180° pystyakselin ympäri (`makeHeld` jousi: sisäryhmä `rotation.y=π`), jänne ja nuoli venyvät oikeaan suuntaan.
+- **Tikkaat:** Shift+R vaihtaa kaltevuutta (`poses:3`: pysty, nojaa 15°, nojaa 30°); yläpää pysyy WH:n korkeudella, törmäys ja kiipeäminen (`ladderAt`) seuraavat kallistusta.
+- **Kiviversiot kaikista järkevistä osista:** kivinen portaikko (ontto), kivitikkaat, kivi-puoli- ja neljännesseinät (pysty/vaaka), iso kivipalkki, kivipylväät (ohut/lyhyt/pitkä),
+  kivivinoseinä, kivipäätykolmio, kiviarkku, kivitynnyri (säilytys ja päivitykset toimivat; `PIECES[t].store` yleistetty `interact`issa). Mallit käyttävät `W`-materiaalia.
+
 ### v0.22 (erä 22)
 - **Uudet esineet:** Puuhiili (`hiili`, polttoaine 10 yksikköä), Paistettu sieni, Rautakilpi, harvinaiset Hiidenjousi / Hiidenmiekka / Hiidenpanssari (tasot 10/12/14).
   Hiilen saa nuotiolla puusta (5 puuta → 2 hiiltä) tai ylipaistetusta ruoasta.
@@ -552,11 +558,8 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 
 - (ideajono muuten tyhjä – odottaa käyttäjän listaa)
 
-### Jäljelle jääneet / jatkoideat erien 20–22 jälkeen
-- Tikkaissa on vain yksi kaltevuus (ei Shift+R-asentoja); ontoissa portaissa 3 jyrkkyyttä on.
-- Kiviversioita ei ole kaikista osista (puoliseinät, tikkaat, tynnyri).
+### Jäljelle jääneet / jatkoideat
 - Pelaajan käsisoihtu ei kulu loppuun (vain seisova soihtu).
-- Jousen jänne/nuoli näkyvät vain pelaajan mallissa (ei vihollisjousissa, niitä ei ole).
 - Ruokia ei voi vielä keittää (ei padan mallia); grillaus tukee vain lihaa ja sientä.
 
 ## Tunnetut puutteet

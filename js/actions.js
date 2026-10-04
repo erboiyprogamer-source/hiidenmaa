@@ -121,8 +121,8 @@ function findInteract(){
   for(const g of graves)consider(g.x,g.y+.5,g.z,{kind:'grave',g,label:'Kerää tavarasi hautakasasta'});
   return best;
 }
-function pieceLabel(p){if(bt(p.t)==='ovi')return p.data.open?'Sulje ovi':'Avaa ovi';switch(p.t){
-  case 'tikkaat':return 'Kiipeä: pidä W (alas S)';
+function pieceLabel(p){if(PIECES[p.t].store)return 'Avaa '+PIECES[p.t].n.toLowerCase();if(bt(p.t)==='ovi')return p.data.open?'Sulje ovi':'Avaa ovi';switch(p.t){
+  case 'tikkaat':case 'kivitikkaat':return 'Kiipeä: pidä W (alas S)';
   case 'ovi':return p.data.open?'Sulje ovi':'Avaa ovi';
   case 'nuotio':case 'grilli':{if(p.data.cook.some(c=>c.t>=c.need))return 'Ota ruoka tulelta';const raw=Object.keys(COOKABLE).some(id=>invCount(id)>0);return raw&&p.data.fuel>0&&p.data.cook.length<(p.t==='grilli'?4:3)?'Paista ruokaa':`Lisää polttoainetta (${p.data.fuel}/${FUEL_MAX})`;}
   case 'soihtuteline':return `Lisää polttoainetta (${Math.ceil(p.data.burn/60)} min)`;
@@ -139,7 +139,7 @@ function interact(){
   if(t.kind==='it'){t.it.use();return;}
   if(t.kind==='grave'){const g=t.g;for(let i=0;i<g.items.length;i++){const s=g.items[i];if(!s)continue;const left=invAdd(s.id,s.n,s.q||1);if(left===0)g.items[i]=null;else s.n=left;}
     if(g.items.every(s=>!s)){scene.remove(g.mesh);graves.splice(graves.indexOf(g),1);msg('Sait tavarasi takaisin.','loot');}else msg('Reppu täyttyi – osa jäi kasaan.','warn');sfx('pickup');return;}
-  if(t.kind==='piece'){const p=t.p;if(bt(p.t)==='ovi'){const a=p.rot*Math.PI/4,lz=(P.pos.x-p.x)*Math.sin(a)+(P.pos.z-p.z)*Math.cos(a);setDoor(p,!p.data.open,p.data.open?p.data.dir:(lz>0?1:-1));sfx('build');return;}switch(p.t){
+  if(t.kind==='piece'){const p=t.p;if(bt(p.t)==='ovi'){const a=p.rot*Math.PI/4,lz=(P.pos.x-p.x)*Math.sin(a)+(P.pos.z-p.z)*Math.cos(a);setDoor(p,!p.data.open,p.data.open?p.data.dir:(lz>0?1:-1));sfx('build');return;}if(PIECES[p.t].store){openChest(p);return;}switch(p.t){
     case 'nuotio':case 'grilli':fireInteract(p);break;
     case 'soihtuteline':{const b=p.data.burn;if(invCount('puu')>0&&b<600){invRemove('puu',1);p.data.burn=600;msg('Soihtu palaa 10 min.');sfx('build');}else if(invCount('hiili')>0&&b<1800){invRemove('hiili',1);p.data.burn=1800;msg('Hiili: soihtu palaa 30 min.');sfx('build');}else msg(invCount('puu')>0||invCount('hiili')>0?'Soihdussa on jo tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');break;}
     case 'sanky':sleepAt(p);break;

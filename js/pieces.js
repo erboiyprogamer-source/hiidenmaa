@@ -34,7 +34,7 @@ const PIECES={
   pylvas_pitka:{n:'Pitkä pylväs',req:{puu:2},hp:160,snap:'free',cat:'palkit',col:[.3,2*WH]},
   portaat:{n:'Raput',req:{puu:3},hp:120,snap:'cell',cat:'portaat'},
   portaat_ontelo:{n:'Portaat',req:{puu:4},hp:110,snap:'cell',cat:'portaat',poses:3},
-  tikkaat:{n:'Tikkaat',req:{puu:2},hp:60,snap:'wall',cat:'portaat'},
+  tikkaat:{n:'Tikkaat',req:{puu:2},hp:60,snap:'wall',cat:'portaat',poses:3},
   aita:{n:'Paaluaita',req:{puu:4},hp:260,snap:'wall',cat:'puolustus',mobProof:1},
   soihtuteline:{n:'Seisova soihtu',req:{puu:1,pihka:1},hp:50,snap:'free',cat:'valo',alku:1},
   tyopenkki:{n:'Työpenkki',req:{puu:10},hp:200,snap:'free',noBench:1,cat:'tyopisteet',alku:1},
@@ -52,6 +52,20 @@ const PIECES={
   kivipylvas:{n:'Kivipylväs',req:{kivi:2},hp:300,snap:'free',cat:'kivi',base:'pylvas',stone:1},
   kivipalkki:{n:'Kivipalkki',req:{kivi:2},hp:250,snap:'wall',cat:'kivi',base:'palkki',stone:1},
   kiviraput:{n:'Kiviraput',req:{kivi:6},hp:350,snap:'cell',cat:'kivi',base:'portaat',stone:1},
+  kiviportaat_ontelo:{n:'Kivinen portaikko',req:{kivi:5},hp:300,snap:'cell',cat:'kivi',base:'portaat_ontelo',stone:1},
+  kivitikkaat:{n:'Kivitikkaat',req:{kivi:3},hp:200,snap:'wall',cat:'kivi',base:'tikkaat',stone:1},
+  kivi_k2:{n:'Kivipuoliseinä pysty',req:{kivi:3},hp:250,snap:'wall',cat:'kivi',base:'seina_k2',stone:1},
+  kivi_k4:{n:'Kivineljäsosaseinä pysty',req:{kivi:2},hp:150,snap:'wall',cat:'kivi',base:'seina_k4',stone:1},
+  kivi_m2:{n:'Kivipuoliseinä vaaka',req:{kivi:3},hp:250,snap:'wall',cat:'kivi',base:'seina_m2',stone:1},
+  kivi_m4:{n:'Kivineljäsosaseinä vaaka',req:{kivi:2},hp:150,snap:'wall',cat:'kivi',base:'seina_m4',stone:1},
+  kivipalkki2:{n:'Iso kivipalkki',req:{kivi:4},hp:400,snap:'wall',cat:'kivi',base:'palkki2',stone:1},
+  kivipylvas_ohut:{n:'Ohut kivipylväs',req:{kivi:1},hp:150,snap:'free',cat:'kivi',base:'pylvas_ohut',stone:1},
+  kivipylvas_lyhyt:{n:'Lyhyt kivipylväs',req:{kivi:1},hp:200,snap:'free',cat:'kivi',base:'pylvas_lyhyt',stone:1},
+  kivipylvas_pitka:{n:'Pitkä kivipylväs',req:{kivi:4},hp:400,snap:'free',cat:'kivi',base:'pylvas_pitka',stone:1},
+  kivivinoseina:{n:'Kivivinoseinä',req:{kivi:2},hp:250,snap:'wall',cat:'kivi',base:'vinoseina',stone:1,flip:1},
+  kivikolmio:{n:'Kivinen päätykolmio',req:{kivi:2},hp:250,snap:'wall',cat:'kivi',base:'kolmio',stone:1,flip:1},
+  kiviarkku:{n:'Kiviarkku',req:{kivi:8},hp:300,snap:'free',cat:'kivi',base:'arkku',stone:1},
+  kivitynnyri:{n:'Kivitynnyri',req:{kivi:5},hp:250,snap:'free',cat:'kivi',base:'tynnyri',stone:1},
   kivikatto:{n:'Kivikatto',req:{kivi:4},hp:300,snap:'cell',cat:'kivikatot',roof:1,base:'katto',stone:1},
   kivikatto_loiva:{n:'Loiva kivikatto',req:{kivi:4},hp:300,snap:'cell',cat:'kivikatot',roof:1,base:'katto_loiva',stone:1},
   kiviharjakatto:{n:'Kiviharjakatto',req:{kivi:5},hp:340,snap:'cell',cat:'kivikatot',roof:1,base:'harjakatto',stone:1},
@@ -80,7 +94,9 @@ function pieceBoxes(t,f=0){const def=PIECES[t];t=bt(t);if(def.dim)return[[0,def.
   case 'palkki':case 'palkki2':{const L=BEAM_L(t),th=BEAM_TH(t),a=(f%5)*Math.PI/8;if(!a)return[[0,th/2,0,L,th,th]];
     const n=Math.max(1,Math.ceil(L/.4)),l=L/n,c=Math.cos(a),sn=Math.sin(a),y0=L/2*sn+th/2*c,out=[];
     for(let k=0;k<n;k++){const sp=-L/2+l*(k+.5);out.push([sp*c,y0+sp*sn,0,l*c+th*sn,l*sn+th*c,th]);}return out;}
-  case 'tikkaat':return[[0,WH/2,0,.8,WH,.1]];
+  // Tikkaat: asento f 0–2 = pysty, nojaa 15°, nojaa 30° (yläpää kallistuu taaksepäin -z). Pituus säädetään niin, että yläpää on aina WH:n korkeudella.
+  case 'tikkaat':{const a=(f%3)*Math.PI/12;if(!a)return[[0,WH/2,0,.8,WH,.1]];const L=WH/Math.cos(a),n=Math.ceil(L/.4),l=L/n,c=Math.cos(a),sn=Math.sin(a),out=[];
+    for(let k=0;k<n;k++){const s=l*(k+.5);out.push([0,s*c,-s*sn,.8,l*c+.1*sn,l*sn+.1*c]);}return out;}
   case 'portaat_ontelo':{const gm=stairGeom(f%3),d=gm.run/STEP_N,h=gm.rise/STEP_N,out=[];for(let i=0;i<STEP_N;i++)out.push([0,h*(i+1)-.05,G/2-d/2-i*d,G,.1,d]);return out;}
   case 'tynnyri':return[[0,.5,0,.9,1,.9]];
   case 'portaat':{const d=G/STEP_N,h=WH/STEP_N,out=[];for(let i=0;i<STEP_N;i++)out.push([0,h*(i+1)/2,G/2-d/2-i*d,G,h*(i+1),d]);return out;}
@@ -96,11 +112,11 @@ function pieceBoxes(t,f=0){const def=PIECES[t];t=bt(t);if(def.dim)return[[0,def.
 // Suorakulmainen kolmio (leveys G, korkeus h), suora kulma vasemmassa alanurkassa. R-kierto peilaa.
 // Vinoseinä (suorakulmio-kolmio) ja päätykolmio (tasakylkinen). Tekstuuri-UV normalisoidaan seinän mittakaavaan
 // (u = x/G, v = y/WH), jotta lankkukuvio on yhtä harva kuin seinässä.
-function triMesh(t,f=0){const kolmio=t==='kolmio',h=kolmio?G/2:WH,s=new THREE.Shape();
+function triMesh(t,f=0,W=MAT.wood){const kolmio=t==='kolmio',h=kolmio?G/2:WH,s=new THREE.Shape();
   if(kolmio){s.moveTo(-G/2,0);s.lineTo(G/2,0);s.lineTo(0,h);}else{s.moveTo(-G/2,0);s.lineTo(G/2,0);s.lineTo(-G/2,h);}s.closePath();
   const geo=new THREE.ExtrudeGeometry(s,{depth:.2,bevelEnabled:false});geo.translate(0,0,-.1);
   const pa=geo.attributes.position,uv=geo.attributes.uv;for(let i=0;i<pa.count;i++)uv.setXY(i,(pa.getX(i)+G/2)/G,pa.getY(i)/WH);
-  const m=new THREE.Mesh(geo,MAT.wood);m.castShadow=true;m.receiveShadow=true;
+  const m=new THREE.Mesh(geo,W);m.castShadow=true;m.receiveShadow=true;
   const grp=new THREE.Group();grp.add(m);grp.scale.set((f&1)?-1:1,(f&2)?-1:1,1);grp.position.y=(f&2)?h:0;return grp;}
 // Kattolappeen mesh: kaltevuus run → rise, reunus matalassa päässä (ja halutessa korkeassa). Kivikatto ilman olkireunusta.
 function roofSlope(run,rise,fringeHigh,stone){const L=Math.hypot(run,rise)+.15,rg=new THREE.Group();rg.position.y=rise/2;rg.rotation.x=Math.atan2(rise,run);rg.add(bx(G+.1,.14,L,stone?MAT.stone:MAT.thatch));
@@ -127,9 +143,9 @@ function buildPieceMesh(t,f=0){
     case 'katto':g.add(roofSlope(G,G,true,def.stone));break;
     case 'katto_loiva':g.add(roofSlope(G,G/2,true,def.stone));break;
     case 'harjakatto':{const a=roofSlope(G/2,G/2,false,def.stone),b2=new THREE.Group();b2.add(roofSlope(G/2,G/2,false,def.stone));a.position.z=G/4;b2.position.z=-G/4;b2.rotation.y=Math.PI;g.add(a,b2);break;}
-    case 'vinoseina':case 'kolmio':g.add(triMesh(t,f));break;
+    case 'vinoseina':case 'kolmio':g.add(triMesh(t,f,W));break;
     case 'palkki':case 'palkki2':{const L=BEAM_L(t),th=BEAM_TH(t),a=(f%5)*Math.PI/8,b=bxw(L,th,th,W,0,0,0);const grp=new THREE.Group();grp.add(b);grp.rotation.z=a;grp.position.y=L/2*Math.sin(a)+th/2*Math.cos(a);g.add(grp);break;}
-    case 'tikkaat':{for(const x of[-.35,.35])g.add(bxw(.08,WH,.08,MAT.wood,x,WH/2,0));for(let y=.3;y<WH-.1;y+=.36)g.add(bxw(.7,.06,.06,MAT.wood,0,y,.02));break;}
+    case 'tikkaat':{const a=(f%3)*Math.PI/12,L=WH/Math.cos(a),lg=new THREE.Group();for(const x of[-.35,.35])lg.add(bxw(.08,L,.08,W,x,L/2,0));for(let y=.3;y<L-.1;y+=.36)lg.add(bxw(.7,.06,.06,W,0,y,.02));lg.rotation.x=-a;g.add(lg);break;}
     case 'portaat':{const d=G/STEP_N,h=WH/STEP_N;for(let i=0;i<STEP_N;i++)g.add(bxw(G,h*(i+1),d,W,0,h*(i+1)/2,G/2-d/2-i*d));break;}
     case 'portaat_ontelo':{const gm=stairGeom(f%3),d=gm.run/STEP_N,h=gm.rise/STEP_N,L=Math.hypot(gm.run,gm.rise),al=Math.atan2(gm.rise,gm.run);
       for(let i=0;i<STEP_N;i++)g.add(bxw(G,.1,d+.02,W,0,h*(i+1)-.05,G/2-d/2-i*d));
@@ -144,8 +160,8 @@ function buildPieceMesh(t,f=0){
     case 'sulatin':g.add(bx(1.4,1.1,1.4,MAT.stone,0,.55,0),bx(1.1,1,1.1,MAT.stone,0,1.6,0),bx(.6,.6,.6,MAT.stone,0,2.4,0));{const glow=bx(.5,.4,.05,MAT.flame,0,.5,.71,false);g.add(glow);g.userData.glow=glow;}break;
     case 'ahjo':g.add(bx(1,.8,.7,MAT.stone,-.3,.4,0),bx(.7,.25,.35,mat(0x3a3a3a,{metalness:.6,roughness:.4}),.45,.95,0),bx(.3,.6,.3,mat(0x3a3a3a),.45,.5,0));{const coal=bx(.6,.06,.4,MAT.flame,-.3,.82,0,false);g.add(coal);}break;
     case 'sanky':g.add(bxw(1.1,.3,2.1,MAT.wood,0,.15,0),bx(1,.12,1.6,mat(0x8a6a4a),0,.36,.2),bx(.8,.14,.35,mat(0xd9cbb0),0,.38,-.8),bxw(1.1,.6,.12,MAT.wood,0,.3,-1.05));break;
-    case 'arkku':g.add(bxw(1,.6,.65,MAT.wood,0,.3,0),bxw(1.04,.14,.69,MAT.wood,0,.66,0),bx(1.06,.06,.7,mat(0x444444),0,.45,0));break;
-    case 'tynnyri':{const b=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,1,12),MAT.wood);b.position.y=.5;g.add(b);const mid=new THREE.Mesh(new THREE.CylinderGeometry(.46,.46,.9,12),MAT.wood);mid.position.y=.5;g.add(mid);
+    case 'arkku':g.add(bxw(1,.6,.65,W,0,.3,0),bxw(1.04,.14,.69,W,0,.66,0),bx(1.06,.06,.7,mat(0x444444),0,.45,0));break;
+    case 'tynnyri':{const b=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,1,12),W);b.position.y=.5;g.add(b);const mid=new THREE.Mesh(new THREE.CylinderGeometry(.46,.46,.9,12),W);mid.position.y=.5;g.add(mid);
       for(const y of[.18,.82]){const r=new THREE.Mesh(new THREE.CylinderGeometry(.47,.47,.07,12),mat(0x3a3a3a));r.position.y=y;g.add(r);}break;}
     case 'soihtuteline':{g.add(bxw(.12,1.6,.12,MAT.wood,0,.8,0));const fa=bx(.2,.25,.2,MAT.flame,0,1.7,0,false),fb=bx(.1,.12,.1,MAT.flame2,0,1.84,0,false);g.add(fa,fb);g.userData.flame=[fa,fb];break;}
   }
