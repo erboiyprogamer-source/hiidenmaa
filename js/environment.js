@@ -104,7 +104,7 @@ function updateRain(dt){const a=rain.geometry.attributes.position.array,sp=26*(w
   rainInit=true;rain.geometry.attributes.position.needsUpdate=true;}
 function updateLights(){
   const src=lightSources.filter(s=>s.on()&&(!!s.dun===P.inDun)).sort((a,b)=>dist2(a.x,a.z,P.pos.x,P.pos.z)-dist2(b.x,b.z,P.pos.x,P.pos.z));
-  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=src[i];if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;l.intensity=s.i*1.15;}else{l.intensity=0;l.userData.base=0;}}
+  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=src[i];if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;}else{l.intensity=0;l.userData.base=0;}}
 }
 // Tilat: jokaisella on vaikutus pelaajan kykyihin (P.fx), kuvaus ja halutessa ajastin (s). effects() kerää aktiiviset, calcFx() laskee kertoimet.
 function effects(){const e=[],wt=invWeight(),b=P.buffs,add=(key,name,kind,desc,t)=>e.push({key,name,kind,desc,t});

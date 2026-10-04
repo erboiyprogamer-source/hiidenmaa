@@ -141,7 +141,7 @@ function updateStations(dt){
     if(p.t==='sulatin'){const run=(p.data.ore>0||p.data.iore>0)&&p.data.wood>0;p.mesh.userData.glow.visible=run;if(run){p.data.t+=dt;const iron=p.data.ore<=0;if(p.data.t>=(iron?10:7)){p.data.t=0;p.data.wood--;if(iron){p.data.iore--;p.data.idone++;}else{p.data.ore--;p.data.done++;}}}}
   }
   for(const g of graves){const near=dist2(g.x,g.z,P.pos.x,P.pos.z)<50*50&&!P.inDun;g.beam.visible=near;if(near)g.beam.material.opacity=.28+Math.sin(playTime*3)*.1;}
-  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i];if(l.userData.base)l.intensity=l.userData.base*(.85+Math.sin(playTime*(9+i)+i*3)*.08+Math.sin(playTime*23+i)*.05);}
+  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i];l.intensity=!l.userData.base?0:l.userData.base*(.85+Math.sin(playTime*(9+i)+i*3)*.08+Math.sin(playTime*23+i)*.05);}
   // Valokatto: pelaajan kohdalle osuva yhteisvalo (summa etäisyyden mukaan vaimennettuna) ei ylitä LIGHT_CAP:ia – päällekkäiset valot eivät kirkastu loputtomiin.
   {let W=0;const ls=[...LIGHTS,torchLight];for(const l of ls)if(l.intensity>0){const d=Math.hypot(l.position.x-P.pos.x,l.position.y-(P.pos.y+1),l.position.z-P.pos.z);W+=l.intensity*Math.pow(Math.max(0,1-d/l.distance),1.5);}
    if(W>LIGHT_CAP){const k=LIGHT_CAP/W;for(const l of ls)l.intensity*=k;}}

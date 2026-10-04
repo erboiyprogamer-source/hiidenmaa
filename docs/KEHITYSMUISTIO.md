@@ -49,6 +49,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.28 (korjauserä)
+- **Välkkymisbugi korjattu:** `updateLights()` (0,4 s välein) asetti valojen intensiteetin kattoa edeltävään arvoon, joten kahden valon huoneessa kirkkaus hyppäsi 0,4 s välein.
+  Nyt se asettaa vain `userData.base`n; intensiteetti lasketaan joka kehys `updateStations`issa (välke + `LIGHT_CAP`). Testi: kahden soihdun huoneessa suurin kehysten välinen hyppy 0,055.
+- **Tulen sammutus iskemällä:** lähitaisteluisku sammuttaa edessä olevan nuotion, grillinuotion tai seisovan soihdun (`doMeleeHit`, polttoaine/palamisaika nollataan; syttyy uudelleen lisäämällä polttoainetta).
+
 ### v0.27 (korjauserä)
 - **Selkä:** vain kilpi + yksi työkalu/ase (tai jousi). Työkalu käännetty `rotation.z=π/2`, jolloin hakun siivet ja miekan terä ovat selän suuntaisesti (ei piikkejä selkää vasten).
 - **Valot:** pistevalojen voimakkuus ×1.7 → ×1.15, kantama 22 → 17 m (käsisoihtu 2.6, 18 m). **Valokatto** `LIGHT_CAP`=2.2 (ai.js `updateStations`): pelaajan kohdan yhteisvalo
