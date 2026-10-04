@@ -34,10 +34,17 @@ function updateMobs(dt){
       if(fs){m.fearT=1;m.siege=null;}}
     if(m.fearT>0){m.fearT-=dt;m.wind=0;m.state='flee';let fx=m.pos.x,fz=m.pos.z,fd=1e9;for(const s of fireSrc){const dd=dist2(s.x,s.z,m.pos.x,m.pos.z);if(dd<fd){fd=dd;fx=s.x;fz=s.z;}}
       moveMob(m,m.pos.x-fx,m.pos.z-fz,d.run,dt);animMob(m,dt);if(m.fearT<=0)m.state='idle';continue;}
-    if(d.ai==='flee'){if((!P.crouch&&dist<9&&m.los&&!P.dead)||playTime-m.lastHit<6){m.state='flee';}else if(m.state==='flee'&&dist>22)m.state='idle';}
-    else if(hostile&&!P.dead&&m.los&&(dist<aggroR||playTime-m.lastHit<10)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
-    else if(m.state==='chase'&&(dist>aggroR*1.6||P.dead||m.noLos>3)){m.state='idle';if(m.noLos>3){m.angry=false;m.lastHit=-99;}m.noLos=0;}
-    if(m.state==='flee'){tx=-dx;tz=-dz;spd=d.run;}
+    const hurt=playTime-m.lastHit<10;
+    // Paikallaan oleville vaikeille vihollisille: iskuttomana 30 s → parantuvat hitaasti (1 %/s).
+    if((MOB_SKULL[m.type]||0)>=3&&playTime-m.lastHit>30&&m.hp<m.maxHp)m.hp=Math.min(m.maxHp,m.hp+m.maxHp*.01*dt);
+    if(d.ai==='flee'){// säikähdysetäisyys: kävely 7 m, juoksu 16 m, ase kädessä ×1.4, kyykyssä 3.5 m. Vahingoitettu pelkää 10 s.
+      const w=curWeapon(),armed=(w.cat==='weapon'||w.cat==='bow')&&!P.crouch;let sr=P.crouch?3.5:P.running?16:7;if(armed)sr*=1.4;
+      if(hurt||(!P.dead&&dist<sr&&(m.los||dist<4))){if(m.state!=='flee'){m.state='flee';m.fleeT=0;}}else if(m.state==='flee'&&dist>28)m.state='idle';}
+    else if(hostile&&!P.dead&&((m.los&&dist<aggroR)||hurt)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
+    else if(m.state==='chase'&&!hurt&&(dist>aggroR*1.6||P.dead||m.noLos>3)){m.state='idle';if(m.noLos>3){m.angry=false;m.lastHit=-99;}m.noLos=0;}
+    if(m.state==='flee'){// pakosuunta pois pelaajasta satunnaisella poikkeamalla, vaihtuu 1.2–3 s välein
+      m.fleeT=(m.fleeT||0)-dt;if(m.fleeT<=0){m.fleeT=1.2+Math.random()*1.8;m.fleeA=Math.atan2(-dx,-dz)+(Math.random()-.5)*(hurt?1.6:.8);}
+      tx=Math.sin(m.fleeA);tz=Math.cos(m.fleeA);spd=d.run;}
     else if(m.state==='chase'){
       if(m.wind>0){m.wind-=dt;if(m.wind<=0){if(mobReach(m,dist)<d.range+.25&&!P.dead&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){const f=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(f>.5)hurtPlayer(d.dmg,m.pos.x,m.pos.z);}m.atkCd=d.cd;}}
       else if(mobReach(m,dist)<d.range+.2&&m.atkCd<=0&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){m.wind=d.wind;}
