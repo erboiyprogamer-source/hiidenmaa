@@ -11,13 +11,13 @@ function stoneBox(w,h,d,x,y,z,ry=0,m=MAT.stone,col=true){const me=bx(w,h,d,m,x,y
 const rockC=(c,t)=>{const k=.85+t*.3,f=v=>Math.min(255,v*k|0);return(f(c>>16&255)<<16)|(f(c>>8&255)<<8)|f(c&255);};
 const RUNES=[
   {k:'rune1',t:'Riimukivi – Rannan kivi',txt:'”Merien yli tullut, kuule: tämä on Hiidenmaa. Kalmanvartija on pitänyt saarta otteessaan yhdeksän talvea. Kerää oksia ja kiviä, rakenna suoja ennen ensimmäistä yötä. Yöllä sudet laskeutuvat niityille.”',reveal:null},
-  {k:'rune2',t:'Riimukivi – Nummen laita',txt:'”Lounaan kalmanummella nukkuvat vanhat päälliköt Hautakummussa. Heidän kirstuissaan lepää kolme hiidenkiveä. Ota tuli mukaasi, sillä kumpu on pimeä.”',reveal:'barrow'},
-  {k:'rune3',t:'Riimukivi – Tunturin juuri',txt:'”Kun kolme hiidenkiveä kohtaa Kalmankehän alttarin, vartija herää. Kivinen iho kestää terän, mutta nuija murskaa sen. Kupari kasvaa metsän vanhoissa lohkareissa.”',reveal:'circle'},
+  {k:'rune2',t:'Riimukivi – Nummen laita',txt:()=>`”Kalmanummella, ${dirText(LOC.rune2,'barrow')}, nukkuvat vanhat päälliköt Hautakummussa. Heidän kirstuissaan lepää kolme hiidenkiveä. Ota tuli mukaasi, sillä kumpu on pimeä.”`,reveal:'barrow'},
+  {k:'rune3',t:'Riimukivi – Tunturin juuri',txt:()=>`”Kalmankehä on ${dirText(LOC.rune3,'circle')}. Kun kolme hiidenkiveä kohtaa sen alttarin, vartija herää. Kivinen iho kestää terän, mutta nuija murskaa sen. Kupari kasvaa metsän vanhoissa lohkareissa.”`,reveal:'circle'},
 ];
 for(const R of RUNES){const L=LOC[R.k],y=terrainH(L.x,L.z);const me=stoneBox(.9,2.6,.5,L.x,y+1.1,L.z,.3,mat(0x6f6c66));
   const glyph=bx(.5,1.6,.04,MAT.glow,0,0,.26,false);me.add(glyph);
   interactables.push({x:L.x,y:y+1,z:L.z,r:2.6,label:()=>'Lue riimukivi',use:()=>readRune(R)});}
-function readRune(R){showLore(R.t,R.txt);if(R.reveal&&!flags.disc[R.reveal]){flags.disc[R.reveal]=1;msg(`${LOC[R.reveal].name} merkittiin karttaan.`,'loot');}flags.runes[R.k]=1;}
+function readRune(R){showLore(R.t,typeof R.txt==='function'?R.txt():R.txt);if(R.reveal&&!flags.disc[R.reveal]){flags.disc[R.reveal]=1;msg(`${LOC[R.reveal].name} merkittiin karttaan.`,'loot');}flags.runes[R.k]=1;}
 function buildRuin(L,seed){const r=mulberry32(seed),y=terrainH(L.x,L.z);
   for(let i=0;i<9;i++){const a=i/9*TAU,d=4.5+r()*.6,h=.6+r()*2.4;if(r()<.2)continue;stoneBox(2.2,h,.8,L.x+Math.cos(a)*d,y+h/2-.2,L.z+Math.sin(a)*d,-a+Math.PI/2);}
   stoneBox(1.4,.4,1.4,L.x+1.5,y+.1,L.z-1,0.4);

@@ -55,6 +55,20 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.56 (erä 33: kolme uutta karttaa)
+- **Uudet kartat** (`MAPS` 3 → 6, uusi peli arpoo kartan kuten ennenkin):
+  - **Routasaari** (id 3): vuoristo idässä (`mtn` dx 1), matala vuoriraja `mtnH` 18 → laajat tunturirinteet, nummi ja Hautakumpu
+    pohjois-luoteessa, vähän niittyjä (`meadowT` 0,24), meri lännessä ja etelässä.
+  - **Aarnikorpi** (id 4): neljä isoa aarnimetsää, yksinäinen tunturi (`peak`) pohjoisessa, nummi ja kumpu koillisessa, niittyjä
+    hyvin vähän (`meadowT` 0,14), aloitus etelärannalla.
+  - **Nummiluodot** (id 5): iso keskijärvi, laaja nummi (`moorR` 88) pohjoisessa, tunturi kaakossa, paljon niittyjä (`meadowT` 0,46).
+- **Biomiparametrit kartoittain** (`biomeAt`, valinnaiset): `moorR` (68), `mtnH` (23), `meadowT` (0,33). Vanhat kartat ennallaan.
+- **Suunnat lasketaan:** `dirIn(k,from)` (world.js, esim. "lounaassa") ja `dirText` (story.js). Rannan riimukivi 2 ja 3, tavoitteet
+  "Hae kolme hiidenkiveä" / "Herätä Kalmanvartija" ja tehtävä "Löydä Hautakumpu" kertovat suunnan oikein jokaisella kartalla
+  (GOALS/QUESTS `get d()`). Riimukivi A puhuu tuntureista eikä pohjoisesta. Sääntö "Hautakumpu aina lounaassa" poistettu.
+- Routaportin (pref mountain) sijoittelu: tunturissa sallitaan jyrkempi rinne (≤10 m / 16 m, tasoitetaan) ja etäisyys kiinteisiin raunioihin/riimukiviin 30 m → portti on tunturissa kaikilla kuudella kartalla. Paikat siirtyivät myös vanhoilla kartoilla (ei vaikuta tallennuksiin, koska paikat lasketaan aina uudelleen).
+- Tarkistettu jokaiselle uudelle kartalle: kaikki paikat maalla, 25 rautasuonta, kuparia, Hautakumpu toimii, ei konsolivirheitä.
+
 ### v0.55 (erä 32: ulottuvuuksien koristelu, spawneri, luolan muodot ja avainketju)
 - **Avainketju korjattu** (ks. Pysyvät päätökset): Routaportti lukittu Jääavaimella (maailmasta), uusi esine **Luuavain** (Jäätär → Kalmankammio),
   Aarniavain Kalmaherralta (ei enää `drops`-listassa, vaan `REALMS.portal2.key`). Lukitun portin viesti kertoo, mistä avain löytyy, ja merkitsee

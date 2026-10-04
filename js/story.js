@@ -55,7 +55,7 @@ function updateSites(dt){
 const DIRS=['pohjoiseen','koilliseen','itään','kaakkoon','etelään','lounaaseen','länteen','luoteeseen'];
 function dirText(from,k){const L=LOC[k],dx=L.x-from.x,dz=L.z-from.z,a=Math.atan2(dx,-dz),i=((Math.round(a/(Math.PI/4))%8)+8)%8;return `${DIRS[i]}, noin ${Math.round(Math.hypot(dx,dz)/10)*10} m`;}
 const XRUNES={
-  runeA:{t:'Riimukivi – Pohjan huurre',reveal:['portal1'],txt:f=>`”Pohjan kylmässä seisoo Routaportti, ${dirText(f,'portal1')}. Sen takana on Routaluola, ja siellä Jäätär vartioi talvea. Portti on lukittu – sen avain on kätketty tänne, meidän maailmaamme.”`},
+  runeA:{t:'Riimukivi – Tunturin huurre',reveal:['portal1'],txt:f=>`”Tunturin kylmyydessä seisoo Routaportti, ${dirText(f,'portal1')}. Sen takana on Routaluola, ja siellä Jäätär vartioi talvea. Portti on lukittu – sen avain on kätketty tänne, meidän maailmaamme.”`},
   runeB:{t:'Riimukivi – Avaimen kätkijä',reveal:['poiR1','portal1'],txt:f=>`”Jääavain lepää rauniotalon arkussa, ${dirText(f,'poiR1')}. Kivinen vartija vahtii sitä. Avain aukaisee Routaportin, ${dirText(f,'portal1')}.”`},
   runeC:{t:'Riimukivi – Kivien kirstut',reveal:['poiK1'],txt:f=>`”Vanhat kansat kätkivät aarteensa suuriin kiviin. Yksi arkkukivi on ${dirText(f,'poiK1')}. Muista: vartijat ovat sidottuja paikkaansa – juokse karkuun, jos hupenet.”`},
   runeD:{t:'Riimukivi – Kolme sisarta',reveal:['portal2'],txt:f=>`”Kolme sisarta vartioivat jäätä, kuolemaa ja metsää, ja kukin kantaa seuraavan avainta. Jäätär kantaa luuavainta, joka aukaisee Kalmankammion portin, ${dirText(f,'portal2')}. Kun kaikki kaatuvat, Hiidenmaan vartija jää yksin.”`},
@@ -76,9 +76,9 @@ for(const k in XRUNES){const R=XRUNES[k],L=LOC[k],y=terrainH(L.x,L.z),v=k.charCo
 // Jokainen tehtävä on kuvaus + ehto; näytetään ensimmäinen suorittamaton. at = kartalle merkitty kohde, jonka suunta ja etäisyys näytetään.
 const QUESTS=[
   {t:'Lue rannan riimukivi',d:'Rannalla seisoo kivi, joka kertoo saaresta.',done:()=>!!flags.runes.rune1},
-  {t:'Löydä Hautakumpu',d:'Lounaan nummella lepäävät vanhat päälliköt.',at:'barrow',done:()=>!!flags.disc.barrow},
+  {t:'Löydä Hautakumpu',get d(){return `Kalmanummella ${dirIn('barrow')} lepäävät vanhat päälliköt.`;},at:'barrow',done:()=>!!flags.disc.barrow},
   {t:'Avaa Hautakummun kolme kirstua',d:'Kumpu on pimeä – ota tuli mukaan.',at:'barrow',done:()=>flags.sarc.every(Boolean)},
-  {t:'Etsi Routaportti',d:'Pohjoisen riimukivet tietävät sen sijainnin.',at:'portal1',done:()=>!!flags.disc.portal1},
+  {t:'Etsi Routaportti',d:'Riimukivet tietävät sen sijainnin. Se on tuntureiden kylmyydessä.',at:'portal1',done:()=>!!flags.disc.portal1},
   {t:'Löydä Jääavain',d:'Rauniotalon arkku, kivivartijan vahtimana.',at:'poiR1',done:()=>invCount('jaaavain')>0||!!fo('poi').poiR1||!portalLocked('portal1')},
   {t:'Avaa Routaportti',d:'Jääavain sopii Routaportin lukkoon.',at:'portal1',done:()=>!portalLocked('portal1')},
   {t:'Kukista Jäätär Routaluolassa',d:'Sokkelon perimmäisessä kammiossa. Hän kantaa luuavainta.',at:'portal1',done:()=>!!fo('rb').portal1},

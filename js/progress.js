@@ -72,8 +72,8 @@ const GOALS=[
   {id:'kivirak',t:'Rakenna kivestä',d:'Kiviseinät, kivilattiat ja kivikatot kestävät paljon. Kivikatot ovat omassa välilehdessään.',xp:15,ok:()=>anyP(isStone)},
   {id:'grilli',t:'Rakenna grillinuotio',d:'Grillitelineessä on neljä paikkaa ruoalle. Ota ruoka ajoissa – ylipaistettu muuttuu hiileksi.',xp:20,ok:()=>anyP(p=>p.t==='grilli')},
   {id:'rauta',t:'Löydä rautaa',d:'Rautasuonet ovat vuoristossa. Tarvitset kuparihakun.',xp:30,ok:()=>flags.seen&&(flags.seen.rautamalmi||flags.seen.rauta)},
-  {id:'kivet',t:'Hae kolme hiidenkiveä',d:'Hautakumpu on lounaassa kalmanummella. Ota soihtu mukaan.',xp:40,ok:()=>invCount('hiidenkivi')>=3||boss||flags.boss},
-  {id:'vartija',t:'Herätä Kalmanvartija',d:'Kalmankehä on nummen eteläreunalla. Aseta kivet alttarille ja voita vartija.',xp:100,ok:()=>flags.boss},
+  {id:'kivet',t:'Hae kolme hiidenkiveä',get d(){return `Hautakumpu on ${dirIn('barrow')} kalmanummella. Ota soihtu mukaan.`;},xp:40,ok:()=>invCount('hiidenkivi')>=3||boss||flags.boss},
+  {id:'vartija',t:'Herätä Kalmanvartija',get d(){return `Kalmankehä on ${dirIn('circle')} Hautakummun lähellä. Aseta kivet alttarille ja voita vartija.`;},xp:100,ok:()=>flags.boss},
   {id:'vapaa',t:'Hiidenmaa on vapaa',d:'Jatka rakentamista ja tutkimista omaan tahtiisi.',xp:0,ok:()=>false},
 ];
 // Vanhat tallennukset (flags.gv puuttuu) käyttivät 11 tavoitteen listaa: muunnetaan indeksi ja annetaan jo ansaittu XP.
