@@ -80,9 +80,9 @@ function updatePlayer(dt){
   fig.g.visible=camDist>1.8;
   // torch light
   const torch=offId==='soihtu';
-  if(torch){const u=torchFl||(torchFl={cur:1,target:1,t:0}),s=flick(u,dt);torchLight.intensity=2.6*s;fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;
+  if(torch){const u=torchFl||(torchFl={cur:1,target:1,t:0}),s=1+(flick(u,dt)-1)*.4;torchLight.intensity=2.6*s;fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;
     // Liekit elävät, kipinöitä ja savua lähtee satunnaisesti kärjestä
-    const fl=offMesh&&offMesh.userData.flame;if(fl){fl[0].scale.set(.85+s*.2,.8+s*.5,.85+s*.2);fl[1].scale.set(1,.8+s*.4,1);fl[2].scale.set(1,.7+s*.6,1);fl[3].material.opacity=.14+s*.16;fl[3].scale.setScalar(.8+s*.35);offMesh.rotation.z=Math.sin(playTime*3.1)*.04;}
+    const fl=offMesh&&offMesh.userData.flame;if(fl){fl[0].scale.set(.95+s*.05,.9+s*.2,.95+s*.05);fl[1].scale.set(1,.9+s*.15,1);fl[2].scale.set(1,.85+s*.2,1);fl[3].material.opacity=.2+s*.06;fl[3].scale.setScalar(.92+s*.12);offMesh.rotation.z=Math.sin(playTime*3.1)*.04;}
     if(fig.g.visible){_tmpV.set(0,.4,.62);if(offMesh)offMesh.localToWorld(_tmpV);if(Math.random()<dt*7)emitEmber(_tmpV.x+(Math.random()-.5)*.08,_tmpV.y,_tmpV.z+(Math.random()-.5)*.08,'spark');if(Math.random()<dt*1.6)emitEmber(_tmpV.x,_tmpV.y+.1,_tmpV.z,'smoke');}}
   else torchLight.intensity=0;
 }
