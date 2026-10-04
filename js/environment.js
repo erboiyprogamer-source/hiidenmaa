@@ -30,7 +30,7 @@ function updateWeather(){if(playTime<weather.until)return;const r=Math.random(),
   weather.cur=w;weather.until=playTime+(w==='myrsky'?90+Math.random()*90:150+Math.random()*180);
   if(w!==prev&&!P.inDun&&WMSG[w])msg(WMSG[w]);}
 const cSkyDay=new THREE.Color(0x87a9c2),cSkyDusk=new THREE.Color(0xc98a64),cSkyNight=new THREE.Color(0x070b14),cGrey=new THREE.Color(0x7d858c),cFlash=new THREE.Color(0xe8f0ff),cTmp=new THREE.Color(),cSun=new THREE.Color(),cSunLow=new THREE.Color(0xffa060);
-let wCloud=.2,wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0,aarniK=0;
+let lightK=1,wCloud=.2,wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0,aarniK=0;
 const cAarni=new THREE.Color(0x26302a);
 // Kuun kirkkaus vaihtelee 8 päivän kierrossa (uusikuu .2 … täysikuu 1).
 function moonPhase(){return .2+.8*(.5-.5*Math.cos((dayN%8)/8*TAU));}
@@ -74,7 +74,7 @@ function updateEnvironment(dt){
   const ang=(dayT-.5)*TAU,el=Math.cos(ang)+.3;
   // Taivaan valo vaihtuu pehmeästi (hämärä ~1,5 min). Aurinko sammuu horisontissa ennen kuun syttymistä,
   // joten valon suunta vaihtuu vasta kun voimakkuus on nolla.
-  const light=sstep(-.4,.45,el),sunK=sstep(-.12,.08,el),moonK=sstep(-.12,-.32,el);
+  const light=sstep(-.4,.45,el);lightK=light;const sunK=sstep(-.12,.08,el),moonK=sstep(-.12,-.32,el);
   const sd=_tmpV.set(Math.sin(ang)*.9,el,.35).normalize();
   if(P.inDun){scene.background.setHex(0x050403);scene.fog.color.setHex(0x050403);scene.fog.near=3;scene.fog.far=28;hemi.intensity=.06;sun.intensity=0;amb.intensity=.05;stars.visible=false;sunDisc.visible=false;moon.visible=false;rain.visible=false;snow.visible=false;water.visible=false;return;}
   water.visible=true;stars.visible=true;

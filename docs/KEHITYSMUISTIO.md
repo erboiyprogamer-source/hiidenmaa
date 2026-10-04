@@ -49,6 +49,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.44 (korjaus: soihdun sytytys, ilmoitukset ja varjot)
+- **Uudelleensytytys:** sammunut soihtu (fuel > 0) syttyy kun pelaaja on toisen palavan liekin (nuotio, grilli, seisova soihtu) vieressä < 1.15 m ja odottaa **2.5 s** (`torchIgn`); poistuminen nollaa ajastimen; ei sateessa/vedessä.
+- **Ilmoitukset** (viestilokiin): loppuun palaessa "Soihtusi paloi loppuun! Avaa reppu (Tab) ja napsauta soihtua – sieltä voit lisätä siihen pihkaa…", sateen/veden sammuttaessa "…Sytytä se uudelleen viemällä se kiinni toiseen liekkiin ja odota hetki." ja "Soihtu syttyy… pysy liekin vieressä."
+- **Käsisoihdun varjo vain pimeässä:** `shDark` (yö, sisällä, luolasto, Aarnimetsä, synkkä sää) → varjokameran kantama .3 m (ei varjoa) … 2.4 m; päivänvalossa kutistuu sulavasti nollaan.
+- **Tulien (LIGHTS[0]) varjot:** kartta 512 → 192 px, kantama 18 → 15 m, bias suurempi (huonolaatuisempi ja sumeampi, ei seuraa reunoja tarkasti), päivitys pimeällä joka 2. kehys (aiemmin 3.), päivällä 6.
+
 ### v0.43 (korjaus: käsisoihdun varjo)
 - Käsisoihdun varjo pieneksi, huonolaatuiseksi läntiksi: varjokameran kantama 18 → 3.2 m, varjokartta 512 → 64 px, `radius` 3 (pehmeä), päivittyy **joka kehys** (`fT=1`) eli piirtyy koko ajan sulavasti; halpa koska kamera näkee vain lähimmät esineet. Tulien (LIGHTS[0]) varjot ennallaan (512 px, harvemmin).
 
