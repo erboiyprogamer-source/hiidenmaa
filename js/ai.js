@@ -18,6 +18,8 @@ function updateMobs(dt){
     if(m.dead){m.deadT+=dt;m.f.g.rotation.z=Math.min(Math.PI/2,m.deadT*4);m.f.g.position.y=m.pos.y-m.deadT*.3;if(m.deadT>2.2)mobRemove(m);continue;}
     const d=m.def,dx=P.pos.x-m.pos.x,dz=P.pos.z-m.pos.z,dist=Math.hypot(dx,dz);
     if(!m.dun&&m!==boss&&dist>120){mobRemove(m);continue;}
+    // Piirtoetäisyyden ulkopuolella (sumun takana) mobia ei piirretä eikä animoida
+    if(m!==boss&&!m.dun){const far=dist>scene.fog.far+8;if(far!==!m.f.g.visible){m.f.g.visible=!far;}if(far){m.f.g.position.copy(m.pos);}}
     if(m.dun!==P.inDun){continue;}
     m.flash=Math.max(0,m.flash-dt);for(const mt of m.mats)mt.emissive.setHex(m.flash>0?0x661111:0x000000);
     m.atkCd-=dt;
@@ -84,6 +86,7 @@ function moveMob(m,tx,tz,spd,dt){
   m.speedNow=moved/dt;
 }
 function animMob(m,dt){
+  if(!m.f.g.visible)return;
   const f=m.f;f.g.position.copy(m.pos);f.g.rotation.y=m.yaw;
   m.walkPh+=(m.speedNow||0)*dt*2.2;const sw=Math.sin(m.walkPh)*Math.min(1,(m.speedNow||0)/3)*.7;
   if(f.biped){f.legL.rotation.x=sw;f.legR.rotation.x=-sw;f.armL.rotation.x=-sw*.6;f.armR.rotation.x=sw*.6;
@@ -141,6 +144,8 @@ function respawnNodes(){for(const n of nodes)if(!n.alive&&n.respawnAt<=playTime&
 const LIGHT_CAP=3.0;let shFrame=0;const ALL_LIGHTS=[...LIGHTS,torchLight,torchFill];
 function updateStations(dt){
   for(const p of pieces){
+    // piirtoetäisyys: kaukana (sumun takana) olevia rakennuksia ei piirretä
+    {const far=dist2(p.x,p.z,P.pos.x,P.pos.z)>(scene.fog.far+25)**2;if(far===p.mesh.visible)p.mesh.visible=!far;}
     if(isFirePiece(p.t)){const f=p.mesh.userData.flame,d=p.data;const lit=d.fuel>0;f[0].visible=f[1].visible=lit;
       if(lit){const u=p.fl||(p.fl={cur:1,target:1,t:Math.random()*.2}),s=flick(u,dt);f[0].scale.set(.9+s*.12,.7+s*.45,.9+s*.12);f[1].scale.set(1,.8+s*.35,1);d.burn+=dt;
         if(dist2(p.x,p.z,P.pos.x,P.pos.z)<35*35){if(Math.random()<dt*3.2)emitEmber(p.x+(Math.random()-.5)*.4,p.y+.7,p.z+(Math.random()-.5)*.4,'spark');if(Math.random()<dt*.9)emitEmber(p.x+(Math.random()-.5)*.2,p.y+1.1,p.z+(Math.random()-.5)*.2,'smoke');}if(d.burn>=90){d.burn=0;d.fuel--;}for(const c of d.cook)c.t+=dt;}

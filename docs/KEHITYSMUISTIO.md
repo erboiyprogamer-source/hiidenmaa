@@ -49,6 +49,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.53 (erä 30: kartta ja piirtoetäisyys)
+- **Sileämpi ja pienempi tutkittu alue:** `FOGC` 2 m / px, paljastus pehmeillä säteittäisillä gradienteilla (`fogReveal`), tutkimussäde 24 → 12 m (`exploreTick`, 4 m ruudut, säde 3); `resetFog` piirtää tallennetun alueen samoin.
+- **Löytämättömät paikat piilossa:** merkit vain `flags.disc`-paikoista, ja sumu peittää alueen kunnes se on tutkittu.
+- **Liikkuvat pilvet kartalla** (vain kun kartta on auki): `CLOUDC` (saumaton kohina) liukuu sumun päällä (`source-atop`), `mapLoop` pyörii vain `openPanel==='map'` aikana.
+- **Kartan zoom ja siirto:** rulla zoomaa kohdistimeen (×1–6), vedä siirtää, kaksoisnapsautus keskittää (`mapZ`, `mapCX/CZ`, `mapView`).
+- **Rakennukset kartalle ja minikartalle** ylhäältä päin pikseleinä (`BLDC`, 1 px / m, `drawBld`): lattiat 3×3 px, seinät 3×1, katot päällimmäisinä; värit materiaalin mukaan (puu, kivi, terva, olki). Päivittyy `bldDirty`-lipulla (`markShadowDirty`).
+- **Minikartan 3 zoomitasoa** (N): 60 (oletus) / 35 / 110 m.
+- **Piirtoetäisyys (Minecraft-tyyliin):** `SET.renderDist` 90/165/260/400 m → sumun near/far ja kasvillisuuden näkyvyys (`RDK`); sumun takana olevia mobeja ja rakennuksia ei piirretä eikä mobeja animoida.
+
 ### v0.52 (erä 29: valikko, asetukset ja tallennus)
 - **Uusi `js/settings.js`** (latautuu state.js:n jälkeen): `ACTIONS`/`BIND` (22 vaihdettavaa näppäintoimintoa, tallennus `hiidenmaa_keys`), `kd(action)` korvaa kovakoodatut `keys.KeyX`, `validateKey` (varatut: Esc, 1–8, F-näppäimet, erikoisnäppäimet; Shift vain juoksulle; ei jo käytössä olevia), vaihto kahdessa vaiheessa (paina näppäintä → vahvista pienessä ikkunassa `#keyDlg`), oletusten palautus; `SET` (grafiikka/ohjaus, tallennus `hiidenmaa_set`) ja `applyGfx()`.
 - **Pelivalikko uusiksi:** puuteemaiset painikkeet + otsikon korostusviiva; **Asetukset**-kortti välilehdin (Näppäimet, Grafiikka, Ohjaus ja ääni, Tallennus). **Tallenna nyt -bugi korjattu** (ei enää avaa asetuksia; tila näkyy painikkeessa ja rivillä).
@@ -591,7 +600,7 @@ Kirjattu v0.35:n jälkeen. Jokainen erä: testaa, päivitä muistio, versio+`?v=
 3. Hiiren rulla hotbarin selaukseen (kuten Minecraft), zoom manuaalisesti jos toggle päällä.
 4. Grafiikka-asetusvalikko joka muistaa valinnat (localStorage): varjot (siirretään), puiden heiluminen, partikkelien määrä, detaljien määrä, piirtoetäisyys, rakennusten detaljit.
 
-**Erä 30 – Kartta ja piirtoetäisyys (2, 8, 10)**
+**Erä 30 – Kartta ja piirtoetäisyys (2, 8, 10)** – TEHTY (v0.53)
 1. Kartan löydetty alue sileämmäksi ja hienojakoisemmaksi; löytämättömät paikat piiloon (pilvisumu); karttanäkymässä pilvet liikkuvat (vain kun auki), kartan zoom, rakennukset ylhäältä pikseleinä.
 2. Minimapin 3 zoomitasoa näppäimellä (oletus nykyinen).
 3. Piirtoetäisyys (render distance) Minecraft-tyyliin: sumu piirtoalueen reunalla; etäisyyden päässä partikkelit/animaatiot/visuaalit pois.

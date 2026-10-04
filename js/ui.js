@@ -61,7 +61,7 @@ let panelOpenedAt=0;
 function renderLog(){const fm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
   $('#logBody').innerHTML=msgLog.length?[...msgLog].reverse().map(m=>`<div class="lg ${m.cls}"><span class="num">${fm(m.at)}</span>${m.t.replace(/</g,'&lt;')}</div>`).join(''):'<div class="note">Ei ilmoituksia vielä.</div>';}
 function togglePanel(name){if(openPanel===name){closePanels();return;}panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';releaseLock();mouseL=false;mouseR=false;P.drawing=false;
-  if(name==='inv'){$('#inv').hidden=false;renderInv();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;drawBigMap();}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}}
+  if(name==='inv'){$('#inv').hidden=false;renderInv();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}}
 function closePanels(keep,skipLock){if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP'])$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;if(!keep){state='play';if(!skipLock)requestLock();}}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
 function nearStations(){const s={};for(const p of pieces){const k=isFirePiece(p.t)?'nuotio':p.t;if(['tyopenkki','nuotio','ahjo'].includes(k)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(k==='nuotio'?4:8)**2&&!P.inDun){if(k==='nuotio'&&p.data.fuel<=0)continue;s[k]=1;}}return s;}
@@ -141,12 +141,35 @@ const MAPW=HALF*2,MAPC=document.createElement('canvas');MAPC.width=MAPC.height=M
     else{const gx=Math.min(GN,Math.round((wx+HALF)/GS)),gz=Math.min(GN,Math.round((wz+HALF)/GS)),i=(gz*HN+gx)*3;r=terrainColors[i]*255;gg=terrainColors[i+1]*255;b=terrainColors[i+2]*255;const sh=clamp((terrainH(wx-1,wz-1)-h)*.12,-.25,.25);r*=1-sh;gg*=1-sh;b*=1-sh;}
     const o=(y*MAPW+x)*4;img.data[o]=r;img.data[o+1]=gg;img.data[o+2]=b;img.data[o+3]=255;}
   g.putImageData(img,0,0);})();
-const FOGC=document.createElement('canvas');FOGC.width=FOGC.height=EXN;const fogG=FOGC.getContext('2d');
+// Sumu (tuntematon alue): FOGC 2 m / pikseli. Paljastus tehdään pehmeillä säteittäisillä gradienteilla (sileä reuna), joten kartta ei ole kulmikas.
+const FOGS=EXN*2,FOGK=FOGS/MAPW;
+const FOGC=document.createElement('canvas');FOGC.width=FOGC.height=FOGS;const fogG=FOGC.getContext('2d');
 // Tuntematon alue on pilviverhon peitossa (läpinäkymätön), joten maastoa ei erota.
-const FOGIMG=(function(){const im=fogG.createImageData(EXN,EXN);for(let y=0;y<EXN;y++)for(let x=0;x<EXN;x++){const v=18+fbm(x*.09+3,y*.09-7,4)*40,o=(y*EXN+x)*4;im.data[o]=v;im.data[o+1]=v*.97;im.data[o+2]=v*.93;im.data[o+3]=255;}return im;})();
-function resetFog(){fogG.putImageData(FOGIMG,0,0);for(let i=0;i<explored.length;i++)if(explored[i])fogG.clearRect(i%EXN,(i/EXN)|0,1,1);}
-function exploreTick(){if(P.inDun)return;const cx=Math.floor((P.pos.x+HALF)/4),cz=Math.floor((P.pos.z+HALF)/4);for(let z=cz-6;z<=cz+6;z++)for(let x=cx-6;x<=cx+6;x++){if(x<0||z<0||x>=EXN||z>=EXN)continue;if((x-cx)**2+(z-cz)**2>36)continue;const i=z*EXN+x;if(!explored[i]){explored[i]=1;fogG.clearRect(x,z,1,1);}}
+const FOGIMG=(function(){const im=fogG.createImageData(FOGS,FOGS);for(let y=0;y<FOGS;y++)for(let x=0;x<FOGS;x++){const v=18+fbm(x*.045+3,y*.045-7,4)*40,o=(y*FOGS+x)*4;im.data[o]=v;im.data[o+1]=v*.97;im.data[o+2]=v*.93;im.data[o+3]=255;}return im;})();
+function fogReveal(wx,wz,r){const x=(wx+HALF)*FOGK,y=(wz+HALF)*FOGK,rr=r*FOGK,gr=fogG.createRadialGradient(x,y,rr*.3,x,y,rr);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  fogG.globalCompositeOperation='destination-out';fogG.fillStyle=gr;fogG.beginPath();fogG.arc(x,y,rr,0,TAU);fogG.fill();fogG.globalCompositeOperation='source-over';}
+function resetFog(){fogG.putImageData(FOGIMG,0,0);for(let i=0;i<explored.length;i++)if(explored[i])fogReveal(((i%EXN)+.5)*4-HALF,(((i/EXN)|0)+.5)*4-HALF,7);}
+// Tutkittu alue: 4 m ruudut, säde 3 ruutua (12 m, aiemmin 24 m)
+function exploreTick(){if(P.inDun)return;const cx=Math.floor((P.pos.x+HALF)/4),cz=Math.floor((P.pos.z+HALF)/4);for(let z=cz-3;z<=cz+3;z++)for(let x=cx-3;x<=cx+3;x++){if(x<0||z<0||x>=EXN||z>=EXN)continue;if((x-cx)**2+(z-cz)**2>9)continue;const i=z*EXN+x;if(!explored[i]){explored[i]=1;fogReveal((x+.5)*4-HALF,(z+.5)*4-HALF,7);}}
   for(const k of ['ruinF','ruinM','ruinC','barrow','circle']){const L=LOC[k];if(!flags.disc[k]&&dist2(L.x,L.z,P.pos.x,P.pos.z)<30*30){flags.disc[k]=1;msg(`Löysit paikan: ${L.name}`,'loot');}}}
+// Rakennukset kartalle ylhäältä: 1 pikseli / metri (BLDC), päivitetään kun rakennukset muuttuvat
+const BLDC=document.createElement('canvas');BLDC.width=BLDC.height=MAPW;const bldG=BLDC.getContext('2d');
+function drawBld(){bldDirty=false;bldG.clearRect(0,0,MAPW,MAPW);
+  const col=p=>{const d=PIECES[p.t];return d.stone||p.t==='kiviseina'?'#a9a79f':/tervas/.test(p.t)?'#5a4030':d.roof?(d.stone?'#7a7870':'#d0ad4c'):'#a8723e';};
+  const order=p=>PIECES[p.t].roof?3:PIECES[bt(p.t)]&&(bt(p.t)==='lattia'||bt(p.t)==='tervaslattia')?0:PIECES[p.t].snap==='wall'?1:2;
+  for(const o of [0,1,2,3])for(const p of pieces){if(order(p)!==o)continue;const x=p.x+HALF,z=p.z+HALF;bldG.fillStyle=col(p);
+    if(o===0||o===3)bldG.fillRect(Math.round(x-1.25),Math.round(z-1.25),3,3);
+    else if(o===1){if(p.rot%4===0)bldG.fillRect(Math.round(x-1.25),Math.round(z-.5),3,1);else bldG.fillRect(Math.round(x-.5),Math.round(z-1.25),1,3);}
+    else bldG.fillRect(Math.round(x-.5),Math.round(z-.5),2,2);}}
+// Liikkuvat pilvet kartalla (vain kun kartta on auki): läpikuultava pilvikuvio liukuu sumun päällä
+const CLOUDC=(function(){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d'),im=g.createImageData(256,256),k=TAU/256;for(let y=0;y<256;y++)for(let x=0;x<256;x++){
+  // jaksollinen (saumaton) kohina: siniaaltojen summa, jaksot jakavat 256:n
+  const wx=x+Math.sin(y*k*2)*14+Math.sin(y*k*5)*5,wy=y+Math.sin(x*k*3)*12+Math.sin(x*k*7)*4,v=.5+.2*Math.sin(wx*k*3)*Math.cos(wy*k*2)+.12*Math.sin(wx*k*6+wy*k*4)*Math.cos(wy*k*5)+.06*Math.sin(wx*k*11)*Math.sin(wy*k*9);
+  const o=(y*256+x)*4,a=clamp((v-.42)*2,0,1);im.data[o]=235;im.data[o+1]=238;im.data[o+2]=245;im.data[o+3]=a*95;}g.putImageData(im,0,0);return c;})();
+const FOGTMP=document.createElement('canvas');FOGTMP.width=FOGTMP.height=640;
+let mapZ=1,mapCX=0,mapCZ=0,mapRAF=0,mapDrag=null;
+function mapView(){const sw=MAPW/mapZ;return{sw,x0:clamp(mapCX+HALF-sw/2,0,MAPW-sw),y0:clamp(mapCZ+HALF-sw/2,0,MAPW-sw)};}
+function mapLoop(){if(openPanel!=='map'){mapRAF=0;return;}drawBigMap();mapRAF=requestAnimationFrame(mapLoop);}
 function mapMarkers(g,sx,ox,oz){
   const pt=(x,z)=>[(x+ox)*sx,(z+oz)*sx];
   for(const k in flags.disc){const L=LOC[k];if(!L)continue;const [x,y]=pt(L.x,L.z);g.fillStyle='#8fd8cf';g.save();g.translate(x,y);g.rotate(Math.PI/4);g.fillRect(-4,-4,8,8);g.restore();if(sx>1){g.fillStyle='#eee5d3';g.font='600 12px Alegreya Sans, sans-serif';g.fillText(L.name,x+8,y+4);}}
@@ -155,12 +178,27 @@ function mapMarkers(g,sx,ox,oz){
   for(const gr of graves){const [x,y]=pt(gr.x,gr.z),r=sx>1?8:6;g.save();g.translate(x,y);g.fillStyle='#f2ecdc';g.strokeStyle='#7a1a12';g.lineWidth=1.6;g.beginPath();g.arc(0,-r*.15,r*.8,0,TAU);g.fill();g.stroke();g.fillRect(-r*.45,r*.4,r*.9,r*.6);g.strokeRect(-r*.45,r*.4,r*.9,r*.6);g.fillStyle='#1a1410';g.beginPath();g.arc(-r*.33,-r*.2,r*.22,0,TAU);g.arc(r*.33,-r*.2,r*.22,0,TAU);g.fill();g.restore();}
 }
 function drawPlayerArrow(g,x,y,s){g.save();g.translate(x,y);g.rotate(-camYaw);g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=1.5;g.beginPath();g.moveTo(0,-s);g.lineTo(s*.7,s*.8);g.lineTo(0,s*.4);g.lineTo(-s*.7,s*.8);g.closePath();g.fill();g.stroke();g.restore();}
-function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),S=c.width/MAPW;g.imageSmoothingEnabled=true;g.drawImage(MAPC,0,0,c.width,c.height);g.drawImage(FOGC,0,0,c.width,c.height);mapMarkers(g,S,HALF,HALF);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF)*S,(P.pos.z+HALF)*S,9);}
+function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),W=c.width,v=mapView(),S=W/v.sw;
+  g.imageSmoothingEnabled=true;g.drawImage(MAPC,v.x0,v.y0,v.sw,v.sw,0,0,W,W);
+  if(bldDirty)drawBld();g.imageSmoothingEnabled=false;g.drawImage(BLDC,v.x0,v.y0,v.sw,v.sw,0,0,W,W);g.imageSmoothingEnabled=true;
+  const t=FOGTMP.getContext('2d');t.globalCompositeOperation='source-over';t.clearRect(0,0,W,W);t.drawImage(FOGC,v.x0*FOGK,v.y0*FOGK,v.sw*FOGK,v.sw*FOGK,0,0,W,W);
+  t.globalCompositeOperation='source-atop';{const tt=performance.now()/1000,ox=(tt*9)%256,oy=(tt*4)%256;t.save();t.translate(ox,oy);t.fillStyle=t.createPattern(CLOUDC,'repeat');t.fillRect(-256,-256,W+512,W+512);t.restore();}
+  t.globalCompositeOperation='source-over';g.drawImage(FOGTMP,0,0);
+  mapMarkers(g,S,HALF-v.x0,HALF-v.y0);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF-v.x0)*S,(P.pos.z+HALF-v.y0)*S,9);
+  g.fillStyle='rgba(238,229,211,.8)';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='left';g.fillText(mapZ>1?`Zoom ×${mapZ.toFixed(1)} · vedä siirtääksesi · kaksoisnapsautus keskittää`:'Rulla = zoom',10,630);}
+// Kartan zoom (rulla) ja siirto (vetäminen)
+(function(){const c=$('#bigmap');
+  c.addEventListener('wheel',e=>{e.preventDefault();const r=c.getBoundingClientRect(),W=c.width,v=mapView(),fx=(e.clientX-r.left)/r.width,fy=(e.clientY-r.top)/r.height,wx=v.x0+fx*v.sw-HALF,wz=v.y0+fy*v.sw-HALF;
+    mapZ=clamp(mapZ*(e.deltaY<0?1.25:.8),1,6);const v2=MAPW/mapZ;mapCX=wx-(fx-.5)*v2;mapCZ=wz-(fy-.5)*v2;},{passive:false});
+  c.addEventListener('mousedown',e=>{mapDrag={x:e.clientX,y:e.clientY};});
+  addEventListener('mouseup',()=>{mapDrag=null;});
+  addEventListener('mousemove',e=>{if(!mapDrag||openPanel!=='map')return;const r=c.getBoundingClientRect(),v=mapView(),k=v.sw/r.width;mapCX-=(e.clientX-mapDrag.x)*k;mapCZ-=(e.clientY-mapDrag.y)*k;mapDrag={x:e.clientX,y:e.clientY};});
+  c.addEventListener('dblclick',()=>{mapCX=P.pos.x;mapCZ=P.pos.z;});})();
 // Minikartan zoomitasot (näppäin BIND.minizoom): 60 m (oletus), 35 m, 110 m säde
 const MINI_R=[60,35,110];let miniZ=0;
 function cycleMiniZoom(){miniZ=(miniZ+1)%MINI_R.length;msg(`Minikartta: ${MINI_R[miniZ]} m`);}
 function drawMinimap(){const c=$('#mini'),g=c.getContext('2d'),W=c.width,R=MINI_R[miniZ],S=W/(R*2);g.save();g.clearRect(0,0,W,W);g.beginPath();g.arc(W/2,W/2,W/2,0,TAU);g.clip();g.fillStyle='#1d1a16';g.fillRect(0,0,W,W);
-  if(!P.inDun){const sx=P.pos.x+HALF-R,sz=P.pos.z+HALF-R;g.drawImage(MAPC,sx,sz,R*2,R*2,0,0,W,W);g.imageSmoothingEnabled=true;g.drawImage(FOGC,sx/4,sz/4,R*2/4,R*2/4,0,0,W,W);mapMarkers(g,S,-(P.pos.x-R),-(P.pos.z-R));
+  if(!P.inDun){const sx=P.pos.x+HALF-R,sz=P.pos.z+HALF-R;g.drawImage(MAPC,sx,sz,R*2,R*2,0,0,W,W);if(bldDirty)drawBld();g.imageSmoothingEnabled=false;g.drawImage(BLDC,sx,sz,R*2,R*2,0,0,W,W);g.imageSmoothingEnabled=true;g.drawImage(FOGC,sx*FOGK,sz*FOGK,R*2*FOGK,R*2*FOGK,0,0,W,W);mapMarkers(g,S,-(P.pos.x-R),-(P.pos.z-R));
     for(const m of mobs){if(m.dead||m.dun)continue;const x=(m.pos.x-P.pos.x+R)*S,y=(m.pos.z-P.pos.z+R)*S;if(m.state==='chase'||m===boss){g.fillStyle=m===boss?'#8fd8cf':'#c8463b';g.beginPath();g.arc(x,y,m===boss?5:2.5,0,TAU);g.fill();}}}
   else{g.fillStyle='#a99d89';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='center';g.fillText('Hautakumpu',W/2,W/2+30);}
   drawPlayerArrow(g,W/2,W/2,7);g.restore();
