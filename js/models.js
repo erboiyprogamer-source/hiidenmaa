@@ -82,16 +82,25 @@ function makeHeld(id){
       const geo=new THREE.TorusGeometry(R,.04,6,14,arc);geo.rotateZ(-arc/2);geo.rotateY(-Math.PI/2);geo.translate(0,0,.72-R);const me=new THREE.Mesh(geo,metalOf(c));me.castShadow=true;g.add(me);
       const hub=new THREE.Mesh(new THREE.BoxGeometry(.09,.09,.1),mat(0x3a3a3a));hub.position.z=.72;g.add(hub);break;}
     case 'keihas':{shaft(g,1.7,W,.026);g.add(poly([[1.6,.035],[1.78,0],[1.6,-.035]],.03,metalOf(0x66707a)));g.position.z=-.3;break;}
-    case 'miekka':case 'rautamiekka':{const L=id==='miekka'?.85:1,bm=metalOf(id==='miekka'?0xe9a46a:0xc8d2dc,{metalness:.6,roughness:.4});
+    case 'miekka':case 'rautamiekka':case 'hiidenmiekka':{const L=id==='miekka'?.85:1,bm=metalOf(id==='miekka'?0xe9a46a:id==='hiidenmiekka'?0x7fe9dd:0xc8d2dc,{metalness:.6,roughness:.4});
       shaft(g,.2,smat(0x4a2f18),.03,-.02);const pom=new THREE.Mesh(new THREE.SphereGeometry(.045,8,6),metalOf(0x8f5326));pom.position.z=-.03;g.add(pom);
       g.add(bx(.3,.05,.06,metalOf(0x8f5326),0,0,.17));
       g.add(poly([[.18,.05],[.18+L-.14,.05],[.18+L,0],[.18+L-.14,-.05],[.18,-.05]],.03,bm));break;}
     case 'lapio':{shaft(g,.95,W);g.add(poly([[.82,.1],[1.0,.1],[1.12,.0],[1.0,-.1],[.82,-.1]],.03,metalOf(0x8a96a3,{roughness:.5})));const gr=new THREE.Mesh(new THREE.BoxGeometry(.2,.04,.06),W);gr.position.set(0,0,-.08);g.add(gr);break;}
     case 'soihtu':{shaft(g,.6,W,.034);const fl=new THREE.Mesh(new THREE.ConeGeometry(.08,.22,6),MAT.flame);fl.rotation.x=Math.PI/2;fl.position.z=.68;g.add(fl);const f2=new THREE.Mesh(new THREE.ConeGeometry(.045,.14,6),MAT.flame2);f2.rotation.x=Math.PI/2;f2.position.z=.66;g.add(f2);break;}
     case 'vasara':{shaft(g,.6,W);const hd=bx(.12,.13,.3,mat(0x7c6a52),0,0,.54);hd.rotation.z=0;g.add(hd);g.add(bx(.14,.15,.05,mat(0x4b4338),0,0,.38));break;}
-    case 'jousi':{const m=mat(0x8a5a32);const a=bx(.06,.6,.06,m,0,.27,0),b=bx(.06,.6,.06,m,0,-.27,0);a.rotation.x=.35;b.rotation.x=-.35;a.position.z=.1;b.position.z=.1;g.add(a,b,bx(.01,1.05,.01,mat(0xe7e1cf),0,0,-.02,false));g.rotation.x=0;break;}
+    // Jousi: runko kaareva (vatsa +z eli ampumasuuntaan, kärjet jännittäjää kohti), jänne kärkien välillä ja nuoli, joka vedetään taakse (updateBowMesh).
+    case 'jousi':case 'hiidenjousi':{const R=.62,arc=1.9,geo=new THREE.TorusGeometry(R,.032,6,16,arc);geo.rotateZ(-arc/2);geo.rotateY(-Math.PI/2);geo.translate(0,0,.12-R);
+      const bm=new THREE.Mesh(geo,smat(id==='jousi'?0x8a5a32:0x5fe6d9));bm.castShadow=true;g.add(bm);
+      const tipY=R*Math.sin(arc/2),tipZ=.12-R+R*Math.cos(arc/2),sm=mat(0xe7e1cf),s1=bx(.012,1,.012,sm,0,0,0,false),s2=bx(.012,1,.012,sm,0,0,0,false);g.add(s1,s2);
+      const ar=new THREE.Group();ar.add(bx(.025,.025,.8,mat(0xc9b48a),0,0,.4,false),bx(.05,.05,.1,mat(0x4d535c),0,0,.82,false));ar.visible=false;g.add(ar);
+      g.userData.bow={s1,s2,ar,tipY,tipZ};updateBowMesh(g,0);break;}
   }
   g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
   return g;
 }
-function makeShield(id){const g=new THREE.Group();g.add(bx(.08,.75,.62,id==='kilpi'?MAT.wood:mat(0xc87a3e,{metalness:.5,roughness:.45}),.08,0,.1));g.add(bx(.1,.16,.16,mat(0xb8b0a0),.12,0,.1));return g;}
+// Jousen jänne ja nuoli: k = vedon määrä 0–1 (0 = ei vedossa, jänne suorana).
+function updateBowMesh(g,k,nocked){const b=g.userData.bow;if(!b)return;const nz=b.tipZ-(k>0?.1+k*.42:0);
+  for(const [s,sy] of [[b.s1,1],[b.s2,-1]]){const dy=-sy*b.tipY,dz=nz-b.tipZ,L=Math.hypot(dy,dz);s.scale.y=L;s.position.set(0,sy*b.tipY+dy/2,b.tipZ+dz/2);s.rotation.x=-Math.atan2(dz,dy);}
+  b.ar.visible=k>0||!!nocked;b.ar.position.z=nz-.02;}
+function makeShield(id){const g=new THREE.Group();g.add(bx(.08,.75,.62,id==='kilpi'?MAT.wood:mat(id==='rautakilpi'?0x8a96a3:0xc87a3e,{metalness:.35,roughness:.5}),.08,0,.1));g.add(bx(.1,.16,.16,mat(0xb8b0a0),.12,0,.1));return g;}

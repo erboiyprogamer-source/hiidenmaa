@@ -6,7 +6,7 @@
 const DAY_LEN=720;
 function isNight(){return dayT<.21||dayT>.79;}
 function sheltered(x,y,z){if(P.inDun)return true;raycaster.set(_tmpV.set(x,y+1.7,z),_tmpV2.set(0,1,0));raycaster.far=14;return raycaster.intersectObjects(pieceRoots,true).length>0;}
-function nearFire(x,z,r=5.5){for(const p of pieces)if(p.t==='nuotio'&&p.data.fuel>0&&dist2(p.x,p.z,x,z)<r*r)return true;return false;}
+function nearFire(x,z,r=5.5){for(const p of pieces)if(isFirePiece(p.t)&&p.data.fuel>0&&dist2(p.x,p.z,x,z)<r*r)return true;return false;}
 let shelterCache=false,fireCache=false,envTick=0,indoorT=0,indoorK=0;
 const cIndoor=new THREE.Color(0x6a5a48);
 // Yksinkertainen valofysiikka: suojassa ja seinien ympäröimänä taivaanvalo himmenee ja sininen sävy poistuu.
@@ -127,7 +127,7 @@ function calcFx(){const f=P.fx,b=P.buffs;f.speed=1;f.dmg=1;f.stamRegen=1;f.hpReg
   if(P.hunger<=0){f.speed*=.85;f.dmg*=.8;f.stamRegen*=.5;f.hpRegen=0;}else if(P.hunger<25){f.dmg*=.9;f.stamRegen*=.85;f.hpRegen*=.5;}
   if(b.pahoinvointi){f.stamRegen*=.5;f.hpRegen=0;}
   if(b.vatsakipu){f.speed*=.9;f.stamRegen*=.7;}
-  if(b.levannyt)f.stamRegen*=1.45;}
+  if(b.levannyt)f.stamRegen*=1.45;f.speed*=1+BON.spd/100;}
 function fmtT(t){return t>=60?`${Math.ceil(t/60)} min`:`${Math.ceil(t)} s`;}
 function survival(dt){
   // statuses
@@ -139,7 +139,7 @@ function survival(dt){
   const snowing=wSnow>.5&&P.pos.y>10&&!P.inDun&&!shelterCache;
   const cold=!fireCache&&((P.wetT>0)||snowing||(isNight()&&!P.inDun&&!(armor&&ITEMS[armor.id].warm)&&!shelterCache));
   P.cold=cold;
-  if(fireCache&&shelterCache){P.restT+=dt;if(P.restT>12&&!P.buffs.levannyt){P.buffs.levannyt=360;msg('Olet levännyt. Kestävyys palautuu nopeammin.','loot');}}else P.restT=0;
+  if(fireCache&&shelterCache){P.restT+=dt;if(P.restT>12&&!P.buffs.levannyt){P.buffs.levannyt=360;flags.rested=1;msg('Olet levännyt. Kestävyys palautuu nopeammin.','loot');}}else P.restT=0;
   for(const k in P.buffs){P.buffs[k]-=dt;if(P.buffs[k]<=0)delete P.buffs[k];}
   calcFx();
   P.crampT-=dt;if(P.buffs.vatsakipu&&P.crampT<=0){P.crampT=8+Math.random()*6;P.stam=Math.max(0,P.stam-12);P.stamDelay=Math.max(P.stamDelay,1);floatText('Auts!',P.pos.x,P.pos.y+2,P.pos.z,'#c9a66b');}

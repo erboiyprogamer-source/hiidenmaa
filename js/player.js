@@ -52,7 +52,7 @@ function updatePlayer(dt){
   if(P.atk){P.atk.t+=dt;if(!P.atk.done&&P.atk.t>=P.atk.hitAt){P.atk.done=true;doMeleeHit(P.atk.w);}if(P.atk.t>=P.atk.dur)P.atk=null;}
   if(!P.atk&&mouseL&&state==='play'&&w.cat==='weapon'&&locked)startAttack();
   else if(mouseL&&state==='play'&&w.cat==='shovel'&&locked)useShovel();
-  if(P.drawing){P.bowDraw=Math.min(1.2,P.bowDraw+dt*1.2);P.stam-=6*dt;P.stamDelay=.5;if(P.stam<=0){P.drawing=false;fireBow();}}
+  if(P.drawing){P.bowDraw=Math.min(1,P.bowDraw+dt/bowDrawTime());P.stam-=6*dt;P.stamDelay=.5;if(P.stam<=0){P.drawing=false;fireBow();}}
   // animate figure
   const hv=Math.hypot(P.vel.x,P.vel.z);P.walkPh+=hv*dt*1.9;
   const sw=Math.sin(P.walkPh)*Math.min(1,hv/4)*.75;
@@ -68,12 +68,14 @@ function updatePlayer(dt){
     rate=32;if(two&&(k<hk+.3||hold)){grip=true;tSh=.2;}}
   if(P.blocking){tLx=-1.3+Math.sin(playTime*3)*.04;tLz=-.3;}
   if(P.drawing){tLx=-1.5;tRx=-1.5;tRz=.5;}
-  if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(0,0,0);if(P.drawing)tLz=-.1;}
+  if(heldMesh&&ITEMS[heldId].cat==='bow'){if(P.drawing)tLz=-.1;}
   const e=Math.min(1,dt*rate);
   armSh+=(tSh-armSh)*e;fig.armL.position.x=armSh;fig.armR.position.x=-armSh;
   fig.armR.rotation.x=lerpAngle(fig.armR.rotation.x,tRx,e);fig.armR.rotation.z=lerpAngle(fig.armR.rotation.z,tRz,e);
   if(grip&&heldMesh){const g=gripAngles();tLx=g[0];tLz=g[1];}
   fig.armL.rotation.x=lerpAngle(fig.armL.rotation.x,tLx,e);fig.armL.rotation.z=lerpAngle(fig.armL.rotation.z,tLz,e);
+  // Jousi pysyy pystyssä (kämmenen kierto kumotaan käsivarren kulmalla); jänne ja nuoli seuraavat vetoa.
+  if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-fig.armL.rotation.x,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
   fig.g.visible=camDist>1.8;
   // torch light
   const torch=offId==='soihtu';torchLight.intensity=torch?3.4+Math.sin(playTime*17)*.35:0;if(torch){fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;}
@@ -111,6 +113,7 @@ function respawn(){
 function sleepAt(p){
   P.spawn={x:p.x,z:p.z};msg('Herätyspaikka asetettu.','loot');
   if(!isNight())return;
+  bump('slept');
   if(!sheltered(p.x,p.y,p.z)){msg('Sänky tarvitsee katon yläpuolelleen.','warn');return;}
   if(mobs.some(m=>!m.dead&&m.def.ai==='hostile'&&dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<20*20)){msg('Et voi nukkua, vihollisia on lähellä.','warn');return;}
   fadeTo(()=>{dayT=.23;dayN++;P.buffs.levannyt=420;P.hunger=Math.max(20,P.hunger-15);P.hp=maxHp();for(const m of [...mobs])if(m.def.ai==='hostile'&&!m.dun)mobRemove(m);const gr=regrowForest();saveGame(true);msg(`Päivä ${dayN} alkaa.`+(gr.planted+gr.revived?' Metsä on kasvanut yön aikana.':''));});

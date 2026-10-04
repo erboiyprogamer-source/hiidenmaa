@@ -145,3 +145,17 @@ textarea{width:100%;min-height:70px;background:rgba(0,0,0,.35);color:var(--bone)
 #effects .fx{display:flex;flex-direction:column;border-left:3px solid var(--frost);padding:3px 8px;margin:4px 0;background:rgba(0,0,0,.28);font-size:12px;cursor:help}
 #effects .fx.bad{border-color:var(--bad)}#effects .fx.good{border-color:var(--moss)}
 #effects .fx span{color:var(--dim)}
+
+/* Erä 22: taso, saavutukset, valmistusvälilehdet */
+#craftTabs{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 8px}
+#lvlbox{position:absolute;right:16px;bottom:56px;font-size:12px;font-weight:700;color:var(--bone);text-shadow:0 1px 2px #000;display:flex;gap:8px;align-items:center}
+#lvlbox .track,#progP .track{display:inline-block;width:90px;height:6px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden}
+#lvlbox .track i,#progP .track i{display:block;height:100%;background:#e8a44a}
+#progP{background:repeating-linear-gradient(180deg,#4a2e18 0,#4a2e18 22px,#3f2713 22px,#3f2713 24px),#47301a;border:3px solid #2a1a0c;box-shadow:inset 0 0 0 2px #6e4a28,0 20px 60px rgba(0,0,0,.7);width:min(820px,calc(100vw - 32px))}
+#progP .lv{display:flex;gap:12px;align-items:center;margin-bottom:10px;font-size:18px}#progP .lv .track{width:220px;height:9px}
+#progP .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.ach{display:flex;flex-direction:column;background:rgba(0,0,0,.28);border-left:3px solid #6e4a28;padding:3px 8px;margin:4px 0;font-size:12px}
+.ach.ok{border-color:var(--moss)}.ach.cur{border-color:#e8a44a;background:rgba(232,164,74,.15)}.ach.fut{opacity:.55}
+.ach span{color:var(--dim)}.ach em{color:#cfe8b0;font-style:normal}
+.msgs .xp,#msgs .xp{color:#e8c070}
+@media(max-width:700px){#progP .cols{grid-template-columns:1fr}}

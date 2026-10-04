@@ -102,7 +102,7 @@ function placeBuild(){
   if(!ghostPos||!ghost||!ghost.visible)return;
   if(!ghostOk){msg(lastInvalid||'Ei voi rakentaa tähän.','warn');return;}
   const def=PIECES[buildSel];for(const [id,n] of Object.entries(def.req))invRemove(id,n);
-  addPiece(buildSel,ghostPos.x,ghostPos.y,ghostPos.z,ghostRot,undefined,undefined,poseOf(buildSel));sfx('build');burst(ghostPos.x,ghostPos.y+.5,ghostPos.z,0x8a5a32,6,2);
+  addPiece(buildSel,ghostPos.x,ghostPos.y,ghostPos.z,ghostRot,undefined,undefined,poseOf(buildSel));bump('built');xpFirst('b_'+buildSel,4);sfx('build');burst(ghostPos.x,ghostPos.y+.5,ghostPos.z,0x8a5a32,6,2);
 }
 // Vasaralla korjaus: kuluma pois, maksaa vauriota vastaavan osuuden rakennusaineista (vähintään 1).
 function lookedPiece(){const {o,d}=camRay();raycaster.set(o,d);raycaster.far=camDist+7;const hits=raycaster.intersectObjects(pieceRoots,true);return hits.length?hits[0].object.userData.piece:null;}

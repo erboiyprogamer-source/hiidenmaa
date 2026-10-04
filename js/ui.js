@@ -26,6 +26,7 @@ function updateHUD(dt){
   hp.firstChild.style.width=(P.hp/maxHp()*100)+'%';hp.lastChild.textContent=`TERVEYS ${Math.ceil(P.hp)}/${maxHp()}`;hp.classList.toggle('low',P.hp<maxHp()*.25);
   st.firstChild.style.width=(P.stam/maxStam()*100)+'%';st.lastChild.textContent=`KESTÄVYYS ${Math.floor(P.stam)}`;
   hu.firstChild.style.width=P.hunger+'%';hu.lastChild.textContent=`KYLLÄISYYS ${Math.floor(P.hunger)}`;hu.classList.toggle('low',P.hunger<15);
+  {const li=lvlInfo();$('#lvlbox').innerHTML=`Taso ${li.L}<span class="track"><i style="width:${li.need?li.xp/li.need*100:100}%"></i></span>`;}
   const wt=invWeight();const we=$('#weight');we.textContent=`Paino ${wt.toFixed(0)}/${MAXW}`;we.classList.toggle('over',wt>MAXW);
   const t=lookTarget,pr=$('#prompt');
   if(t&&!P.dead){const l=t.kind==='it'?t.it.label():t.label;pr.innerHTML=`<kbd>E</kbd>${l}`;}else pr.innerHTML='';
@@ -41,13 +42,14 @@ function updateHUD(dt){
 let openPanel=null,selSlot=-1,curChest=null;
 let panelOpenedAt=0;
 function togglePanel(name){if(openPanel===name){closePanels();return;}panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';releaseLock();mouseL=false;mouseR=false;P.drawing=false;
-  if(name==='inv'){$('#inv').hidden=false;renderInv();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;drawBigMap();}if(name==='chest')$('#chest').hidden=false;}
-function closePanels(keep,skipLock){if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest'])$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;if(!keep){state='play';if(!skipLock)requestLock();}}
+  if(name==='inv'){$('#inv').hidden=false;renderInv();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;drawBigMap();}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}}
+function closePanels(keep,skipLock){if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP'])$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;if(!keep){state='play';if(!skipLock)requestLock();}}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
-function nearStations(){const s={};for(const p of pieces){if(['tyopenkki','nuotio','ahjo'].includes(p.t)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(p.t==='nuotio'?4:8)**2&&!P.inDun){if(p.t==='nuotio'&&p.data.fuel<=0)continue;s[p.t]=1;}}return s;}
+function nearStations(){const s={};for(const p of pieces){const k=isFirePiece(p.t)?'nuotio':p.t;if(['tyopenkki','nuotio','ahjo'].includes(k)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(k==='nuotio'?4:8)**2&&!P.inDun){if(k==='nuotio'&&p.data.fuel<=0)continue;s[k]=1;}}return s;}
 let fxAt=0;
 // Tilat repun vieressä: nimi, jäljellä oleva aika ja vaikutus (osoita hiirellä tai lue suoraan).
 function renderEffects(fxs){fxs=fxs||effects();$('#effects').innerHTML=`<h3>Tilat</h3>`+(fxs.length?fxs.map(e=>`<div class="fx ${e.kind}" title="${e.desc}"><b>${e.name}${e.t?' · '+fmtT(e.t):''}</b><span>${e.desc}</span></div>`).join(''):'<div class="s">Ei erityisiä tiloja.</div>');}
+let craftTab='alku';
 function renderInv(){renderEffects();
   const g=$('#invGrid');g.innerHTML=inv.map((s,i)=>slotHTML(s,i<8?i+1:'')).join('');
   [...g.children].forEach((el,i)=>{el.classList.toggle('sel',i===selSlot);el.onclick=e=>{if(selSlot>=0&&selSlot!==i&&e.shiftKey===false&&inv[selSlot]&&!inv[i]){inv[i]=inv[selSlot];inv[selSlot]=null;selSlot=i;invDirty=true;renderInv();return;}selSlot=i;renderInv();};el.ondblclick=()=>{useSlot(i);renderInv();};el.oncontextmenu=e=>{e.preventDefault();if(inv[i]){useSlot(i);renderInv();}};});
@@ -74,16 +76,20 @@ function renderInv(){renderEffects();
   const st=nearStations();
   $('#stationLine').textContent='Lähellä: '+(Object.keys(st).map(k=>STATION_NAME[k]).join(', ')||'ei työpisteitä')+'. Uusia ohjeita aukeaa, kun löydät uusia aineita.';
   const cl=$('#craftList');cl.innerHTML='';
+  const tabs=$('#craftTabs');tabs.innerHTML='';
+  for(const [id,nm] of CRAFT_CATS){const b=document.createElement('button');b.className='tab'+(id===craftTab?' on':'');b.textContent=nm;b.onclick=()=>{craftTab=id;renderInv();};tabs.appendChild(b);}
   for(const r of RECIPES){const known=Object.keys(r.req).some(id=>flags.seen[id])||!r.st;if(!known)continue;
+    if(craftTab==='alku'?!r.alku:recipeCat(r)!==craftTab)continue;
+    const open=recipeOpen(r);
     const okSt=!r.st||st[r.st];const okMat=Object.entries(r.req).every(([id,n])=>invCount(id)>=n);
-    const el=document.createElement('div');el.className='rec'+(okSt&&okMat?'':' na');
-    el.innerHTML=`<div class="ic" style="background-image:url(${icon(r.id)})"></div><div><div class="nm">${ITEMS[r.id].n}${r.n?` ×${r.n}`:''}</div><div class="rq">${Object.entries(r.req).map(([id,n])=>`<span class="${invCount(id)>=n?'':'miss'}">${n} ${ITEMS[id].n.toLowerCase()}</span>`).join(', ')}${r.st?` · <span class="${okSt?'':'miss'}">${STATION_NAME[r.st]}</span>`:''}</div></div>`;
-    const b=document.createElement('button');b.className='btn pri';b.textContent='Valmista';b.disabled=!(okSt&&okMat);b.onclick=()=>craft(r);el.appendChild(b);cl.appendChild(el);}
+    const el=document.createElement('div');el.className='rec'+(okSt&&okMat&&open?'':' na');
+    el.innerHTML=`<div class="ic" style="background-image:url(${icon(r.id)})"></div><div><div class="nm">${ITEMS[r.id].n}${r.n?` ×${r.n}`:''}</div><div class="rq">${Object.entries(r.req).map(([id,n])=>`<span class="${invCount(id)>=n?'':'miss'}">${n} ${ITEMS[id].n.toLowerCase()}</span>`).join(', ')}${r.st?` · <span class="${okSt?'':'miss'}">${STATION_NAME[r.st]}</span>`:''}${open?'':` · <span class="miss">Taso ${r.lvl}</span>`}</div></div>`;
+    const b=document.createElement('button');b.className='btn pri';b.textContent=open?'Valmista':'Lukittu';b.disabled=!(okSt&&okMat&&open);b.onclick=()=>craft(r);el.appendChild(b);cl.appendChild(el);}
 }
 function upgradeInfo(s){const d=ITEMS[s.id];if(!d.cat||d.cat==='hammer')return null;const q=s.q||1;if(q>=3)return null;const r=RECIPE_BY[s.id];if(!r)return null;
   const req={};for(const [id,n] of Object.entries(r.req))req[id]=Math.ceil(n/2)*q;const st=r.st||'tyopenkki';const near=nearStations()[st];
   const ok=near&&Object.entries(req).every(([id,n])=>invCount(id)>=n);return{req,ok,why:near?'':`Tarvitset: ${STATION_NAME[st]}`};}
-function craft(r){for(const [id,n] of Object.entries(r.req))invRemove(id,n);const left=invAdd(r.id,r.n||1);if(left)spawnDrop(r.id,left,P.pos.x,P.pos.y+1,P.pos.z);sfx('craft');msg(`Valmistit: ${ITEMS[r.id].n}`,'loot');
+function craft(r){if(!recipeOpen(r))return;for(const [id,n] of Object.entries(r.req))invRemove(id,n);bump('crafted');xpFirst('c_'+r.id,6,'uusi esine');const left=invAdd(r.id,r.n||1);if(left)spawnDrop(r.id,left,P.pos.x,P.pos.y+1,P.pos.z);sfx('craft');msg(`Valmistit: ${ITEMS[r.id].n}`,'loot');
   if(ITEMS[r.id].cat&&!equipped(ITEMS[r.id].cat==='bow'||ITEMS[r.id].cat==='hammer'?'weapon':ITEMS[r.id].cat)){const s=inv.find(s=>s&&s.id===r.id&&!s.eq);if(s)toggleEquip(s);}
   invDirty=true;renderInv();}
 let buildTab='alku';
@@ -135,21 +141,3 @@ function drawMinimap(){const c=$('#mini'),g=c.getContext('2d'),W=c.width,R=60,S=
   else{g.fillStyle='#a99d89';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='center';g.fillText('Hautakumpu',W/2,W/2+30);}
   drawPlayerArrow(g,W/2,W/2,7);g.restore();
   g.fillStyle='#eee5d3';g.font='800 11px Alegreya Sans, sans-serif';g.textAlign='center';g.fillText('P',W/2,12);}
-
-/* ---------------- GOALS ---------------- */
-const GOALS=[
-  {t:'Poimi oksia ja kiviä',d:'Kävele niiden luo ja paina E. Tarvitset 3 puuta ja 2 kiveä.',ok:()=>invCount('puu')>=3&&invCount('kivi')>=2||invCount('kirves')},
-  {t:'Valmista kivikirves',d:'Avaa reppu Tab-näppäimellä ja valmista kirves.',ok:()=>invCount('kirves')||invCount('kuparikirves')},
-  {t:'Kaada puita ja tee vasara',d:'Kaada puita kirveellä. Valmista vasara ja rakenna työpenkki (10 puuta).',ok:()=>pieces.some(p=>p.t==='tyopenkki')},
-  {t:'Rakenna suoja ja nuotio',d:'Seinät, katto ja nuotio sisälle. Lepää tulen ääressä katon alla saadaksesi Levännyt-tilan.',ok:()=>pieces.some(p=>p.t==='nuotio')&&pieces.some(p=>p.t==='katto')},
-  {t:'Metsästä ja paista lihaa',d:'Peurat pakenevat – hiivi lähelle tai käytä keihästä tai jousta. Paista liha nuotiolla.',ok:()=>invCount('paisti')||invCount('varras')||flags.ate},
-  {t:'Etsi kuparia',d:'Valmista piikivihakku työpenkillä (piikiveä löytyy rannoilta) ja louhi oransseja kupariesiintymiä metsissä ja vuorten juurella.',ok:()=>invCount('malmi')||invCount('kupari')||pieces.some(p=>p.t==='ahjo')},
-  {t:'Sulata ja takoa',d:'Rakenna sulatusuuni, sulata malmi kupariksi ja rakenna ahjo.',ok:()=>pieces.some(p=>p.t==='ahjo')},
-  {t:'Varustaudu',d:'Takoa kuparimiekka tai kuparipanssari ahjolla. Nuija on hyvä kalmoja vastaan.',ok:()=>invCount('miekka')||invCount('kuparipanssari')||invCount('kuparikilpi')},
-  {t:'Hae kolme hiidenkiveä',d:'Hautakumpu on lounaassa kalmanummella. Ota soihtu mukaan.',ok:()=>invCount('hiidenkivi')>=3||boss||flags.boss},
-  {t:'Herätä Kalmanvartija',d:'Kalmankehä on nummen eteläreunalla. Aseta kivet alttarille ja voita vartija.',ok:()=>flags.boss},
-  {t:'Hiidenmaa on vapaa',d:'Jatka rakentamista ja tutkimista omaan tahtiisi.',ok:()=>false},
-];
-let goalShown=-1;
-function updateGoals(){while(flags.goal<GOALS.length-1&&GOALS[flags.goal].ok()){flags.goal++;if(flags.goal>0){msg('Tavoite saavutettu!','loot');sfx('craft');}}
-  if(goalShown!==flags.goal){goalShown=flags.goal;const g=GOALS[flags.goal];$('#goalT').textContent=g.t;$('#goalD').textContent=g.d;if(flags.goal===8){flags.disc.barrow=1;}if(flags.goal===9)flags.disc.circle=1;}}

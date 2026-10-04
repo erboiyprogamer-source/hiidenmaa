@@ -49,6 +49,27 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.22 (erä 22)
+- **Uudet esineet:** Puuhiili (`hiili`, polttoaine 10 yksikköä), Paistettu sieni, Rautakilpi, harvinaiset Hiidenjousi / Hiidenmiekka / Hiidenpanssari (tasot 10/12/14).
+  Hiilen saa nuotiolla puusta (5 puuta → 2 hiiltä) tai ylipaistetusta ruoasta.
+- **Grillinuotio** (`grilli`, kivi 6 + puu 4 + kupari 2): teline neljälle ruoalle, jokaisella oma aika (`{id,t,need}`, need 9–14 s). Kypsä ruoka pysyy telineessä
+  (näkyy värinä raaka → ruskea → musta); `t ≥ need` kypsä (liha → paisti, sieni → paistettu sieni), `t ≥ 2·need` ylipaistunut → **hiili**. E ottaa kaikki
+  valmiit. Sama logiikka nuotiolla (3 paikkaa). Tulen polttoaine: puu +1, hiili +10 (`FUEL_MAX` 40; `fireInteract()` actions.js).
+- **Hiili polttoaineena:** nuotio/grilli (+10), sulatusuuni (1 hiili = 10 puun verran, max 20), **seisova soihtu** palaa nyt `p.data.burn` s (5 min aluksi,
+  puu → 10 min, hiili → 30 min; sammuu nollaan, uudelleensytytys E:llä).
+- **Viholliset pelkäävät tulta:** palava nuotio/grilli (7 m), seisova soihtu (5 m) ja pelaajan soihtu (6 m, ei luolastossa) → mobi kävelee pois päin (`fearT`, `fireSrc`);
+  Kalmanvartija ja ylimys eivät pelkää.
+- **Piiritys:** ovet (myös suljetut) eivät estä näköyhteyttä (`pointBlocked`, `losClear(...,doors)`), mutta iskut eivät mene suljetun oven läpi. Jos tie on tukossa,
+  vihainen mobi valitsee lähimmän ovi/ikkunaseinän (`nearestOpening`, `m.siege`) ja hajottaa sen 2× vahingolla.
+- **Jousi:** täysi veto 1,6 s (laatu 2: 1,3 s, laatu 3: 1,07 s); `bowDrawTime()`. Vajaa veto: vahinko .2+.8k, nopeus (14+36k)·(1+.1(q−1)), laatu pienentää nuolen painovoimaa
+  (7/(1+.3(q−1))) → suorempi ja kauemmas. Uusi jousimalli (kaari vatsa eteenpäin, jänne + nuoli vedossa, `updateBowMesh`), pysyy pystyssä (`rotation.x = −armL.rotation.x`).
+- **Taso ja XP** (progress.js): `flags.xp`, `needXp(n)=50+30n`, taso 1–20. XP: tavoitteet, saavutukset (+50), tapot (hp/5+3), ensimmäinen valmistus (+6) ja rakennus (+4).
+  Valmistusohjeilla `lvl` (lukittu = "Taso N"), valmistusvalikossa välilehdet (Alkupeli/Työkalut/Aseet/Varusteet/Ruoka/Muut).
+- **Saavutukset** (15 kpl, `ACH`): pysyvät pienet bonukset (`BON`: enimmäisterveys, kestävyys, kantokyky, nopeus %). Laskurit `flags.cnt` (`bump()`).
+- **Tavoitteet:** 28 yksinkertaista järjestettyä tavoitetta (`GOALS`, siirretty ui.js:stä progress.js:ään, id:t). Vanhat tallennukset muunnetaan (`migrateProgress`, `flags.gv`).
+  Panelissa **J**: taso, saavutukset, tavoitelista, tason avaamat ohjeet. HUD:ssa tason palkki (`#lvlbox`).
+- Uusi tiedosto `js/progress.js` (latautuu ui.js:n jälkeen, ennen save.js:ää).
+
 ### v0.21 (erä 21)
 - **Pelaajahahmo uusiksi** (`makePlayer()`, models.js): pehmeä low-poly – pyöreät raajat (sylinterit/pallot, `smat()` ilman flatShadingia), kiharat hiukset
   ja parta, ei hattua; alkukantaiset vaatteet: nahkatunika, turkisharteet, vyö ja pussi, turkisreunaiset saappaat. Panssari värjää tunikan ja hihat
@@ -418,7 +439,7 @@ saavutukset ja teot), saavutukset antavat pysyviä pieniä bonuksia; "palkki" = 
 4. Taivas: liikkuvia, tuuheita pilviä sään mukaan, aurinko ja kuu pilvien takana, pilvet tummuvat ennen myrskyä (pilvi → sade →
    myrsky), pilvet välkkyvät, harvinaiset näkyvät salamat.
 
-### Erä 22 – ruoka, tuli, viholliset, jousi, saavutukset ja taso (ideat 12b,13–19)
+### Erä 22 – ruoka, tuli, viholliset, jousi, saavutukset ja taso (ideat 12b,13–19) – TEHTY (ks. versioloki v0.22)
 1. Uudet esineet ja monipuolisemmat reseptit (köysi, hiili, paistettu sieni, jne.).
 2. Grillinuotio: teline 4 ruoalle, jokaisella oma vaihteleva ajastin; kypsyy (liha → paisti), 2× ajalla ylipaistuu → hiili.
 3. Hiili polttoaineena (10× puu): nuotio, sulatin, pystysoihtu (aika 5 min, puu nollaa 10 min, hiili 30 min).
@@ -530,6 +551,13 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 - Harmaasuden juoksunopeus 4,6 m/s.
 
 - (ideajono muuten tyhjä – odottaa käyttäjän listaa)
+
+### Jäljelle jääneet / jatkoideat erien 20–22 jälkeen
+- Tikkaissa on vain yksi kaltevuus (ei Shift+R-asentoja); ontoissa portaissa 3 jyrkkyyttä on.
+- Kiviversioita ei ole kaikista osista (puoliseinät, tikkaat, tynnyri).
+- Pelaajan käsisoihtu ei kulu loppuun (vain seisova soihtu).
+- Jousen jänne/nuoli näkyvät vain pelaajan mallissa (ei vihollisjousissa, niitä ei ole).
+- Ruokia ei voi vielä keittää (ei padan mallia); grillaus tukee vain lihaa ja sientä.
 
 ## Tunnetut puutteet
 

@@ -59,11 +59,11 @@ function doMeleeHit(w){
     const tier=n.isLog?n.tier:(n.def.tier||1);if(w.chop<tier){if(!hitMob){msg('Tarvitset vahvemman kirveen.','warn');sfx('hit');}return;}
     n.hp-=(5+w.chop*4)*(1+.25*((w.q||1)-1));sfx('chop');burst(n.x,n.y+(n.isLog?.4:1.2),n.z,0x8a5a32,5,3);shake(.08);
     if(n.hp<=0){if(n.isLog){removeLog(n);const c=Math.max(1,Math.round(rint(rng,3,4)*n.s));for(let j=0;j<c;j++){const t=(j+.5)/c;spawnDrop(n.dropId,1,n.ax+(n.bx-n.ax)*t,n.y+.8,n.az+(n.bz-n.az)*t);}burst(n.x,n.y+.4,n.z,0x6b4527,12,4);}
-      else{killNode(n);fallTree(n);}}}
+      else{killNode(n);fallTree(n);bump('trees');}}}
   else if(n.def.kind==='rock'){if(!w.pick){if(!hitMob){msg('Tarvitset hakun louhiaksesi kiveä.','warn');sfx('hit');}return;}
     if(w.pick<(n.def.tier||1)){if(!hitMob){msg('Tarvitset paremman hakun.','warn');sfx('hit');}return;}
     n.hp-=(9+w.pick*3)*(1+.25*((w.q||1)-1));sfx('pick');burst(n.x,n.y+.8,n.z,n.type==='kuparisuoni'?0xd9874a:n.type==='rautasuoni'?0x8a4f3c:0x8f8d86,6,4);shake(.08);
-    if(n.hp<=0){killNode(n);burst(n.x,n.y+.6,n.z,0x8f8d86,16,6);for(const [id,lo,hi] of n.def.drops){const c=rint(rng,lo,hi);for(let j=0;j<c;j++)spawnDrop(id,1,n.x,n.y+.8,n.z);}}}
+    if(n.hp<=0){killNode(n);bump('rocks');burst(n.x,n.y+.6,n.z,0x8f8d86,16,6);for(const [id,lo,hi] of n.def.drops){const c=rint(rng,lo,hi);for(let j=0;j<c;j++)spawnDrop(id,1,n.x,n.y+.8,n.z);}}}
 }
 function damageMob(m,dmg,dt,kx,kz){
   if(m.dead)return;
@@ -74,17 +74,19 @@ function damageMob(m,dmg,dt,kx,kz){
   sfx('hit');burst(m.pos.x,m.pos.y+1,m.pos.z,m.type==='kalmo'||m.type==='ylimys'?0xe6e0cf:m.type==='vartija'?0x5d5a54:0x9a2a22,6,3);
   if(m.hp<=0)killMob(m);
 }
-function killMob(m){m.dead=true;m.deadT=0;sfx('die');P.kills++;
+function killMob(m){m.dead=true;m.deadT=0;sfx('die');P.kills++;bump('kills');bump('k_'+m.type);addXp(Math.round(m.def.hp/(m.type==='vartija'?2:5))+3,m.def.n);
   for(const [id,lo,hi] of m.def.drops){const c=rint(rng,lo,hi);if(c>0)spawnDrop(id,c,m.pos.x,m.pos.y+1,m.pos.z);}
   if(m.type==='vartija'){flags.boss=1;$('#bossbar').hidden=true;bossDefeated();}
   if(m.dunIdx!==undefined)dunKilled[m.dunIdx]=1;
 }
+// Jousi: täysi vetoaika 1,6 s (laatu 2: 1,3 s, laatu 3: 1,07 s). Vajaa veto = vähemmän vahinkoa, hitaampi nuoli ja jyrkempi kaari; laatu suoristaa ja pidentää lentoa.
+function bowDrawTime(){const w=curWeapon();return 1.6/(1+.25*((w.q||1)-1));}
 function fireBow(){
-  const w=curWeapon();const k=Math.min(1,P.bowDraw);invRemove('nuolet',1);
+  const w=curWeapon();const k=Math.min(1,P.bowDraw);invRemove('nuolet',1);bump('shots');
   const from=new V3(P.pos.x,P.pos.y+1.5,P.pos.z);
   const tgt=camRayPoint(70);const dir=tgt.sub(from).normalize();
   from.addScaledVector(dir,.6);
-  shootArrow(from,dir,18+30*k,weaponDmg(w)*(.35+.65*k),'player');sfx('bow');P.yaw=camYaw+Math.PI;
+  const q=w.q||1;shootArrow(from,dir,(14+36*k)*(1+.1*(q-1)),weaponDmg(w)*(.2+.8*k),'player',7/(1+.3*(q-1)));sfx('bow');P.yaw=camYaw+Math.PI;
 }
 function hurtPlayer(dmg,fx,fz){
   if(P.dead||P.invul>0)return;
@@ -104,8 +106,8 @@ function eat(s){const f=ITEMS[s.id].food;if(P.hunger>=96&&!f.buff){msg('Olet kyl
   if(f.buff)P.buffs[f.buff]=300;if(!f.raw)flags.ate=1;
   s.n--;if(s.n<=0)inv[inv.indexOf(s)]=null;invDirty=true;sfx('eat');msg(`Söit: ${ITEMS[s.id].n}`);
 }
-function maxHp(){return 60+(P.buffs.voima?15:0);}
-function maxStam(){return 100+(P.buffs.voima?25:0);}
+function maxHp(){return 60+(P.buffs.voima?15:0)+BON.hp;}
+function maxStam(){return 100+(P.buffs.voima?25:0)+BON.stam;}
 
 /* ---------------- INTERACTION ---------------- */
 let lookTarget=null;
@@ -122,7 +124,8 @@ function findInteract(){
 function pieceLabel(p){if(bt(p.t)==='ovi')return p.data.open?'Sulje ovi':'Avaa ovi';switch(p.t){
   case 'tikkaat':return 'Kiipeä: pidä W (alas S)';
   case 'ovi':return p.data.open?'Sulje ovi':'Avaa ovi';
-  case 'nuotio':return invCount('liha')>0&&p.data.fuel>0?'Paista lihaa':`Lisää puuta (${p.data.fuel}/10)`;
+  case 'nuotio':case 'grilli':{if(p.data.cook.some(c=>c.t>=c.need))return 'Ota ruoka tulelta';const raw=Object.keys(COOKABLE).some(id=>invCount(id)>0);return raw&&p.data.fuel>0&&p.data.cook.length<(p.t==='grilli'?4:3)?'Paista ruokaa':`Lisää polttoainetta (${p.data.fuel}/${FUEL_MAX})`;}
+  case 'soihtuteline':return `Lisää polttoainetta (${Math.ceil(p.data.burn/60)} min)`;
   case 'sanky':return isNight()?'Nuku':'Aseta herätyspaikka';
   case 'arkku':return 'Avaa arkku';
   case 'tynnyri':return 'Avaa tynnyri';
@@ -132,21 +135,30 @@ function pieceLabel(p){if(bt(p.t)==='ovi')return p.data.open?'Sulje ovi':'Avaa o
   default:return null;}}
 function interact(){
   if(P.dead)return;const t=lookTarget;if(!t)return;
-  if(t.kind==='node'){const n=t.n,d=n.def;const c=rint(rng,d.n[0],d.n[1]);const left=invAdd(d.item,c);if(left>=c){msg('Reppu on täynnä.','warn');return;}msg(`+${c-left} ${ITEMS[d.item].n}`,'loot');sfx('pickup');killNode(n);return;}
+  if(t.kind==='node'){const n=t.n,d=n.def;const c=rint(rng,d.n[0],d.n[1]);const left=invAdd(d.item,c);if(left>=c){msg('Reppu on täynnä.','warn');return;}bump('picked');msg(`+${c-left} ${ITEMS[d.item].n}`,'loot');sfx('pickup');killNode(n);return;}
   if(t.kind==='it'){t.it.use();return;}
   if(t.kind==='grave'){const g=t.g;for(let i=0;i<g.items.length;i++){const s=g.items[i];if(!s)continue;const left=invAdd(s.id,s.n,s.q||1);if(left===0)g.items[i]=null;else s.n=left;}
     if(g.items.every(s=>!s)){scene.remove(g.mesh);graves.splice(graves.indexOf(g),1);msg('Sait tavarasi takaisin.','loot');}else msg('Reppu täyttyi – osa jäi kasaan.','warn');sfx('pickup');return;}
   if(t.kind==='piece'){const p=t.p;if(bt(p.t)==='ovi'){const a=p.rot*Math.PI/4,lz=(P.pos.x-p.x)*Math.sin(a)+(P.pos.z-p.z)*Math.cos(a);setDoor(p,!p.data.open,p.data.open?p.data.dir:(lz>0?1:-1));sfx('build');return;}switch(p.t){
-    case 'nuotio':if(invCount('liha')>0&&p.data.fuel>0){if(p.data.cook.length>=3){msg('Nuotiolla on jo täyttä.','warn');break;}invRemove('liha',1);p.data.cook.push(10);msg('Liha paistuu…');sfx('craft');}
-      else{if(p.data.fuel>=10){msg('Nuotiossa on tarpeeksi puuta.');break;}if(invCount('puu')<1){msg('Tarvitset puuta.','warn');break;}invRemove('puu',1);p.data.fuel++;sfx('build');}break;
+    case 'nuotio':case 'grilli':fireInteract(p);break;
+    case 'soihtuteline':{const b=p.data.burn;if(invCount('puu')>0&&b<600){invRemove('puu',1);p.data.burn=600;msg('Soihtu palaa 10 min.');sfx('build');}else if(invCount('hiili')>0&&b<1800){invRemove('hiili',1);p.data.burn=1800;msg('Hiili: soihtu palaa 30 min.');sfx('build');}else msg(invCount('puu')>0||invCount('hiili')>0?'Soihdussa on jo tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');break;}
     case 'sanky':sleepAt(p);break;
     case 'arkku':case 'tynnyri':openChest(p);break;
     case 'sulatin':if(p.data.done>0||p.data.idone>0){if(p.data.done>0)giveOrDrop('kupari',p.data.done,p.x,p.y+1,p.z);if(p.data.idone>0)giveOrDrop('rauta',p.data.idone,p.x,p.y+1,p.z);p.data.done=0;p.data.idone=0;sfx('pickup');break;}
-      {const o=Math.min(invCount('malmi'),10-p.data.ore),io=Math.min(invCount('rautamalmi'),10-p.data.iore),w=Math.min(invCount('puu'),20-p.data.wood);if(o<=0&&io<=0&&w<=0){msg('Tarvitset malmia (kupari tai rauta) ja puuta.','warn');break;}
-       if(o>0){invRemove('malmi',o);p.data.ore+=o;}if(io>0){invRemove('rautamalmi',io);p.data.iore+=io;}if(w>0){invRemove('puu',w);p.data.wood+=w;}msg(`Uuniin: ${o} kuparimalmia, ${io} rautamalmia, ${w} puuta.`);sfx('build');}break;
+      {const o=Math.min(invCount('malmi'),10-p.data.ore),io=Math.min(invCount('rautamalmi'),10-p.data.iore),w=Math.min(invCount('puu'),20-p.data.wood),hc=Math.min(invCount('hiili'),Math.floor((20-p.data.wood-w)/10));if(o<=0&&io<=0&&w<=0&&hc<=0){msg('Tarvitset malmia (kupari tai rauta) ja puuta tai hiiltä.','warn');break;}
+       if(o>0){invRemove('malmi',o);p.data.ore+=o;}if(io>0){invRemove('rautamalmi',io);p.data.iore+=io;}if(w>0){invRemove('puu',w);p.data.wood+=w;}if(hc>0){invRemove('hiili',hc);p.data.wood+=hc*10;}msg(`Uuniin: ${o} kuparimalmia, ${io} rautamalmia, ${w} puuta${hc?`, ${hc} hiiltä`:''}.`);sfx('build');}break;
     case 'tyopenkki':case 'ahjo':togglePanel('inv');break;
   }}
 }
+// Nuotio ja grillinuotio: 1) kerää valmis ruoka, 2) ripusta raaka ruoka (jokaisella oma aika), 3) lisää polttoainetta (puu = 1 yksikkö, hiili = 10).
+function fireInteract(p){const cap=p.t==='grilli'?4:3,d=p.data;
+  const done=d.cook.filter(c=>c.t>=c.need);
+  if(done.length){for(const c of done){const burnt=c.t>=c.need*2;giveOrDrop(burnt?'hiili':COOKABLE[c.id],1,p.x,p.y+.8,p.z);if(!burnt)bump('cooked');}d.cook=d.cook.filter(c=>c.t<c.need);sfx('pickup');return;}
+  const raw=Object.keys(COOKABLE).find(id=>invCount(id)>0);
+  if(raw&&d.fuel>0&&d.cook.length<cap){invRemove(raw,1);d.cook.push({id:raw,t:0,need:9+Math.random()*5});msg(`${ITEMS[raw].n} paistuu… (ota ajoissa, muuten palaa hiileksi)`);sfx('craft');return;}
+  if(d.fuel<10&&invCount('puu')>0){invRemove('puu',1);d.fuel++;sfx('build');return;}
+  if(d.fuel<=FUEL_MAX-10&&invCount('hiili')>0){invRemove('hiili',1);d.fuel+=10;msg('Hiili palaa pitkään.');sfx('build');return;}
+  msg(invCount('puu')>0||invCount('hiili')>0?'Tulessa on tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');}
 function useAltar(){
   if(flags.boss){msg('Kehä on hiljainen. Vartija on poissa.');return;}
   if(boss)return;

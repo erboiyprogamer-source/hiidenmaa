@@ -53,7 +53,8 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 | `js/player.js` | liike, fysiikka, animaatio, kuolema, uudelleensyntyminen, nukkuminen |
 | `js/ai.js` | vihollisten tekoäly, pomon hyökkäykset, `SPAWN`-taulukot, työpisteiden päivitys |
 | `js/camera.js` | kolmannen persoonan kamera |
-| `js/ui.js` | HUD, viestit, paneelit, kartta, `GOALS` |
+| `js/ui.js` | HUD, viestit, paneelit, kartta |
+| `js/progress.js` | `bump`, XP ja taso (`lvlInfo`), saavutukset (`ACH`, `BON`), `GOALS`, edistymispaneeli (J) |
 | `js/save.js` | `serialize`, `loadData`, `saveGame`, `SKEY` |
 | `js/main.js` | valikko, pääsilmukka `frame()`, testirajapinta `window.__game` |
 
@@ -73,7 +74,7 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 - **Rakennusosa:** `PIECES`, `pieceBoxes` (törmäys), `buildPieceMesh` (malli). Työpisteen
   toiminta `actions.js`:n `pieceLabel`/`interact` ja `ai.js`:n `updateStations`.
 - **Vihollinen tai eläin:** `MOBDEF` (malli `fig`, `ai`: flee/neutral/hostile/boss) ja `ai.js`:n `SPAWN`.
-- **Tavoite:** `GOALS` (`ui.js`), järjestyksellä on väliä.
+- **Tavoite:** `GOALS` (`progress.js`, id + xp), järjestyksellä on väliä. Saavutus: `ACH`. Valmistusohjeen tasovaatimus: `lvl`.
 - **Rakennusosan kategoria:** `cat` (+ `alku:1` = Alkupeli-välilehti) ja `BUILD_CATS` (`pieces.js`). Kiviversio: `base:'x',stone:1`.
 
 ## Tallennus
