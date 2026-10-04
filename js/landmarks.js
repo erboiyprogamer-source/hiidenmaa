@@ -67,6 +67,19 @@ const DMAP=[
 "#####################",
 ];
 const DC=3.2, DW=DMAP[0].length, DH=DMAP.length;
+// Seinäsoihtu telineessä: rautalevy seinässä, varsi, rengas ja vino soihtu. dir = [dx,dz] kohti seinää, back = levyn etäisyys ruudun keskeltä.
+// Palauttaa liekin kohdan (valolle). Ei törmäystä.
+const FLAME_CORE=new THREE.MeshBasicMaterial({color:0xffe9a0}),IRON_M=mat(0x2e2c2a,{metalness:.6});
+function wallTorch(par,x,y,z,dir,back=DC/2-.04){const [dx,dz]=dir,fx=x+dx*back,fz=z+dz*back,h=y+2.3,ir=IRON_M;
+  par.add(bx(dx?.06:.34,.44,dz?.06:.34,ir,fx,h,fz,false));par.add(bx(dx?.42:.07,.07,dz?.42:.07,ir,fx-dx*.21,h-.12,fz-dz*.21,false));
+  par.add(bx(.2,.06,.2,ir,fx-dx*.42,h-.06,fz-dz*.42,false));
+  const st=bx(.1,.8,.1,mat(0x4a2f18),fx-dx*.47,h+.18,fz-dz*.47,false);st.rotation.z=dx*.28;st.rotation.x=-dz*.28;par.add(st);
+  const tx=fx-dx*.58,tz=fz-dz*.58,ty=h+.58;par.add(bx(.2,.16,.2,mat(0x2a1a10),tx,ty,tz,false),bx(.22,.32,.22,MAT.flame,tx,ty+.22,tz,false),bx(.11,.2,.11,FLAME_CORE,tx,ty+.2,tz,false));
+  return{x:tx-dx*.15,y:ty+.4,z:tz-dz*.15};}
+// Seisova tulimalja (kolmijalka) avoimille paikoille, joissa ei ole seinää vieressä.
+function brazier(par,x,y,z){const ir=IRON_M;for(let k=0;k<3;k++){const a=k/3*TAU,l=bx(.07,1.3,.07,ir,x+Math.cos(a)*.22,y+.62,z+Math.sin(a)*.22,false);l.rotation.z=Math.cos(a)*.18;l.rotation.x=-Math.sin(a)*.18;par.add(l);}
+  par.add(bx(.7,.22,.7,ir,x,y+1.3,z,false),bx(.5,.12,.5,mat(0x3a1a0c),x,y+1.42,z,false),bx(.42,.45,.42,MAT.flame,x,y+1.65,z,false),bx(.22,.3,.22,FLAME_CORE,x,y+1.6,z,false));
+  return{x,y:y+2,z};}
 const dunSpawns=[], sarcs=[]; let dunEntry=null;
 const dunCell=(ix,iz)=>({x:DUN.x+(ix-DW/2+.5)*DC,z:DUN.z+(iz-DH/2+.5)*DC});
 (function(){
@@ -76,7 +89,7 @@ const dunCell=(ix,iz)=>({x:DUN.x+(ix-DW/2+.5)*DC,z:DUN.z+(iz-DH/2+.5)*DC});
     if(ch==='#'){_m4.makeTranslation(p.x,DUN.y+2.1,p.z);im.setMatrixAt(i++,_m4);addBox(p.x-DC/2,DUN.y,p.z-DC/2,p.x+DC/2,DUN.y+4.2,p.z+DC/2,'static');}
     if(ch==='E')dunEntry=p;
     if(ch==='k'||ch==='B')dunSpawns.push({x:p.x,z:p.z,type:ch==='B'?'ylimys':'kalmo'});
-    if(ch==='t'){lightSources.push({x:p.x,y:DUN.y+2.6,z:p.z,c:0xff8a36,i:1.8,on:()=>true,dun:true});statics.add(bx(.12,.6,.12,mat(0x4a2f18),p.x,DUN.y+2.2,p.z));statics.add(bx(.2,.25,.2,MAT.flame,p.x,DUN.y+2.6,p.z,false));}
+    if(ch==='t'){const dirs=[[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b])=>(DMAP[iz+b]||'')[ix+a]==='#'),L=dirs.length?wallTorch(statics,p.x,DUN.y,p.z,dirs[0]):brazier(statics,p.x,DUN.y,p.z);lightSources.push({x:L.x,y:L.y,z:L.z,c:0xff8a36,i:1.8,on:()=>true,dun:true});}
     if(ch==='C'){const idx=sarcs.length;const base=bx(1.1,.8,2.2,MAT.stone,p.x,DUN.y+.4,p.z);const lid=bx(1.2,.18,2.3,mat(0x6f6a62),0,.5,0);base.add(lid);statics.add(base);addBox(p.x-.55,DUN.y,p.z-1.1,p.x+.55,DUN.y+.8,p.z+1.1,'static');sarcs.push({lid,p});
       interactables.push({x:p.x,y:DUN.y+.8,z:p.z,r:2.6,label:()=>flags.sarc[idx]?'Avattu hautakirstu':'Avaa hautakirstu',use:()=>openSarc(idx)});}
   }));

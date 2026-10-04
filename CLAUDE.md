@@ -42,10 +42,10 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 | `js/audio.js` | `sfx(nimi)` – proseduraaliset äänet |
 | `js/models.js` | `makeBiped`, `makeQuad`, `makeHeld`, `makeShield` |
 | `js/resources.js` | `NODE`, `NGEO`, sijoittelu ruutuihin (`CHN`, `VIS_R`), `nodes`, tukit (`logs`), `regrowForest` |
-| `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`) |
+| `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`), `wallTorch`, `brazier`, `rockC` |
 | `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, `PIECES`, `pieceBoxes`, `buildPieceMesh`, `addPiece`, `removePiece` |
 | `js/mobs.js` | `MOBDEF`, `spawnMob`, `mobs`, `boss` |
-| `js/dungeons.js` | `REALMS` (3 ulottuvuutta), generaattorit, `ensureRealm`, portaalit (`PORTALS`), `realmBossAI`, `P.spawnProt`, `fo(k)` |
+| `js/dungeons.js` | `REALMS` (3 ulottuvuutta, avainketju `lock`/`key`/`alt`), generaattorit, `ensureRealm`, koristeet (`dressFloor`, tynnyrit, spawneri), portaalit, `realmBossAI`, usva/höyry/pisarat, `P.spawnProt`, `fo(k)` |
 | `js/story.js` | löytöpaikat (`SITE_KEYS`, rauniot, arkkukivet), vartijat (`GUARDS`), lisäriimukivet (`XRUNES`), tehtävät (`QUESTS`) |
 | `js/state.js` | `P` (pelaaja), `inv`, `flags`, pelaajahahmo, reppu, maahan pudonneet esineet, partikkelit, ammukset |
 | `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET` (asetukset), `applyGfx()`, asetusvalikko |
@@ -79,6 +79,11 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 - **Vihollinen tai eläin:** `MOBDEF` (malli `fig`, `ai`: flee/neutral/hostile/boss) ja `ai.js`:n `SPAWN`.
 - **Tavoite:** `GOALS` (`progress.js`, id + xp), järjestyksellä on väliä. Saavutus: `ACH`. Valmistusohjeen tasovaatimus: `lvl`.
 - **Rakennusosan kategoria:** `cat` (+ `alku:1` = Alkupeli-välilehti) ja `BUILD_CATS` (`pieces.js`). Kiviversio: `base:'x',stone:1`.
+
+## Etenemisketju
+
+- Ulottuvuuksiin mennään järjestyksessä: avain maailmasta → 1. → 2. → 3. Jokaisella portilla on varmistus (`alt`), jottei
+  kadonnut avain jumita peliä. Uutta lukkoa lisättäessä tarkista, että avaimen lähde on aina saavutettavissa ilman lukon takana olevaa.
 
 ## Tallennus
 

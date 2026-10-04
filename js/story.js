@@ -55,10 +55,10 @@ function updateSites(dt){
 const DIRS=['pohjoiseen','koilliseen','itään','kaakkoon','etelään','lounaaseen','länteen','luoteeseen'];
 function dirText(from,k){const L=LOC[k],dx=L.x-from.x,dz=L.z-from.z,a=Math.atan2(dx,-dz),i=((Math.round(a/(Math.PI/4))%8)+8)%8;return `${DIRS[i]}, noin ${Math.round(Math.hypot(dx,dz)/10)*10} m`;}
 const XRUNES={
-  runeA:{t:'Riimukivi – Pohjan huurre',reveal:['portal1'],txt:f=>`”Pohjan kylmässä aukeaa Routaportti, ${dirText(f,'portal1')}. Sen takana on Routaluola, ja siellä Jäätär vartioi talvea. Kivinen vartija seisoo portin edessä – huurretta ei saa ohittaa.”`},
-  runeB:{t:'Riimukivi – Avaimen kätkijä',reveal:['poiR1','portal2'],txt:f=>`”Kalmankammion portti on lukittu. Sen avain on kätketty rauniotaloon, ${dirText(f,'poiR1')}. Kivinen vartija vahtii arkkua. Kammion portti odottaa ${dirText(f,'portal2')}.”`},
+  runeA:{t:'Riimukivi – Pohjan huurre',reveal:['portal1'],txt:f=>`”Pohjan kylmässä seisoo Routaportti, ${dirText(f,'portal1')}. Sen takana on Routaluola, ja siellä Jäätär vartioi talvea. Portti on lukittu – sen avain on kätketty tänne, meidän maailmaamme.”`},
+  runeB:{t:'Riimukivi – Avaimen kätkijä',reveal:['poiR1','portal1'],txt:f=>`”Jääavain lepää rauniotalon arkussa, ${dirText(f,'poiR1')}. Kivinen vartija vahtii sitä. Avain aukaisee Routaportin, ${dirText(f,'portal1')}.”`},
   runeC:{t:'Riimukivi – Kivien kirstut',reveal:['poiK1'],txt:f=>`”Vanhat kansat kätkivät aarteensa suuriin kiviin. Yksi arkkukivi on ${dirText(f,'poiK1')}. Muista: vartijat ovat sidottuja paikkaansa – juokse karkuun, jos hupenet.”`},
-  runeD:{t:'Riimukivi – Kolme sisarta',reveal:[],txt:()=>'”Kolme sisarta vartioivat jäätä, kuolemaa ja metsää. Jäätär nukkuu Routaluolassa, Kalmaherra Kalmankammiossa ja Aarnihirviö Aarnihaudassa. Kun he kaatuvat, Hiidenmaan vartija jää yksin.”'},
+  runeD:{t:'Riimukivi – Kolme sisarta',reveal:['portal2'],txt:f=>`”Kolme sisarta vartioivat jäätä, kuolemaa ja metsää, ja kukin kantaa seuraavan avainta. Jäätär kantaa luuavainta, joka aukaisee Kalmankammion portin, ${dirText(f,'portal2')}. Kun kaikki kaatuvat, Hiidenmaan vartija jää yksin.”`},
   runeE:{t:'Riimukivi – Vihreä avain',reveal:['portal3'],txt:f=>`”Kun Kalmaherra kaatuu, hänen vyöltään putoaa vihreä aarniavain. Se aukaisee Aarnihaudan portin, ${dirText(f,'portal3')}, metsän pimeimmässä kohdassa.”`},
   runeF:{t:'Riimukivi – Vanha varoitus',reveal:['circle'],txt:f=>`”Portit eivät ole vain pakoreittejä. Niiden takana lepää voima, jota Kalmankehän alttari kaipaa: ${dirText(f,'circle')}. Hiidenkivet ovat kylmiä mutta rehellisiä.”`},
 };
@@ -79,11 +79,12 @@ const QUESTS=[
   {t:'Löydä Hautakumpu',d:'Lounaan nummella lepäävät vanhat päälliköt.',at:'barrow',done:()=>!!flags.disc.barrow},
   {t:'Avaa Hautakummun kolme kirstua',d:'Kumpu on pimeä – ota tuli mukaan.',at:'barrow',done:()=>flags.sarc.every(Boolean)},
   {t:'Etsi Routaportti',d:'Pohjoisen riimukivet tietävät sen sijainnin.',at:'portal1',done:()=>!!flags.disc.portal1},
-  {t:'Kukista Jäätär Routaluolassa',d:'Sokkelon perimmäisessä kammiossa.',at:'portal1',done:()=>!!fo('rb').portal1},
-  {t:'Löydä Jääavain',d:'Rauniotalon arkku, kivivartijan vahtimana.',at:'poiR1',done:()=>invCount('jaaavain')>0||!!fo('rl').portal2},
-  {t:'Avaa Kalmankammion portti',d:'Lukko aukeaa Jääavaimella.',at:'portal2',done:()=>!!fo('rl').portal2},
+  {t:'Löydä Jääavain',d:'Rauniotalon arkku, kivivartijan vahtimana.',at:'poiR1',done:()=>invCount('jaaavain')>0||!!fo('poi').poiR1||!portalLocked('portal1')},
+  {t:'Avaa Routaportti',d:'Jääavain sopii Routaportin lukkoon.',at:'portal1',done:()=>!portalLocked('portal1')},
+  {t:'Kukista Jäätär Routaluolassa',d:'Sokkelon perimmäisessä kammiossa. Hän kantaa luuavainta.',at:'portal1',done:()=>!!fo('rb').portal1},
+  {t:'Avaa Kalmankammion portti',d:'Lukko aukeaa Jäättären luuavaimella.',at:'portal2',done:()=>!portalLocked('portal2')},
   {t:'Kukista Kalmaherra',d:'Hän pitää vihreää aarniavainta vyöllään.',at:'portal2',done:()=>!!fo('rb').portal2},
-  {t:'Avaa Aarnihaudan portti',d:'Aarniavain sopii metsän portin lukkoon.',at:'portal3',done:()=>!!fo('rl').portal3},
+  {t:'Avaa Aarnihaudan portti',d:'Aarniavain sopii metsän portin lukkoon.',at:'portal3',done:()=>!portalLocked('portal3')},
   {t:'Kukista Aarnihirviö',d:'Luolan pimeimmässä sopessa.',at:'portal3',done:()=>!!fo('rb').portal3},
   {t:'Herätä Kalmanvartija',d:'Aseta kolme hiidenkiveä Kalmankehän alttarille.',at:'circle',done:()=>!!(flags.boss||boss)},
   {t:'Kukista Kalmanvartija',d:'Saari vapautuu otteesta.',at:'circle',done:()=>!!flags.boss},

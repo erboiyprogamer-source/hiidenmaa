@@ -24,6 +24,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - Kuolemassa koko reppu jää hautakasaan kuolinpaikalle (näkyy kartalla).
 - Sänky asettaa herätyspaikan. Nukkuminen vaatii yön, katon ja ettei vihollisia ole lähellä.
 - Pomo palaa maahan ja hiidenkivet jäävät alttarille, jos pelaaja poistuu yli 90 m päähän.
+- **Ulottuvuuksien etenemisketju (ei jumiutumista):** Jääavain löytyy maailmasta (rauniotalo `poiR1`) → Routaportti → Jäätär antaa
+  Luuavaimen → Kalmankammion portti → Kalmaherra antaa Aarniavaimen → Aarnihaudan portti. Ensimmäinen ulottuvuus ei vaadi mitään
+  muista ulottuvuuksista. Avain annetaan suoraan reppuun (`REALMS[id].key`, `onMobKilled`). Varmistus: portti aukeaa ilman avainta,
+  jos avaimen lähde on jo käyty (`REALMS[id].alt`: arkku avattu / edellinen pomo kaadettu) tai ulottuvuudessa on jo käyty (`flags.rs`).
+  Maahan pudonneita esineitä ei tallenneta, joten tämä varmistus on pakollinen. Hiidenkiviä on tarjolla 8 (kumpu 3, pomot 3, arkut 2),
+  alttari tarvitsee 3.
 
 ## Tasapainoarvot (päivitä kun muutat)
 
@@ -48,6 +54,31 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
 
 ## Versioloki
+
+### v0.55 (erä 32: ulottuvuuksien koristelu, spawneri, luolan muodot ja avainketju)
+- **Avainketju korjattu** (ks. Pysyvät päätökset): Routaportti lukittu Jääavaimella (maailmasta), uusi esine **Luuavain** (Jäätär → Kalmankammio),
+  Aarniavain Kalmaherralta (ei enää `drops`-listassa, vaan `REALMS.portal2.key`). Lukitun portin viesti kertoo, mistä avain löytyy, ja merkitsee
+  lähteen karttaan (`hint`, `reveal`). `portalLocked` huomioi myös `flags.rs` (jo käyty). Tehtävät: 13 kpl (lisätty "Avaa Routaportti"),
+  riimukivet runeA/B/D kertovat uuden järjestyksen.
+- **Koristeet (`dressFloor`, InstancedMesh-rivit `instM`):** luut, kallot ja leuat lattialla (ei törmäystä), tippukivet kattoon (luola 38 %
+  ruuduista, muut 14 %, Hautakumpu 12 %), luolassa tippukivet myös lattialla seinien vieressä, kiiltävät lätäköt (märkä pinta). Seinät ja
+  lattiat kiiltävämpiä (roughness 0,5–0,72).
+- **Seinäsoihdut telineissä:** `wallTorch()` (landmarks.js: rautalevy, varsi, rengas, vino soihtu, liekin ydin) Hautakummussa ja ulottuvuuksissa;
+  avoimilla paikoilla (pomoareenan kulmat) `brazier()`-tulimalja.
+- **Tynnyrit:** `buildBarrel` (puulieriö + 2 rautavannetta, kansi irtoaa), 1–2 vierekkäin seinän vieressä, 0–8 ryhmää/ulottuvuus ja 3 Hautakummussa;
+  sisältö `BARREL_LOOT`, avaus `flags.rc['id:bI:K']`. Törmäys ympyränä (r 0,44), käytävään jää ≥2,2 m.
+- **Spawnerihuone (Kalmanpesä):** `finishRealm` avaa 5×5 huoneen 35–72 % matkan päähän sisäänkäynnistä (≥8 ruutua pomosta). Jalusta + leijuva
+  hehkuva kide; kun pelaaja on < 26 m ja kaikki sen viholliset ovat kuolleet, se nostattaa 20 s (`SPW_T`) välein 3 vihollista (`REALMS.spw`).
+  Kutsutut eivät tallennu (eivät kuulu `flags.rm`:ään).
+- **Luola (Aarnihauta) kivisemmäksi:** seinät epäsäännöllisinä kivimöhkäleinä (3 päällekkäin / seinäruutu, IcosahedronGeometry, sävyvaihtelu),
+  katossa roikkuvia möhkäleitä, lattialla kivimurskaa; lattia epätasainen: korkeus 0 / 0,15 / 0,3 / 0,45 m (kvantisoitu `fbm`, törmäyslaatikot
+  riveittäin, kaikki erot < `STEPUP`), tasainen sisäänkäynnillä, areenalla, spawnerilla ja esineiden kohdalla. Sisäänkäynnin seinä on tasainen
+  laatikko, jotta paluuportti näkyy.
+- **Pisarat:** `DRIPS` (tippukivien kärjet), `DROPS` (28) putoavat painovoimalla, `SPLASH` (18) roiskerenkaat; 20 m säteellä, enintään 9/s.
+- **Lisää usvaa:** `MIST` 44 → 72 (nopeampi ajelehtiminen + kiemurtelu), uusi `WISP` (48 pientä kiertelevää usvahattaraa sisätiloissa),
+  `STEAM` 48. Laatutaso ≥2 vähentää 60 %.
+- **Suorituskyky:** jokainen ulottuvuus on oma `THREE.Group` (`R.g`), joka näkyy vain kun pelaaja on siellä.
+- Huom: v0.54:n pohjat arpoutuvat nyt eri tavalla samasta siemenestä (v0.54 ei ehtinyt julkaisuun).
 
 ### v0.54 (erä 31: ulottuvuudet, löytöpaikat ja tarina)
 - **Uudet tiedostot:** `js/dungeons.js` (ulottuvuudet, portaalit, generaattorit, vaiheittainen pomo, portaalisuoja) ja `js/story.js` (löytöpaikat, vartijat, lisäriimukivet, tehtävät). Molemmat latautuvat `mobs.js`:n jälkeen.
