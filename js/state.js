@@ -3,7 +3,7 @@
 'use strict';
 
 /* ---------------- GAME STATE ---------------- */
-const P={pos:new V3(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z),vy:0,yaw:Math.PI,onGround:true,hp:60,stam:100,hunger:80,stamDelay:0,atk:null,blocking:false,bowDraw:0,drawing:false,heal:0,buffs:{},wetT:0,restT:0,inWater:false,dead:false,invul:0,stagger:0,walkPh:0,spawn:null,deaths:0,kills:0,hurtFlash:0,inDun:false,crouch:false,crouchK:0};
+const P={pos:new V3(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z),vy:0,yaw:Math.PI,onGround:true,hp:60,stam:100,hunger:80,stamDelay:0,atk:null,blocking:false,bowDraw:0,drawing:false,heal:0,buffs:{},wetT:0,restT:0,inWater:false,dead:false,invul:0,stagger:0,walkPh:0,spawn:null,deaths:0,kills:0,hurtFlash:0,inDun:false,crouch:false,crouchK:0,packLv:0};
 let inv=new Array(32).fill(null);
 let playTime=0, dayT=.3, dayN=1, weather={cur:'selkea',until:200}, flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{}}, graves=[], drops=[];
 let camYaw=Math.PI, camPitch=.35, camDist=6;
@@ -33,7 +33,11 @@ function invAdd(id,n,q=1){const d=ITEMS[id];if(!d)return n;
   invDirty=true;return n;}
 function invRemove(id,n){for(let i=inv.length-1;i>=0&&n>0;i--){const s=inv[i];if(s&&s.id===id){const k=Math.min(n,s.n);s.n-=k;n-=k;if(s.n<=0)inv[i]=null;}}invDirty=true;}
 function invWeight(){let w=0;for(const s of inv)if(s)w+=ITEMS[s.id].w*s.n;return w;}
-const MAXW=160;
+let MAXW=160;
+const PACK_UP=[null,{nahka:6,puu:4},{nahka:12,kupari:4}];
+const invN=()=>32+8*P.packLv;
+// Repun päivitys: lisää paikkoja (+8) ja kantokykyä (+40 painoa) tasoa kohti.
+function setPack(lv){P.packLv=lv;MAXW=160+40*lv;while(inv.length<invN())inv.push(null);invDirty=true;}
 function equipGroup(cat){return ['weapon','bow','hammer','shovel'].includes(cat)?'weapon':['shield','offhand'].includes(cat)?'offhand':cat;}
 function equipped(cat){const grouped=cat==='weapon'||cat==='offhand';
   for(const s of inv){if(!s||!s.eq)continue;const c=ITEMS[s.id].cat;if(grouped?equipGroup(c)===cat:c===cat)return s;}

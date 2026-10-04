@@ -74,6 +74,7 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
   toiminta `actions.js`:n `pieceLabel`/`interact` ja `ai.js`:n `updateStations`.
 - **Vihollinen tai eläin:** `MOBDEF` (malli `fig`, `ai`: flee/neutral/hostile/boss) ja `ai.js`:n `SPAWN`.
 - **Tavoite:** `GOALS` (`ui.js`), järjestyksellä on väliä.
+- **Rakennusosan kategoria:** `cat` (+ `alku:1` = Alkupeli-välilehti) ja `BUILD_CATS` (`pieces.js`). Kiviversio: `base:'x',stone:1`.
 
 ## Tallennus
 

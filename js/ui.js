@@ -44,7 +44,8 @@ function updateHUD(dt){
   drawMinimap();
 }
 let openPanel=null,selSlot=-1,curChest=null;
-function togglePanel(name){if(openPanel===name){closePanels();return;}closePanels(true);openPanel=name;state='ui';releaseLock();mouseL=false;mouseR=false;P.drawing=false;
+let panelOpenedAt=0;
+function togglePanel(name){if(openPanel===name){closePanels();return;}panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';releaseLock();mouseL=false;mouseR=false;P.drawing=false;
   if(name==='inv'){$('#inv').hidden=false;renderInv();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;drawBigMap();}if(name==='chest')$('#chest').hidden=false;}
 function closePanels(keep,skipLock){if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest'])$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;if(!keep){state='play';if(!skipLock)requestLock();}}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
@@ -53,6 +54,7 @@ function renderInv(){
   const g=$('#invGrid');g.innerHTML=inv.map((s,i)=>slotHTML(s,i<8?i+1:'')).join('');
   [...g.children].forEach((el,i)=>{el.classList.toggle('sel',i===selSlot);el.onclick=e=>{if(selSlot>=0&&selSlot!==i&&e.shiftKey===false&&inv[selSlot]&&!inv[i]){inv[i]=inv[selSlot];inv[selSlot]=null;selSlot=i;invDirty=true;renderInv();return;}selSlot=i;renderInv();};el.ondblclick=()=>{useSlot(i);renderInv();};el.oncontextmenu=e=>{e.preventDefault();if(inv[i]){useSlot(i);renderInv();}};});
   $('#invW').textContent=`Paino ${invWeight().toFixed(0)} / ${MAXW}`;
+  upBtn($('#invUp'),PACK_UP[P.packLv+1],`Isompi reppu (taso ${P.packLv+2}: +8 paikkaa, +40 painoa)`,()=>{setPack(P.packLv+1);msg('Reppu kasvoi!','loot');});
   const det=$('#detail'),s=inv[selSlot];
   if(!s){det.innerHTML='<div class="s">Valitse esine. Kaksoisnapsautus tai hiiren oikea käyttää. Napsauta tyhjää paikkaa siirtääksesi valitun esineen.</div>';}
   else{const d=ITEMS[s.id];const q=s.q||1;let stat='';
@@ -86,12 +88,23 @@ function upgradeInfo(s){const d=ITEMS[s.id];if(!d.cat||d.cat==='hammer')return n
 function craft(r){for(const [id,n] of Object.entries(r.req))invRemove(id,n);const left=invAdd(r.id,r.n||1);if(left)spawnDrop(r.id,left,P.pos.x,P.pos.y+1,P.pos.z);sfx('craft');msg(`Valmistit: ${ITEMS[r.id].n}`,'loot');
   if(ITEMS[r.id].cat&&!equipped(ITEMS[r.id].cat==='bow'||ITEMS[r.id].cat==='hammer'?'weapon':ITEMS[r.id].cat)){const s=inv.find(s=>s&&s.id===r.id&&!s.eq);if(s)toggleEquip(s);}
   invDirty=true;renderInv();}
+let buildTab='alku';
+const costChips=req=>Object.entries(req).map(([id,n])=>{const h=invCount(id);return `<span class="mat ${h>=n?'ok':'bad'}">${ITEMS[id].n} ${Math.min(h,999)}/${n}</span>`;}).join('');
 function renderBuild(){const c=$('#buildCards');c.innerHTML='';const hasBench=!!nearPiece('tyopenkki',P.pos.x,P.pos.z,20);
-  for(const [t,d] of Object.entries(PIECES)){const okMat=Object.entries(d.req).every(([id,n])=>invCount(id)>=n);const okB=d.noBench||hasBench;
-    const b=document.createElement('button');b.className='card'+(okMat&&okB?'':' na');b.innerHTML=`<div class="tag">${d.tag}</div><div class="nm">${d.n}</div><div class="rq">${reqText(d.req)}${okB?'':' · tarvitsee työpenkin'}</div>`;
-    b.onclick=()=>{setBuildSel(t);closePanels();};c.appendChild(b);}}
+  const tabs=$('#buildTabs');tabs.innerHTML='';
+  for(const [id,nm] of BUILD_CATS){const b=document.createElement('button');b.className='tab'+(id===buildTab?' on':'');b.textContent=nm;b.onclick=()=>{buildTab=id;renderBuild();};tabs.appendChild(b);}
+  for(const [t,d] of Object.entries(PIECES)){if(buildTab==='alku'?!d.alku:d.cat!==buildTab)continue;
+    const okMat=Object.entries(d.req).every(([id,n])=>invCount(id)>=n);const okB=d.noBench||hasBench;
+    const b=document.createElement('button');b.className='card'+(okMat&&okB?'':' na');b.innerHTML=`<div class="nm">${d.n}</div><div class="rq">${costChips(d.req)}</div>${okB?'':'<div class="rq"><span class="mat bad">tarvitsee työpenkin</span></div>'}`;
+    // Oikealla napilla avattu valikko ei saa valita korttia heti (hiiri on vielä alhaalla).
+    b.onclick=()=>{if(performance.now()-panelOpenedAt<400)return;setBuildSel(t);closePanels();};c.appendChild(b);}}
+// Päivityspainike: näyttää hinnan (punainen = puuttuu) ja tekee päivityksen napsautuksesta.
+function upBtn(el,cost,label,fn){if(!cost){el.innerHTML=`<div class="note">${label} on korkeimmalla tasollaan.</div>`;return;}
+  el.innerHTML=`<button class="btn pri">${label}</button> <span class="rq">${costChips(cost)}</span>`;
+  const ok=Object.entries(cost).every(([id,n])=>invCount(id)>=n);el.firstChild.disabled=!ok;el.firstChild.onclick=()=>{if(!Object.entries(cost).every(([id,n])=>invCount(id)>=n))return;for(const [id,n] of Object.entries(cost))invRemove(id,n);fn();sfx('craft');invDirty=true;};}
 function openChest(p){togglePanel('chest');curChest=p;renderChest();}
-function renderChest(){if(!curChest)return;const items=curChest.data.items;
+function renderChest(){if(!curChest)return;const items=curChest.data.items;$('#chestTitle').textContent=PIECES[curChest.t].n+(curChest.data.lv?` (taso ${curChest.data.lv+1})`:'');
+  upBtn($('#chestUp'),STORE_UP[(curChest.data.lv||0)+1],'Laajenna (+8 paikkaa)',()=>{curChest.data.lv=(curChest.data.lv||0)+1;while(items.length<storeSlots(curChest))items.push(null);msg('Säilytystila kasvoi.','loot');});
   $('#chestGrid').innerHTML=items.map(s=>slotHTML(s)).join('');$('#chestInv').innerHTML=inv.map(s=>slotHTML(s)).join('');
   [...$('#chestGrid').children].forEach((el,i)=>el.onclick=()=>{const s=items[i];if(!s)return;const left=invAdd(s.id,s.n,s.q||1);if(left===0)items[i]=null;else s.n=left;invDirty=true;renderChest();});
   [...$('#chestInv').children].forEach((el,i)=>el.onclick=()=>{const s=inv[i];if(!s)return;if(s.eq){s.eq=false;updateGear();}const j=items.findIndex(x=>!x);if(j<0)return;items[j]={id:s.id,n:s.n,q:s.q};inv[i]=null;invDirty=true;renderChest();});}

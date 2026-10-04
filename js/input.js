@@ -21,6 +21,9 @@ addEventListener('keydown',e=>{
     if(e.code==='KeyE')interact();
     else if(e.code==='KeyR'){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}
     else if(e.code==='KeyG'){if(equipped('weapon')&&equipped('weapon').id==='vasara')cycleSnap();}
+    else if(e.code==='KeyH'){if(equipped('weapon')&&equipped('weapon').id==='vasara')cycleVMode();}
+    else if(e.code==='KeyQ')liftBuild(1);
+    else if(e.code==='KeyZ')liftBuild(-1);
     else if(e.code==='KeyX')removeLooked();
     else if(e.code==='KeyF')repairLooked();
     else if(/^Digit[1-8]$/.test(e.code))useSlot(+e.code.slice(5)-1);
@@ -36,7 +39,8 @@ canvas.addEventListener('mousedown',e=>{
   if(e.button===2){mouseR=true;onSecondary();}
 });
 addEventListener('mouseup',e=>{if(e.button===0){mouseL=false;onPrimaryUp();}if(e.button===2)mouseR=false;dragLook=null;});
-canvas.addEventListener('contextmenu',e=>e.preventDefault());
+addEventListener('contextmenu',e=>e.preventDefault());
+addEventListener('auxclick',e=>{if(e.button===2)e.preventDefault();});
 addEventListener('mousemove',e=>{
   if(state!=='play')return;
   let dx=0,dy=0;

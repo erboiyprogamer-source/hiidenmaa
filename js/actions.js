@@ -118,11 +118,13 @@ function findInteract(){
   for(const g of graves)consider(g.x,g.y+.5,g.z,{kind:'grave',g,label:'Kerää tavarasi hautakasasta'});
   return best;
 }
-function pieceLabel(p){switch(p.t){
+function pieceLabel(p){if(bt(p.t)==='ovi')return p.data.open?'Sulje ovi':'Avaa ovi';switch(p.t){
+  case 'tikkaat':return 'Kiipeä: pidä W (alas S)';
   case 'ovi':return p.data.open?'Sulje ovi':'Avaa ovi';
   case 'nuotio':return invCount('liha')>0&&p.data.fuel>0?'Paista lihaa':`Lisää puuta (${p.data.fuel}/10)`;
   case 'sanky':return isNight()?'Nuku':'Aseta herätyspaikka';
   case 'arkku':return 'Avaa arkku';
+  case 'tynnyri':return 'Avaa tynnyri';
   case 'sulatin':{const st=`kupari ${p.data.ore}, rauta ${p.data.iore}, puu ${p.data.wood}`;return p.data.done>0||p.data.idone>0?`Ota harkot (kupari ${p.data.done}, rauta ${p.data.idone})`:invCount('malmi')>0||invCount('rautamalmi')>0||invCount('puu')>0?`Lisää malmia ja puuta (${st})`:`Sulatusuuni (${st})`;}
   case 'tyopenkki':return 'Käytä työpenkkiä';
   case 'ahjo':return 'Käytä ahjoa';
@@ -133,12 +135,11 @@ function interact(){
   if(t.kind==='it'){t.it.use();return;}
   if(t.kind==='grave'){const g=t.g;for(let i=0;i<g.items.length;i++){const s=g.items[i];if(!s)continue;const left=invAdd(s.id,s.n,s.q||1);if(left===0)g.items[i]=null;else s.n=left;}
     if(g.items.every(s=>!s)){scene.remove(g.mesh);graves.splice(graves.indexOf(g),1);msg('Sait tavarasi takaisin.','loot');}else msg('Reppu täyttyi – osa jäi kasaan.','warn');sfx('pickup');return;}
-  if(t.kind==='piece'){const p=t.p;switch(p.t){
-    case 'ovi':setDoor(p,!p.data.open);sfx('build');break;
+  if(t.kind==='piece'){const p=t.p;if(bt(p.t)==='ovi'){const a=p.rot*Math.PI/4,lz=(P.pos.x-p.x)*Math.sin(a)+(P.pos.z-p.z)*Math.cos(a);setDoor(p,!p.data.open,p.data.open?p.data.dir:(lz>0?1:-1));sfx('build');return;}switch(p.t){
     case 'nuotio':if(invCount('liha')>0&&p.data.fuel>0){if(p.data.cook.length>=3){msg('Nuotiolla on jo täyttä.','warn');break;}invRemove('liha',1);p.data.cook.push(10);msg('Liha paistuu…');sfx('craft');}
       else{if(p.data.fuel>=10){msg('Nuotiossa on tarpeeksi puuta.');break;}if(invCount('puu')<1){msg('Tarvitset puuta.','warn');break;}invRemove('puu',1);p.data.fuel++;sfx('build');}break;
     case 'sanky':sleepAt(p);break;
-    case 'arkku':openChest(p);break;
+    case 'arkku':case 'tynnyri':openChest(p);break;
     case 'sulatin':if(p.data.done>0||p.data.idone>0){if(p.data.done>0)giveOrDrop('kupari',p.data.done,p.x,p.y+1,p.z);if(p.data.idone>0)giveOrDrop('rauta',p.data.idone,p.x,p.y+1,p.z);p.data.done=0;p.data.idone=0;sfx('pickup');break;}
       {const o=Math.min(invCount('malmi'),10-p.data.ore),io=Math.min(invCount('rautamalmi'),10-p.data.iore),w=Math.min(invCount('puu'),20-p.data.wood);if(o<=0&&io<=0&&w<=0){msg('Tarvitset malmia (kupari tai rauta) ja puuta.','warn');break;}
        if(o>0){invRemove('malmi',o);p.data.ore+=o;}if(io>0){invRemove('rautamalmi',io);p.data.iore+=io;}if(w>0){invRemove('puu',w);p.data.wood+=w;}msg(`Uuniin: ${o} kuparimalmia, ${io} rautamalmia, ${w} puuta.`);sfx('build');}break;

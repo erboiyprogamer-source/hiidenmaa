@@ -34,7 +34,8 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Vuorokauden pituus `DAY_LEN` | 720 s (12 min) |
 | Rakennusruudukko `G` / seinän korkeus `WH` | 2,5 m / 2,6 m |
 | Oviaukko | 1,7 × 2,3 m |
-| Portaat | 6 askelmaa (0,43 m) |
+| Portaat / Raput | 6 askelmaa (0,43 m) |
+| Reppu | 32 paikkaa, päivitys +8 paikkaa +40 painoa (2 tasoa) |
 
 | Olento | HP | Juoksu m/s | Vahinko | Huom. |
 | --- | --- | --- | --- | --- |
@@ -47,6 +48,26 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
 
 ## Versioloki
+
+### v0.20 (erä 20)
+- **Puutekstuurit:** `bxw()` (render.js) skaalaa laatikon UV:t mittoihin (u = pituus/G, v = korkeus/WH); kaikki puuosat (aita, portaat,
+  palkit, pylväät, ovi, työpenkki, arkku, sänky) käyttävät `MAT.wood`ia. Seinän tumma pylväs poistettu.
+- **Ovi kaksipuoleinen:** ripa kummallakin puolella, aukeaa pelaajasta poispäin (`p.data.dir` ±1, sarana samassa kohdassa;
+  tallentuu `d:{open,dir}`).
+- **Pystykohdistus:** H vaihtaa auto / pysty (askel `VSTEP`=WH/4=0,65 m) / 3D (näkyy myös seuraavan kerroksen ruudukko);
+  Q nostaa ja Z laskee haamua (`buildLift`).
+- **Hiiri:** `contextmenu` estetty koko sivulla; oikealla avattu valikko ei valitse korttia 400 ms:iin (`panelOpenedAt`).
+- **Rakennusvalikko:** puuteemainen, läpinäkymätön, välilehdet (`BUILD_CATS`; Alkupeli oletuksena = osat joilla `alku:1`),
+  aineet punaisella puuttuessa ("Puu 0/12", `costChips`).
+- **Säilytys:** Tynnyri (12 paikkaa). Säiliön laajennus (`STORE_UP`: taso 2 tervaspuu 6, taso 3 kupari 6 + nahka 4; +8 paikkaa/taso).
+  Reppu: `P.packLv` 0–2, `PACK_UP` (nahka 6 + puu 4; nahka 12 + kupari 4), +8 paikkaa ja +40 painoa/taso (`setPack`, `invN()`).
+- **Uudet osat:** ikkunaseinä, puoli- ja neljännesseinät (pysty/vaaka, `dim`), pylväät (ohut/lyhyt/pitkä, `col`), palkki ja iso palkki
+  kallistuvat Shift+R:llä 5 asentoa (0, 22,5, 45, 67,5, 90°), tikkaat (`ladderAt()` player.js: W/Välilyönti ylös, S alas),
+  ontot **Portaat** (`portaat_ontelo`, Shift+R: tavallinen/jyrkkä/loiva, `stairGeom`); vanhat portaat nimeltä **Raput**.
+- **Kiviversiot** (`base`+`stone:1`): kivilattia, kiviikkuna, kiviovi, kivipylväs, kivipalkki, kiviraput; **Kivikatot**-kategoria
+  (kivikatto, loiva kivikatto, kiviharjakatto). `bt(t)` palauttaa muodon antavan perustyypin.
+- **Tallennus v8:** `P.packLv`, säiliöiden `lv`, ovien `dir`.
+- Siirretty erään 22: valmistusvalikon kategoriat/Alkupeli (liittyy tavoitteisiin ja avautuviin reseptteihin).
 
 ### v0.19 (erä 19)
 - **Päätykolmio tasakylkiseksi:** `kolmio` = pohja G, kärki keskellä korkeudella G/2, sopii yhden ruudun harjakaton päähän
@@ -361,7 +382,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 Tulkinnat: hahmo = pehmeä low-poly (sylinterit/pallot, ei ulkoisia malleja); taso kasvaa kokemuspisteistä (tavoitteet,
 saavutukset ja teot), saavutukset antavat pysyviä pieniä bonuksia; "palkki" = rakennusosa.
 
-### Erä 20 – rakennus ja valikot (ideat 1,2,3,6,7,9,10,11) – KESKEN
+### Erä 20 – rakennus ja valikot (ideat 1,2,3,6,7,9,10,11) – TEHTY (ks. versioloki v0.20)
 1. Puutekstuurit yhtenäisiksi: seinän tumma pylväs pois; kaikki puuosat `MAT.wood` ja UV:t metrisiksi (`bxw()`), aidat ja portaat
    eivät enää tiheitä. Ovi kaksipuoleinen: ripa molemmilla puolilla, aukeaa pelaajasta poispäin, sarana pysyy samassa kohdassa.
 2. Pystykohdistus: H vaihtaa pysty-snappia (pois / pysty G/2-askelin / 3D-ruudukko = pystyviivat + kerrostasot).

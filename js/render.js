@@ -47,6 +47,12 @@ const MAT={
 };
 function bx(w,h,d,m,x=0,y=0,z=0,shadow=true){const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);me.position.set(x,y,z);me.castShadow=shadow;me.receiveShadow=true;return me;}
 
+// Laatikko, jonka tekstuuri-UV skaalataan mittoihin: lankkukuvio on kaikissa puuosissa yhtä harva kuin seinässä
+// (u = pituus / G, v = korkeus / WH). Sivut: px,nx (u=syvyys,v=korkeus), py,ny (u=leveys,v=syvyys), pz,nz (u=leveys,v=korkeus).
+function bxw(w,h,d,m,x=0,y=0,z=0,shadow=true){const geo=new THREE.BoxGeometry(w,h,d),uv=geo.attributes.uv,dim=[[d,h],[d,h],[w,d],[w,d],[w,h],[w,h]];
+  for(let f=0;f<6;f++)for(let i=0;i<4;i++){const k=f*4+i;uv.setXY(k,uv.getX(k)*dim[f][0]/G,uv.getY(k)*dim[f][1]/(f===2||f===3?G:WH));}
+  const me=new THREE.Mesh(geo,m);me.position.set(x,y,z);me.castShadow=shadow;me.receiveShadow=true;return me;}
+
 /* merge helper for instanced scenery */
 const _m4=new THREE.Matrix4(),_q=new THREE.Quaternion(),_e=new THREE.Euler(),_s=new V3(),_p=new V3();
 function part(g,color,x=0,y=0,z=0,rx=0,ry=0,rz=0,sx=1,sy=1,sz=1){_e.set(rx,ry,rz);_q.setFromEuler(_e);return{g,c:new THREE.Color(color),m:new THREE.Matrix4().compose(new V3(x,y,z),_q.clone(),new V3(sx,sy,sz))};}

@@ -3,6 +3,9 @@
 'use strict';
 
 /* ---------------- PLAYER UPDATE ---------------- */
+// Tikkaat: pelaaja kiipeää, kun hän on tikkaiden edessä (±.6 m sivusuunnassa, .9 m syvyyssuunnassa).
+function ladderAt(pos){for(const p of pieces){if(p.t!=='tikkaat')continue;const dx=pos.x-p.x,dz=pos.z-p.z;if(dx*dx+dz*dz>2.6)continue;const a=p.rot*Math.PI/4,lx=dx*Math.cos(a)-dz*Math.sin(a),lz=dx*Math.sin(a)+dz*Math.cos(a);
+  if(Math.abs(lx)<.65&&Math.abs(lz)<.95&&pos.y>p.y-.3&&pos.y<p.y+WH-.05)return p;}return null;}
 function updatePlayer(dt){
   if(P.dead)return;
   P.invul=Math.max(0,P.invul-dt);P.stagger=Math.max(0,P.stagger-dt);P.hurtFlash=Math.max(0,P.hurtFlash-dt);
@@ -26,7 +29,11 @@ function updatePlayer(dt){
   // velocity
   P.vel.x=lerp(P.vel.x,dx*speed,Math.min(1,dt*(P.onGround?12:3)));P.vel.z=lerp(P.vel.z,dz*speed,Math.min(1,dt*(P.onGround?12:3)));
   if(state==='play'&&keys.Space&&P.onGround&&!P.swim&&P.stam>=8&&!over){P.vy=7.2;P.onGround=false;P.stam-=8;P.stamDelay=.8;}
-  if(P.swim){P.vy=lerp(P.vy,(-1.25-P.pos.y)*3,dt*4);}else P.vy-=22*dt;
+  const lad=!P.swim&&!P.dead&&ladderAt(P.pos);P.onLadder=!!lad;
+  if(P.swim){P.vy=lerp(P.vy,(-1.25-P.pos.y)*3,dt*4);}
+  else if(lad&&(keys.KeyW||keys.Space||keys.KeyS)){P.vy=keys.KeyS&&!keys.KeyW&&!keys.Space?-2.6:2.6;P.onGround=false;}
+  else if(lad&&!P.onGround){P.vy=Math.max(P.vy,-1);}
+  else P.vy-=22*dt;
   const feet=P.pos.y;
   P.pos.x+=P.vel.x*dt;P.pos.z+=P.vel.z*dt;
   collideXZ(P.pos,.38,1.8,feet);
@@ -88,7 +95,7 @@ function gripAngles(){fig.g.updateMatrixWorld(true);
 function lerpAngle(a,b,t){let d=((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;return a+d*t;}
 function playerDie(){
   if(P.dead)return;P.dead=true;P.deaths++;P.hp=0;sfx('die');
-  const items=inv.filter(Boolean).map(s=>({id:s.id,n:s.n,q:s.q}));inv=new Array(32).fill(null);invDirty=true;updateGear();setBuildSel(null);
+  const items=inv.filter(Boolean).map(s=>({id:s.id,n:s.n,q:s.q}));inv=new Array(invN()).fill(null);invDirty=true;updateGear();setBuildSel(null);
   if(items.length){const y=P.inDun?DUN.y:terrainH(P.pos.x,P.pos.z);makeGrave({x:P.pos.x,y,z:P.pos.z,items});}
   fig.g.rotation.x=-Math.PI/2;fig.g.position.y+=.3;
   setTimeout(()=>{state='dead';releaseLock();$('#deadS').hidden=false;$('#hud').hidden=true;},1400);
