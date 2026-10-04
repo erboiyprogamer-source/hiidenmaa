@@ -41,16 +41,17 @@ function updatePlayer(dt){
   P.pos.y+=P.vy*dt;
   const ceil=ceilingAt(P.pos.x,P.pos.z,.38,feet+1.8);if(P.vy>0&&P.pos.y+1.8>ceil){P.pos.y=ceil-1.8;P.vy=0;}
   const g=groundAt(P.pos.x,P.pos.z,.38,feet);
-  if(P.pos.y<=g+.02&&P.vy<=0){if(!P.onGround&&P.vy<-15){const fd=(-P.vy-15)*6;P.hp-=fd;floatText('-'+Math.round(fd),P.pos.x,P.pos.y+2,P.pos.z,'#e0614f');if(P.hp<=0)playerDie();}P.pos.y=g;P.vy=0;P.onGround=true;}
+  if(P.pos.y<=g+.02&&P.vy<=0){if(!P.onGround&&P.vy<-4)P.landT=.25;if(!P.onGround&&P.vy<-15){const fd=(-P.vy-15)*6;P.hp-=fd;floatText('-'+Math.round(fd),P.pos.x,P.pos.y+2,P.pos.z,'#e0614f');if(P.hp<=0)playerDie();}P.pos.y=g;P.vy=0;P.onGround=true;}
   else if(P.pos.y>g+.3)P.onGround=false;
   if(P.pos.y<g&&P.vy<=0)P.pos.y=g;
   // world bounds
   const R=Math.hypot(P.pos.x,P.pos.z),RM=HALF+15;if(!P.inDun&&R>RM){P.pos.x*=RM/R;P.pos.z*=RM/R;}
   // facing
-  if(P.atk||P.blocking||P.drawing){P.yaw=lerpAngle(P.yaw,camYaw+Math.PI,Math.min(1,dt*18));}
+  if(P.atk||P.blocking||P.drawing){P.yaw=lerpAngle(P.yaw,camYaw+Math.PI,Math.min(1,dt*((P.turnWait||0)>0?9:18)));}
   else if(dl>0)P.yaw=lerpAngle(P.yaw,Math.atan2(P.vel.x,P.vel.z),Math.min(1,dt*10));
   // attack
-  if(P.atk){P.atk.t+=dt;if(!P.atk.done&&P.atk.t>=P.atk.hitAt){P.atk.done=true;doMeleeHit(P.atk.w);}if(P.atk.t>=P.atk.dur)P.atk=null;}
+  if(P.atk&&(P.turnWait||0)>0){P.turnWait-=dt;if(P.turnWait<=0)P.yaw=camYaw+Math.PI;}
+  else if(P.atk){P.atk.t+=dt;if(!P.atk.done&&P.atk.t>=P.atk.hitAt){P.atk.done=true;doMeleeHit(P.atk.w);}if(P.atk.t>=P.atk.dur)P.atk=null;}
   if(!P.atk&&mouseL&&state==='play'&&w.cat==='weapon'&&locked)startAttack();
   else if(mouseL&&state==='play'&&w.cat==='shovel'&&locked)useShovel();
   if(P.drawing){P.bowDraw=Math.min(1,P.bowDraw+dt/bowDrawTime());P.stam-=6*dt;P.stamDelay=.5;if(P.stam<=0){P.drawing=false;fireBow();}}
@@ -58,15 +59,29 @@ function updatePlayer(dt){
   const hv=Math.hypot(P.vel.x,P.vel.z);P.walkPh+=hv*dt*1.9;
   const sw=Math.sin(P.walkPh)*Math.min(1,hv/4)*.75;
   fig.g.position.copy(P.pos);if(P.swim)fig.g.position.y=P.pos.y-.2;fig.g.rotation.y=P.yaw;
-  P.crouchK=lerp(P.crouchK,P.crouch?1:0,Math.min(1,dt*10));fig.g.scale.y=1-.16*P.crouchK;
-  fig.legL.rotation.x=sw;fig.legR.rotation.x=-sw;
-  if(!P.onGround&&!P.swim){fig.legL.rotation.x=-.5;fig.legR.rotation.x=.3;}
+  P.crouchK=lerp(P.crouchK,P.crouch?1:0,Math.min(1,dt*9));
+  // Jalat: lonkka + polvi. Kävely, ilma (hyppy), laskeutumisen joustaminen, iskun askel ja kyykky (polvet syvälle koukkuun, vartalo etukenoon).
+  {const K=P.crouchK;P.landT=Math.max(0,(P.landT||0)-dt);const land=Math.min(1,P.landT/.25);
+   let thL=sw,thR=-sw,knL=.08+Math.max(0,-sw)*.9,knR=.08+Math.max(0,sw)*.9,lunge=0;
+   if(!P.onGround&&!P.swim){thL=-.5;thR=.25;knL=.75;knR=.5;}
+   if(land>0){thL=lerp(thL,-.55,land);thR=lerp(thR,-.55,land);knL=lerp(knL,1.0,land);knR=lerp(knR,1.0,land);}
+   if(P.atk&&!(P.turnWait>0)){lunge=Math.sin(Math.PI*clamp(P.atk.t/P.atk.dur,0,1));thL-=.3*lunge;thR+=.2*lunge;knL+=.3*lunge;knR+=.15*lunge;}
+   if(K>0){const cw=Math.sin(P.walkPh)*Math.min(1,hv/3)*.25;thL=lerp(thL,-1.0+cw,K);thR=lerp(thR,-1.0-cw,K);knL=lerp(knL,1.8,K);knR=lerp(knR,1.8,K);}
+   fig.legL.rotation.x=thL;fig.legR.rotation.x=thR;fig.kneeL.rotation.x=knL;fig.kneeR.rotation.x=knR;
+   const drop=.3*K+.09*land+.05*lunge;fig.rig.position.y=-drop;fig.rig.rotation.x=.38*K+.07*lunge+.05*land;fig.head.rotation.x=-.28*K-.04*lunge;}
   // Kädet: lasketaan tavoitekulmat ja siirrytään niihin pehmeästi (ei äkillisiä hyppyjä).
-  let tRx=sw*.7,tRz=0,tLx=-sw*.7,tLz=0,tSh=.44,rate=14,grip=false;
+  let tRx=sw*.7,tRz=0,tLx=-sw*.7,tLz=0,tSh=.35,rate=14,grip=false,eRo=null,eLo=null;
   const hold=mouseL&&state==='play';
-  if(P.atk){const k=P.atk.t/P.atk.dur,hk=P.atk.hitAt/P.atk.dur,two=P.atk.w.chop&&!P.atk.offBusy;
-    [tRx,tRz]=two?swingPose(k,hk,-2.6,.35,-.7,-.35,hold):swingPose(k,hk,-2.4,.5,-.9,-.4,hold);
-    rate=32;if(two&&(k<hk+.3||hold)){grip=true;tSh=.2;}}
+  if(P.atk){const k=P.atk.t/P.atk.dur,hk=P.atk.hitAt/P.atk.dur,two=P.atk.w.chop&&!P.atk.offBusy,sd=P.atk.side||1;
+    if(P.atk.w.id==='keihas'){// työntö: nostokulma = kohteen suunta; käsi vedetään taakse ja ojennetaan
+      const p=P.atk.aimP||0,tw=P.turnWait>0?0:1;let a;if(k<hk*.8)a=lerp(-.1,.5,sstep(0,1,k/(hk*.8)));else if(k<hk)a=lerp(.5,-p,sstep(0,1,(k-hk*.8)/(hk*.2)));else a=lerp(-p,0,Math.min(1,(k-hk)/.3));
+      tRx=a;tRz=-.12;eRo=k<hk?Math.min(0,-p-a):Math.min(0,-p-a)*Math.max(0,1-(k-hk)/.3);}
+    else{// viistoisku: vuorotellen vasen-ylhäältä → oikea-alas ja oikea-ylhäältä → vasen-alas
+      const hz=sd>0?.62:-.7,lz=sd>0?-.55:.5;
+      [tRx,tRz]=two?swingPose(k,hk,-2.6,hz,-.7,lz,hold):swingPose(k,hk,-2.4,hz*.9,-.9,lz*.9,hold);}
+    rate=32;if(two&&(k<hk+.3||hold)){grip=true;tSh=.14;}}
+  if(P.crouchK>.4&&!P.atk&&!P.blocking&&!P.drawing){const K=P.crouchK;tLx=lerp(tLx,-1.45,K);tLz=lerp(tLz,.12,K);tRx=lerp(tRx,-.35,K);tRz=lerp(tRz,-1.15,K);eLo=-.06*K;}// vaanimisasento: toinen käsi pitkällä eteen, toinen sivulle
+
   if(P.blocking){tLx=-1.3+Math.sin(playTime*3)*.04;tLz=-.3;}
   if(P.drawing){tLx=-1.5;tRx=-1.5;tRz=.5;}
   if(heldMesh&&ITEMS[heldId].cat==='bow'){if(P.drawing)tLz=-.1;}
@@ -75,6 +90,10 @@ function updatePlayer(dt){
   fig.armR.rotation.x=lerpAngle(fig.armR.rotation.x,tRx,e);fig.armR.rotation.z=lerpAngle(fig.armR.rotation.z,tRz,e);
   if(grip&&heldMesh){const g=gripAngles();tLx=g[0];tLz=g[1];}
   fig.armL.rotation.x=lerpAngle(fig.armL.rotation.x,tLx,e);fig.armL.rotation.z=lerpAngle(fig.armL.rotation.z,tLz,e);
+  // Kyynärpäät taipuvat sitä enemmän mitä korkeammalle käsivarsi nousee (jousella vetokäsi taipuu, jousikäsi suorana)
+  {const bendR=-(.14+clamp(-fig.armR.rotation.x,0,2.8)*.28),bendL=-(.14+clamp(-fig.armL.rotation.x,0,2.8)*.28);
+   let tR=eRo!==null?eRo:bendR,tL=eLo!==null?eLo:bendL;if(P.drawing){tL=-.05;tR=-(.5+P.bowDraw*.9);}
+   fig.elbowR.rotation.x=lerp(fig.elbowR.rotation.x,tR,Math.min(1,dt*20));fig.elbowL.rotation.x=lerp(fig.elbowL.rotation.x,tL,Math.min(1,dt*20));}
   // Jousi pysyy pystyssä (kämmenen kierto kumotaan käsivarren kulmalla); jänne ja nuoli seuraavat vetoa.
   if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-fig.armL.rotation.x,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
   fig.g.visible=camDist>1.8;
@@ -88,7 +107,7 @@ function updatePlayer(dt){
 }
 // Isku: nosto ylävasemmalle, isku alaoikealle (osuma iskun lopussa). Palautus lepoon, tai jos
 // lyöntinappi on pohjassa, suoraan seuraavan iskun nostoasentoon (käsi pysyy aseessa).
-let armSh=.44;
+let armSh=.35;
 function swingPose(k,hk,hx,hz,lx,lz,hold){const wk=hk*.55;let t;
   if(k<wk){t=sstep(0,1,k/wk);return[lerp(-.2,hx,t),lerp(0,hz,t)];}
   if(k<hk){t=sstep(0,1,(k-wk)/(hk-wk));return[lerp(hx,lx,t),lerp(hz,lz,t)];}

@@ -33,7 +33,15 @@ function startAttack(){
   const w=curWeapon();
   if(P.stam<w.st){if(playTime-lastStamMsgT>1.2){msg('Liian uupunut.','warn');lastStamMsgT=playTime;}return;}
   P.stam-=w.st;P.stamDelay=1;P.atk={t:0,dur:w.spd+.2,hitAt:w.spd*.55,done:false,w,offBusy:!!equipped('offhand')};
-  P.yaw=camYaw+Math.PI;
+  // Vuorotellen vasen-ylhäältä / oikea-ylhäältä viistoiskut
+  P.swingSide=-(P.swingSide||1);P.atk.side=P.swingSide;
+  // Kääntyminen kursorin suuntaan ei ole hetkellinen: pieni viive (iskun ajastin odottaa)
+  const diff=Math.abs(((camYaw+Math.PI-P.yaw+Math.PI)%TAU+TAU)%TAU-Math.PI);P.turnWait=diff>.4?Math.min(.28,.08+diff*.1):0;
+  // Keihäs: kärki kohdistetaan kohteeseen (nousukulma p vaakatasosta)
+  if(w.id==='keihas'){let ty=P.pos.y+1.3,th=3,best=1e9;const fx=Math.sin(camYaw+Math.PI),fz=Math.cos(camYaw+Math.PI);
+    for(const m of mobs){if(m.dead||m.dun!==P.inDun)continue;const dx=m.pos.x-P.pos.x,dz=m.pos.z-P.pos.z,d=Math.hypot(dx,dz);if(d>w.range+m.def.r+1||(d>.5&&(dx*fx+dz*fz)/d<.6))continue;if(d<best){best=d;ty=mobEyeY(m)-.2;th=Math.max(.5,d);}}
+    if(best>=1e9){const c=camRayPoint(w.range+1);ty=c.y;th=Math.max(.5,Math.hypot(c.x-P.pos.x,c.z-P.pos.z));}
+    P.atk.aimP=clamp(Math.atan2(ty-(P.pos.y+1.2),th),-.8,.8);}
 }
 function weaponDmg(w){return w.dmg*(1+.25*((w.q||1)-1))*(P.buffs.voima?1.15:1)*P.fx.dmg;}
 const _nl=[];

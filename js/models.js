@@ -32,39 +32,40 @@ function makeQuad(o){
   const tail=bx(.1*s,.1*s,.35*s,mB,0,(lh+.4)*s,-.75*s*L);tail.rotation.x=.6;g.add(tail);
   return{g,legs,head,body,s,quad:true};
 }
-// Pelaajahahmo: pehmeä low-poly. Pyöreät raajat, kiharat hiukset ja parta, alkukantaiset vaatteet (nahkatunika, turkisharteet, saappaat).
-// Rajapinta sama kuin makeBiped:ssä (legL, legR, armL, armR, head, torso, hand, handL). cloth = panssarin mukaan värjättävät osat.
+// Pelaajahahmo: laiha, litteäpintainen low-poly. Nivelet: olka–kyynärpää (elbowL/R) ja lonkka–polvi (kneeL/R) taipuvat; koko keho on `rig`-ryhmässä,
+// jota voi laskea (polvet koukussa) ja kallistaa. Rajapinta kuten makeBiped:ssä (legL, legR, armL, armR, head, torso, hand, handL). cloth = panssarin mukaan värjättävät osat.
 const softMats={};
 function smat(c,o){const k=c+JSON.stringify(o||{});return softMats[k]||(softMats[k]=new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.9,metalness:0,flatShading:false},o||{})));}
 function rnd(g,x,y,z,r,m,sx=1,sy=1,sz=1,seg=10){const me=new THREE.Mesh(new THREE.SphereGeometry(r,seg,Math.max(6,seg-2)),m);me.position.set(x,y,z);me.scale.set(sx,sy,sz);me.castShadow=true;g.add(me);return me;}
 function tube(g,rt,rb,h,m,x,y,z,sx=1,sz=1,seg=12){const me=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),m);me.position.set(x,y,z);me.scale.set(sx,1,sz);me.castShadow=true;g.add(me);return me;}
 function makePlayer(){
-  const g=new THREE.Group(),hip=.8,skin=smat(0xe2b48c),hairM=smat(0x4a2e1a),leather=smat(0x5e4026),fur=smat(0xa18a68),cloth=smat(0x8a6a46),pant=smat(0x5a4632),boot=smat(0x3f2d1c);
-  const mkLeg=x=>{const p=new THREE.Group();p.position.set(x,hip,0);tube(p,.125,.095,hip-.14,pant,0,-(hip-.14)/2-.0,0);tube(p,.115,.115,.3,boot,0,-hip+.17,0);tube(p,.13,.13,.07,fur,0,-hip+.34,0);rnd(p,0,-hip+.07,.07,.1,boot,1,.7,1.55);g.add(p);return p;};
-  const legL=mkLeg(-.15),legR=mkLeg(.15);
-  const torso=tube(g,.27,.3,.76,cloth,0,hip+.38,0,1.05,.68);
-  tube(g,.31,.31,.08,leather,0,hip+.1,0,1.05,.7);rnd(g,.24,hip+.08,.12,.07,leather,1,1.2,.8);rnd(g,-.18,hip+.06,-.17,.06,fur,1,1.1,.8);
-  tube(g,.34,.3,.14,fur,0,hip+.68,0,1.1,.78);rnd(g,0,hip+.74,-.02,.2,fur,1.55,.45,1.0);
+  const g=new THREE.Group(),rig=new THREE.Group(),hip=.8,F=(c,o)=>smat(c,Object.assign({flatShading:true},o||{}));g.add(rig);
+  const skin=F(0xe2b48c),hairM=smat(0x4a2e1a),leather=F(0x5e4026),fur=F(0xa18a68),cloth=F(0x8a6a46),pant=F(0x5a4632),boot=F(0x3f2d1c);
+  const mkLeg=x=>{const p=new THREE.Group();p.position.set(x,hip,0);tube(p,.092,.078,.4,pant,0,-.2,0,1,1,8);rnd(p,0,-.4,0,.072,pant,1,1,1,8);
+    const k=new THREE.Group();k.position.set(0,-.4,0);p.add(k);tube(k,.072,.06,.4,pant,0,-.2,0,1,1,8);tube(k,.07,.07,.2,boot,0,-.3,0,1,1,8);tube(k,.083,.083,.06,fur,0,-.2,0,1,1,8);rnd(k,0,-.37,.07,.075,boot,1,.7,1.8,8);rig.add(p);return[p,k];};
+  const [legL,kneeL]=mkLeg(-.12),[legR,kneeR]=mkLeg(.12);
+  const torso=tube(rig,.2,.22,.76,cloth,0,hip+.38,0,1.18,.62,8);
+  tube(rig,.235,.235,.07,leather,0,hip+.1,0,1.18,.65,8);rnd(rig,.22,hip+.08,.1,.06,leather,1,1.2,.8,6);rnd(rig,-.16,hip+.06,-.15,.055,fur,1,1.1,.8,6);
+  tube(rig,.27,.23,.12,fur,0,hip+.7,0,1.2,.7,8);
   const cloths=[torso];
-  const mkArm=x=>{const p=new THREE.Group();p.position.set(x,hip+.68,0);rnd(p,0,0,0,.115,fur);
-    const up=tube(p,.09,.08,.36,cloth,0,-.2,0);cloths.push(up);tube(p,.07,.062,.34,skin,0,-.52,0);tube(p,.078,.078,.09,leather,0,-.6,0);g.add(p);return p;};
-  const armL=mkArm(.4),armR=mkArm(-.4); // hahmo katsoo +z:aan, joten +x on vasen
-  const hand=new THREE.Group();hand.position.set(0,-.66,.02);rnd(hand,0,0,0,.075,skin);armR.add(hand);
-  const handL=new THREE.Group();handL.position.set(0,-.62,.02);rnd(handL,0,0,0,.075,skin);armL.add(handL);
-  tube(g,.075,.085,.12,skin,0,hip+.8,0);
-  const head=new THREE.Group();head.position.set(0,hip+.76,0);g.add(head);
-  rnd(head,0,.28,0,.205,skin,1,1.1,1.02,14);
-  rnd(head,0,.25,.2,.04,skin,.9,1.1,1.2,8);                                         // nenä
-  rnd(head,-.2,.27,0,.045,skin,.6,1,.9,8);rnd(head,.2,.27,0,.045,skin,.6,1,.9,8);     // korvat
-  const em=new THREE.MeshBasicMaterial({color:0x1a1a1a});rnd(head,-.075,.31,.185,.026,em,1,1.2,.6,6);rnd(head,.075,.31,.185,.026,em,1,1.2,.6,6);
-  // Kiharat: pieniä palloja pään päälle, taakse ja sivuille (kiinteä siemen, ei satunnaisuutta)
-  for(let i=0;i<22;i++){const th=i/22*TAU,ring=i%2,y=.38+ring*.07,r=.19-ring*.03,sx=Math.sin(th),cz=Math.cos(th);if(cz>.55&&!ring)continue;rnd(head,sx*r,y+(i%3)*.012,cz*r*.95-.02,.075,hairM,1,1,1,8);}
-  for(const [x,z] of [[0,.0],[.09,.06],[-.09,.06],[.1,-.07],[-.1,-.07],[0,-.14],[0,.1]])rnd(head,x,.49,z,.075,hairM,1,.9,1,8);
-  for(const [x,y] of [[-.16,.2],[.16,.2],[-.2,.28],[.2,.28],[-.14,.34],[.14,.34]])rnd(head,x,y,-.06,.07,hairM,1,1,1,8);
-  // Parta ja viikset
-  for(const [x,y,z,r] of [[-.13,.2,.13,.06],[-.08,.14,.17,.065],[0,.12,.19,.07],[.08,.14,.17,.065],[.13,.2,.13,.06],[-.05,.2,.2,.04],[.05,.2,.2,.04],[0,.07,.15,.06]])rnd(head,x,y,z,r,hairM,1,1,1,8);
+  const mkArm=x=>{const p=new THREE.Group();p.position.set(x,hip+.68,0);rnd(p,0,0,0,.085,fur,1,1,1,8);
+    const up=tube(p,.063,.056,.33,cloth,0,-.18,0,1,1,8);cloths.push(up);
+    const e=new THREE.Group();e.position.set(0,-.35,0);p.add(e);rnd(e,0,0,0,.052,skin,1,1,1,8);tube(e,.053,.045,.3,skin,0,-.17,0,1,1,8);tube(e,.058,.058,.08,leather,0,-.26,0,1,1,8);rig.add(p);return[p,e];};
+  const [armL,elbowL]=mkArm(.35),[armR,elbowR]=mkArm(-.35); // hahmo katsoo +z:aan, joten +x on vasen
+  const hand=new THREE.Group();hand.position.set(0,-.33,.02);rnd(hand,0,0,0,.062,skin,1,1,1,8);elbowR.add(hand);
+  const handL=new THREE.Group();handL.position.set(0,-.33,.02);rnd(handL,0,0,0,.062,skin,1,1,1,8);elbowL.add(handL);
+  tube(rig,.06,.07,.12,skin,0,hip+.8,0,1,1,8);
+  const head=new THREE.Group();head.position.set(0,hip+.76,0);head.scale.setScalar(.93);rig.add(head);
+  rnd(head,0,.28,0,.2,skin,.9,1.12,1,12);
+  rnd(head,0,.25,.19,.038,skin,.9,1.1,1.2,8);
+  rnd(head,-.19,.27,0,.042,skin,.6,1,.9,8);rnd(head,.19,.27,0,.042,skin,.6,1,.9,8);
+  const em=new THREE.MeshBasicMaterial({color:0x1a1a1a});rnd(head,-.07,.31,.18,.025,em,1,1.2,.6,6);rnd(head,.07,.31,.18,.025,em,1,1.2,.6,6);
+  for(let i=0;i<22;i++){const th=i/22*TAU,ring=i%2,y=.38+ring*.07,r=.18-ring*.03,sx=Math.sin(th),cz=Math.cos(th);if(cz>.55&&!ring)continue;rnd(head,sx*r*.92,y+(i%3)*.012,cz*r*.95-.02,.07,hairM,1,1,1,8);}
+  for(const [x,z] of [[0,.0],[.09,.06],[-.09,.06],[.1,-.07],[-.1,-.07],[0,-.14],[0,.1]])rnd(head,x,.49,z,.07,hairM,1,.9,1,8);
+  for(const [x,y] of [[-.15,.2],[.15,.2],[-.19,.28],[.19,.28],[-.13,.34],[.13,.34]])rnd(head,x,y,-.06,.065,hairM,1,1,1,8);
+  for(const [x,y,z,r] of [[-.12,.2,.12,.055],[-.075,.14,.16,.06],[0,.12,.18,.065],[.075,.14,.16,.06],[.12,.2,.12,.055],[-.05,.2,.19,.038],[.05,.2,.19,.038],[0,.07,.14,.055]])rnd(head,x,y,z,r,hairM,1,1,1,8);
   g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
-  return{g,legL,legR,armL,armR,head,torso,hand,handL,s:1,biped:true,cloth:cloths};
+  return{g,rig,legL,legR,kneeL,kneeR,armL,armR,elbowL,elbowR,head,torso,hand,handL,s:1,biped:true,cloth:cloths};
 }
 // Aseen osat pyöristetyillä varsilla ja muotoilluilla terillä. poly = sivuprofiili (z,y) pistetaulukko, paksuus x-suunnassa.
 function poly(pts,thick,m){const sh=new THREE.Shape();sh.moveTo(pts[0][0],pts[0][1]);for(const q of pts.slice(1))sh.lineTo(q[0],q[1]);sh.closePath();
