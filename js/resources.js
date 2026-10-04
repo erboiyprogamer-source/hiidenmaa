@@ -114,7 +114,7 @@ function makeChunkIM(type,k,cap){const cx=k%CHN,cz=(k/CHN)|0,x0=-HALF+cx*CHS,z0=
 // Kaukaiset ruudut piiloon (sumu peittää ne joka tapauksessa).
 function updateChunkVis(){const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far;
   for(const im of CHUNK_IMS){const R=Math.min(f,im.userData.vis)+CHS*.72;im.visible=im.count>0&&!P.inDun&&dist2(cx,cz,im.userData.cx,im.userData.cz)<R*R;}}
-function initNode(n){n.ox=n.x;n.oz=n.z;n.s0=n.s;n.id=nodeIdN++;n.def=NODE[n.type];n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?n.s*n.s:1);n.hp=n.maxHp;n.alive=true;n.respawnAt=0;
+function initNode(n){n.ox=n.x;n.oz=n.z;n.s0=n.s;n.id=nodeIdN++;n.def=NODE[n.type];n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?n.s*n.s*1.2:1);n.hp=n.maxHp;n.alive=true;n.respawnAt=0;
   setNodeMatrix(n,true);
   if(n.def.kind==='tree')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+6*n.s,n);
   else if(n.def.kind==='rock')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+1.2*n.s,n);
@@ -127,10 +127,10 @@ nodes.forEach(ngridAdd);
 // Etäisyys solmuun: tukeille janan lähin piste, muille keskipiste.
 function nodeDist(n,x,z){if(!n.isLog)return Math.hypot(x-n.x,z-n.z);const dx=n.bx-n.ax,dz=n.bz-n.az,t=clamp(((x-n.ax)*dx+(z-n.az)*dz)/(dx*dx+dz*dz),0,1);return Math.hypot(x-(n.ax+dx*t),z-(n.az+dz*t));}
 function nodesNear(x,z,r,out){out.length=0;const x0=Math.floor((x-r)/CELL),x1=Math.floor((x+r)/CELL),z0=Math.floor((z-r)/CELL),z1=Math.floor((z+r)/CELL);for(let gx=x0;gx<=x1;gx++)for(let gz=z0;gz<=z1;gz++){const a=NGRID.get(ck(gx,gz));if(a)for(const n of a)if(n.alive&&!out.includes(n)&&nodeDist(n,x,z)<r)out.push(n);}return out;}
-function killNode(n){n.alive=false;n.respawnAt=playTime+n.def.respawn;setNodeMatrix(n,false);if(n.col)n.col.off=true;}
-function reviveNode(n){n.alive=true;n.hp=n.maxHp;setNodeMatrix(n,true);if(n.col)n.col.off=false;}
+function killNode(n){markShadowDirty();n.alive=false;n.respawnAt=playTime+n.def.respawn;setNodeMatrix(n,false);if(n.col)n.col.off=true;}
+function reviveNode(n){markShadowDirty();n.alive=true;n.hp=n.maxHp;setNodeMatrix(n,true);if(n.col)n.col.off=false;}
 // Siirtää puun/kasvin uuteen paikkaan (törmäys, ruudukko, korkeus, koko).
-function moveNode(n,x,z,s){n.x=x;n.z=z;n.s=s;n.y=terrainH(x,z);n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?s*s:1);
+function moveNode(n,x,z,s){n.x=x;n.z=z;n.s=s;n.y=terrainH(x,z);n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?s*s*1.2:1);
   if(n.col){gridRemove(n.col);const off=n.col.off;if(n.def.kind==='tree')n.col=addCircle(x,z,n.def.r*s,n.y-1,n.y+6*s,n);else n.col=addCircle(x,z,n.def.r*s,n.y-1,n.y+1.2*s,n);n.col.off=off;}
   ngridRemove(n);ngridAdd(n);}
 function locMin(x,z){let m=1e9;for(const k in LOC)m=Math.min(m,Math.hypot(x-LOC[k].x,z-LOC[k].z));return m;}
@@ -150,20 +150,30 @@ function terraSetVertex(i,h){if(Math.abs(h-HGT0[i])<.005){delete TERRA[i];h=HGT0
 function terraFlush(){terrainMesh.geometry.attributes.position.needsUpdate=true;terrainMesh.geometry.computeBoundingSphere();}
 function terraList(){return Object.entries(TERRA).map(([i,h])=>[+i,+h.toFixed(2)]);}
 function applyTerra(list){for(const [i,h] of list)terraSetVertex(i,h);terraFlush();for(const n of nodes)syncNodeY(n);}
-function resetTerra(){for(const i in TERRA){HGT[i]=HGT0[i];terrainMesh.geometry.attributes.position.array[i*3+1]=HGT0[i];delete TERRA[i];}terraFlush();}
+function resetTerra(){for(const i in TERRA){HGT[i]=HGT0[i];terrainMesh.geometry.attributes.position.array[i*3+1]=HGT0[i];delete TERRA[i];}terraFlush();resetMud();}
+// Multaisuus (0–1) maaston kärjissä: lapio lisää (tummat polut), kuokka vähentää. Väri sekoittuu alkuperäisestä kohti tummaa multaa.
+const MUD=new Float32Array(HN*HN),TCOL0=terrainColors.slice(),MUDC=[.25,.18,.12];
+function mudSet(i,v){v=clamp(v,0,1);if(v<.01)v=0;MUD[i]=v;const c=terrainMesh.geometry.attributes.color.array,j=((i*2654435761)>>>0)%100/100*.16+.92;for(let k=0;k<3;k++)c[i*3+k]=lerp(TCOL0[i*3+k],MUDC[k]*j,v);}
+function mudFlush(){terrainMesh.geometry.attributes.color.needsUpdate=true;}
+function mudList(){const o=[];for(let i=0;i<MUD.length;i++)if(MUD[i]>0)o.push([i,+MUD[i].toFixed(2)]);return o;}
+function applyMud(list){for(const [i,v] of list)mudSet(i,v);mudFlush();}
+function resetMud(){for(let i=0;i<MUD.length;i++)if(MUD[i]>0)mudSet(i,0);mudFlush();}
 function restoreNode(n){if(n.x!==n.ox||n.z!==n.oz||n.s!==n.s0)moveNode(n,n.ox,n.oz,n.s0);syncNodeY(n);if(!n.alive)reviveNode(n);else setNodeMatrix(n,true);}
 
 /* ---------------- TUKIT (kaatuneet puut) ---------------- */
 const logs=[];
-const logMat=mat(0x6b4a2e);
+// Rungon kuoren väri puulajeittain (tukit ja oksat saavat alkuperäisen puun värin) ja kuoren sisäväri (lohkeamat ja kolot).
+const TRUNK_C={kuusi:0x5a3a22,koivu:0xe9e6dc,kelo:0x6d665c,aarnipuu:0x4a3524},LEAF_C={kuusi:0x2e5a2e,koivu:0x7aa641,kelo:0,aarnipuu:0x1c3a22},WOOD_IN=0xc08a52;
+const logMats={};const logMatOf=t=>logMats[t]||(logMats[t]=mat(TRUNK_C[t]||0x6b4a2e));
 function spawnLogs(n,a){
   const H=(TREE_H[n.type]||5)*n.s,rad=(n.type==='aarnipuu'?.55:.2)*n.s,cnt=n.s>1.3||n.type==='aarnipuu'?2:1;
   const dx=Math.sin(a),dz=Math.cos(a),L0=.5,L1=H*.85,seg=(L1-L0)/cnt;
   for(let i=0;i<cnt;i++){const s0=L0+i*seg+.1,s1=L0+(i+1)*seg-.1,len=s1-s0;
     const ax=n.x+dx*s0,az=n.z+dz*s0,bx=n.x+dx*s1,bz=n.z+dz*s1,cx=(ax+bx)/2,cz=(az+bz)/2,y=terrainH(cx,cz);
     const geo=new THREE.CylinderGeometry(rad,rad*1.08,len,7);geo.rotateX(Math.PI/2);
-    const mesh=new THREE.Mesh(geo,logMat);mesh.position.set(cx,y+rad*.9,cz);mesh.rotation.y=a;mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);
-    const lg={type:'tukki',def:NODE.tukki,isLog:true,x:cx,z:cz,y,ax,az,bx,bz,rad,s:n.s,hp:20*n.s,maxHp:20*n.s,alive:true,mesh,cols:[],tier:n.def.tier||1,dropId:n.type==='aarnipuu'?'tervaspuu':'puu'};
+    const mesh=new THREE.Mesh(geo,logMatOf(n.type));mesh.position.set(cx,y+rad*.9,cz);
+    if(n.type==='koivu')for(let k=0;k<3;k++){const st=new THREE.Mesh(new THREE.CylinderGeometry(rad*1.01,rad*1.01,.06,7),mat(0x222222));st.rotation.x=Math.PI/2;st.position.z=(k-1)*len*.28;mesh.add(st);}mesh.rotation.y=a;mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);
+    const lg={type:'tukki',def:NODE.tukki,isLog:true,x:cx,z:cz,y,ax,az,bx,bz,rad,s:n.s,hp:24*n.s*n.s,maxHp:24*n.s*n.s,alive:true,mesh,cols:[],len,a,notches:[],tier:n.def.tier||1,dropId:n.type==='aarnipuu'?'tervaspuu':'puu',src:n.type};
     for(let t=0;t<=len;t+=.9){const px=ax+(bx-ax)*t/len,pz=az+(bz-az)*t/len;lg.cols.push(addCircle(px,pz,rad,y-1,y+rad*1.8,lg));}
     lg.gk=[];const ks=new Set();for(let t=0;t<=len;t+=2){ks.add(ck(Math.floor((ax+(bx-ax)*t/len)/CELL),Math.floor((az+(bz-az)*t/len)/CELL)));}ks.add(ck(Math.floor(bx/CELL),Math.floor(bz/CELL)));
     for(const k of ks){let arr=NGRID.get(k);if(!arr)NGRID.set(k,arr=[]);arr.push(lg);lg.gk.push(k);}

@@ -6,7 +6,7 @@
 // Tikkaat: pelaaja kiipeää, kun hän on tikkaiden edessä (±.6 m sivusuunnassa, .9 m syvyyssuunnassa).
 function ladderAt(pos){for(const p of pieces){if(bt(p.t)!=='tikkaat')continue;const dx=pos.x-p.x,dz=pos.z-p.z;if(dx*dx+dz*dz>5)continue;const a=p.rot*Math.PI/4,lx=dx*Math.cos(a)-dz*Math.sin(a),lz=dx*Math.sin(a)+dz*Math.cos(a),zc=-Math.max(0,pos.y-p.y)*Math.tan((p.f%3)*Math.PI/12);
   if(Math.abs(lx)<.65&&Math.abs(lz-zc)<.95&&pos.y>p.y-.3&&pos.y<p.y+WH-.05)return p;}return null;}
-let torchFl=null;const torchPh=[Math.random()*TAU,Math.random()*TAU];
+let torchFl=null,torchBarT=0,torchIgn=0,shDark=0;const torchPh=[Math.random()*TAU,Math.random()*TAU];
 function updatePlayer(dt){
   if(P.dead)return;
   P.invul=Math.max(0,P.invul-dt);P.stagger=Math.max(0,P.stagger-dt);P.hurtFlash=Math.max(0,P.hurtFlash-dt);
@@ -61,14 +61,16 @@ function updatePlayer(dt){
   fig.g.position.copy(P.pos);if(P.swim)fig.g.position.y=P.pos.y-.2;fig.g.rotation.y=P.yaw;
   P.crouchK=lerp(P.crouchK,P.crouch?1:0,Math.min(1,dt*9));
   // Jalat: lonkka + polvi. Kävely, ilma (hyppy), laskeutumisen joustaminen, iskun askel ja kyykky (polvet syvälle koukkuun, vartalo etukenoon).
-  {const K=P.crouchK;P.landT=Math.max(0,(P.landT||0)-dt);const land=Math.min(1,P.landT/.25);
+  {let bobC=0;const K=P.crouchK;P.landT=Math.max(0,(P.landT||0)-dt);const land=Math.min(1,P.landT/.25);
    let thL=sw,thR=-sw,knL=.08+Math.max(0,-sw)*.9,knR=.08+Math.max(0,sw)*.9,lunge=0;
    if(!P.onGround&&!P.swim){thL=-.5;thR=.25;knL=.75;knR=.5;}
    if(land>0){thL=lerp(thL,-.55,land);thR=lerp(thR,-.55,land);knL=lerp(knL,1.0,land);knR=lerp(knR,1.0,land);}
    if(P.atk&&!(P.turnWait>0)){lunge=Math.sin(Math.PI*clamp(P.atk.t/P.atk.dur,0,1));thL-=.3*lunge;thR+=.2*lunge;knL+=.3*lunge;knR+=.15*lunge;}
-   if(K>0){const cw=Math.sin(P.walkPh)*Math.min(1,hv/3)*.25;thL=lerp(thL,-1.0+cw,K);thR=lerp(thR,-1.0-cw,K);knL=lerp(knL,1.8,K);knR=lerp(knR,1.8,K);}
+   // Kyykkykävely: isot, hitaat askeleet (reiden heilahdus ±.6, takajalka koukussa kun jalka nousee eteen), runko hieman keinuu
+   if(K>0){const mv=Math.min(1,hv/1.4),ph=P.walkPh*.75,cw=Math.sin(ph)*mv*.6,liftL=Math.max(0,-Math.cos(ph))*.55*mv,liftR=Math.max(0,Math.cos(ph))*.55*mv;
+     thL=lerp(thL,-1.0+cw,K);thR=lerp(thR,-1.0-cw,K);knL=lerp(knL,1.8-cw*.8+liftL,K);knR=lerp(knR,1.8+cw*.8+liftR,K);bobC=Math.abs(Math.sin(ph))*.035*mv*K;}
    fig.legL.rotation.x=thL;fig.legR.rotation.x=thR;fig.kneeL.rotation.x=knL;fig.kneeR.rotation.x=knR;
-   const drop=.3*K+.09*land+.05*lunge;fig.rig.position.y=-drop;fig.rig.rotation.x=.38*K+.07*lunge+.05*land;fig.head.rotation.x=-.28*K-.04*lunge;}
+   const drop=.3*K+.09*land+.05*lunge-bobC;fig.rig.position.y=-drop;fig.rig.rotation.x=.1*K+.07*lunge+.05*land;fig.head.rotation.x=-.12*K-.04*lunge;}
   // Kädet: lasketaan tavoitekulmat ja siirrytään niihin pehmeästi (ei äkillisiä hyppyjä).
   let tRx=sw*.7,tRz=0,tLx=-sw*.7,tLz=0,tSh=.35,rate=14,grip=false,eRo=null,eLo=null;
   const hold=mouseL&&state==='play';
@@ -79,12 +81,13 @@ function updatePlayer(dt){
     else{// viistoisku: vuorotellen vasen-ylhäältä → oikea-alas ja oikea-ylhäältä → vasen-alas
       const hz=sd>0?.62:-.7,lz=sd>0?-.55:.5;
       [tRx,tRz]=two?swingPose(k,hk,-2.6,hz,-.7,lz,hold):swingPose(k,hk,-2.4,hz*.9,-.9,lz*.9,hold);}
-    rate=32;if(two&&(k<hk+.3||hold)){grip=true;tSh=.14;}}
-  if(P.crouchK>.4&&!P.atk&&!P.blocking&&!P.drawing){const K=P.crouchK;tLx=lerp(tLx,-1.45,K);tLz=lerp(tLz,.12,K);tRx=lerp(tRx,-.35,K);tRz=lerp(tRz,-1.15,K);eLo=-.06*K;}// vaanimisasento: toinen käsi pitkällä eteen, toinen sivulle
+    rate=k<hk+.12?30:6;if(two&&(k<hk+.3||hold)){grip=true;tSh=.31;}}
+  if(P.crouchK>.4&&!P.atk&&!P.blocking&&!P.drawing){const K=P.crouchK;tLx=lerp(tLx,-.5,K);tLz=lerp(tLz,.85,K);tRx=lerp(tRx,-.25,K);tRz=lerp(tRz,-.75,K);eLo=-.95*K;}// kyykky: vasen käsi koukussa sivulla ja alhaalla, oikea sivulla
 
   if(P.blocking){tLx=-1.3+Math.sin(playTime*3)*.04;tLz=-.3;}
   if(P.drawing){tLx=-1.5;tRx=-1.5;tRz=.5;}
   if(heldMesh&&ITEMS[heldId].cat==='bow'){if(P.drawing)tLz=-.1;}
+  if(P.atk)P.recT=.55;else P.recT=Math.max(0,(P.recT||0)-dt);if(!P.atk&&P.recT>0&&!P.drawing&&!P.blocking)rate=Math.min(rate,5);// iskun jälkeen kädet palaavat lepoon pehmeästi
   const e=Math.min(1,dt*rate);
   armSh+=(tSh-armSh)*e;fig.armL.position.x=armSh;fig.armR.position.x=-armSh;
   fig.armR.rotation.x=lerpAngle(fig.armR.rotation.x,tRx,e);fig.armR.rotation.z=lerpAngle(fig.armR.rotation.z,tRz,e);
@@ -93,17 +96,29 @@ function updatePlayer(dt){
   // Kyynärpäät taipuvat sitä enemmän mitä korkeammalle käsivarsi nousee (jousella vetokäsi taipuu, jousikäsi suorana)
   {const bendR=-(.14+clamp(-fig.armR.rotation.x,0,2.8)*.28),bendL=-(.14+clamp(-fig.armL.rotation.x,0,2.8)*.28);
    let tR=eRo!==null?eRo:bendR,tL=eLo!==null?eLo:bendL;if(P.drawing){tL=-.05;tR=-(.5+P.bowDraw*.9);}
-   fig.elbowR.rotation.x=lerp(fig.elbowR.rotation.x,tR,Math.min(1,dt*20));fig.elbowL.rotation.x=lerp(fig.elbowL.rotation.x,tL,Math.min(1,dt*20));}
+   fig.elbowR.rotation.x=lerp(fig.elbowR.rotation.x,tR,Math.min(1,dt*(P.atk?20:8)));fig.elbowL.rotation.x=lerp(fig.elbowL.rotation.x,tL,Math.min(1,dt*(P.atk?20:8)));}
   // Jousi pysyy pystyssä (kämmenen kierto kumotaan käsivarren kulmalla); jänne ja nuoli seuraavat vetoa.
   if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-fig.armL.rotation.x,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
   fig.g.visible=camDist>1.8;
   // torch light
-  const torch=offId==='soihtu';
-  if(torch){const u=torchFl||(torchFl={cur:1,target:1,t:0}),s=1+(flick(u,dt)-1)*.52+(Math.sin(playTime*1.7+torchPh[0])+Math.sin(playTime*3.1+torchPh[1]))*.02;torchLight.intensity=2.6*s;fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;
+  const ts=torchSlot();let torch=false;
+  if(ts){if(ts.fuel===undefined)ts.fuel=TORCH_T;if(ts.lit===undefined)ts.lit=true;
+    if(ts.lit&&ts.fuel>0){ts.fuel-=dt*(P.running?1.2:1);
+      if(wRain>.5&&!shelterCache&&!P.inDun){ts.lit=false;msg('Sade sammutti soihtusi! Sytytä se uudelleen viemällä se kiinni toiseen liekkiin ja odota hetki.','warn');sfx('hit');}
+      else if(P.inWater&&!P.inDun){ts.lit=false;msg('Vesi sammutti soihtusi! Sytytä se uudelleen viemällä se kiinni toiseen liekkiin ja odota hetki.','warn');sfx('hit');}
+      else if(ts.fuel<=0){ts.fuel=0;ts.lit=false;msg('Soihtusi paloi loppuun! Avaa reppu (Tab) ja napsauta soihtua – sieltä voit lisätä siihen pihkaa. Sen jälkeen sytytä se toisen liekin avulla.','warn');invDirty=true;}}
+    else if(ts.fuel>0){// uudelleensytytys: soihtu kiinni toisessa liekissä (< 1.1 m) ja odotus 2.5 s
+      let near=false;for(const p of pieces){if(isFirePiece(p.t)?p.data.fuel>0:p.t==='soihtuteline'&&p.data.burn>0){if(dist2(p.x,p.z,P.pos.x,P.pos.z)<1.15*1.15){near=true;break;}}}
+      if(near&&!P.inWater&&!(wRain>.5&&!shelterCache&&!P.inDun)){if(torchIgn<=0)msg('Soihtu syttyy… pysy liekin vieressä.');torchIgn+=dt;if(torchIgn>=2.5){ts.lit=true;torchIgn=0;msg('Sytytit soihdun!','loot');sfx('pickup');}}else torchIgn=0;}
+    // Käsisoihdun varjo vain pimeässä (yö, sisällä, luolasto, synkkä sää, Aarnimetsä); päivänvalossa varjokameran kantama kutistuu nollaan (liukuu pois), pimeässä 2.4 m
+    {const dk=P.inDun?1:Math.max(1-lightK,indoorK,aarniK*.9,wDark>.55?.7:0);shDark+=(dk-shDark)*Math.min(1,dt*2.5);const far=.3+Math.max(0,shDark-.25)/.75*2.1;if(Math.abs(torchLight.shadow.camera.far-far)>.02){torchLight.shadow.camera.far=far;torchLight.shadow.camera.updateProjectionMatrix();}}
+    torch=!!torchSlot()&&ts.lit&&ts.fuel>0;torchBarT-=dt;if(torchBarT<=0){torchBarT=1;invDirty=true;}
+    const fl0=offMesh&&offMesh.userData.flame;if(fl0)for(const f of fl0)f.visible=torch;}
+  if(torch){const u=torchFl||(torchFl={cur:1,target:1,t:0}),s=1+(flick(u,dt)-1)*.52+(Math.sin(playTime*1.7+torchPh[0])+Math.sin(playTime*3.1+torchPh[1]))*.02;{const kf=QUAL.pointShadow?.45:0;torchLight.intensity=2.6*s*(1-kf);torchFill.intensity=2.6*s*kf;}fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;torchFill.position.copy(torchLight.position);
     // Liekit elävät, kipinöitä ja savua lähtee satunnaisesti kärjestä
     const fl=offMesh&&offMesh.userData.flame;if(fl){fl[0].scale.set(.95+s*.05,.9+s*.2,.95+s*.05);fl[1].scale.set(1,.9+s*.15,1);fl[2].scale.set(1,.85+s*.2,1);fl[3].material.opacity=.2+s*.06;fl[3].scale.setScalar(.92+s*.12);offMesh.rotation.z=Math.sin(playTime*3.1)*.04;}
     if(fig.g.visible){_tmpV.set(0,.4,.62);if(offMesh)offMesh.localToWorld(_tmpV);if(Math.random()<dt*7)emitEmber(_tmpV.x+(Math.random()-.5)*.08,_tmpV.y,_tmpV.z+(Math.random()-.5)*.08,'spark');if(Math.random()<dt*1.6)emitEmber(_tmpV.x,_tmpV.y+.1,_tmpV.z,'smoke');}}
-  else torchLight.intensity=0;
+  else{torchLight.intensity=0;torchFill.intensity=0;}
 }
 // Isku: nosto ylävasemmalle, isku alaoikealle (osuma iskun lopussa). Palautus lepoon, tai jos
 // lyöntinappi on pohjassa, suoraan seuraavan iskun nostoasentoon (käsi pysyy aseessa).

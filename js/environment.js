@@ -30,7 +30,7 @@ function updateWeather(){if(playTime<weather.until)return;const r=Math.random(),
   weather.cur=w;weather.until=playTime+(w==='myrsky'?90+Math.random()*90:150+Math.random()*180);
   if(w!==prev&&!P.inDun&&WMSG[w])msg(WMSG[w]);}
 const cSkyDay=new THREE.Color(0x87a9c2),cSkyDusk=new THREE.Color(0xc98a64),cSkyNight=new THREE.Color(0x070b14),cGrey=new THREE.Color(0x7d858c),cFlash=new THREE.Color(0xe8f0ff),cTmp=new THREE.Color(),cSun=new THREE.Color(),cSunLow=new THREE.Color(0xffa060);
-let wCloud=.2,wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0,aarniK=0;
+let lightK=1,wCloud=.2,wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0,aarniK=0;
 const cAarni=new THREE.Color(0x26302a);
 // Kuun kirkkaus vaihtelee 8 päivän kierrossa (uusikuu .2 … täysikuu 1).
 function moonPhase(){return .2+.8*(.5-.5*Math.cos((dayN%8)/8*TAU));}
@@ -39,15 +39,30 @@ const cCloudDay=new THREE.Color(0xffffff),cCloudNight=new THREE.Color(0x232a3a),
 function updateClouds(dt,cover,light,el){const vis=!P.inDun;let cx=camera.position.x,cz=camera.position.z;
   _cc.copy(cCloudNight).lerp(cCloudDay,light).lerp(cCloudGrey,Math.min(1,wDark/.6)*.85);
   const dusk=sstep(.5,.0,el)*sstep(-.3,0,el);_cc.lerp(cSunLow,dusk*.45);
-  const drift=dt*(2+wWind*7),R=CLOUD_R;
-  for(const c of CLOUDS){const u=c.userData;c.visible=vis;if(!vis)continue;
+  const drift=dt*(2+wWind*7),R=CLOUD_R,grow=.75+.55*cover,hor=scene.background;
+  for(const c of CLOUDS){const u=c.userData;if(!vis){c.visible=false;continue;}
     u.ox+=drift*u.sp;const mod=(v)=>((v%(2*R))+2*R)%(2*R);
     const dx=mod(u.ox-cx+R)-R,dz=mod(u.oz-cz+R)-R,d=Math.hypot(dx,dz);
     c.position.set(cx+dx,u.h,cz+dz);
-    const k=sstep(u.th,u.th+.12,cover)*sstep(R,R*.75,d);c.scale.setScalar(Math.max(.001,u.sc*k));c.visible=k>.02;
-    const m=c.material;m.color.copy(_cc);const near=sstep(240,60,d);m.emissive.copy(_cc).multiplyScalar(.42*light+.1);
-    if(flash>0)m.emissive.lerp(cFlash,Math.min(1,flash*(.5+.5*near)));}
+    // ilmestyminen peiton mukaan; kaukana häipyy (opasiteetti + väri kohti horisonttia) eikä piirry R:n takana
+    const k=sstep(u.th,u.th+.12,cover),far=sstep(R*.5,R*.97,d),op=.95*k*(1-far);c.visible=op>.03;if(!c.visible)continue;
+    c.scale.set(u.sc*grow,u.sc*(.8+.4*cover),u.sc*grow);
+    const m=c.material;m.opacity=op;m.color.copy(_cc).lerp(hor,far*.75);m.emissive.copy(m.color).multiplyScalar(.55*light+.12);
+    if(flash>0){const near=sstep(240,60,d);m.emissive.lerp(cFlash,Math.min(1,flash*(.5+.5*near)));}}
+  // pilvikansi rankassa säässä
+  const deck=sstep(.82,1,cover)*Math.min(1,wDark/.4);cloudDeck.visible=vis&&deck>.02;if(cloudDeck.visible){cloudDeck.position.set(cx,128,cz);cloudDeck.material.opacity=deck*.92;cloudDeck.material.color.copy(_cc);if(flash>0)cloudDeck.material.color.lerp(cFlash,flash*.6);
+    cloudDeck.material.map.offset.x+=drift*.0004;}
   if(boltGrp){boltT-=dt;boltGrp.visible=boltT>0&&((boltT*40|0)%3!==0);if(boltT<=0){scene.remove(boltGrp);boltGrp=null;}}}
+// Taivaskupoli ja auringonsäteet (vain selkeällä/puolipilvisellä säällä päivällä, ei sisällä).
+const _sky=new THREE.Color(),_skyS=new THREE.Vector3(),_up=new THREE.Vector3(0,1,0);
+function updateSky(light,sd0,el,sunK){const sd=_skyS.copy(sd0);skyDome.position.copy(camera.position);skyDome.visible=!P.inDun;
+  SKY_U.uHor.value.copy(scene.background);_sky.copy(scene.background).multiplyScalar(.62);_sky.b=Math.min(1,_sky.b*1.25+.03*light);SKY_U.uTop.value.copy(_sky);
+  SKY_U.uSun.value.set(sd.x,sd.y,sd.z);SKY_U.uSunC.value.copy(cSun);SKY_U.uGlow.value=sunK*(1-Math.min(1,wDark*1.4))*(1-aarniK*.7);
+  const clear=(1-sstep(.35,.7,wCloud))*(1-Math.min(1,wDark*3))*sstep(.05,.25,el)*sstep(.85,.45,el)*sunK*(1-indoorK)*(1-aarniK);
+  sunShafts.visible=!P.inDun&&clear>.02;if(sunShafts.visible){const hx=sd.x,hz=sd.z,hl=Math.hypot(hx,hz)||1;
+    sunShafts.position.set(camera.position.x+hx/hl*70,Math.max(0,camera.position.y-25),camera.position.z+hz/hl*70);
+    sunShafts.rotation.set(0,0,0);sunShafts.quaternion.setFromUnitVectors(_up,sd.normalize());
+    sunShafts.userData.mat.opacity=.07*clear*(.85+.15*Math.sin(playTime*.3));}}
 function updateEnvironment(dt){
   const W=WEATHERS[weather.cur]||WEATHERS.selkea,k=Math.min(1,dt*.3);
   // Pilvet tummuvat ensin (hitaasti), sade alkaa vasta kun taivas on tarpeeksi tumma.
@@ -59,7 +74,7 @@ function updateEnvironment(dt){
   const ang=(dayT-.5)*TAU,el=Math.cos(ang)+.3;
   // Taivaan valo vaihtuu pehmeästi (hämärä ~1,5 min). Aurinko sammuu horisontissa ennen kuun syttymistä,
   // joten valon suunta vaihtuu vasta kun voimakkuus on nolla.
-  const light=sstep(-.4,.45,el),sunK=sstep(-.12,.08,el),moonK=sstep(-.12,-.32,el);
+  const light=sstep(-.4,.45,el);lightK=light;const sunK=sstep(-.12,.08,el),moonK=sstep(-.12,-.32,el);
   const sd=_tmpV.set(Math.sin(ang)*.9,el,.35).normalize();
   if(P.inDun){scene.background.setHex(0x050403);scene.fog.color.setHex(0x050403);scene.fog.near=3;scene.fog.far=28;hemi.intensity=.06;sun.intensity=0;amb.intensity=.05;stars.visible=false;sunDisc.visible=false;moon.visible=false;rain.visible=false;snow.visible=false;water.visible=false;return;}
   water.visible=true;stars.visible=true;
@@ -82,7 +97,7 @@ function updateEnvironment(dt){
   stars.material.opacity=(1-light)*(1-wDark);stars.position.copy(camera.position);
   sunDisc.position.set(camera.position.x+sd.x*380,camera.position.y+sd.y*380,camera.position.z+sd.z*380);sunDisc.visible=el>-.1&&wDark<.3;
   moon.position.set(camera.position.x-sd.x*370,camera.position.y-sd.y*370,camera.position.z-sd.z*370);moon.visible=-sd.y>-.08&&wDark<.5;moon.material.color.setScalar(.35+.65*ph);
-  updateClouds(dt,wCloud,light,el);
+  updateClouds(dt,wCloud,light,el);updateSky(light,sd,el,sunK);
   rain.visible=wRain>.15;if(rain.visible){rain.material.opacity=.45*Math.min(1,wRain);updateRain(dt);}
   snow.visible=wSnow>.1&&P.pos.y>10;if(snow.visible){snow.material.opacity=.9*Math.min(1,wSnow);const a=snow.geometry.attributes.position.array;for(let i=0;i<a.length;i+=3){a[i+1]-=2.2*dt;a[i]+=Math.sin(playTime*.8+i)*.4*dt;if(a[i+1]<-4){a[i]=(Math.random()-.5)*50;a[i+1]=20+Math.random()*6;a[i+2]=(Math.random()-.5)*50;}}snow.geometry.attributes.position.needsUpdate=true;snow.position.set(camera.position.x,camera.position.y-8,camera.position.z);}
   water.position.y=Math.sin(playTime*.6)*.04;
@@ -104,7 +119,7 @@ function updateRain(dt){const a=rain.geometry.attributes.position.array,sp=26*(w
   rainInit=true;rain.geometry.attributes.position.needsUpdate=true;}
 function updateLights(){
   const src=lightSources.filter(s=>s.on()&&(!!s.dun===P.inDun)).sort((a,b)=>dist2(a.x,a.z,P.pos.x,P.pos.z)-dist2(b.x,b.z,P.pos.x,P.pos.z));
-  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=src[i];if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;}else{l.intensity=0;l.userData.base=0;}}
+  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=src[i];if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){if(i===0&&(l.position.x!==s.x||l.position.z!==s.z))l.shadow.needsUpdate=true;l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;}else{l.intensity=0;l.userData.base=0;}}
 }
 // Tilat: jokaisella on vaikutus pelaajan kykyihin (P.fx), kuvaus ja halutessa ajastin (s). effects() kerää aktiiviset, calcFx() laskee kertoimet.
 function effects(){const e=[],wt=invWeight(),b=P.buffs,add=(key,name,kind,desc,t)=>e.push({key,name,kind,desc,t});

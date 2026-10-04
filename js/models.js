@@ -88,6 +88,7 @@ function makeHeld(id){
       g.add(bx(.3,.05,.06,metalOf(0x8f5326),0,0,.17));
       g.add(poly([[.18,.05],[.18+L-.14,.05],[.18+L,0],[.18+L-.14,-.05],[.18,-.05]],.03,bm));break;}
     case 'lapio':{shaft(g,.95,W);g.add(poly([[.82,.1],[1.0,.1],[1.12,.0],[1.0,-.1],[.82,-.1]],.03,metalOf(0x8a96a3,{roughness:.5})));const gr=new THREE.Mesh(new THREE.BoxGeometry(.2,.04,.06),W);gr.position.set(0,0,-.08);g.add(gr);break;}
+    case 'kuokka':{shaft(g,.95,W);g.add(bx(.06,.34,.16,mat(0x8a96a3,{metalness:.2,roughness:.55}),0,-.15,.86));g.add(bx(.08,.08,.12,mat(0x3a3a3a),0,0,.86));break;}
     case 'soihtu':{shaft(g,.6,W,.034);const wrap=new THREE.Mesh(new THREE.CylinderGeometry(.052,.04,.14,8),smat(0x3a2a1c));wrap.rotation.x=Math.PI/2;wrap.position.z=.56;g.add(wrap);
       const fa=new THREE.Mesh(new THREE.ConeGeometry(.095,.3,7),MAT.flame),fb=new THREE.Mesh(new THREE.ConeGeometry(.06,.22,7),MAT.flame2),fc=new THREE.Mesh(new THREE.ConeGeometry(.032,.14,6),new THREE.MeshBasicMaterial({color:0xfffbe0}));
       const glow=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),new THREE.MeshBasicMaterial({color:0xff9a3a,transparent:true,opacity:.22,depthWrite:false,fog:false}));
@@ -103,7 +104,7 @@ function makeHeld(id){
       // Käännetään koko jousi 180° pystyakselin ympäri: vatsa osoittaa pelaajaan päin ja jänne venyy ampumasuuntaan nähden oikein.
       const inner=new THREE.Group();while(g.children.length)inner.add(g.children[0]);inner.rotation.y=Math.PI;g.add(inner);break;}
   }
-  g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
+  g.traverse(m=>{if(m.isMesh)m.castShadow=true;});if(g.userData.flame)for(const f of g.userData.flame)f.castShadow=false;
   return g;
 }
 // Jousen jänne ja nuoli: k = vedon määrä 0–1 (0 = ei vedossa, jänne suorana).

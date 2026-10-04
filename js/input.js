@@ -16,6 +16,7 @@ addEventListener('keydown',e=>{
   if(e.code==='Tab'||e.code==='KeyI')togglePanel('inv');
   else if(e.code==='KeyM')togglePanel('map');
   else if(e.code==='KeyJ')togglePanel('prog');
+  else if(e.code==='KeyT')togglePanel('log');
   else if(e.code==='KeyB'){const w=equipped('weapon');if(w&&w.id==='vasara')togglePanel('build');else msg('Ota vasara käteen rakentaaksesi.','warn');}
   else if(e.code==='Escape'){if(openPanel){e.preventDefault();closePanels(false,true);}else if(state==='play'&&locked){pauseGame();releaseLock();}}
   else if(state==='play'){

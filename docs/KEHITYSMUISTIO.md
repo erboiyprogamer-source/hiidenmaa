@@ -49,6 +49,70 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.49 (kiinteiden valojen varjot harvoin, muutoksessa heti)
+- Paikalle sijoitettujen valojen (`LIGHTS[0]`) varjokartta kauempana (> 9 m) vain joka 60. (pimeällä) / 120. (päivällä) kehys. **Ympäristön muuttuessa päivitys heti** (`markShadowDirty()` → `shDirty`): rakennuksen lisäys/purku/rikkoutuminen (`addPiece`, `removePiece`), oven liike (`setDoor`), puun/solmun kaato ja uusiutuminen (`killNode`, `reviveNode`). Lähellä (< 9 m) pelaajan varjon takia ennallaan (2./4. kehys). Lippu pysyy päällä kunnes valo palaa.
+
+### v0.48 (ilmoitusten näkyvyysaika)
+- Ilmoituksen näkyvyysaika pituuden mukaan: 3 s + 70 ms / merkki, rajattuna 4–13 s (aiemmin aina 4,5 s). Pitkät ohjeviestit (esim. soihdun loppuminen) ehtii lukea; kaikki pysyy myös T-lokissa.
+
+### v0.47 (pelaajan varjo tulen vieressä)
+- Pelaajan varjo seisovan soihdun/nuotion vieressä päivittyy tiheään: kun pelaaja on < 9 m päässä `LIGHTS[0]`:sta, varjokarttaa päivitetään pimeällä joka 2. (päivällä joka 4.) kehys; kauempana 8./16. (kantama pysyy 15 m). Rajoitus: three.js r128:ssa päivitystiheys on valokohtainen eikä sitä voi säätää heittäjäkohtaisesti (pelaaja vs. kiinteät esineet), joten ratkaisu perustuu etäisyyteen.
+
+### v0.46 (varjojen laatu liikkuvuuden mukaan)
+- **Liikkuvat varjot (käsisoihto, pelaaja) himeämmiksi ja sumeammiksi:** varjokartta 64 → 40 px (blobimaisempi), päivitys joka kehys. Uusi **täytevalo** `torchFill` (sama paikka, ei varjoa): soihdun intensiteetti jaetaan 55 % varjoa heittävälle ja 45 % täytevalolle, joten soihdun varjot jäävät himeiksi (varjoalue saa täytevalon). Laatutasolla 3 (pistevalovarjot pois) koko teho varjottomalle.
+- **Paikallaan olevat valot (seisova soihtu, nuotio = `LIGHTS[0]`) terävämmiksi, harvemmin:** varjokartta 192 → 384 px, päivitys pimeällä joka 8. (aiemmin 2.) ja päivällä joka 16. kehys (×2 laatutasolla ≥1); lähimmän valon vaihtuessa heti.
+
+### v0.45 (ilmoituslokki)
+- **T avaa viimeiset 10 ilmoitusta** (`msgLog`, `renderLog`, paneeli `#logP`): uusin ylimpänä, pelin kellonaika, varoitukset punaisella ja löydöt vihreällä reunalla. Suljetaan T:llä/Esc:llä/✕:llä. Mainittu valikon ohjelistassa.
+
+### v0.44 (korjaus: soihdun sytytys, ilmoitukset ja varjot)
+- **Uudelleensytytys:** sammunut soihtu (fuel > 0) syttyy kun pelaaja on toisen palavan liekin (nuotio, grilli, seisova soihtu) vieressä < 1.15 m ja odottaa **2.5 s** (`torchIgn`); poistuminen nollaa ajastimen; ei sateessa/vedessä.
+- **Ilmoitukset** (viestilokiin): loppuun palaessa "Soihtusi paloi loppuun! Avaa reppu (Tab) ja napsauta soihtua – sieltä voit lisätä siihen pihkaa…", sateen/veden sammuttaessa "…Sytytä se uudelleen viemällä se kiinni toiseen liekkiin ja odota hetki." ja "Soihtu syttyy… pysy liekin vieressä."
+- **Käsisoihdun varjo vain pimeässä:** `shDark` (yö, sisällä, luolasto, Aarnimetsä, synkkä sää) → varjokameran kantama .3 m (ei varjoa) … 2.4 m; päivänvalossa kutistuu sulavasti nollaan.
+- **Tulien (LIGHTS[0]) varjot:** kartta 512 → 192 px, kantama 18 → 15 m, bias suurempi (huonolaatuisempi ja sumeampi, ei seuraa reunoja tarkasti), päivitys pimeällä joka 2. kehys (aiemmin 3.), päivällä 6.
+
+### v0.43 (korjaus: käsisoihdun varjo)
+- Käsisoihdun varjo pieneksi, huonolaatuiseksi läntiksi: varjokameran kantama 18 → 3.2 m, varjokartta 512 → 64 px, `radius` 3 (pehmeä), päivittyy **joka kehys** (`fT=1`) eli piirtyy koko ajan sulavasti; halpa koska kamera näkee vain lähimmät esineet. Tulien (LIGHTS[0]) varjot ennallaan (512 px, harvemmin).
+
+### v0.42 (korjauserä: varjot, hakkuu, soihtu, kyykky, kädet)
+- **Varjobugi korjattu:** v0.40:ssä pistevalon varjokartta (`shadow.autoUpdate=false`) päivittyi vain pimeällä → päivällä jäi vanha kartta (varjot "jäätyivät", sitten puuttuivat). Nyt `needsUpdate` nostetaan itse säännöllisesti kun valo palaa: pimeällä soihtu joka 2., tuli joka 3. kehys, päivällä 6./8.; lähimmän tulen vaihtuessa heti (`updateLights`). Kevyempi kuin autoUpdate (aiemmin 2×6 kuutiopassia joka kehys).
+- **Mukautuva laatu** (`QUAL`, `setQuality`, `autoQuality` main.js): kehysajan liukuva keskiarvo > 36 ms 3 s → laatu −1 taso (1: varjopäivitykset harvemmin, 2: aurinkovarjokartta 1024 px, 3: pistevalovarjot pois); < 18 ms 12 s → takaisin ylöspäin. Varjot säilyvät mahdollisimman pitkään.
+- **Tukkien lohkeamat pienemmiksi ja pinnassa kiinni:** litteät laastarit rungon pinnalla (`logPatch`, kulma θ poikkileikkauksessa) + tumma reunus; halkeamia kuoreen (`logCrack`, 3 tukin syntyessä + lisää iskuista). Puiden kestävyys +20 % (pystypuu ×1.2, tukki 24·s²).
+- **Käsisoihtu ei katoa:** palaessa loppuun vain pää sammuu (`fuel`=0, `lit`=false, mittari harmaa); pihkaa voi lisätä repun yksityiskohdista (+30 s / pihka). **Sammuu myös vedessä** (`P.inWater`), ei syty vedessä.
+- **Kyykky luonnollisemmaksi:** vartalon etukallistus .38 → .1, vasen käsi koukussa (kyynärpää −.95) sivulla ja alhaalla, oikea sivulla; kyykkykävely: iso hidas askel (reiden heilahdus ±.6, polvi nostaa jalan kun se tulee eteen, vartalo keinuu ±.035). **Selkätavarat** kuuluvat nyt `fig.rig`-ryhmään (seuraavat kyykkyä) ja ovat aivan selän pinnassa (kilpi z −.1, jousi −.19, työkalu −.17/−.29).
+- **Kädet palaavat pehmeästi:** isku ajastetusti: nopea vain osumaikkunassa (30), sen jälkeen 6, iskun jälkeen .55 s hidas palautus (5); kyynärpäät 20 → 8. **Hakkuussa olkapäät pysyvät kiinni paikoillaan** (`tSh` .14 → .31), kädet eivät enää katoa vartalon eteen.
+- Pieniä optimointeja: kipinöiden materiaalit poolissa (`emPool`), valolista ei luoda uudelleen joka kehys (`ALL_LIGHTS`).
+
+### v0.41 (erä 28: maasto ja työkalut)
+- **Multaisuus** (`MUD`, resources.js): jokaisella maaston kärjellä arvo 0–1; väri sekoittuu alkuperäisestä (`TCOL0`) kohti tummaa multaa (`MUDC`). Tallentuu harvana listana (`mud:[[i,v]]`, `mudList`/`applyMud`), nollautuu uudessa pelissä (`resetMud` resetTerran yhteydessä).
+- **Lapio:** tasoittaa kuten ennen ja lisäksi tekee maasta multaisen ja tummemman (+.4 / käyttö keskellä) → polut.
+- **Uusi Kuokka** (`kuokka`, cat shovel, puu 4 + kivi 3, Alkupeli): nostaa maata (+.15 m / käyttö, max +3 m alkuperäisestä, ei aivan jalkojen alla) ja vähentää multaisuutta (−.45) eli palauttaa maan alkuperäiseksi. Oma malli ja kuvake.
+- Huom: maaston kärkiväli rajoittaa polkujen tarkkuutta (polku on muutaman metrin levyinen).
+
+### v0.40 (erä 27: valo ja soihtu)
+- **Tulien varjot pimeällä:** lähin pistevalo (`LIGHTS[0]`) ja käsisoihtu (`torchLight`) heittävät varjoja (cube-varjokartta 512 px, far 18 m). Varjokartta päivittyy vain pimeällä (yö, sisällä, luolasto, synkkä sää; `shadow.autoUpdate`), päivällä ei kuormita. Tulipaikan omat osat ja soihdun liekit eivät varjosta omaa valoaan.
+- **Käsisoihtu kuluu:** `TORCH_T` = 60 s palamista yhteensä, juostessa 20 % nopeammin; tila esineessä (`s.fuel`, `s.lit`, tallentuu). Hotbarin/repun paikassa oranssi mittari (harmaa kun sammunut). Palaessa loppuun esine poistuu.
+- **Sade sammuttaa** soihdun ulkona (`wRain` > .5, ei suojassa). **Sytytys:** vie sammunut soihtu kädessä toisen liekin viereen (palava nuotio/grilli < 2.5 m tai seisova soihtu < 2.2 m). Sammunut soihtu ei valaise eikä pelota vihollisia (`torchLit()`).
+
+### v0.39 (erä 26: taivas ja pilvet)
+- **Taivaskupoli** (`skyDome`, ShaderMaterial, `SKY_U`): liukuväri horisontista (= sumun väri) tummempaan zeniittiin + auringon hehku (heikkenee pilvisellä). `updateSky()` environment.js.
+- **Pilvet uusiksi:** 26 isoa, leveää ja litteäpohjaista pilvilauttaa (70–170 m, 26–40 palloa, korkeus 96–126 m eli aiempaa matalammalla, `CLOUD_R` 420). Peitto säästä (kynnys `th`), koko kasvaa peiton mukana (×.75–1.3). Kaukana pilvet häipyvät horisontin väriin (opasiteetti + väri, `far`) eivätkä piirry `CLOUD_R`:n takana.
+- **Pilvikansi** (`cloudDeck`): rankassa sateessa ja myrskyssä koko taivaan peittävä harmaa kerros (128 m), salama valaisee sen.
+- **Auringonsäteet** (`sunShafts`): selkeällä/puolipilvisellä säällä matalalla paistavasta auringosta läpikuultavia valokeiloja (additiivinen, opasiteetti ≤ .07), ei sisällä eikä Aarnimetsässä.
+
+### v0.38 (erä 25: eläimet, viholliset ja terveyspalkit)
+- **Eläinten säikähdys:** kävellessä 7 m, juostessa 16 m, vahinkoa tekevä ase/jousi kädessä ×1.4, kyykyssä 3.5 m (näköyhteys tai < 4 m). Vahingoitettu eläin pelkää 10 s; pakosuunta pois pelaajasta satunnaisella poikkeamalla (±.4….8 rad), vaihtuu 1.2–3 s välein; rauhoittuu > 28 m päässä.
+- **Viholliset huomaavat iskun:** 10 s iskusta (myös nuoli) vihollinen jahtaa ilman näköyhteyttäkin eikä luovuta jahtia; sen jälkeen taas läheisyys + näköyhteys.
+- **Terveyspalkit** (`updateMobBars`): näkyvät 10 s iskusta tai kun katsoo mobia < 12 m päästä; vaikeat (`MOB_SKULL` ≥ 3) jo < 70 m. Nimi + `hp/max` (+ kerros ×N), alla pääkallot (`MOB_SKULL`: peura 0, karju 1, hiisi 1, susi 2, kalmo 2, ylimys 3, vartija 5). Yksi kerros = 60 hp; useampikerroksinen palkki pidempi (max 3×), kerrokset eri värisiä (`LAYER_C`).
+- **Vaikeat parantuvat:** ≥ 3 pääkalloa, 30 s ilman iskuja → +1 % maksimiterveydestä / s.
+
+### v0.37 (erä 24: puut ja hakkuu)
+- **Tukit alkuperäisen puun värisiä:** `TRUNK_C` (kuusi, koivu + mustat raidat, kelo, aarnipuu), `logMatOf(type)`; `LEAF_C` oksien lehville.
+- **Oksat:** kaatuvan puun rungon sivuilla 4 oksaa (aarnipuulla 7, lehvät lehtipuilla/havuilla); maahan osuessa ne irtoavat (`dropBranch`), putoavat ja vajoavat ~6 s maan alle (poistetaan 9 s).
+- **Lohkeamat ja kolot:** tukkia lyödessä (`chopLog`) osumakohtaan kuoren sisävärinen (`WOOD_IN` 0xc08a52) lohkeama sille puolelle josta lyödään; samaan kohtaan lyötäessä kolo kasvaa (4 tasoa). Joka iskulla puupartikkeleja (sisä- ja kuoriväri).
+- **Iso puu kestää kauemmin:** tukin kesto 20·s → 20·s² (pystypuu jo hp·s²). Kaatumisaika (1+.3·s) s (aarnipuu ×2), alku hidas (k^2.6).
+- **Ruutu tärähtää** kun puu kaatuu lähelle (etäisyys < pituus + 8 m, voimakkuus koon ja etäisyyden mukaan).
+
 ### v0.36 (erä 23: hahmo ja animaatiot)
 - **Hahmo laihemmaksi ja litteäpintaiseksi:** `makePlayer` uusiksi (kapeampi vartalo, ohuemmat raajat, 8-sivuiset sylinterit + `flatShading`; pää/kiharat pehmeämmät). Nivelet: `elbowL/R` (olka–kyynärpää) ja `kneeL/R` (lonkka–polvi); koko keho `fig.rig`-ryhmässä (voi laskea ja kallistaa).
 - **Jalat joustavat:** kävelyssä polvet taipuvat, hypyssä polvet koukussa, laskeutumisessa joustaminen (`P.landT`, .25 s), iskussa askel ja pieni etukenoon (`lunge`). Kyykky (C): polvet syvälle (reisi −1.0, polvi 1.8), vartalo etukenoon, runko laskee .3 m, toinen käsi pitkällä eteen ja toinen sivulle.
@@ -486,24 +550,24 @@ Kirjattu v0.35:n jälkeen. Jokainen erä: testaa, päivitä muistio, versio+`?v=
 3. Kirveen isku viistoon, vuorotellen vasen-ylhäältä ja oikea-ylhäältä viistosti alas.
 4. Keihäs: isku kääntää kärjen kohti kohdetta (työntö kohti kohdetta, ei suoraan eteen).
 
-**Erä 24 – Puut ja hakkuu (0.3, 0.7)**
+**Erä 24 – Puut ja hakkuu (0.3, 0.7)** – TEHTY (v0.37)
 1. Kaadettu runko saa alkuperäisen puun värin (kuori), oksat jäävät rungon sivuille ja irtoavat kaatuessa; oksat uppoavat hitaasti maahan ja katoavat.
 2. Kaadettua runkoa lyödessä sen pinnalle ilmestyy ruskeita (kuoren sisäväri) lohkeamia; joka iskulla puupartikkeleja ja isompi kolo.
 3. Mitä isompi puu, sitä kauemmin hakkuu; kaatuminen alkaa hitaana, kaatuessa lähellä pelaajaa ruutu tärähtää.
 
-**Erä 25 – Eläimet, viholliset ja terveyspalkit (0.5, 0.6, 4)**
+**Erä 25 – Eläimet, viholliset ja terveyspalkit (0.5, 0.6, 4)** – TEHTY (v0.38)
 1. Eläimet säikähtävät jo kaukaa kun pelaaja juoksee kohti, vielä kauempaa jos kädessä vahinkoa tekevä ase/työkalu; kävellessä vasta lähempää. Vahingoitettu eläin pelkää 10 s ja juoksee satunnaisiin suuntiin kauemmas.
 2. Vahingoitetun eläimen/mobin terveyspalkki + numero (10 s iskusta; lähellä ja kun katsoo sitä; bossit ja vaikeat jo kaukaa katsottaessa), palkin alla pääkalloja vaikeustasosta, palkki pitenee/monikerroksinen (1 kerros ≈ pelaajan terveys), pahimmat bossit parantuvat 30 s iskuttomuuden jälkeen.
 3. Vihollinen huomaa pelaajan aina 10 s sen jälkeen kun pelaaja vahingoitti sitä (myös jousella), muuten tarvitaan läheisyys.
 
-**Erä 26 – Taivas ja pilvet (0)**
+**Erä 26 – Taivas ja pilvet (0)** – TEHTY (v0.39; grafiikka-asetukset erässä 29)
 1. Pilvet suuremmiksi, leveämmiksi ja realistisemmiksi (taivaalle levittäytyviä), koko säästä riippuen; kaukana sumeat/häipyvät (optimointi); pilviä hieman matalammalle; selkeällä säällä aurinko paistaa sumun/pilvien välistä; realistisempi taivas (asetuksiin myöhemmin yksinkertaistus).
 
-**Erä 27 – Valo ja soihtu (0.9, 0.99)**
+**Erä 27 – Valo ja soihtu (0.9, 0.99)** – TEHTY (v0.40)
 1. Tulet/valot heittävät varjoja ympäröivien esineiden taakse pimeällä (ei päivänvalossa ulkona).
 2. Käsisoihtu sammuu sateessa (sateen alla), syttyy kun vie toisen liekin viereen; soihtu kuluu käytettäessä (mittari, 1 min yhteensä, sateessa 20 % nopeammin), sammuessa liekki ja valo katoavat.
 
-**Erä 28 – Maasto ja työkalut (1)**
+**Erä 28 – Maasto ja työkalut (1)** – TEHTY (v0.41)
 1. Lapio: vasen klikkaus tekee maasta multaisemman ja tummemman (polut). Uusi kuokka: nostaa maanmuotoja ja vähentää multaisuutta (palauttaa alkuperäiseksi).
 
 **Erä 29 – Valikko, asetukset ja tallennus (1.1, 1.2, 1.3, 9)**

@@ -51,9 +51,15 @@ function update(dt){
   updateHUD(dt);
 }
 function menuCam(dt){menuA+=dt*.03;const cx=Math.cos(menuA)*60,cz=Math.sin(menuA)*60;camera.position.set(cx,terrainH(cx,cz)+22,cz);camera.lookAt(0,6,6);P.pos.set(0,5,6);updateEnvironment(dt);if(!started)fig.g.visible=true;}
+// Mukautuva laatu: liukuva keskiarvo kehysajasta; >36 ms 3 s → laatu −1 taso, <18 ms 12 s → +1 taso (min 6 s välein).
+let fAvg=.016,qBadT=0,qGoodT=0,qCool=0;
+function autoQuality(raw){if(raw>.5)return;fAvg+=(raw-fAvg)*.05;qCool-=raw;
+  if(fAvg>.036){qBadT+=raw;qGoodT=0;}else if(fAvg<.018){qGoodT+=raw;qBadT=0;}else{qBadT=Math.max(0,qBadT-raw);qGoodT=Math.max(0,qGoodT-raw);}
+  if(qCool<=0){if(qBadT>3&&QUAL.lvl<QUAL.max){setQuality(QUAL.lvl+1);qCool=6;qBadT=0;}else if(qGoodT>12&&QUAL.lvl>0){setQuality(QUAL.lvl-1);qCool=6;qGoodT=0;}}}
 function frame(now){
   requestAnimationFrame(frame);
-  const dt=Math.min(.05,(now-last)/1000);last=now;
+  const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;
+  if(state==='play')autoQuality(raw);
   try{
     if(state==='play'||state==='ui')update(dt);
     else if(state==='menu')menuCam(dt);

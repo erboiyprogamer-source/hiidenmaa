@@ -37,7 +37,8 @@ const ITEMS={
   miekka:{n:'Kuparimiekka',w:2,s:1,c:'#e0904f',cat:'weapon',dmg:24,dt:'slash',range:2.6,st:8,spd:.44,d:'Nopea ja terävä.'},
   soihtu:{n:'Soihtu',w:1,s:1,c:'#ff9a3a',cat:'offhand',light:true,d:'Valaisee pimeässä. Pidä toisessa kädessä aseen tai työkalun rinnalla.'},
   jousi:{n:'Metsästysjousi',w:2,s:1,c:'#8a5a32',cat:'bow',dmg:16,dt:'pierce',st:4,d:'Pidä hiiren vasenta pohjassa jännittääksesi. Tarvitsee nuolia.'},
-  lapio:{n:'Lapio',w:2.5,s:1,c:'#8a7a60',cat:'shovel',d:'Hiiren vasen tasoittaa maata pehmeästi kohti jalkojesi korkeutta (kestävyys −6). Ei rakennusten lähellä.'},
+  kuokka:{n:'Kuokka',w:2.5,s:1,c:'#7a6a50',cat:'shovel',d:'Hiiren vasen nostaa maata ja poistaa multaa (palauttaa maan alkuperäiseksi). Ei rakennusten lähellä.'},
+  lapio:{n:'Lapio',w:2.5,s:1,c:'#8a7a60',cat:'shovel',d:'Hiiren vasen tasoittaa maata kohti jalkojesi korkeutta ja tekee siitä multaisen ja tummemman – sillä teet polkuja (kestävyys −6). Ei rakennusten lähellä.'},
   hiidenjousi:{n:'Hiidenjousi',w:2,s:1,c:'#5fe6d9',cat:'bow',dmg:30,dt:'pierce',st:4,rare:1,d:'Hiidenkivellä vahvistettu jousi. Hyvin voimakas. (Harvinainen)'},
   hiidenmiekka:{n:'Hiidenmiekka',w:3,s:1,c:'#7fe9dd',cat:'weapon',dmg:52,dt:'slash',range:2.8,st:8,spd:.4,rare:1,d:'Vartijan sydämen ja hiidenkivien voimalla taottu terä. (Harvinainen)'},
   vasara:{n:'Vasara',w:2,s:1,c:'#7c6a52',cat:'hammer',d:'Rakennustyökalu. B avaa rakennusvalikon.'},
@@ -54,6 +55,7 @@ const RECIPES=[
   {id:'kirves',req:{puu:3,kivi:2},alku:1},
   {id:'vasara',req:{puu:3,kivi:1},alku:1},
   {id:'lapio',req:{puu:4,kivi:2},alku:1},
+  {id:'kuokka',req:{puu:4,kivi:3},alku:1},
   {id:'nuija',req:{puu:6},alku:1},
   {id:'soihtu',req:{puu:1,pihka:1},alku:1},
   {id:'hiili',st:'nuotio',req:{puu:5},n:2,alku:1},
@@ -136,6 +138,7 @@ function icon(id){
       else if(/hakku/.test(id)){wd(46,4.4);g.lineCap='butt';for(const [w,c] of[[8,'#1f1a16'],[5.5,tier[0]]]){g.strokeStyle=c;g.lineWidth=w;g.beginPath();g.moveTo(35,-17);g.quadraticCurveTo(49,0,35,17);g.stroke();}
         poly([[33,-19],[38,-17],[36,-13]],tier[1]);poly([[33,19],[38,17],[36,13]],tier[1]);g.fillStyle='#3a3a3a';g.fillRect(38,-3.5,6,7);}
       else if(id==='lapio'){wd(37,4);g.fillStyle='#6b4527';g.fillRect(-1,-7,5,14);g.strokeStyle='#2e1d0e';g.strokeRect(-1,-7,5,14);metal([[33,-8],[43,-9],[50,0],[43,9],[33,8]]);line(36,0,47,0,1.5,'#fff9');}
+      else if(id==='kuokka'){wd(42,4);metal([[34,0],[38,-1],[40,14],[34,16],[32,3]]);line(36,2,37,14,1.2,'#fff8');}
       else if(id==='keihas'){wd(40,3.2);metal([[38,0],[41,-5],[52,0],[41,5]]);line(38,0,51,0,1,'#fff9');for(let k=0;k<3;k++)line(33+k*2,-3,35+k*2,3,1.5,'#7a2a22');}
       else if(id==='nuija'){wd(30,5);g.fillStyle='#7a5230';g.strokeStyle='#2e1d0e';g.lineWidth=1.3;g.beginPath();g.moveTo(26,-2.5);g.lineTo(34,-5);g.quadraticCurveTo(48,-10,48,0);g.quadraticCurveTo(48,10,34,5);g.lineTo(26,2.5);g.closePath();g.fill();g.stroke();for(const [x,y] of[[38,-5],[42,0],[38,5],[34,0]])circ(x,y,1.6,'#9a9a92');}
       else if(id==='vasara'){wd(40,4.4);g.fillStyle='#7c6a52';g.strokeStyle='#1f1a16';g.lineWidth=1.3;g.fillRect(36,-10,9,20);g.strokeRect(36,-10,9,20);g.fillStyle='#4b4338';g.fillRect(36,-10,2.5,20);g.fillRect(42.5,-10,2.5,20);line(39,-8,39,8,1.2,'#fff6');}
