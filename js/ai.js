@@ -131,7 +131,7 @@ function spawner(dt){
     const pack=type==='susi'&&night?2:1;for(let k=0;k<pack;k++)spawnMob(type,x+k*1.5,z+k);return;}
 }
 function respawnNodes(){for(const n of nodes)if(!n.alive&&n.respawnAt<=playTime&&dist2(n.x,n.z,P.pos.x,P.pos.z)>40*40&&!nearBase(n.x,n.z))respawnNode(n);}
-const LIGHT_CAP=2.2;
+const LIGHT_CAP=3.0;
 function updateStations(dt){
   for(const p of pieces){
     if(isFirePiece(p.t)){const f=p.mesh.userData.flame,d=p.data;const lit=d.fuel>0;f[0].visible=f[1].visible=lit;
