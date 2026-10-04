@@ -297,110 +297,65 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 - Ukkosen ääni pois, myrsky kaataa harvoin puita (alle jäävä −80 % HP), mobien ulottuvuus kaikkiin
   suuntiin, pehmeämpi kamera, kasvit/puut vain uusiutuvat eivätkä tukikohdan lähelle.
 
-### Erä 16 – rakentamisen kohdistus (TEE SEURAAVAKSI)
-1. Kohdistus valitsee ensisijaisesti viereisen, jo rakennetun osan (ei maata), kun molemmat ovat lähellä.
-2. Kohdistustilat yhdellä näppäimellä (esim. G): ruudukko (läpinäkyvä ruudukko rakennusalueella),
-   puoliruudukko (puolivälit), vapaa (perinteinen) ja reunajatko (katsottavan osan reunaan jatkoksi).
-   Tila näkyy rakennusvihjeessä.
-3. Päällekkäiset pinnat eivät välky (z-fighting): pienet siirrot/polygonOffset rakennusosille.
-4. Rakennusvalikkoon palkki pienenä ja isona (kohdistuvat ruudukkoon).
-5. R kääntää 45° kerrallaan.
+### Erä 16 – maailma: puiden uusiutuminen paikalleen, sade, valo, lapio (TEE SEURAAVAKSI)
+Versio 0.16, `?v=0.16`, tallennusversio 6.
+1. **Kaadettu puu uusiutuu vain lähelle (≤5 m) kaatopaikkaa** ja on täysin normaali puu (törmäys, hakkuu,
+   kaatuminen, tukit, myrsky). Tee `respawnTree(n)` (resources.js), jota sekä `respawnNodes()` (ai.js) että
+   `regrowForest()` kutsuvat `reviveNode`n sijaan puille: arvo enintään 10 kertaa uusi piste ≤5 m
+   alkuperäisestä (`n.ox,n.oz` = alkuperäinen paikka, tallenna `initNode`ssa), hyväksy jos `terrainH>1`,
+   `biomeAt` on sama kuin ennen, `!nearBase`, `nodesNear(x,z,2.5)` tyhjä (ei muita solmuja) eikä 20 m
+   sisällä `LOC`-paikoista; muuten jää alkuperäiseen paikkaan. Siirto: `gridRemove(n.col)` + uusi
+   `addCircle`, `ngridRemove/ngridAdd`, `n.y=terrainH`, uusi koko `treeS()` (aarnipuu .8–1.15), `maxHp=hp·s²`,
+   `setNodeMatrix`. Ruudun instanssi saa jäädä vanhaan ruutuun (rajauspallossa +30 m varaa).
+   Tallennus: `moved:[[id,x,z,s]]` siirtyneille → `loadData` palauttaa paikat ennen `nodes`-listaa (v6).
+   Kasvit (marjat, sienet) samoin ≤3 m.
+2. **Sade ei tule katon/rakennusten läpi:** sadepisaroille oma pysähtymiskorkeus. Kun pisara syntyy
+   (render/environment `rain`-silmukka), laske maailmakoordinaateissa `stopY = max(terrainH, korkein
+   rakennuslaatikon yläpinta kohdassa x,z)` (`gridQuery` + `c.t==='b'&&c.owner&&c.owner.t`), tallenna
+   `Float32Array`iin. Pisara uudelleensyntyy kun `y < stopY`. Älä tee raycastia joka kehys.
+3. **Valo ei tule seinien/katon läpi (yksinkertainen):** `indoorK` (environment.js): suojassa (`shelterCache`)
+   ja seiniä ≥5/8 suunnassa 6 m säteellä (8 vaakasädettä `pieceRoots`-raycastilla, päivitys 0,5 s välein) →
+   lerp kohti 1. Kerro `hemi`, `amb` ja `sun` (1−.65·indoorK); tulet ja soihdut (`LIGHTS`, `torchLight`)
+   ennallaan. Varmista että kaikki rakennusmeshit `castShadow` (paitsi olkireunus) ja seinäsaumat eivät vuoda
+   (seinän pituus G+.02).
+4. **Lapio (maanmuokkaus):** esine `lapio` (`cat:'shovel'`, `equipGroup` → 'weapon'), resepti työpenkki:
+   puu 4, kivi 2, kuvake ja malli (`makeHeld`). Hiiren vasen: tasoittaa maata katsottavassa kohdassa
+   (`camRayPoint`, ≤6 m) säteellä 2,5 m kohti pelaajan jalkojen korkeutta, enintään ±.4 m/painallus,
+   pehmeä reuna (`sstep`), kestävyys −6. Muokkaa `HGT`-ruudukkoa (GS=2 → ~3×3 kärkeä), päivitä
+   maastoverkon `position` + normaalit (tallenna verkko globaaliin `terrainGeo` render.js:ssä; laske
+   normaalit vain muokatulle alueelle tai koko verkolle kerran per painallus), siirrä alueen solmut
+   (`n.y`, `setNodeMatrix`, törmäysympyrä). Ei rakennusten päälle (`nearBase` ei estä, mutta
+   `pointBlocked`/rakennuslaatikot alueella → "Rakennus on tiellä."). Tallennus: `terra:[[i,h]]` muutetut
+   kärjet (v6). Kartta-kuvaa ei tarvitse päivittää.
 
-### Erä 17 – katot ja kolmiot
-1. Päätykolmio tasakylkiseksi, yhden seinän levyiseksi (harjakaton päätyyn).
-2. Tylpempi olkikatto (loivempi kaltevuus) ja yhden ruudun harjakatto (molemmat lappeet).
-3. Päätykolmio ja vinoseinä (puoliseinä) kääntyvät R:llä myös ylösalaisin: 4 asentoa per suunta.
+### Erä 17 – rakentamisen kohdistus
+Versio 0.17. Kohdistustila `snapMode` (building.js), vaihto **G**, tila näkyy `#buildhint`issä.
+1. **Kohdistus suosii rakennettua osaa:** `buildRaycast` – jos osa osuu ≤1 m kauempana kuin maa, valitse
+   osa. Lattia/seinä maahan, kun vieressä (≤1,6·G, |Δy|<1,5) on lattia: käytä sen korkeutta ja kohdista
+   x,z sen ruudukkoon (`floor.x+k·G`), ei maailman ruudukkoon.
+2. **Tilat:** `ruudukko` (oletus; läpinäkyvä `THREE.GridHelper` 10×G haamun ympärillä haamun korkeudella,
+   näkyy vain vasara kädessä), `puoli` (G/2-askeleet), `vapaa` (ei kohdistusta, 0,25 m askel), `reuna`
+   (katsottavan osan lähimpään reunaan jatkoksi osuman pinnan normaalin suuntaan: seinän päälle, viereen,
+   lattian jatkoksi).
+3. **Ei välkkymistä (z-fighting):** `addPiece`ssa pieni mittakaava-ero `1+((x·7+z·13)&3)·.0015` ja
+   `validPlace` kieltää saman tyypin samaan paikkaan+kiertoon. Lisäksi `polygonOffset` lattioille.
+4. **Palkki** kahdessa koossa: `palkki` (pituus G, .22×.22) ja `palkki_iso` (2·G, .3×.3), puu 1 / 2,
+   snap 'wall', asettuu seinän yläreunaan tai lattian reunaan, R kääntää.
+5. **R kääntää 45°:** `buildRot` 0–7, `rotation.y=rot·π/4`. 45°-kierrolla törmäys: jaa laatikko pitkän
+   akselin suuntaan ~0,4 m paloihin ja kierrä keskipisteet (AABB-palat). Tallennus v7: `r` kahdeksasosina,
+   v<7 → `r*2`.
 
-### Erä 18 – sade ja valo rakennuksissa, lapio
-1. Sade ei tule katon tai rakennusten läpi (sadepisarat katkeavat katon kohdalla).
-2. Valo ei tule seinien/katon läpi: yksinkertainen valofysiikka (sisällä hämärämpää, varjot,
-   taivaanvalo vähenee suojassa).
-3. Lapio: maanmuokkaustyökalu, joka tasoittaa maata pehmeästi (korkeuskartta + maastoverkko + törmäys).
-
-
-### Erä 7 – ohjaus ja animaatio – tehty (ks. versioloki v0.7)
-- C = kyykky/hiipiminen, vihollisten huomaamisetäisyys pienemmäksi, eläimet eivät säiky.
-- `beforeunload`-vahvistus. Koko näyttö F → K. Käsien pehmeä siirtyminen, ketjuiskut.
-
-### Erä 6 – korjauserä – tehty (ks. versioloki v0.6)
-- Välimuistin ohitus, kädet oikein päin, kirveen kahden käden ote, iskun suunta ja ajoitus, ESC,
-  koko näyttö (F). Tallennusilmoitus oli jo koodissa (näkyi vasta kun välimuisti päivittyi).
-
-### Erä 8 – rakentaminen – TEHTY (ks. versioloki v0.9)
-1. Kiinteä olkikatto: pieceBoxes('katto') = 8 porrasviipaletta rinteen suuntaan (paikallinen +z
-   matala pää, -z korkea), viipaleen i yläpinta G/8*(i+1), pohja max(0, yläpinta-.3). Tällöin
-   pelaaja ei kävele läpi, kamera pysähtyy (camera.js käyttää pointBlocked) ja katolla voi kävellä.
-   Tarkista validPlace-poikkeus katolle ja ettei katto estä liikettä talon sisällä.
-2. Paaluaita kestää mobit: PIECES.aita.mobProof=1. damagePiece(p,d,src) saa lähteen; ai.js:n
-   jumittumiskohdassa (n. rivi 50) kutsu src='mob' ja ohita vahinko, jos PIECES[p.t].mobProof.
-   Piikkien vahinko mobille (damageMob 6) säilyy. Pelaaja purkaa vasaralla (X) kuten ennen.
-3. Vauriotekstuurit: 3 kuntotasoa hp/maxHp (>66 %, 33–66 %, <33 %). Tee canvas-tekstuureihin
-   halkeamat ja reiät (puu, kivi, olki), välimuistita materiaalit tasoittain. Funktio
-   setPieceDamage(p) pieces.js:ään, kutsu damagePiecessa ja addPiecessa (latauksen jälkeen oikea taso).
-4. Uudet osat (PIECES, pieceBoxes, buildPieceMesh, snap 'wall', R kääntää/peilaa):
-   - 'vinoseina' Vinoseinä: suorakulmainen kolmio G leveä, WH korkea (ylänurkasta vastakkaiseen
-     alanurkkaan), puu 1.
-   - 'kolmio' Päätykolmio: suorakulmainen kolmio G × G, sopii 45° katon päätyyn, puu 1.
-   Malli THREE.Shape + ExtrudeGeometry (paksuus .2). Törmäys 6 pystyviipaleena kolmion muodon mukaan.
-5. Työpenkin alue näkyviin (vanha suunnitelma): BENCH_R=20, oranssi maastoa seuraava rengas
-   näkyy vain vasara kädessä, virheviesti "Rakenna työpenkin alueelle (oranssi raja)."
-   - Toteutus: vakio `BENCH_R=20` (pieces.js). `addPiece('tyopenkki')` luo maaston mukaan kulkevan
-     rengasnauhan (128 segm., y = `terrainH`+.05…+.45, läpikuultava oranssi `MeshBasicMaterial`,
-     `depthWrite:false`), `removePiece` poistaa sen. `validPlace` käyttää samaa 20 m:n sääntöä.
-   - Olkikaton karhea reuna (`thatchFringe`): canvas-tekstuuri (läpinäkyvä tausta, eripituisia
-     olkia), `alphaTest:.5`, `DoubleSide`. Kaistale katon matalaan ja korkeaan reunaan
-     (poikittaiset päät), ulottuu ~.3 m reunan yli.
-
-### Erä 9 – taistelu, näköyhteys ja hiipiminen – TEHTY (ks. versioloki v0.8)
-1. collision.js: losClear(ax,ay,az,bx,by,bz) – askel .3 m, pointBlocked, ohita päiden .4 m.
-   Silmäkorkeudet: mob y+1.2 (pomo +4), pelaaja y+1.3.
-2. ai.js aggro: chase vaatii näköyhteyden. Ilman näköyhteyttä 3 s (m.noLos) → idle, viha
-   lähtee, myös vaikka mobia olisi lyöty.
-3. Mobin isku (ai.js n. rivi 25): osuu vain jos losClear JA dist < d.range+.25 (keskipisteiden
-   etäisyys, nyt range+r+.4 = liian pitkä) JA katse f > .5. Isku ei koskaan mene seinän läpi.
-4. Pelaajan isku (actions.js doMeleeHit): ohita mobit ja puut/kivet ilman losClear-yhteyttä.
-5. Eläimet: kun P.crouch, flee-eläimet eivät säiky lainkaan (ai.js rivi 20: säikkyvät vain
-   lyönnistä). Hiiviskelyisku: P.crouch ja mob ei ole chase/flee-tilassa → vahinko ×2, keltainen
-   "Hiiviskelyisku!"-teksti.
-
-### Erä 10 – taivas ja sää – TEHTY (ks. versioloki v0.10)
-1. Pehmeä valon vaihto (environment.js n. rivi 26): nyt aurinko vaihtuu kuuksi hetkessä. Tee
-   sunK=sstep(-.12,.08,el) ja moonK yöllä. Valon voimakkuus laskee nollaan horisontissa ja suunta
-   vaihtuu vasta nollassa. Hämärä ja aamunkoitto noin 1,5 min peliaikaa. Laajenna light-käyrää
-   pehmeämmäksi.
-2. Kuu: pallo auringon vastapuolella (fog:false), vaalea canvas-tekstuuri läikillä, heikko
-   sinertävä kuunvalo varjoineen, vaihe vaihtelee dayN:n mukaan (kirkkaus).
-3. Uudet säät WEATHERS-taulukkoon: myrsky (rankkasade, salamat = hetkellinen valon välähdys +
-   jyrinä audio.js:ään 0,5–2 s viiveellä), lumisade (vain vuorilla tai korkealla, hitaat valkoiset
-   hiutaleet), tihku, tuulinen (puiden latvat huojuvat). Todennäköisyydet updateWeatheriin, viestit
-   suomeksi, säätila näkyy kellossa.
-
-### Erä 11 – isompi maailma ja metsät – TEHTY (ks. versioloki v0.11)
-1. Kartta noin 3× pinta-alaltaan: world.js HALF 200→350, GN 200→350 (GS pysyy 2). Skaalaa
-   LOC-paikat ×1.75, reunan meri (sstep(170,198,d)) ja biomien kohinat. Kartat: MAPC 400→700 px,
-   explored-ruudukko 100→175. Mittaa FPS ennen ja jälkeen ja kirjaa se.
-2. Tiheämpi metsä: niittyalueet selvästi pienemmiksi biomeAtissa, metsän puutiheys .42→.6.
-3. Puiden koko vaihtelee: s .6–2.0, hp ∝ s², saaliit ∝ s.
-4. Uusi biomi "Aarnimetsä" (1–2 isoa aluetta): 'aarnipuu', runko 1–1,6 m paksu, 14–22 m korkea,
-   havusto vasta 10 m:n yläpuolella. Tumma sammalmaa. Kun pelaaja on biomissa: tiheä sumu (near
-   6, far 60), valo ×.6, synkkä tunnelma. Aarnipuuta ei voi kaataa ennen erää 12 (viesti
-   "Tarvitset vahvemman kirveen").
-5. Kaatuneesta puusta jää tukki (state.js fallTree): uusi node kind 'log' vaakatasossa
-   rungon suuntaan, pituus ~ puun korkeus, hp 20*s, hakkaamalla saa puut. Isot puut = 2 tukkia.
-6. Metsä kasvaa öisin: sleepAtin fadeTo-callbackissa herätä kaadetut puut, joiden 25 m:n
-   säteellä ei ole rakennusta, ja istuta enintään 40 uutta puuta metsäbiomeihin (varaa
-   instanssipooli, esim. 400 paikkaa per puulaji).
-
-### Erä 12 – malmit, työkalut ja aarnipuu – TEHTY (ks. versioloki v0.12)
-1. Työkalutasot: ITEMS-aseille pick/chop-taso (piikivihakku 1, UUSI kuparihakku 2 ahjosta:
-   kupari 6, puu 3, rautahakku 3; kivikirves 1, kuparikirves 2, rautakirves 3). NODE:lle `tier`.
-   Liian heikko työkalu → "Tarvitset paremman hakun/kirveen".
-2. Rautasuoni: harvinainen (~25 kpl) vuorilla h>22, hp 120, tier 2, antaa rautamalmia 2–4.
-   Sulatusuuni sulattaa myös rautamalmin rautaharkoksi (erillinen jono).
-3. Rautavarusteet ahjoon: rautakirves (chop 3), rautahakku, rautamiekka (dmg 34),
-   rautapanssari (arm 22). Kuvakkeet icon()-switchiin.
-4. Aarnipuu vaatii chop-tason 3 ja antaa tervaspuuta (uusi tumma puu). Uudet rakennusosat
-   tervasseinä ja tervaslattia: tumma väri, hp ×2.
+### Erä 18 – katot ja kolmiot
+Versio 0.18.
+1. **Päätykolmio tasakylkiseksi:** `kolmio` = pohja G, kärki keskellä korkeudella G/2 (sopii yhden ruudun
+   harjakaton päätyyn ja parittoman talon katon kärkeen). Vanhat `kolmio`-tallennukset muuttuvat
+   automaattisesti uuteen muotoon (sama tyyppi).
+2. **Tylpempi olkikatto** `katto_loiva` (nousu G/2 / G, 8 viipaletta yläpinta G/16·(i+1)) ja **harjakatto**
+   `harjakatto` yhden ruudun kokoisena: kaksi lapetta, harja ruudun keskellä korkeudella G/2,
+   viipaleet symmetrisesti, olkireunus molempiin päihin.
+3. **Neljä asentoa:** päätykolmio ja vinoseinä: R vaihtaa asennon (normaali, peilattu, ylösalaisin,
+   ylösalaisin peilattu), Shift+R kääntää suuntaa. Kenttä `p.f` (0–3, tallennukseen `f`).
+   Peilaus `scale.x=-1`, ylösalaisin kierto keskikohdan ympäri; törmäysviipaleet lasketaan asennon mukaan.
 
 ### Erä 14 – Aarnimetsä, sumu ja kartan pilviverho – TEHTY (ks. versioloki v0.14)
 - Roikkuvat havuoksat, iso alue ja pensaat, sumuisempi ja pimeämpi peli, pimeä kartta.
