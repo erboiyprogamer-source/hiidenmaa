@@ -4,13 +4,14 @@
 
 const fo=k=>flags[k]||(flags[k]={});
 const REALMS={
-  portal1:{n:'Routaluola',gen:'maze',W:31,H:31,wall:0x9fb4c6,floor:0x6a7c8c,tc:0x8fd0ff,fog:0x08121a,glow:0x7fd0ff,boss:'jaajattari',mobs:['routasusi','routasusi','kalmo'],dens:.04,lock:null},
-  portal2:{n:'Kalmankammio',gen:'rooms',W:43,H:35,wall:0x9a8f7e,floor:0x5c554a,tc:0xff8a36,fog:0x0d0806,glow:0xe6e0cf,boss:'kalmaherra',mobs:['kalmo','kalmo','kalmo','ylimys'],dens:.035,lock:'jaaavain'},
-  portal3:{n:'Aarnihauta',gen:'cave',W:47,H:47,wall:0x6f8a5a,floor:0x4a5a3a,tc:0x9aff7a,fog:0x050c06,glow:0x7aff9a,boss:'aarnihirvio',mobs:['hiisi','hiisi','susi','kivivartija'],dens:.03,lock:'aarniavain'},
+  portal1:{n:'Routaluola',gen:'maze',W:31,H:31,wall:0x9fb4c6,floor:0x6a7c8c,tc:0x8fd0ff,fog:0x08121a,glow:0x7fd0ff,mist:0xb8d8f0,boss:'jaajattari',mobs:['routasusi','routasusi','kalmo'],dens:.04,lock:null},
+  portal2:{n:'Kalmankammio',gen:'rooms',W:43,H:35,wall:0x9a8f7e,floor:0x5c554a,tc:0xff8a36,fog:0x0d0806,glow:0xe6e0cf,mist:0xcfc4b0,boss:'kalmaherra',mobs:['kalmo','kalmo','kalmo','ylimys'],dens:.035,lock:'jaaavain'},
+  portal3:{n:'Aarnihauta',gen:'cave',W:47,H:47,wall:0x6f8a5a,floor:0x4a5a3a,tc:0x9aff7a,fog:0x050c06,glow:0x7aff9a,mist:0x9fd8a0,boss:'aarnihirvio',mobs:['hiisi','hiisi','susi','kivivartija'],dens:.03,lock:'aarniavain'},
 };
+const RCH=7.6; // sisätilan kattokorkeus (pomojen pää ei osu kattoon)
 const REALM_IDS=Object.keys(REALMS);
 REALM_IDS.forEach((id,k)=>{REALMS[id].cx=DUN.x+(k+1)*230;REALMS[id].cz=DUN.z;});
-const BUILT={}, PORTALS=[];
+const BUILT={}, PORTALS=[], VENTS=[];
 const CHEST_LOOT=[[['rauta',3],['kupari',3],['nuolet',12]],[['rautamalmi',4],['pihka',3],['nahka',3]],[['hiidenkivi',1],['luu',4]],[['kupari',5],['kivi',6],['nuolet',10]],[['rauta',2],['hiili',4],['liha',3]]];
 
 /* ---------------- GENERAATTORIT: ruudukko, jossa '#' on seinä ja '.' lattia ---------------- */
@@ -67,7 +68,8 @@ function finishRealm(g,r,D){
   const chests=[],dead=floors.filter(([x,z])=>wallN(x,z)>=3&&d[z*W+x]>10&&Math.max(Math.abs(x-bs.ix),Math.abs(z-bs.iz))>4);
   for(const c of dead){if(chests.length>=4)break;if(r()<.6&&!chests.some(t=>near(t,c,6)))chests.push(c);}
   if(chests.length<2){for(const c of floors){if(chests.length>=3)break;if(wallN(c[0],c[1])>=1&&d[c[1]*W+c[0]]>14&&r()<.05)chests.push(c);}}
-  return{ent,boss:bs,mobs,torches,chests:chests.map(([ix,iz])=>({ix,iz}))};
+  const vents=[];for(const [x,z] of floors){if(vents.length>=8)break;if(wallN(x,z)>=1&&d[z*W+x]>6&&r()<.03&&!vents.some(t=>near(t,[x,z],6)))vents.push([x,z]);}
+  return{ent,boss:bs,mobs,torches,vents,chests:chests.map(([ix,iz])=>({ix,iz}))};
 }
 
 /* ---------------- SISÄTILAN RAKENTAMINEN (laiska: vasta ensimmäisellä käynnillä) ---------------- */
@@ -75,6 +77,7 @@ function disposeRealm(id){const R=BUILT[id];if(!R)return;
   for(const o of R.objs){statics.remove(o);if(o.geometry)o.geometry.dispose();}
   for(const c of R.cols)gridRemove(c);
   for(const it of R.its){const i=interactables.indexOf(it);if(i>=0)interactables.splice(i,1);}
+  for(const v of R.vl||[]){const i=VENTS.indexOf(v);if(i>=0)VENTS.splice(i,1);}
   for(const l of R.ls){const i=lightSources.indexOf(l);if(i>=0)lightSources.splice(i,1);}
   delete BUILT[id];}
 function resetRealms(){for(const id of Object.keys(BUILT))disposeRealm(id);}
@@ -92,16 +95,17 @@ function ensureRealm(id){
   const isW=(x,z)=>x<0||z<0||x>=W||z>=H||g[z][x]==='#';
   const vis=(x,z)=>{for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)if(!isW(x+b,z+a))return true;return false;};
   const wallsV=[];for(let z=0;z<H;z++)for(let x=0;x<W;x++)if(g[z][x]==='#'&&vis(x,z))wallsV.push([x,z]);
-  const im=new THREE.InstancedMesh(new THREE.BoxGeometry(DC,4.2,DC),new THREE.MeshStandardMaterial({map:TEX.stone,roughness:1,color:D.wall}),wallsV.length);im.frustumCulled=false;im.receiveShadow=true;
-  wallsV.forEach(([x,z],i)=>{const p=cell(x,z);_m4.makeTranslation(p.x,y0+2.1,p.z);im.setMatrixAt(i,_m4);});
+  const im=new THREE.InstancedMesh(new THREE.BoxGeometry(DC,RCH,DC),new THREE.MeshStandardMaterial({map:TEX.stone,roughness:1,color:D.wall}),wallsV.length);im.frustumCulled=false;im.receiveShadow=true;
+  wallsV.forEach(([x,z],i)=>{const p=cell(x,z);_m4.makeTranslation(p.x,y0+RCH/2,p.z);im.setMatrixAt(i,_m4);});
   im.instanceMatrix.needsUpdate=true;add(im);
-  for(let z=0;z<H;z++){let x=0;while(x<W){if(g[z][x]==='#'&&vis(x,z)){let e=x;while(e+1<W&&g[z][e+1]==='#'&&vis(e+1,z))e++;const a=cell(x,z),b=cell(e,z);box(a.x-DC/2,y0,a.z-DC/2,b.x+DC/2,y0+4.2,b.z+DC/2);x=e+1;}else x++;}}
+  for(let z=0;z<H;z++){let x=0;while(x<W){if(g[z][x]==='#'&&vis(x,z)){let e=x;while(e+1<W&&g[z][e+1]==='#'&&vis(e+1,z))e++;const a=cell(x,z),b=cell(e,z);box(a.x-DC/2,y0,a.z-DC/2,b.x+DC/2,y0+RCH,b.z+DC/2);x=e+1;}else x++;}}
   const fw=W*DC,fh=H*DC;
   const fl=bx(fw,.4,fh,new THREE.MeshStandardMaterial({map:TEX.stone.clone(),color:D.floor}),D.cx,y0-.2,D.cz,false);fl.material.map.repeat.set(W,H);fl.material.map.needsUpdate=true;add(fl);
   box(D.cx-fw/2,y0-1,D.cz-fh/2,D.cx+fw/2,y0,D.cz+fh/2);
-  add(bx(fw,.4,fh,mat(0x1d1a17),D.cx,y0+4.4,D.cz,false));
-  box(D.cx-fw/2,y0+4.2,D.cz-fh/2,D.cx+fw/2,y0+5,D.cz+fh/2).noGround=true;
+  add(bx(fw,.4,fh,mat(0x1d1a17),D.cx,y0+RCH+.2,D.cz,false));
+  box(D.cx-fw/2,y0+RCH,D.cz-fh/2,D.cx+fw/2,y0+RCH+.8,D.cz+fh/2).noGround=true;
   for(const [ix,iz] of L.torches){const p=cell(ix,iz);add(bx(.12,.6,.12,mat(0x4a2f18),p.x,y0+2.2,p.z));add(bx(.2,.25,.2,MAT.flame,p.x,y0+2.6,p.z,false));lit(p.x,y0+2.6,p.z,D.tc,1.8);}
+  R.vl=[];for(const [ix,iz] of L.vents){const p=cell(ix,iz);add(bx(.9,.08,.9,mat(0x1a1714),p.x,y0+.04,p.z,false));const v={x:p.x,y:y0+.1,z:p.z,col:D.mist,rate:3.5,dun:true,acc:0};VENTS.push(v);R.vl.push(v);}
   R.entry=cell(L.ent.ix,L.ent.iz);R.boss=cell(L.boss.ix,L.boss.iz);
   R.mobs=L.mobs.map(m=>({...cell(m.ix,m.iz),type:m.type}));
   L.chests.forEach((c,i)=>{const p=cell(c.ix,c.iz),key=id+':'+i,sarc=D.gen==='rooms';
@@ -171,6 +175,7 @@ function summonMinions(m,n){const R=REALMS[m.realm],cnt=mobs.filter(o=>o.boss===
   shockwave(m.pos.x,m.pos.y,m.pos.z,6,REALMS[m.realm].glow);}
 function realmBossAI(m,dt,dx,dz,dist){
   const d=m.def,f=m.f;
+  if(f.sway)for(const w of f.sway){w.m.rotation.z=w.bz+Math.sin(playTime*w.f+w.p)*w.a;w.m.rotation.x=w.bxr+Math.cos(playTime*w.f*.8+w.p)*w.a*.6;}
   if(m.state==='sleep'){if(!P.dead&&dist<d.aggro&&(P.spawnProt||0)<=0){m.state='intro';m.t=0;sfx('roar');}f.g.position.copy(m.pos);return;}
   if(m.state==='intro'){m.t+=dt;m.yaw=Math.atan2(dx,dz);f.g.position.copy(m.pos);f.g.rotation.y=m.yaw;f.armL.rotation.x=f.armR.rotation.x=-2.8*Math.min(1,m.t);
     if(m.t>2){m.state='chase';m.phase=1;sfx('roar');shake(.5);msg(`${d.n} herää!`,'warn');}return;}
@@ -201,9 +206,36 @@ function realmBossAI(m,dt,dx,dz,dist){
 let bbOwn=false;
 function updateDungeons(dt){
   if(P.spawnProt>0)P.spawnProt-=dt;
+  updateMist(dt);
   for(const p of PORTALS){const lk=portalLocked(p.id);if(p.lk!==lk){p.lk=lk;setPortalLook(p.id);}p.plane.material.opacity=lk?.28:.5+.2*Math.sin(playTime*2.2+p.ph);}
   const rb=P.inDun?mobs.find(m=>m.def.ai==='rboss'&&m.dun&&!m.dead&&m.state!=='sleep'):null,bar=$('#bossbar');
   if(rb){bbOwn=true;bar.hidden=false;bar.querySelector('.name').textContent=rb.def.n+(rb.phase>1?` · vaihe ${rb.phase}`:'');bar.querySelector('i').style.width=(rb.hp/rb.maxHp*100)+'%';}
   else if(bbOwn){bbOwn=false;bar.querySelector('.name').textContent='Kalmanvartija';if(!(boss&&!boss.dead))bar.hidden=true;}
 }
 function nearSite(x,z,r){for(const k in LOC){const L=LOC[k];if((L.kind==='portal'||L.kind==='ruin'||L.kind==='rock')&&dist2(x,z,L.x,L.z)<r*r)return true;}return false;}
+
+/* ---------------- USVA JA HÖYRY ---------------- */
+// Matala usva leijuu pelaajan ympärillä ulottuvuuksissa, Hautakummussa ja löytöpaikkojen lähellä; höyrypuhurit (VENTS) työntävät höyryä ylös.
+const MIST_TEX=(function(){const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d'),gr=g.createRadialGradient(32,32,2,32,32,32);gr.addColorStop(0,'rgba(255,255,255,.9)');gr.addColorStop(.5,'rgba(255,255,255,.35)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);})();
+const mkSprite=()=>{const m=new THREE.Sprite(new THREE.SpriteMaterial({map:MIST_TEX,transparent:true,depthWrite:false,opacity:0,fog:false}));m.visible=false;scene.add(m);return{m,life:0,max:1,x:0,y:0,z:0,vx:0,vy:0,vz:0,size:4,op:.1};};
+const MIST=Array.from({length:44},mkSprite), STEAM=Array.from({length:44},mkSprite);
+// Ulkona höyryävät paikat: kummun portti, arkkukivet ja portaalien juuret
+for(const k in LOC){const L=LOC[k];if(L.kind==='rock')VENTS.push({x:L.x+1.5,y:terrainH(L.x,L.z)+.1,z:L.z+2.5,col:0xdfe8ea,rate:1.2,acc:0});if(L.kind==='portal'){const y=terrainH(L.x,L.z);for(const s of [-1,1])VENTS.push({x:L.x+(L.ax==='x'?s*4.4:.6),y:y+.1,z:L.z+(L.ax==='x'?.6:s*4.4),col:0xdfe8ea,rate:1.4,acc:0});}}
+VENTS.push({x:LOC.barrow.x+9.6,y:terrainH(LOC.barrow.x+10.5,LOC.barrow.z)+.1,z:LOC.barrow.z-1,col:0xcfd4d0,rate:2.5,acc:0},{x:LOC.barrow.x+9.6,y:terrainH(LOC.barrow.x+10.5,LOC.barrow.z)+.1,z:LOC.barrow.z+1,col:0xcfd4d0,rate:2.5,acc:0});
+[[5,6],[12,10],[16,2],[8,10],[17,5]].forEach(([ix,iz])=>{const p=dunCell(ix,iz);VENTS.push({x:p.x,y:DUN.y+.1,z:p.z,col:0xb8b2a6,rate:3,dun:true,acc:0});});
+function updateMist(dt){
+  const dun=P.inDun,D=dun&&P.realm?REALMS[P.realm]:null,q=QUAL.lvl>=2?.4:1;
+  let ax=P.pos.x,az=P.pos.z,on=dun,col=D?D.mist:0xa8a49a;
+  if(!dun){let bd=60*60;for(const k in LOC){const L=LOC[k];if(L.kind!=='portal'&&L.kind!=='rock'&&L.kind!=='ruin'&&k!=='barrow')continue;const d2=dist2(L.x,L.z,P.pos.x,P.pos.z);if(d2<bd){bd=d2;ax=L.x;az=L.z;on=true;}}col=0xc9d6da;}
+  const n=MIST.length*q;
+  MIST.forEach((s,i)=>{
+    if(i>=n||(!on&&s.life<=0)){s.m.visible=false;return;}
+    if(s.life<=0){if(!on)return;const a=Math.random()*TAU,rr=Math.random()*(dun?15:10);s.x=ax+Math.cos(a)*rr;s.z=az+Math.sin(a)*rr;s.y=(dun?DUN.y:terrainH(s.x,s.z))+.3+Math.random()*1.1;s.vx=(Math.random()-.5)*.5;s.vz=(Math.random()-.5)*.5;s.max=s.life=6+Math.random()*6;s.size=dun?4.5+Math.random()*3:5+Math.random()*4;s.op=dun?.15:.1;}
+    s.life-=dt;const k=s.life/s.max,f=Math.sin(Math.PI*(1-k));s.x+=s.vx*dt;s.z+=s.vz*dt;
+    s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar(s.size*(1+.25*(1-k)));s.m.material.opacity=s.op*f;s.m.material.color.setHex(col);s.m.visible=true;});
+  for(const v of VENTS){if(!!v.dun!==dun||dist2(v.x,v.z,P.pos.x,P.pos.z)>30*30)continue;v.acc+=dt*v.rate*q;
+    while(v.acc>=1){v.acc--;const s=STEAM.find(o=>o.life<=0);if(!s)break;s.x=v.x+(Math.random()-.5)*.5;s.y=v.y;s.z=v.z+(Math.random()-.5)*.5;s.vx=(Math.random()-.5)*.3;s.vz=(Math.random()-.5)*.3;s.vy=.9+Math.random()*.7;s.max=s.life=2.4+Math.random()*1.2;s.col=v.col;}}
+  for(const s of STEAM){if(s.life<=0){s.m.visible=false;continue;}
+    s.life-=dt;const k=s.life/s.max;s.x+=s.vx*dt;s.y+=s.vy*dt;s.z+=s.vz*dt;
+    s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar(.7+(1-k)*2.8);s.m.material.opacity=.3*Math.sin(Math.PI*(1-k));s.m.material.color.setHex(s.col);s.m.visible=true;}
+}
