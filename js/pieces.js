@@ -58,9 +58,9 @@ function buildPieceMesh(t){
   switch(t){
     case 'lattia':g.add(bx(G,.2,G,MAT.wood,0,-.1,0));break;
     case 'tervaslattia':g.add(bx(G,.2,G,MAT.tarwood,0,-.1,0));break;
-    case 'tervasseina':g.add(bx(G,WH,.2,MAT.tarwood,0,WH/2,0));g.add(bx(.22,WH,.24,mat(0x2e2016),-G/2+.11,WH/2,0));break;
-    case 'seina':g.add(bx(G,WH,.2,MAT.wood,0,WH/2,0));g.add(bx(.22,WH,.24,mat(0x5e3b1f),-G/2+.11,WH/2,0));break;
-    case 'kiviseina':g.add(bx(G,WH,.36,MAT.stone,0,WH/2,0));break;
+    case 'tervasseina':g.add(bx(G+.02,WH,.2,MAT.tarwood,0,WH/2,0));g.add(bx(.22,WH,.24,mat(0x2e2016),-G/2+.11,WH/2,0));break;
+    case 'seina':g.add(bx(G+.02,WH,.2,MAT.wood,0,WH/2,0));g.add(bx(.22,WH,.24,mat(0x5e3b1f),-G/2+.11,WH/2,0));break;
+    case 'kiviseina':g.add(bx(G+.02,WH,.36,MAT.stone,0,WH/2,0));break;
     case 'aita':{const n=9;for(let i=0;i<n;i++){const x=-G/2+.12+i*(G-.24)/(n-1);g.add(bx(.18,1.5,.18,mat(0x7b5434),x,.75,0));const tip=new THREE.Mesh(new THREE.ConeGeometry(.12,.35,4),mat(0x9a7450));tip.position.set(x,1.65,0);tip.castShadow=true;g.add(tip);}g.add(bx(G,.14,.24,mat(0x5e3b1f),0,.7,.08));break;}
     case 'ovi':{const pw=(G-DOOR_W)/2,px=DOOR_W/2+pw/2,fm=mat(0x5e3b1f);g.add(bx(pw,WH,.22,fm,-px,WH/2,0),bx(pw,WH,.22,fm,px,WH/2,0),bx(G,WH-DOOR_H,.22,fm,0,(DOOR_H+WH)/2,0));const piv=new THREE.Group();piv.position.set(-DOOR_W/2,0,0);piv.add(bx(DOOR_W,DOOR_H-.05,.1,MAT.wood,DOOR_W/2,(DOOR_H-.05)/2,0));piv.add(bx(.12,.12,.16,mat(0x3a3a3a),DOOR_W-.22,1.05,.04));g.add(piv);g.userData.leaf=piv;break;}
     case 'katto':{const L=G*Math.SQRT2+.15,rg=new THREE.Group();rg.position.y=G/2;rg.rotation.x=Math.PI/4;rg.add(bx(G+.1,.14,L,MAT.thatch));

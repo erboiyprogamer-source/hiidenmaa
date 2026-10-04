@@ -114,7 +114,7 @@ function makeChunkIM(type,k,cap){const cx=k%CHN,cz=(k/CHN)|0,x0=-HALF+cx*CHS,z0=
 // Kaukaiset ruudut piiloon (sumu peittää ne joka tapauksessa).
 function updateChunkVis(){const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far;
   for(const im of CHUNK_IMS){const R=Math.min(f,im.userData.vis)+CHS*.72;im.visible=im.count>0&&!P.inDun&&dist2(cx,cz,im.userData.cx,im.userData.cz)<R*R;}}
-function initNode(n){n.id=nodeIdN++;n.def=NODE[n.type];n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?n.s*n.s:1);n.hp=n.maxHp;n.alive=true;n.respawnAt=0;
+function initNode(n){n.ox=n.x;n.oz=n.z;n.s0=n.s;n.id=nodeIdN++;n.def=NODE[n.type];n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?n.s*n.s:1);n.hp=n.maxHp;n.alive=true;n.respawnAt=0;
   setNodeMatrix(n,true);
   if(n.def.kind==='tree')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+6*n.s,n);
   else if(n.def.kind==='rock')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+1.2*n.s,n);
@@ -129,6 +129,29 @@ function nodeDist(n,x,z){if(!n.isLog)return Math.hypot(x-n.x,z-n.z);const dx=n.b
 function nodesNear(x,z,r,out){out.length=0;const x0=Math.floor((x-r)/CELL),x1=Math.floor((x+r)/CELL),z0=Math.floor((z-r)/CELL),z1=Math.floor((z+r)/CELL);for(let gx=x0;gx<=x1;gx++)for(let gz=z0;gz<=z1;gz++){const a=NGRID.get(ck(gx,gz));if(a)for(const n of a)if(n.alive&&!out.includes(n)&&nodeDist(n,x,z)<r)out.push(n);}return out;}
 function killNode(n){n.alive=false;n.respawnAt=playTime+n.def.respawn;setNodeMatrix(n,false);if(n.col)n.col.off=true;}
 function reviveNode(n){n.alive=true;n.hp=n.maxHp;setNodeMatrix(n,true);if(n.col)n.col.off=false;}
+// Siirtää puun/kasvin uuteen paikkaan (törmäys, ruudukko, korkeus, koko).
+function moveNode(n,x,z,s){n.x=x;n.z=z;n.s=s;n.y=terrainH(x,z);n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?s*s:1);
+  if(n.col){gridRemove(n.col);const off=n.col.off;if(n.def.kind==='tree')n.col=addCircle(x,z,n.def.r*s,n.y-1,n.y+6*s,n);else n.col=addCircle(x,z,n.def.r*s,n.y-1,n.y+1.2*s,n);n.col.off=off;}
+  ngridRemove(n);ngridAdd(n);}
+function locMin(x,z){let m=1e9;for(const k in LOC)m=Math.min(m,Math.hypot(x-LOC[k].x,z-LOC[k].z));return m;}
+// Kaadettu puu uusiutuu enintään 5 m (kasvi 3 m) alkuperäisestä paikastaan; muuten alkuperäiseen paikkaan.
+function respawnNode(n){const kind=n.def.kind;
+  if(kind==='tree'||kind==='pick'){const R=kind==='tree'?5:3,b0=biomeHere(n.ox,n.oz),lm=Math.min(20,locMin(n.ox,n.oz));let px=n.ox,pz=n.oz,ps=n.s0;
+    const tmp=[];
+    for(let t=0;t<10;t++){const a=rng()*TAU,d=Math.sqrt(rng())*R,x=n.ox+Math.cos(a)*d,z=n.oz+Math.sin(a)*d,h=terrainH(x,z);
+      if(h<=1||biomeAt(x,z,h)!==b0||nearBase(x,z)||locMin(x,z)<lm)continue;if(nodesNear(x,z,kind==='tree'?2.5:1,tmp).length)continue;
+      px=x;pz=z;ps=kind==='tree'?(n.type==='aarnipuu'?.8+rng()*.35:treeS()):1;break;}
+    moveNode(n,px,pz,ps);}
+  syncNodeY(n);reviveNode(n);}
+// Palauttaa solmun alkuperäiseen paikkaan ja kokoon (uusi peli / lataus).
+function syncNodeY(n){const y=terrainH(n.x,n.z);if(Math.abs(y-n.y)<.001)return;n.y=y;if(n.alive)setNodeMatrix(n,true);if(n.col){n.col.minY=y-1;n.col.maxY=n.def.kind==='tree'?y+6*n.s:y+1.2*n.s;}}
+// Maanmuokkaus (lapio): korkeuskartta, maastoverkko, solmujen korkeudet. Muokatut kärjet tallentuvat (`TERRA`).
+function terraSetVertex(i,h){if(Math.abs(h-HGT0[i])<.005){delete TERRA[i];h=HGT0[i];}else TERRA[i]=h;HGT[i]=h;terrainMesh.geometry.attributes.position.array[i*3+1]=h;}
+function terraFlush(){terrainMesh.geometry.attributes.position.needsUpdate=true;terrainMesh.geometry.computeBoundingSphere();}
+function terraList(){return Object.entries(TERRA).map(([i,h])=>[+i,+h.toFixed(2)]);}
+function applyTerra(list){for(const [i,h] of list)terraSetVertex(i,h);terraFlush();for(const n of nodes)syncNodeY(n);}
+function resetTerra(){for(const i in TERRA){HGT[i]=HGT0[i];terrainMesh.geometry.attributes.position.array[i*3+1]=HGT0[i];delete TERRA[i];}terraFlush();}
+function restoreNode(n){if(n.x!==n.ox||n.z!==n.oz||n.s!==n.s0)moveNode(n,n.ox,n.oz,n.s0);syncNodeY(n);if(!n.alive)reviveNode(n);else setNodeMatrix(n,true);}
 
 /* ---------------- TUKIT (kaatuneet puut) ---------------- */
 const logs=[];
@@ -158,5 +181,5 @@ function unplantAll(){for(let i=nodes.length-1;i>=0;i--){const n=nodes[i];if(!n.
 function nearBase(x,z){const r=BENCH_R*1.5;for(const p of pieces)if(dist2(p.x,p.z,x,z)<r*r)return true;return false;}
 // Yöllä nukkuessa: kaadetut puut ja poimitut kasvit uusiutuvat (ei uusia), paitsi rakennusten lähellä.
 function regrowForest(){let revived=0;
-  for(const n of nodes)if(!n.alive&&(n.def.kind==='tree'||n.def.kind==='pick')&&!nearBase(n.x,n.z)){reviveNode(n);revived++;}
+  for(const n of nodes)if(!n.alive&&(n.def.kind==='tree'||n.def.kind==='pick')&&!nearBase(n.x,n.z)){respawnNode(n);revived++;}
   return{revived,planted:0};}

@@ -110,7 +110,7 @@ function spawner(dt){
     if(dist2(x,z,LOC.spawn.x,LOC.spawn.z)<30*30&&MOBDEF[type].ai==='hostile'&&!night)continue;
     const pack=type==='susi'&&night?2:1;for(let k=0;k<pack;k++)spawnMob(type,x+k*1.5,z+k);return;}
 }
-function respawnNodes(){for(const n of nodes)if(!n.alive&&n.respawnAt<=playTime&&dist2(n.x,n.z,P.pos.x,P.pos.z)>40*40&&!nearBase(n.x,n.z))reviveNode(n);}
+function respawnNodes(){for(const n of nodes)if(!n.alive&&n.respawnAt<=playTime&&dist2(n.x,n.z,P.pos.x,P.pos.z)>40*40&&!nearBase(n.x,n.z))respawnNode(n);}
 function updateStations(dt){
   for(const p of pieces){
     if(p.t==='nuotio'){const f=p.mesh.userData.flame;const lit=p.data.fuel>0;f[0].visible=f[1].visible=lit;if(lit){f[0].scale.y=1+Math.sin(playTime*12+p.x)*.15;p.data.burn+=dt;if(p.data.burn>=90){p.data.burn=0;p.data.fuel--;}

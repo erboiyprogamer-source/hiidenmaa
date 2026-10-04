@@ -4,8 +4,10 @@
 
 /* ---------------- SAVE / LOAD ---------------- */
 const SKEY='hiidenmaa_save_v1';
-function serialize(){return{v:5,mapId:MAP_ID,bossPending:!!(boss&&!boss.dead&&!flags.boss),playTime,dayT,dayN,weather,flags,P:{x:P.pos.x,y:P.pos.y,z:P.pos.z,hp:P.hp,stam:P.stam,hunger:P.hunger,buffs:P.buffs,spawn:P.spawn,deaths:P.deaths,kills:P.kills,inDun:P.inDun},cam:[camYaw,camPitch],inv,
+function serialize(){return{v:6,mapId:MAP_ID,bossPending:!!(boss&&!boss.dead&&!flags.boss),playTime,dayT,dayN,weather,flags,P:{x:P.pos.x,y:P.pos.y,z:P.pos.z,hp:P.hp,stam:P.stam,hunger:P.hunger,buffs:P.buffs,spawn:P.spawn,deaths:P.deaths,kills:P.kills,inDun:P.inDun},cam:[camYaw,camPitch],inv,
   pieces:pieces.map(p=>({t:p.t,x:p.x,y:p.y,z:p.z,r:p.rot,hp:p.hp,d:p.t==='arkku'?{items:p.data.items}:p.t==='nuotio'?{fuel:p.data.fuel}:p.t==='sulatin'?{ore:p.data.ore,iore:p.data.iore,wood:p.data.wood,done:p.data.done,idone:p.data.idone}:p.t==='ovi'?{open:p.data.open}:{}})),
+  moved:nodes.filter(n=>n.x!==n.ox||n.z!==n.oz||n.s!==n.s0).map(n=>[n.id,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
+  terra:terraList(),
   planted:nodes.filter(n=>n.planted).map(n=>[n.type,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
   nodes:nodes.filter(n=>!n.alive).map(n=>[n.id,Math.round(n.respawnAt-playTime)]),graves:graves.map(g=>({x:g.x,y:g.y,z:g.z,items:g.items})),dk:dunKilled,
   explored:btoa(String.fromCharCode.apply(null,packBits(explored)))};}
@@ -23,10 +25,12 @@ function loadData(s){
   if(s.cam){camYaw=s.cam[0];camPitch=s.cam[1];}
   inv=(s.inv||[]).slice(0,32);while(inv.length<32)inv.push(null);
   if(!oldWorld){
+    applyTerra(s.terra||[]);
     for(const p of s.pieces||[])addPiece(p.t,p.x,p.y,p.z,p.r,p.hp,p.d);
     for(const [t,x,z,sc] of s.planted||[])plantTree(t,x,z,sc);
     // v<5: maiseman solmujen numerointi muuttui (pensaat), joten kaadettujen lista ohitetaan.
-    const byId=new Map(nodes.map(n=>[n.id,n]));for(const [id,left] of (s.v>=5?s.nodes:null)||[]){const n=byId.get(id);if(n){killNode(n);n.respawnAt=playTime+left;}}
+    const byId=new Map(nodes.map(n=>[n.id,n]));for(const [id,x,z,sc] of s.moved||[]){const n=byId.get(id);if(n)moveNode(n,x,z,sc);}
+    for(const [id,left] of (s.v>=5?s.nodes:null)||[]){const n=byId.get(id);if(n){killNode(n);n.respawnAt=playTime+left;}}
     for(const g of s.graves||[])makeGrave(g);}
   else{const all=[];for(const p of s.pieces||[])for(const [id,n] of Object.entries(PIECES[p.t]?PIECES[p.t].req:{}))all.push([id,n]);for(const g of s.graves||[])for(const it of g.items||[])if(it)all.push([it.id,it.n]);
     for(const [id,n] of all)invAdd(id,n);setTimeout(()=>msg('Maailma on kasvanut! Vanhat rakennuksesi palautettiin tarvikkeina reppuun.','warn'),600);}
@@ -38,7 +42,7 @@ function loadData(s){
 }
 function resetWorld(){
   for(const p of [...pieces])removePiece(p);for(const m of [...mobs])mobRemove(m);for(const d of drops)scene.remove(d.mesh);drops=[];for(const g of graves)scene.remove(g.mesh);graves=[];
-  clearLogs();unplantAll();for(const n of nodes)if(!n.alive)reviveNode(n);for(const k in dunKilled)delete dunKilled[k];explored.fill(0);
+  clearLogs();unplantAll();resetTerra();for(const n of nodes)restoreNode(n);for(const k in dunKilled)delete dunKilled[k];explored.fill(0);
   for(const p of projs)scene.remove(p.m);projs.length=0;
   circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));sarcs.forEach(s=>{s.lid.position.x=0;s.lid.rotation.z=0;});
   $('#bossbar').hidden=true;
