@@ -153,7 +153,7 @@ function updateStations(dt){
   for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i];const u=l.userData.fl||(l.userData.fl={cur:1,target:1,t:Math.random()*.2});l.intensity=!l.userData.base?0:l.userData.base*flick(u,dt)*(.95+Math.sin(playTime*(7+i*1.7)+i*3)*.05);}
   // Pistevalojen varjokartat päivitetään harvemmin (autoUpdate pois, needsUpdate nostetaan itse): pimeällä joka 2. (soihtu) / 3. (tuli) kehys,
   // päivällä harvemmin; vain jos valo palaa. Kun lähin tuli vaihtuu (updateLights), kartta päivitetään heti. Laatutaso (`QUAL`) voi harventaa lisää.
-  {shFrame++;const dark=P.inDun||isNight()||indoorK>.5||wDark>.55,q=QUAL.lvl,fT=(dark?2:6)*(q>=1?2:1),fF=(dark?3:8)*(q>=1?2:1);
+  {shFrame++;const dark=P.inDun||isNight()||indoorK>.5||wDark>.55,q=QUAL.lvl,fT=1,fF=(dark?3:8)*(q>=1?2:1);
    if(QUAL.pointShadow){if(torchLight.intensity>0&&shFrame%fT===0)torchLight.shadow.needsUpdate=true;if(LIGHTS[0].intensity>0&&shFrame%fF===0)LIGHTS[0].shadow.needsUpdate=true;}}
   // Valokatto: pelaajan kohdalle osuva yhteisvalo (summa etäisyyden mukaan vaimennettuna) ei ylitä LIGHT_CAP:ia – päällekkäiset valot eivät kirkastu loputtomiin.
   {let W=0;const ls=ALL_LIGHTS;for(const l of ls)if(l.intensity>0){const d=Math.hypot(l.position.x-P.pos.x,l.position.y-(P.pos.y+1),l.position.z-P.pos.z);W+=l.intensity*Math.pow(Math.max(0,1-d/l.distance),1.5);}

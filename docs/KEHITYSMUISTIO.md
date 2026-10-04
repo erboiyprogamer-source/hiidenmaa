@@ -49,6 +49,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.43 (korjaus: käsisoihdun varjo)
+- Käsisoihdun varjo pieneksi, huonolaatuiseksi läntiksi: varjokameran kantama 18 → 3.2 m, varjokartta 512 → 64 px, `radius` 3 (pehmeä), päivittyy **joka kehys** (`fT=1`) eli piirtyy koko ajan sulavasti; halpa koska kamera näkee vain lähimmät esineet. Tulien (LIGHTS[0]) varjot ennallaan (512 px, harvemmin).
+
 ### v0.42 (korjauserä: varjot, hakkuu, soihtu, kyykky, kädet)
 - **Varjobugi korjattu:** v0.40:ssä pistevalon varjokartta (`shadow.autoUpdate=false`) päivittyi vain pimeällä → päivällä jäi vanha kartta (varjot "jäätyivät", sitten puuttuivat). Nyt `needsUpdate` nostetaan itse säännöllisesti kun valo palaa: pimeällä soihtu joka 2., tuli joka 3. kehys, päivällä 6./8.; lähimmän tulen vaihtuessa heti (`updateLights`). Kevyempi kuin autoUpdate (aiemmin 2×6 kuutiopassia joka kehys).
 - **Mukautuva laatu** (`QUAL`, `setQuality`, `autoQuality` main.js): kehysajan liukuva keskiarvo > 36 ms 3 s → laatu −1 taso (1: varjopäivitykset harvemmin, 2: aurinkovarjokartta 1024 px, 3: pistevalovarjot pois); < 18 ms 12 s → takaisin ylöspäin. Varjot säilyvät mahdollisimman pitkään.

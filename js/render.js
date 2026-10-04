@@ -23,6 +23,8 @@ const torchLight=new THREE.PointLight(0xffa04a,0,18,1.4); scene.add(torchLight);
 // Pimeällä lähin tuli ja käsisoihtu heittävät varjoja (pistevalon varjokartta 512 px). Varjokartta päivitetään vain pimeällä (`updateLightShadows`).
 for(const l of [LIGHTS[0],torchLight]){l.castShadow=true;l.shadow.mapSize.set(512,512);l.shadow.camera.near=.3;l.shadow.camera.far=18;l.shadow.bias=-.004;l.shadow.autoUpdate=false;l.shadow.needsUpdate=true;}
 // Mukautuva laatu: jos kehysaika on pitkään liian korkea, laatua lasketaan (1: harvemmat pistevalovarjot, 2: aurinkovarjokartta 1024 px, 3: pistevalovarjot pois). Palautuu kun peli sujuu.
+// Käsisoihdun varjo: pieni (kantama 3.2 m), matalaresoluutioinen (64 px) ja pehmeä läntti, päivittyy joka kehys (halpa, koska kamera näkee vain lähimmät esineet).
+torchLight.shadow.mapSize.set(64,64);torchLight.shadow.camera.far=3.2;torchLight.shadow.camera.near=.25;torchLight.shadow.radius=3;torchLight.shadow.bias=-.01;
 const QUAL={lvl:0,pointShadow:true,sunSize:2048,max:3};
 function setQuality(l){QUAL.lvl=l;QUAL.pointShadow=l<3;const ss=l>=2?1024:2048;if(ss!==QUAL.sunSize){QUAL.sunSize=ss;sun.shadow.mapSize.set(ss,ss);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}}
 
