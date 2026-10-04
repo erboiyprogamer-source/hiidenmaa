@@ -18,6 +18,8 @@ const PIECES={
   katto:{n:'Olkikatto',req:{puu:2},hp:100,snap:'cell',tag:'Rakenne'},
   vinoseina:{n:'Vinoseinä',req:{puu:1},hp:90,snap:'wall',tag:'Rakenne'},
   kolmio:{n:'Päätykolmio',req:{puu:1},hp:90,snap:'wall',tag:'Rakenne'},
+  palkki:{n:'Palkki',req:{puu:1},hp:70,snap:'wall',tag:'Rakenne'},
+  palkki2:{n:'Iso palkki',req:{puu:2},hp:130,snap:'wall',tag:'Rakenne',span2:1},
   pylvas:{n:'Pylväs',req:{puu:1},hp:120,snap:'free',tag:'Rakenne'},
   portaat:{n:'Portaat',req:{puu:3},hp:120,snap:'cell',tag:'Rakenne'},
   kiviseina:{n:'Kiviseinä',req:{kivi:5},hp:500,snap:'wall',tag:'Puolustus'},
@@ -39,6 +41,8 @@ function pieceBoxes(t){switch(t){
   case 'ovi':{const pw=(G-DOOR_W)/2,px=DOOR_W/2+pw/2;return[[-px,WH/2,0,pw,WH,.22],[px,WH/2,0,pw,WH,.22],[0,(DOOR_H+WH)/2,0,G,WH-DOOR_H,.22],[0,(DOOR_H-.05)/2,0,DOOR_W,DOOR_H-.05,.12,'door']];}
   case 'katto':{const n=8,d=G/n,out=[];for(let i=0;i<n;i++){const top=d*(i+1),bot=Math.max(0,top-.3);out.push([0,(top+bot)/2,G/2-d*(i+.5),G,top-bot,d]);}return out;}
   case 'vinoseina':case 'kolmio':{const h=t==='kolmio'?G:WH,n=6,w=G/n,out=[];for(let j=0;j<n;j++){const hj=h*(1-(j+.5)/n);out.push([-G/2+w*(j+.5),hj/2,0,w,hj,.2]);}return out;}
+  case 'palkki':return[[0,.11,0,G,.22,.22]];
+  case 'palkki2':return[[0,.15,0,2*G,.3,.3]];
   case 'pylvas':return[[0,WH/2,0,.3,WH,.3]];
   case 'portaat':{const d=G/STEP_N,h=WH/STEP_N,out=[];for(let i=0;i<STEP_N;i++)out.push([0,h*(i+1)/2,G/2-d/2-i*d,G,h*(i+1),d]);return out;}
   case 'tyopenkki':return[[0,.5,0,1.8,1,.9]];
@@ -67,6 +71,8 @@ function buildPieceMesh(t){
       for(const s of [-1,1]){const gm=new THREE.PlaneGeometry(G+.1,.5);gm.rotateX(-Math.PI/2);if(s>0)gm.rotateY(Math.PI);const f=new THREE.Mesh(gm,MAT.thatchFringe);f.position.set(0,.08,s*L/2);rg.add(f);}
       g.add(rg);break;}
     case 'vinoseina':case 'kolmio':g.add(triMesh(t==='kolmio'?G:WH));break;
+    case 'palkki':g.add(bx(G,.22,.22,mat(0x6b4527),0,.11,0));break;
+    case 'palkki2':g.add(bx(2*G,.3,.3,mat(0x5e3b1f),0,.15,0));break;
     case 'pylvas':g.add(bx(.3,WH,.3,mat(0x6b4527),0,WH/2,0));break;
     case 'portaat':{const d=G/STEP_N,h=WH/STEP_N;for(let i=0;i<STEP_N;i++)g.add(bx(G,h*(i+1),d,MAT.wood,0,h*(i+1)/2,G/2-d/2-i*d));break;}
     case 'tyopenkki':g.add(bx(1.8,.14,.9,MAT.wood,0,.86,0));for(const [x,z] of [[-.8,-.35],[.8,-.35],[-.8,.35],[.8,.35]])g.add(bx(.14,.8,.14,mat(0x5e3b1f),x,.4,z));g.add(bx(.5,.08,.2,mat(0x8f8d86),.3,.98,0));g.add(bx(.08,.06,.6,mat(0x6b4527),-.4,.96,.1));break;
@@ -101,9 +107,19 @@ function makeBenchRing(x,z){const n=128,pos=new Float32Array((n+1)*6),idx=[];
   const m=new THREE.Mesh(geo,RING_MAT);m.visible=false;m.frustumCulled=false;scene.add(m);return m;}
 function updateBenchRings(){const on=state==='play'&&!P.inDun&&curWeapon().cat==='hammer';for(const p of pieces)if(p.ring)p.ring.visible=on;}
 function rotLocal(b,rot){const r=((rot%4)+4)%4;let [x,y,z,w,h,d]=b;for(let i=0;i<r;i++){const nx=z,nz=-x;x=nx;z=nz;const t=w;w=d;d=t;}return[x,y,z,w,h,d];}
-function worldBoxes(t,x,y,z,rot){return pieceBoxes(t).map(b=>{const[cx,cy,cz,w,h,d]=rotLocal(b,rot);return{minX:x+cx-w/2,maxX:x+cx+w/2,minY:y+cy-h/2,maxY:y+cy+h/2,minZ:z+cz-d/2,maxZ:z+cz+d/2,door:b[6]==='door'};});}
+// rot = kahdeksasosakierroksia (45°). Parilliset kierrot ovat suoria AABB-kiertoja; parittomat jaetaan ~.4 m paloihin.
+function worldBoxes(t,x,y,z,rot){const R8=((rot%8)+8)%8,boxes=pieceBoxes(t);
+  if(R8%2===0)return boxes.map(b=>{const[cx,cy,cz,w,h,d]=rotLocal(b,R8/2);return{minX:x+cx-w/2,maxX:x+cx+w/2,minY:y+cy-h/2,maxY:y+cy+h/2,minZ:z+cz-d/2,maxZ:z+cz+d/2,door:b[6]==='door'};});
+  const ang=R8*Math.PI/4,c=Math.cos(ang),s=Math.sin(ang),out=[];
+  for(const b of boxes){const[cx,cy,cz,w,h,d]=b,ax=w>=d,L=ax?w:d,n=Math.max(1,Math.ceil(L/.4)),l=L/n;
+    for(let k=0;k<n;k++){const off=-L/2+l*(k+.5),lx=ax?cx+off:cx,lz=ax?cz:cz+off,sw=ax?l:w,sd=ax?d:l,wx=lx*c+lz*s,wz=-lx*s+lz*c,hw=sw*Math.abs(c)+sd*Math.abs(s),hd=sw*Math.abs(s)+sd*Math.abs(c);
+      out.push({minX:x+wx-hw/2,maxX:x+wx+hw/2,minY:y+cy-h/2,maxY:y+cy+h/2,minZ:z+wz-hd/2,maxZ:z+wz+hd/2,door:b[6]==='door'});}}
+  return out;}
 function addPiece(t,x,y,z,rot,hp,data){
-  const def=PIECES[t],mesh=buildPieceMesh(t);mesh.position.set(x,y,z);mesh.rotation.y=rot*Math.PI/2;scene.add(mesh);
+  const def=PIECES[t],mesh=buildPieceMesh(t);mesh.position.set(x,y,z);mesh.rotation.y=rot*Math.PI/4;
+  // Päällekkäisten pintojen välkkyminen (z-fighting) estetään antamalla jokaiselle osalle hieman erilainen mittakaava.
+  {let h=(Math.imul(Math.round(x*8),374761393)+Math.imul(Math.round(y*8),668265263)+Math.imul(Math.round(z*8),2147483629))|0;h=Math.imul(h^(h>>>13),1274126177);h^=h>>>16;const hs=h>>>0;mesh.scale.set(1+(hs%8)*.0006,1+((hs>>>3)%8)*.0006,1+((hs>>>6)%8)*.0006);}
+  scene.add(mesh);
   const p={t,x,y,z,rot,hp:hp??def.hp,mesh,data:data||{},cols:[],dmgLv:0};
   mesh.userData.piece=p;mesh.traverse(m=>{m.userData.piece=p;});
   for(const b of worldBoxes(t,x,y,z,rot)){const c=addBox(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ,p);c.door=b.door;p.cols.push(c);}

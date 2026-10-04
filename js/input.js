@@ -19,7 +19,8 @@ addEventListener('keydown',e=>{
   else if(e.code==='Escape'){if(openPanel){e.preventDefault();closePanels(false,true);}else if(state==='play'&&locked){pauseGame();releaseLock();}}
   else if(state==='play'){
     if(e.code==='KeyE')interact();
-    else if(e.code==='KeyR'){buildRot=(buildRot+1)%4;}
+    else if(e.code==='KeyR'){buildRot=(buildRot+1)%8;}
+    else if(e.code==='KeyG'){if(equipped('weapon')&&equipped('weapon').id==='vasara')cycleSnap();}
     else if(e.code==='KeyX')removeLooked();
     else if(e.code==='KeyF')repairLooked();
     else if(/^Digit[1-8]$/.test(e.code))useSlot(+e.code.slice(5)-1);

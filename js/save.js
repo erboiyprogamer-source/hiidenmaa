@@ -4,7 +4,7 @@
 
 /* ---------------- SAVE / LOAD ---------------- */
 const SKEY='hiidenmaa_save_v1';
-function serialize(){return{v:6,mapId:MAP_ID,bossPending:!!(boss&&!boss.dead&&!flags.boss),playTime,dayT,dayN,weather,flags,P:{x:P.pos.x,y:P.pos.y,z:P.pos.z,hp:P.hp,stam:P.stam,hunger:P.hunger,buffs:P.buffs,spawn:P.spawn,deaths:P.deaths,kills:P.kills,inDun:P.inDun},cam:[camYaw,camPitch],inv,
+function serialize(){return{v:7,mapId:MAP_ID,bossPending:!!(boss&&!boss.dead&&!flags.boss),playTime,dayT,dayN,weather,flags,P:{x:P.pos.x,y:P.pos.y,z:P.pos.z,hp:P.hp,stam:P.stam,hunger:P.hunger,buffs:P.buffs,spawn:P.spawn,deaths:P.deaths,kills:P.kills,inDun:P.inDun},cam:[camYaw,camPitch],inv,
   pieces:pieces.map(p=>({t:p.t,x:p.x,y:p.y,z:p.z,r:p.rot,hp:p.hp,d:p.t==='arkku'?{items:p.data.items}:p.t==='nuotio'?{fuel:p.data.fuel}:p.t==='sulatin'?{ore:p.data.ore,iore:p.data.iore,wood:p.data.wood,done:p.data.done,idone:p.data.idone}:p.t==='ovi'?{open:p.data.open}:{}})),
   moved:nodes.filter(n=>n.x!==n.ox||n.z!==n.oz||n.s!==n.s0).map(n=>[n.id,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
   terra:terraList(),
@@ -26,7 +26,7 @@ function loadData(s){
   inv=(s.inv||[]).slice(0,32);while(inv.length<32)inv.push(null);
   if(!oldWorld){
     applyTerra(s.terra||[]);
-    for(const p of s.pieces||[])addPiece(p.t,p.x,p.y,p.z,p.r,p.hp,p.d);
+    for(const p of s.pieces||[])addPiece(p.t,p.x,p.y,p.z,(s.v||1)<7?p.r*2:p.r,p.hp,p.d);
     for(const [t,x,z,sc] of s.planted||[])plantTree(t,x,z,sc);
     // v<5: maiseman solmujen numerointi muuttui (pensaat), joten kaadettujen lista ohitetaan.
     const byId=new Map(nodes.map(n=>[n.id,n]));for(const [id,x,z,sc] of s.moved||[]){const n=byId.get(id);if(n)moveNode(n,x,z,sc);}
