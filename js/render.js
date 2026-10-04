@@ -18,8 +18,8 @@ const amb=new THREE.AmbientLight(0xffffff,.1); scene.add(amb);
 const sun=new THREE.DirectionalLight(0xfff1d6,1); sun.castShadow=true;
 sun.shadow.mapSize.set(2048,2048); const sc=sun.shadow.camera; sc.left=-55;sc.right=55;sc.top=55;sc.bottom=-55;sc.near=1;sc.far=260; sun.shadow.bias=-.0006; sun.shadow.normalBias=.04;
 scene.add(sun); scene.add(sun.target);
-const LIGHTS=[]; for(let i=0;i<6;i++){const l=new THREE.PointLight(0xff9a40,0,22,1.5);scene.add(l);LIGHTS.push(l);}
-const torchLight=new THREE.PointLight(0xffa04a,0,24,1.4); scene.add(torchLight);
+const LIGHTS=[]; for(let i=0;i<6;i++){const l=new THREE.PointLight(0xff9a40,0,17,1.5);scene.add(l);LIGHTS.push(l);}
+const torchLight=new THREE.PointLight(0xffa04a,0,18,1.4); scene.add(torchLight);
 
 function canvasTex(fn,size=64){const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');fn(g,size);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;}
 const texR=mulberry32(77);

@@ -78,7 +78,7 @@ function updatePlayer(dt){
   if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-fig.armL.rotation.x,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
   fig.g.visible=camDist>1.8;
   // torch light
-  const torch=offId==='soihtu';torchLight.intensity=torch?3.4+Math.sin(playTime*17)*.35:0;if(torch){fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;}
+  const torch=offId==='soihtu';torchLight.intensity=torch?2.6+Math.sin(playTime*17)*.3:0;if(torch){fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;}
 }
 // Isku: nosto ylävasemmalle, isku alaoikealle (osuma iskun lopussa). Palautus lepoon, tai jos
 // lyöntinappi on pohjassa, suoraan seuraavan iskun nostoasentoon (käsi pysyy aseessa).

@@ -16,11 +16,11 @@ scene.add(fig.g);let heldMesh=null,heldId=null,offMesh=null,offId=null,armorId=n
 // Repussa olevat mutta käyttämättömät aseet, kilvet ja työkalut näkyvät pelaajan selässä (kilpi keskellä, jousi vinossa, työkalut varret ylöspäin).
 const backG=new THREE.Group();fig.g.add(backG);let backKey='';
 function updateBack(){const items=inv.filter(s=>s&&!s.eq&&['weapon','bow','shield','shovel','hammer'].includes(ITEMS[s.id].cat));
-  const sh=items.find(s=>ITEMS[s.id].cat==='shield'),bo=items.find(s=>ITEMS[s.id].cat==='bow'),tl=items.filter(s=>!['shield','bow'].includes(ITEMS[s.id].cat)).slice(0,3);
+  const sh=items.find(s=>ITEMS[s.id].cat==='shield'),one=items.find(s=>ITEMS[s.id].cat!=='shield'),bo=one&&ITEMS[one.id].cat==='bow'?one:null,tl=one&&!bo?[one]:[];
   const key=[sh,bo,...tl].map(s=>s?s.id:'-').join();if(key===backKey)return;backKey=key;while(backG.children.length)backG.remove(backG.children[0]);
   if(sh){const m=makeShield(sh.id);const o=new THREE.Group();m.rotation.y=Math.PI/2;m.position.set(0,0,0);o.add(m);o.position.set(0,1.2,-.25);o.scale.setScalar(.85);backG.add(o);}
   if(bo){const m=makeHeld(bo.id),o=new THREE.Group();o.add(m);o.position.set(.08,1.2,-.33);o.rotation.set(0,0,.5);o.scale.setScalar(.95);backG.add(o);}
-  tl.forEach((s,i)=>{const m=makeHeld(s.id),i2=new THREE.Group(),o=new THREE.Group();i2.rotation.x=-Math.PI/2;i2.add(m);o.add(i2);o.position.set([-.17,.17,0][i],.78,-.3-(sh?.06:0)-i*.03);o.rotation.z=[.2,-.2,.05][i];o.scale.setScalar(.85);backG.add(o);});}
+  tl.forEach((s,i)=>{const m=makeHeld(s.id),i2=new THREE.Group(),o=new THREE.Group();m.rotation.z=Math.PI/2;/* terät/piikit sivusuuntaan = selänmyötäisesti, ei selkää vasten */i2.rotation.x=-Math.PI/2;i2.add(m);o.add(i2);o.position.set(.12,.78,-.3-(sh?.06:0));o.rotation.z=-.12;o.scale.setScalar(.85);backG.add(o);});}
 function updateGear(){updateBack();
   {const w0=equipped('weapon');if(!w0||w0.id!=='vasara')setBuildSel(null);}
   const w=equipped('weapon'),wid=w?w.id:null;
