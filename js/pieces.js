@@ -73,7 +73,12 @@ const PIECES={
 const bt=t=>PIECES[t]&&PIECES[t].base||t;
 const isFirePiece=t=>t==='nuotio'||t==='grilli';
 // Tulen jäljellä oleva palamisaika prosentteina täydestä (FUEL_MAX yksikköä × 90 s); yli 50 % ei voi lisätä.
-const firePct=p=>Math.max(0,Math.round((p.data.fuel*90-p.data.burn)/(FUEL_MAX*90)*100)),torchPct=p=>Math.round(p.data.burn/1800*100);
+// 100 % = palamisaika heti viimeisen polttoaineen lisäyksen jälkeen (p.data.full, s). fireRem/torchRem = jäljellä olevat sekunnit.
+const fireRem=p=>Math.max(0,p.data.fuel*90-p.data.burn),torchRem=p=>Math.max(0,p.data.burn);
+const pctOf=(rem,p)=>Math.max(0,Math.min(100,Math.round(rem/Math.max(1,p.data.full||rem||1)*100)));
+const firePct=p=>pctOf(fireRem(p),p),torchPct=p=>pctOf(torchRem(p),p);
+const fuelText=(rem,pct)=>`${pct}/100 · ${(rem/60).toFixed(1).replace('.',',')} min`;
+function markFull(p){p.data.full=p.t==='soihtuteline'?torchRem(p):fireRem(p);}
 const FUEL_MAX=40,COOKABLE={liha:'paisti',sieni:'sienipaisti'};
 for(const d of Object.values(PIECES))if(d.base){const b=PIECES[d.base];for(const k of ['poses','flip','span2','noBench','store','col','dim'])if(d[k]===undefined&&b[k]!==undefined)d[k]=b[k];}
 const BUILD_CATS=[['alku','Alkupeli'],['seinat','Seinät ja lattiat'],['katot','Katot'],['palkit','Palkit ja pylväät'],['portaat','Portaat ja tikkaat'],['kalusto','Kalusto'],['tyopisteet','Työpisteet'],['valo','Valo'],['puolustus','Puolustus'],['kivi','Kivirakennus'],['kivikatot','Kivikatot']];
@@ -207,9 +212,9 @@ function addPiece(t,x,y,z,rot,hp,data,f=0){
   const p={t,x,y,z,rot,f,hp:hp??def.hp,mesh,data:data||{},cols:[],dmgLv:0};
   mesh.userData.piece=p;mesh.traverse(m=>{m.userData.piece=p;});
   for(const b of worldBoxes(t,x,y,z,rot,f)){const c=addBox(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ,p);c.door=b.door;p.cols.push(c);}
-  if(isFirePiece(t)){p.data.fuel=p.data.fuel??4;p.data.burn=p.data.burn??0;p.data.cook=(p.data.cook||[]).map(c=>typeof c==='number'?{id:'liha',t:0,need:10}:c);lightSources.push(p.light={x,y:y+.8,z,c:0xff8c3a,i:2,on:()=>p.data.fuel>0,piece:p});}
+  if(isFirePiece(t)){p.data.fuel=p.data.fuel??4;p.data.burn=p.data.burn??0;if(!p.data.full)p.data.full=Math.max(90,fireRem(p));p.data.cook=(p.data.cook||[]).map(c=>typeof c==='number'?{id:'liha',t:0,need:10}:c);lightSources.push(p.light={x,y:y+.8,z,c:0xff8c3a,i:2,on:()=>p.data.fuel>0,piece:p});}
   // Seisova soihtu palaa p.data.burn sekuntia (5 min aluksi; puu nollaa 10 min, hiili 30 min).
-  if(t==='soihtuteline'){p.data.burn=p.data.burn??300;lightSources.push(p.light={x,y:y+1.8,z,c:0xffa04a,i:1.5,on:()=>p.data.burn>0,piece:p});}
+  if(t==='soihtuteline'){p.data.burn=p.data.burn??300;if(!p.data.full)p.data.full=Math.max(60,p.data.burn);lightSources.push(p.light={x,y:y+1.8,z,c:0xffa04a,i:1.5,on:()=>p.data.burn>0,piece:p});}
   if(t==='sulatin'){p.data.ore=p.data.ore||0;p.data.iore=p.data.iore||0;p.data.wood=p.data.wood||0;p.data.done=p.data.done||0;p.data.idone=p.data.idone||0;p.data.t=0;lightSources.push(p.light={x,y:y+.6,z,c:0xff7a2a,i:1.2,on:()=>(p.data.ore>0||p.data.iore>0)&&p.data.wood>0,piece:p});}
   if(t==='tyopenkki')p.ring=makeBenchRing(x,z);
   if(def.store){p.data.lv=p.data.lv||0;p.data.items=p.data.items||[];while(p.data.items.length<storeSlots(p))p.data.items.push(null);}

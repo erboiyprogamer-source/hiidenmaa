@@ -128,8 +128,8 @@ function findInteract(){
 function pieceLabel(p){if(PIECES[p.t].store)return 'Avaa '+PIECES[p.t].n.toLowerCase();if(bt(p.t)==='ovi')return p.data.open?'Sulje ovi':'Avaa ovi';switch(p.t){
   case 'tikkaat':case 'kivitikkaat':return 'Kiipeä: pidä W (alas S)';
   case 'ovi':return p.data.open?'Sulje ovi':'Avaa ovi';
-  case 'nuotio':case 'grilli':{if(p.data.cook.some(c=>c.t>=c.need))return 'Ota ruoka tulelta';const raw=Object.keys(COOKABLE).some(id=>invCount(id)>0);return raw&&p.data.fuel>0&&p.data.cook.length<(p.t==='grilli'?4:3)?'Paista ruokaa':`Lisää polttoainetta (palaa vielä ${firePct(p)} %)`;}
-  case 'soihtuteline':return `Lisää polttoainetta (palaa vielä ${torchPct(p)} % · ${Math.ceil(p.data.burn/60)} min)`;
+  case 'nuotio':case 'grilli':{if(p.data.cook.some(c=>c.t>=c.need))return 'Ota ruoka tulelta';const raw=Object.keys(COOKABLE).some(id=>invCount(id)>0);return raw&&p.data.fuel>0&&p.data.cook.length<(p.t==='grilli'?4:3)?'Paista ruokaa':`Polttoainetta ${fuelText(fireRem(p),firePct(p))} – lisää`;}
+  case 'soihtuteline':return `Polttoainetta ${fuelText(torchRem(p),torchPct(p))} – lisää`;
   case 'sanky':return isNight()?'Nuku':'Aseta herätyspaikka';
   case 'arkku':return 'Avaa arkku';
   case 'tynnyri':return 'Avaa tynnyri';
@@ -145,7 +145,7 @@ function interact(){
     for(const s of g.items)if(s)invAdd(s.id,s.n,s.q||1);removeGrave(g);msg('Sait tavarasi takaisin.','loot');sfx('pickup');return;}
   if(t.kind==='piece'){const p=t.p;if(bt(p.t)==='ovi'){const a=p.rot*Math.PI/4,lz=(P.pos.x-p.x)*Math.sin(a)+(P.pos.z-p.z)*Math.cos(a);setDoor(p,!p.data.open,p.data.open?p.data.dir:(lz>0?1:-1));sfx('build');return;}if(PIECES[p.t].store){openChest(p);return;}switch(p.t){
     case 'nuotio':case 'grilli':fireInteract(p);break;
-    case 'soihtuteline':{const b=p.data.burn;if(torchPct(p)>50){msg(`Soihdussa on jo tarpeeksi polttoainetta (${torchPct(p)} %).`);break;}if(invCount('puu')>0&&b<600){invRemove('puu',1);p.data.burn=600;msg('Soihtu palaa 10 min.');sfx('build');}else if(invCount('hiili')>0&&b<1800){invRemove('hiili',1);p.data.burn=1800;msg('Hiili: soihtu palaa 30 min.');sfx('build');}else msg(invCount('puu')>0||invCount('hiili')>0?'Soihdussa on jo tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');break;}
+    case 'soihtuteline':{const b=p.data.burn;if(torchPct(p)>50){msg(`Soihdussa on jo tarpeeksi polttoainetta (${torchPct(p)} %).`);break;}if(invCount('puu')>0&&b<600){invRemove('puu',1);p.data.burn=600;markFull(p);msg('Soihtu palaa 10 min.');sfx('build');}else if(invCount('hiili')>0&&b<1800){invRemove('hiili',1);p.data.burn=1800;markFull(p);msg('Hiili: soihtu palaa 30 min.');sfx('build');}else msg(invCount('puu')>0||invCount('hiili')>0?'Soihdussa on jo tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');break;}
     case 'sanky':sleepAt(p);break;
     case 'arkku':case 'tynnyri':openChest(p);break;
     case 'sulatin':if(p.data.done>0||p.data.idone>0){if(p.data.done>0)giveOrDrop('kupari',p.data.done,p.x,p.y+1,p.z);if(p.data.idone>0)giveOrDrop('rauta',p.data.idone,p.x,p.y+1,p.z);p.data.done=0;p.data.idone=0;sfx('pickup');break;}
@@ -161,8 +161,8 @@ function fireInteract(p){const cap=p.t==='grilli'?4:3,d=p.data;
   const raw=Object.keys(COOKABLE).find(id=>invCount(id)>0);
   if(raw&&d.fuel>0&&d.cook.length<cap){invRemove(raw,1);d.cook.push({id:raw,t:0,need:9+Math.random()*5});msg(`${ITEMS[raw].n} paistuu… (ota ajoissa, muuten palaa hiileksi)`);sfx('craft');return;}
   if(firePct(p)>50){msg(`Tulessa on jo tarpeeksi polttoainetta (${firePct(p)} %).`);return;}
-  if(invCount('puu')>0){invRemove('puu',1);d.fuel++;sfx('build');return;}
-  if(d.fuel<=FUEL_MAX-10&&invCount('hiili')>0){invRemove('hiili',1);d.fuel+=10;msg('Hiili palaa pitkään.');sfx('build');return;}
+  if(invCount('puu')>0){invRemove('puu',1);d.fuel++;markFull(p);sfx('build');return;}
+  if(d.fuel<=FUEL_MAX-10&&invCount('hiili')>0){invRemove('hiili',1);d.fuel+=10;markFull(p);msg('Hiili palaa pitkään.');sfx('build');return;}
   msg(invCount('puu')>0||invCount('hiili')>0?'Tulessa on tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');}
 function useAltar(){
   if(flags.boss){msg('Kehä on hiljainen. Vartija on poissa.');return;}

@@ -49,6 +49,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.31 (korjauserä)
+- **Polttoaineen näyttö:** nuotion, grillin ja seisovan soihdun kehote näyttää "Polttoainetta 62/100 · 3,4 min". 100 = palamisaika heti viimeisen lisäyksen jälkeen (`p.data.full`, `markFull()`),
+  joten prosentti kertoo kuinka suuri osa kyseisen polttoaineen ajasta on jäljellä; minuutit ovat arvio jäljellä olevasta ajasta. Yli 50:n ei voi lisätä. `full` tallentuu.
+
 ### v0.30 (korjauserä)
 - **Iso vilkahtava objekti korjattu:** uusi kipinä/savuhiukkanen luotiin mittakaavassa 1 (1 m pallo) ja pieneni vasta seuraavassa päivityksessä → yhden kehyksen välähdys. Nyt mittakaava asetetaan heti (.001).
 - **Välke hillitympi:** `flick()` palauttaa kertoimen ~.82–1.04 (aiemmin ~.55–1.1), liekkien koon vaihtelu pienenee samalla.

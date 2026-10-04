@@ -5,7 +5,7 @@
 /* ---------------- SAVE / LOAD ---------------- */
 const SKEY='hiidenmaa_save_v1';
 function serialize(){return{v:8,mapId:MAP_ID,bossPending:!!(boss&&!boss.dead&&!flags.boss),playTime,dayT,dayN,weather,flags,P:{x:P.pos.x,y:P.pos.y,z:P.pos.z,hp:P.hp,stam:P.stam,hunger:P.hunger,buffs:P.buffs,spawn:P.spawn,deaths:P.deaths,kills:P.kills,inDun:P.inDun,packLv:P.packLv},cam:[camYaw,camPitch],inv,
-  pieces:pieces.map(p=>({t:p.t,x:p.x,y:p.y,z:p.z,r:p.rot,f:p.f||0,hp:p.hp,d:PIECES[p.t].store?{items:p.data.items,lv:p.data.lv}:isFirePiece(p.t)?{fuel:p.data.fuel,burn:p.data.burn,cook:p.data.cook}:p.t==='soihtuteline'?{burn:p.data.burn}:p.t==='sulatin'?{ore:p.data.ore,iore:p.data.iore,wood:p.data.wood,done:p.data.done,idone:p.data.idone}:bt(p.t)==='ovi'?{open:p.data.open,dir:p.data.dir}:{}})),
+  pieces:pieces.map(p=>({t:p.t,x:p.x,y:p.y,z:p.z,r:p.rot,f:p.f||0,hp:p.hp,d:PIECES[p.t].store?{items:p.data.items,lv:p.data.lv}:isFirePiece(p.t)?{fuel:p.data.fuel,burn:p.data.burn,cook:p.data.cook,full:p.data.full}:p.t==='soihtuteline'?{burn:p.data.burn,full:p.data.full}:p.t==='sulatin'?{ore:p.data.ore,iore:p.data.iore,wood:p.data.wood,done:p.data.done,idone:p.data.idone}:bt(p.t)==='ovi'?{open:p.data.open,dir:p.data.dir}:{}})),
   moved:nodes.filter(n=>n.x!==n.ox||n.z!==n.oz||n.s!==n.s0).map(n=>[n.id,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
   terra:terraList(),
   planted:nodes.filter(n=>n.planted).map(n=>[n.type,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
