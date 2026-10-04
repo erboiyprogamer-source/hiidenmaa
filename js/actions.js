@@ -35,7 +35,7 @@ function startAttack(){
   P.stam-=w.st;P.stamDelay=1;P.atk={t:0,dur:w.spd+.2,hitAt:w.spd*.55,done:false,w,offBusy:!!equipped('offhand')};
   P.yaw=camYaw+Math.PI;
 }
-function weaponDmg(w){return w.dmg*(1+.25*((w.q||1)-1))*(P.buffs.voima?1.15:1);}
+function weaponDmg(w){return w.dmg*(1+.25*((w.q||1)-1))*(P.buffs.voima?1.15:1)*P.fx.dmg;}
 const _nl=[];
 function doMeleeHit(w){
   const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);let hitMob=false;const dmg=weaponDmg(w);
@@ -98,6 +98,7 @@ function hurtPlayer(dmg,fx,fz){
 }
 P.vel=new V3();
 function eat(s){const f=ITEMS[s.id].food;if(P.hunger>=96&&!f.buff){msg('Olet kylläinen.','warn');return;}
+  if(P.hunger>=85&&!f.raw){P.buffs.vatsakipu=75;msg('Söit liikaa – vatsaa kivistää.','warn');}
   P.hunger=Math.min(100,P.hunger+f.h);if(f.hp)P.heal+=f.hp;if(f.st)P.stam=Math.min(maxStam(),P.stam+f.st);
   if(f.raw&&Math.random()<.45){P.buffs.pahoinvointi=40;msg('Raaka liha kääntää vatsaa.','warn');}
   if(f.buff)P.buffs[f.buff]=300;if(!f.raw)flags.ate=1;

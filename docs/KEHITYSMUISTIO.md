@@ -49,6 +49,19 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.21 (erä 21)
+- **Pelaajahahmo uusiksi** (`makePlayer()`, models.js): pehmeä low-poly – pyöreät raajat (sylinterit/pallot, `smat()` ilman flatShadingia), kiharat hiukset
+  ja parta, ei hattua; alkukantaiset vaatteet: nahkatunika, turkisharteet, vyö ja pussi, turkisreunaiset saappaat. Panssari värjää tunikan ja hihat
+  (`fig.cloth`). Aseet (`makeHeld`): pyöreät varret (`shaft`), muotoillut terät (`poly()` = ExtrudeGeometry sivuprofiilista): kirves, miekka, lapio, keihäs,
+  kaareva hakku, piikkinuija, soihtu. Jousi ennallaan (erä 22).
+- **Varjot ja valot:** aurinko .85 → 1.4, taivasvalo .12+.4·valo → .07+.2·valo, ambient pienemmäksi; pistevalot ×1.7 ja pidemmälle (22 m), käsisoihtu 3.4.
+- **Tilat** (`effects()`, `calcFx()` environment.js): jokaisella kuvaus ja ajastin, `P.fx` = {speed, dmg, stamRegen, hpRegen} kertoimet vaikuttavat
+  kävelyyn, iskuun ja palautumiseen. Näkyvät HUD-chipeinä (tooltip) ja repun vieressä "Tilat"-laatikossa. Uusia: Nälkäinen (<25), Vatsakipu (syöminen
+  kun kylläisyys ≥ 85: 75 s, kramppi vie kestävyyttä), Märkä näyttää ajastimen. Kylmä −7 % kävely, −10 % isku, −40 % kestävyyden palautus.
+- **Taivas:** 46 liikkuvaa pehmeää pilveä (`CLOUDS`, `updateClouds()`), peitto säästä (`WEATHERS.*.cloud`), tuuli kuljettaa niitä; aurinko ja kuu jäävät pilvien taakse;
+  pilvet tummuvat ennen sadetta (`wDark` k=.12; sade alkaa vasta kun `wDark/W.dark` > ~.6–.9), välkkyvät salamasta; harvinainen näkyvä salama (`strikeBolt()`,
+  35 % myrskyn iskuista).
+
 ### v0.20 (erä 20)
 - **Puutekstuurit:** `bxw()` (render.js) skaalaa laatikon UV:t mittoihin (u = pituus/G, v = korkeus/WH); kaikki puuosat (aita, portaat,
   palkit, pylväät, ovi, työpenkki, arkku, sänky) käyttävät `MAT.wood`ia. Seinän tumma pylväs poistettu.
@@ -396,7 +409,7 @@ saavutukset ja teot), saavutukset antavat pysyviä pieniä bonuksia; "palkki" = 
 8. Tikkaat (kiivettävät, 3 kaltevuutta Shift+R) ja uudet ontot portaat (vain askelmat ja sivupalkit, 3 jyrkkyyttä Shift+R);
    nykyiset portaat nimeltään Raput. Kiviversiot järkevistä osista (`kivi_*`) ja kivikatot omaan kategoriaan.
 
-### Erä 21 – hahmo, taivas, valo ja tilat (ideat 4,5,8,12)
+### Erä 21 – hahmo, taivas, valo ja tilat (ideat 4,5,8,12) – TEHTY (ks. versioloki v0.21)
 1. Pelihahmo uusiksi pehmeällä low-polylla: pyöreät raajat, kiharat hiukset ja parta (ei hattua), alkuasukasvaatteet (nahka/turkki);
    uudet työkalumallit (kirves, hakku, miekka, lapio, vasara, keihäs, nuija, soihtu, jousi, kilpi).
 2. Kontrastimpi valaistus: syvemmät varjot (matalampi hemi/amb, vahvempi aurinko), voimakkaammat valonlähteet.

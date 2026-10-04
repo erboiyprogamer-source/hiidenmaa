@@ -19,11 +19,11 @@ function updatePlayer(dt){
   let speed=4.6;const wantRun=(keys.ShiftLeft||keys.ShiftRight)&&!P.crouch;
   P.running=false;
   if(wantRun&&dl>0&&!over&&P.stam>0&&!P.blocking&&!P.drawing){speed=8;P.running=true;P.stam-=13*dt;P.stamDelay=.8;}
-  if(P.blocking||P.drawing)speed=2.4;if(over)speed*=.55;if(armor&&ITEMS[armor.id].slow)speed*=1-ITEMS[armor.id].slow;if(P.atk)speed*=.45;if(P.crouch)speed=Math.min(speed,2.3);
+  if(P.blocking||P.drawing)speed=2.4;if(over)speed*=.55;if(armor&&ITEMS[armor.id].slow)speed*=1-ITEMS[armor.id].slow;if(P.atk)speed*=.45;if(P.crouch)speed=Math.min(speed,2.3);speed*=P.fx.speed;
   P.inWater=P.pos.y<-.9&&!P.inDun;P.swim=P.pos.y<-1.3&&!P.inDun;
   if(P.swim){speed=2.6;P.stam-=(dl>0?6:2)*dt;P.stamDelay=.6;if(P.stam<=0){P.hp-=4*dt;if(P.hp<=0)playerDie();}}
   // stamina regen
-  P.stamDelay-=dt;if(P.stamDelay<=0&&!P.swim){let r=22;if(P.cold)r*=.6;if(P.buffs.levannyt)r*=1.45;if(P.hunger<=0)r*=.5;if(P.buffs.pahoinvointi)r*=.5;P.stam=Math.min(maxStam(),P.stam+r*dt);}
+  P.stamDelay-=dt;if(P.stamDelay<=0&&!P.swim){let r=22*P.fx.stamRegen;P.stam=Math.min(maxStam(),P.stam+r*dt);}
   if(P.blocking&&P.stam<=0)P.blocking=false;
   P.stam=Math.max(0,P.stam);
   // velocity
@@ -76,7 +76,7 @@ function updatePlayer(dt){
   fig.armL.rotation.x=lerpAngle(fig.armL.rotation.x,tLx,e);fig.armL.rotation.z=lerpAngle(fig.armL.rotation.z,tLz,e);
   fig.g.visible=camDist>1.8;
   // torch light
-  const torch=offId==='soihtu';torchLight.intensity=torch?2.1+Math.sin(playTime*17)*.25:0;if(torch){fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;}
+  const torch=offId==='soihtu';torchLight.intensity=torch?3.4+Math.sin(playTime*17)*.35:0;if(torch){fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;}
 }
 // Isku: nosto ylävasemmalle, isku alaoikealle (osuma iskun lopussa). Palautus lepoon, tai jos
 // lyöntinappi on pohjassa, suoraan seuraavan iskun nostoasentoon (käsi pysyy aseessa).

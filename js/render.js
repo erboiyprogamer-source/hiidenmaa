@@ -18,8 +18,8 @@ const amb=new THREE.AmbientLight(0xffffff,.1); scene.add(amb);
 const sun=new THREE.DirectionalLight(0xfff1d6,1); sun.castShadow=true;
 sun.shadow.mapSize.set(2048,2048); const sc=sun.shadow.camera; sc.left=-55;sc.right=55;sc.top=55;sc.bottom=-55;sc.near=1;sc.far=260; sun.shadow.bias=-.0006; sun.shadow.normalBias=.04;
 scene.add(sun); scene.add(sun.target);
-const LIGHTS=[]; for(let i=0;i<6;i++){const l=new THREE.PointLight(0xff9a40,0,16,1.6);scene.add(l);LIGHTS.push(l);}
-const torchLight=new THREE.PointLight(0xffa04a,0,18,1.5); scene.add(torchLight);
+const LIGHTS=[]; for(let i=0;i<6;i++){const l=new THREE.PointLight(0xff9a40,0,22,1.5);scene.add(l);LIGHTS.push(l);}
+const torchLight=new THREE.PointLight(0xffa04a,0,24,1.4); scene.add(torchLight);
 
 function canvasTex(fn,size=64){const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');fn(g,size);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;}
 const texR=mulberry32(77);
@@ -102,4 +102,26 @@ const moon=new THREE.Mesh(new THREE.SphereGeometry(12,16,12),new THREE.MeshBasic
 const snow=(function(){const N=700,g=new THREE.BufferGeometry(),p=new Float32Array(N*3),r=mulberry32(13);for(let i=0;i<N;i++)p.set([(r()-.5)*50,r()*26,(r()-.5)*50],i*3);g.setAttribute('position',new THREE.BufferAttribute(p,3));
   const m=new THREE.Points(g,new THREE.PointsMaterial({color:0xffffff,size:.14,transparent:true,opacity:.9}));m.frustumCulled=false;m.visible=false;scene.add(m);return m;})();
 const sunDisc=new THREE.Mesh(new THREE.SphereGeometry(9,12,8),new THREE.MeshBasicMaterial({color:0xfff2c8,fog:false}));scene.add(sunDisc);
+/* ---------------- PILVET JA SALAMAT ---------------- */
+// Pehmeät, liikkuvat pilvet (jokaisella oma materiaali, jotta sää, valo ja salamat värjäävät niitä erikseen). Pilvet ovat aurinkoa ja kuuta lähempänä,
+// joten ne peittävät ne luonnollisesti. Peitto (cover) riippuu säästä: pilvet ilmestyvät ja katoavat järjestyksessä (kynnys th).
+const CLOUD_R=340,CLOUDS=[];
+(function(){const r=mulberry32(77),sg=new THREE.SphereGeometry(1,10,7);
+  for(let i=0;i<46;i++){const parts=[],n=5+(r()*4|0),w=26+r()*34;
+    for(let k=0;k<n;k++){const px=(k/(n-1)-.5)*w*(.8+r()*.4),pr=w*(.16+r()*.14)*(1-Math.abs(k/(n-1)-.5)*.9),py=(r()-.3)*w*.07;
+      parts.push(part(sg,0xf2f4f8,px,py+pr*.15,(r()-.5)*w*.3,0,0,0,pr*1.25,pr*.72,pr));
+      parts.push(part(sg,0xc9ced6,px,py-pr*.3,(r()-.5)*w*.25,0,0,0,pr*1.1,pr*.45,pr*.9));}
+    const m=new THREE.Mesh(mergeParts(parts),new THREE.MeshLambertMaterial({vertexColors:true,flatShading:false,fog:false,transparent:true,opacity:.96}));
+    m.frustumCulled=false;m.userData={th:i/46,ox:(r()*2-1)*CLOUD_R,oz:(r()*2-1)*CLOUD_R,h:130+r()*55,sp:.7+r()*.6,sc:.8+r()*.7};m.scale.setScalar(m.userData.sc);scene.add(m);CLOUDS.push(m);}
+})();
+// Salama: sahalaitainen valkoinen jono pilvestä maahan, näkyy lyhyen hetken (strikeBolt()).
+let boltGrp=null,boltT=0;
+function strikeBolt(){if(boltGrp){scene.remove(boltGrp);boltGrp=null;}
+  const d=new V3();camera.getWorldDirection(d);const a0=Math.atan2(d.x,d.z)+(Math.random()-.5)*1.7,dist=110+Math.random()*150,bx0=camera.position.x+Math.sin(a0)*dist,bz0=camera.position.z+Math.cos(a0)*dist;
+  const top=CLOUDS[0].userData.h+10,bot=Math.max(0,terrainH(bx0,bz0)),g=new THREE.Group(),bm=new THREE.MeshBasicMaterial({color:0xeaf2ff,fog:false});
+  const chain=(x0,y0,z0,x1,y1,z1,w,n)=>{let px=x0,py=y0,pz=z0;for(let i=1;i<=n;i++){const t=i/n,nx=x0+(x1-x0)*t+(i<n?(Math.random()-.5)*dist*.07:0),ny=y0+(y1-y0)*t,nz=z0+(z1-z0)*t+(i<n?(Math.random()-.5)*dist*.07:0);
+      const L=Math.hypot(nx-px,ny-py,nz-pz),seg=new THREE.Mesh(new THREE.BoxGeometry(w,L,w),bm);seg.position.set((px+nx)/2,(py+ny)/2,(pz+nz)/2);seg.lookAt(nx,ny,nz);seg.rotateX(Math.PI/2);g.add(seg);px=nx;py=ny;pz=nz;}return[px,py,pz];};
+  chain(bx0,top,bz0,bx0+(Math.random()-.5)*20,bot,bz0+(Math.random()-.5)*20,1.1,14);
+  for(let b=0;b<2;b++){const sy=top-(.2+Math.random()*.5)*(top-bot);chain(bx0,sy,bz0,bx0+(Math.random()-.5)*60,sy-30-Math.random()*30,bz0+(Math.random()-.5)*60,.6,5);}
+  scene.add(g);boltGrp=g;boltT=.28;return{x:bx0,z:bz0};}
 const rain=(function(){const N=900,g=new THREE.BufferGeometry(),p=new Float32Array(N*6);g.setAttribute('position',new THREE.BufferAttribute(p,3));const l=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0xaac4d8,transparent:true,opacity:.45}));l.frustumCulled=false;l.visible=false;scene.add(l);const r=mulberry32(9);for(let i=0;i<N;i++){const x=(r()-.5)*50,y=r()*30,z=(r()-.5)*50;p.set([x,y,z,x+.05,y+.7,z],i*6);}return l;})();

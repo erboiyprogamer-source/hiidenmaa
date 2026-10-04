@@ -3,7 +3,7 @@
 'use strict';
 
 /* ---------------- GAME STATE ---------------- */
-const P={pos:new V3(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z),vy:0,yaw:Math.PI,onGround:true,hp:60,stam:100,hunger:80,stamDelay:0,atk:null,blocking:false,bowDraw:0,drawing:false,heal:0,buffs:{},wetT:0,restT:0,inWater:false,dead:false,invul:0,stagger:0,walkPh:0,spawn:null,deaths:0,kills:0,hurtFlash:0,inDun:false,crouch:false,crouchK:0,packLv:0};
+const P={pos:new V3(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z),vy:0,yaw:Math.PI,onGround:true,hp:60,stam:100,hunger:80,stamDelay:0,atk:null,blocking:false,bowDraw:0,drawing:false,heal:0,buffs:{},wetT:0,restT:0,inWater:false,dead:false,invul:0,stagger:0,walkPh:0,spawn:null,deaths:0,kills:0,hurtFlash:0,inDun:false,crouch:false,crouchK:0,packLv:0,fx:{speed:1,dmg:1,stamRegen:1,hpRegen:1},crampT:0};
 let inv=new Array(32).fill(null);
 let playTime=0, dayT=.3, dayN=1, weather={cur:'selkea',until:200}, flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{}}, graves=[], drops=[];
 let camYaw=Math.PI, camPitch=.35, camDist=6;
@@ -11,8 +11,7 @@ const EXN=Math.ceil(HALF/2); // tutkimusruudukko 4 m ruuduin
 const explored=new Uint8Array(EXN*EXN);
 let state='menu';
 
-const fig=makeBiped({s:1,body:0x5a6e7a,skin:0xe2b48c,legs:0x4a3b2c,eyes:0x1a1a1a});
-fig.head.add(bx(.48,.16,.1,mat(0xc98a3a),0,.06,.23));fig.head.add(bx(.5,.18,.5,mat(0x6b6b6b,{metalness:.4,roughness:.5}),0,.5,0));fig.head.add(bx(.08,.14,.08,mat(0x8a8a8a),0,.42,.25));
+const fig=makePlayer();
 scene.add(fig.g);let heldMesh=null,heldId=null,offMesh=null,offId=null,armorId=null;
 function updateGear(){
   {const w0=equipped('weapon');if(!w0||w0.id!=='vasara')setBuildSel(null);}
@@ -21,7 +20,7 @@ function updateGear(){
   const o=equipped('offhand'),oid=o?o.id:null;
   if(oid!==offId){if(offMesh)fig.handL.remove(offMesh);offMesh=null;offId=oid;if(oid){offMesh=ITEMS[oid].cat==='shield'?makeShield(oid):makeHeld(oid);fig.handL.add(offMesh);}}
   const a=equipped('armor'),aid=a?a.id:null;
-  if(aid!==armorId){armorId=aid;const c=aid==='rautapanssari'?0x7d8894:aid==='kuparipanssari'?0xc07a40:aid==='nahkavaatteet'?0x8a6040:0x5a6e7a;fig.torso.material=mat(c);fig.armL.children[0].material=mat(c);fig.armR.children[0].material=mat(c);}
+  if(aid!==armorId){armorId=aid;const c=aid==='rautapanssari'?0x7d8894:aid==='kuparipanssari'?0xc07a40:aid==='nahkavaatteet'?0x8a6040:0x8a6a46;const cm=smat(c);for(const m of fig.cloth)m.material=cm;}
 }
 
 /* ---------------- INVENTORY ---------------- */

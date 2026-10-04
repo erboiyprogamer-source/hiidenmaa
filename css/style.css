@@ -139,3 +139,9 @@ textarea{width:100%;min-height:70px;background:rgba(0,0,0,.35);color:var(--bone)
 .mat{display:inline-block;margin:2px 4px 0 0;padding:1px 6px;border-radius:3px;font-size:12px;font-weight:700;background:rgba(0,0,0,.35)}
 .mat.ok{color:#cfe8b0}.mat.bad{color:#ff7a68;background:rgba(120,20,10,.45)}
 #chestUp,#invUp{margin:8px 0}
+
+/* Erä 21: tilat repun vieressä */
+#effects{margin-top:10px;max-width:480px}
+#effects .fx{display:flex;flex-direction:column;border-left:3px solid var(--frost);padding:3px 8px;margin:4px 0;background:rgba(0,0,0,.28);font-size:12px;cursor:help}
+#effects .fx.bad{border-color:var(--bad)}#effects .fx.good{border-color:var(--moss)}
+#effects .fx span{color:var(--dim)}

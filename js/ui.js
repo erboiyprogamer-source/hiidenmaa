@@ -30,13 +30,8 @@ function updateHUD(dt){
   const t=lookTarget,pr=$('#prompt');
   if(t&&!P.dead){const l=t.kind==='it'?t.it.label():t.label;pr.innerHTML=`<kbd>E</kbd>${l}`;}else pr.innerHTML='';
   // status chips
-  const ch=[];
-  if(P.crouch)ch.push(['Hiipii','neu']);if(shelterCache&&!P.inDun)ch.push(['Suojassa','neu']);if(fireCache)ch.push(['Lämmin','good']);
-  if(P.buffs.levannyt)ch.push([`Levännyt ${Math.ceil(P.buffs.levannyt/60)} min`,'good']);
-  if(P.buffs.voima)ch.push([`Voimistunut ${Math.ceil(P.buffs.voima/60)} min`,'good']);
-  if(P.wetT>0)ch.push(['Märkä','bad']);if(P.cold)ch.push(['Kylmä','bad']);if(P.hunger<=0)ch.push(['Nälkä','bad']);
-  if(P.buffs.pahoinvointi)ch.push(['Pahoinvointi','bad']);if(wt>MAXW)ch.push(['Ylikuormitus','bad']);if(P.restT>0&&!P.buffs.levannyt)ch.push([`Lepää… ${Math.ceil(12-P.restT)} s`,'neu']);
-  $('#status').innerHTML=ch.map(([t,c])=>`<div class="chip ${c}"><b></b>${t}</div>`).join('');
+  const fxs=effects();$('#status').innerHTML=fxs.map(e=>`<div class="chip ${e.kind}" title="${e.desc}"><b></b>${e.name}${e.t?' '+fmtT(e.t):''}</div>`).join('');
+  if(openPanel==='inv'&&performance.now()-fxAt>400){fxAt=performance.now();renderEffects(fxs);}
   // clock
   const hh=Math.floor(dayT*24),mm=Math.floor((dayT*24-hh)*60/10)*10;$('#clock').innerHTML=`Päivä ${dayN} · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')} <span>· ${P.inDun?'Hautakumpu':WEATHERS[weather.cur].n}</span>`;
   if(invDirty){invDirty=false;$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1)).join('');if(openPanel==='inv')renderInv();if(openPanel==='chest')renderChest();if(openPanel==='build')renderBuild();}
@@ -50,7 +45,10 @@ function togglePanel(name){if(openPanel===name){closePanels();return;}panelOpene
 function closePanels(keep,skipLock){if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest'])$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;if(!keep){state='play';if(!skipLock)requestLock();}}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
 function nearStations(){const s={};for(const p of pieces){if(['tyopenkki','nuotio','ahjo'].includes(p.t)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(p.t==='nuotio'?4:8)**2&&!P.inDun){if(p.t==='nuotio'&&p.data.fuel<=0)continue;s[p.t]=1;}}return s;}
-function renderInv(){
+let fxAt=0;
+// Tilat repun vieressä: nimi, jäljellä oleva aika ja vaikutus (osoita hiirellä tai lue suoraan).
+function renderEffects(fxs){fxs=fxs||effects();$('#effects').innerHTML=`<h3>Tilat</h3>`+(fxs.length?fxs.map(e=>`<div class="fx ${e.kind}" title="${e.desc}"><b>${e.name}${e.t?' · '+fmtT(e.t):''}</b><span>${e.desc}</span></div>`).join(''):'<div class="s">Ei erityisiä tiloja.</div>');}
+function renderInv(){renderEffects();
   const g=$('#invGrid');g.innerHTML=inv.map((s,i)=>slotHTML(s,i<8?i+1:'')).join('');
   [...g.children].forEach((el,i)=>{el.classList.toggle('sel',i===selSlot);el.onclick=e=>{if(selSlot>=0&&selSlot!==i&&e.shiftKey===false&&inv[selSlot]&&!inv[i]){inv[i]=inv[selSlot];inv[selSlot]=null;selSlot=i;invDirty=true;renderInv();return;}selSlot=i;renderInv();};el.ondblclick=()=>{useSlot(i);renderInv();};el.oncontextmenu=e=>{e.preventDefault();if(inv[i]){useSlot(i);renderInv();}};});
   $('#invW').textContent=`Paino ${invWeight().toFixed(0)} / ${MAXW}`;
