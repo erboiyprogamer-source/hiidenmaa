@@ -24,7 +24,7 @@ function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
     b.style.background=L>1?LAYER_C[(L-2)%6]:'rgba(0,0,0,.6)';b.firstChild.style.width=clamp(fill*100,0,100)+'%';b.firstChild.style.background=LAYER_C[(L-1)%6];
     b.children[1].textContent=`${m.def.n} ${Math.ceil(m.hp)}/${m.maxHp}${layers>1?' ×'+L:''}`;b.children[2].textContent='☠'.repeat(sk);}
   for(;k<mobBars.length;k++)mobBars[k].hidden=true;}
-function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
+function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${s.id==='soihtu'?`<span class="fu${s.lit===false?' off':''}"><i style="width:${Math.max(0,(s.fuel??TORCH_T)/TORCH_T*100)}%"></i></span>`:''}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
 let hudT=0;
 function updateHUD(dt){
   hudT-=dt;updateMsgs(dt);updateFloaters(dt);updateMobBars();

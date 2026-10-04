@@ -20,6 +20,8 @@ sun.shadow.mapSize.set(2048,2048); const sc=sun.shadow.camera; sc.left=-55;sc.ri
 scene.add(sun); scene.add(sun.target);
 const LIGHTS=[]; for(let i=0;i<6;i++){const l=new THREE.PointLight(0xff9a40,0,17,1.5);scene.add(l);LIGHTS.push(l);}
 const torchLight=new THREE.PointLight(0xffa04a,0,18,1.4); scene.add(torchLight);
+// Pimeällä lähin tuli ja käsisoihtu heittävät varjoja (pistevalon varjokartta 512 px). Varjokartta päivitetään vain pimeällä (`updateLightShadows`).
+for(const l of [LIGHTS[0],torchLight]){l.castShadow=true;l.shadow.mapSize.set(512,512);l.shadow.camera.near=.3;l.shadow.camera.far=18;l.shadow.bias=-.004;l.shadow.autoUpdate=false;}
 
 function canvasTex(fn,size=64){const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');fn(g,size);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;}
 const texR=mulberry32(77);

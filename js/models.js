@@ -103,7 +103,7 @@ function makeHeld(id){
       // Käännetään koko jousi 180° pystyakselin ympäri: vatsa osoittaa pelaajaan päin ja jänne venyy ampumasuuntaan nähden oikein.
       const inner=new THREE.Group();while(g.children.length)inner.add(g.children[0]);inner.rotation.y=Math.PI;g.add(inner);break;}
   }
-  g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
+  g.traverse(m=>{if(m.isMesh)m.castShadow=true;});if(g.userData.flame)for(const f of g.userData.flame)f.castShadow=false;
   return g;
 }
 // Jousen jänne ja nuoli: k = vedon määrä 0–1 (0 = ei vedossa, jänne suorana).

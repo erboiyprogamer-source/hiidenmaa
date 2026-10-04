@@ -6,7 +6,7 @@
 // Tikkaat: pelaaja kiipeää, kun hän on tikkaiden edessä (±.6 m sivusuunnassa, .9 m syvyyssuunnassa).
 function ladderAt(pos){for(const p of pieces){if(bt(p.t)!=='tikkaat')continue;const dx=pos.x-p.x,dz=pos.z-p.z;if(dx*dx+dz*dz>5)continue;const a=p.rot*Math.PI/4,lx=dx*Math.cos(a)-dz*Math.sin(a),lz=dx*Math.sin(a)+dz*Math.cos(a),zc=-Math.max(0,pos.y-p.y)*Math.tan((p.f%3)*Math.PI/12);
   if(Math.abs(lx)<.65&&Math.abs(lz-zc)<.95&&pos.y>p.y-.3&&pos.y<p.y+WH-.05)return p;}return null;}
-let torchFl=null;const torchPh=[Math.random()*TAU,Math.random()*TAU];
+let torchFl=null,torchBarT=0;const torchPh=[Math.random()*TAU,Math.random()*TAU];
 function updatePlayer(dt){
   if(P.dead)return;
   P.invul=Math.max(0,P.invul-dt);P.stagger=Math.max(0,P.stagger-dt);P.hurtFlash=Math.max(0,P.hurtFlash-dt);
@@ -98,7 +98,15 @@ function updatePlayer(dt){
   if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-fig.armL.rotation.x,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
   fig.g.visible=camDist>1.8;
   // torch light
-  const torch=offId==='soihtu';
+  const ts=torchSlot();let torch=false;
+  if(ts){if(ts.fuel===undefined)ts.fuel=TORCH_T;if(ts.lit===undefined)ts.lit=true;
+    if(ts.lit&&ts.fuel>0){ts.fuel-=dt*(P.running?1.2:1);
+      if(wRain>.5&&!shelterCache&&!P.inDun){ts.lit=false;msg('Sade sammutti soihdun. Sytytä se toisen liekin vieressä.','warn');sfx('hit');}
+      else if(ts.fuel<=0){const i=inv.indexOf(ts);if(i>=0)inv[i]=null;msg('Soihtu paloi loppuun.','warn');invDirty=true;updateGear();}}
+    else if(ts.fuel>0){let near=nearFire(P.pos.x,P.pos.z,2.5);if(!near)for(const p of pieces)if(p.t==='soihtuteline'&&p.data.burn>0&&dist2(p.x,p.z,P.pos.x,P.pos.z)<2.2*2.2){near=true;break;}
+      if(near&&!(wRain>.5&&!shelterCache&&!P.inDun)){ts.lit=true;msg('Sytytit soihdun.','loot');sfx('pickup');}}
+    torch=!!torchSlot()&&ts.lit&&ts.fuel>0;torchBarT-=dt;if(torchBarT<=0){torchBarT=1;invDirty=true;}
+    const fl0=offMesh&&offMesh.userData.flame;if(fl0)for(const f of fl0)f.visible=torch;}
   if(torch){const u=torchFl||(torchFl={cur:1,target:1,t:0}),s=1+(flick(u,dt)-1)*.52+(Math.sin(playTime*1.7+torchPh[0])+Math.sin(playTime*3.1+torchPh[1]))*.02;torchLight.intensity=2.6*s;fig.handL.getWorldPosition(torchLight.position);torchLight.position.y+=.6;
     // Liekit elävät, kipinöitä ja savua lähtee satunnaisesti kärjestä
     const fl=offMesh&&offMesh.userData.flame;if(fl){fl[0].scale.set(.95+s*.05,.9+s*.2,.95+s*.05);fl[1].scale.set(1,.9+s*.15,1);fl[2].scale.set(1,.85+s*.2,1);fl[3].material.opacity=.2+s*.06;fl[3].scale.setScalar(.92+s*.12);offMesh.rotation.z=Math.sin(playTime*3.1)*.04;}

@@ -173,6 +173,8 @@ function buildPieceMesh(t,f=0){
     case 'soihtuteline':{g.add(bxw(.12,1.6,.12,MAT.wood,0,.8,0));const fa=bx(.2,.25,.2,MAT.flame,0,1.7,0,false),fb=bx(.1,.12,.1,MAT.flame2,0,1.84,0,false);g.add(fa,fb);g.userData.flame=[fa,fb];break;}
   }
   g.traverse(m=>{if(m.isMesh){m.castShadow=m.castShadow!==false;m.receiveShadow=true;}});
+  // Tulipaikan omat osat eivät varjosta omaa valoaan
+  if(isFirePiece(t)||t==='soihtuteline')g.traverse(m=>{if(m.isMesh)m.castShadow=false;});
   return g;
 }
 let pieces=[]; const pieceRoots=[];

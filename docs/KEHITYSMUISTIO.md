@@ -49,6 +49,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.40 (erä 27: valo ja soihtu)
+- **Tulien varjot pimeällä:** lähin pistevalo (`LIGHTS[0]`) ja käsisoihtu (`torchLight`) heittävät varjoja (cube-varjokartta 512 px, far 18 m). Varjokartta päivittyy vain pimeällä (yö, sisällä, luolasto, synkkä sää; `shadow.autoUpdate`), päivällä ei kuormita. Tulipaikan omat osat ja soihdun liekit eivät varjosta omaa valoaan.
+- **Käsisoihtu kuluu:** `TORCH_T` = 60 s palamista yhteensä, juostessa 20 % nopeammin; tila esineessä (`s.fuel`, `s.lit`, tallentuu). Hotbarin/repun paikassa oranssi mittari (harmaa kun sammunut). Palaessa loppuun esine poistuu.
+- **Sade sammuttaa** soihdun ulkona (`wRain` > .5, ei suojassa). **Sytytys:** vie sammunut soihtu kädessä toisen liekin viereen (palava nuotio/grilli < 2.5 m tai seisova soihtu < 2.2 m). Sammunut soihtu ei valaise eikä pelota vihollisia (`torchLit()`).
+
 ### v0.39 (erä 26: taivas ja pilvet)
 - **Taivaskupoli** (`skyDome`, ShaderMaterial, `SKY_U`): liukuväri horisontista (= sumun väri) tummempaan zeniittiin + auringon hehku (heikkenee pilvisellä). `updateSky()` environment.js.
 - **Pilvet uusiksi:** 26 isoa, leveää ja litteäpohjaista pilvilauttaa (70–170 m, 26–40 palloa, korkeus 96–126 m eli aiempaa matalammalla, `CLOUD_R` 420). Peitto säästä (kynnys `th`), koko kasvaa peiton mukana (×.75–1.3). Kaukana pilvet häipyvät horisontin väriin (opasiteetti + väri, `far`) eivätkä piirry `CLOUD_R`:n takana.
@@ -518,7 +523,7 @@ Kirjattu v0.35:n jälkeen. Jokainen erä: testaa, päivitä muistio, versio+`?v=
 **Erä 26 – Taivas ja pilvet (0)** – TEHTY (v0.39; grafiikka-asetukset erässä 29)
 1. Pilvet suuremmiksi, leveämmiksi ja realistisemmiksi (taivaalle levittäytyviä), koko säästä riippuen; kaukana sumeat/häipyvät (optimointi); pilviä hieman matalammalle; selkeällä säällä aurinko paistaa sumun/pilvien välistä; realistisempi taivas (asetuksiin myöhemmin yksinkertaistus).
 
-**Erä 27 – Valo ja soihtu (0.9, 0.99)**
+**Erä 27 – Valo ja soihtu (0.9, 0.99)** – TEHTY (v0.40)
 1. Tulet/valot heittävät varjoja ympäröivien esineiden taakse pimeällä (ei päivänvalossa ulkona).
 2. Käsisoihtu sammuu sateessa (sateen alla), syttyy kun vie toisen liekin viereen; soihtu kuluu käytettäessä (mittari, 1 min yhteensä, sateessa 20 % nopeammin), sammuessa liekki ja valo katoavat.
 

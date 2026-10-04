@@ -162,3 +162,7 @@ textarea{width:100%;min-height:70px;background:rgba(0,0,0,.35);color:var(--bone)
 
 /* Erä 25: terveyspalkin pääkallot */
 .mobbar .sk{position:absolute;top:7px;bottom:auto;left:50%;transform:translateX(-50%);font-size:11px;color:#e8e2d0;letter-spacing:1px;white-space:nowrap;text-shadow:0 1px 2px #000}
+
+/* Erä 27: soihdun palamismittari */
+.slot .fu{position:absolute;left:4px;right:4px;bottom:3px;height:4px;background:rgba(0,0,0,.6);border-radius:2px;overflow:hidden}
+.slot .fu i{display:block;height:100%;background:#ffa53a}.slot .fu.off i{background:#6a6560}
