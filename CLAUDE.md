@@ -35,17 +35,20 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 | Tiedosto | Sisältö |
 | --- | --- |
 | `js/core.js` | `$`, `clamp`, `lerp`, `sstep`, kohina (`fbm`, `ridge`), `mulberry32` |
-| `js/world.js` | `WS` (skaala), `MAPS`/`MAP`/`MAP_ID` (3 karttaa), `HALF`, `LOC`, `AARNI`, `DUN`, `heightFn`, `biomeAt`, `terrainH` |
+| `js/world.js` | `WS` (skaala), `MAPS`/`MAP`/`MAP_ID` (6 karttaa), `dirIn`, `HALF`, `LOC` (+ arvotut `SITE_DEFS`-paikat), `AARNI`, `DUN`, `heightFn`, `biomeAt`, `terrainH` |
 | `js/render.js` | renderer, scene, camera, valot, tekstuurit, `MAT`, `mat()`, `bx()`, maasto, vesi, taivas, sade |
 | `js/collision.js` | törmäysruudukko: `addBox`, `addCircle`, `groundAt`, `collideXZ`, `pointBlocked`, `STEPUP` |
 | `js/items.js` | `ITEMS`, `RECIPES`, `RECIPE_BY`, `icon(id)` (canvas-kuvakkeet) |
 | `js/audio.js` | `sfx(nimi)` – proseduraaliset äänet |
 | `js/models.js` | `makeBiped`, `makeQuad`, `makeHeld`, `makeShield` |
 | `js/resources.js` | `NODE`, `NGEO`, sijoittelu ruutuihin (`CHN`, `VIS_R`), `nodes`, tukit (`logs`), `regrowForest` |
-| `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`) |
+| `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`), `wallTorch`, `brazier`, `rockC` |
 | `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, `PIECES`, `pieceBoxes`, `buildPieceMesh`, `addPiece`, `removePiece` |
 | `js/mobs.js` | `MOBDEF`, `spawnMob`, `mobs`, `boss` |
+| `js/dungeons.js` | `REALMS` (3 ulottuvuutta, avainketju `lock`/`key`/`alt`), generaattorit, `ensureRealm`, koristeet (`dressFloor`, tynnyrit, spawneri), portaalit, `realmBossAI`, usva/höyry/pisarat, `P.spawnProt`, `fo(k)` |
+| `js/story.js` | löytöpaikat (`SITE_KEYS`, rauniot, arkkukivet), vartijat (`GUARDS`), lisäriimukivet (`XRUNES`), tehtävät (`QUESTS`) |
 | `js/state.js` | `P` (pelaaja), `inv`, `flags`, pelaajahahmo, reppu, maahan pudonneet esineet, partikkelit, ammukset |
+| `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET` (asetukset), `applyGfx()`, asetusvalikko |
 | `js/input.js` | näppäimet, hiiri, hiiren lukitus |
 | `js/actions.js` | hyökkäys, vahinko, syöminen, `interact()`, alttari, luolastoon meno |
 | `js/building.js` | rakennushaamu, ruudukkoon kohdistus, `validPlace`, purku |
@@ -56,13 +59,14 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 | `js/ui.js` | HUD, viestit, paneelit, kartta |
 | `js/progress.js` | `bump`, XP ja taso (`lvlInfo`), saavutukset (`ACH`, `BON`), `GOALS`, edistymispaneeli (J) |
 | `js/save.js` | `serialize`, `loadData`, `saveGame`, `SKEY` |
-| `js/main.js` | valikko, pääsilmukka `frame()`, testirajapinta `window.__game` |
+| `js/main.js` | valikko, pääsilmukka `frame()`, mukautuva laatu, testirajapinta `window.__game` |
 
 ## Mittayksiköt ja sopimukset
 
 - Metrit ja sekunnit. Maailma on noin −350…350 m (`HALF`), suunniteltu yksikkökoordinaatteihin ja skaalattu
   `WS`=1,75. Luolasto on erillinen tila kohdassa `DUN` (pelaaja siellä kun `P.inDun`).
 - Kartta valitaan ennen skriptien latausta (`localStorage['hiidenmaa_map']`); vaihto = sivun uudelleenlataus.
+- Tarinateksteihin ei kirjoiteta kiinteitä ilmansuuntia: käytä `dirIn`/`dirText`, koska paikat ovat eri kartoilla eri suunnissa.
 - Pelaaja: pituus 1,8 m, säde 0,38 m, kävely 4,6 m/s, juoksu 8 m/s, askelnousu `STEPUP` 0,55 m.
 - Rakennusosien mitat tulevat vakioista `G`, `WH`, `DOOR_W`, `DOOR_H`, `STEP_N` (`js/pieces.js`).
   Älä kirjoita mittoja numeroina osien sisään.
@@ -76,6 +80,11 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 - **Vihollinen tai eläin:** `MOBDEF` (malli `fig`, `ai`: flee/neutral/hostile/boss) ja `ai.js`:n `SPAWN`.
 - **Tavoite:** `GOALS` (`progress.js`, id + xp), järjestyksellä on väliä. Saavutus: `ACH`. Valmistusohjeen tasovaatimus: `lvl`.
 - **Rakennusosan kategoria:** `cat` (+ `alku:1` = Alkupeli-välilehti) ja `BUILD_CATS` (`pieces.js`). Kiviversio: `base:'x',stone:1`.
+
+## Etenemisketju
+
+- Ulottuvuuksiin mennään järjestyksessä: avain maailmasta → 1. → 2. → 3. Jokaisella portilla on varmistus (`alt`), jottei
+  kadonnut avain jumita peliä. Uutta lukkoa lisättäessä tarkista, että avaimen lähde on aina saavutettavissa ilman lukon takana olevaa.
 
 ## Tallennus
 

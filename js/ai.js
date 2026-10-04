@@ -18,11 +18,14 @@ function updateMobs(dt){
     if(m.dead){m.deadT+=dt;m.f.g.rotation.z=Math.min(Math.PI/2,m.deadT*4);m.f.g.position.y=m.pos.y-m.deadT*.3;if(m.deadT>2.2)mobRemove(m);continue;}
     const d=m.def,dx=P.pos.x-m.pos.x,dz=P.pos.z-m.pos.z,dist=Math.hypot(dx,dz);
     if(!m.dun&&m!==boss&&dist>120){mobRemove(m);continue;}
+    // Piirtoetäisyyden ulkopuolella (sumun takana) mobia ei piirretä eikä animoida
+    if(m!==boss&&!m.dun){const far=dist>scene.fog.far+8;if(far!==!m.f.g.visible){m.f.g.visible=!far;}if(far){m.f.g.position.copy(m.pos);}}
     if(m.dun!==P.inDun){continue;}
     m.flash=Math.max(0,m.flash-dt);for(const mt of m.mats)mt.emissive.setHex(m.flash>0?0x661111:0x000000);
     m.atkCd-=dt;
     let tx=0,tz=0,spd=0;
     if(d.ai==='boss'){bossAI(m,dt,dx,dz,dist);continue;}
+    if(d.ai==='rboss'){realmBossAI(m,dt,dx,dz,dist);continue;}
     const night=isNight()&&!P.inDun;
     const hostile=d.ai==='hostile'||(d.ai==='neutral'&&m.angry);
     const aggroR=(d.aggro||12)*(night?1.35:1)*(P.crouch?.5:1);
@@ -34,13 +37,16 @@ function updateMobs(dt){
       if(fs){m.fearT=1;m.siege=null;}}
     if(m.fearT>0){m.fearT-=dt;m.wind=0;m.state='flee';let fx=m.pos.x,fz=m.pos.z,fd=1e9;for(const s of fireSrc){const dd=dist2(s.x,s.z,m.pos.x,m.pos.z);if(dd<fd){fd=dd;fx=s.x;fz=s.z;}}
       moveMob(m,m.pos.x-fx,m.pos.z-fz,d.run,dt);animMob(m,dt);if(m.fearT<=0)m.state='idle';continue;}
+    // Vartijat pysyvät paikallaan: jos ne ajautuvat liian kauas (säde guard.r), ne palaavat takaisin ja paranevat.
+    if(m.guard){const gx=m.guard.x-m.pos.x,gz=m.guard.z-m.pos.z,gd=Math.hypot(gx,gz);if(gd>m.guard.r)m.ret=true;
+      if(m.ret){m.state='idle';m.wind=0;if(gd<3)m.ret=false;else{moveMob(m,gx,gz,d.run,dt);animMob(m,dt);m.hp=Math.min(m.maxHp,m.hp+m.maxHp*.05*dt);continue;}}}
     const hurt=playTime-m.lastHit<10;
     // Paikallaan oleville vaikeille vihollisille: iskuttomana 30 s → parantuvat hitaasti (1 %/s).
     if((MOB_SKULL[m.type]||0)>=3&&playTime-m.lastHit>30&&m.hp<m.maxHp)m.hp=Math.min(m.maxHp,m.hp+m.maxHp*.01*dt);
     if(d.ai==='flee'){// säikähdysetäisyys: kävely 7 m, juoksu 16 m, ase kädessä ×1.4, kyykyssä 3.5 m. Vahingoitettu pelkää 10 s.
       const w=curWeapon(),armed=(w.cat==='weapon'||w.cat==='bow')&&!P.crouch;let sr=P.crouch?3.5:P.running?16:7;if(armed)sr*=1.4;
       if(hurt||(!P.dead&&dist<sr&&(m.los||dist<4))){if(m.state!=='flee'){m.state='flee';m.fleeT=0;}}else if(m.state==='flee'&&dist>28)m.state='idle';}
-    else if(hostile&&!P.dead&&((m.los&&dist<aggroR)||hurt)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
+    else if(hostile&&!P.dead&&!(P.spawnProt>0)&&((m.los&&dist<aggroR)||hurt)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
     else if(m.state==='chase'&&!hurt&&(dist>aggroR*1.6||P.dead||m.noLos>3)){m.state='idle';if(m.noLos>3){m.angry=false;m.lastHit=-99;}m.noLos=0;}
     if(m.state==='flee'){// pakosuunta pois pelaajasta satunnaisella poikkeamalla, vaihtuu 1.2–3 s välein
       m.fleeT=(m.fleeT||0)-dt;if(m.fleeT<=0){m.fleeT=1.2+Math.random()*1.8;m.fleeA=Math.atan2(-dx,-dz)+(Math.random()-.5)*(hurt?1.6:.8);}
@@ -84,6 +90,7 @@ function moveMob(m,tx,tz,spd,dt){
   m.speedNow=moved/dt;
 }
 function animMob(m,dt){
+  if(!m.f.g.visible)return;
   const f=m.f;f.g.position.copy(m.pos);f.g.rotation.y=m.yaw;
   m.walkPh+=(m.speedNow||0)*dt*2.2;const sw=Math.sin(m.walkPh)*Math.min(1,(m.speedNow||0)/3)*.7;
   if(f.biped){f.legL.rotation.x=sw;f.legR.rotation.x=-sw;f.armL.rotation.x=-sw*.6;f.armR.rotation.x=sw*.6;
@@ -129,11 +136,11 @@ const SPAWN={
 };
 function spawner(dt){
   spawnT-=dt;if(spawnT>0||P.inDun||P.dead)return;spawnT=2.5;
-  const night=isNight();const alive=mobs.filter(m=>!m.dun&&!m.dead&&m!==boss);const cap=night?14:10;
+  const night=isNight();const alive=mobs.filter(m=>!m.dun&&!m.dead&&m!==boss&&!m.guard);const cap=night?14:10;
   if(alive.length>=cap)return;
   for(let tries=0;tries<6;tries++){const a=Math.random()*TAU,d=38+Math.random()*30,x=P.pos.x+Math.cos(a)*d,z=P.pos.z+Math.sin(a)*d;const h=terrainH(x,z);if(h<.5)continue;
     const b=biomeAt(x,z,h);const tbl=SPAWN[b];if(!tbl)continue;const list=night?tbl.night:tbl.day;let r=Math.random(),type=list[0][0];for(const [t,p] of list){if(r<p){type=t;break;}r-=p;}
-    if(nearBase(x,z))continue;
+    if(nearBase(x,z)||nearSite(x,z,50))continue;
     if(dist2(x,z,LOC.spawn.x,LOC.spawn.z)<30*30&&MOBDEF[type].ai==='hostile'&&!night)continue;
     const pack=type==='susi'&&night?2:1;for(let k=0;k<pack;k++)spawnMob(type,x+k*1.5,z+k);return;}
 }
@@ -141,6 +148,8 @@ function respawnNodes(){for(const n of nodes)if(!n.alive&&n.respawnAt<=playTime&
 const LIGHT_CAP=3.0;let shFrame=0;const ALL_LIGHTS=[...LIGHTS,torchLight,torchFill];
 function updateStations(dt){
   for(const p of pieces){
+    // piirtoetäisyys: kaukana (sumun takana) olevia rakennuksia ei piirretä
+    {const far=dist2(p.x,p.z,P.pos.x,P.pos.z)>(scene.fog.far+25)**2;if(far===p.mesh.visible)p.mesh.visible=!far;}
     if(isFirePiece(p.t)){const f=p.mesh.userData.flame,d=p.data;const lit=d.fuel>0;f[0].visible=f[1].visible=lit;
       if(lit){const u=p.fl||(p.fl={cur:1,target:1,t:Math.random()*.2}),s=flick(u,dt);f[0].scale.set(.9+s*.12,.7+s*.45,.9+s*.12);f[1].scale.set(1,.8+s*.35,1);d.burn+=dt;
         if(dist2(p.x,p.z,P.pos.x,P.pos.z)<35*35){if(Math.random()<dt*3.2)emitEmber(p.x+(Math.random()-.5)*.4,p.y+.7,p.z+(Math.random()-.5)*.4,'spark');if(Math.random()<dt*.9)emitEmber(p.x+(Math.random()-.5)*.2,p.y+1.1,p.z+(Math.random()-.5)*.2,'smoke');}if(d.burn>=90){d.burn=0;d.fuel--;}for(const c of d.cook)c.t+=dt;}

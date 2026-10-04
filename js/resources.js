@@ -113,7 +113,7 @@ function makeChunkIM(type,k,cap){const cx=k%CHN,cz=(k/CHN)|0,x0=-HALF+cx*CHS,z0=
   im.userData.cx=x0+CHS/2;im.userData.cz=z0+CHS/2;im.userData.k=k;im.userData.vis=VIS_R[NODE[type].kind]||140;scene.add(im);nodeIM[type].push(im);CHUNK_IMS.push(im);return im;}
 // Kaukaiset ruudut piiloon (sumu peittää ne joka tapauksessa).
 function updateChunkVis(){const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far;
-  for(const im of CHUNK_IMS){const R=Math.min(f,im.userData.vis)+CHS*.72;im.visible=im.count>0&&!P.inDun&&dist2(cx,cz,im.userData.cx,im.userData.cz)<R*R;}}
+  for(const im of CHUNK_IMS){const R=Math.min(f,im.userData.vis*RDK*(im.userData.vis<80?DETK:1))+CHS*.72;im.visible=im.count>0&&!P.inDun&&dist2(cx,cz,im.userData.cx,im.userData.cz)<R*R;}}
 function initNode(n){n.ox=n.x;n.oz=n.z;n.s0=n.s;n.id=nodeIdN++;n.def=NODE[n.type];n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?n.s*n.s*1.2:1);n.hp=n.maxHp;n.alive=true;n.respawnAt=0;
   setNodeMatrix(n,true);
   if(n.def.kind==='tree')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+6*n.s,n);

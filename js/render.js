@@ -28,9 +28,9 @@ for(const l of [LIGHTS[0],torchLight]){l.castShadow=true;l.shadow.mapSize.set(38
 // Käsisoihdun varjo: pieni (kantama 3.2 m), matalaresoluutioinen (64 px) ja pehmeä läntti, päivittyy joka kehys (halpa, koska kamera näkee vain lähimmät esineet).
 torchLight.shadow.mapSize.set(40,40);torchLight.shadow.camera.far=3.2;torchLight.shadow.camera.near=.25;torchLight.shadow.radius=3;torchLight.shadow.bias=-.01;
 // Kiinteiden valojen varjokartta päivitetään harvoin; ympäristön muuttuessa (rakennus lisätty/purettu/rikottu, ovi liikkuu, puu kaatuu) lippu nostetaan ja päivitys tehdään heti.
-let shDirty=true;const markShadowDirty=()=>{shDirty=true;};
+let shDirty=true,bldDirty=true;const markShadowDirty=()=>{shDirty=true;bldDirty=true;};
 const QUAL={lvl:0,pointShadow:true,sunSize:2048,max:3};
-function setQuality(l){QUAL.lvl=l;QUAL.pointShadow=l<3;const ss=l>=2?1024:2048;if(ss!==QUAL.sunSize){QUAL.sunSize=ss;sun.shadow.mapSize.set(ss,ss);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}}
+function setQuality(l){QUAL.lvl=l;QUAL.pointShadow=l<3&&SET.shadow==='high';const ss=(l>=2||SET.shadow==='low')?1024:2048;if(ss!==QUAL.sunSize){QUAL.sunSize=ss;sun.shadow.mapSize.set(ss,ss);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}}
 
 function canvasTex(fn,size=64){const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');fn(g,size);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;}
 const texR=mulberry32(77);

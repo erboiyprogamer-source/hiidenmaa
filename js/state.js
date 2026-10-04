@@ -83,10 +83,10 @@ const _tmpV=new V3(),_tmpV2=new V3();
 
 /* ---------------- PARTICLES & FX ---------------- */
 const parts=[];const pGeo=new THREE.BoxGeometry(.12,.12,.12);
-function burst(x,y,z,color,n=8,sp=3){for(let i=0;i<n;i++){if(parts.length>90){const o=parts.shift();scene.remove(o.m);}const m=new THREE.Mesh(pGeo,mat(color));m.position.set(x,y,z);scene.add(m);parts.push({m,vx:(Math.random()-.5)*sp,vy:Math.random()*sp,vz:(Math.random()-.5)*sp,t:.6+Math.random()*.4});}}
+function burst(x,y,z,color,n=8,sp=3){n=Math.round(n*PF);for(let i=0;i<n;i++){if(parts.length>90){const o=parts.shift();scene.remove(o.m);}const m=new THREE.Mesh(pGeo,mat(color));m.position.set(x,y,z);scene.add(m);parts.push({m,vx:(Math.random()-.5)*sp,vy:Math.random()*sp,vz:(Math.random()-.5)*sp,t:.6+Math.random()*.4});}}
 // Kipinät ja savu: kevyet, nousevat hiukkaset tulille ja soihduille (ei painovoimaa). kind: 'spark' | 'smoke'.
 const embers=[],emPool=[],emGeo=new THREE.SphereGeometry(1,5,4);
-function emitEmber(x,y,z,kind){if(embers.length>70)return;const sp=kind==='spark',c=sp?(Math.random()<.5?0xffb43a:0xff7a1a):0x6a6560;
+function emitEmber(x,y,z,kind){if(embers.length>70*PF||Math.random()>PF)return;const sp=kind==='spark',c=sp?(Math.random()<.5?0xffb43a:0xff7a1a):0x6a6560;
   let mt=emPool.pop();if(!mt)mt=new THREE.MeshBasicMaterial({transparent:true,depthWrite:false,fog:false});mt.color.setHex(c);mt.opacity=sp?1:.35;const m=new THREE.Mesh(emGeo,mt);m.position.set(x,y,z);m.scale.setScalar(.001);scene.add(m);
   embers.push({m,sp,t:0,life:sp?.5+Math.random()*.8:1.1+Math.random()*.9,vx:(Math.random()-.5)*(sp?.8:.3),vy:sp?.9+Math.random()*1.3:.5+Math.random()*.4,vz:(Math.random()-.5)*(sp?.8:.3),r:sp?.018+Math.random()*.014:.07});}
 function updateEmbers(dt){for(let i=embers.length-1;i>=0;i--){const e=embers[i];e.t+=dt;const k=e.t/e.life;if(k>=1){scene.remove(e.m);emPool.push(e.m.material);embers.splice(i,1);continue;}

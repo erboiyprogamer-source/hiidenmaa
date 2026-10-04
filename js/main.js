@@ -7,6 +7,19 @@ function hasSave(){try{return!!localStorage.getItem(SKEY);}catch(e){return false
 function refreshMenu(){const s=hasSave();const inGame=started;$('#bContinue').hidden=!s||inGame;$('#bResume').hidden=!inGame;$('#bSave').hidden=!inGame;$('#bNew').querySelector('small').textContent=inGame?'Aloittaa alusta uudella arvotulla kartalla – nykyinen eteneminen katoaa, ellei sitä ole tallennettu':'Aloita rannalta ilman mitään – kartta arvotaan';
   $('#mapName').textContent=`Kartta: ${MAP.name}`;
   if(s&&!inGame){try{const d=JSON.parse(localStorage.getItem(SKEY));$('#saveInfo').textContent=`${(MAPS[d.mapId||0]||MAPS[0]).name} · päivä ${d.dayN} · ${Math.round(d.playTime/60)} min pelattu`;}catch(e){}}}
+// Valikon vierityksen vihjeet: ohuet, raaputetun näköiset tikkunuolet ylä- ja alareunassa, jotka sykkivät rauhallisesti,
+// kun sivua on piilossa ylhäällä tai alhaalla. Vierityspalkki on piilotettu CSS:llä.
+function scrollHints(el){
+  const svg=(up)=>`<svg viewBox="0 0 16 36" width="12" height="30" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path d="${up?'M8.2 34 L7.8 19 L8.3 3.2':'M7.8 2 L8.2 17 L7.7 32.8'}" stroke-width="1.3"/><path d="${up?'M8.6 33 L8.4 4.4':'M7.4 3 L7.6 31.6'}" stroke-width=".6" opacity=".6"/>
+    <path d="${up?'M2.6 9.4 L8.1 3 L13.6 9.8':'M2.4 26.6 L7.9 33 L13.4 26.2'}" stroke-width="1.3"/><path d="${up?'M3.4 10.2 L8.3 4.2':'M3.2 25.8 L8.1 31.8'}" stroke-width=".6" opacity=".6"/></g></svg>`;
+  const mk=(cls,up)=>{const d=document.createElement('div');d.className='scrollHint '+cls;d.innerHTML=svg(up);el.appendChild(d);return d;};
+  const u=mk('up',true),dn=mk('down',false);
+  const upd=()=>{u.classList.toggle('on',el.scrollTop>6);dn.classList.toggle('on',el.scrollTop+el.clientHeight<el.scrollHeight-6);};
+  el.addEventListener('scroll',upd,{passive:true});addEventListener('resize',upd);
+  if(window.ResizeObserver)new ResizeObserver(upd).observe(el.firstElementChild||el);
+  new MutationObserver(upd).observe(el,{subtree:true,attributes:true,attributeFilter:['hidden'],childList:true});
+  setTimeout(upd,50);return upd;}
 let started=false,confirmNew=false;
 function startPlay(){started=true;state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();invDirty=true;}
 function pauseGame(){if(state!=='play'||openPanel)return;state='paused';pausedAt=performance.now();$('#menu').hidden=false;$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
@@ -20,28 +33,16 @@ function playSave(s,welcome){const mid=s.mapId||0;if(mid!==MAP_ID&&switchMap(mid
 $('#bNew').onclick=()=>{if(started&&!confirmNew){confirmNew=true;$('#bNew').firstChild.textContent='Vahvista: uusi peli';setTimeout(()=>{confirmNew=false;$('#bNew').firstChild.textContent='Uusi peli';},4000);return;}confirmNew=false;$('#bNew').firstChild.textContent='Uusi peli';startNewGame();};
 $('#bContinue').onclick=()=>{try{playSave(JSON.parse(localStorage.getItem(SKEY)),'Tervetuloa takaisin.');}catch(e){$('#ioMsg').textContent='Tallennuksen lataus epäonnistui.';}};
 $('#bResume').onclick=()=>{state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();};
-$('#bSave').onclick=()=>{const ok=saveGame(true);$('#ioMsg').textContent=ok?'Tallennettu selaimeen.':'Selaimen tallennus ei ole käytössä – kopioi tallennuskoodi.';$('#opts').hidden=false;if(!ok)$('#bExport').click();
-  const lbl=$('#bSave').firstChild,prevT=lbl.textContent;lbl.textContent=ok?'Tallennettu ✓':'Tallennus epäonnistui';setTimeout(()=>{lbl.textContent=prevT;},1800);};
-// Näppäinlista: isot kategoriat. Päivitä tätä kun näppäimiä lisätään.
-const KEYLIST=[
-  ['Liikkuminen',[['W A S D','liiku'],['Shift','juokse'],['Välilyönti','hyppää (tikkailla ylös)'],['C','kyykky / hiipiminen'],['S','tikkailla alas'],['Hiiri','kamera'],['Hiiren rulla','kameran etäisyys']]],
-  ['Toiminnot',[['Hiiren vasen','isku / jousen jännitys (pidä ja päästä) / lapio ja kuokka'],['Hiiren oikea','torju kilvellä (rakennusvalikko vasaralla)'],['E','poimi, avaa, käytä, nuku, paista'],['1–8','pikapaikat: varusta tai syö'],['Soihtu kädessä','sytytys: vie toisen liekin viereen ja odota 2,5 s']]],
-  ['Rakentaminen (vasara kädessä)',[['B','rakennusvalikko'],['Hiiren vasen','rakenna'],['R','käännä 45°'],['Shift + R','vaihda asentoa / kaltevuutta'],['G','sivuttaiskohdistus (ruudukko, puoli, vapaa, reuna)'],['H','pystykohdistus (auto, pysty, 3D)'],['Q / Z','nosta / laske haamua (pystykohdistuksessa)'],['X','pura'],['F','korjaa']]],
-  ['Valikot ja paneelit',[['Tab tai I','reppu ja valmistus'],['M','kartta'],['J','taso, saavutukset ja tavoitteet'],['T','viimeiset 10 ilmoitusta'],['Esc','sulje paneeli / pelitauko (kohdistin näkyviin)']]],
-  ['Näkymä',[['K','koko näyttö'],['Esc','pelitauko ja asetukset']]],
-];
-$('#bKeys').onclick=()=>{const b=$('#keysBox');if(!b.hidden){b.hidden=true;return;}
-  b.innerHTML='<div class="keysGrid">'+KEYLIST.map(([c,l])=>`<div class="keyCat"><h3>${c}</h3>${l.map(([k,d])=>`<div class="keyRow"><span class="kb">${k}</span><span>${d}</span></div>`).join('')}</div>`).join('')+'</div>';b.hidden=false;};
-$('#bMenuToggle').onclick=()=>{$('#opts').hidden=!$('#opts').hidden;};
-$('#bExport').onclick=()=>{const j=JSON.stringify(serialize());$('#saveCode').value=btoa(unescape(encodeURIComponent(j)));$('#ioMsg').textContent='Koodi luotu nykyisestä pelistä.';};
-$('#bCopy').onclick=()=>{const t=$('#saveCode');if(!t.value)$('#bExport').click();navigator.clipboard.writeText(t.value).then(()=>$('#ioMsg').textContent='Kopioitu leikepöydälle.').catch(()=>{t.select();$('#ioMsg').textContent='Valittu – kopioi Ctrl+C:llä.';});};
-$('#bImport').onclick=()=>{try{const s=JSON.parse(decodeURIComponent(escape(atob($('#saveCode').value.trim()))));playSave(s,'Peli ladattu koodista.');}catch(e){$('#ioMsg').textContent='Koodi ei kelpaa.';}};
-$('#optShadow').onchange=e=>{renderer.shadowMap.enabled=e.target.checked;scene.traverse(o=>{if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true);}});};
-$('#optSound').onchange=e=>{soundOn=e.target.checked;};
-$('#optInvY').onchange=e=>{invertY=e.target.checked;};
+// Tallenna: ei avaa asetuksia; ilmoitus näkyy painikkeessa ja valikon tilariviltä
+$('#bSave').onclick=()=>{const ok=saveGame(true);const lbl=$('#bSave').firstChild,prevT=lbl.textContent;
+  $('#saveMsg').textContent=ok?'Tallennettu selaimeen.':'Selaimen tallennus ei ole käytössä – avaa Asetukset › Tallennus ja tallenna koodi tai tiedosto.';
+  lbl.textContent=ok?'Tallennettu ✓':'Tallennus epäonnistui';setTimeout(()=>{lbl.textContent=prevT;$('#saveMsg').textContent='';},2200);};
+$('#bKeys').onclick=()=>{if(!$('#settings').hidden&&setTab==='keys'){$('#settings').hidden=true;return;}openSettings('keys');};
+$('#bMenuToggle').onclick=()=>{if(!$('#settings').hidden&&setTab!=='keys'){$('#settings').hidden=true;return;}openSettings(setTab==='keys'?'gfx':setTab);};
+$('#bSetClose').onclick=()=>{$('#settings').hidden=true;};
 $('#bRespawn').onclick=respawn;
 $('#bWinCont').onclick=()=>{$('#winS').hidden=true;$('#hud').hidden=false;state='play';requestLock();};
-refreshMenu();
+refreshMenu();scrollHints($("#menu"));
 // Kartanvaihdon jälkeinen jatko: aloita uusi peli tai lataa tallennus automaattisesti.
 (function(){let p=null,d=null;try{p=sessionStorage.getItem('hiidenmaa_pending');d=sessionStorage.getItem('hiidenmaa_data');sessionStorage.removeItem('hiidenmaa_pending');sessionStorage.removeItem('hiidenmaa_data');}catch(e){}
   if(p==='new'){newGame();startPlay();setTimeout(()=>msg(`Kartta: ${MAP.name}`),300);}
@@ -52,7 +53,7 @@ let last=performance.now(),slowT=0,saveT=0,lightT=0,menuA=0;
 function update(dt){
   playTime+=dt;dayT+=dt/DAY_LEN;if(dayT>=1){dayT-=1;dayN++;msg(`Päivä ${dayN}`);}
   const wasNight=isNight();
-  updatePlayer(dt);updateMobs(dt);updateProjs(dt);updateDrops(dt);updateFx(dt);updateStations(dt);spawner(dt);survival(dt);updateWeather();
+  updatePlayer(dt);updateDungeons(dt);updateStory(dt);updateMobs(dt);updateProjs(dt);updateDrops(dt);updateFx(dt);updateStations(dt);spawner(dt);survival(dt);updateWeather();
   updateEnvironment(dt);updateCamera(dt);updateBenchRings();updateChunkVis();
   if(state==='play'){lookTarget=findInteract();updateGhost();}else if(ghost)ghost.visible=false;
   lightT-=dt;if(lightT<=0){lightT=.4;updateLights();}
@@ -69,7 +70,7 @@ function autoQuality(raw){if(raw>.5)return;fAvg+=(raw-fAvg)*.05;qCool-=raw;
 function frame(now){
   requestAnimationFrame(frame);
   const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;
-  if(state==='play')autoQuality(raw);
+  if(state==='play'&&SET.autoQ)autoQuality(raw);
   try{
     if(state==='play'||state==='ui')update(dt);
     else if(state==='menu')menuCam(dt);
@@ -78,6 +79,6 @@ function frame(now){
   }catch(err){console.error(err);}
   renderer.render(scene,camera);
 }
-updateLights();
+updateLights();applyGfx();
 requestAnimationFrame(frame);
 window.__game={renderer,keys,G,WH,get ghost(){return{sel:buildSel,ok:ghostOk,pos:ghostPos,why:lastInvalid}},placeBuild,openChest,scene,camera,P,get mobs(){return mobs},inv:()=>inv,pieces:()=>pieces,invAdd,addPiece,spawnMob,newGame,startPlay,flags:()=>flags,saveGame,serialize,loadData,setState:s=>state=s,get state(){return state},update,interact,togglePanel,useSlot,craft,RECIPE_BY,setBuildSel,enterDungeon,exitDungeon,camYaw:v=>camYaw=v,doMeleeHit,startAttack,nodes,setDay:v=>dayT=v};

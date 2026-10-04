@@ -8,8 +8,10 @@
 const WS=1.75;
 const HALF=350, GN=350, GS=HALF*2/GN, HN=GN+1;
 const DUN={x:900,y:60,z:900}; // hautakummun sisätila (erillinen tila, kartan ulkopuolella)
-// Kolme karttaa. Kaikki mitat yksikkökoordinaateissa (kerrotaan WS:llä). Hautakumpu on aina lounaassa
-// (−x, +z) ja vuoret pohjoisessa, jotta riimukivien tekstit pitävät paikkansa.
+// Kuusi karttaa. Kaikki mitat yksikkökoordinaateissa (kerrotaan WS:llä). Paikat voivat olla missä suunnassa tahansa:
+// tarinatekstit laskevat ilmansuunnat (dirIn / dirText). Biomiparametrit (valinnaiset): moorR = nummen säde (68),
+// mtnH = vuoribiomin alaraja metreinä (23), meadowT = niittyjen osuus metsän seassa (0,33). Kartalla on oltava vuoria
+// (mtn tai peak, yli 23 m), jotta rautaa löytyy, ja nummi Hautakummun ympärillä.
 const MAPS=[
   {name:'Hiidenmaa',ox:0,oz:0,
     loc:{spawn:[0,6],barrow:[-118,92],circle:[-92,138],ruinF:[52,-40],ruinM:[-34,-122],ruinC:[150,24],rune1:[5,0],rune2:[-64,48],rune3:[22,-92]},
@@ -22,11 +24,26 @@ const MAPS=[
   {name:'Tunturinniemi',ox:-41,oz:88,
     loc:{spawn:[6,40],barrow:[-116,118],circle:[-88,150],ruinF:[78,52],ruinM:[-30,-62],ruinC:[152,74],rune1:[11,34],rune2:[-62,92],rune3:[18,-22]},
     mtn:{dx:0,dz:-1,a:-5,b:70,h:52},moor:[-104,128],lakes:[[64,104,30,10]],east:1,aarni:[[95,40,42],[-80,40,38]]},
+  // Routasaari: vuoristo idässä, pitkät tunturirinteet (matala vuoriraja), nummi ja kumpu luoteessa, vähän niittyjä
+  {name:'Routasaari',ox:-73,oz:41,
+    loc:{spawn:[-70,30],barrow:[-102,-100],circle:[-62,-128],ruinF:[-10,92],ruinM:[92,-24],ruinC:[-138,58],rune1:[-64,24],rune2:[-92,-56],rune3:[34,8]},
+    center:[-70,30],mtn:{dx:1,dz:0,a:15,b:100,h:46},moor:[-100,-104],moorR:58,mtnH:18,meadowT:.24,lakes:[[-12,-40,30,10],[40,112,24,9]],east:0,aarni:[[-24,124,36]]},
+  // Aarnikorpi: synkkiä aarnimetsiä joka puolella, keskellä pohjoisessa yksinäinen tunturi, kumpu idän nummella, niittyjä vähän
+  {name:'Aarnikorpi',ox:119,oz:-67,
+    loc:{spawn:[0,118],barrow:[112,46],circle:[142,8],ruinF:[-62,22],ruinM:[8,-96],ruinC:[-118,104],rune1:[6,112],rune2:[76,72],rune3:[2,-34]},
+    center:[0,118],mtn:null,peak:[10,-66,58,52],moor:[112,42],meadowT:.14,lakes:[[64,104,26,10]],east:0,aarni:[[-92,0,62],[64,-108,46],[-34,64,40],[110,-50,30]]},
+  // Nummiluodot: iso keskijärvi, laaja nummi pohjoisessa kummun ympärillä, tunturi kaakossa, paljon niittyjä lännessä
+  {name:'Nummiluodot',ox:-29,oz:-131,
+    loc:{spawn:[-112,4],barrow:[6,-118],circle:[52,-128],ruinF:[-82,-82],ruinM:[88,96],ruinC:[134,-24],rune1:[-106,8],rune2:[-48,-90],rune3:[58,62]},
+    center:[-112,4],peak:[92,92,58,52],mtn:null,moor:[8,-112],moorR:88,meadowT:.46,lakes:[[0,0,66,14]],east:0,aarni:[[-92,92,40]]},
 ];
 const MAP_ID=(()=>{try{const v=+localStorage.getItem('hiidenmaa_map');return v>=0&&v<MAPS.length?v|0:0;}catch(e){return 0;}})();
 const MAP=MAPS[MAP_ID];
 const LOC={};
 for(const k in MAP.loc){const [u,v]=MAP.loc[k];LOC[k]={x:u*WS,z:v*WS};}
+// Ilmansuunta paikkaan k (oletuksena aloituspaikasta) olosijassa, esim. "lounaassa". Pohjoinen = −z.
+const DIRS_IN=['pohjoisessa','koillisessa','idässä','kaakossa','etelässä','lounaassa','lännessä','luoteessa'];
+function dirIn(k,from){const f=from||LOC.spawn,L=LOC[k],a=Math.atan2(L.x-f.x,-(L.z-f.z));return DIRS_IN[((Math.round(a/(Math.PI/4))%8)+8)%8];}
 Object.assign(LOC.barrow,{name:'Hautakumpu'});Object.assign(LOC.circle,{name:'Kalmankehä'});
 Object.assign(LOC.ruinF,{name:'Metsäraunio'});Object.assign(LOC.ruinM,{name:'Vuoriraunio'});Object.assign(LOC.ruinC,{name:'Rantaraunio'});
 // Aarnimetsät (yksikkökoordinaatit): korkeat, tuuheat ja synkät metsät.
@@ -69,12 +86,12 @@ function inAarni(x,z){const u=x/WS,v=z/WS;for(const A of AARNI)if(Math.hypot(u-A
 function biomeAt(x,z,h){
   if(h<1.1)return h<-.4?'sea':'beach';
   const u=x/WS,v=z/WS;
-  if(Math.hypot(u-MAP.moor[0],v-MAP.moor[1])<68+(fbm(u*.05,v*.05,2)-.5)*24)return 'moor';
-  if(h>23)return 'mountain';
-  if(h>1.6&&h<20&&inAarni(x,z))return 'aarni';
+  if(Math.hypot(u-MAP.moor[0],v-MAP.moor[1])<(MAP.moorR||68)+(fbm(u*.05,v*.05,2)-.5)*24)return 'moor';
+  if(h>(MAP.mtnH||23))return 'mountain';
+  if(h>1.6&&h<Math.min(20,(MAP.mtnH||23)-1)&&inAarni(x,z))return 'aarni';
   const C=MAP.center||MAP.loc.spawn,d=Math.hypot(u-C[0],v-C[1]);
   if(d<40+(fbm(u*.04+9,v*.04,2)-.5)*26)return 'meadow';
-  if(fbm(u*.02-40,v*.02+12,3)<.33)return 'meadow';
+  if(fbm(u*.02-40,v*.02+12,3)<(MAP.meadowT??.33))return 'meadow';
   return 'forest';
 }
 const HGT=new Float32Array(HN*HN);
@@ -89,3 +106,40 @@ function terrainH(x,z){
   return h11+(h01-h11)*(1-fx)+(h10-h11)*(1-fz);
 }
 function biomeHere(x,z){return biomeAt(x,z,terrainH(x,z));}
+
+/* ---------------- LÖYTÖPAIKAT: portaalit, rauniot, arkkukivet, lisäriimukivet ---------------- */
+// Sijainnit arvotaan kartan mukaan (sama joka kerta samalla kartalla), maasto tasoitetaan ja paikat lisätään LOC:iin,
+// jolloin metsä ja kivet väistävät niitä (resources.js) ja kartta osaa näyttää ne löydettyään.
+const SITE_DEFS=[
+  {k:'portal1',kind:'portal',name:'Routaportti',pref:'mountain'},
+  {k:'portal2',kind:'portal',name:'Kalmankammion portti',pref:'moor'},
+  {k:'portal3',kind:'portal',name:'Aarnihaudan portti',pref:'aarni'},
+  {k:'poiR1',kind:'ruin',name:'Sortunut talo'},{k:'poiR2',kind:'ruin',name:'Raunioitunut tupa'},
+  {k:'poiR3',kind:'ruin',name:'Hylätty talonpohja'},{k:'poiR4',kind:'ruin',name:'Murtunut linnake'},
+  {k:'poiK1',kind:'rock',name:'Arkkukivi'},{k:'poiK2',kind:'rock',name:'Hohtava arkkukivi'},{k:'poiK3',kind:'rock',name:'Sammaltunut arkkukivi'},
+  {k:'runeA',kind:'rune',name:'Riimukivi'},{k:'runeB',kind:'rune',name:'Riimukivi'},{k:'runeC',kind:'rune',name:'Riimukivi'},
+  {k:'runeD',kind:'rune',name:'Riimukivi'},{k:'runeE',kind:'rune',name:'Riimukivi'},{k:'runeF',kind:'rune',name:'Riimukivi'},
+];
+(function(){
+  const rg=mulberry32(9001+MAP_ID*77),S0=LOC.spawn;
+  const flatten=(x,z,r,h)=>{const R=r+10;for(let iz=Math.max(0,Math.floor((z-R+HALF)/GS));iz<=Math.min(GN,Math.ceil((z+R+HALF)/GS));iz++)for(let ix=Math.max(0,Math.floor((x-R+HALF)/GS));ix<=Math.min(GN,Math.ceil((x+R+HALF)/GS));ix++){
+    const d=Math.hypot(-HALF+ix*GS-x,-HALF+iz*GS-z),t=sstep(R,r,d);if(t>0){const i=iz*HN+ix;HGT[i]=lerp(HGT[i],h,t);HGT0[i]=HGT[i];}}};
+  for(const D of SITE_DEFS){
+    const rune=D.kind==='rune',minOther=rune?42:68,minSpawn=rune?(D.k==='runeA'?32:60):75;let best=null;
+    for(let t=0;t<6000&&!best;t++){
+      const x=(rg()*2-1)*HALF*.78,z=(rg()*2-1)*HALF*.78,h=terrainH(x,z);
+      if(h<2.2||h>(D.pref==='mountain'&&t<2500?60:22))continue;
+      if(Math.hypot(x-S0.x,z-S0.z)<minSpawn||(D.k==='runeA'&&Math.hypot(x-S0.x,z-S0.z)>110))continue;
+      let bad=false;for(const k in LOC){const L=LOC[k],m=(k==='spawn'||k==='barrow'||k==='circle')?Math.max(minOther,k==='spawn'?minSpawn:75):minOther;const mm=D.pref==='mountain'&&!L.kind&&/^(ruin|rune)/.test(k)?30:(L.kind==='rune'&&!rune?55:m);if(Math.hypot(x-L.x,z-L.z)<mm){bad=true;break;}}
+      if(bad)continue;
+      let lo=h,hi=h;for(let a=0;a<8;a++){const hh=terrainH(x+Math.cos(a*.785)*8,z+Math.sin(a*.785)*8);lo=Math.min(lo,hh);hi=Math.max(hi,hh);}
+      if(lo<1.3||hi-lo>(D.pref==="mountain"&&t<2500?10:(t<4000?4.5:7)))continue;
+      if(D.pref&&t<2500){const b=biomeAt(x,z,h);if(b!==D.pref)continue;}
+      best={x,z};
+    }
+    if(!best){const a=rg()*TAU;best={x:S0.x+Math.cos(a)*150,z:S0.z+Math.sin(a)*150};}
+    const h=Math.max(2.2,terrainH(best.x,best.z));
+    if(!rune)flatten(best.x,best.z,D.kind==='portal'?9:8,h);
+    LOC[D.k]={x:best.x,z:best.z,name:D.name,kind:D.kind,ax:rg()<.5?'x':'z'};
+  }
+})();

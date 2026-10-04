@@ -24,6 +24,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - Kuolemassa koko reppu jää hautakasaan kuolinpaikalle (näkyy kartalla).
 - Sänky asettaa herätyspaikan. Nukkuminen vaatii yön, katon ja ettei vihollisia ole lähellä.
 - Pomo palaa maahan ja hiidenkivet jäävät alttarille, jos pelaaja poistuu yli 90 m päähän.
+- **Ulottuvuuksien etenemisketju (ei jumiutumista):** Jääavain löytyy maailmasta (rauniotalo `poiR1`) → Routaportti → Jäätär antaa
+  Luuavaimen → Kalmankammion portti → Kalmaherra antaa Aarniavaimen → Aarnihaudan portti. Ensimmäinen ulottuvuus ei vaadi mitään
+  muista ulottuvuuksista. Avain annetaan suoraan reppuun (`REALMS[id].key`, `onMobKilled`). Varmistus: portti aukeaa ilman avainta,
+  jos avaimen lähde on jo käyty (`REALMS[id].alt`: arkku avattu / edellinen pomo kaadettu) tai ulottuvuudessa on jo käyty (`flags.rs`).
+  Maahan pudonneita esineitä ei tallenneta, joten tämä varmistus on pakollinen. Hiidenkiviä on tarjolla 8 (kumpu 3, pomot 3, arkut 2),
+  alttari tarvitsee 3.
 
 ## Tasapainoarvot (päivitä kun muutat)
 
@@ -48,6 +54,85 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
 
 ## Versioloki
+
+### v0.57 (päävalikon vieritys)
+- Päävalikko (`.screen`) vierii pystysuunnassa hiiren rullalla ja kosketuksella, vierityspalkki piilotettu (`scrollbar-width:none`,
+  `::-webkit-scrollbar`). Asetus- ja näppäinkortit eivät enää vieri erikseen (max-height pois), vaan koko valikko vierii; sisältö
+  keskitetään pystysuunnassa, kun se mahtuu (`margin-block:auto`).
+- Vierityksen vihjeet (`scrollHints`, main.js): ohuet, raaputetun näköiset SVG-tikkunuolet sarakkeen vasemmassa reunuksessa;
+  ylänuoli näkyy kun yläpuolella on piilossa sisältöä, alanuoli kun alapuolella on lisää. Sykkivät rauhallisesti (2,6 s,
+  läpinäkyvyys 0,3–0,85, 2 px liike). Päivittyy vierityksessä, ikkunan koon muuttuessa ja kun kortteja avataan/suljetaan.
+
+### v0.56 (erä 33: kolme uutta karttaa)
+- **Uudet kartat** (`MAPS` 3 → 6, uusi peli arpoo kartan kuten ennenkin):
+  - **Routasaari** (id 3): vuoristo idässä (`mtn` dx 1), matala vuoriraja `mtnH` 18 → laajat tunturirinteet, nummi ja Hautakumpu
+    pohjois-luoteessa, vähän niittyjä (`meadowT` 0,24), meri lännessä ja etelässä.
+  - **Aarnikorpi** (id 4): neljä isoa aarnimetsää, yksinäinen tunturi (`peak`) pohjoisessa, nummi ja kumpu koillisessa, niittyjä
+    hyvin vähän (`meadowT` 0,14), aloitus etelärannalla.
+  - **Nummiluodot** (id 5): iso keskijärvi, laaja nummi (`moorR` 88) pohjoisessa, tunturi kaakossa, paljon niittyjä (`meadowT` 0,46).
+- **Biomiparametrit kartoittain** (`biomeAt`, valinnaiset): `moorR` (68), `mtnH` (23), `meadowT` (0,33). Vanhat kartat ennallaan.
+- **Suunnat lasketaan:** `dirIn(k,from)` (world.js, esim. "lounaassa") ja `dirText` (story.js). Rannan riimukivi 2 ja 3, tavoitteet
+  "Hae kolme hiidenkiveä" / "Herätä Kalmanvartija" ja tehtävä "Löydä Hautakumpu" kertovat suunnan oikein jokaisella kartalla
+  (GOALS/QUESTS `get d()`). Riimukivi A puhuu tuntureista eikä pohjoisesta. Sääntö "Hautakumpu aina lounaassa" poistettu.
+- Routaportin (pref mountain) sijoittelu: tunturissa sallitaan jyrkempi rinne (≤10 m / 16 m, tasoitetaan) ja etäisyys kiinteisiin raunioihin/riimukiviin 30 m → portti on tunturissa kaikilla kuudella kartalla. Paikat siirtyivät myös vanhoilla kartoilla (ei vaikuta tallennuksiin, koska paikat lasketaan aina uudelleen).
+- Tarkistettu jokaiselle uudelle kartalle: kaikki paikat maalla, 25 rautasuonta, kuparia, Hautakumpu toimii, ei konsolivirheitä.
+
+### v0.55 (erä 32: ulottuvuuksien koristelu, spawneri, luolan muodot ja avainketju)
+- **Avainketju korjattu** (ks. Pysyvät päätökset): Routaportti lukittu Jääavaimella (maailmasta), uusi esine **Luuavain** (Jäätär → Kalmankammio),
+  Aarniavain Kalmaherralta (ei enää `drops`-listassa, vaan `REALMS.portal2.key`). Lukitun portin viesti kertoo, mistä avain löytyy, ja merkitsee
+  lähteen karttaan (`hint`, `reveal`). `portalLocked` huomioi myös `flags.rs` (jo käyty). Tehtävät: 13 kpl (lisätty "Avaa Routaportti"),
+  riimukivet runeA/B/D kertovat uuden järjestyksen.
+- **Koristeet (`dressFloor`, InstancedMesh-rivit `instM`):** luut, kallot ja leuat lattialla (ei törmäystä), tippukivet kattoon (luola 38 %
+  ruuduista, muut 14 %, Hautakumpu 12 %), luolassa tippukivet myös lattialla seinien vieressä, kiiltävät lätäköt (märkä pinta). Seinät ja
+  lattiat kiiltävämpiä (roughness 0,5–0,72).
+- **Seinäsoihdut telineissä:** `wallTorch()` (landmarks.js: rautalevy, varsi, rengas, vino soihtu, liekin ydin) Hautakummussa ja ulottuvuuksissa;
+  avoimilla paikoilla (pomoareenan kulmat) `brazier()`-tulimalja.
+- **Tynnyrit:** `buildBarrel` (puulieriö + 2 rautavannetta, kansi irtoaa), 1–2 vierekkäin seinän vieressä, 0–8 ryhmää/ulottuvuus ja 3 Hautakummussa;
+  sisältö `BARREL_LOOT`, avaus `flags.rc['id:bI:K']`. Törmäys ympyränä (r 0,44), käytävään jää ≥2,2 m.
+- **Spawnerihuone (Kalmanpesä):** `finishRealm` avaa 5×5 huoneen 35–72 % matkan päähän sisäänkäynnistä (≥8 ruutua pomosta). Jalusta + leijuva
+  hehkuva kide; kun pelaaja on < 26 m ja kaikki sen viholliset ovat kuolleet, se nostattaa 20 s (`SPW_T`) välein 3 vihollista (`REALMS.spw`).
+  Kutsutut eivät tallennu (eivät kuulu `flags.rm`:ään).
+- **Luola (Aarnihauta) kivisemmäksi:** seinät epäsäännöllisinä kivimöhkäleinä (3 päällekkäin / seinäruutu, IcosahedronGeometry, sävyvaihtelu),
+  katossa roikkuvia möhkäleitä, lattialla kivimurskaa; lattia epätasainen: korkeus 0 / 0,15 / 0,3 / 0,45 m (kvantisoitu `fbm`, törmäyslaatikot
+  riveittäin, kaikki erot < `STEPUP`), tasainen sisäänkäynnillä, areenalla, spawnerilla ja esineiden kohdalla. Sisäänkäynnin seinä on tasainen
+  laatikko, jotta paluuportti näkyy.
+- **Pisarat:** `DRIPS` (tippukivien kärjet), `DROPS` (28) putoavat painovoimalla, `SPLASH` (18) roiskerenkaat; 20 m säteellä, enintään 9/s.
+- **Lisää usvaa:** `MIST` 44 → 72 (nopeampi ajelehtiminen + kiemurtelu), uusi `WISP` (48 pientä kiertelevää usvahattaraa sisätiloissa),
+  `STEAM` 48. Laatutaso ≥2 vähentää 60 %.
+- **Suorituskyky:** jokainen ulottuvuus on oma `THREE.Group` (`R.g`), joka näkyy vain kun pelaaja on siellä.
+- Huom: v0.54:n pohjat arpoutuvat nyt eri tavalla samasta siemenestä (v0.54 ei ehtinyt julkaisuun).
+
+### v0.54 (erä 31: ulottuvuudet, löytöpaikat ja tarina)
+- **Uudet tiedostot:** `js/dungeons.js` (ulottuvuudet, portaalit, generaattorit, vaiheittainen pomo, portaalisuoja) ja `js/story.js` (löytöpaikat, vartijat, lisäriimukivet, tehtävät). Molemmat latautuvat `mobs.js`:n jälkeen.
+- **Löytöpaikat (`world.js` `SITE_DEFS`):** 3 portaalia (Routaportti vuorilla, Kalmankammion portti nummella, Aarnihaudan portti aarnimetsässä), 4 rauniotaloa, 3 arkkukiveä ja 6 lisäriimukiveä. Sijainnit arvotaan kartan mukaan (siemen `9001+MAP_ID*77`, sama joka kerta), maasto tasoitetaan (`flatten`, portaali/rauniot r 8–9 m) ja paikat lisätään `LOC`:iin (`kind`, `name`, portaaleilla `ax` = aukon suunta). Metsä/kivet väistävät niitä 20 m (resources `clear`), spawneri 50 m (`nearSite`).
+- **Ulottuvuudet (`REALMS`):** Routaluola (sokkelo 31×31, jäävartija **Jäätär**), Kalmankammio (huoneet 43×35, **Kalmaherra**), Aarnihauta (luola 47×47, **Aarnihirviö**). Sisätila rakennetaan laiskasti vasta ensimmäisellä käynnillä (`ensureRealm`), pohja arvotaan siemenestä `flags.rs[id]` (tallennetaan → sama pohja aina; vanhoissa tallennuksissa arvonta tapahtuu ensimmäisellä portaalikäynnillä). Sijainti `DUN.x+(k+1)*230`. `resetRealms()` purkaa rakenteet (`resetWorld`). Vain näkyvät seinät piirretään/törmäytetään (vierekkäiset yhdistetty laatikoiksi). Generaattorit: `genMaze` (rekursiivinen peruutus + silmukat + huoneet), `genRooms` (11 huonetta + käytävät), `genCave` (soluautomaatti, suurin yhtenäinen alue). `finishRealm`: sisäänkäynti vasempaan reunaan, pomoareena (7×7 avarrettu) kauimmaiseen kohtaan, mobit ≥10 ruudun päähän sisäänkäynnistä, soihtuja, 2–4 arkkua (`flags.rc`). Pelaaja palaa ulos portaalin eteen (`portalFront`); tallennus ulottuvuudessa lataa pelaajan portaalin eteen (`P.realm` tallennetaan).
+- **Lukot:** Kalmankammion portti vaatii **Jääavaimen** (rauniotalon `poiR1` arkussa, kivivartijan vahtimana), Aarnihaudan portti **Aarniavaimen** (Kalmaherran pudotus). Avain kuluu lukkoon (`flags.rl`). Lukittu portti hehkuu punaisena ja siinä on ketju+lukko.
+- **Vaiheittainen pomo (`ai:'rboss'`, `realmBossAI`):** nukkuu kunnes pelaaja <17 m; vaiheet 100–66 / 66–33 / 33–0 % (nopeampi, lyhyempi tauko). Kierto `kit`: swipe, slam, charge, throw (kivi), nova (vaihe 3, 11 m, väistä hyppäämällä), summon (kutsuu 2–3 apulaista, max 4; myös vaiheenvaihdossa `sum`). Pomopalkki näyttää nimen + vaiheen. Pudotukset: rauta, kupari, **1 hiidenkivi**, Kalmaherralla aarniavain. Kaatuminen tallentuu (`flags.rb`), ei uusiudu.
+- **Portaalisuoja:** `P.spawnProt` 3,2 s kaikissa portaali-/kumpusiirtymissä: `hurtPlayer` ei tee vahinkoa, viholliset eivät aloita jahtia. Sisätilan viholliset ≥10 ruudun päässä sisäänkäynnistä, maailman spawneri ei toimi portaalien lähellä.
+- **Vartijat:** `GUARDS`-taulukko (kivivartija, kalmo, hiisi) kohteille; syntyvät kun pelaaja <75 m, pysyvät kohteen lähellä (`m.guard.r` 15–16 m, palaavat ja paranevat), kaatuminen tallentuu (`flags.gk`). Eivät kuluta spawnerin kattoa. Uudet mobit: `kivivartija` (110 hp, tylppä heikkous), `routasusi`, kolme pomoa.
+- **Rauniot ja arkkukivet:** `buildPoiRuin` (suorakaiteen muotoinen talonpohja rikkinäisine seinineen, nurkkapylväät, arkku), `buildPoiRock` (lohkarekehä, hohtava riimu, arkku keskellä + valo). Arkusta XP:tä; löytö merkitään karttaan 30 m päästä.
+- **Hautakummun portti:** `landmarks.js` – kaarimainen kivinen sisäänkäynti, rosoiset sammaloituneet lohkareet kummun kyljessä, portaat, soihtuvarret, riimulaatat, kallot, kivikehä kummun päällä ja hehkuva kiviröykkiö huipulla. `rockC()` sävyttää kivet (kanavat kerrotaan, ei lisätä).
+- **Tarina:** `XRUNES` runeA–F (neljä eri kivimuotoa) kertovat vihjeitä ja suuntia (`dirText`: ilmansuunta + etäisyys, lasketaan lukuhetkellä → toimii kaikilla kartoilla) ja merkitsevät kohteet karttaan. `QUESTS` (12 tehtävää ketjuna: rannan riimukivi → Hautakumpu → kirstut → Routaportti → Jäätär → Jääavain → Kalmankammio → Kalmaherra → Aarnihauta → Aarnihirviö → Kalmanvartija x2) näkyy oikeassa yläkulmassa (`#quest`) suunnan ja etäisyyden kanssa; suoritus +60 XP; `flags.qi` tallennetaan, vanhassa tallennuksessa jo tehdyt ohitetaan hiljaa.
+- **Viimeistely (v0.54):** ulottuvuuksien katto nostettu 4,2 → 7,6 m (`RCH`), pomot lyhennetty (s 2,5 → 1,75–1,85; korkeimmat ≈5,5 m sarvineen) ja mallit tehty yksityiskohtaisiksi (`figJaatar`, `figKalmaherra`, `figAarni` mobs.js: hiukset/sarvet/kruunut/viitat/ketjut/miekka/sienet; heiluvat osat `swayAdd` → `f.sway`, animoi `realmBossAI`). Usva (`MIST`, 44 spriteä pelaajan ympärillä ulottuvuuksissa, Hautakummussa ja löytöpaikoilla) ja höyrypuhurit (`VENTS`, `STEAM`; ulottuvuuksissa 0–8 kpl/pohja, kummun portilla, arkkukivillä ja portaaleilla) `updateMist` dungeons.js; laatutaso ≥2 vähentää 60 %.
+- **Muut:** uudet esineet `jaaavain`, `aarniavain` (+kuvakkeet); ulottuvuuden sumun väri (`REALMS[id].fog`); kello näyttää ulottuvuuden nimen; versio 0.54.
+
+### v0.53 (erä 30: kartta ja piirtoetäisyys)
+- **Sileämpi ja pienempi tutkittu alue:** `FOGC` 2 m / px, paljastus pehmeillä säteittäisillä gradienteilla (`fogReveal`), tutkimussäde 24 → 12 m (`exploreTick`, 4 m ruudut, säde 3); `resetFog` piirtää tallennetun alueen samoin.
+- **Löytämättömät paikat piilossa:** merkit vain `flags.disc`-paikoista, ja sumu peittää alueen kunnes se on tutkittu.
+- **Liikkuvat pilvet kartalla** (vain kun kartta on auki): `CLOUDC` (saumaton kohina) liukuu sumun päällä (`source-atop`), `mapLoop` pyörii vain `openPanel==='map'` aikana.
+- **Kartan zoom ja siirto:** rulla zoomaa kohdistimeen (×1–6), vedä siirtää, kaksoisnapsautus keskittää (`mapZ`, `mapCX/CZ`, `mapView`).
+- **Rakennukset kartalle ja minikartalle** ylhäältä päin pikseleinä (`BLDC`, 1 px / m, `drawBld`): lattiat 3×3 px, seinät 3×1, katot päällimmäisinä; värit materiaalin mukaan (puu, kivi, terva, olki). Päivittyy `bldDirty`-lipulla (`markShadowDirty`).
+- **Minikartan 3 zoomitasoa** (N): 60 (oletus) / 35 / 110 m.
+- **Piirtoetäisyys (Minecraft-tyyliin):** `SET.renderDist` 90/165/260/400 m → sumun near/far ja kasvillisuuden näkyvyys (`RDK`); sumun takana olevia mobeja ja rakennuksia ei piirretä eikä mobeja animoida.
+
+### v0.52 (erä 29: valikko, asetukset ja tallennus)
+- **Uusi `js/settings.js`** (latautuu state.js:n jälkeen): `ACTIONS`/`BIND` (22 vaihdettavaa näppäintoimintoa, tallennus `hiidenmaa_keys`), `kd(action)` korvaa kovakoodatut `keys.KeyX`, `validateKey` (varatut: Esc, 1–8, F-näppäimet, erikoisnäppäimet; Shift vain juoksulle; ei jo käytössä olevia), vaihto kahdessa vaiheessa (paina näppäintä → vahvista pienessä ikkunassa `#keyDlg`), oletusten palautus; `SET` (grafiikka/ohjaus, tallennus `hiidenmaa_set`) ja `applyGfx()`.
+- **Pelivalikko uusiksi:** puuteemaiset painikkeet + otsikon korostusviiva; **Asetukset**-kortti välilehdin (Näppäimet, Grafiikka, Ohjaus ja ääni, Tallennus). **Tallenna nyt -bugi korjattu** (ei enää avaa asetuksia; tila näkyy painikkeessa ja rivillä).
+- **Tallennuskoodi pakattu:** `HM2:` + base64(deflate-raw JSON) (`packSave`/`unpackSave`, CompressionStream); testissä 5797 → 488 merkkiä. Vanha base64-koodi latautuu edelleen. **.txt-tiedosto:** "Tallenna .txt-tiedostoon" ja "Lataa .txt-tiedostosta".
+- **Hiiren rulla pikapaikkoihin** (asetus, `SET.wheelHotbar`): vaihtaa valittua pikapaikkaa (`hotSel`, korostus `.hsel`) ja varustaa varustettavan esineen; zoom säädetään liukusäätimellä (`SET.zoom`). Numeronäppäimet 1–8 asettavat myös valinnan.
+- **Grafiikka-asetukset:** varjot (hyvät/kevyet/pois), automaattinen laatu, puiden heiluminen (`SWAY.uWind`), hiukkaset (`PF` kerroin: `burst`, kipinät, sade/lumi `drawRange`), yksityiskohdat (`DETK`), rakennusten yksityiskohdat (`DET()`-merkityt meshit: ovenkahvat, tikkaiden puolat, ikkunalauta, tynnyrin vanteet, työpenkin työkalut), piirtoetäisyys (`RDK` = metrit/165: sumun `near/far` ja puiden/kivien näkyvyys).
+- **Minikartan zoom** (näppäin N, `MINI_R` 60/35/110 m).
+- **Kilpi torjunnassa:** vasen käsi koukussa oikealle ruumiin eteen (olka −.65, sisäänpäin −.8, kyynärpää −1.2) ja kilpi käännetään pehmeästi (`P.blockK`) osoittamaan eteenpäin (käden kierto kumotaan kvaternionilla).
 
 ### v0.51 (näppäinlista päävalikossa)
 - Päävalikkoon **Näppäimet**-painike (`#bKeys`): avaa/sulkee puuteemaisen listan jossa kaikki näppäimet isojen kategorioiden alla (Liikkuminen, Toiminnot, Rakentaminen, Valikot ja paneelit, Näkymä). Lista on taulukkona `KEYLIST` (main.js) – päivitä se kun näppäimiä lisätään (pohja myöhemmälle näppäinten vaihtovalikolle, erä 29).
@@ -576,18 +661,18 @@ Kirjattu v0.35:n jälkeen. Jokainen erä: testaa, päivitä muistio, versio+`?v=
 **Erä 28 – Maasto ja työkalut (1)** – TEHTY (v0.41)
 1. Lapio: vasen klikkaus tekee maasta multaisemman ja tummemman (polut). Uusi kuokka: nostaa maanmuotoja ja vähentää multaisuutta (palauttaa alkuperäiseksi).
 
-**Erä 29 – Valikko, asetukset ja tallennus (1.1, 1.2, 1.3, 9)**
+**Erä 29 – Valikko, asetukset ja tallennus (1.1, 1.2, 1.3, 9)** – TEHTY (v0.52)
 1. Asetuksiin lista kaikista näppäimistä; keybind-vaihtovalikko (oma pieni, varmistus, ei päällekkäisiä/kiellettyjä näppäimiä).
 2. Pelivalikko hienommaksi teemaan sopivaksi; BUG: Tallenna-nappi avaa asetusvalikon – korjaa; tallennuskoodi tiivistetympi (lyhyempi muoto) + lataus/tallennus .txt-tiedostona.
 3. Hiiren rulla hotbarin selaukseen (kuten Minecraft), zoom manuaalisesti jos toggle päällä.
 4. Grafiikka-asetusvalikko joka muistaa valinnat (localStorage): varjot (siirretään), puiden heiluminen, partikkelien määrä, detaljien määrä, piirtoetäisyys, rakennusten detaljit.
 
-**Erä 30 – Kartta ja piirtoetäisyys (2, 8, 10)**
+**Erä 30 – Kartta ja piirtoetäisyys (2, 8, 10)** – TEHTY (v0.53)
 1. Kartan löydetty alue sileämmäksi ja hienojakoisemmaksi; löytämättömät paikat piiloon (pilvisumu); karttanäkymässä pilvet liikkuvat (vain kun auki), kartan zoom, rakennukset ylhäältä pikseleinä.
 2. Minimapin 3 zoomitasoa näppäimellä (oletus nykyinen).
 3. Piirtoetäisyys (render distance) Minecraft-tyyliin: sumu piirtoalueen reunalla; etäisyyden päässä partikkelit/animaatiot/visuaalit pois.
 
-**Erä 31 – Maailma, ulottuvuudet ja tarina (3, 5, 6, 7)** (iso; jaetaan tarvittaessa 31a–c)
+**Erä 31 – Maailma, ulottuvuudet ja tarina (3, 5, 6, 7)** – TEHTY (v0.54)
 1. Hautakumpu ja löydöt näyttävämmiksi; portti luolamaisesti kumpuun; uusia löytöpaikkoja (rakennuksen jäänteet, kivet+arkku) karttaan; kohteita suojelevia mobeja.
 2. Lisää labyrintti-ulottuvuuksia portteineen ja bosseineen; isoja, vaihtelevia pohjia (arvonta uuden pelin alussa, vanhoissa portaaliin mentäessä); portin spawn-suoja 3 s (ei iskuja), mobit eivät spawnaa portin lähelle.
 3. Tarina: riimukivien tekstit vaihtelevat ja antavat vihjeitä/tehtäviä (yläkulman tehtävä); osa portaaleista lukittu (avain/esine kartalta).

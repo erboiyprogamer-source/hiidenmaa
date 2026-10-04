@@ -15,6 +15,9 @@ const ITEMS={
   rautamalmi:{n:'Rautamalmi',w:6,s:30,c:'#7a5a50',d:'Vuorten syvistä suonista. Sulata sulatusuunissa raudaksi.'},
   rauta:{n:'Rautaharkko',w:4,s:30,c:'#8a96a3',d:'Kovaa ja raskasta. Parhaat työkalut ja aseet taotaan raudasta.'},
   tervaspuu:{n:'Tervaspuu',w:2.5,s:50,c:'#4a3424',d:'Aarnipuun tummaa, pihkaista puuta. Kestää kaksi kertaa tavallista puuta.'},
+  jaaavain:{n:'Jääavain',w:.3,s:1,c:'#9fd8ff',d:'Kylmä, huurteinen avain rauniotalon arkusta. Aukaisee Routaportin lukon.'},
+  luuavain:{n:'Luuavain',w:.3,s:1,c:'#e6e0cf',d:'Luusta veistetty avain, jonka Jäätär kantoi. Aukaisee Kalmankammion portin lukon.'},
+  aarniavain:{n:'Aarniavain',w:.3,s:1,c:'#7aff9a',d:'Sammaleen peittämä vihreä avain. Aukaisee Aarnihaudan portin lukon.'},
   hiidenkivi:{n:'Hiidenkivi',w:2,s:10,c:'#7fd6cc',d:'Kylmä, sisältä hehkuva kivi. Kalmankehän alttari kaipaa kolmea.'},
   sydan:{n:'Vartijan sydän',w:3,s:1,c:'#5fe6d9',d:'Kivinen sydän, joka sykkii vielä hiljaa. Voittosi merkki.'},
   liha:{n:'Raaka liha',w:1,s:20,c:'#c9554e',food:{h:6,raw:true},d:'Paista nuotiolla. Raakana vatsa voi kääntyä.'},
@@ -109,6 +112,7 @@ function icon(id){
     case 'tervaspuu':g.save();g.translate(24,24);g.rotate(-.5);g.fillStyle='#4a3424';g.fillRect(-16,-7,30,14);g.restore();circ(33,17,7,'#7a5638','#2a1c12');circ(33,17,3,'#5a3e28');break;
     case 'kupari':poly([[8,32],[14,20],[40,20],[44,32]],'#e0904f','#8f5326');poly([[14,20],[18,14],[36,14],[40,20]],'#f2b07a');break;
     case 'hiidenkivi':poly([[24,6],[34,20],[30,40],[18,40],[14,20]],'#7fd6cc','#2f8f86');poly([[24,10],[28,20],[24,34],[20,20]],'#c9fff8');break;
+    case 'jaaavain':case 'aarniavain':case 'luuavain':{const c1=id==='jaaavain'?'#9fd8ff':id==='luuavain'?'#e6e0cf':'#7aff9a',c2=id==='jaaavain'?'#3d7fa8':id==='luuavain'?'#8a8070':'#2f8f4a';circ(15,15,9,c1,c2);circ(15,15,4,'#13110e');line(21,21,40,40,5,c1);line(33,33,38,28,4,c1);line(38,38,42,34,4,c1);line(21,21,40,40,1.5,c2);break;}
     case 'sydan':circ(18,20,9,'#5fe6d9');circ(30,20,9,'#5fe6d9');poly([[10,24],[38,24],[24,40]],'#5fe6d9');circ(20,18,3,'#d8fffb');break;
     case 'liha':case 'paisti':circ(28,22,12,d.c,'#4a2216');line(18,32,9,41,5,'#e7e1cf');circ(8,42,3.5,'#e7e1cf');if(id==='paisti')line(22,18,34,24,2,'#c47a4a');break;
     case 'marjat':[[18,20],[28,18],[22,29],[32,28],[15,31]].forEach(p=>circ(p[0],p[1],6,'#c82a3c','#6a1220'));line(22,8,24,16,2,'#5a7a2a');break;
