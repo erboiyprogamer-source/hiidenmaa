@@ -87,7 +87,11 @@ function makeHeld(id){
       g.add(bx(.3,.05,.06,metalOf(0x8f5326),0,0,.17));
       g.add(poly([[.18,.05],[.18+L-.14,.05],[.18+L,0],[.18+L-.14,-.05],[.18,-.05]],.03,bm));break;}
     case 'lapio':{shaft(g,.95,W);g.add(poly([[.82,.1],[1.0,.1],[1.12,.0],[1.0,-.1],[.82,-.1]],.03,metalOf(0x8a96a3,{roughness:.5})));const gr=new THREE.Mesh(new THREE.BoxGeometry(.2,.04,.06),W);gr.position.set(0,0,-.08);g.add(gr);break;}
-    case 'soihtu':{shaft(g,.6,W,.034);const fl=new THREE.Mesh(new THREE.ConeGeometry(.08,.22,6),MAT.flame);fl.rotation.x=Math.PI/2;fl.position.z=.68;g.add(fl);const f2=new THREE.Mesh(new THREE.ConeGeometry(.045,.14,6),MAT.flame2);f2.rotation.x=Math.PI/2;f2.position.z=.66;g.add(f2);break;}
+    case 'soihtu':{shaft(g,.6,W,.034);const wrap=new THREE.Mesh(new THREE.CylinderGeometry(.052,.04,.14,8),smat(0x3a2a1c));wrap.rotation.x=Math.PI/2;wrap.position.z=.56;g.add(wrap);
+      const fa=new THREE.Mesh(new THREE.ConeGeometry(.095,.3,7),MAT.flame),fb=new THREE.Mesh(new THREE.ConeGeometry(.06,.22,7),MAT.flame2),fc=new THREE.Mesh(new THREE.ConeGeometry(.032,.14,6),new THREE.MeshBasicMaterial({color:0xfffbe0}));
+      const glow=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),new THREE.MeshBasicMaterial({color:0xff9a3a,transparent:true,opacity:.22,depthWrite:false,fog:false}));
+      // Liekit osoittavat aina ylös (kämmenen koordinaatistossa +y), sauva kärjestä eteen
+      for(const [m,y] of[[fa,.2],[fb,.16],[fc,.12]]){m.position.set(0,y,.62);g.add(m);}glow.position.set(0,.18,.62);g.add(glow);g.userData.flame=[fa,fb,fc,glow];break;}
     case 'vasara':{shaft(g,.6,W);g.add(bx(.34,.14,.16,mat(0x7c6a52),0,0,.54));for(const sx of[-1,1])g.add(bx(.04,.16,.18,mat(0x4b4338),sx*.15,0,.54));g.add(bx(.07,.16,.07,mat(0x4b4338),0,0,.4));break;}
     // Jousi: runko kaareva (vatsa +z eli ampumasuuntaan, kärjet jännittäjää kohti), jänne kärkien välillä ja nuoli, joka vedetään taakse (updateBowMesh).
     case 'jousi':case 'hiidenjousi':{const R=.62,arc=1.9,geo=new THREE.TorusGeometry(R,.032,6,16,arc);geo.rotateZ(-arc/2);geo.rotateY(-Math.PI/2);geo.translate(0,0,.12-R);

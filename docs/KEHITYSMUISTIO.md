@@ -49,6 +49,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.29 (korjauserä)
+- **Käsisoihtu näyttävämmäksi:** kolmikerroksinen liekki (oranssi, keltainen, valkoinen) + himmeä hehku, liekit osoittavat aina ylös; liekki ja valo elävät satunnaisesti, kipinöitä ja savua lähtee kärjestä.
+- **Satunnaistettu välke kaikkiin valoihin:** `flick(u,dt)` (state.js) – arvo hakeutuu satunnaisesti vaihtuvaan tavoitteeseen (.82–1.1), harvoin pieni vajaus; käytössä pistevaloissa (`LIGHTS`), käsisoihdussa ja nuotioiden/grillien/seisovien soihtujen liekeissä.
+- **Hiukkaset:** `emitEmber(x,y,z,'spark'|'smoke')` + `updateEmbers` – kevyet nousevat kipinät ja savu nuotioille, grilleille, seisoville soihduille (alle 30–35 m) ja käsisoihdulle; enintään 70 kerrallaan.
+
 ### v0.28 (korjauserä)
 - **Välkkymisbugi korjattu:** `updateLights()` (0,4 s välein) asetti valojen intensiteetin kattoa edeltävään arvoon, joten kahden valon huoneessa kirkkaus hyppäsi 0,4 s välein.
   Nyt se asettaa vain `userData.base`n; intensiteetti lasketaan joka kehys `updateStations`issa (välke + `LIGHT_CAP`). Testi: kahden soihdun huoneessa suurin kehysten välinen hyppy 0,055.
