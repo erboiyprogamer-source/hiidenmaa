@@ -45,8 +45,10 @@ function validPlace(t,x,y,z,rot){
   if(t==='katto'){for(const p of pieces)if(p.t==='katto'&&Math.abs(p.x-x)<.1&&Math.abs(p.z-z)<.1&&Math.abs(p.y-y)<.5){lastInvalid='Paikalla on jo katto.';return false;}
     for(const b of worldBoxes(t,x,y,z,rot)){const px=clamp(P.pos.x,b.minX,b.maxX),pz=clamp(P.pos.z,b.minZ,b.maxZ);if(dist2(px,pz,P.pos.x,P.pos.z)<.16&&b.maxY>P.pos.y+.3&&b.minY<P.pos.y+1.8){lastInvalid='Seisot tiellä.';return false;}}
     return true;}
+  // Sama osa samaan paikkaan (myös kääntämällä) on kielletty.
+  for(const p of pieces)if(p.t===t&&Math.abs(p.x-x)<.3&&Math.abs(p.z-z)<.3&&Math.abs(p.y-y)<.3&&(def.snap==='floor'||def.snap==='cell'||(p.rot-rot)%2===0)){lastInvalid='Paikalla on jo sama rakennus.';return false;}
   for(const b of worldBoxes(t,x,y,z,rot)){const s=.2;gridQuery((b.minX+b.maxX)/2,(b.minZ+b.maxZ)/2,Math.max(b.maxX-b.minX,b.maxZ-b.minZ),_cl);
-    for(const c of _cl){if(c.maxY<=b.minY+s||c.minY>=b.maxY-s)continue;
+    for(const c of _cl){const sy=Math.min(s,(b.maxY-b.minY)*.3,(c.maxY-c.minY)*.3);if(c.maxY<=b.minY+sy||c.minY>=b.maxY-sy)continue;
       if(c.t==='c'){const cx=clamp(c.x,b.minX,b.maxX),cz=clamp(c.z,b.minZ,b.maxZ);if(dist2(cx,cz,c.x,c.z)<(c.r-.05)**2){lastInvalid='Tiellä on jotain.';return false;}}
       else if(c.minX<b.maxX-s&&c.maxX>b.minX+s&&c.minZ<b.maxZ-s&&c.maxZ>b.minZ+s){lastInvalid='Päällekkäin toisen rakenteen kanssa.';return false;}}
     const px=clamp(P.pos.x,b.minX,b.maxX),pz=clamp(P.pos.z,b.minZ,b.maxZ);if(dist2(px,pz,P.pos.x,P.pos.z)<.16&&b.maxY>P.pos.y+.3&&b.minY<P.pos.y+1.8){lastInvalid='Seisot tiellä.';return false;}}
@@ -59,6 +61,14 @@ function placeBuild(){
   const def=PIECES[buildSel];for(const [id,n] of Object.entries(def.req))invRemove(id,n);
   addPiece(buildSel,ghostPos.x,ghostPos.y,ghostPos.z,buildRot);sfx('build');burst(ghostPos.x,ghostPos.y+.5,ghostPos.z,0x8a5a32,6,2);
 }
+// Vasaralla korjaus: kuluma pois, maksaa vauriota vastaavan osuuden rakennusaineista (vähintään 1).
+function lookedPiece(){const {o,d}=camRay();raycaster.set(o,d);raycaster.far=camDist+7;const hits=raycaster.intersectObjects(pieceRoots,true);return hits.length?hits[0].object.userData.piece:null;}
+function repairLooked(){
+  const w=curWeapon();if(w.cat!=='hammer')return;const p=lookedPiece();if(!p)return;
+  const max=PIECES[p.t].hp;if(p.hp>=max-.5){msg(`${PIECES[p.t].n} on ehjä.`);return;}
+  const frac=1-p.hp/max,cost={};for(const [id,n] of Object.entries(PIECES[p.t].req))cost[id]=Math.max(1,Math.ceil(n*frac));
+  for(const [id,n] of Object.entries(cost))if(invCount(id)<n){msg(`Korjaukseen tarvitaan: ${reqText(cost)}`,'warn');return;}
+  for(const [id,n] of Object.entries(cost))invRemove(id,n);p.hp=max;setPieceDamage(p);sfx('build');burst(p.x,p.y+1,p.z,0xe8c070,8,3);msg(`${PIECES[p.t].n} korjattu.`,'loot');}
 function removeLooked(){
   const w=curWeapon();if(w.cat!=='hammer'){return;}
   const {o,d}=camRay();raycaster.set(o,d);raycaster.far=camDist+7;const hits=raycaster.intersectObjects(pieceRoots,true);if(!hits.length)return;

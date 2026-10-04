@@ -48,6 +48,19 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.16 (erä 16)
+- **Putoamisvahinko ×2:** `(-vy-15)*6` (ennen ×3). 14 m pudotus ≈ 59 vahinkoa. Korjattu samalla
+  vahinkonumeron puuttuva z-koordinaatti (`floatText`).
+- **Esineet katoavat maasta 5 min jälkeen** (`DROP_LIFE=300`), vilkkuvat viimeiset 15 s. Hautakasat eivät katoa.
+- **Näköyhteys kaikille:** myös pakenevat eläimet (peura) huomaavat pelaajan vain näköyhteydellä
+  (`m.los` lasketaan kaikille <45 m). Vihollisilla näköyhteys oli jo (erä 9).
+- **Vasaralla korjaus (F):** katsottava rakennus korjataan täyteen; hinta = vaurion osuus rakennuksen
+  aineista (vähintään 1 kutakin). Ehjästä tulee viesti, puuttuvista aineista lista. Vihje rakennuspalkissa.
+- **Ei päällekkäisiä rakennuksia:** sama osa samaan paikkaan (myös käännettynä) kielletty, ja pystysuuntainen
+  päällekkäisyysmarginaali mitoitetaan ohuiden osien mukaan (lattiat .2 m eivät enää mene päällekkäin).
+- Regressiotestit (erät 7–15) ajettu uudelleen.
+
+
 ### v0.15 (erä 15)
 - **Ukkosen ääni pois** (toistaiseksi): salama välähtää edelleen, `sfx('thunder')` poistettu.
 - **Myrsky kaataa puita:** jokaisella salamalla 12 %:n todennäköisyys, että puu 3–40 m päässä kaatuu
@@ -293,12 +306,16 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
+### Erä 16 – korjaukset ja ylläpito – TEHTY (ks. versioloki v0.16)
+- Putoamisvahinko ×2, maassa olevat esineet katoavat 5 min jälkeen, kaikki eläimet tarvitsevat
+  näköyhteyden huomatakseen pelaajan, vasaralla korjaus (F), ei päällekkäisiä samoja rakennuksia.
+
 ### Erä 15 – pelattavuuskorjaukset – TEHTY (ks. versioloki v0.15)
 - Ukkosen ääni pois, myrsky kaataa harvoin puita (alle jäävä −80 % HP), mobien ulottuvuus kaikkiin
   suuntiin, pehmeämpi kamera, kasvit/puut vain uusiutuvat eivätkä tukikohdan lähelle.
 
-### Erä 16 – maailma: puiden uusiutuminen paikalleen, sade, valo, lapio (TEE SEURAAVAKSI)
-Versio 0.16, `?v=0.16`, tallennusversio 6.
+### Erä 17 – maailma: puiden uusiutuminen paikalleen, sade, valo, lapio (TEE SEURAAVAKSI)
+Versio 0.17, `?v=0.17`, tallennusversio 6.
 1. **Kaadettu puu uusiutuu vain lähelle (≤5 m) kaatopaikkaa** ja on täysin normaali puu (törmäys, hakkuu,
    kaatuminen, tukit, myrsky). Tee `respawnTree(n)` (resources.js), jota sekä `respawnNodes()` (ai.js) että
    `regrowForest()` kutsuvat `reviveNode`n sijaan puille: arvo enintään 10 kertaa uusi piste ≤5 m
@@ -328,8 +345,8 @@ Versio 0.16, `?v=0.16`, tallennusversio 6.
    `pointBlocked`/rakennuslaatikot alueella → "Rakennus on tiellä."). Tallennus: `terra:[[i,h]]` muutetut
    kärjet (v6). Kartta-kuvaa ei tarvitse päivittää.
 
-### Erä 17 – rakentamisen kohdistus
-Versio 0.17. Kohdistustila `snapMode` (building.js), vaihto **G**, tila näkyy `#buildhint`issä.
+### Erä 18 – rakentamisen kohdistus
+Versio 0.18. Kohdistustila `snapMode` (building.js), vaihto **G**, tila näkyy `#buildhint`issä.
 1. **Kohdistus suosii rakennettua osaa:** `buildRaycast` – jos osa osuu ≤1 m kauempana kuin maa, valitse
    osa. Lattia/seinä maahan, kun vieressä (≤1,6·G, |Δy|<1,5) on lattia: käytä sen korkeutta ja kohdista
    x,z sen ruudukkoon (`floor.x+k·G`), ei maailman ruudukkoon.
@@ -337,16 +354,16 @@ Versio 0.17. Kohdistustila `snapMode` (building.js), vaihto **G**, tila näkyy `
    näkyy vain vasara kädessä), `puoli` (G/2-askeleet), `vapaa` (ei kohdistusta, 0,25 m askel), `reuna`
    (katsottavan osan lähimpään reunaan jatkoksi osuman pinnan normaalin suuntaan: seinän päälle, viereen,
    lattian jatkoksi).
-3. **Ei välkkymistä (z-fighting):** `addPiece`ssa pieni mittakaava-ero `1+((x·7+z·13)&3)·.0015` ja
-   `validPlace` kieltää saman tyypin samaan paikkaan+kiertoon. Lisäksi `polygonOffset` lattioille.
+3. **Ei välkkymistä (z-fighting):** `addPiece`ssa pieni mittakaava-ero `1+((x·7+z·13)&3)·.0015`, lisäksi
+   `polygonOffset` lattioille. (Päällekkäisten samojen osien esto tehtiin jo erässä 16.)
 4. **Palkki** kahdessa koossa: `palkki` (pituus G, .22×.22) ja `palkki_iso` (2·G, .3×.3), puu 1 / 2,
    snap 'wall', asettuu seinän yläreunaan tai lattian reunaan, R kääntää.
 5. **R kääntää 45°:** `buildRot` 0–7, `rotation.y=rot·π/4`. 45°-kierrolla törmäys: jaa laatikko pitkän
    akselin suuntaan ~0,4 m paloihin ja kierrä keskipisteet (AABB-palat). Tallennus v7: `r` kahdeksasosina,
    v<7 → `r*2`.
 
-### Erä 18 – katot ja kolmiot
-Versio 0.18.
+### Erä 19 – katot ja kolmiot
+Versio 0.19.
 1. **Päätykolmio tasakylkiseksi:** `kolmio` = pohja G, kärki keskellä korkeudella G/2 (sopii yhden ruudun
    harjakaton päätyyn ja parittoman talon katon kärkeen). Vanhat `kolmio`-tallennukset muuttuvat
    automaattisesti uuteen muotoon (sama tyyppi).

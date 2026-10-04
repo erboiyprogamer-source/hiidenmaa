@@ -33,7 +33,7 @@ function updatePlayer(dt){
   P.pos.y+=P.vy*dt;
   const ceil=ceilingAt(P.pos.x,P.pos.z,.38,feet+1.8);if(P.vy>0&&P.pos.y+1.8>ceil){P.pos.y=ceil-1.8;P.vy=0;}
   const g=groundAt(P.pos.x,P.pos.z,.38,feet);
-  if(P.pos.y<=g+.02&&P.vy<=0){if(!P.onGround&&P.vy<-15){const fd=(-P.vy-15)*3;P.hp-=fd;floatText('-'+Math.round(fd),P.pos.x,P.pos.y+2,'#e0614f');if(P.hp<=0)playerDie();}P.pos.y=g;P.vy=0;P.onGround=true;}
+  if(P.pos.y<=g+.02&&P.vy<=0){if(!P.onGround&&P.vy<-15){const fd=(-P.vy-15)*6;P.hp-=fd;floatText('-'+Math.round(fd),P.pos.x,P.pos.y+2,P.pos.z,'#e0614f');if(P.hp<=0)playerDie();}P.pos.y=g;P.vy=0;P.onGround=true;}
   else if(P.pos.y>g+.3)P.onGround=false;
   if(P.pos.y<g&&P.vy<=0)P.pos.y=g;
   // world bounds

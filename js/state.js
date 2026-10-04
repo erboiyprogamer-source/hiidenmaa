@@ -50,8 +50,10 @@ let invDirty=true;
 /* ---------------- DROPS ---------------- */
 const dropGeo=new THREE.BoxGeometry(.32,.32,.32);
 function spawnDrop(id,n,x,y,z,q=1,silent){const me=new THREE.Mesh(dropGeo,mat(new THREE.Color(ITEMS[id].c).getHex()));me.castShadow=true;me.position.set(x,y,z);scene.add(me);drops.push({id,n,q,mesh:me,vx:(Math.random()-.5)*3,vy:3+Math.random()*2,vz:(Math.random()-.5)*3,t:0,rest:false});}
+const DROP_LIFE=300; // maassa olevat esineet katoavat 5 min jälkeen
 function updateDrops(dt){
   for(let i=drops.length-1;i>=0;i--){const d=drops[i],m=d.mesh;d.t+=dt;
+    if(d.t>DROP_LIFE){scene.remove(m);drops.splice(i,1);continue;}m.visible=d.t<DROP_LIFE-15||((d.t*5)|0)%2===0;
     if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=groundAt(m.position.x,m.position.z,.2,m.position.y+.5)+.18;if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
     else{m.position.y=d.baseY+.12+Math.sin(d.t*3)*.06;m.rotation.y+=dt*1.5;}
     if(d.t>.5&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');}d.n=left;if(left<=0){scene.remove(m);drops.splice(i,1);}}
