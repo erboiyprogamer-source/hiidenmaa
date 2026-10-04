@@ -48,6 +48,22 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.15 (erä 15)
+- **Ukkosen ääni pois** (toistaiseksi): salama välähtää edelleen, `sfx('thunder')` poistettu.
+- **Myrsky kaataa puita:** jokaisella salamalla 12 %:n todennäköisyys, että puu 3–40 m päässä kaatuu
+  satunnaiseen suuntaan (`stormFellTree`). Kaatuvan puun alle jäävä (puun pituus, sivulla ±1,4·s m)
+  menettää 80 % maksimiterveydestä (`crushPlayer`). Testissä ~9 kaatoa / 100 salamaa.
+- **Mobin ulottuvuus 3D:ssä:** `mobReach(m,dist)` = vaakaetäisyys + pystyväli mobin iskukohdasta
+  (biped 1 m·s, nelijalkainen .6 m·s) pelaajan vartaloon (0–1,8 m). Seinän päällä seisovaa ei
+  enää lyödä juurelta (testi: ulottuvuus 2,25 > 1,95).
+- **Kamera pehmeämmäksi:** esteen etäisyys 30 näytteellä (ennen 12), kamera tulee lähemmäs nopeasti
+  ja palaa hitaasti (`camD`), kohteen korkeus pehmennetty (`camTY`, portaat/askelmat). Seinän vieressä
+  kävellessä suurin nykäys 0,008 m/kehys.
+- **Uusiutuminen:** nukkuessa vain kaadetut puut ja poimitut kasvit uusiutuvat (ei enää uusia
+  puita). Rakennusten (myös arkku, sänky, työpenkki) `BENCH_R`×1,5 = 30 m:n säteelle ei uusiudu
+  mitään (myös ajastettu `respawnNodes`) eikä synny eläimiä/vihollisia (`nearBase`).
+
+
 ### v0.14 (erä 14, käyttäjän toive)
 - **Aarnipuu uudelleen:** paksu runko ja 7 kerrosta leveitä, alaspäin roikkuvia havuoksia (`aarniGeo()`),
   alimmat kärjet ~1,5–3 m korkeudessa; ~1270 kolmiota/puu. Tiheys .13→.085 (latvukset ovat leveitä).
@@ -276,6 +292,31 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ## Ideajono
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+### Erä 15 – pelattavuuskorjaukset – TEHTY (ks. versioloki v0.15)
+- Ukkosen ääni pois, myrsky kaataa harvoin puita (alle jäävä −80 % HP), mobien ulottuvuus kaikkiin
+  suuntiin, pehmeämpi kamera, kasvit/puut vain uusiutuvat eivätkä tukikohdan lähelle.
+
+### Erä 16 – rakentamisen kohdistus (TEE SEURAAVAKSI)
+1. Kohdistus valitsee ensisijaisesti viereisen, jo rakennetun osan (ei maata), kun molemmat ovat lähellä.
+2. Kohdistustilat yhdellä näppäimellä (esim. G): ruudukko (läpinäkyvä ruudukko rakennusalueella),
+   puoliruudukko (puolivälit), vapaa (perinteinen) ja reunajatko (katsottavan osan reunaan jatkoksi).
+   Tila näkyy rakennusvihjeessä.
+3. Päällekkäiset pinnat eivät välky (z-fighting): pienet siirrot/polygonOffset rakennusosille.
+4. Rakennusvalikkoon palkki pienenä ja isona (kohdistuvat ruudukkoon).
+5. R kääntää 45° kerrallaan.
+
+### Erä 17 – katot ja kolmiot
+1. Päätykolmio tasakylkiseksi, yhden seinän levyiseksi (harjakaton päätyyn).
+2. Tylpempi olkikatto (loivempi kaltevuus) ja yhden ruudun harjakatto (molemmat lappeet).
+3. Päätykolmio ja vinoseinä (puoliseinä) kääntyvät R:llä myös ylösalaisin: 4 asentoa per suunta.
+
+### Erä 18 – sade ja valo rakennuksissa, lapio
+1. Sade ei tule katon tai rakennusten läpi (sadepisarat katkeavat katon kohdalla).
+2. Valo ei tule seinien/katon läpi: yksinkertainen valofysiikka (sisällä hämärämpää, varjot,
+   taivaanvalo vähenee suojassa).
+3. Lapio: maanmuokkaustyökalu, joka tasoittaa maata pehmeästi (korkeuskartta + maastoverkko + törmäys).
+
 
 ### Erä 7 – ohjaus ja animaatio – tehty (ks. versioloki v0.7)
 - C = kyykky/hiipiminen, vihollisten huomaamisetäisyys pienemmäksi, eläimet eivät säiky.

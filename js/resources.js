@@ -154,14 +154,9 @@ function plantTree(type,x,z,s){const k=chunkOf(x,z),im=(nodeIM[type]||[]).find(m
   const n={type,x,z,y:terrainH(x,z),s,rot:rng()*TAU,idx:im.userData.used++,im,planted:true};im.count=im.userData.used;initNode(n);ngridAdd(n);return n;}
 function unplantAll(){for(let i=nodes.length-1;i>=0;i--){const n=nodes[i];if(!n.planted)continue;setNodeMatrix(n,false);if(n.col)gridRemove(n.col);ngridRemove(n);nodes.splice(i,1);}
   for(const k in nodeIM)for(const im of nodeIM[k]){im.userData.used=im.userData.base;im.count=im.userData.base;}nodeIdN=nodes.length?Math.max(...nodes.map(n=>n.id))+1:0;}
-function regrowForest(){
-  const nearBuild=(x,z)=>pieces.some(p=>dist2(p.x,p.z,x,z)<25*25);
-  let revived=0;for(const n of nodes)if(!n.alive&&n.def.kind==='tree'&&!nearBuild(n.x,n.z)){reviveNode(n);revived++;}
-  let planted=0;const tmpL=[];
-  for(let t=0;t<600&&planted<40;t++){const x=(rng()-.5)*(HALF-20)*2,z=(rng()-.5)*(HALF-20)*2,h=terrainH(x,z);if(h<1.2)continue;
-    const b=biomeAt(x,z,h);if(b!=='forest'&&b!=='aarni')continue;if(nearBuild(x,z))continue;
-    let ok=true;for(const k in LOC){const L=LOC[k];if(dist2(x,z,L.x,L.z)<20*20){ok=false;break;}}if(!ok)continue;
-    if(nodesNear(x,z,3,tmpL).length)continue;if(dist2(x,z,P.pos.x,P.pos.z)<6*6)continue;
-    const type=b==='aarni'?(rng()<.4?'aarnipuu':'kuusi'):(rng()<.8?'kuusi':'koivu');
-    if(plantTree(type,x,z,type==='aarnipuu'?.8:.6+rng()*.3))planted++;}
-  return{revived,planted};}
+// Rakennusten (myös arkku, sänky, työpenkki) läheisyyteen ei uusiudu eikä synny mitään: säde BENCH_R × 1,5.
+function nearBase(x,z){const r=BENCH_R*1.5;for(const p of pieces)if(dist2(p.x,p.z,x,z)<r*r)return true;return false;}
+// Yöllä nukkuessa: kaadetut puut ja poimitut kasvit uusiutuvat (ei uusia), paitsi rakennusten lähellä.
+function regrowForest(){let revived=0;
+  for(const n of nodes)if(!n.alive&&(n.def.kind==='tree'||n.def.kind==='pick')&&!nearBase(n.x,n.z)){reviveNode(n);revived++;}
+  return{revived,planted:0};}
