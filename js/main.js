@@ -22,6 +22,16 @@ $('#bContinue').onclick=()=>{try{playSave(JSON.parse(localStorage.getItem(SKEY))
 $('#bResume').onclick=()=>{state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();};
 $('#bSave').onclick=()=>{const ok=saveGame(true);$('#ioMsg').textContent=ok?'Tallennettu selaimeen.':'Selaimen tallennus ei ole käytössä – kopioi tallennuskoodi.';$('#opts').hidden=false;if(!ok)$('#bExport').click();
   const lbl=$('#bSave').firstChild,prevT=lbl.textContent;lbl.textContent=ok?'Tallennettu ✓':'Tallennus epäonnistui';setTimeout(()=>{lbl.textContent=prevT;},1800);};
+// Näppäinlista: isot kategoriat. Päivitä tätä kun näppäimiä lisätään.
+const KEYLIST=[
+  ['Liikkuminen',[['W A S D','liiku'],['Shift','juokse'],['Välilyönti','hyppää (tikkailla ylös)'],['C','kyykky / hiipiminen'],['S','tikkailla alas'],['Hiiri','kamera'],['Hiiren rulla','kameran etäisyys']]],
+  ['Toiminnot',[['Hiiren vasen','isku / jousen jännitys (pidä ja päästä) / lapio ja kuokka'],['Hiiren oikea','torju kilvellä (rakennusvalikko vasaralla)'],['E','poimi, avaa, käytä, nuku, paista'],['1–8','pikapaikat: varusta tai syö'],['Soihtu kädessä','sytytys: vie toisen liekin viereen ja odota 2,5 s']]],
+  ['Rakentaminen (vasara kädessä)',[['B','rakennusvalikko'],['Hiiren vasen','rakenna'],['R','käännä 45°'],['Shift + R','vaihda asentoa / kaltevuutta'],['G','sivuttaiskohdistus (ruudukko, puoli, vapaa, reuna)'],['H','pystykohdistus (auto, pysty, 3D)'],['Q / Z','nosta / laske haamua (pystykohdistuksessa)'],['X','pura'],['F','korjaa']]],
+  ['Valikot ja paneelit',[['Tab tai I','reppu ja valmistus'],['M','kartta'],['J','taso, saavutukset ja tavoitteet'],['T','viimeiset 10 ilmoitusta'],['Esc','sulje paneeli / pelitauko (kohdistin näkyviin)']]],
+  ['Näkymä',[['K','koko näyttö'],['Esc','pelitauko ja asetukset']]],
+];
+$('#bKeys').onclick=()=>{const b=$('#keysBox');if(!b.hidden){b.hidden=true;return;}
+  b.innerHTML='<div class="keysGrid">'+KEYLIST.map(([c,l])=>`<div class="keyCat"><h3>${c}</h3>${l.map(([k,d])=>`<div class="keyRow"><span class="kb">${k}</span><span>${d}</span></div>`).join('')}</div>`).join('')+'</div>';b.hidden=false;};
 $('#bMenuToggle').onclick=()=>{$('#opts').hidden=!$('#opts').hidden;};
 $('#bExport').onclick=()=>{const j=JSON.stringify(serialize());$('#saveCode').value=btoa(unescape(encodeURIComponent(j)));$('#ioMsg').textContent='Koodi luotu nykyisestä pelistä.';};
 $('#bCopy').onclick=()=>{const t=$('#saveCode');if(!t.value)$('#bExport').click();navigator.clipboard.writeText(t.value).then(()=>$('#ioMsg').textContent='Kopioitu leikepöydälle.').catch(()=>{t.select();$('#ioMsg').textContent='Valittu – kopioi Ctrl+C:llä.';});};

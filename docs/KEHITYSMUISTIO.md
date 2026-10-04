@@ -49,6 +49,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.51 (näppäinlista päävalikossa)
+- Päävalikkoon **Näppäimet**-painike (`#bKeys`): avaa/sulkee puuteemaisen listan jossa kaikki näppäimet isojen kategorioiden alla (Liikkuminen, Toiminnot, Rakentaminen, Valikot ja paneelit, Näkymä). Lista on taulukkona `KEYLIST` (main.js) – päivitä se kun näppäimiä lisätään (pohja myöhemmälle näppäinten vaihtovalikolle, erä 29).
+
 ### v0.50 (ilmoitukset piiloon valikoiden ajaksi)
 - Ruudun ilmoitukset (`#msgs`) piilotetaan (`visibility:hidden`) kun mikä tahansa paneeli (reppu, rakennus, kartta, arkku, J, T) on auki tai peli ei ole `play`-tilassa; ne palaavat valikon sulkeuduttua (ajastimet jatkuvat) ja säilyvät T-lokissa.
 
