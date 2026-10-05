@@ -873,12 +873,20 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 
 - (ideajono muuten tyhjä – odottaa käyttäjän listaa)
 
-### Jäljelle jääneet / jatkoideat
-- Pelaajan käsisoihtu ei kulu loppuun (vain seisova soihtu).
-- Ruokia ei voi vielä keittää (ei padan mallia); grillaus tukee vain lihaa ja sientä.
+### Avoimet: käyttäjän ehdotuksista toteuttamatta tai osittain (tarkistettu v0.62, koko keskusteluhistoria käyty läpi)
+1. **Portaalisuoja ei estä pelaajan omia iskuja** (kohta 5: "silloin pelaajakaan ei voi lyödä ketään"). Nyt suoja estää vain vihollisten
+   iskut ja jahdin.
+2. **Tehtävät eivät ohjaa yksittäisille riimukiville** (kohta 6, esim. "löydä riimukivi vuoristosta"). Riimukivet A–F antavat vihjeitä,
+   mutta tehtäväketjussa on vain rannan riimukivi.
+3. **Taivaan yksinkertaistus asetuksista** (kohta 0): pilvien määrä ja valonsäteet säädettävissä, mutta yksinkertaista taivasta
+   (ilman taivaskupolin varjostinta, tähtiä tai kuuta) ei ole.
+4. **Piirtoetäisyys ja muisti** (kohta 10): kaukana olevaa ei piirretä eikä animoida, mutta tiedot (puut, kivet, maasto) pysyvät muistissa,
+   ja maasto on yksi kokonainen verkko (sumu peittää kaukaisen osan). Maaston paloittelu ruutuihin olisi seuraava askel.
+5. **Ctrl kyykyksi / Ctrl+W:n esto** (kysymys): selain ei anna estää Ctrl+W:tä, joten Ctrl ei sovi kyykylle; kyykky on C (vaihdettavissa).
+- Omia jatkoideoita (ei käyttäjän pyyntöjä): pata ja keitot (grillaus tukee vain lihaa ja sientä), huonekalujen kohdistus ruudukkoon.
 
 ## Tunnetut puutteet
 
-- Katossa ei ole törmäystä, ja katon reunat eivät liity siististi toisiinsa.
+- Katon reunat eivät liity siististi toisiinsa (katoilla on törmäys erästä 8 alkaen).
 - Huonekalut (työpenkki, sänky, arkku) eivät kohdistu ruudukkoon.
 - Hiiren lukitus voi olla estetty joissain upotetuissa näkymissä. Silloin kamera käännetään vetämällä.
