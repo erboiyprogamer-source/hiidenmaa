@@ -76,7 +76,13 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 .grid .slot.sel{border-color:var(--frost)}
 #invHead{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 #detail{margin-top:12px;min-height:96px;padding:10px 12px;border:1px solid var(--line);background:rgba(0,0,0,.2);max-width:440px}
-#detail .t{font-weight:800;font-size:16px}
+#detail .t{font-family:'Uncial Antiqua',serif;font-size:26px;line-height:1.15;color:#f3e6c4;margin-bottom:2px}
+#detail .t .qs{color:var(--frost);font-size:18px}
+.props{border-collapse:collapse;font-size:13px;margin:2px 0 8px;width:100%}
+.props td{padding:2px 8px 2px 0;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top}.props td:first-child{color:var(--dim);width:46%}
+.upPrev{margin:6px 0 10px;padding:8px 10px;border:1px solid rgba(150,200,255,.35);background:rgba(40,60,80,.25);border-radius:3px}
+.upPrev .uh{font-weight:800;margin-bottom:4px;color:var(--frost)}.upPrev .arr{color:var(--dim)}.upPrev .props td b{color:#bfe8a0}.upPrev .btn{margin-top:8px}
+.btn.on{outline:1px solid var(--frost)}
 #detail .s{color:var(--dim);font-size:13px;margin:3px 0 8px}
 .btns{display:flex;flex-wrap:wrap;gap:6px}
 .btn{background:var(--bark);border:1px solid var(--line2);color:var(--bone);padding:6px 12px;border-radius:3px;font-weight:700;font-size:13px}

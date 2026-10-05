@@ -25,7 +25,7 @@ function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
     b.style.background=L>1?LAYER_C[(L-2)%6]:'rgba(0,0,0,.6)';b.firstChild.style.width=clamp(fill*100,0,100)+'%';b.firstChild.style.background=LAYER_C[(L-1)%6];
     b.children[1].textContent=`${m.def.n} ${Math.ceil(m.hp)}/${m.maxHp}${layers>1?' ×'+L:''}`;b.children[2].textContent='☠'.repeat(sk);}
   for(;k<mobBars.length;k++)mobBars[k].hidden=true;}
-function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${s.id==='soihtu'?`<span class="fu${s.lit===false?' off':''}"><i style="width:${Math.max(0,(s.fuel??TORCH_T)/TORCH_T*100)}%"></i></span>`:''}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
+function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${s.id==='soihtu'?`<span class="fu${s.lit===false?' off':''}"><i style="width:${Math.max(0,(s.fuel??torchMax(s))/torchMax(s)*100)}%"></i></span>`:''}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
 let hudT=0,msgHidden=false;
 function updateHUD(dt){
   hudT-=dt;updateMsgs(dt);updateFloaters(dt);updateMobBars();
@@ -62,7 +62,7 @@ function renderLog(){const fm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60))
   $('#logBody').innerHTML=msgLog.length?[...msgLog].reverse().map(m=>`<div class="lg ${m.cls}"><span class="num">${fm(m.at)}</span>${m.t.replace(/</g,'&lt;')}</div>`).join(''):'<div class="note">Ei ilmoituksia vielä.</div>';}
 function togglePanel(name){if(openPanel===name){closePanels();return;}panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';releaseLock();mouseL=false;mouseR=false;P.drawing=false;
   if(name==='inv'){$('#inv').hidden=false;renderInv();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}}
-function closePanels(keep,skipLock){if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP'])$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;if(!keep){state='play';if(!skipLock)requestLock();}}
+function closePanels(keep,skipLock){upPrev=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP'])$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;if(!keep){state='play';if(!skipLock)requestLock();}}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
 function nearStations(){const s={};for(const p of pieces){const k=isFirePiece(p.t)?'nuotio':p.t;if(['tyopenkki','nuotio','ahjo'].includes(k)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(k==='nuotio'?4:8)**2&&!P.inDun){if(k==='nuotio'&&p.data.fuel<=0)continue;s[k]=1;}}return s;}
 let fxAt=0;
@@ -71,26 +71,27 @@ function renderEffects(fxs){fxs=fxs||effects();$('#effects').innerHTML=`<h3>Tila
 let craftTab='alku';
 function renderInv(){renderEffects();
   const g=$('#invGrid');g.innerHTML=inv.map((s,i)=>slotHTML(s,i<8?i+1:'')).join('');
-  [...g.children].forEach((el,i)=>{el.classList.toggle('sel',i===selSlot);el.onclick=e=>{if(selSlot>=0&&selSlot!==i&&e.shiftKey===false&&inv[selSlot]&&!inv[i]){inv[i]=inv[selSlot];inv[selSlot]=null;selSlot=i;invDirty=true;renderInv();return;}selSlot=i;renderInv();};el.ondblclick=()=>{useSlot(i);renderInv();};el.oncontextmenu=e=>{e.preventDefault();if(inv[i]){useSlot(i);renderInv();}};});
+  [...g.children].forEach((el,i)=>{el.classList.toggle('sel',i===selSlot);el.onclick=e=>{if(selSlot>=0&&selSlot!==i&&e.shiftKey===false&&inv[selSlot]&&!inv[i]){inv[i]=inv[selSlot];inv[selSlot]=null;selSlot=i;invDirty=true;renderInv();return;}if(selSlot!==i)upPrev=null;selSlot=i;renderInv();};el.ondblclick=()=>{useSlot(i);renderInv();};el.oncontextmenu=e=>{e.preventDefault();if(inv[i]){useSlot(i);renderInv();}};});
   $('#invW').textContent=`Paino ${invWeight().toFixed(0)} / ${MAXW}`;
-  upBtn($('#invUp'),PACK_UP[P.packLv+1],`Isompi reppu (taso ${P.packLv+2}: +8 paikkaa, +40 painoa)`,()=>{setPack(P.packLv+1);msg('Reppu kasvoi!','loot');});
+  upBtn($('#invUp'),PACK_UP[P.packLv+1],`Isompi reppu (taso ${P.packLv+2})`,()=>{setPack(P.packLv+1);msg('Reppu kasvoi!','loot');},'pack',
+    [['Paikkoja',invN(),invN()+8],['Kantokyky',MAXW,MAXW+40]],renderInv,'Reppu');
   const det=$('#detail'),s=inv[selSlot];
   if(!s){det.innerHTML='<div class="s">Valitse esine. Kaksoisnapsautus tai hiiren oikea käyttää. Napsauta tyhjää paikkaa siirtääksesi valitun esineen.</div>';}
-  else{const d=ITEMS[s.id];const q=s.q||1;let stat='';
-    if(d.cat==='weapon')stat=`Vahinko ${weaponDmg({...d,q}).toFixed(0)} (${{slash:'viiltävä',blunt:'murskaava',pierce:'pistävä',fire:'tuli'}[d.dt]}) · kestävyys/isku ${d.st}`+(d.chop?' · kaataa puita':'')+(d.pick?' · louhii':'');
-    if(d.cat==='bow')stat=`Vahinko jopa ${weaponDmg({...d,q}).toFixed(0)}`;
-    if(d.cat==='shield')stat=`Torjuu ${Math.round(Math.min(.95,d.block*(1+.1*(q-1)))*100)} %`;
-    if(d.cat==='shovel')stat='Tasoittaa maata · kestävyys/käyttö 6';
-    if(d.cat==='offhand')stat='Toisen käden tarvike – voi pitää yhdessä aseen kanssa.';
-    if(d.cat==='armor')stat=`Suoja ${(d.arm*(1+.2*(q-1))).toFixed(0)}${d.warm?' · lämmin':''}`;
-    if(d.food)stat=`Kylläisyys +${d.food.h}${d.food.hp?` · terveys +${d.food.hp}`:''}${d.food.st?` · kestävyys +${d.food.st}`:''}`;
-    const up=upgradeInfo(s);
-    det.innerHTML=`<div class="t">${d.n}${q>1?` <span style="color:var(--frost)">★${q}</span>`:''}</div><div class="s">${d.d||''}${stat?`<br><b>${stat}</b>`:''}<br>Paino ${(d.w*s.n).toFixed(1)}</div><div class="btns"></div>`;
+  else{const d=ITEMS[s.id];const q=s.q||1;
+    const up=upgradeInfo(s),props=itemProps(s,q),open=up&&upPrev==='item'+selSlot;
+    det.innerHTML=`<div class="t">${d.n}${q>1?` <span class="qs">★${q}</span>`:''}</div><div class="s">${d.d||''}</div>`+
+      `<table class="props">${props.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`+
+      (open?upPreviewHTML(props,itemProps(s,q+1),up.req,`★${q} → ★${q+1}`):'')+`<div class="btns"></div>`;
     const b=det.querySelector('.btns');
     if(d.food){const x=document.createElement('button');x.className='btn pri';x.textContent='Syö';x.onclick=()=>{eat(s);renderInv();};b.appendChild(x);}
     if(d.cat){const x=document.createElement('button');x.className='btn pri';x.textContent=s.eq?'Riisu':'Varusta';x.onclick=()=>{toggleEquip(s);renderInv();};b.appendChild(x);}
-    if(up){const x=document.createElement('button');x.className='btn';x.textContent=`Paranna ★${q+1} (${reqText(up.req)})`;x.disabled=!up.ok;x.title=up.why||'';x.onclick=()=>{for(const [id,n] of Object.entries(up.req))invRemove(id,n);s.q=q+1;sfx('craft');msg(`${d.n} paranneltu tasolle ${q+1}.`,'loot');invDirty=true;renderInv();};b.appendChild(x);}
-    if(s.id==='soihtu'&&(s.fuel??TORCH_T)<TORCH_T){const x=document.createElement('button');x.className='btn';x.textContent='Lisää pihkaa (+60 s)';x.disabled=invCount('pihka')<1;x.onclick=()=>{if(invCount('pihka')<1)return;invRemove('pihka',1);s.fuel=Math.min(TORCH_T,(s.fuel??0)+60);sfx('build');renderInv();};b.appendChild(x);}
+    // Paranna: ensimmäinen painallus näyttää mitä muuttuu, vasta "Päivitä nyt" tekee päivityksen.
+    if(up){const x=document.createElement('button');x.className='btn'+(open?' on':'');x.textContent=open?`Piilota ★${q+1}`:`Paranna ★${q+1} …`;x.onclick=()=>{upPrev=open?null:'item'+selSlot;renderInv();};b.appendChild(x);
+      if(open){const y=document.createElement('button');y.className='btn pri';y.textContent='Päivitä nyt';y.disabled=!up.ok;y.title=up.why||'';
+        y.onclick=()=>{if(!upgradeInfo(s)||!upgradeInfo(s).ok)return;const m0=s.id==='soihtu'?torchMax(s):0;for(const [id,n] of Object.entries(up.req))invRemove(id,n);s.q=q+1;
+          if(s.id==='soihtu')s.fuel=(s.fuel??m0)+torchMax(s)-m0;upPrev=null;sfx('craft');msg(`${d.n} paranneltu tasolle ${q+1}.`,'loot');invDirty=true;renderInv();};
+        det.querySelector('.upPrev').appendChild(y);if(up.why){const w=document.createElement('span');w.className='rq';w.innerHTML=` <span class="mat bad">${up.why}</span>`;det.querySelector('.upPrev').appendChild(w);}}}
+    if(s.id==='soihtu'&&(s.fuel??torchMax(s))<torchMax(s)){const x=document.createElement('button');x.className='btn';x.textContent='Lisää pihkaa (+60 s)';x.disabled=invCount('pihka')<1;x.onclick=()=>{if(invCount('pihka')<1)return;invRemove('pihka',1);s.fuel=Math.min(torchMax(s),(s.fuel??0)+60);sfx('build');renderInv();};b.appendChild(x);}
     const dr=document.createElement('button');dr.className='btn';dr.textContent='Pudota';dr.onclick=()=>{inv[selSlot]=null;if(s.eq){s.eq=false;}spawnDrop(s.id,s.n,P.pos.x+Math.sin(P.yaw),P.pos.y+1,P.pos.z+Math.cos(P.yaw),s.q);invDirty=true;updateGear();selSlot=-1;renderInv();};b.appendChild(dr);}
   // crafting
   const st=nearStations();
@@ -123,15 +124,39 @@ function renderBuild(){const c=$('#buildCards');c.innerHTML='';const hasBench=!!
     // Oikealla napilla avattu valikko ei saa valita korttia heti (hiiri on vielä alhaalla).
     b.onclick=()=>{if(performance.now()-panelOpenedAt<400)return;setBuildSel(t);closePanels();};c.appendChild(b);}}
 // Päivityspainike: näyttää hinnan (punainen = puuttuu) ja tekee päivityksen napsautuksesta.
-function upBtn(el,cost,label,fn){if(!cost){el.innerHTML=`<div class="note">${label} on korkeimmalla tasollaan.</div>`;return;}
-  el.innerHTML=`<button class="btn pri">${label}</button> <span class="rq">${costChips(cost)}</span>`;
-  const ok=Object.entries(cost).every(([id,n])=>invCount(id)>=n);el.firstChild.disabled=!ok;el.firstChild.onclick=()=>{if(!Object.entries(cost).every(([id,n])=>invCount(id)>=n))return;for(const [id,n] of Object.entries(cost))invRemove(id,n);fn();sfx('craft');invDirty=true;};}
+// Päivityksen esikatselu: muuttuvat ominaisuudet (nykyinen → uusi), hinta ja "Päivitä nyt" -painikkeen paikka (.upPrev).
+let upPrev=null;
+function upPreviewHTML(a,b,cost,head){const rows=[];for(let i=0;i<b.length;i++){const o=a.find(r=>r[0]===b[i][0]);if(!o||o[1]!==b[i][1])rows.push([b[i][0],o?o[1]:'–',b[i][1]]);}
+  return `<div class="upPrev"><div class="uh">Päivitys ${head}</div><table class="props">${rows.length?rows.map(([k,x,y])=>`<tr><td>${k}</td><td>${x} <span class="arr">→</span> <b>${y}</b></td></tr>`).join(''):'<tr><td colspan="2">Ei muutoksia ominaisuuksiin.</td></tr>'}</table><div class="rq">Hinta: ${costChips(cost)}</div></div>`;}
+// Repun ja arkkujen laajennus: ensin "mitä muuttuu" (chg = [[nimi, nyt, uusi]]), sitten Päivitä nyt.
+function upBtn(el,cost,label,fn,key,chg,rerender,what){if(!cost){el.innerHTML=`<div class="note">${what||label} on korkeimmalla tasollaan.</div>`;return;}
+  const open=upPrev===key;
+  el.innerHTML=`<button class="btn${open?' on':''}">${open?'Piilota':label+' …'}</button>`+(open?upPreviewHTML(chg.map(c=>[c[0],c[1]]),chg.map(c=>[c[0],c[2]]),cost,`– ${label}`):'');
+  el.firstChild.onclick=()=>{upPrev=open?null:key;rerender();};
+  if(open){const ok=Object.entries(cost).every(([id,n])=>invCount(id)>=n),y=document.createElement('button');y.className='btn pri';y.textContent='Päivitä nyt';y.disabled=!ok;
+    y.onclick=()=>{if(!Object.entries(cost).every(([id,n])=>invCount(id)>=n))return;for(const [id,n] of Object.entries(cost))invRemove(id,n);upPrev=null;fn();sfx('craft');invDirty=true;rerender();};el.querySelector('.upPrev').appendChild(y);}}
+// Tavaran ominaisuudet listana [nimi, arvo] annetulla ★-tasolla (tietopaneeli ja päivityksen vertailu).
+function itemProps(s,q){const d=ITEMS[s.id],o=[],f1=v=>v.toFixed(1).replace('.',','),pc=v=>Math.round(v*100)+' %',mss=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')} min`,mq=d.cat&&d.cat!=='hammer'&&RECIPE_BY[s.id];
+  if(mq)o.push(['Taso','★'+q+' / ★3']);
+  if(d.cat==='weapon'){const w={...d,q};o.push(['Vahinko',weaponDmg(w).toFixed(0)],['Vahinkotyyppi',{slash:'viiltävä',blunt:'murskaava',pierce:'pistävä',fire:'tuli'}[d.dt]||'–'],['Kestävyyttä / isku',String(d.st)]);
+    if(d.chop)o.push(['Hakkuuteho',((5+d.chop*4)*(1+.25*(q-1))).toFixed(0)]);if(d.pick)o.push(['Louhintateho',((9+d.pick*3)*(1+.25*(q-1))).toFixed(0)]);if(d.range)o.push(['Ulottuvuus',f1(d.range)+' m']);}
+  if(d.cat==='bow')o.push(['Vahinko enintään',weaponDmg({...d,q}).toFixed(0)],['Jännitysaika',f1(1.6/(1+.25*(q-1)))+' s'],['Nuolen nopeus',((14+36)*(1+.1*(q-1))).toFixed(0)+' m/s']);
+  if(d.cat==='shield')o.push(['Torjuu',pc(Math.min(.95,d.block*(1+.1*(q-1))))]);
+  if(d.cat==='shovel')o.push(['Käyttö','tasoittaa maata'],['Kestävyyttä / käyttö','6']);
+  if(d.cat==='armor'){const a=d.arm*(1+.2*(q-1));o.push(['Suoja',a.toFixed(0)],['Vahinko pienenee',pc(1-20/(20+a))]);if(d.warm)o.push(['Lämmin','kyllä']);}
+  if(s.id==='soihtu'){const m=TORCH_T*(1+.5*(q-1));o.push(['Palamisaika (max)',mss(m)]);if(q===(s.q||1))o.push(['Jäljellä',`${mss(Math.max(0,Math.min(m,s.fuel??m)))} (${Math.round(Math.max(0,(s.fuel??m))/m*100)} %)`],['Tila',s.lit===false?'sammunut':'palaa kun pidät kädessä']);}
+  else if(d.cat==='offhand')o.push(['Käsi','toinen käsi']);
+  if(d.food)o.push(['Kylläisyys','+'+d.food.h],...(d.food.hp?[['Terveys','+'+d.food.hp]]:[]),...(d.food.st?[['Kestävyys','+'+d.food.st]]:[]),...(d.food.buff?[['Vaikutus','tehoruoka']]:[]),...(d.food.raw?[['Raaka','voi aiheuttaa pahoinvointia']]:[]));
+  if(d.fuel)o.push(['Polttoarvo',d.fuel+'× puu']);
+  o.push(['Paino',f1(d.w*s.n)+(s.n>1?` (${f1(d.w)} / kpl)`:'')]);if(d.s>1)o.push(['Määrä',`${s.n} / ${d.s}`]);
+  return o;}
 function openChest(p){togglePanel('chest');curChest=p;renderChest();}
 function renderChest(){if(!curChest)return;const items=curChest.data.items;$('#chestTitle').textContent=PIECES[curChest.t].n+(curChest.data.lv?` (taso ${curChest.data.lv+1})`:'');
-  upBtn($('#chestUp'),STORE_UP[(curChest.data.lv||0)+1],'Laajenna (+8 paikkaa)',()=>{curChest.data.lv=(curChest.data.lv||0)+1;while(items.length<storeSlots(curChest))items.push(null);msg('Säilytystila kasvoi.','loot');});
+  upBtn($('#chestUp'),STORE_UP[(curChest.data.lv||0)+1],`Laajenna (taso ${(curChest.data.lv||0)+2})`,()=>{curChest.data.lv=(curChest.data.lv||0)+1;while(items.length<storeSlots(curChest))items.push(null);msg('Säilytystila kasvoi.','loot');},'chest',
+    [['Paikkoja',storeSlots(curChest),storeSlots(curChest)+8]],renderChest,PIECES[curChest.t].n);
   $('#chestGrid').innerHTML=items.map(s=>slotHTML(s)).join('');$('#chestInv').innerHTML=inv.map(s=>slotHTML(s)).join('');
-  [...$('#chestGrid').children].forEach((el,i)=>el.onclick=()=>{const s=items[i];if(!s)return;const left=invAdd(s.id,s.n,s.q||1);if(left===0)items[i]=null;else s.n=left;invDirty=true;renderChest();});
-  [...$('#chestInv').children].forEach((el,i)=>el.onclick=()=>{const s=inv[i];if(!s)return;if(s.eq){s.eq=false;updateGear();}const j=items.findIndex(x=>!x);if(j<0)return;items[j]={id:s.id,n:s.n,q:s.q};inv[i]=null;invDirty=true;renderChest();});}
+  [...$('#chestGrid').children].forEach((el,i)=>el.onclick=()=>{const s=items[i];if(!s)return;const left=invAdd(s.id,s.n,s.q||1);if(left===0){items[i]=null;if(s.fuel!==undefined){const t=[...inv].reverse().find(x=>x&&x.id===s.id&&x.fuel===undefined);if(t){t.fuel=s.fuel;t.lit=s.lit;}}}else s.n=left;invDirty=true;renderChest();});
+  [...$('#chestInv').children].forEach((el,i)=>el.onclick=()=>{const s=inv[i];if(!s)return;if(s.eq){s.eq=false;updateGear();}const j=items.findIndex(x=>!x);if(j<0)return;items[j]={id:s.id,n:s.n,q:s.q,fuel:s.fuel,lit:s.lit};inv[i]=null;invDirty=true;renderChest();});}
 
 /* ---------------- MAP ---------------- */
 const MAPW=HALF*2,MAPC=document.createElement('canvas');MAPC.width=MAPC.height=MAPW;

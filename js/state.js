@@ -6,9 +6,11 @@
 const P={pos:new V3(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z),vy:0,yaw:Math.PI,onGround:true,hp:60,stam:100,hunger:80,stamDelay:0,atk:null,blocking:false,bowDraw:0,drawing:false,heal:0,buffs:{},wetT:0,restT:0,inWater:false,dead:false,invul:0,stagger:0,walkPh:0,spawn:null,deaths:0,kills:0,hurtFlash:0,inDun:false,crouch:false,crouchK:0,packLv:0,fx:{speed:1,dmg:1,stamRegen:1,hpRegen:1},crampT:0};
 let inv=new Array(32).fill(null);
 // Käsisoihtu: palaa yhteensä 60 s (juostessa 20 % nopeammin), sammuu sateessa, syttyy toisen liekin vieressä. Tila tallentuu esineeseen (fuel, lit).
-const TORCH_T=120; // käsisoihdun paloaika (s); pihka lisää 60 s
+const TORCH_T=120; // käsisoihdun paloaika (s) tasolla ★1; pihka lisää 60 s
+// Soihdun täysi paloaika ★-tason mukaan: +50 % per taso (★1 120 s, ★2 180 s, ★3 240 s).
+const torchMax=s=>TORCH_T*(1+.5*(((s&&s.q)||1)-1));
 function torchSlot(){const s=equipped('offhand');return s&&s.id==='soihtu'?s:null;}
-function torchLit(){const s=torchSlot();return !!s&&s.lit!==false&&(s.fuel??TORCH_T)>0;}
+function torchLit(){const s=torchSlot();return !!s&&s.lit!==false&&(s.fuel??torchMax(s))>0;}
 let playTime=0, dayT=.3, dayN=1, weather={cur:'selkea',until:200}, flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{},xp:0,cnt:{},ach:{},first:{},gv:2}, graves=[], drops=[];
 let camYaw=Math.PI, camPitch=.35, camDist=6;
 const EXN=Math.ceil(HALF/2); // tutkimusruudukko 4 m ruuduin

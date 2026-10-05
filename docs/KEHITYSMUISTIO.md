@@ -58,6 +58,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.66 (erä 39: tavarat ja päivitykset)
+- **Päivityksen esikatselu:** kaikki päivitykset (tavaran ★, reppu, arkut ja tynnyrit) avaavat ensin alle laatikon "Päivitys ★1 → ★2",
+  jossa muuttuvat ominaisuudet (nyt → uusi, vihreällä) ja hinta (punainen = puuttuu). Vasta laatikon **Päivitä nyt** tekee päivityksen.
+  Uusi painallus (Piilota), toisen tavaran valinta tai paneelin sulkeminen sulkee esikatselun (`upPrev`, `upPreviewHTML`, `upBtn`).
+- **Ominaisuudet repussa:** tietopaneelissa tavaran nimi isolla (Uncial Antiqua 26 px) ja kaikki ominaisuudet taulukkona (`itemProps(s,q)`):
+  taso, vahinko, tyyppi, kestävyys/isku, hakkuu- ja louhintateho, ulottuvuus, jousen jännitysaika ja nuolen nopeus, torjunta,
+  suoja ja vahingon vähennys, soihdun palamisaika max / jäljellä / tila, ruoan arvot, polttoarvo, paino ja määrä. Sama funktio laskee
+  päivityksen vertailun.
+- **Käsisoihtu ★:** täysi palamisaika `torchMax(s)` = 120 s × (1 + 0,5 × (★ − 1)) → 120 / 180 / 240 s. Päivitys lisää myös jäljellä olevaa
+  aikaa erotuksen verran. Seisova soihtu ennallaan.
+- **Korjaus:** soihdun polttoaine ja sytytystila säilyvät arkun kautta siirrettäessä (ennen soihtu täyttyi arkussa käyttämällä).
+
 ### v0.65 (yleinen reunakohdistus kaikille osille)
 - **`smartSnap` korvaa vanhan `edgeSnap`:in.** Toimii kaikille osien muodoille (seinät, palkit, pylväät, lattiat, katot, kalusteet,
   työpisteet) ja kaikissa G-tiloissa paitsi *vapaa*. Kohteen muoto = sen törmäyslaatikoiden yhteinen rajaus (`unionBox(worldBoxes)`).
@@ -951,6 +963,28 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 
 **Erä 38 – Mobien mallit (11)**
 1. Kaikki eläimet ja hirviöt pelaajahahmon tyyliin (ei palikkamaisia): pehmeät low-poly-muodot, nivelet, yksityiskohdat.
+
+#### Käyttäjän päivityslista (v0.65 jälkeen, 8 kohtaa) – vastaukset tarkentaviin kysymyksiin kirjattu
+
+**Erä 39 – Tavarat ja päivitykset (3, 4, 5)** – ✅ tehty v0.66
+1. Päivityksen esikatselu: päivitysnappi avaa ensin alle listan "mitä muuttuu" (nykyinen → uusi arvo) ja vasta sen alla oleva
+   **Päivitä nyt** tekee päivityksen. Koskee kaikkia päivityksiä: tavarat ★, reppu, arkut ja tynnyrit.
+2. Ominaisuudet repussa: tavaraa napsauttamalla nykyinen tietopaneeli näyttää nimen isolla ja kaikki ominaisuudet listana
+   (esim. soihtu: palamisaika jäljellä / max).
+3. Käsisoihtu ★-päivitettäväksi: palamisaika +50 % per taso (★1 120 s, ★2 180 s, ★3 240 s). Seisova soihtu ennallaan.
+
+**Erä 40 – Varjot, kartta ja oksat (2, 6, 7)**
+1. Pelaajan varjo seisovasta soihdusta: uusi korkein päivitysnopeus **Joka ruutu** (vain pelaajan soihtuvarjo). Automaattinen
+   varjolaatu siirretään Varjot-sivulle.
+2. Kartta ja minikartta: maaston pikselikuva piirretään uudelleen vain tapahtumasta (rakennus/purku, puun kaatuminen, uusi alue
+   paljastuu), ei jatkuvasti silmukassa. Mobien punaiset pisteet ja pelaaja päivittyvät normaalisti.
+3. Grafiikka-asetus "Puiden oksat": pois päältä → ei oksia pystypuissa eikä kaatuessa, ei maahan jääviä paloja. Lastut ja pöly lyödessä jäävät.
+
+**Erä 41 – Haarniskat ja äänet (1, 8)**
+1. Nahkavaatteet: uusi tekstuuri ja paksumpi malli, vaaleat reunat, siteet, selässä repeävä roikkuva nahkaliuska joka heiluu kävellessä.
+   Muille haarniskoille (kupari, rauta, hiidenpanssari) omaan tyyliinsä sopivat yksityiskohdat.
+2. Äänet: puun kaatuminen ja tömähdys matalammaksi, viimeinen isku ennen rungon katkeamista hieman kimeämpi, kaikkiin toistuviin
+   ääniin pieni satunnainen sävelkorkeuden vaihtelu (jokainen lyönti hieman eri).
 
 ### Avoimet: käyttäjän ehdotuksista toteuttamatta tai osittain (tarkistettu v0.62, koko keskusteluhistoria käyty läpi)
 1. **Portaalisuoja ei estä pelaajan omia iskuja** (kohta 5: "silloin pelaajakaan ei voi lyödä ketään"). Nyt suoja estää vain vihollisten
