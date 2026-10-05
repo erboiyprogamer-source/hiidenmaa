@@ -11,6 +11,9 @@ addEventListener('keydown',e=>{
   if(e.code==='Tab'){e.preventDefault();}
   if(e.code===BIND.full&&!e.repeat&&(state==='play'||state==='ui'||state==='paused'))toggleFullscreen();
   if(state==='paused'&&e.code==='Escape'&&!e.repeat&&performance.now()-pausedAt>400){if(!$('#settings').hidden)$('#settings').hidden=true;else $('#bResume').click();return;}
+  // v0.80: kuoleman ruudulla Enter herättää (hiiren lisäksi); kuollessa muut näppäimet eivät avaa valikoita
+  if(state==='dead'){if((e.code==='Enter'||e.code==='NumpadEnter')&&!e.repeat){e.preventDefault();respawn();}return;}
+  if(P.dead)return;
   if(state!=='play'&&state!=='ui')return;
   if(e.repeat)return;
   const c=e.code;

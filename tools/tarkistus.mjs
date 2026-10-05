@@ -44,6 +44,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('tuli: soihtu/tulinuoli sytyttää',()=>typeof igniteMob==='function'&&!!ITEMS.tulinuolet&&!!RECIPES.find(r=>r.id==='tulinuolet'));
   t('reppu: vaihto, puolitus, Q-pudotus, arkun käsisiirto',()=>typeof moveSlot==='function'&&typeof splitSlot==='function'&&typeof dropSel==='function'&&typeof chestClick==='function');
   t('ammukset heikoimmasta parhaaseen',()=>{const a=flags.ammo;flags.ammo=null;window.__game.invAdd('nuolet',2);window.__game.invAdd('tulinuolet',2);const ok=ammoId()==='nuolet'&&AMMO.indexOf('nuolet')<AMMO.indexOf('tulinuolet');flags.ammo=a;return ok;});
+  t('kuollessa kaikki valikot sulkeutuvat, Enter herättää',()=>typeof closeAllForDeath==='function'&&/Enter/.test($('#bRespawn').textContent)&&getComputedStyle($('#deadS')).cursor!=='none');
   t('rakennusnäppäimet vain rakennustilassa (isBuilding)',()=>typeof isBuilding==='function'&&(()=>{const b=buildSel;buildSel=null;const r=!isBuilding();buildSel=b;return r;})());
   t('DEV: kartan paljastus (pilvet + kohteet)',()=>!DEV||typeof devRevealMap==='function');
   t('DEV-valikko (Ä) ja V-nopeus',()=>!DEV||(!!$('#devP')&&typeof renderDev==='function'));

@@ -58,6 +58,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.80 (kuoleman ruutu)
+- Kuollessa kaikki valikot sulkeutuvat heti ja uudelleen ruudun ilmestyessä (`closeAllForDeath`, player.js): reppu, rakennus, kartta,
+  arkku, edistyminen, loki, DEV, päävalikko, asetukset ja näppäinikkuna. Vain "Kaaduit"-ruutu jää. Kuolinanimaation aikana (1,4 s)
+  näppäimet eivät avaa valikoita eikä Esc avaa päävalikkoa (`P.dead`-ehto `togglePanel`/`pauseGame`/keydown).
+- Kuoleman ruudulla **Enter** (tai Numpad Enter) herättää hiiren lisäksi; hiiren kursori näkyy ruudulla (`#deadS{cursor:default}`).
+  `respawn()` toimii vain tilassa `dead` (ei tuplaherätystä).
+
 ### v0.79 (rakennusnäppäimet vain rakennettaessa)
 - R, Shift+R, G, H, Q ja Z toimivat ja antavat ilmoituksen vain rakennustilassa (`isBuilding()`, building.js: vasara kädessä **ja**
   rakennusosa valittuna). Ennen Shift+R ilmoitti "Asento vaihtuu…" ilman vasaraakin, ja G/H ilmoittivat pelkällä vasaralla.

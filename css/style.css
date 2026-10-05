@@ -227,3 +227,6 @@ select.isdef{color:#f3ead8;background-color:rgba(120,96,70,.55)}
 option.def{color:#fbf3e2;background:#6a4c2c;font-weight:700}
 input.isdef{filter:brightness(1.25)}
 #mini{pointer-events:auto;cursor:pointer}
+
+/* v0.80: hiiren kursori näkyy aina kuoleman ruudulla */
+#deadS,#deadS *{cursor:default}#deadS .mbtn{cursor:pointer}

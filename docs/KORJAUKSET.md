@@ -115,6 +115,14 @@ koukkuja; kun käyttäjä pyytää pois, aseta `DEV=false`. Tarkistus- ja tasapa
 else if(c===BIND.rot){if(isBuilding()){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}}
 ```
 
+### 17. Valikot jäivät auki kuollessa – v0.80
+**Oire:** jos reppu, kartta, DEV tai päävalikko oli auki kuollessa, se jäi kuoleman ruudun päälle/alle.
+**Korjaus:** `closeAllForDeath()` (player.js) kutsutaan `playerDie`:ssä heti ja kuoleman ruudun avautuessa. Uusi valikko/ikkuna → lisää se
+tähän listaan. Kuollessa `togglePanel` ja `pauseGame` eivät toimi; Enter herättää (`input.js`, tila `dead`).
+```js
+function closeAllForDeath(){if(openPanel)closePanels(false,true);if(state==='paused'||state==='ui')state='play';for(const id of ['#menu','#settings','#keyDlg'])if($(id))$(id).hidden=true;…}
+```
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

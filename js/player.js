@@ -184,7 +184,7 @@ function playerDie(){
   const items=inv.filter(Boolean).map(s=>({id:s.id,n:s.n,q:s.q}));inv=new Array(invN()).fill(null);invDirty=true;updateGear();setBuildSel(null);
   if(items.length){const y=P.inDun?DUN.y:terrainH(P.pos.x,P.pos.z);makeGrave({x:P.pos.x,y,z:P.pos.z,items});}
   fig.g.rotation.x=-Math.PI/2;fig.g.position.y+=.3;
-  setTimeout(()=>{state='dead';releaseLock();$('#deadS').hidden=false;$('#hud').hidden=true;},1400);
+  closeAllForDeath();setTimeout(()=>{closeAllForDeath();state='dead';releaseLock();$('#deadS').hidden=false;$('#hud').hidden=true;},1400);
 }
 // Hautakasa: kivet + pieni valomajakka (läpikuultava pylväs + himmeä pistevalo), joka näkyy lähellä (updateStations).
 function makeGrave(g){const m=new THREE.Group();m.add(bx(1,.5,1,mat(0x6a6862),0,.25,0),bx(.5,1.2,.2,mat(0x8f8d86),0,.9,-.3));
@@ -192,7 +192,9 @@ function makeGrave(g){const m=new THREE.Group();m.add(bx(1,.5,1,mat(0x6a6862),0,
   const beam=new THREE.Mesh(new THREE.CylinderGeometry(.06,.3,8,8,1,true),bm);beam.position.y=4.4;m.add(beam);g.beam=beam;
   m.position.set(g.x,g.y,g.z);scene.add(m);g.mesh=m;g.light={x:g.x,y:g.y+1.4,z:g.z,c:0x8fffee,i:1.1,on:()=>true};lightSources.push(g.light);graves.push(g);}
 function removeGrave(g){scene.remove(g.mesh);const i=graves.indexOf(g);if(i>=0)graves.splice(i,1);const j=lightSources.indexOf(g.light);if(j>=0)lightSources.splice(j,1);}
-function respawn(){
+// v0.80: kuollessa kaikki valikot (reppu, kartta, arkku, DEV, päävalikko, asetukset, näppäinikkuna) suljetaan – vain kuoleman ruutu jää.
+function closeAllForDeath(){if(openPanel)closePanels(false,true);if(state==='paused'||state==='ui')state='play';for(const id of ['#menu','#settings','#keyDlg'])if($(id))$(id).hidden=true;mouseL=mouseR=false;P.drawing=false;}
+function respawn(){if(!P.dead||state!=='dead')return;
   $('#deadS').hidden=true;$('#hud').hidden=false;P.dead=false;P.hp=maxHp()*.6;P.stam=maxStam();P.hunger=Math.max(P.hunger,40);P.buffs={};P.wetT=0;
   if(P.inDun){P.inDun=false;P.realm=null;for(const m of [...mobs])if(m.dun)mobRemove(m);}
   const bed=pieces.find(p=>p.t==='sanky'&&P.spawn&&p.x===P.spawn.x&&p.z===P.spawn.z);
