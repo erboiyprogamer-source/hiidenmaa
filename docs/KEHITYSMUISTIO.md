@@ -37,7 +37,8 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | --- | --- |
 | Pelaajan kävely / juoksu | 4,6 / 8 m/s |
 | Käsisoihdun paloaika `TORCH_T` | 120 s (pihka +60 s) |
-| Vihollisten nopeuskerroin `MOB_SPD` | 0,85 |
+| Vihollisten nopeuskerroin `MOB_SPD` | 0,85 (aarnimetsässä viholliset ×1,2, v0.83) |
+| Vihollisten syntyetäisyys | yö 55–85 m (10 %: 20–30 m), päivä 38–68 m, päivällä max 2 vihollista |
 | Puiden uusiutuminen | kerran yössä, 100 m säteellä |
 | Rakennusalueen suoja (`nearBase`) | 15 m osasta, työpenkki 26 m |
 | Terveys / kestävyys / max paino | 60 / 100 / 160 |
@@ -58,6 +59,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
 
 ## Versioloki
+
+### v0.83 (vihollisten spawnaus – päivityslista kohta 2)
+- `spawner`/`spawnSpot` (ai.js). **Yö:** 90 % syntyy 55–85 m päähän (ennen 38–68) ja vaeltaa omia reittejään; 10 % 20–30 m päähän,
+  mieluiten puun tai kiven taakse pelaajasta katsottuna (`nodesNear`, 8 yritystä), muuten avoimelle. Lähelle syntyvä susi tulee yksin.
+  **Aarnimetsä** vetää: yöllä muiden biomien ehdokas hyväksytään 55 %:lla, aarnimetsän aina; pelaajan ollessa aarnimetsässä tahti 1,5 s
+  (muuten 2,5 s) ja raja 18 (muuten 14).
+- **Päivä:** eläimet kuten ennen. Vihollisia enintään 2 (aarnimetsässä 3) ja vain `DAY_FOE_BIOMES`: korpimetsä, suo, kangas, nummi, aarni
+  (metsä/suo/aarni: vihollisten osuus ×1,4). Muualla päivällä vain eläimiä.
+- **Aarnimetsässä** viholliset (ja vihaiset neutraalit) liikkuvat 20 % nopeammin (`moveMob`, biomi tarkistetaan 1 s välein `m.aarni`).
+  Aarnimetsään astuessa ilmoitus "Hirviöt ovat vihaisia Aarnimetsässä – ne liikkuvat täällä nopeammin." (enintään kerran minuutissa).
+- Testattu 400 spawnauskierroksella: yö med. 68–71 m, lähelle 8–10 % (min 19 m); päivä max 2 vihollista (aarnin lähellä 3).
+- Raunioiden/portaalien/arkkukivien 50 m suoja ja aloitusalueen päiväsuoja ennallaan.
 
 ### v0.82 (uudet biomit ja alueet – päivityslista kohta 3)
 - **Uudet biomit** vievät tilaa metsältä ja niityltä (`biomeAt`, world.js); vuori, nummi, aarnimetsä ja ranta ennallaan, aloitusniitty pysyy:
@@ -935,7 +948,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
-2. Mobien spawnaus: yöllä suurin osa, vähän kauempana (jahtaavat); osa lähelle mieluiten esteen taakse. Päivällä max 2, vain tiheä metsä /
+2. TEHTY v0.83. Mobien spawnaus: yöllä suurin osa, vähän kauempana (jahtaavat); osa lähelle mieluiten esteen taakse. Päivällä max 2, vain tiheä metsä /
    suo / kuiva biomi; tumma aarnimetsä hyvin todennäköinen, hirviöt siellä 20 % nopeampia + ilmoitus biomille astuessa.
 3. TEHTY v0.82. Uusia biomeja + nimet; nykyinen biomi näkyy, repussa biomin ominaisuudet; "Uusi alue löydetty: …" fade in/out vain ensimmäisellä kerralla
    (aloitusbiomi merkitty löydetyksi ilman ilmoitusta).

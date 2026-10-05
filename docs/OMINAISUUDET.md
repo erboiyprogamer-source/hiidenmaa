@@ -8,6 +8,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## 1. Maailma
 
+- **Vihollisten syntyminen (v0.83):** yöllä 90 % 55–85 m päähän (vaeltavat), 10 % 20–30 m päähän puun/kiven taakse; aarnimetsä vetää
+  vihollisia (yöllä tahti 1,5 s, raja 18). Päivällä enintään 2 vihollista (aarnimetsässä 3) ja vain korpimetsässä, suolla, kankaalla,
+  nummella ja aarnimetsässä. Aarnimetsässä viholliset +20 % nopeampia, ilmoitus alueelle astuessa.
 - **Biomit (`biomeAt`/`zoneAt`/`BIOMES`, world.js, v0.82):** Rantaniitty (aloitus), Koivulehto, Korpimetsä, Upposuo (liike −15 %, lätäköt),
   Jäkäläkangas (männyt, piikivi), Aarnimetsä, Kalmanummi, Tunturikangas, Rakka (lohkareet, kupari), Kivivuori, Routahuiput (> 33 m),
   Hietaranta. Nimi näkyy minikartan alla, ominaisuudet repussa. Ensimmäisellä käynnillä "Uusi alue löydetty: …" (häivytys), `flags.bio`.

@@ -81,7 +81,10 @@ function mobReach(m,dist){const sy=m.pos.y+(m.f.biped?1:.6)*(m.f.s||1),gap=Math.
 // Kaikkien vihollisten ja eläinten liikenopeus × MOB_SPD (−15 %, v0.63)
 const MOB_SPD=.85;
 function moveMob(m,tx,tz,spd,dt){
-  spd*=MOB_SPD;const l=Math.hypot(tx,tz);
+  spd*=MOB_SPD;
+  // v0.83: Aarnimetsässä hirviöt ovat vihaisia ja liikkuvat 20 % nopeammin (biomi tarkistetaan sekunnin välein)
+  if(!m.dun&&(m.bioT=(m.bioT||0)-dt)<=0){m.bioT=1;m.aarni=biomeHere(m.pos.x,m.pos.z)==='aarni';}
+  if(m.aarni&&(m.def.ai==='hostile'||m.angry))spd*=1.2;const l=Math.hypot(tx,tz);
   if(l>.01){const ty=Math.atan2(tx,tz);m.yaw=lerpAngle(m.yaw,ty,Math.min(1,dt*8));}
   let vx=0,vz=0;if(l>.01&&spd>0){vx=Math.sin(m.yaw)*spd;vz=Math.cos(m.yaw)*spd;}
   m.vel.x*=Math.max(0,1-dt*6);m.vel.z*=Math.max(0,1-dt*6);
@@ -151,15 +154,38 @@ const SPAWN={
   tunturi:{day:[['peura',.6],['susi',.4]],night:[['susi',1]]},
   rakka:{day:[['susi',.5],['peura',.5]],night:[['susi',1]]},
 };
+// v0.83 spawnaus (päivityslista kohta 2):
+// - YÖ: suurin osa (90 %) syntyy 55–85 m päähän ja vaeltaa omia reittejään (huomaa pelaajan tavallisesti); 10 % syntyy 20–30 m päähän,
+//   mieluiten puun tai kiven taakse (pelaajasta katsottuna), muuten avoimelle paikalle. Aarnimetsä vetää vihollisia: muualla ehdokas
+//   hyväksytään 55 %:n todennäköisyydellä, aarnimetsässä aina; pelaajan ollessa aarnimetsässä tahti 1,5 s ja raja 18.
+// - PÄIVÄ: eläimet kuten ennen; vihollisia enintään 2 (aarnimetsässä 3) ja vain tiheässä metsässä, suolla, kankaalla, nummella ja aarnimetsässä.
+const DAY_FOE_BIOMES={forest:1,suo:1,kangas:1,moor:1,aarni:1};
+const _spN=[];
+function spawnSpot(night){
+  if(night&&Math.random()<.1){// lähelle: puun/kiven taakse
+    for(let t=0;t<8;t++){const a=Math.random()*TAU,d=20+Math.random()*10,x=P.pos.x+Math.cos(a)*d,z=P.pos.z+Math.sin(a)*d;
+      nodesNear(x,z,5,_spN);const cov=_spN.find(n=>n.alive&&(n.def.kind==='tree'||n.def.kind==='rock'));
+      if(cov){const ux=cov.x-P.pos.x,uz=cov.z-P.pos.z,l=Math.hypot(ux,uz)||1,o=cov.def.r*cov.s+1.3,bx=cov.x+ux/l*o,bz=cov.z+uz/l*o;
+        if(!pointBlocked(bx,terrainH(bx,bz)+.5,bz))return {x:bx,z:bz,near:1,cover:1};}}
+    const a=Math.random()*TAU,d=20+Math.random()*10;return {x:P.pos.x+Math.cos(a)*d,z:P.pos.z+Math.sin(a)*d,near:1};}
+  const a=Math.random()*TAU,d=night?55+Math.random()*30:38+Math.random()*30;return {x:P.pos.x+Math.cos(a)*d,z:P.pos.z+Math.sin(a)*d};}
 function spawner(dt){
-  spawnT-=dt;if(spawnT>0||P.inDun||P.dead)return;spawnT=2.5;
-  const night=isNight();const alive=mobs.filter(m=>!m.dun&&!m.dead&&m!==boss&&!m.guard);const cap=night?14:10;
+  spawnT-=dt;if(spawnT>0||P.inDun||P.dead)return;
+  const night=isNight(),inA=P.zone==='aarni';spawnT=night&&inA?1.5:2.5;
+  const alive=mobs.filter(m=>!m.dun&&!m.dead&&m!==boss&&!m.guard);const cap=night?(inA?18:14):10;
   if(alive.length>=cap)return;
-  for(let tries=0;tries<6;tries++){const a=Math.random()*TAU,d=38+Math.random()*30,x=P.pos.x+Math.cos(a)*d,z=P.pos.z+Math.sin(a)*d;const h=terrainH(x,z);if(h<.5)continue;
-    const b=biomeAt(x,z,h);const tbl=SPAWN[b];if(!tbl)continue;const list=night?tbl.night:tbl.day;let r=Math.random(),type=list[0][0];for(const [t,p] of list){if(r<p){type=t;break;}r-=p;}
+  const dayFoes=alive.filter(m=>m.def.ai==='hostile').length;
+  for(let tries=0;tries<6;tries++){const sp=spawnSpot(night),x=sp.x,z=sp.z;const h=terrainH(x,z);if(h<.5)continue;
+    const b=biomeAt(x,z,h);const tbl=SPAWN[b];if(!tbl)continue;
+    if(night&&b!=='aarni'&&!sp.near&&Math.random()>.55)continue;
+    let list=night?tbl.night:tbl.day;
+    if(!night){const foeOk=DAY_FOE_BIOMES[b]&&dayFoes<(b==='aarni'?3:2);if(!foeOk)list=list.filter(([t])=>MOBDEF[t].ai!=='hostile');
+      else if(b==='aarni'||b==='forest'||b==='suo')list=list.map(([t,p])=>[t,MOBDEF[t].ai==='hostile'?p*1.4:p]);}
+    if(!list.length)continue;const tot=list.reduce((a,[,p])=>a+p,0);
+    let r=Math.random()*tot,type=list[0][0];for(const [t,p] of list){if(r<p){type=t;break;}r-=p;}
     if(nearBase(x,z)||nearSite(x,z,50))continue;
     if(dist2(x,z,LOC.spawn.x,LOC.spawn.z)<30*30&&MOBDEF[type].ai==='hostile'&&!night)continue;
-    const pack=type==='susi'&&night?2:1;for(let k=0;k<pack;k++)spawnMob(type,x+k*1.5,z+k);return;}
+    const pack=type==='susi'&&night&&!sp.near?2:1;for(let k=0;k<pack;k++){const m=spawnMob(type,x+k*1.5,z+k);if(m&&sp.near)m.state='idle';}return;}
 }
 function respawnNodes(){for(const n of nodes)if(!n.alive&&n.def.kind!=='tree'&&n.respawnAt<=playTime&&dist2(n.x,n.z,P.pos.x,P.pos.z)>40*40&&!nearBase(n.x,n.z))respawnNode(n);}
 const LIGHT_CAP=3.0;let shFrame=0,shNearPrev=false;const ALL_LIGHTS=[...LIGHTS,torchLight,torchFill];

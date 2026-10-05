@@ -83,7 +83,9 @@ function devRevealMap(){explored.fill(1);resetFog();for(const k in LOC){const L=
 let zoneT=0,zoneBanT=0;
 function updateZone(dt){zoneT-=dt;if(zoneT>0)return;zoneT=.4;if(P.inDun||P.dead)return;
   const z=zoneAt(P.pos.x,P.pos.z);if(z===P.zone&&!zoneQuiet)return;const ch=z!==P.zone;P.zone=z;if(!flags.bio)flags.bio={meadow:1};
-  if(!flags.bio[z]){flags.bio[z]=1;if(!zoneQuiet)showZoneBanner(BIOMES[z].n);}zoneQuiet=false;if(ch&&openPanel==='inv')renderBiome();}
+  if(!flags.bio[z]){flags.bio[z]=1;if(!zoneQuiet)showZoneBanner(BIOMES[z].n);}
+  if(ch&&z==='aarni'&&!zoneQuiet&&playTime-(flags.aarniMsg||-99)>60){flags.aarniMsg=playTime;setTimeout(()=>msg('Hirviöt ovat vihaisia Aarnimetsässä – ne liikkuvat täällä nopeammin.','warn'),flags.bio.aarni===1&&$('#zoneBan').classList.contains('on')?1500:0);}
+  zoneQuiet=false;if(ch&&openPanel==='inv')renderBiome();}
 function showZoneBanner(name){const el=$('#zoneBan');$('#zoneBanN').textContent=name;el.classList.add('on');sfx('discover');msg(`Uusi alue löydetty: ${name}`,'loot');
   clearTimeout(zoneBanT);zoneBanT=setTimeout(()=>el.classList.remove('on'),4000);}
 function renderBiome(){const B=$('#biomeBox');if(!B)return;if(P.inDun||!P.zone||!BIOMES[P.zone]){B.innerHTML='';return;}const b=BIOMES[P.zone],dg=['','Rauhallinen','Kohtalainen','Vaarallinen'][b.danger]||'';
