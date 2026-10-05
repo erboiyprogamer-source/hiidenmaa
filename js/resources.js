@@ -139,7 +139,9 @@ function reviveNode(n){markShadowDirty();n.alive=true;n.hp=n.maxHp;setNodeMatrix
 // Siirtää puun/kasvin uuteen paikkaan (törmäys, ruudukko, korkeus, koko).
 function moveNode(n,x,z,s){n.x=x;n.z=z;n.s=s;n.y=terrainH(x,z);n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?s*s*1.2:1);
   if(n.col){gridRemove(n.col);const off=n.col.off;if(n.def.kind==='tree')n.col=addCircle(x,z,n.def.r*s,n.y-1,n.y+6*s,n);else n.col=addCircle(x,z,n.def.r*s,n.y-1,n.y+1.2*s,n);n.col.off=off;}
-  ngridRemove(n);ngridAdd(n);}
+  ngridRemove(n);ngridAdd(n);
+  // Kuva siirtyy törmäyksen ja hakkuukohteen mukana (ennen latauksessa siirretyn puun kuva jäi alkuperäiselle paikalle → haamupuu)
+  if(n.alive)setNodeMatrix(n,true);}
 function locMin(x,z){let m=1e9;for(const k in LOC)m=Math.min(m,Math.hypot(x-LOC[k].x,z-LOC[k].z));return m;}
 // Kaadettu puu uusiutuu enintään 5 m (kasvi 3 m) alkuperäisestä paikastaan; muuten alkuperäiseen paikkaan.
 function respawnNode(n){const kind=n.def.kind;
