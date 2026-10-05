@@ -38,6 +38,39 @@ const softMats={};
 function smat(c,o){const k=c+JSON.stringify(o||{});return softMats[k]||(softMats[k]=new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.9,metalness:0,flatShading:false},o||{})));}
 function rnd(g,x,y,z,r,m,sx=1,sy=1,sz=1,seg=10){const me=new THREE.Mesh(new THREE.SphereGeometry(r,seg,Math.max(6,seg-2)),m);me.position.set(x,y,z);me.scale.set(sx,sy,sz);me.castShadow=true;g.add(me);return me;}
 function tube(g,rt,rb,h,m,x,y,z,sx=1,sz=1,seg=12){const me=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),m);me.position.set(x,y,z);me.scale.set(sx,1,sz);me.castShadow=true;g.add(me);return me;}
+// Yksityiskohtainen kaksijalkainen (v0.71, pelaajahahmon tyyli): pyöristetyt raajat (tube/rnd), nivelpallot, kyynärpää- ja polvinivel
+// (elbowL/R, kneeL/R), kämmenet ja jalkaterät, kaula ja pallopää. Rajapinta kuten makeBiped (g, legL/R, armL/R, head, torso, hand, handL, biped),
+// joten tekoälyn animaatiot toimivat sellaisenaan. torso ja head ovat skaalaamattomia ryhmiä (lisäosat eivät litisty).
+// o: s koko, body/skin/legs/boot värit, eyes (hehkuva), wide, thin (luiseva), headS, flat (särmikäs kivi), skel (luuranko), noHead.
+function makeHumanoid(o){
+  const s=o.s||1,g=new THREE.Group(),th=o.thin?.62:1,wd=o.wide||1,F=c=>smat(c,{flatShading:!!o.flat||!!o.skel,roughness:o.rough||.9});
+  const mB=F(o.body),mS=F(o.skin),mL=F(o.legs||o.body),mBo=F(o.boot||o.legs||o.body),mJ=o.joint?F(o.joint):mS,hip=.8*s,seg=o.flat?6:8;
+  // jalat: reisi, polvi, sääri, jalkaterä
+  const mkLeg=x=>{const p=new THREE.Group();p.position.set(x,hip,0);tube(p,.1*s*th,.085*s*th,.4*s,mL,0,-.2*s,0,1,1,seg);rnd(p,0,-.4*s,0,.08*s*th,mJ,1,1,1,seg);
+    const k=new THREE.Group();k.position.set(0,-.4*s,0);p.add(k);tube(k,.08*s*th,.065*s*th,.36*s,o.skel?mL:mBo,0,-.18*s,0,1,1,seg);
+    rnd(k,0,-.37*s,.06*s,.08*s*th,mBo,1,.65,1.9,seg);g.add(p);return[p,k];};
+  const [legL,kneeL]=mkLeg(-.13*s*wd),[legR,kneeR]=mkLeg(.13*s*wd);
+  // vartalo: lantio, rinta, hartiat
+  const torso=new THREE.Group();torso.position.set(0,hip+.38*s,0);g.add(torso);
+  if(!o.skel){tube(torso,.22*s*wd,.2*s*wd,.76*s,mB,0,0,0,1.15,.66,seg);rnd(torso,0,.3*s,0,.24*s*wd,mB,1.2,.55,.7,seg);tube(torso,.235*s*wd,.235*s*wd,.08*s,F(o.belt||0x3a2a1c),0,-.3*s,0,1.15,.7,seg);}
+  else{// luuranko: selkäranka, kylkiluut, lantio, solisluut
+    for(let i=0;i<7;i++)rnd(torso,0,-.32*s+i*.11*s,-.06*s,.045*s,mB,1,.8,1,6);
+    for(let i=0;i<5;i++){const y=.25*s-i*.11*s,r=(.2-i*.012)*s*wd,rib=new THREE.Mesh(new THREE.TorusGeometry(r,.022*s,4,10,Math.PI*1.25),mB);rib.rotation.set(Math.PI/2,0,Math.PI*1.12);rib.position.set(0,y,-.02*s);rib.scale.set(1,.75,1);torso.add(rib);}
+    rnd(torso,0,-.38*s,0,.17*s*wd,mB,1.3,.45,.7,6);tube(torso,.02*s,.02*s,.5*s*wd,mB,0,.36*s,.02*s).rotation.z=Math.PI/2;}
+  // käsivarret: olka, olkavarsi, kyynärpää, kyynärvarsi, kämmen + peukalo
+  const mkArm=x=>{const p=new THREE.Group();p.position.set(x,hip+.68*s,0);rnd(p,0,0,0,.1*s*(o.skel?.7:1),o.shoulder?F(o.shoulder):mJ,1,1,1,seg);
+    tube(p,.07*s*th,.062*s*th,.33*s,o.armMat?F(o.armMat):(o.skel?mB:mS),0,-.18*s,0,1,1,seg);
+    const e=new THREE.Group();e.position.set(0,-.35*s,0);p.add(e);rnd(e,0,0,0,.06*s*th,mJ,1,1,1,seg);tube(e,.058*s*th,.048*s*th,.3*s,o.armMat?F(o.armMat):(o.skel?mB:mS),0,-.17*s,0,1,1,seg);g.add(p);return[p,e];};
+  const [armL,elbowL]=mkArm(.36*s*wd),[armR,elbowR]=mkArm(-.36*s*wd);
+  const mkHand=(e,sx)=>{const h=new THREE.Group();h.position.set(0,-.33*s,.02*s);rnd(h,0,0,0,.07*s,o.handMat?F(o.handMat):mS,1,1.15,.8,seg);rnd(h,sx*.05*s,.01*s,.04*s,.03*s,o.handMat?F(o.handMat):mS,1,1.4,1,6);e.add(h);return h;};
+  const hand=mkHand(elbowR,-1),handL=mkHand(elbowL,1);
+  // kaula ja pää
+  const head=new THREE.Group();head.position.set(0,hip+.76*s,0);g.add(head);const hs=(o.headS||1)*s;
+  if(!o.noHead){tube(head,.06*s,.07*s,.14*s,o.skel?mB:mS,0,.02*s,0,1,1,seg);rnd(head,0,.28*hs,0,.2*hs,mS,.92,1.08,1,o.flat?6:12);
+    if(o.eyes){const em=new THREE.MeshBasicMaterial({color:o.eyes});for(const x of [-.075,.075])rnd(head,x*hs,.3*hs,.17*hs,.032*hs,em,1,.8,.6,6);}}
+  g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
+  return{g,legL,legR,kneeL,kneeR,armL,armR,elbowL,elbowR,head,torso,hand,handL,s,biped:true,human:true};
+}
 function makePlayer(){
   const g=new THREE.Group(),rig=new THREE.Group(),hip=.8,F=(c,o)=>smat(c,Object.assign({flatShading:true},o||{}));g.add(rig);
   const skin=F(0xe2b48c),hairM=smat(0x4a2e1a),leather=F(0x5e4026),fur=F(0xa18a68),cloth=F(0x8a6a46),pant=F(0x5a4632),boot=F(0x3f2d1c);

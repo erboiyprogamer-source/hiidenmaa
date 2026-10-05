@@ -193,8 +193,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Grafiikka:** 3D-resoluutio, automaattinen laatu, piirtoetäisyys 60–400 m, yksityiskohdat, rakennusten yksityiskohdat, hiukkaset,
   valonlähteiden määrä, usva ja höyry, pilvet, valonsäteet, puiden heiluminen.
 - **Varjot:** laatu, auringon varjojen tarkkuus ja etäisyys, päivitystiheys, tulien varjot ja niiden tarkkuus.
-- **Äänet:** proseduraaliset (`sfx`), sävelkorkeus vaihtelee ±3,5 % joka soitolla. Omat äänet viimeiselle kirveeniskulle, tukin hakkuulle ja
-  katkeamiselle, kaatuneen puun tömähdykselle (matala, koon ja etäisyyden mukaan), kiven hajoamiselle ja rakenteiden murtumiselle.
+- **Äänet:** proseduraaliset (`sfx`), sävelkorkeus vaihtelee ±3,5 % joka soitolla. Puun ja tukin iskut ovat sama kirveenisku; viimeinen isku
+  lähes sama (pystypuu: hiljainen ritinä, tukki: pehmeä tumma tömähdys), kaatunut puu tömähtää tummasti. Tömähdyksen sävel puun koon ja
+  voimakkuus etäisyyden mukaan; omat äänet kiven hajoamiselle ja rakenteiden murtumiselle.
 - **Ohjaus ja ääni:** rulla pikapaikoille, kameran etäisyys, äänet, käänteinen pystyhiiri. Oletukset merkitty, sivukohtainen palautus.
 - **Piirtoetäisyys karsii:** maisema sumuun, puut ruuduittain, rakennukset, viholliset (ei animointia), staattiset kohteet, ulottuvuudet.
 

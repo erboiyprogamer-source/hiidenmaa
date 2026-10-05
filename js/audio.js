@@ -28,15 +28,15 @@ function sfx(type,pitch=1,vol=1){
     case 'roar':tone(110,45,1.2,.4,'sawtooth');break;
     case 'slam':noise(.5,300,60,.6,1);tone(80,30,.5,.4,'sine');break;
     case 'die':tone(300,80,.4,.2,'triangle');break;
-    // viimeinen kirveenisku ennen kuin runko katkeaa: hieman kimeämpi ja terävämpi, perään ritinä
-    case 'chopFinal':noise(.1,620,230,.42,3);tone(215,105,.1,.2,'triangle');noise(.05,3200,1800,.32,4,.03);noise(.45,1300,320,.2,1.5,.07);tone(330,140,.3,.05,'sawtooth',.07);break;
-    // tukin hakkuu: ontompi ja hieman matalampi kuin pystypuu
-    case 'chopLog':noise(.11,420,150,.4,3);tone(150,80,.12,.2,'triangle');break;
-    // tukin viimeinen isku: tumma – matala halkeava rusahdus, puun repeämisen jyrinä ja puolikkaiden raskas tömähdys (ei kirkkaita korkeita ääniä)
-    case 'logBreak':noise(.16,360,110,.55,2.2);tone(120,55,.18,.3,'triangle');noise(.55,520,120,.3,1.1,.05);noise(.5,150,38,.6,.8,.2);tone(64,26,.45,.45,'sine',.2);break;
-    // kaatuneen puun tömähdys maahan: matala jytinä ja maan rapina
-    case 'thud':noise(.7,180,40,.65,.9);tone(70,28,.65,.5,'sine');noise(.35,900,250,.12,1,.05);break;
-    case 'rockBreak':noise(.35,2200,400,.38,2);noise(.5,400,90,.4,1,.04);tone(110,45,.3,.22,'sine');break;
+    // Puun ja tukin äänet (v0.71, käyttäjän toive): jokainen isku on sama kirveenisku (sävel vaihtelee joka lyönnillä). Viimeinen isku
+    // pystypuuhun on lähes sama, vain hiljainen ritinä perään. Tukin viimeinen isku = sama isku + pehmeä tumma tömähdys.
+    case 'chopFinal':noise(.1,500,180,.4,3);tone(180,90,.1,.2,'triangle');noise(.3,700,250,.05,1.5,.06);break;
+    case 'chopLog':noise(.1,500,180,.4,3);tone(180,90,.1,.2,'triangle');break;
+    case 'logBreak':noise(.1,500,180,.4,3);tone(180,90,.1,.2,'triangle');noise(.38,170,45,.38,.9,.05);tone(72,32,.32,.26,'sine',.05);break;
+    // kaatuneen puun tömähdys maahan: tumma matala jytinä
+    case 'thud':noise(.7,170,38,.65,.9);tone(66,26,.7,.5,'sine');noise(.4,380,110,.1,1,.05);break;
+    // kiven viimeinen isku = sama hakkuääni + pehmeä tumma murtuminen
+    case 'rockBreak':noise(.08,3000,1500,.3,5);tone(900,600,.06,.08,'square');noise(.45,300,70,.35,1,.05);tone(90,38,.3,.2,'sine',.05);break;
     case 'crumble':noise(.6,500,70,.55,1);noise(.4,1800,500,.2,1.5,.08);tone(80,32,.5,.35,'sine');break;
     case 'woodBreak':noise(.25,800,200,.45,2);noise(.35,350,80,.3,1,.05);break;
   }

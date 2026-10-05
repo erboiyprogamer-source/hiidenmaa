@@ -39,7 +39,9 @@ const TREE_BR={koivu:[[1.7,.3,1.45,.62],[2.15,2.4,1.6,.58],[2.6,4.3,1.5,.66],[3.
 function brParts(type){const P=[],[bc,lc]=BR_COL[type];for(const [h,phi,L,t] of TREE_BR[type]){const c=Math.cos(t),s=Math.sin(t),cp=Math.cos(phi),sp=Math.sin(phi),x0=.12*cp,z0=-.12*sp;
   P.push(part(new THREE.BoxGeometry(L,.09,.09),bc,x0+L/2*c*cp,h+L/2*s,z0-L/2*c*sp,0,phi,t));
   P.push(part(new THREE.IcosahedronGeometry(L*.3,0),lc,x0+L*.85*c*cp,h+L*.85*s,z0-L*.85*c*sp));}return P;}
-const koivuBase=()=>[part(new THREE.BoxGeometry(.32,4.6,.32),0xe9e6dc,0,2.3,0),part(new THREE.BoxGeometry(.34,.1,.2),0x222222,0,1.4,.02),part(new THREE.BoxGeometry(.34,.08,.2),0x222222,0,2.6,-.02),part(new THREE.IcosahedronGeometry(1.7,0),0x7aa641,0,4.7,0),part(new THREE.IcosahedronGeometry(1.2,0),0x8bb84c,.6,5.5,.3)];
+// Runko jaettu 12 korkeussegmenttiin: huojunta (swH = max(0, y − 1,5)) ei ole lineaarinen, joten yksiosainen runko taipui eri tavalla
+// kuin sen päällä olevat mustat täplät (täplät näyttivät pysyvän paikallaan). Segmentoitu runko seuraa samaa käyrää kuin täplät.
+const koivuBase=()=>[part(new THREE.BoxGeometry(.32,4.6,.32,1,12,1),0xe9e6dc,0,2.3,0),part(new THREE.BoxGeometry(.34,.1,.2),0x222222,0,1.4,.02),part(new THREE.BoxGeometry(.34,.08,.2),0x222222,0,2.6,-.02),part(new THREE.IcosahedronGeometry(1.7,0),0x7aa641,0,4.7,0),part(new THREE.IcosahedronGeometry(1.2,0),0x8bb84c,.6,5.5,.3)];
 const NGEO={
   kuusi:mergeParts([part(new THREE.BoxGeometry(.4,2.2,.4),0x5a3a22,0,1.1,0),part(new THREE.ConeGeometry(1.7,2.5,7),0x2e5a2e,0,2.7,0),part(new THREE.ConeGeometry(1.3,2.1,7),0x356836,0,3.9,0),part(new THREE.ConeGeometry(.85,1.7,7),0x3b7440,0,5,0)]),
   koivu:mergeParts([...koivuBase(),...brParts('koivu')]),

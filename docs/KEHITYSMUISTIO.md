@@ -58,6 +58,26 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.71 (erä 44: pomot ja humanoidit yksityiskohtaisiksi; äänet ja koivu)
+- **Uusi `makeHumanoid` (models.js):** kaksijalkainen pelaajahahmon tyyliin – pyöristetyt raajat, nivelpallot, kyynärpää- ja polvinivel,
+  kämmenet peukaloineen, jalkaterät, kaula ja pallopää; luurankotila (`skel`: selkäranka, kaarevat kylkiluut, lantio) ja kivitila (`flat`).
+  Rajapinta kuten `makeBiped`, joten tekoälyn animaatiot toimivat; `torso`/`head` ovat skaalaamattomia ryhmiä. Animaatio (`animMob`):
+  polvi koukistuu taakse jäävässä jalassa, kyynärpäät koukussa, viitat ja rievut heiluvat (`f.sway`).
+- **Kalmanvartija** (`figGolem(3.1,true)`): lohkareista koottu kivijätti – rinta- ja selkälohkareet, hehkuvat riimuhalkeamat rinnassa ja
+  käsivarsissa, sammaloituneet olkalohkareet piikkeineen, kivinyrkit, polvilohkareet, kivilaattalannevaate, kulmakaari ja hehkuva suu,
+  7-piikkinen kivikruunu, selässä riimumonoliitti. **Kivivartija** samalla rungolla (s 1,3, ilman monoliittia).
+- **Kalmon ylimys** (`figYlimys`): luurankoaatelinen – kallo silmäkuopissa liekkisilmät, nenäaukko, leuka ja hampaat, pronssikruunu
+  punaisin kivin, ruostunut olkapanssari, tabardi, vyö kallosoljella, heiluva repaleinen viitta, pitkä ruostunut miekka.
+- **Kalmo** (`figKalmo`): luurankosoturi, syaanit silmät, riepulannevaate (heiluu), olkalevy, ruostunut kirves.
+- **Sammalhiisi** (`figHiisi`): iso pää, suippokorvat, kyömynenä, suu kulmahampain, oksasarvet, sammaltupsut, lehtihame, piikkinuija.
+- **Ulottuvuuksien pomot** (Jäätär, Kalmaherra, Aarnihirviö): runko vaihdettu `makeHumanoid`:iin (nivelet, pyöreät raajat); omat
+  yksityiskohdat ennallaan. Täysi uudelleensuunnittelu ideajonossa (erä 44b).
+- Mobin materiaalikloonit jaetaan saman mobin sisällä (yksityiskohtaisissa malleissa 8–13 materiaalia 50–96 osalle).
+- **Äänet uudelleen (käyttäjän toive):** puun ja tukin jokainen isku on sama kirveenisku (sävel vaihtelee ±3,5 %). Pystypuun viimeinen isku
+  lähes sama, vain hiljainen ritinä; kaatunut puu tömähtää tummasti (`thud`). Tukin viimeinen isku = sama isku + pehmeä tumma tömähdys.
+  Kiven viimeinen isku = sama hakkuääni + pehmeä tumma murtuminen.
+- **Koivun mustat täplät heiluvat rungon mukana:** runko jaettu 12 korkeussegmenttiin (huojunta ei ole lineaarinen korkeuden suhteen).
+
 ### v0.70 (korjauksia: varjojen jähmettyminen, hiipiminen, korjausmuistio, ominaisuustarkistus)
 - **Varjot jähmettyivät:** automaattisen laadun tasolla 3 (tai tulien varjot pois) pistevalojen varjokarttoja ei enää päivitetty, mutta
   valot heittivät varjoa vanhasta kartasta. Nyt `setQuality` kytkee `castShadow`:n samalla pois/päälle. Kaukana tulesta varjojen
@@ -1060,10 +1080,14 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 3. Jousi oikein päin pelaajan kädessä, myös vedossa.
 4. Äänien sävelvaihtelu hakatessa; puun tömähdys maahan matala; tukin lyönti ja viimeinen isku omat äänensä; sama kaikkeen tuhoamiseen.
 
-**Erä 44 – Pomot ja humanoidit yksityiskohtaisiksi (2)**
+**Erä 44 – Pomot ja humanoidit yksityiskohtaisiksi (2)** – ✅ tehty v0.71 (ulottuvuuksien pomoista vain runko, ks. 44b)
 1. Pomot ensin (käyttäjän kuvissa Kalmanvartija ja Kalmon ylimys): pelaajahahmon tyyli (pyöristetyt low-poly-muodot, nivelet kyynärpäissä
    ja polvissa, kasvot, vaatteet/haarniska, yksityiskohdat), sitten ulottuvuuksien pomot (Jäätär, Kalmaherra, Aarnihirviö).
 2. Humanoidit: kalmo, hiisi, kivivartija, routa- ja muut ulottuvuuksien viholliset.
+
+**Erä 44b – Ulottuvuuksien pomot kokonaan uusiksi**
+1. Jäätär, Kalmaherra ja Aarnihirviö: laatikkomaiset lisäosat (kylkiluut, olkapäät, sarvet, viitat) pyöristetyiksi ja nivelellisiksi
+   samaan tyyliin kuin Kalmanvartija ja ylimys v0.71.
 
 **Erä 45 – Eläimet yksityiskohtaisiksi (2)**
 1. Peura, karju, susi, routasusi ja muut nelijalkaiset: pehmeämmät muodot, nivelletyt jalat, pää ja häntä, turkki- ja sarviyksityiskohdat.

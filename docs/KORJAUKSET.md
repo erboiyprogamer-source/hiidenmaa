@@ -77,6 +77,20 @@ keskilinjaa kohti, jos se on yli 0,58 m vasemmasta olasta.
 **Muutos:** kaikki löydetyt arkut/kirstut/tynnyrit avautuvat arkkuikkunaan (`openFound(avain,otsikko,saalis)`, ui.js), sisältö
 `flags.fc[avain]`. Uudessa löydettävässä säiliössä käytä aina `openFound` – älä `giveOrDrop`-silmukkaa.
 
+### 10. Puun äänet: käyttäjän määrittelemä malli – v0.71
+Älä keksi omia ääniä puulle: **sama kirveenisku joka lyönnillä** (`chop`, sävel vaihtelee), viimeinen isku vain hieman eri
+(`chopFinal` = chop + hiljainen ritinä; `logBreak` = chop + pehmeä tumma tömähdys), kaatuneen puun maahan osuminen tumma `thud`.
+v0.68:n "kimeämpi/läpsähtävä" viimeinen isku ja erillinen `chopLog` eivät käyttäjän mielestä toimineet.
+
+### 11. Koivun täplät eivät heilu – v0.71
+**Syy:** huojunta (`treeMat`, resources.js) siirtää kärkeä `max(0,y−1,5)`:n mukaan; yksiosainen runko taipuu lineaarisesti päätypisteidensä
+välillä, mutta erilliset täplät käyrän mukaan → täplät "irtoavat" rungosta. **Korjaus:** runko `BoxGeometry(.32,4.6,.32,1,12,1)`.
+Sama periaate kaikkiin huojuviin osiin: pitkät osat jaetaan korkeussegmentteihin.
+
+### 12. Uudet mobimallit – v0.71
+Käytä `makeHumanoid`:ia (ei `makeBiped`), jotta tyyli ja nivelet ovat samat. Lisäosat kiinnitetään `torso`/`head`/`hand`-ryhmiin
+(ei skaalattuihin mesheihin). Heiluvat osat `swayAdd(f,mesh,amp,taajuus)` – `animMob` liikuttaa niitä. Tarkista kuvakaappauksella.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

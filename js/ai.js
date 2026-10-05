@@ -99,6 +99,9 @@ function animMob(m,dt){
   const f=m.f;f.g.position.copy(m.pos);f.g.rotation.y=m.yaw;
   m.walkPh+=(m.speedNow||0)*dt*2.2;const sw=Math.sin(m.walkPh)*Math.min(1,(m.speedNow||0)/3)*.7;
   if(f.biped){f.legL.rotation.x=sw;f.legR.rotation.x=-sw;f.armL.rotation.x=-sw*.6;f.armR.rotation.x=sw*.6;
+    // yksityiskohtaiset mallit (makeHumanoid): polvi koukistuu taakse jäävässä jalassa, kyynärpäät hieman koukussa; viitat ja rievut heiluvat
+    if(f.kneeL){f.kneeL.rotation.x=.08+Math.max(0,-sw)*.9;f.kneeR.rotation.x=.08+Math.max(0,sw)*.9;f.elbowL.rotation.x=f.elbowR.rotation.x=-.25-(m.wind>0?.5:0);}
+    if(f.sway&&m.def.ai!=='rboss')for(const w of f.sway){w.m.rotation.z=w.bz+Math.sin(playTime*w.f+w.p)*w.a;w.m.rotation.x=w.bxr+Math.cos(playTime*w.f*.8+w.p)*w.a*.6+Math.min(.5,(m.speedNow||0)*.08);}
     if(m.wind>0){f.armR.rotation.x=-2.6;f.armL.rotation.x=-2.2;}else if(m.wind<=0&&m.atkCd>m.def.cd-.25){f.armR.rotation.x=-.3;}}
   else{f.legs[0].rotation.x=sw;f.legs[3].rotation.x=sw;f.legs[1].rotation.x=-sw;f.legs[2].rotation.x=-sw;f.head.rotation.x=m.wind>0?-.5:(m.atkCd>m.def.cd-.2?.4:0);}
   if(m.anim>0)m.anim-=dt;

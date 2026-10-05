@@ -32,6 +32,9 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('jousi ei käännetty 180° (selkä eteen)',()=>{const m=makeHeld('jousi');return !m.children.some(c=>c.isGroup&&Math.abs(c.rotation.y-Math.PI)<.01);});
   t('varjot pois laadulla 3 → castShadow pois',()=>{setQuality(3);const a=!LIGHTS[0].castShadow;setQuality(0);return a&&LIGHTS[0].castShadow===QUAL.pointShadow;});
   t('kyykyssä paikallaan eläin ei säikähdä',()=>{for(const m of [...mobs])mobRemove(m);const d=spawnMob('peura',P.pos.x,P.pos.z+2.5);keys[BIND.crouch]=true;for(let i=0;i<20;i++)g.update(1/30);keys[BIND.crouch]=false;return d.state!=='flee';});
+  t('yksityiskohtaiset pomot/humanoidit (makeHumanoid)',()=>['vartija','ylimys','kalmo','hiisi','kivivartija','jaajattari','kalmaherra','aarnihirvio'].every(k=>{const m=spawnMob(k,P.pos.x+20,P.pos.z+20);const ok=m.f.human&&!!m.f.kneeL;mobRemove(m);return ok;}));
+  t('koivun runko segmentoitu (täplät heiluvat)',()=>NGEO.koivu&&NGEO.koivu.attributes.position.count>400);
+  t('puun äänet: sama isku, tumma tömähdys',()=>['chop','chopFinal','logBreak','thud'].every(k=>/case '/.test(sfx.toString())&&sfx.toString().includes("case '"+k+"'")));
   return chk;});
 for(const [k,v] of Object.entries(r))console.log(v===true?'OK ':'XX ',k,v===true?'':v);
 console.log('errors',errs);const bad=Object.values(r).filter(v=>v!==true).length+errs.length;console.log(bad?`VIRHEITÄ: ${bad}`:'KAIKKI OK');await b.close();process.exit(bad?1:0);

@@ -43,11 +43,11 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/collision.js` | törmäysruudukko: `addBox`, `addCircle`, `groundAt`, `collideXZ`, `pointBlocked`, `STEPUP` |
 | `js/items.js` | `ITEMS`, `RECIPES`, `RECIPE_BY`, `icon(id)` (canvas-kuvakkeet) |
 | `js/audio.js` | `sfx(nimi, sävel, voimakkuus)` – proseduraaliset äänet, satunnainen sävelvaihtelu |
-| `js/models.js` | `makeBiped`, `makeQuad`, `makeHeld`, `makeShield` |
+| `js/models.js` | `makeHumanoid` (yksityiskohtaiset kaksijalkaiset), `makeBiped`, `makeQuad`, `makeHeld`, `makeShield`, pelaaja `makePlayer` |
 | `js/resources.js` | `NODE`, `NGEO`, sijoittelu ruutuihin (`CHN`, `VIS_R`), `nodes`, tukit (`logs`), `regrowForest` |
 | `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`), `wallTorch`, `brazier`, `rockC` |
 | `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, `PIECES`, `pieceBoxes`, `buildPieceMesh`, `addPiece`, `removePiece` |
-| `js/mobs.js` | `MOBDEF`, `spawnMob`, `mobs`, `boss` |
+| `js/mobs.js` | `MOBDEF`, mallit (`figGolem`, `figYlimys`, `figKalmo`, `figHiisi`, ulottuvuuksien pomot), `spawnMob`, `mobs`, `boss` |
 | `js/dungeons.js` | `REALMS` (3 ulottuvuutta, avainketju `lock`/`key`/`alt`), generaattorit, `ensureRealm`, koristeet (`dressFloor`, tynnyrit, spawneri), portaalit, `realmBossAI`, Kalmanpesän murskaus `hitSpawner`, usva/höyry/pisarat, `P.spawnProt`, `fo(k)` |
 | `js/story.js` | löytöpaikat (`SITE_KEYS`, rauniot, arkkukivet), vartijat (`GUARDS`), lisäriimukivet (`XRUNES`), tehtävät (`QUESTS`) |
 | `js/state.js` | `P` (pelaaja), `inv`, `flags`, pelaajahahmo, reppu, maahan pudonneet esineet, partikkelit, ammukset |
