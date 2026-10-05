@@ -1,6 +1,7 @@
 /* Hiidenmaa – ui.js
    HUD, viestit, paneelit (reppu, valmistus, rakennus, arkku), kartta, tavoitteet */
 'use strict';
+if(DEV){const d=document.createElement('div');d.textContent='DEV-tila · Ö = 10× nopeus';d.style.cssText='position:fixed;left:8px;bottom:4px;z-index:50;font:700 12px sans-serif;color:#ffd36a;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:3px;pointer-events:none';document.body.appendChild(d);}
 
 /* ---------------- UI ---------------- */
 // Viestin näkyvyysaika riippuu pituudesta: 3 s + 70 ms / merkki, rajattuna 4–13 s.

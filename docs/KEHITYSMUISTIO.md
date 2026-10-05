@@ -58,6 +58,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.74 (⚠ väliaikainen kehitystila)
+- `const DEV=true` (core.js) – käyttäjän pyynnöstä testailua varten: kestävyys ei kulu, korkein taso (kaikki ohjeet auki), ei painorajaa
+  (ei ylikuormitusta), **Ö pohjassa (näppäinkoodi `Semicolon`) liike 10× nopeampi**, vasemmassa alakulmassa merkki "DEV-tila".
+  Kytkennät: player.js (`over`, kestävyys, nopeus), environment.js (ylikuormitusmerkki), progress.js (`lvlInfo`), ui.js (merkki).
+  **Poista ennen julkaisua: `DEV=false`** (muu peli ennallaan, tallennusmuoto ei muutu).
+
 ### v0.73 (mobien terveyspalkit)
 - **Palkki ja pääkallot korkeammalle:** palkin korkeus lasketaan mallin todellisesta korkeudesta (`m.barH`, rajauslaatikko kerran mobia kohden)
   + 0,45 m – ennen `r × 2,8 + 0,8`, joka osui uusien mallien päähän/sarviin. Pääkallot nimen yläpuolelle (ennen palkin alla).
