@@ -197,6 +197,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 - **Vuorokausi** 720 s (yö kun `dayT` < 0,21 tai > 0,79), pehmeä hämärä, kuu vaiheineen, tähdet.
 - **Sää:** selkeä, pilvinen, tuulinen, tihku, sade, myrsky (salamat, puiden kaatuminen), lumisade (vuorilla), sumu.
+- **Tuuli (v0.84):** suunta pysyy 2–6 min ja kääntyy hitaasti (40–90 s, enint. 120°); nopeus säästä (selkeä 1–4 … myrsky 15–22 m/s) + puuskat.
+  Pilvet (myös kartalla) liikkuvat tuulen suuntaan, puut kallistuvat ja heiluvat, sade viistää, savu ja kipinät ajautuvat, nuolet kallistuvat
+  (13 m/s ≈ 0,5 m / 30 m). Kartalla kompassi + "Tuuli: suunnasta X m/s", minikartan reunalla tuulinuoli.
 - **Pilvet** isoina kerroksina sään mukaan, kaukana häipyvät; pilvikansi rankassa säässä; salaman välähdys kevyt.
 - **Aurinko:** pyöreä hehku (`sunGlow`), säteet selkeällä säällä (häipyvät aurinkoon katsottaessa).
 - **Aarnimetsässä** tiheä sumu ja pimeämpi valo.

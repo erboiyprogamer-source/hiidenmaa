@@ -332,15 +332,28 @@ function mapMarkers(g,sx,ox,oz){
   // Pääkallo näkyy kunnes hautakasan tavarat on kerätty.
   for(const gr of graves){const [x,y]=pt(gr.x,gr.z),r=sx>1?8:6;g.save();g.translate(x,y);g.fillStyle='#f2ecdc';g.strokeStyle='#7a1a12';g.lineWidth=1.6;g.beginPath();g.arc(0,-r*.15,r*.8,0,TAU);g.fill();g.stroke();g.fillRect(-r*.45,r*.4,r*.9,r*.6);g.strokeRect(-r*.45,r*.4,r*.9,r*.6);g.fillStyle='#1a1410';g.beginPath();g.arc(-r*.33,-r*.2,r*.22,0,TAU);g.arc(r*.33,-r*.2,r*.22,0,TAU);g.fill();g.restore();}
 }
+// v0.84: tuulikompassi isolla kartalla (nuoli = puhallussuunta, kartan ylös = pohjoinen) + teksti "Tuuli: lounaasta 6 m/s".
+const mapCO={x:0,y:0,t:0};
+function windArrow(g,x,y,L,col){g.save();g.translate(x,y);g.rotate(Math.atan2(WIND.z,WIND.x));g.strokeStyle=col;g.fillStyle=col;g.lineWidth=Math.max(1.5,L*.09);g.lineCap='round';
+  g.beginPath();g.moveTo(-L*.5,0);g.lineTo(L*.32,0);g.stroke();g.beginPath();g.moveTo(L*.5,0);g.lineTo(L*.18,-L*.2);g.lineTo(L*.18,L*.2);g.closePath();g.fill();
+  g.beginPath();g.moveTo(-L*.5,0);g.lineTo(-L*.62,-L*.16);g.moveTo(-L*.38,0);g.lineTo(-L*.5,-L*.16);g.stroke();g.restore();}
+function drawWindCompass(g,x,y,r){g.save();g.fillStyle='rgba(19,17,14,.62)';g.beginPath();g.arc(x,y,r,0,TAU);g.fill();g.strokeStyle='rgba(232,164,74,.75)';g.lineWidth=1.5;g.stroke();
+  g.fillStyle='#eee5d3';g.font='800 11px Alegreya Sans, sans-serif';g.textAlign='center';g.textBaseline='middle';
+  for(const [t,dx,dy] of [['P',0,-1],['I',1,0],['E',0,1],['L',-1,0]])g.fillText(t,x+dx*(r-8),y+dy*(r-8));
+  windArrow(g,x,y,r*1.15,'#8fd8cf');g.textBaseline='alphabetic';g.font='700 12px Alegreya Sans, sans-serif';
+  const txt=`Tuuli: ${windFromText()} ${Math.round(WIND.spd)} m/s`,tw=g.measureText(txt).width;g.fillStyle='rgba(19,17,14,.62)';g.fillRect(x-tw/2-6,y+r+6,tw+12,18);g.fillStyle='#eee5d3';g.fillText(txt,x,y+r+19);g.restore();}
 function drawPlayerArrow(g,x,y,s){g.save();g.translate(x,y);g.rotate(-camYaw);g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=1.5;g.beginPath();g.moveTo(0,-s);g.lineTo(s*.7,s*.8);g.lineTo(0,s*.4);g.lineTo(-s*.7,s*.8);g.closePath();g.fill();g.stroke();g.restore();}
 function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),W=c.width,v=mapView(),S=W/v.sw;
   g.imageSmoothingEnabled=true;g.drawImage(MAPC,v.x0,v.y0,v.sw,v.sw,0,0,W,W);
   if(bldDirty)drawBld();g.imageSmoothingEnabled=false;g.drawImage(BLDC,v.x0,v.y0,v.sw,v.sw,0,0,W,W);g.imageSmoothingEnabled=true;
   const t=FOGTMP.getContext('2d');t.globalCompositeOperation='source-over';t.clearRect(0,0,W,W);t.drawImage(FOGC,v.x0*FOGK,v.y0*FOGK,v.sw*FOGK,v.sw*FOGK,0,0,W,W);
-  t.globalCompositeOperation='source-atop';{const tt=performance.now()/1000,lay=(img,sp,dx,dy,sc,al)=>{t.save();t.globalAlpha=al;t.scale(sc,sc);t.translate((tt*sp*dx)%256,(tt*sp*dy)%256);t.fillStyle=t.createPattern(img,'repeat');t.fillRect(-256,-256,W/sc+512,W/sc+512);t.restore();};
+  t.globalCompositeOperation='source-atop';{const now=performance.now()/1000,dd=Math.min(.1,now-(mapCO.t||now));mapCO.t=now;const ws=.6+WIND.spd*.12;mapCO.x+=WIND.x*ws*dd;mapCO.y+=WIND.z*ws*dd;
+    // v0.84: kartan pilvet liikkuvat tuulen suuntaan (kertynyt siirtymä, joten suunnan kääntyminen ei hyppää)
+    const lay=(img,sp,dx,dy,sc,al)=>{t.save();t.globalAlpha=al;t.scale(sc,sc);t.translate((mapCO.x*sp*dx+mapCO.y*sp*(1-dx)*.3)%256,(mapCO.y*sp*dx-mapCO.x*sp*(1-dx)*.3)%256);t.fillStyle=t.createPattern(img,'repeat');t.fillRect(-256,-256,W/sc+512,W/sc+512);t.restore();};
     lay(CLOUDSH,6,1,.45,2.2,.22);lay(CLOUDC2,4,.8,.6,2.6,.55);lay(CLOUDC,7,1,.4,2,.85);}
   t.globalCompositeOperation='source-over';g.drawImage(FOGTMP,0,0);
   mapMarkers(g,S,HALF-v.x0,HALF-v.y0);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF-v.x0)*S,(P.pos.z+HALF-v.y0)*S,9);
+  drawWindCompass(g,W-84,58,34);
   g.fillStyle='rgba(238,229,211,.8)';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='left';g.fillText(mapZ>1?`Zoom ×${mapZ.toFixed(1)} · vedä siirtääksesi · kaksoisnapsautus keskittää`:'Rulla = zoom',10,630);}
 // Kartan zoom (rulla) ja siirto (vetäminen)
 (function(){const c=$('#bigmap');
@@ -361,4 +374,7 @@ function drawMinimap(){const c=$('#mini'),g=c.getContext('2d'),W=c.width,R=MINI_
   else{g.fillStyle='#a99d89';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='center';g.fillText('Hautakumpu',W/2,W/2+30);}
   drawPlayerArrow(g,W/2,W/2,7);g.restore();
   g.fillStyle='#eee5d3';g.font='800 11px Alegreya Sans, sans-serif';g.textAlign='center';g.fillText('P',W/2,12);
+  // v0.84: tuulinuoli minikartan reunalla – sijaitsee sillä puolella, josta tuuli tulee, ja osoittaa puhallussuuntaan; vieressä m/s
+  if(!P.inDun){const ra=W/2-13,ax=W/2-WIND.x*ra,ay=W/2-WIND.z*ra;g.fillStyle='rgba(19,17,14,.7)';g.beginPath();g.arc(ax,ay,10,0,TAU);g.fill();windArrow(g,ax,ay,15,'#8fd8cf');
+    g.font='700 9px Alegreya Sans, sans-serif';g.fillStyle='#d8cdb6';g.fillText(`${Math.round(WIND.spd)}`,ax,ay+(ay>W/2?-12:19));}
   g.font='700 10px Alegreya Sans, sans-serif';g.fillStyle='rgba(19,17,14,.65)';g.fillRect(W/2-22,W-17,44,13);g.fillStyle='#d8cdb6';g.fillText(`${R} m · ${keyLabel(BIND.minizoom)}`,W/2,W-7);}

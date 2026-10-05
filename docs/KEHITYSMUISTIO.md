@@ -38,6 +38,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Pelaajan kävely / juoksu | 4,6 / 8 m/s |
 | Käsisoihdun paloaika `TORCH_T` | 120 s (pihka +60 s) |
 | Vihollisten nopeuskerroin `MOB_SPD` | 0,85 (aarnimetsässä viholliset ×1,2, v0.83) |
+| Tuuli (m/s) | selkeä 1–4, pilvi 3–7, sade 4–8, tuulinen 8–13, myrsky 15–22; suunta 2–6 min, käännös 40–90 s |
 | Vihollisten syntyetäisyys | yö 55–85 m (10 %: 20–30 m), päivä 38–68 m, päivällä max 2 vihollista |
 | Puiden uusiutuminen | kerran yössä, 100 m säteellä |
 | Rakennusalueen suoja (`nearBase`) | 15 m osasta, työpenkki 26 m |
@@ -59,6 +60,17 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
 
 ## Versioloki
+
+### v0.84 (tuuli – päivityslista kohta 4)
+- `WIND` + `updateWind` (environment.js), tila `flags.wind` (tallentuu). Suunta pysyy 2–6 min, kääntyy 40–90 s:ssa (smoothstep) uuteen
+  arvottuun suuntaan enintään ±120°, lisäksi hidas ±8° huojunta. Nopeus säätyypin mukaan `WIND_RANGE` (selkeä 1–4, sumu 1–3, pilvi/tihku/
+  lumi 3–7, sade 4–8, tuulinen 8–13, myrsky 15–22 m/s), tavoite vaihtuu 20–45 s välein, hidas siirtymä + puuskat (enint. +25 %).
+- **Vaikutukset:** pilvet (maailma: `u.ox/u.oz` tuulen suuntaan, nopeus 1,2 + 0,55·m/s; kartan pilvikerrokset kertyvällä siirtymällä `mapCO`),
+  puut (`treeMat`: vanha edestakainen heilunta säilyy + kallistus tuulen suuntaan `uWDir`/`uLean` = m/s / 22, instanssin kierto huomioitu,
+  sykkivä puuska; pois kun "Puiden heilunta" pois), sade viistää ja ajautuu, savu ja kipinät ajautuvat (savu 0,32, kipinä 0,18 × m/s),
+  nuolet (kiihtyvyys 0,08 × m/s → 13 m/s ≈ 0,5 m sivuttain 30 m:llä; ei luolastossa).
+- **Näyttö:** isolla kartalla kompassi (P/I/E/L, nuoli = puhallussuunta) ja "Tuuli: lounaasta 6 m/s"; minikartan reunalla tuulinuoli sillä
+  puolella, josta tuuli tulee, + m/s. Kohdan 15 ruoho käyttää samaa `SWAY.uWDir/uLean`-tuulta.
 
 ### v0.83 (vihollisten spawnaus – päivityslista kohta 2)
 - `spawner`/`spawnSpot` (ai.js). **Yö:** 90 % syntyy 55–85 m päähän (ennen 38–68) ja vaeltaa omia reittejään; 10 % 20–30 m päähän,
@@ -952,7 +964,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
    suo / kuiva biomi; tumma aarnimetsä hyvin todennäköinen, hirviöt siellä 20 % nopeampia + ilmoitus biomille astuessa.
 3. TEHTY v0.82. Uusia biomeja + nimet; nykyinen biomi näkyy, repussa biomin ominaisuudet; "Uusi alue löydetty: …" fade in/out vain ensimmäisellä kerralla
    (aloitusbiomi merkitty löydetyksi ilman ilmoitusta).
-4. Tuulensuunta: vaihtuu hitaasti satunnaisesti (minuutteja, kääntyy hitaasti); kartalla suunta ja nopeus; pilvet liikkuvat tuulen suuntaan.
+4. TEHTY v0.84. Tuulensuunta: vaihtuu hitaasti satunnaisesti (minuutteja, kääntyy hitaasti); kartalla suunta ja nopeus; pilvet liikkuvat tuulen suuntaan.
 5. 4 uutta eläintä (samaa tyyliä) + 2 joskus vihamielistä + harvinaisia pelottavia (seuraa 30–60 s, poistuu 5 s ja unohtaa); luonteen mukaiset
    säikähdys/reaktiot. Karhu: iso, lyö kauas ja nopeasti, kaataa eteen jäävät puut tukeiksi, HP 200 % pelaajasta, palautuu jos ei lyöty 1 min.
 6. Kalmanvartija: harvemmin liuku/ryntäys, iskulla pidempi viive. Kaikki kiviä heittävät pomot: kivi 30 % hitaampi, hyökkäysviive +10 %.

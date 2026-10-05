@@ -69,17 +69,24 @@ const NGEO={
 const NGEO_FALL={koivu:mergeParts(koivuBase())};
 const nodes=[]; const nodeIM={};
 // Puiden latvat huojuvat tuulessa (vahvemmin tuulisella säällä ja myrskyssä).
-const SWAY={uTime:{value:0},uWind:{value:.15}};
+const SWAY={uTime:{value:0},uWind:{value:.15},uWDir:{value:new V3(0,0,1)},uLean:{value:0}}; // uWDir/uLean: tuulen suunta ja kallistus (v0.84)
 const treeMat=vcMat.clone();
-treeMat.onBeforeCompile=sh=>{sh.uniforms.uTime=SWAY.uTime;sh.uniforms.uWind=SWAY.uWind;
-  sh.vertexShader='uniform float uTime;uniform float uWind;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+treeMat.onBeforeCompile=sh=>{sh.uniforms.uTime=SWAY.uTime;sh.uniforms.uWind=SWAY.uWind;sh.uniforms.uWDir=SWAY.uWDir;sh.uniforms.uLean=SWAY.uLean;
+  sh.vertexShader='uniform float uTime;uniform float uWind;uniform vec3 uWDir;uniform float uLean;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
   #ifdef USE_INSTANCING
   float swPh=instanceMatrix[3].x*.13+instanceMatrix[3].z*.11;
   #else
   float swPh=0.;
   #endif
   float swH=max(0.,position.y-1.5);
-  transformed.x+=sin(uTime*1.7+swPh)*uWind*swH*.05;transformed.z+=cos(uTime*1.3+swPh)*uWind*swH*.035;`);};
+  transformed.x+=sin(uTime*1.7+swPh)*uWind*swH*.05;transformed.z+=cos(uTime*1.3+swPh)*uWind*swH*.035;
+  // v0.84: kallistus tuulen suuntaan (maailman suunta muunnetaan instanssin paikalliseen kiertoon) + sykkivä puuska tuulen suunnassa.
+  #ifdef USE_INSTANCING
+  mat3 swM=mat3(instanceMatrix);vec3 swL=vec3(dot(swM[0],uWDir),dot(swM[1],uWDir),dot(swM[2],uWDir));swL/=max(length(swL),1e-4);
+  #else
+  vec3 swL=uWDir;
+  #endif
+  float swLean=uLean*swH*min(swH,5.)*.016*(1.+.35*sin(uTime*1.9+swPh));transformed.x+=swL.x*swLean;transformed.z+=swL.z*swLean;`);};
 // Puiden korkeus kertoimella s=1 (tukkien pituutta varten).
 const TREE_H={kuusi:5.8,koivu:6.2,kelo:4.8,manty:8.4,aarnipuu:21};
 const POOL={kuusi:400,koivu:400,manty:200,aarnipuu:60}; // varapaikat öisin kasvaville puille

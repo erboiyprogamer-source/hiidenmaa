@@ -39,10 +39,10 @@ const cCloudDay=new THREE.Color(0xffffff),cCloudNight=new THREE.Color(0x232a3a),
 function updateClouds(dt,cover,light,el){const vis=!P.inDun;let cx=camera.position.x,cz=camera.position.z;
   _cc.copy(cCloudNight).lerp(cCloudDay,light).lerp(cCloudGrey,Math.min(1,wDark/.6)*.85);
   const dusk=sstep(.5,.0,el)*sstep(-.3,0,el);_cc.lerp(cSunLow,dusk*.45);
-  const drift=dt*(2+wWind*7),R=CLOUD_R,grow=.75+.55*cover,hor=scene.background;
+  const drift=dt*(1.2+WIND.spd*.55),R=CLOUD_R,grow=.75+.55*cover,hor=scene.background;
   const nC=CLOUDS.length*(SET.clouds??1);
   for(let ci=0;ci<CLOUDS.length;ci++){const c=CLOUDS[ci],u=c.userData;if(!vis||ci>=nC){c.visible=false;continue;}
-    u.ox+=drift*u.sp;const mod=(v)=>((v%(2*R))+2*R)%(2*R);
+    u.ox+=drift*u.sp*WIND.x;u.oz+=drift*u.sp*WIND.z;const mod=(v)=>((v%(2*R))+2*R)%(2*R);
     const dx=mod(u.ox-cx+R)-R,dz=mod(u.oz-cz+R)-R,d=Math.hypot(dx,dz);
     c.position.set(cx+dx,u.h,cz+dz);
     // ilmestyminen peiton mukaan; kaukana häipyy (opasiteetti + väri kohti horisonttia) eikä piirry R:n takana
@@ -65,7 +65,27 @@ function updateSky(light,sd0,el,sunK){const sd=_skyS.copy(sd0);skyDome.position.
     sunShafts.rotation.set(0,0,0);sunShafts.quaternion.setFromUnitVectors(_up,sd.normalize());
     camera.getWorldDirection(_camD);const look=Math.max(0,_camD.dot(sd));sunShafts.userData.mat.opacity=.07*clear*(.85+.15*Math.sin(playTime*.3))*(1-sstep(.45,.85,look));}
   sunGlow.visible=!P.inDun&&el>-.08;if(sunGlow.visible){sunGlow.position.copy(sunDisc.position);sunGlow.material.opacity=(.55+.25*sstep(.3,0,el))*sunK*(1-Math.min(1,wDark*1.6))*(1-sstep(.4,.9,wCloud)*.6);}}
+// v0.84 TUULI (päivityslista kohta 4). WIND.a = suunta johon tuuli puhaltaa (rad, atan2(x,z)), WIND.x/z = yksikkövektori, WIND.spd m/s.
+// Suunta pysyy 2–6 min, sitten kääntyy 40–90 s:ssa uuteen arvottuun suuntaan (enintään ±120°), lisäksi ±8° hidas huojunta.
+// Nopeus säätyypin mukaan (WIND_RANGE) hitaasti vaihtuvalla tavoitteella + puuskat. Tila tallentuu (flags.wind).
+// Käyttäjät: pilvet (maailma + kartta), puiden kallistus (SWAY.uWDir/uLean), sade, savu ja kipinät, nuolet, kartta ja minikartta.
+const WIND_RANGE={selkea:[1,4],pilvi:[3,7],tihku:[3,7],sade:[4,8],sumu:[1,3],lumi:[3,7],tuuli:[8,13],myrsky:[15,22]};
+const WIND={a:0,x:0,z:1,spd:3,gust:0};
+function windState(){let w=flags.wind;if(!w||typeof w.a!=='number'){const a=Math.random()*TAU;w=flags.wind={a,a0:a,ta:a,hold:120+Math.random()*240,turn:0,dur:1,spd:3,st:3,sT:0};}return w;}
+function updateWind(dt){const w=windState();
+  if(w.turn>0){w.turn=Math.max(0,w.turn-dt);const k=sstep(0,1,1-w.turn/w.dur);w.a=w.a0+(w.ta-w.a0)*k;if(w.turn<=0){w.a=w.ta;w.hold=120+Math.random()*240;}}
+  else{w.hold-=dt;if(w.hold<=0){w.a0=w.a;w.ta=w.a+(Math.random()*2-1)*Math.PI*2/3;w.dur=w.turn=40+Math.random()*50;}}
+  const R=WIND_RANGE[weather.cur]||[2,5];w.sT-=dt;if(w.sT<=0||w.st<R[0]||w.st>R[1]){w.sT=20+Math.random()*25;w.st=R[0]+Math.random()*(R[1]-R[0]);}
+  w.spd=lerp(w.spd,w.st,Math.min(1,dt*.08));
+  const t=playTime;WIND.gust=Math.max(0,Math.sin(t*.37)*.5+Math.sin(t*1.13+1.7)*.35+Math.sin(t*2.9)*.15)*.25;
+  WIND.spd=w.spd*(1+WIND.gust);WIND.a=w.a+Math.sin(t*.05)*.1+Math.sin(t*.13+2)*.04;WIND.x=Math.sin(WIND.a);WIND.z=Math.cos(WIND.a);
+  // puiden (ja tulevan ruohon) kallistus tuulen suuntaan: voimakkuus 0–1 (22 m/s = 1)
+  SWAY.uWDir.value.set(WIND.x,0,WIND.z);SWAY.uLean.value=SET.sway?Math.min(1.2,WIND.spd/22):0;}
+const WIND_DIRS=['pohjoisesta','koillisesta','idästä','kaakosta','etelästä','lounaasta','lännestä','luoteesta'];
+// Mistä tuuli tulee (vastakkainen puhallussuunnalle). Kartan pohjoinen = −z (kuten minikartta "P").
+function windFromText(){const from=Math.atan2(-WIND.x,WIND.z);return WIND_DIRS[((Math.round(from/(Math.PI/4))%8)+8)%8];}
 function updateEnvironment(dt){
+  updateWind(dt);
   const W=WEATHERS[weather.cur]||WEATHERS.selkea,k=Math.min(1,dt*.3);
   // Pilvet tummuvat ensin (hitaasti), sade alkaa vasta kun taivas on tarpeeksi tumma.
   wDark=lerp(wDark,W.dark,Math.min(1,dt*.12));wFog=lerp(wFog,W.fog,k);wCloud=lerp(wCloud,W.cloud||0,Math.min(1,dt*.15));
@@ -117,10 +137,10 @@ function roofTopAt(x,z){let h=terrainH(x,z);gridQuery(x,z,.15,_cl);for(const c o
 function updateRain(dt){const a=rain.geometry.attributes.position.array,sp=26*(wRain>1.1?1.35:1),cx=camera.position.x,cy=camera.position.y,cz=camera.position.z;
   if(rain.position.lengthSq()>0)rain.position.set(0,0,0);
   for(let i=0,k=0;i<a.length;i+=6,k++){
-    if(rainInit){a[i+1]-=sp*dt;a[i+4]-=sp*dt;}
+    if(rainInit){const dx=WIND.x*WIND.spd*.45*dt,dz=WIND.z*WIND.spd*.45*dt;a[i+1]-=sp*dt;a[i+4]-=sp*dt;a[i]+=dx;a[i+2]+=dz;a[i+3]+=dx;a[i+5]+=dz;}
     const out=Math.abs(a[i]-cx)>26||Math.abs(a[i+2]-cz)>26;
     if(!rainInit||out||a[i+1]<RAIN_STOP[k]){const x=cx+(Math.random()-.5)*50,z=cz+(Math.random()-.5)*50,stop=roofTopAt(x,z),y=Math.max(cy+(rainInit&&!out?14+Math.random()*8:Math.random()*22-2),stop+.5+Math.random()*3);
-      a[i]=x;a[i+1]=y;a[i+2]=z;a[i+3]=x+.05+wWind*.25;a[i+4]=y+.7;a[i+5]=z;RAIN_STOP[k]=stop;}}
+      const sl=.03+WIND.spd*.03;a[i]=x;a[i+1]=y;a[i+2]=z;a[i+3]=x-WIND.x*sl;a[i+4]=y+.7;a[i+5]=z-WIND.z*sl;RAIN_STOP[k]=stop;}}
   rainInit=true;rain.geometry.attributes.position.needsUpdate=true;}
 function updateLights(){
   const src=lightSources.filter(s=>s.on()&&(!!s.dun===P.inDun)).sort((a,b)=>dist2(a.x,a.z,P.pos.x,P.pos.z)-dist2(b.x,b.z,P.pos.x,P.pos.z));

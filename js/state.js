@@ -96,7 +96,8 @@ function emitEmber(x,y,z,kind){if(embers.length>70*PF||Math.random()>PF)return;c
   let mt=emPool.pop();if(!mt)mt=new THREE.MeshBasicMaterial({transparent:true,depthWrite:false,fog:false});mt.color.setHex(c);mt.opacity=sp?1:.35;const m=new THREE.Mesh(emGeo,mt);m.position.set(x,y,z);m.scale.setScalar(.001);scene.add(m);
   embers.push({m,sp,t:0,life:sp?.5+Math.random()*.8:1.1+Math.random()*.9,vx:(Math.random()-.5)*(sp?.8:.3),vy:sp?.9+Math.random()*1.3:.5+Math.random()*.4,vz:(Math.random()-.5)*(sp?.8:.3),r:sp?.018+Math.random()*.014:.07});}
 function updateEmbers(dt){for(let i=embers.length-1;i>=0;i--){const e=embers[i];e.t+=dt;const k=e.t/e.life;if(k>=1){scene.remove(e.m);emPool.push(e.m.material);embers.splice(i,1);continue;}
-  e.m.position.x+=(e.vx+Math.sin(e.t*7+i)*.25)*dt;e.m.position.y+=e.vy*dt;e.m.position.z+=e.vz*dt;
+  const wk=(e.sp?.18:.32)*WIND.spd*Math.min(1,e.t*1.5); // v0.84: savu ja kipinät ajautuvat tuulen mukana (savu enemmän)
+  e.m.position.x+=(e.vx+Math.sin(e.t*7+i)*.25+WIND.x*wk)*dt;e.m.position.y+=e.vy*dt;e.m.position.z+=(e.vz+WIND.z*wk)*dt;
   e.m.scale.setScalar(e.sp?e.r*(1-k*.6):e.r*(1+k*2.6));e.m.material.opacity=e.sp?1-k:.35*(1-k);}}
 // Satunnaistettu välke: arvo hakeutuu satunnaisesti vaihtuvaan tavoitteeseen, joskus pieni "vajaus". Palauttaa kertoimen ~.82–1.04 (vain vähän eloa).
 function flick(u,dt){u.t-=dt;if(u.t<=0){u.t=.04+Math.random()*.16;u.target=.82+Math.random()*.28;if(Math.random()<.04)u.target=.55+Math.random()*.15;}u.cur+=(u.target-u.cur)*Math.min(1,dt*14);return 1+(u.cur-1)*.4;}
@@ -149,7 +150,8 @@ function shootArrow(from,dir,speed,dmg,owner,grav,fire){const m=new THREE.Group(
 function throwRock(from,target,dmg){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,0),mat(0x5d5a54));m.castShadow=true;m.position.copy(from);scene.add(m);const d=_tmpV.subVectors(target,from);const T=1.1;const v=new V3(d.x/T,(d.y+.5*14*T*T)/T,d.z/T);projs.push({m,v,dmg,owner:'boss',t:0,g:14,kind:'rock'});}
 function updateProjs(dt){
   for(let i=projs.length-1;i>=0;i--){const p=projs[i];p.t+=dt;if(p.stuck){if(p.t>6){scene.remove(p.m);projs.splice(i,1);}continue;}
-    p.v.y-=p.g*dt;p.m.position.addScaledVector(p.v,dt);if(p.kind==='arrow')p.m.lookAt(_tmpV.copy(p.m.position).add(p.v));else{p.m.rotation.x+=dt*5;}
+    p.v.y-=p.g*dt;if(p.kind==='arrow'&&!P.inDun){const wa=WIND.spd*.08*dt;p.v.x+=WIND.x*wa;p.v.z+=WIND.z*wa;} // v0.84: tuuli kallistaa nuolen rataa (13 m/s ≈ 0,5 m / 30 m)
+    p.m.position.addScaledVector(p.v,dt);if(p.kind==='arrow')p.m.lookAt(_tmpV.copy(p.m.position).add(p.v));else{p.m.rotation.x+=dt*5;}
     const pos=p.m.position;let hit=false;
     if(p.owner==='player'){for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);if(p.fire)igniteMob(m);hit=true;break;}}}
     else{if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<(p.kind==='rock'?2.2*2.2:.6)&&pos.y<P.pos.y+2.2&&pos.y>P.pos.y-.5){hurtPlayer(p.dmg,pos.x-p.v.x,pos.z-p.v.z);hit=true;}}
