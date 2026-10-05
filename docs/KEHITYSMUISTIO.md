@@ -55,6 +55,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.62 (korjaus: haamupuut latauksen jälkeen)
+- **Uudelleen kasvaneen puun läpi pystyi kävelemään eikä sitä voinut hakata.** Syy: uusiutuva puu siirtyy enintään 5 m alkuperäisestä
+  paikastaan; tallennus muistaa siirron (`moved`), mutta latauksessa `moveNode` siirsi vain törmäyksen, hakkuukohteen ja korkeuden,
+  ei puun kuvaa (InstancedMesh-matriisi jäi alkuperäiseen paikkaan). Näkyvä puu oli siis haamu ja oikea puu näkymätön 2–5 m päässä.
+  Nyt `moveNode` päivittää myös kuvan (`setNodeMatrix`), kun puu on elossa. Testattu: kuva = puun paikka latauksen jälkeen.
+
 ### v0.61 (kartan merkit vain paljastetulla alueella)
 - Löydetyn paikan merkki (◆ + nimi) näkyy kartalla ja minikartalla vain, jos sen kohta on paljastettu (pelaaja on käynyt ~12 m
   säteellä, `isExplored`, ui.js). Riimukivi tai tavoite voi edelleen kertoa paikan (`flags.disc`), jolloin suunta ja etäisyys näkyvät
