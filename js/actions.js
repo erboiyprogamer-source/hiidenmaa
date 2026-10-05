@@ -212,11 +212,9 @@ function useAltar(){
   const L=LOC.circle;setTimeout(()=>{boss=spawnMob('vartija',L.x,L.z-4);boss.state='intro';boss.t=0;$('#bossbar').hidden=false;shockwave(L.x,6,L.z-4,10);},1600);
 }
 function openSarc(i){
-  if(flags.sarc[i]){msg('Kirstu on tyhjä.');return;}
-  flags.sarc[i]=1;const s=sarcs[i];s.lid.position.x=.7;s.lid.rotation.z=.3;
-  giveOrDrop('hiidenkivi',1,s.p.x,DUN.y+1.2,s.p.z);
-  const extra=[['kupari',2],['nuolet',12],['luu',3]][i];giveOrDrop(extra[0],extra[1],s.p.x,DUN.y+1.2,s.p.z);
-  sfx('pickup');burst(s.p.x,DUN.y+1,s.p.z,0x7fd6cc,14,3);
+  const first=!flags.sarc[i],s=sarcs[i];
+  openFound('sarc:'+i,'Hautakirstu',first?[['hiidenkivi',1],[['kupari',2],['nuolet',12],['luu',3]][i]]:null);
+  if(first){flags.sarc[i]=1;s.lid.position.x=.7;s.lid.rotation.z=.3;burst(s.p.x,DUN.y+1,s.p.z,0x7fd6cc,14,3);}
 }
 function showLore(t,txt){const el=$('#msgs');const d=document.createElement('div');d.innerHTML=`<b style="color:var(--frost)">${t}</b><br><span style="font-weight:500">${txt}</span>`;d.style.maxWidth='440px';d.style.whiteSpace='normal';el.appendChild(d);d._life=14;msgEls.push(d);}
 

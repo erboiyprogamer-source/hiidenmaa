@@ -198,7 +198,13 @@ function itemProps(s,q){const d=ITEMS[s.id],o=[],f1=v=>v.toFixed(1).replace('.',
   o.push(['Paino',f1(d.w*s.n)+(s.n>1?` (${f1(d.w)} / kpl)`:'')]);if(d.s>1)o.push(['Määrä',`${s.n} / ${d.s}`]);
   return o;}
 function openChest(p){togglePanel('chest');curChest=p;renderChest();}
-function renderChest(){if(!curChest)return;const items=curChest.data.items;$('#chestTitle').textContent=PIECES[curChest.t].n+(curChest.data.lv?` (taso ${curChest.data.lv+1})`:'');
+// Löydetyt arkut, kirstut ja tynnyrit avautuvat arkkuikkunaan kuten omat arkut. Sisältö luodaan ensimmäisellä avauksella saalistaulukosta
+// ja tallentuu flags.fc[avain] (myös pelaajan sinne jättämät esineet). Jos paikka on avattu vanhassa tallennuksessa (saalis jo annettu), se on tyhjä.
+function foundItems(key,loot,slots=8){const fc=fo('fc');if(!fc[key]){const it=[];for(const [id,n,q] of loot||[])if(ITEMS[id])it.push({id,n,q:q||1});while(it.length<slots)it.push(null);fc[key]=it;}return fc[key];}
+function openFound(key,title,loot){const items=foundItems(key,loot);if(openPanel)closePanels(true);togglePanel('chest');curChest={found:true,title,data:{items}};sfx('pickup');renderChest();}
+const foundEmpty=key=>{const it=fo('fc')[key];return !!it&&!it.some(Boolean);};
+function renderChest(){if(!curChest)return;const items=curChest.data.items;$('#chestTitle').textContent=curChest.found?curChest.title:PIECES[curChest.t].n+(curChest.data.lv?` (taso ${curChest.data.lv+1})`:'');
+  if(curChest.found)$('#chestUp').innerHTML='';else
   upBtn($('#chestUp'),STORE_UP[(curChest.data.lv||0)+1],`Laajenna (taso ${(curChest.data.lv||0)+2})`,()=>{curChest.data.lv=(curChest.data.lv||0)+1;while(items.length<storeSlots(curChest))items.push(null);msg('Säilytystila kasvoi.','loot');},'chest',
     [['Paikkoja',storeSlots(curChest),storeSlots(curChest)+8]],renderChest,PIECES[curChest.t].n);
   $('#chestGrid').innerHTML=items.map(s=>slotHTML(s)).join('');$('#chestInv').innerHTML=inv.map(s=>slotHTML(s)).join('');

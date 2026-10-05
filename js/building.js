@@ -31,11 +31,13 @@ function liftBuild(d){if(!vMode&&SNAP_NAMES[snapMode]!=='3D')return;buildLift=cl
 function cycleSnap(){snapMode=(snapMode+1)%SNAP_NAMES.length;msg(`Kohdistus: ${SNAP_NAMES[snapMode]}`);}
 // Läpinäkyvä ruudukko haamun ympärillä (ruudukko- ja puolitilassa).
 function updateGrid(on,cx,y,cz){const mode=SNAP_NAMES[snapMode],m1=mode==='1 m',m3=mode==='3D',div=m1?25:mode==='puoli'?20:10;
-  // 3D-tilassa pystyruudukko (G välein pystyviivat, kerroskorkeuden puolikkaan välein vaakaviivat) haamun kohdalla, kameraa kohti käännettynä
-  if(on&&m3&&!gridV){const pts=[];for(let i=-5;i<=5;i++)pts.push(i*G,0,0,i*G,3*WH,0);for(let j=0;j<=6;j++)pts.push(-5*G,j*WH/2,0,5*G,j*WH/2,0);
-    const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));gridV=new THREE.LineSegments(gg,new THREE.LineBasicMaterial({color:0xbfe6ff,transparent:true,opacity:.28,depthWrite:false}));scene.add(gridV);}
-  if(gridV){gridV.visible=on&&m3;if(gridV.visible){const d=new V3();camera.getWorldDirection(d);gridV.rotation.y=Math.abs(d.x)>Math.abs(d.z)?Math.PI/2:0;gridV.position.set(cx,y,cz);}}
-  if(on&&(vMode===2||m3)&&!gridHelper2){gridHelper2=new THREE.GridHelper(10*G,10,0xbfe6ff,0xbfe6ff);gridHelper2.material=new THREE.LineBasicMaterial({color:0xbfe6ff,transparent:true,opacity:.3,depthWrite:false});scene.add(gridHelper2);}
+  // 3D-tilassa näkyvä 3D-hila haamun ympärillä (v0.69 selkeämmäksi): pystytolpat jokaisessa ruudukon kulmassa (7 × 7, kaksi kerrosta korkeita)
+  // ja vaakaruudukot puolen kerroksen välein (WH/2) kahteen kerrokseen asti. Hila kohdistuu samaan ruudukkoon kuin lattiaruudukko.
+  if(on&&m3&&!gridV){const pts=[],N=3,H=2*WH;for(let i=-N;i<=N;i++)for(let j=-N;j<=N;j++)pts.push(i*G,0,j*G,i*G,H,j*G);
+    for(let l=1;l<=4;l++){const yy=l*WH/2;for(let i=-N;i<=N;i++){pts.push(-N*G,yy,i*G,N*G,yy,i*G);pts.push(i*G,yy,-N*G,i*G,yy,N*G);}}
+    const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));gridV=new THREE.LineSegments(gg,new THREE.LineBasicMaterial({color:0x9fe3ff,transparent:true,opacity:.5,depthWrite:false}));gridV.renderOrder=3;scene.add(gridV);}
+  if(gridV){gridV.visible=on&&m3;if(gridV.visible)gridV.position.set(cx,y+.03,cz);}
+  if(on&&(vMode===2||m3)&&!gridHelper2){gridHelper2=new THREE.GridHelper(10*G,10,0xbfe6ff,0xbfe6ff);gridHelper2.material=new THREE.LineBasicMaterial({color:0xbfe6ff,transparent:true,opacity:.45,depthWrite:false});scene.add(gridHelper2);}
   if(gridHelper2){gridHelper2.visible=on&&(vMode===2||m3);if(gridHelper2.visible)gridHelper2.position.set(cx,y+WH+.04,cz);}
   if(on&&(!gridHelper||gridDiv!==div)){if(gridHelper){scene.remove(gridHelper);gridHelper.geometry.dispose();}
     gridHelper=new THREE.GridHelper(m1?25:10*G,div,0xffffff,0xffffff);gridHelper.material=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.42,depthWrite:false});gridDiv=div;scene.add(gridHelper);}

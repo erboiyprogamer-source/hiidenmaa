@@ -29,10 +29,11 @@ function sfx(type,pitch=1,vol=1){
     case 'slam':noise(.5,300,60,.6,1);tone(80,30,.5,.4,'sine');break;
     case 'die':tone(300,80,.4,.2,'triangle');break;
     // viimeinen kirveenisku ennen kuin runko katkeaa: hieman kimeämpi ja terävämpi, perään ritinä
-    case 'chopFinal':noise(.1,620,230,.42,3);tone(215,105,.1,.2,'triangle');noise(.22,1500,500,.16,2,.06);break;
+    case 'chopFinal':noise(.1,620,230,.42,3);tone(215,105,.1,.2,'triangle');noise(.05,3200,1800,.32,4,.03);noise(.45,1300,320,.2,1.5,.07);tone(330,140,.3,.05,'sawtooth',.07);break;
     // tukin hakkuu: ontompi ja hieman matalampi kuin pystypuu
     case 'chopLog':noise(.11,420,150,.4,3);tone(150,80,.12,.2,'triangle');break;
-    case 'logBreak':noise(.16,700,200,.42,2.5);noise(.3,1200,300,.18,1.5,.05);tone(130,60,.2,.22,'triangle');break;
+    // tukin viimeinen isku: tumma – matala halkeava rusahdus, puun repeämisen jyrinä ja puolikkaiden raskas tömähdys (ei kirkkaita korkeita ääniä)
+    case 'logBreak':noise(.16,360,110,.55,2.2);tone(120,55,.18,.3,'triangle');noise(.55,520,120,.3,1.1,.05);noise(.5,150,38,.6,.8,.2);tone(64,26,.45,.45,'sine',.2);break;
     // kaatuneen puun tömähdys maahan: matala jytinä ja maan rapina
     case 'thud':noise(.7,180,40,.65,.9);tone(70,28,.65,.5,'sine');noise(.35,900,250,.12,1,.05);break;
     case 'rockBreak':noise(.35,2200,400,.38,2);noise(.5,400,90,.4,1,.04);tone(110,45,.3,.22,'sine');break;

@@ -116,8 +116,10 @@ function buildBarrel(add,cols,its,x,y,z,key,li){
   for(const yy of [.22,.78]){const b=new THREE.Mesh(new THREE.CylinderGeometry(.415,.415,.06,10),ir);b.position.y=yy;g.add(b);}
   const lid=new THREE.Mesh(new THREE.CylinderGeometry(.37,.37,.06,10),mat(0x5a3a20));lid.position.y=1.02;g.add(lid);add(g);
   cols.push(addCircle(x,z,.44,y,y+1.05,'static'));
-  const it={x,y:y+.8,z,r:2.2,label:()=>fo('rc')[key]?'Tyhjä tynnyri':'Avaa tynnyri',use:()=>{if(fo('rc')[key])return;fo('rc')[key]=1;lid.position.set(.35,.6,0);lid.rotation.z=1.3;
-    for(const [id,n] of BARREL_LOOT[li%BARREL_LOOT.length])giveOrDrop(id,n,x,y+1.2,z);sfx('pickup');burst(x,y+1,z,0x8a5a32,8,2);}};
+  // Kansi avataan laiskasti (label-kutsussa): tynnyreitä rakennetaan myös latauksessa ennen kuin flags on olemassa.
+  let lidOpen=false;const open=()=>{lidOpen=true;lid.position.set(.35,.6,0);lid.rotation.z=1.3;};
+  const it={x,y:y+.8,z,r:2.2,label:()=>{if(!lidOpen&&fo('rc')[key])open();return foundEmpty(key)?'Tynnyri (tyhjä)':'Avaa tynnyri';},use:()=>{const first=!fo('rc')[key];
+    openFound(key,'Tynnyri',first?BARREL_LOOT[li%BARREL_LOOT.length]:null);if(first){fo('rc')[key]=1;open();burst(x,y+1,z,0x8a5a32,8,2);}}};
   interactables.push(it);its.push(it);}
 
 /* ---------------- SISÄTILAN RAKENTAMINEN (laiska: vasta ensimmäisellä käynnillä) ---------------- */
@@ -181,8 +183,9 @@ function ensureRealm(id){
   L.chests.forEach((c,i)=>{const p=cell(c.ix,c.iz),key=id+':'+i,sarc=D.gen==='rooms';
     const b=bx(sarc?1.1:1,sarc?.8:.7,sarc?2.2:.65,sarc?MAT.stone:MAT.wood,p.x,y0+(sarc?.4:.35),p.z);b.add(bx(sarc?1.2:1.04,.18,sarc?2.3:.7,sarc?mat(0x6f6a62):mat(0x4a4a4a),0,sarc?.5:.38,0));add(b);
     R.cols.push(addBox(p.x-.5,y0,p.z-(sarc?1.1:.33),p.x+.5,y0+.7,p.z+(sarc?1.1:.33),'static'));
-    const it={x:p.x,y:y0+.8,z:p.z,r:2.6,label:()=>fo('rc')[key]?'Tyhjä arkku':(sarc?'Avaa hautakirstu':'Avaa arkku'),use:()=>{if(fo('rc')[key])return;fo('rc')[key]=1;b.children[0].position.x=.5;b.children[0].rotation.z=.3;
-      for(const [it2,n] of CHEST_LOOT[(i+(seed&7))%CHEST_LOOT.length])giveOrDrop(it2,n,p.x,y0+1.2,p.z);sfx('pickup');burst(p.x,y0+1,p.z,D.glow,12,3);}};
+    const open=()=>{b.children[0].position.x=.5;b.children[0].rotation.z=.3;};if(fo('rc')[key])open();
+    const it={x:p.x,y:y0+.8,z:p.z,r:2.6,label:()=>(sarc?'Hautakirstu':'Arkku')+(foundEmpty(key)?' (tyhjä)':'')+' – avaa',use:()=>{const first=!fo('rc')[key];
+      openFound(key,sarc?'Hautakirstu':'Arkku',first?CHEST_LOOT[(i+(seed&7))%CHEST_LOOT.length]:null);if(first){fo('rc')[key]=1;open();burst(p.x,y0+1,p.z,D.glow,12,3);}}};
     interactables.push(it);R.its.push(it);});
   const ex=R.entry.x-DC/2+.15;
   const pm=new THREE.MeshBasicMaterial({color:D.glow,transparent:true,opacity:.7,side:THREE.DoubleSide,depthWrite:false});

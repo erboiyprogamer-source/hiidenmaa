@@ -58,6 +58,23 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.69 (korjauksia: 3D-hila, löydetyt arkut, haku, tukin ääni, ominaisuustarkistus)
+- **3D-ruudukko näkyväksi:** 3D-tila oli koodissa, mutta pystyruudukko oli niin haalea (opasiteetti 0,28, yksi kameraa kohti käännetty
+  taso), ettei sitä erottanut. Nyt `gridV` on oikea 3D-hila: pystytolpat jokaisessa ruudukon kulmassa (7 × 7, kaksi kerrosta korkeita) ja
+  vaakaruudukot puolen kerroksen välein (WH/2) kahteen kerrokseen, opasiteetti 0,5. Seuraavan kerroksen ruudukko 0,3 → 0,45.
+- **Löydetyt arkut, kirstut ja tynnyrit avautuvat arkkuikkunaan** kuten omat arkut (ulottuvuuksien arkut, hautakirstut ja tynnyrit,
+  Hautakummun kirstut ja tynnyrit, raunioiden aarrearkut, löytöpaikkojen arkut). Sisältö luodaan ensimmäisellä avauksella saalistaulukosta
+  ja tallentuu `flags.fc[avain]`; esineitä voi ottaa ja jättää. Vanhassa tallennuksessa jo avattu paikka on tyhjä (saalis annettiin jo).
+  Ensimmäisen avauksen vaikutukset (XP, vartijaviesti, kannen avaus, tehtäväliput) säilyvät. Ei laajennusnappia löydetyissä.
+- **Haku:** `body{user-select:none}` periytyi hakukenttään, mikä estää kirjoittamisen esim. Safarissa → hakukentille `user-select:text`.
+- **Tukin viimeinen isku** tummemmaksi: matala halkeava rusahdus, puun repeämisen jyrinä ja raskas tömähdys (ei kirkasta napsahdusta).
+  Pystypuun viimeiseen iskuun lisätty selkeämpi ritinä.
+- **Korjaus:** tynnyrin kannen tila luettiin latauksessa ennen kuin `flags` oli olemassa (kaatoi skriptin) → luetaan laiskasti.
+- **Ominaisuustarkistus:** kaikki muistioissa mainitut tunnisteet tarkistettu koodia vasten (puuttuvat olivat vain vanhoja nimiä:
+  `palkki_iso` → `palkki2`, `gripWithLeft` → `armIK`, `KEYLIST` → `ACTIONS`/`BIND`, ukkosen ääni poistettu tarkoituksella v0.36) ja
+  34 keskeistä ominaisuutta testattu pelissä (G-tilat, H-tila, reunakohdistus, kartat, ulottuvuudet, tehtävät, asetukset, puut, myrskyt,
+  soihtu, kartta, päivitykset, ehdotukset, haku, IK, Kalmanpesä, arkut ym.): kaikki toiminnassa.
+
 ### v0.68 (erä 43: kirveen ote, jousi, Kalmanpesän murskaus, äänet)
 - **Kahden nivelen IK (`armIK`, player.js):** käsivarsi (olka rx/rz) ja kyynärpää lasketaan niin, että kämmen osuu annettuun pisteeseen
   (olkavarsi 0,35 m, kyynärvarsi 0,33 m; ratkaisu ja kaavat funktion kommentissa). Korvaa vanhan `gripAngles`-suuntauksen, joka ei
