@@ -111,9 +111,9 @@ function fallTree(n,dir,crush){const g=new THREE.Group();const m=new THREE.Mesh(
   for(let i=0;i<(lay?lay.length:nb);i++){let phi=i/nb*TAU+rng()*.8,h=H*(.28+.55*i/nb),L=(.6+rng()*.5)*n.s*(big?2.5:1),th=.07*n.s*(big?2:1),tilt=.35+rng()*.3;
     // koivu: täsmälleen pystypuun oksat (sama asettelu, puun kierto ja koko)
     if(lay){const q=lay[i];h=q[0]*n.s;phi=q[1]+(n.rot||0);L=q[2]*n.s;tilt=q[3];}
-    const b=new THREE.Group();b.add(bx(L,th,th,bm,L/2,0,0));
+    const b=new THREE.Group();b.add(bx(L,lay?.09*n.s:th,lay?.09*n.s:th,bm,L/2,0,0));
     if(lm){if(n.type==='kuusi'){for(let k=0;k<3;k++){const nd=new THREE.Mesh(new THREE.ConeGeometry(L*.16,L*.42,5),lm);nd.position.x=L*(.35+k*.27);nd.rotation.z=-Math.PI/2;nd.castShadow=true;b.add(nd);}}
-      else{const lf=new THREE.Mesh(new THREE.IcosahedronGeometry(L*(n.type==='koivu'?.34:.3),0),lm);lf.position.x=L*.85;lf.castShadow=true;b.add(lf);
+      else{const lf=new THREE.Mesh(new THREE.IcosahedronGeometry(L*.3,0),lm);lf.position.x=L*.85;lf.castShadow=true;b.add(lf);
 }}
     b.position.set(Math.cos(phi)*.12*n.s,h,-Math.sin(phi)*.12*n.s);b.rotation.set(0,phi,tilt);g.add(b);brs.push(b);b.userData.det=.3+rng()*.6;}
   fx.push({obj:g,t:0,update:(f,dt)=>{const k=Math.min(1,f.t/dur);g.rotation.set(0,0,0);g.rotateOnWorldAxis(_tmpV.set(Math.cos(a),0,-Math.sin(a)),Math.pow(k,2.6)*Math.PI/2);

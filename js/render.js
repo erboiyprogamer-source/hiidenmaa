@@ -144,6 +144,10 @@ const sunShafts=(function(){const t=canvasTex((g,s)=>{const gr=g.createLinearGra
   t.magFilter=THREE.LinearFilter;const grp=new THREE.Group(),mt=new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide});
   const r=mulberry32(55);for(let i=0;i<7;i++){const w=6+r()*12,L=260,off=(r()-.5)*90;for(const ry of[0,Math.PI/2]){const p=new THREE.Mesh(new THREE.PlaneGeometry(w,L),mt);p.position.set(off*Math.cos(ry),L/2,off*Math.sin(ry)+(r()-.5)*40);p.rotation.y=ry;grp.add(p);}}
   grp.visible=false;grp.frustumCulled=false;grp.renderOrder=-4;scene.add(grp);grp.userData.mat=mt;return grp;})();
+// Auringon pehmeä pyöreä hehku: säteittäinen liukuväri (additiivinen sprite) auringon ympärillä. Säteet häivytetään, kun katse
+// osoittaa kohti aurinkoa, koska pitkien tasojen päät näkyisivät silloin neliönä.
+const sunGlow=(function(){const t=canvasTex((g,s)=>{const gr=g.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);gr.addColorStop(0,'rgba(255,246,220,1)');gr.addColorStop(.12,'rgba(255,238,200,.55)');gr.addColorStop(.35,'rgba(255,225,170,.16)');gr.addColorStop(1,'rgba(255,215,160,0)');g.fillStyle=gr;g.fillRect(0,0,s,s);},128);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,opacity:.0}));sp.scale.setScalar(150);sp.renderOrder=-5;scene.add(sp);return sp;})();
 // Salama: sahalaitainen valkoinen jono pilvestä maahan, näkyy lyhyen hetken (strikeBolt()).
 let boltGrp=null,boltT=0;
 function strikeBolt(){if(boltGrp){scene.remove(boltGrp);boltGrp=null;}

@@ -55,7 +55,7 @@ function updateClouds(dt,cover,light,el){const vis=!P.inDun;let cx=camera.positi
     cloudDeck.material.map.offset.x+=drift*.0004;}
   if(boltGrp){boltT-=dt;boltGrp.visible=boltT>0&&((boltT*40|0)%3!==0);if(boltT<=0){scene.remove(boltGrp);boltGrp=null;}}}
 // Taivaskupoli ja auringonsäteet (vain selkeällä/puolipilvisellä säällä päivällä, ei sisällä).
-const _sky=new THREE.Color(),_skyS=new THREE.Vector3(),_up=new THREE.Vector3(0,1,0);
+const _sky=new THREE.Color(),_skyS=new THREE.Vector3(),_up=new THREE.Vector3(0,1,0),_camD=new THREE.Vector3();
 function updateSky(light,sd0,el,sunK){const sd=_skyS.copy(sd0);skyDome.position.copy(camera.position);skyDome.visible=!P.inDun;
   SKY_U.uHor.value.copy(scene.background);_sky.copy(scene.background).multiplyScalar(.62);_sky.b=Math.min(1,_sky.b*1.25+.03*light);SKY_U.uTop.value.copy(_sky);
   SKY_U.uSun.value.set(sd.x,sd.y,sd.z);SKY_U.uSunC.value.copy(cSun);SKY_U.uGlow.value=sunK*(1-Math.min(1,wDark*1.4))*(1-aarniK*.7);
@@ -63,7 +63,8 @@ function updateSky(light,sd0,el,sunK){const sd=_skyS.copy(sd0);skyDome.position.
   sunShafts.visible=!P.inDun&&clear>.02&&SET.shafts!==false;if(sunShafts.visible){const hx=sd.x,hz=sd.z,hl=Math.hypot(hx,hz)||1;
     sunShafts.position.set(camera.position.x+hx/hl*70,Math.max(0,camera.position.y-25),camera.position.z+hz/hl*70);
     sunShafts.rotation.set(0,0,0);sunShafts.quaternion.setFromUnitVectors(_up,sd.normalize());
-    sunShafts.userData.mat.opacity=.07*clear*(.85+.15*Math.sin(playTime*.3));}}
+    camera.getWorldDirection(_camD);const look=Math.max(0,_camD.dot(sd));sunShafts.userData.mat.opacity=.07*clear*(.85+.15*Math.sin(playTime*.3))*(1-sstep(.45,.85,look));}
+  sunGlow.visible=!P.inDun&&el>-.08;if(sunGlow.visible){sunGlow.position.copy(sunDisc.position);sunGlow.material.opacity=(.55+.25*sstep(.3,0,el))*sunK*(1-Math.min(1,wDark*1.6))*(1-sstep(.4,.9,wCloud)*.6);}}
 function updateEnvironment(dt){
   const W=WEATHERS[weather.cur]||WEATHERS.selkea,k=Math.min(1,dt*.3);
   // Pilvet tummuvat ensin (hitaasti), sade alkaa vasta kun taivas on tarpeeksi tumma.

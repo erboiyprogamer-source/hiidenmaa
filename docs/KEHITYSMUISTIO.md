@@ -55,6 +55,20 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.64 (rakennuskohdistus, ähky, auringon hehku, koivun oksat näkyvämmiksi)
+- **G-kohdistustilat:** ruudukko (G = 2,5 m), **1 m** (kaikki osat 1 m välein, 1 m ruudukko näkyy), puoli, **3D** (vaakaruudukko +
+  pystyruudukko: pystyviivat G välein, vaakaviivat WH/2 välein kameraa kohti käännettynä, korkeus kohdistuu WH/4 portain, Q/Z
+  nostaa/laskee, seuraava kerros näkyy), vapaa, reuna. **Korjaus:** ruudukkotiloissa myös "vapaat" osat (pylväät, huonekalut,
+  soihdut, työpisteet) kohdistuvat: pylväät ruudun kulmiin, muut ruudun keskelle (ennen ne ohittivat ruudukon 0,25 m tarkkuudella).
+- **Reunajatko seinän yläkulmasta:** kun katse osuu seinän ylimpään 0,5 m:iin (ei yläpintaan), haamu ehdottaa uutta seinää
+  päälle jatkoksi (korkeus = seinän korkeus, myös puoli- ja neljäsosaseinät `dim`); muualta sivulle jatkoksi kuten ennen.
+- **Ähky (vatsakipu) vasta kun palkki on jo täynnä:** syöminen ei enää estynyt 96 %:ssa eikä palkin täyttyminen aiheuta ähkyä;
+  ähky tulee vain jos kylläisyys on jo ≥ 99 ja syö silti (ei raakaa eikä tehoruokaa). Kesto 75 → 52 s (−30 %).
+- **Auringon hehku pyöreäksi:** neliö auringon ympärillä johtui auringonsäteiden pitkistä tasoista, joiden päät näkyivät neliönä
+  aurinkoon katsottaessa. Säteet häivytetään nyt kun katse osoittaa aurinkoa kohti, ja auringon ympärillä on pehmeä pyöreä
+  hehku (`sunGlow`, additiivinen säteittäinen sprite; himmenee pilvissä ja synkässä säässä, voimistuu matalalla auringolla).
+- **Koivun oksat** pidemmiksi, paksummiksi ja matalammalle (7 oksaa), jotta ne erottuvat latvuksen alta.
+
 ### v0.63 (erä 35: myrskyn puut, koivun oksat, nopeudet, soihtu, salama, leijuvat luut)
 - **Myrsky kaataa puita noin 5 s välein** (4–6 s, `stormT`) satunnaisesta puusta 9–100 m päässä pelaajasta (ei aarnipuita eikä
   rakennusalueelta, `nearBase`). Kaatuminen on normaali `fallTree` (murskaa alle jäävän, oksat, tukit/tavarat, tärähdys lähellä).
@@ -891,6 +905,10 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 **Erä 35 – Pelattavuus ja korjaukset (2, 3, 4, 5, 8, 10)** – TEHTY (v0.63)
 1. Myrsky kaataa puita ~1 / 5 s 100 m säteellä (oikea kaatumisfysiikka). 2. Koivun oksat näkyvät jo pystypuussa ja ovat samat, jotka irtoavat.
 3. Mobien nopeus −15 %. 4. Käsisoihtu palaa 100 % kauemmin. 5. Salaman välähdys kevyemmäksi. 6. Leijuvat luut/koristeet maahan.
+
+**Lisäpyynnöt v0.63:n jälkeen (12, 13 + korjaukset)** – TEHTY (v0.64)
+12. G-valintaan 3D-ruudukko (vaaka + pysty); normaali ruudukko kohdistaa oikeasti; seinän yläkulmasta ehdotus rakentaa päälle.
+13. Ähky vain kun palkki on jo täynnä ja syö uudelleen, kesto 30 % lyhyempi. + Koivun oksat näkyviksi, auringon neliö → pyöreä hehku.
 
 **Erä 36 – Pomot ja saalis (6, 7)**
 1. Pomon terveyspalkki kerroksina: 1 palkki = pelaajan maksimiterveys (esim. 340 hp / 100 → 3,4 palkkia päällekkäin), luku palkin alla.
