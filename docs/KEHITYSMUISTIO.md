@@ -58,6 +58,20 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.67 (erä 42: ehdotukset ja haku)
+- **Ehdotukset-välilehti** on oletuksena ensimmäinen sekä rakennusvalikossa (B) että valmistuksessa (reppu), Alkupeli toisena.
+  - Valmistus (`suggestCrafts`, enintään 8): avoimet ja tunnetut ohjeet pisteytetään. Aineet valmiina +4 (työpiste puuttuu +2,5,
+    muuten osuus aineista ×2); varuste jota ei vielä ole +3 tai parempi kuin paras omistettu samaa ryhmää +3, huonompi/sama −8
+    (ryhmät `gearKey`: kirveet hakkuun, hakut louhinnan, aseet vahingon, haarniskat suojan, kilvet torjunnan mukaan);
+    nuolet jos jousi ja alle 20 nuolta; soihtu jos ei ole; ruoka nälkäisenä. Pelin vaihe: + 0,5 × min(ohjeen taso, pelaajan taso).
+    Kynnys 2,5. Jokaisessa rivissä syy keltaisella (esim. "Parempi kuin nykyinen · Aineet valmiina").
+  - Rakennus (`suggestBuilds`, enintään 10): työpenkki ensin (+10), nuotio (+6), sänky (+5), perussuoja lattia/seinä/ovi/katto
+    kun seiniä ja lattioita alle 12 (+4), arkku kun reppu yli 60 % täynnä (+4), sulatin kun repussa malmia (+7), ahjo kun kuparia (+6),
+    kiviseinä/-lattia kun kiveä ≥ 30 ja talo pystyssä (+3); varaa rakentaa +2, puuttuvat aineet −1; muuten uusi osa jota on varaa
+    rakentaa (talon jälkeen). Syy näkyy kortissa.
+- **Haku:** hakukenttä kummassakin valikossa (`#buildSearch`, `#craftSearch`). Hakee kaikista välilehdistä nimen osalla, kirjainkoko
+  ja tarkkeet ohitetaan (`fold`). Esc tyhjentää / poistuu kentästä. Pelin näppäimet eivät toimi kenttään kirjoitettaessa.
+
 ### v0.66 (erä 39: tavarat ja päivitykset)
 - **Päivityksen esikatselu:** kaikki päivitykset (tavaran ★, reppu, arkut ja tynnyrit) avaavat ensin alle laatikon "Päivitys ★1 → ★2",
   jossa muuttuvat ominaisuudet (nyt → uusi, vihreällä) ja hinta (punainen = puuttuu). Vasta laatikon **Päivitä nyt** tekee päivityksen.
@@ -985,6 +999,11 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
    Muille haarniskoille (kupari, rauta, hiidenpanssari) omaan tyyliinsä sopivat yksityiskohdat.
 2. Äänet: puun kaatuminen ja tömähdys matalammaksi, viimeinen isku ennen rungon katkeamista hieman kimeämpi, kaikkiin toistuviin
    ääniin pieni satunnainen sävelkorkeuden vaihtelu (jokainen lyönti hieman eri).
+
+**Erä 42 – Ehdotukset ja haku** – ✅ tehty v0.67
+1. Rakennusvalikon ja valmistuksen ensimmäinen (oletus)välilehti "Ehdotukset": todennäköisesti seuraavaksi tarvittavat ja ne,
+   joihin aineet ovat jo valmiina. Alkupeli toisena.
+2. Haku kummassakin valikossa (rakennusosat / tavarat).
 
 ### Avoimet: käyttäjän ehdotuksista toteuttamatta tai osittain (tarkistettu v0.62, koko keskusteluhistoria käyty läpi)
 1. **Portaalisuoja ei estä pelaajan omia iskuja** (kohta 5: "silloin pelaajakaan ei voi lyödä ketään"). Nyt suoja estää vain vihollisten
