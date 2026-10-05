@@ -58,6 +58,28 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.65 (yleinen reunakohdistus kaikille osille)
+- **`smartSnap` korvaa vanhan `edgeSnap`:in.** Toimii kaikille osien muodoille (seinät, palkit, pylväät, lattiat, katot, kalusteet,
+  työpisteet) ja kaikissa G-tiloissa paitsi *vapaa*. Kohteen muoto = sen törmäyslaatikoiden yhteinen rajaus (`unionBox(worldBoxes)`).
+- **Alueet osumakohdan mukaan:**
+  - **Yläosa** (yläpinta tai sivun ylin kaista: 30 % korkeudesta, 0,12–0,5 m) → uusi osa kohteen **päälle**. Suunta keskelle, reunalle
+    tai kulmaan: yläpinnalla osumakohdasta (keskialue 35 %), sivulta katsottuna katsottu sivu + vasen/oikea yläkulma (sivun uloimmat 30 %).
+    Näin jokaisessa osassa on 4 sivua ja ylhäältä katsottuna 8 suuntaa (sivut + kulmat) + keskikohta.
+  - **Pääty** (pitkän ohuen osan, kuten seinän tai palkin, päätypinta tai sivun uloin 15 %) → seinä/palkki jatkuu samaan linjaan.
+  - **Sivun keski** (vain reuna-tilassa) → viereen ulospäin; ohut osa (seinä, pylväs) asettuu ison kohteen reunalinjalle.
+- **Sijoitus akseleittain kokoeron mukaan** (ohut = alle 0,4 m, `THIN`): molemmat ohuita → keskitetty (pylväs pylvään päälle);
+  ohut kohde isomman osan alla → kohteen keskilinja osan reunalle (lattia seinän/pylvään päälle katsotulle puolelle); ohut osa
+  isomman päällä → kohteen reunalle/kulmaan (pylväs palkin päähän, seinä lattian reunalle); samankokoiset → reunat tasan
+  (puoliseinä seinän päällä katsottuun yläkulmaan).
+- **Ruudukkoviivasääntö:** lattia/katto ohuen kohteen päällä seuraa lähimmän lattian ruudukkoa (`gridOrigin`). Ruudukon kulmassa
+  oleva pylväs → lattia katsottuun kulmaruutuun; ruudukkoviivalla (kahden ruudun välissä) oleva pylväs → katsottu ruutu.
+- **Kierto:** seinä/palkki seinän päälle tai jatkoksi samaan suuntaan; muuten katsotun reunan suuntaisesti (pylvään +x-sivun yläreuna →
+  palkki z-suuntaan, kulmasta katsottuna palkin pää pylvään kohdalle). Seinä lattian keskelle → lähimmälle reunalle.
+- **Korkeus:** päälle = kohteen yläpinta (lattia: yläpinta tasan tuen yläpinnan kanssa); viereen = sama pohjataso (lattian kohdalla
+  sen yläpinta). 3D-/pystytilassa reunakohdistuksen korkeutta ei pyöristetä, Q/Z-nosto toimii yhä.
+- **Ruudukkotiloissa:** lattioiden yläpinta ja sivujen keskiosat jätetään tavalliselle ruudukolle; ei-ohuilla kohteilla (työpenkki)
+  lattia pysyy ruudussa. Ohitetaan: vinossa (45°) olevat kohteet, katot, portaat ja tikkaat.
+
 ### Dokumentaatio (v0.64 jälkeen)
 - Uusi `docs/OMINAISUUDET.md`: kaikki pelin järjestelmät, säännöt ja fysiikan arvot yhdessä viiteoppaassa (maailma, liikkuminen,
   selviytyminen, keräily ja puut, valmistus, rakentaminen ja kohdistus, tuli ja valo, taistelu, viholliset, pomot, luolastot,
@@ -436,7 +458,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - **Kohdistus suosii rakennettua osaa:** `buildRaycast` valitsee osan, jos se on enintään 1 m maata kauempana.
   Maahan tähdätessä viereinen lattia (≤1,6·G) määrää ruudukon paikan (`ox,oz`) ja korkeuden, eli uusi osa jatkaa
   lattian ruudukkoa vaikka lattia olisi rakennettu vapaasti.
-- **Reunajatko** (`edgeSnap`): seinän sivusta → jatke samaan suuntaan; seinän päältä → pinoaminen; lattian päältä:
+- **Reunajatko** (`edgeSnap`, v0.65 alkaen `smartSnap`, ks. versioloki): seinän sivusta → jatke samaan suuntaan; seinän päältä → pinoaminen; lattian päältä:
   lattia → viereinen lattia, seinä → lattian lähin reuna (suunta automaattisesti); seinän sivusta lattia → viereen.
 - **R kääntää 45°:** `buildRot` 0–7, `p.rot` on nyt kahdeksasosakierroksia (`rotation.y=rot·π/4`). Parittomat kierrot:
   `worldBoxes` jakaa laatikot ~.4 m paloihin ja kiertää ne (AABB-palat). **Tallennusversio 7:** v<7 → `r*2`.
