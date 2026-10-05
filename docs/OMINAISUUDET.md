@@ -75,7 +75,12 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **48 esinettä, 27 valmistusohjetta.** Työpisteet: työpenkki, ahjo, nuotio/grilli, sulatusuuni. Ohjeilla tasovaatimus (`lvl`).
 - **Aseet:** puunuija, kivikirves, piikivikeihäs, kupari-/rautamiekka, kupari-/rautakirves, kupari-/rautahakku, hiidenmiekka (harvinainen).
   Jouset: metsästysjousi, hiidenjousi. Kilvet: puu, kupari, rauta. Panssarit: nahka, kupari, rauta, hiiden.
-- **Laatu (★1–3):** kehittäminen parantaa vahinkoa, nopeutta ja jousen vetoa.
+- **Laatu (★1–3):** kehittäminen parantaa vahinkoa, nopeutta ja jousen vetoa; käsisoihdun palamisaika +50 % per taso.
+- **Ehdotukset ja haku:** valmistuksen ja rakennusvalikon oletusvälilehti *Ehdotukset* näyttää syineen ne, joihin aineet ovat valmiina,
+  puuttuvat tai paremmat varusteet ja pelin vaiheeseen sopivat rakennukset (työpenkki → nuotio → sänky → suoja → sulatin/ahjo).
+  Hakukenttä hakee kaikista välilehdistä nimen osalla.
+- **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
+- **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
 - **Jousi:** täysi veto 1,6 s (laatu 2: 1,3 s, laatu 3: 1,07 s); vajaa veto = vähemmän vahinkoa, hitaampi nuoli, jyrkempi kaari.
 - **Reppu:** 32 paikkaa, kehitys +8 paikkaa / +40 painoa (2 tasoa). Arkku 16→24→32, tynnyri 10→16→22.
 - **Avaimet:** Jääavain, Luuavain, Aarniavain (ulottuvuuksien portit).
@@ -108,7 +113,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Nuotio/grilli:** polttoaine ≤ 40 yksikköä (`FUEL_MAX`), puu = 1 yksikkö = 90 s, hiili = 10 yksikköä. Lisäys vain kun alle 50 %.
   Grilli kypsentää 4 ruokaa kerrallaan (oma ajastin 9–14 s); 2× ajalla ruoka palaa hiileksi.
 - **Seisova soihtu:** puu 10 min, hiili 30 min. Lyöminen sammuttaa tulen.
-- **Käsisoihtu:** palaa **120 s** (juostessa 20 % nopeammin), pihka lisää 60 s; sade ja vesi sammuttavat; sytytys toisen liekin vieressä 2,5 s.
+- **Käsisoihtu:** palaa **120 s** (★2 180 s, ★3 240 s; juostessa 20 % nopeammin), pihka lisää 60 s; sade ja vesi sammuttavat; sytytys toisen liekin vieressä 2,5 s.
 - **Valot:** enintään 6 lähintä valonlähdettä kerralla (asetus), yhteisvalon katto (`LIGHT_CAP`), elävä välke.
 - **Varjot:** aurinko/kuu (varjokartta 2048, alue 55 m); lähimmän tulen varjot pimeällä (päivitys tiheä pelaajan ollessa 17 m sisällä, kerran
   poistuttaessa); käsisoihdun pieni varjo pimeällä.

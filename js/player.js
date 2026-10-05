@@ -108,7 +108,7 @@ function updatePlayer(dt){
   fig.g.visible=camDist>1.8;
   // torch light
   const ts=torchSlot();let torch=false;
-  if(ts){if(ts.fuel===undefined)ts.fuel=TORCH_T;if(ts.lit===undefined)ts.lit=true;
+  if(ts){if(ts.fuel===undefined)ts.fuel=torchMax(ts);if(ts.lit===undefined)ts.lit=true;
     if(ts.lit&&ts.fuel>0){ts.fuel-=dt*(P.running?1.2:1);
       if(wRain>.5&&!shelterCache&&!P.inDun){ts.lit=false;msg('Sade sammutti soihtusi! Sytytä se uudelleen viemällä se kiinni toiseen liekkiin ja odota hetki.','warn');sfx('hit');}
       else if(P.inWater&&!P.inDun){ts.lit=false;msg('Vesi sammutti soihtusi! Sytytä se uudelleen viemällä se kiinni toiseen liekkiin ja odota hetki.','warn');sfx('hit');}

@@ -76,7 +76,13 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 .grid .slot.sel{border-color:var(--frost)}
 #invHead{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 #detail{margin-top:12px;min-height:96px;padding:10px 12px;border:1px solid var(--line);background:rgba(0,0,0,.2);max-width:440px}
-#detail .t{font-weight:800;font-size:16px}
+#detail .t{font-family:'Uncial Antiqua',serif;font-size:26px;line-height:1.15;color:#f3e6c4;margin-bottom:2px}
+#detail .t .qs{color:var(--frost);font-size:18px}
+.props{border-collapse:collapse;font-size:13px;margin:2px 0 8px;width:100%}
+.props td{padding:2px 8px 2px 0;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top}.props td:first-child{color:var(--dim);width:46%}
+.upPrev{margin:6px 0 10px;padding:8px 10px;border:1px solid rgba(150,200,255,.35);background:rgba(40,60,80,.25);border-radius:3px}
+.upPrev .uh{font-weight:800;margin-bottom:4px;color:var(--frost)}.upPrev .arr{color:var(--dim)}.upPrev .props td b{color:#bfe8a0}.upPrev .btn{margin-top:8px}
+.btn.on{outline:1px solid var(--frost)}
 #detail .s{color:var(--dim);font-size:13px;margin:3px 0 8px}
 .btns{display:flex;flex-wrap:wrap;gap:6px}
 .btn{background:var(--bark);border:1px solid var(--line2);color:var(--bone);padding:6px 12px;border-radius:3px;font-weight:700;font-size:13px}
@@ -150,6 +156,10 @@ textarea{width:100%;min-height:70px;background:rgba(0,0,0,.35);color:var(--bone)
 
 /* Erä 22: taso, saavutukset, valmistusvälilehdet */
 #craftTabs{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 8px}
+.search{display:block;width:100%;max-width:min(680px,calc(100vw - 70px));box-sizing:border-box;margin:0 0 8px;padding:6px 10px;font:inherit;font-size:14px;color:var(--bone);background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:3px;outline:none}
+.search:focus{border-color:var(--frost)}.search::placeholder{color:var(--dim)}
+.tab.sug{color:#f3d58a}.tab.sug.on{color:#ffe9b0}
+.why{display:inline-block;font-size:11px;font-weight:600;color:#f3d58a;margin:1px 0 2px}.rec .why{display:block;margin:1px 0 0}
 #lvlbox{position:absolute;right:16px;bottom:56px;font-size:12px;font-weight:700;color:var(--bone);text-shadow:0 1px 2px #000;display:flex;gap:8px;align-items:center}
 #lvlbox .track,#progP .track{display:inline-block;width:90px;height:6px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden}
 #lvlbox .track i,#progP .track i{display:block;height:100%;background:#e8a44a}
