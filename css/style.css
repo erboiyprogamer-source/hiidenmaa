@@ -209,3 +209,8 @@ textarea{width:100%;min-height:70px;background:rgba(0,0,0,.35);color:var(--bone)
 @keyframes hintPulse{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:.85;transform:translateY(-2px)}}
 @keyframes hintPulseDown{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:.85;transform:translateY(2px)}}
 @media (max-width:560px){.scrollHint{left:3px}}
+/* Asetukset: oletusarvo näkyy vaaleana ja merkinnällä */
+.defTag{display:inline-block;margin-left:6px;padding:0 6px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#2a2116;background:rgba(240,228,205,.75);vertical-align:1px}
+select.isdef{color:#f3ead8;background-color:rgba(120,96,70,.55)}
+option.def{color:#fbf3e2;background:#6a4c2c;font-weight:700}
+input.isdef{filter:brightness(1.25)}

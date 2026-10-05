@@ -33,13 +33,23 @@ function validateKey(action,code){
   return{ok:true};}
 
 /* ---------------- ASETUKSET ---------------- */
-const SET_DEF={shadow:'high',autoQ:true,sway:true,particles:1,detail:'high',bldDetail:true,renderDist:165,wheelHotbar:false,zoom:5.5,sound:true,invY:false};
+// Oletukset = taso, jolla suurin osa pelaa. Varjot: sunRes = auringon varjokartta (px), shDist = auringon varjoalueen säde (m),
+// shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
+const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,particles:1,detail:'high',bldDetail:true,
+  renderDist:165,lights:6,mist:1,clouds:1,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false};
+// Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
+const SET_PAGES={gfx:['res','autoQ','renderDist','detail','bldDetail','particles','lights','mist','clouds','shafts','sway'],shadow:['shadow','sunRes','shDist','shRate','ptShadow','ptRes'],ctl:['wheelHotbar','zoom','sound','invY']};
 const SET=Object.assign({},SET_DEF);
 try{Object.assign(SET,JSON.parse(localStorage.getItem('hiidenmaa_set')||'{}'));}catch(e){}
 function saveSet(){try{localStorage.setItem('hiidenmaa_set',JSON.stringify(SET));}catch(e){}}
 let RDK=1,DETK=1,PF=1,hotSel=0,lastShadowOn=null;
 // Ottaa asetukset käyttöön (kutsutaan käynnistyksessä ja kun asetusta muutetaan)
 function applyGfx(){
+  const dpr=devicePixelRatio||1,pr=SET.res==='native'?Math.min(dpr,2):Math.min(dpr,1.5)*(+SET.res||1);
+  if(Math.abs(renderer.getPixelRatio()-pr)>.001){renderer.setPixelRatio(pr);renderer.setSize(innerWidth,innerHeight);}
+  {const d=+SET.shDist||55,sc=sun.shadow.camera;if(sc.right!==d){sc.left=-d;sc.right=d;sc.top=d;sc.bottom=-d;sc.updateProjectionMatrix();}}
+  {const ps=+SET.ptRes||384,l=LIGHTS[0];if(l.shadow.mapSize.x!==ps){l.shadow.mapSize.set(ps,ps);if(l.shadow.map){l.shadow.map.dispose();l.shadow.map=null;}l.shadow.needsUpdate=true;}}
+  sun.shadow.autoUpdate=SET.shRate!=='slow';
   const on=SET.shadow!=='off';renderer.shadowMap.enabled=on;
   if(lastShadowOn!==on){lastShadowOn=on;scene.traverse(o=>{if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true);});}
   if(typeof setQuality==='function')setQuality(QUAL.lvl);
@@ -53,9 +63,15 @@ function applyPieceDetail(mesh){const v=!!SET.bldDetail;mesh.traverse(o=>{if(o.u
 
 /* ---------------- ASETUSVALIKKO ---------------- */
 let setTab='keys',capture=null;
-const SET_TABS=[['keys','Näppäimet'],['gfx','Grafiikka'],['ctl','Ohjaus ja ääni'],['save','Tallennus']];
+const SET_TABS=[['keys','Näppäimet'],['gfx','Grafiikka'],['shadow','Varjot'],['ctl','Ohjaus ja ääni'],['save','Tallennus']];
 const row=(l,c,n='')=>`<div class="setRow"><label>${l}</label>${c}<span class="note">${n}</span></div>`;
-const optSel=(id,opts,cur)=>`<select id="${id}">${opts.map(([v,t])=>`<option value="${v}"${String(v)===String(cur)?' selected':''}>${t}</option>`).join('')}</select>`;
+const optSel=(id,opts,cur,def)=>`<select id="${id}"${String(cur)===String(def)?' class="isdef"':''}>${opts.map(([v,t])=>{const d=def!==undefined&&String(v)===String(def);return `<option value="${v}"${d?' class="def"':''}${String(v)===String(cur)?' selected':''}>${t}${d?' · oletus':''}</option>`;}).join('')}</select>`;
+// Asetusrivi asetusavaimelle: valikko (opts) tai valintaruutu. Oletusarvo näkyy vaaleana ja merkinnällä "oletus".
+const isDef=k=>String(SET[k])===String(SET_DEF[k]);
+const setRow=(label,key,opts,note='')=>row(label+(isDef(key)?' <span class="defTag">oletus</span>':''),opts?optSel('s_'+key,opts,SET[key],SET_DEF[key]):`<input type="checkbox" id="s_${key}"${SET[key]?' checked':''}${isDef(key)?' class="isdef"':''}>`,note);
+function bindSet(keys){for(const k of keys){const el=$('#s_'+k);if(!el||el.type==='range')continue;el.onchange=()=>{const d=SET_DEF[k];SET[k]=el.type==='checkbox'?el.checked:(typeof d==='number'&&el.value!=='native'?+el.value:el.value);saveSet();applyGfx();renderSettings();};}}
+function resetPage(page){keyDialog('Palautetaanko tämän sivun asetukset oletuksiin?',[['Palauta',()=>{for(const k of SET_PAGES[page])SET[k]=SET_DEF[k];saveSet();applyGfx();renderSettings();}],['Peruuta',null]]);}
+const resetBtn=`<div class="row" style="margin-top:10px"><button class="btn" id="bPageReset">Palauta sivun oletusasetukset</button></div>`;
 function openSettings(tab){if(tab)setTab=tab;$('#settings').hidden=false;renderSettings();}
 function renderSettings(){const t=$('#setTabs');t.innerHTML='';
   for(const [id,nm] of SET_TABS){const b=document.createElement('button');b.className='tab'+(id===setTab?' on':'');b.textContent=nm;b.onclick=()=>{setTab=id;renderSettings();};t.appendChild(b);}
@@ -70,26 +86,38 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
     $('#bKeysReset').onclick=()=>keyDialog('Palautetaanko kaikki näppäimet oletuksiin?',[['Palauta',()=>{Object.assign(BIND,BIND_DEF);saveBinds();renderSettings();}],['Peruuta',null]]);
   }else if(setTab==='gfx'){
     body.innerHTML=`<div class="setGrid">${
-      row('Varjot',optSel('sShadow',[['high','Hyvät'],['low','Kevyet'],['off','Pois']],SET.shadow))+
-      row('Automaattinen laatu',`<input type="checkbox" id="sAutoQ"${SET.autoQ?' checked':''}>`,'laskee varjojen laatua jos peli nykii')+
-      row('Puiden heiluminen',`<input type="checkbox" id="sSway"${SET.sway?' checked':''}>`)+
-      row('Hiukkaset (kipinät, sade, lumi)',optSel('sPart',[[1,'Kaikki'],[.5,'Puolet'],[.25,'Vähän'],[0,'Pois']],SET.particles))+
-      row('Yksityiskohdat (kasvit, pienet esineet)',optSel('sDet',[['high','Paljon'],['low','Vähän']],SET.detail))+
-      row('Rakennusten yksityiskohdat',`<input type="checkbox" id="sBld"${SET.bldDetail?' checked':''}>`)+
-      row('Piirtoetäisyys',optSel('sRD',[[90,'Lähellä (90 m)'],[165,'Normaali (165 m)'],[260,'Kaukana (260 m)'],[400,'Äärimmäinen (400 m)']],SET.renderDist))
-    }</div><p class="note">Kaukana oleva maailma häipyy sumuun piirtoetäisyyden reunalla. Asetukset tallentuvat selaimeen.</p>`;
-    const bind=(id,key,conv)=>{const el=$('#'+id);el.onchange=()=>{SET[key]=el.type==='checkbox'?el.checked:conv?conv(el.value):el.value;saveSet();applyGfx();};};
-    bind('sShadow','shadow');bind('sAutoQ','autoQ');bind('sSway','sway');bind('sPart','particles',parseFloat);bind('sDet','detail');bind('sBld','bldDetail');bind('sRD','renderDist',v=>+v);
+      setRow('3D-resoluutio','res',[['native','Terävä (näytön tarkkuus)'],[1,'Normaali'],[.85,'85 %'],[.7,'70 %'],[.55,'55 %'],[.4,'40 %']],'pienempi = kevyempi, käyttöliittymä pysyy terävänä')+
+      setRow('Automaattinen laatu','autoQ',null,'laskee varjojen laatua jos peli nykii')+
+      setRow('Piirtoetäisyys','renderDist',[[60,'Hyvin lähellä (60 m)'],[90,'Lähellä (90 m)'],[165,'Normaali (165 m)'],[260,'Kaukana (260 m)'],[400,'Äärimmäinen (400 m)']],'kauempana olevaa ei piirretä eikä animoida')+
+      setRow('Yksityiskohdat (kasvit, pienet esineet)','detail',[['high','Paljon'],['low','Vähän']])+
+      setRow('Rakennusten yksityiskohdat','bldDetail')+
+      setRow('Hiukkaset (kipinät, sade, lumi)','particles',[[1,'Kaikki'],[.5,'Puolet'],[.25,'Vähän'],[0,'Pois']])+
+      setRow('Valonlähteitä yhtä aikaa','lights',[[6,'Paljon (6)'],[4,'Normaali (4)'],[2,'Vähän (2)']],'tulet, soihdut, portaalit')+
+      setRow('Usva ja höyry','mist',[[1,'Kaikki'],[.5,'Puolet'],[0,'Pois']])+
+      setRow('Pilvet','clouds',[[1,'Kaikki'],[.6,'Vähemmän'],[.3,'Vähän'],[0,'Pois']])+
+      setRow('Auringon valonsäteet','shafts')+
+      setRow('Puiden heiluminen','sway')
+    }</div><p class="note">Vaaleana näkyvä valinta on oletus. Asetukset tallentuvat selaimeen.</p>`+resetBtn;
+    bindSet(SET_PAGES.gfx);$('#bPageReset').onclick=()=>resetPage('gfx');
+  }else if(setTab==='shadow'){
+    body.innerHTML=`<div class="setGrid">${
+      setRow('Varjot','shadow',[['high','Hyvät'],['low','Kevyet'],['off','Pois']])+
+      setRow('Auringon varjojen tarkkuus','sunRes',[[1024,'Matala (1024)'],[2048,'Normaali (2048)'],[4096,'Korkea (4096)']])+
+      setRow('Auringon varjojen etäisyys','shDist',[[35,'Lähellä (35 m)'],[55,'Normaali (55 m)'],[80,'Kaukana (80 m)'],[110,'Hyvin kaukana (110 m)']],'kauempana varjot ovat epätarkempia')+
+      setRow('Varjojen päivitystiheys','shRate',[['fast','Nopea'],['normal','Normaali'],['slow','Hidas']],'hidas = kevyempi, varjot liikkuvat nykien')+
+      setRow('Tulien ja soihtujen varjot','ptShadow',null,'pimeällä')+
+      setRow('Tulien varjojen tarkkuus','ptRes',[[256,'Matala (256)'],[384,'Normaali (384)'],[768,'Korkea (768)']])
+    }</div><p class="note">Vaaleana näkyvä valinta on oletus.</p>`+resetBtn;
+    bindSet(SET_PAGES.shadow);$('#bPageReset').onclick=()=>resetPage('shadow');
   }else if(setTab==='ctl'){
     body.innerHTML=`<div class="setGrid">${
-      row('Hiiren rulla vaihtaa pikapaikkaa',`<input type="checkbox" id="sWheel"${SET.wheelHotbar?' checked':''}>`,'kuten Minecraftissa; zoom säädetään alta')+
-      row('Kameran etäisyys',`<input type="range" id="sZoom" min="2.2" max="10" step=".1" value="${SET.zoom}">`,`<span id="sZoomV">${(+SET.zoom).toFixed(1)} m</span>`)+
-      row('Äänet',`<input type="checkbox" id="sSound"${SET.sound?' checked':''}>`)+
-      row('Käännä pystyhiiri',`<input type="checkbox" id="sInvY"${SET.invY?' checked':''}>`)
-    }</div>`;
-    $('#sWheel').onchange=e=>{SET.wheelHotbar=e.target.checked;saveSet();applyGfx();};
+      setRow('Hiiren rulla vaihtaa pikapaikkaa','wheelHotbar',null,'kuten Minecraftissa; zoom säädetään alta')+
+      row('Kameran etäisyys'+(isDef('zoom')?' <span class="defTag">oletus</span>':''),`<input type="range" id="sZoom" min="2.2" max="10" step=".1" value="${SET.zoom}">`,`<span id="sZoomV">${(+SET.zoom).toFixed(1)} m</span>`)+
+      setRow('Äänet','sound')+
+      setRow('Käännä pystyhiiri','invY')
+    }</div>`+resetBtn;
+    bindSet(SET_PAGES.ctl);$('#bPageReset').onclick=()=>resetPage('ctl');
     $('#sZoom').oninput=e=>{SET.zoom=+e.target.value;$('#sZoomV').textContent=SET.zoom.toFixed(1)+' m';camDist=SET.zoom;saveSet();};
-    $('#sSound').onchange=e=>{SET.sound=e.target.checked;saveSet();applyGfx();};$('#sInvY').onchange=e=>{SET.invY=e.target.checked;saveSet();applyGfx();};
   }else{
     body.innerHTML=`<p class="note">Tallennuskoodi on pakattu: sen voi kopioida, tallentaa .txt-tiedostoksi ja ladata takaisin toisella koneella.</p>
       <textarea id="saveCode" spellcheck="false" placeholder="Tallennuskoodi tulee tähän"></textarea>

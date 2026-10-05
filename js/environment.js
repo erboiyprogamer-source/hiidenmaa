@@ -40,7 +40,8 @@ function updateClouds(dt,cover,light,el){const vis=!P.inDun;let cx=camera.positi
   _cc.copy(cCloudNight).lerp(cCloudDay,light).lerp(cCloudGrey,Math.min(1,wDark/.6)*.85);
   const dusk=sstep(.5,.0,el)*sstep(-.3,0,el);_cc.lerp(cSunLow,dusk*.45);
   const drift=dt*(2+wWind*7),R=CLOUD_R,grow=.75+.55*cover,hor=scene.background;
-  for(const c of CLOUDS){const u=c.userData;if(!vis){c.visible=false;continue;}
+  const nC=CLOUDS.length*(SET.clouds??1);
+  for(let ci=0;ci<CLOUDS.length;ci++){const c=CLOUDS[ci],u=c.userData;if(!vis||ci>=nC){c.visible=false;continue;}
     u.ox+=drift*u.sp;const mod=(v)=>((v%(2*R))+2*R)%(2*R);
     const dx=mod(u.ox-cx+R)-R,dz=mod(u.oz-cz+R)-R,d=Math.hypot(dx,dz);
     c.position.set(cx+dx,u.h,cz+dz);
@@ -59,7 +60,7 @@ function updateSky(light,sd0,el,sunK){const sd=_skyS.copy(sd0);skyDome.position.
   SKY_U.uHor.value.copy(scene.background);_sky.copy(scene.background).multiplyScalar(.62);_sky.b=Math.min(1,_sky.b*1.25+.03*light);SKY_U.uTop.value.copy(_sky);
   SKY_U.uSun.value.set(sd.x,sd.y,sd.z);SKY_U.uSunC.value.copy(cSun);SKY_U.uGlow.value=sunK*(1-Math.min(1,wDark*1.4))*(1-aarniK*.7);
   const clear=(1-sstep(.35,.7,wCloud))*(1-Math.min(1,wDark*3))*sstep(.05,.25,el)*sstep(.85,.45,el)*sunK*(1-indoorK)*(1-aarniK);
-  sunShafts.visible=!P.inDun&&clear>.02;if(sunShafts.visible){const hx=sd.x,hz=sd.z,hl=Math.hypot(hx,hz)||1;
+  sunShafts.visible=!P.inDun&&clear>.02&&SET.shafts!==false;if(sunShafts.visible){const hx=sd.x,hz=sd.z,hl=Math.hypot(hx,hz)||1;
     sunShafts.position.set(camera.position.x+hx/hl*70,Math.max(0,camera.position.y-25),camera.position.z+hz/hl*70);
     sunShafts.rotation.set(0,0,0);sunShafts.quaternion.setFromUnitVectors(_up,sd.normalize());
     sunShafts.userData.mat.opacity=.07*clear*(.85+.15*Math.sin(playTime*.3));}}
@@ -119,7 +120,8 @@ function updateRain(dt){const a=rain.geometry.attributes.position.array,sp=26*(w
   rainInit=true;rain.geometry.attributes.position.needsUpdate=true;}
 function updateLights(){
   const src=lightSources.filter(s=>s.on()&&(!!s.dun===P.inDun)).sort((a,b)=>dist2(a.x,a.z,P.pos.x,P.pos.z)-dist2(b.x,b.z,P.pos.x,P.pos.z));
-  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=src[i];if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){if(i===0&&(l.position.x!==s.x||l.position.z!==s.z))l.shadow.needsUpdate=true;l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;}else{l.intensity=0;l.userData.base=0;}}
+  const nL=Math.min(LIGHTS.length,+SET.lights||6);
+  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=i<nL?src[i]:null;if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){if(i===0&&(l.position.x!==s.x||l.position.z!==s.z))l.shadow.needsUpdate=true;l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;}else{l.intensity=0;l.userData.base=0;}}
 }
 // Tilat: jokaisella on vaikutus pelaajan kykyihin (P.fx), kuvaus ja halutessa ajastin (s). effects() kerää aktiiviset, calcFx() laskee kertoimet.
 function effects(){const e=[],wt=invWeight(),b=P.buffs,add=(key,name,kind,desc,t)=>e.push({key,name,kind,desc,t});

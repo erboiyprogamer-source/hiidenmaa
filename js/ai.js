@@ -145,7 +145,7 @@ function spawner(dt){
     const pack=type==='susi'&&night?2:1;for(let k=0;k<pack;k++)spawnMob(type,x+k*1.5,z+k);return;}
 }
 function respawnNodes(){for(const n of nodes)if(!n.alive&&n.respawnAt<=playTime&&dist2(n.x,n.z,P.pos.x,P.pos.z)>40*40&&!nearBase(n.x,n.z))respawnNode(n);}
-const LIGHT_CAP=3.0;let shFrame=0;const ALL_LIGHTS=[...LIGHTS,torchLight,torchFill];
+const LIGHT_CAP=3.0;let shFrame=0,shNearPrev=false;const ALL_LIGHTS=[...LIGHTS,torchLight,torchFill];
 function updateStations(dt){
   for(const p of pieces){
     // piirtoetäisyys: kaukana (sumun takana) olevia rakennuksia ei piirretä
@@ -162,8 +162,13 @@ function updateStations(dt){
   for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i];const u=l.userData.fl||(l.userData.fl={cur:1,target:1,t:Math.random()*.2});l.intensity=!l.userData.base?0:l.userData.base*flick(u,dt)*(.95+Math.sin(playTime*(7+i*1.7)+i*3)*.05);}
   // Pistevalojen varjokartat päivitetään harvemmin (autoUpdate pois, needsUpdate nostetaan itse): pimeällä joka 2. (soihtu) / 3. (tuli) kehys,
   // päivällä harvemmin; vain jos valo palaa. Kun lähin tuli vaihtuu (updateLights), kartta päivitetään heti. Laatutaso (`QUAL`) voi harventaa lisää.
-  {shFrame++;const dark=P.inDun||isNight()||indoorK>.5||wDark>.55,q=QUAL.lvl,fT=1,nearL=dist2(LIGHTS[0].position.x,LIGHTS[0].position.z,P.pos.x,P.pos.z)<9*9,fF=(nearL?(dark?2:4):(dark?60:120))*(q>=1?2:1);// pelaajan lähellä (< 9 m) pelaajan varjo liikkuu tulen kanssa → tiheä päivitys; kaukana harvaan
-   if(QUAL.pointShadow){if(torchLight.intensity>0&&shFrame%fT===0)torchLight.shadow.needsUpdate=true;if(LIGHTS[0].intensity>0){if(shFrame%fF===0||shDirty)LIGHTS[0].shadow.needsUpdate=true;shDirty=false;}}}
+  {shFrame++;const dark=P.inDun||isNight()||indoorK>.5||wDark>.55,q=QUAL.lvl,rate=SET.shRate==='fast'?.5:SET.shRate==='slow'?2.5:1,fT=SET.shRate==='slow'?2:1;
+   // Pelaaja (ja hänen varjonsa) on lähimmän tulen varjokameran kantamalla (15 m + marginaali) → tiheä päivitys. Kun pelaaja poistuu kantamalta,
+   // kartta päivitetään vielä kerran, jottei pelaajan vanha varjo jää maahan (aiemmin säde oli 9 m ja varjo jäi näkyviin harvan päivityksen ajaksi).
+   const nearL=dist2(LIGHTS[0].position.x,LIGHTS[0].position.z,P.pos.x,P.pos.z)<17*17,left=shNearPrev&&!nearL;shNearPrev=nearL;
+   const fF=Math.max(1,Math.round((nearL?(dark?2:4):(dark?60:120))*(q>=1?2:1)*rate));
+   if(SET.shRate==='slow'&&shFrame%3===0)sun.shadow.needsUpdate=true;
+   if(QUAL.pointShadow){if(torchLight.intensity>0&&shFrame%fT===0)torchLight.shadow.needsUpdate=true;if(LIGHTS[0].intensity>0){if(shFrame%fF===0||shDirty||left)LIGHTS[0].shadow.needsUpdate=true;shDirty=false;}}}
   // Valokatto: pelaajan kohdalle osuva yhteisvalo (summa etäisyyden mukaan vaimennettuna) ei ylitä LIGHT_CAP:ia – päällekkäiset valot eivät kirkastu loputtomiin.
   {let W=0;const ls=ALL_LIGHTS;for(const l of ls)if(l.intensity>0){const d=Math.hypot(l.position.x-P.pos.x,l.position.y-(P.pos.y+1),l.position.z-P.pos.z);W+=l.intensity*Math.pow(Math.max(0,1-d/l.distance),1.5);}
    if(W>LIGHT_CAP){const k=LIGHT_CAP/W;for(const l of ls)l.intensity*=k;}}

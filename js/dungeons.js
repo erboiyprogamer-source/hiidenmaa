@@ -304,7 +304,7 @@ for(const k in LOC){const L=LOC[k];if(L.kind==='rock')VENTS.push({x:L.x+1.5,y:te
 VENTS.push({x:LOC.barrow.x+9.6,y:terrainH(LOC.barrow.x+10.5,LOC.barrow.z)+.1,z:LOC.barrow.z-1,col:0xcfd4d0,rate:2.5,acc:0},{x:LOC.barrow.x+9.6,y:terrainH(LOC.barrow.x+10.5,LOC.barrow.z)+.1,z:LOC.barrow.z+1,col:0xcfd4d0,rate:2.5,acc:0});
 [[5,6],[12,10],[16,2],[8,10],[17,5]].forEach(([ix,iz])=>{const p=dunCell(ix,iz);VENTS.push({x:p.x,y:DUN.y+.1,z:p.z,col:0xb8b2a6,rate:3,dun:true,acc:0});});
 function updateMist(dt){
-  const dun=P.inDun,D=dun&&P.realm?REALMS[P.realm]:null,q=QUAL.lvl>=2?.4:1;
+  const dun=P.inDun,D=dun&&P.realm?REALMS[P.realm]:null,q=(QUAL.lvl>=2?.4:1)*(SET.mist??1);
   let ax=P.pos.x,az=P.pos.z,on=dun,col=D?D.mist:0xa8a49a;
   if(!dun){let bd=60*60;for(const k in LOC){const L=LOC[k];if(L.kind!=='portal'&&L.kind!=='rock'&&L.kind!=='ruin'&&k!=='barrow')continue;const d2=dist2(L.x,L.z,P.pos.x,P.pos.z);if(d2<bd){bd=d2;ax=L.x;az=L.z;on=true;}}col=0xc9d6da;}
   const n=MIST.length*q;

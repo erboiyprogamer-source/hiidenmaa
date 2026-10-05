@@ -55,6 +55,32 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.58 (erä 34: grafiikka- ja varjoasetukset, soihdun varjokorjaus, rakennusalueet, karsinta, kartan pilvet)
+- **Oletustaso = nykyinen grafiikka** (`SET_DEF`). Kaikki valinnat merkitään: oletusarvo näkyy vaaleana (`select.isdef`, `option.def`
+  "· oletus") ja rivin otsikossa on merkki "OLETUS" (`.defTag`). Jokaisella asetussivulla on "Palauta sivun oletusasetukset"
+  (`SET_PAGES`, `resetPage`, vahvistus).
+- **Grafiikka-sivu:** alussa **3D-resoluutio** (`res`: Terävä = näytön tarkkuus ≤2, Normaali = oletus min(dpr,1,5), 85/70/55/40 %;
+  `renderer.setPixelRatio`, käyttöliittymä pysyy terävänä), automaattinen laatu, piirtoetäisyys (uusi 60 m), yksityiskohdat,
+  rakennusten yksityiskohdat, hiukkaset, **valonlähteitä yhtä aikaa** (`lights` 6/4/2), **usva ja höyry** (`mist`), **pilvet**
+  (`clouds` kaikki/vähemmän/vähän/pois), **auringon valonsäteet** (`shafts`), puiden heiluminen.
+- **Uusi Varjot-sivu:** varjot (hyvät/kevyet/pois), auringon varjojen tarkkuus (`sunRes` 1024/2048/4096), auringon varjojen
+  etäisyys (`shDist` 35/55/80/110 m, varjokameran laatikko), päivitystiheys (`shRate` nopea/normaali/hidas: hidas = aurinko joka 3.
+  kuva ja tulet ×2,5 harvemmin, nopea = tulet ×0,5), tulien ja soihtujen varjot päälle/pois (`ptShadow`), tulien varjojen
+  tarkkuus (`ptRes` 256/384/768). `setQuality` käyttää näitä (automaattinen laatu puolittaa edelleen tarvittaessa).
+- **Korjaus: pelaajan varjo jäi maahan seisovan soihdun luota poistuttaessa.** Syy: lähimmän tulen varjokartta päivitettiin
+  tiheästi vain alle 9 m:n päässä (varjokameran kantama on 15 m), sen jälkeen vain 2–4 s välein. Nyt tiheä päivitys 17 m asti ja
+  kun pelaaja poistuu alueelta, kartta päivitetään heti kerran (`shNearPrev`).
+- **Puut eivät kasva rakennusalueelle:** `nearBase` = 15 m jokaisesta pelaajan rakennusosasta + työpenkin alue × 1,3 (26 m).
+  Korjattu virhe: jos uusiutuvalle puulle ei löytynyt kelvollista paikkaa, se palasi alkuperäiseen paikkaansa, vaikka se oli
+  rakennusalueella. Nyt `respawnNode` palauttaa false ja yrittää minuutin päästä uudelleen. Löytöpaikat: metsä väistää kaikkia
+  `LOC`-paikkoja 20 m (riimukivet 4 m) ja uusiutuva puu ei siirry niitä lähemmäs (`locMin`).
+- **Piirtoetäisyys oikeasti karsii:** `cullStatics` (0,5 s välein) piilottaa riimukivet, rauniot, portaalit, kummun ja löytöpaikat
+  sumun takana (keskipiste + säde lasketaan kerran; InstancedMesh instanssien mukaan) ja Hautakummun sisätilan, kun pelaaja ei
+  ole siellä. Puut/kivet (ruuduittain), rakennukset ja viholliset karsittiin jo; ulottuvuudet ovat omia ryhmiään.
+- **Kartan pilvet pilvimäisemmiksi:** `mkMapClouds` = saumaton jaksollinen arvokohina (5 oktaavia) → pyöreät kumpupilvet pehmeillä
+  reunoilla, valaistu luoteesta (vaalea yläreuna, harmaampi pohja); kaksi kerrosta eri nopeuksilla/suunnilla/mittakaavoilla ja
+  pilvien varjot (`CLOUDSH`) alla. Edelleen vain kun kartta on auki.
+
 ### v0.57 (päävalikon vieritys)
 - Päävalikko (`.screen`) vierii pystysuunnassa hiiren rullalla ja kosketuksella, vierityspalkki piilotettu (`scrollbar-width:none`,
   `::-webkit-scrollbar`). Asetus- ja näppäinkortit eivät enää vieri erikseen (max-height pois), vaan koko valikko vierii; sisältö
