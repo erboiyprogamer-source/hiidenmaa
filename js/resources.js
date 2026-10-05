@@ -201,6 +201,13 @@ function unplantAll(){for(let i=nodes.length-1;i>=0;i--){const n=nodes[i];if(!n.
 const BASE_PIECE_R=15;
 function nearBase(x,z){for(const p of pieces){const r=p.t==='tyopenkki'?BENCH_R*1.3:BASE_PIECE_R;if(dist2(p.x,p.z,x,z)<r*r)return true;}return false;}
 // Yöllä nukkuessa: kaadetut puut ja poimitut kasvit uusiutuvat (ei uusia), paitsi rakennusten lähellä.
-function regrowForest(){let revived=0;
-  for(const n of nodes)if(!n.alive&&(n.def.kind==='tree'||n.def.kind==='pick')&&!nearBase(n.x,n.z)){if(respawnNode(n))revived++;}
+function regrowForest(){let revived=nightRegrow();
+  for(const n of nodes)if(!n.alive&&n.def.kind==='pick'&&!nearBase(n.x,n.z)){if(respawnNode(n))revived++;}
   return{revived,planted:0};}
+// Kaadetut puut yrittävät kasvaa takaisin vain kerran yössä ja vain pelaajan 100 m säteellä (ei rakennusalueelle).
+// Yön tunnus: illan tunnit kuuluvat kuluvaan päivään, aamuyö edelliseen (flags.rgN = viimeisin yö, jona yritettiin).
+const REGROW_R=100;
+function nightId(){return dayN-(dayT<.5?1:0);}
+function nightRegrow(){const id=nightId();if(flags.rgN===id)return 0;flags.rgN=id;let c=0;
+  for(const n of nodes)if(!n.alive&&n.def.kind==='tree'&&dist2(n.x,n.z,P.pos.x,P.pos.z)<REGROW_R*REGROW_R&&!nearBase(n.x,n.z)){if(respawnNode(n))c++;}
+  return c;}

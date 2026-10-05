@@ -55,6 +55,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.59 (puiden uusiutuminen yöllä)
+- **Kaadetut puut kasvavat takaisin vain kerran yössä ja vain pelaajan 100 m säteellä** (`nightRegrow`, `REGROW_R`, resources.js).
+  Yritys tehdään yön alkaessa (`isNight`, tarkistus 1 s välein, ei luolastossa) tai nukkuessa (`regrowForest`); jos jo tehty samana
+  yönä, ei uutta yritystä. Yön tunnus `nightId()` (ilta = kuluva päivä, aamuyö = edellinen), viimeisin yritys `flags.rgN` (tallentuu).
+  Rakennusalue (`nearBase`) ja löytöpaikat torjuvat edelleen. Päivällä `respawnNodes` ei enää uusi puita (kivet ym. ennallaan),
+  marjat ja kasvit uusiutuvat nukkuessa kuten ennen.
+
 ### v0.58 (erä 34: grafiikka- ja varjoasetukset, soihdun varjokorjaus, rakennusalueet, karsinta, kartan pilvet)
 - **Oletustaso = nykyinen grafiikka** (`SET_DEF`). Kaikki valinnat merkitään: oletusarvo näkyy vaaleana (`select.isdef`, `option.def`
   "· oletus") ja rivin otsikossa on merkki "OLETUS" (`.defTag`). Jokaisella asetussivulla on "Palauta sivun oletusasetukset"
