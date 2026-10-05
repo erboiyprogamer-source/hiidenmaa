@@ -58,6 +58,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.76 (ammusten järjestys)
+- Ammukset listassa `AMMO` heikoimmasta parhaaseen (piikivinuolet → tulinuolet → tulevat). Ilman valintaa jousi käyttää heikointa jota on;
+  valittu ammus ensin ja sen loputtua taas heikoimmasta. Valitun napin uusi painallus palauttaa automaattiseen. Ominaisuuslistassa "Ammus".
+
 ### v0.75 (pomot, alttari, reppu ja arkut, tuli, tulinuolet)
 - **Isot pomot eivät parane:** Kalmanvartija (ennen +30 hp/s pelaajan kuoltua) ja ulottuvuuksien pomot (+40 hp/s) eivät enää palauta
   terveyttä. Ulottuvuuspomon terveys säilyy poistuttaessa (`flags.rbHp[ulottuvuus]`), Kalmanvartijan maahan vajotessa (`flags.bossHp`).

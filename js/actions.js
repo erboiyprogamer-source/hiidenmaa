@@ -114,8 +114,10 @@ function updateBurn(m,dt){if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9)){stopBurn
   if(m.fireFx){const t=playTime*9;m.fireFx.children.forEach((c,i)=>{c.scale.y=.8+.35*Math.abs(Math.sin(t+i*1.7));});if(Math.random()<dt*6)emitEmber(m.pos.x+(Math.random()-.5)*.5,m.pos.y+(m.barH||1.5)*.7,m.pos.z+(Math.random()-.5)*.5,'spark');}
   if(m.hp<=0){stopBurn(m);killMob(m);return true;}
   if(m.burnT<=0)stopBurn(m);return false;}
-// Valittu ammus (flags.ammo): ensisijainen, jos sitä on, muuten toinen.
-function ammoId(){const pref=flags.ammo==='tulinuolet'?['tulinuolet','nuolet']:['nuolet','tulinuolet'];return pref.find(id=>invCount(id)>0)||null;}
+// Ammukset heikoimmasta parhaaseen (v0.76). Jos ammusta ei ole valittu (flags.ammo), käytetään heikointa jota on; valittu ammus käytetään
+// ensin ja sen loputtua taas heikoimmasta alkaen. Uusi ammus lisätään listaan oikeaan kohtaan (esim. tulevat rautanuolet).
+const AMMO=['nuolet','tulinuolet'];
+function ammoId(){if(flags.ammo&&invCount(flags.ammo)>0)return flags.ammo;return AMMO.find(id=>invCount(id)>0)||null;}
 function killMob(m){m.dead=true;m.deadT=0;sfx('die');P.kills++;bump('kills');bump('k_'+m.type);addXp(Math.round(m.def.hp/(m.type==='vartija'?2:5))+3,m.def.n);
   for(const [id,lo,hi] of m.def.drops){const c=rint(rng,lo,hi);if(c>0)spawnDrop(id,c,m.pos.x,m.pos.y+1,m.pos.z);}
   if(m.type==='vartija'){flags.boss=1;$('#bossbar').hidden=true;bossDefeated();}
