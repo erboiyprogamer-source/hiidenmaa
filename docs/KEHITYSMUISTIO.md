@@ -58,6 +58,16 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.70 (korjauksia: varjojen jähmettyminen, hiipiminen, korjausmuistio, ominaisuustarkistus)
+- **Varjot jähmettyivät:** automaattisen laadun tasolla 3 (tai tulien varjot pois) pistevalojen varjokarttoja ei enää päivitetty, mutta
+  valot heittivät varjoa vanhasta kartasta. Nyt `setQuality` kytkee `castShadow`:n samalla pois/päälle. Kaukana tulesta varjojen
+  päivitysväli 60/120 → 12/30 kehystä (pimeä/päivä).
+- **Eläimet säikähtivät kyykyssä:** kyykyssä paikallaan ei huomata; hiipiessä 1,5 m (eläin katsoo kohti) tai 0,9 m (selin). Ennen 3,5 m ja
+  alle 4 m aina, jolloin hiiviskelyisku ei koskaan ylettynyt. Kävely 7 m / juoksu 16 m ennallaan.
+- **Uusi `docs/KORJAUKSET.md`:** toistuvat viat, syyt ja korjaukset koodinpätkineen + pakolliset tarkistukset.
+- **Uusi `tools/tarkistus.mjs`:** 39 ominaisuuden regressiotesti (G-tilat, 3D-hila, H, reunakohdistus, kartat, ulottuvuudet, tehtävät,
+  asetukset, puut, myrsky, soihtu, kartta, päivitykset, ehdotukset, haku, IK, jousi, Kalmanpesä, löydetyt arkut, varjot, hiipiminen…).
+
 ### v0.69 (korjauksia: 3D-hila, löydetyt arkut, haku, tukin ääni, ominaisuustarkistus)
 - **3D-ruudukko näkyväksi:** 3D-tila oli koodissa, mutta pystyruudukko oli niin haalea (opasiteetti 0,28, yksi kameraa kohti käännetty
   taso), ettei sitä erottanut. Nyt `gridV` on oikea 3D-hila: pystytolpat jokaisessa ruudukon kulmassa (7 × 7, kaksi kerrosta korkeita) ja

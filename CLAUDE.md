@@ -6,7 +6,8 @@ rakentaminen, taistelu, luolasto ja yksi pomo. Valheim on inspiraatio, mutta pel
 
 Lue tämän lisäksi aina `docs/KEHITYSMUISTIO.md`. Siinä ovat tehdyt päätökset, tasapainoarvot,
 versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen. Pelin kaikki ominaisuudet, säännöt ja
-fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`.
+fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niiden korjaukset koodinpätkineen ovat
+`docs/KORJAUKSET.md`:ssä – lue se ennen muutoksia ja lisää sinne uusi kohta aina, kun jokin rikkoutuu tai katoaa.
 
 ## Käyttäjä ja työtapa
 
@@ -108,6 +109,8 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`.
   Pilvisessiossa cdnjs on estetty: asenna `three@0.128.0` npm:stä testikansioon ja ohjaa
   `**/three.min.js`-pyyntö siihen `page.route`:lla (vain testiä varten, ei peliin).
 - Tarkista aina, ettei konsoliin tule virheitä, ja että tallennus + lataus toimii.
+- **Ominaisuustarkistus jokaisen erän jälkeen:** `tools/tarkistus.mjs` (pitää tulostaa `KAIKKI OK`). Lisää uudelle ominaisuudelle
+  oma tarkistusrivi, jotta sen katoaminen huomataan. Ennen haaran nollausta tarkista, ettei yhdistämättömiä committeja katoa.
 
 ## Julkaisu
 

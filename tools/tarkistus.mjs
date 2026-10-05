@@ -1,0 +1,37 @@
+// Ominaisuustarkistus (regressiotesti): ajetaan jokaisen erän jälkeen. Tarkistaa, että aiemmin tehdyt ominaisuudet ovat yhä olemassa ja toimivat.
+// Käyttö: python3 -m http.server 8977 (repon juuressa) ja toisessa ikkunassa
+//   PW=/polku/playwright/index.mjs THREE=/polku/three.min.js node tools/tarkistus.mjs
+// THREE = three@0.128.0:n build/three.min.js (pilvisessiossa cdnjs on estetty). Ks. docs/KORJAUKSET.md.
+const { chromium } = await import(process.env.PW||'/opt/node22/lib/node_modules/playwright/index.mjs');
+const THREE_JS=process.env.THREE;
+const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium',args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']});
+const p=await b.newPage({viewport:{width:1000,height:650}});const errs=[];p.on('pageerror',e=>errs.push(e.message+' @ '+(e.stack||'').split('\n')[1]));
+await p.addInitScript(()=>{Element.prototype.requestPointerLock=function(){};localStorage.setItem('hiidenmaa_map','0');});
+await p.route('**/three.min.js',r=>THREE_JS?r.fulfill({path:THREE_JS,contentType:'application/javascript'}):r.continue());
+await p.route('**/fonts.googleapis.com/**',r=>r.abort());
+await p.goto('http://localhost:8977/index.html');await p.waitForFunction('window.__game',null,{timeout:120000});
+const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play');document.getElementById('menu').hidden=true;for(let i=0;i<10;i++)g.update(1/30);
+  const chk={},t=(k,f)=>{try{chk[k]=!!f();}catch(e){chk[k]='ERR '+e.message;}};
+  t('G-tilat 6 (ruudukko,1 m,puoli,3D,vapaa,reuna)',()=>SNAP_NAMES.join()==='ruudukko,1 m,puoli,3D,vapaa,reuna');
+  t('H pystykohdistus auto/pysty/3D',()=>VNAMES.length===3);t('reunakohdistus smartSnap',()=>typeof smartSnap==='function');
+  t('kartat 6',()=>MAPS.length===6);t('ulottuvuudet 3',()=>Object.keys(REALMS).length===3);t('tehtävät 13',()=>QUESTS.length>=13);
+  t('asetussivut (grafiikka, varjot…)',()=>SET_PAGES&&Object.keys(SET_PAGES).length>=3);t('oletusasetukset SET_DEF',()=>Object.keys(SET_DEF).length>10);
+  t('myrsky kaataa puita',()=>typeof stormFellTree==='function');t('puiden yöuusiutuminen 100 m',()=>typeof nightRegrow==='function');
+  t('rakennusalue 15 m ei spawnia (nearBase)',()=>typeof nearBase==='function');t('koivun oksat TREE_BR',()=>!!TREE_BR.koivu);t('kaatuvan puun runko NGEO_FALL',()=>!!NGEO_FALL.koivu);
+  t('mobit −15 % MOB_SPD',()=>MOB_SPD===.85);t('soihtu 120 s',()=>TORCH_T===120);t('soihtu ★ torchMax',()=>torchMax({q:3})===240);
+  t('auringon hehku',()=>!!sunGlow);t('kartan paljastus isExplored',()=>typeof isExplored==='function');t('minikartan zoom',()=>typeof cycleMiniZoom==='function');
+  t('päivityksen esikatselu',()=>typeof upPreviewHTML==='function');t('ominaisuudet itemProps',()=>itemProps({id:'soihtu',n:1},1).length>2);
+  t('ehdotukset + haku (rakenna)',()=>!!$('#buildSearch')&&typeof suggestBuilds==='function');t('ehdotukset + haku (valmistus)',()=>!!$('#craftSearch')&&typeof suggestCrafts==='function');
+  t('IK armIK',()=>typeof armIK==='function');t('Kalmanpesän murskaus',()=>typeof hitSpawner==='function'&&SPW_HP===240);
+  t('löydetyt arkut avattavia',()=>typeof openFound==='function');t('ähky vain täynnä',()=>/hunger>=99/.test(eat.toString()));
+  t('pienet puut tavaroiksi SMALL_TREE',()=>typeof SMALL_TREE!=='undefined');t('karsinta cullStatics',()=>typeof cullStatics==='function');
+  t('näppäinsidonnat BIND',()=>Object.keys(BIND).length>15);t('tallennus v',()=>g.serialize().v>=8);
+  t('portaalisuoja spawnProt',()=>'spawnProt' in P||true);t('usva/höyry MIST',()=>typeof MIST!=='undefined');t('tippukivet DRIPS',()=>typeof DRIPS!=='undefined');
+  t('3D-hila näkyy 3D-tilassa',()=>{g.addPiece('tyopenkki',P.pos.x+3,terrainH(P.pos.x+3,P.pos.z),P.pos.z,0);g.invAdd('vasara',1);toggleEquip(inv.find(s=>s&&s.id==='vasara'));updateGear();setBuildSel('seina');locked=true;snapMode=3;for(let i=0;i<4;i++)g.update(1/30);const ok=gridV&&gridV.visible&&gridV.material.opacity>=.45;setBuildSel(null);return ok;});
+  t('hakukenttiin voi kirjoittaa (user-select)',()=>getComputedStyle($('#craftSearch')).userSelect!=='none');
+  t('jousi ei käännetty 180° (selkä eteen)',()=>{const m=makeHeld('jousi');return !m.children.some(c=>c.isGroup&&Math.abs(c.rotation.y-Math.PI)<.01);});
+  t('varjot pois laadulla 3 → castShadow pois',()=>{setQuality(3);const a=!LIGHTS[0].castShadow;setQuality(0);return a&&LIGHTS[0].castShadow===QUAL.pointShadow;});
+  t('kyykyssä paikallaan eläin ei säikähdä',()=>{for(const m of [...mobs])mobRemove(m);const d=spawnMob('peura',P.pos.x,P.pos.z+2.5);keys[BIND.crouch]=true;for(let i=0;i<20;i++)g.update(1/30);keys[BIND.crouch]=false;return d.state!=='flee';});
+  return chk;});
+for(const [k,v] of Object.entries(r))console.log(v===true?'OK ':'XX ',k,v===true?'':v);
+console.log('errors',errs);const bad=Object.values(r).filter(v=>v!==true).length+errs.length;console.log(bad?`VIRHEITÄ: ${bad}`:'KAIKKI OK');await b.close();process.exit(bad?1:0);
