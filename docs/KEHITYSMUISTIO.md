@@ -58,6 +58,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.78 (DEV: kartan paljastus)
+- DEV-valikkoon (Ä) rivi **Kartta → Paljasta kartta ja kohteet** (`devRevealMap`, ui.js): `explored` täyteen (pilviverho pois koko kartalta,
+  tallentuu) ja kaikki nimetyt `LOC`-paikat `flags.disc`:iin (rauniot, portaalit, kummut, riimukivet, arvotut paikat). `resetFog` tyhjentää
+  sumukankaan suoraan, kun kaikki on paljastettu (ei 90 000 gradienttia latauksessa).
+
 ### v0.77 (DEV: V-nopeus ja Ä-valikko)
 - DEV-tilan 10× nopeus näppäimeen **V** (ennen vasen Alt). **Ä** (`Quote`) avaa DEV-valikon (`#devP`, `renderDev`): sää (kaikki `WEATHERS`,
   pysyy 10 min), kellonaika (liukusäädin + aamu/päivä/ilta/yö), terveys ja kylläisyys liukusäätimillä; E/Ä/✕ sulkee. DEV-merkki ruudun yläreunaan.
