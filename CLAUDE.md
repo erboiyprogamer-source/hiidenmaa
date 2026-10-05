@@ -53,7 +53,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`.
 | `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET`/`SET_DEF` (oletus = yleisin taso), `SET_PAGES`, `applyGfx()`, asetusvalikko (Grafiikka, Varjot, …) |
 | `js/input.js` | näppäimet, hiiri, hiiren lukitus |
 | `js/actions.js` | hyökkäys, vahinko, syöminen, `interact()`, alttari, luolastoon meno |
-| `js/building.js` | rakennushaamu, ruudukkoon kohdistus, `validPlace`, purku |
+| `js/building.js` | rakennushaamu, ruudukkoon kohdistus, reunakohdistus `smartSnap`, `validPlace`, purku |
 | `js/environment.js` | päivä/yö (`DAY_LEN`), sää, valot, selviytyminen (nälkä, kylmä, lepo) |
 | `js/player.js` | liike, fysiikka, animaatio, kuolema, uudelleensyntyminen, nukkuminen |
 | `js/ai.js` | vihollisten tekoäly, pomon hyökkäykset, `SPAWN`-taulukot, työpisteiden päivitys |

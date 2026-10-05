@@ -89,8 +89,14 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Kohdistustilat (G):** ruudukko (2,5 m), **1 m**, puoli (1,25 m), **3D** (vaaka- + pystyruudukko, korkeus WH/4 portain), vapaa (0,25 m),
   reuna. Ruudukkotiloissa kaikki osat kohdistuvat: lattiat ruutujen keskelle, seinät reunoille, **pylväät kulmiin, muut ruudun keskelle**.
 - **Pystykohdistus (H):** auto, pysty (Q/Z nostaa/laskee), 3D (seuraava kerros näkyy).
-- **Reunajatko:** katse rakennetun osan reunaan → jatko viereen; **seinän yläreunaan (ylin 0,5 m) → uusi seinä päälle**;
-  lattian reunaan → lattia viereen.
+- **Reunakohdistus (`smartSnap`, kaikki G-tilat paitsi vapaa, kaikki osat):** kohteen muoto = törmäyslaatikoiden rajaus.
+  - Yläpinta tai sivun ylin kaista (30 % korkeudesta, 0,12–0,5 m) → **päälle**: keskelle, reunalle tai kulmaan (sivulta: katsottu sivu +
+    vasen/oikea yläkulma). Esim. pylvään yläkulma → lattia/palkki/pylväs pylvään yläpuolelle katsottuun suuntaan.
+  - Seinän/palkin pääty tai sivun uloin 15 % → jatko samaan linjaan. Sivun keski → viereen (vain reuna-tilassa).
+  - Kokosäännöt (ohut < 0,4 m): ohut+ohut keskitetty, ohut kohde → osan reuna kohteen keskilinjalle, ohut osa → kohteen reunalle/kulmaan,
+    muuten reunat tasan. Lattia/katto ohuen kohteen päällä seuraa ruudukkoa: ruudukkoviivalla oleva pylväs → katsottu ruutu.
+  - Seinä/palkki kääntyy katsotun reunan suuntaiseksi (seinän päällä samaan suuntaan). Ruudukkotiloissa lattian yläpinta ja sivujen
+    keskiosat kohdistuvat tavalliseen ruudukkoon. Ei vinoille (45°) kohteille, katoille, portaille eikä tikkaille.
 - **Kääntö:** R = 45°, Shift+R = asento (kolmiot/vinoseinät 4 asentoa, palkit 5 kulmaa, portaat 3 jyrkkyyttä).
 - **Säännöt (`validPlace`):** sama osa samaan paikkaan kielletty, ei liian syvälle veteen, katto ei pelaajan päälle, maksu repusta.
 - **Kunto:** 3 vauriotasoa näkyvät tekstuurissa; vasara: X purkaa (materiaalit takaisin), F korjaa. Paaluaita kestää mobit (piikit vahingoittavat).
