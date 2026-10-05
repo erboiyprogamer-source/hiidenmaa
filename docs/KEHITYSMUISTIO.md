@@ -58,6 +58,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.73 (mobien terveyspalkit)
+- **Palkki ja pääkallot korkeammalle:** palkin korkeus lasketaan mallin todellisesta korkeudesta (`m.barH`, rajauslaatikko kerran mobia kohden)
+  + 0,45 m – ennen `r × 2,8 + 0,8`, joka osui uusien mallien päähän/sarviin. Pääkallot nimen yläpuolelle (ennen palkin alla).
+- **Näkyy vasta tarkasti katsottaessa:** katseen ja mobin keskikohdan välinen kulma ≤ ~11° (vahvat ☠≥3: ~9°), ennen 22° / 18°.
+  Etäisyysrajat ennallaan (12 m, vahvat 70 m); lyöty mobi näkyy 10 s katseesta riippumatta.
+
 ### v0.72 (vasara vyölle, luonnolliset lyönnit ilman läpimenoa, napavektori-IK, erä 45: eläimet)
 - **Vasara vyöllä takana:** kun vasara ei ole kädessä, se roikkuu vyön yläreunasta selän puolella (ripustus y 0,94, z −0,24): pää vyön päällä
   selän suuntaisesti (90° pystyakselin ympäri aiemmasta, jolloin pää sojotti taaksepäin), varsi alas. Heiluu askelten tahdissa ja kallistuu

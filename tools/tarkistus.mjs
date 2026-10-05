@@ -38,6 +38,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('yksityiskohtaiset eläimet (makeAnimal)',()=>['peura','karju','susi','routasusi'].every(k=>{const m=spawnMob(k,P.pos.x+20,P.pos.z+20);const ok=m.f.animal&&!!m.f.legs[0].userData.knee;mobRemove(m);return ok;}));
   t('vasara roikkuu vyöllä takana',()=>{g.invAdd('vasara',1);g.invAdd('kirves',1);const kv=inv.find(s=>s&&s.id==='kirves');if(!kv.eq)toggleEquip(kv);updateGear();return !!backHang&&Math.abs(backHang.position.y-.94)<.05;});
   t('lyönti ei mene vartalon läpi (armClear)',()=>{const kv=inv.find(s=>s&&s.id==='kirves');if(!kv.eq)toggleEquip(kv);updateGear();locked=true;let bad=0;for(let sw=0;sw<2;sw++){P.atk=null;P.stam=100;for(let i=0;i<10;i++)g.update(1/30);mouseL=true;g.update(1/30);mouseL=false;for(let f=0;f<30&&P.atk;f++){g.update(1/30);if(bodyPen(fig.hand,.05)>0||bodyPen(fig.handL,.05)>0||bodyPen(fig.elbowL,.04)>0||bodyPen(fig.elbowR,.04)>0)bad++;}}return bad===0;});
+  t('mobin palkki mallin yläpuolella, tarkka katse',()=>/m\.barH\+\.45/.test(updateMobBars.toString())&&/\.988:\.982/.test(updateMobBars.toString()));
   return chk;});
 for(const [k,v] of Object.entries(r))console.log(v===true?'OK ':'XX ',k,v===true?'':v);
 console.log('errors',errs);const bad=Object.values(r).filter(v=>v!==true).length+errs.length;console.log(bad?`VIRHEITÄ: ${bad}`:'KAIKKI OK');await b.close();process.exit(bad?1:0);
