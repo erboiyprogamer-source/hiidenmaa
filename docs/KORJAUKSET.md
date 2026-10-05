@@ -108,6 +108,13 @@ Käyttäjän toive: vasara roikkuu **vyöllä takana**, pää selän suuntaisest
 `const DEV=true` (core.js) on käyttäjän pyytämä testitila (ääretön kestävyys, max taso, ei painorajaa, V = 10× nopeus (v0.77; ennen Alt/Ö), Ä = DEV-valikko: sää, aika, terveys, kylläisyys, kartan + kohteiden paljastus v0.78). Älä poista
 koukkuja; kun käyttäjä pyytää pois, aseta `DEV=false`. Tarkistus- ja tasapainotestit kannattaa ajaa myös DEV=false-tilassa.
 
+### 16. Rakennusnäppäimet ilmoittivat rakentamatta – v0.79
+**Oire:** Shift+R (ja G/H) näytti ilmoituksen ("Asento vaihtuu…", "Kohdistus: …"), vaikka pelaaja ei rakentanut.
+**Korjaus (input.js):** jokainen rakennusnäppäin tarkistaa `isBuilding()` (vasara + `buildSel`). Uudet rakennusnäppäimet samalla ehdolla.
+```js
+else if(c===BIND.rot){if(isBuilding()){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}}
+```
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

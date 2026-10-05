@@ -27,11 +27,11 @@ addEventListener('keydown',e=>{
   else if(c==='Escape'){if(openPanel){e.preventDefault();closePanels(false,true);}else if(state==='play'&&locked){pauseGame();releaseLock();}}
   else if(state==='play'){
     if(c===BIND.interact)interact();
-    else if(c===BIND.rot){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}
-    else if(c===BIND.snap){if(equipped('weapon')&&equipped('weapon').id==='vasara')cycleSnap();}
-    else if(c===BIND.vsnap){if(equipped('weapon')&&equipped('weapon').id==='vasara')cycleVMode();}
-    else if(c===BIND.up)liftBuild(1);
-    else if(c===BIND.down)liftBuild(-1);
+    else if(c===BIND.rot){if(isBuilding()){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}}
+    else if(c===BIND.snap){if(isBuilding())cycleSnap();}
+    else if(c===BIND.vsnap){if(isBuilding())cycleVMode();}
+    else if(c===BIND.up){if(isBuilding())liftBuild(1);}
+    else if(c===BIND.down){if(isBuilding())liftBuild(-1);}
     else if(c===BIND.remove)removeLooked();
     else if(c===BIND.repair)repairLooked();
     else if(/^Digit[1-8]$/.test(c)){hotSel=+c.slice(5)-1;invDirty=true;useSlot(hotSel);}

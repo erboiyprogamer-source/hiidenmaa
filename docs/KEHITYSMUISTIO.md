@@ -58,6 +58,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.79 (rakennusnäppäimet vain rakennettaessa)
+- R, Shift+R, G, H, Q ja Z toimivat ja antavat ilmoituksen vain rakennustilassa (`isBuilding()`, building.js: vasara kädessä **ja**
+  rakennusosa valittuna). Ennen Shift+R ilmoitti "Asento vaihtuu…" ilman vasaraakin, ja G/H ilmoittivat pelkällä vasaralla.
+
 ### v0.78 (DEV: kartan paljastus)
 - DEV-valikkoon (Ä) rivi **Kartta → Paljasta kartta ja kohteet** (`devRevealMap`, ui.js): `explored` täyteen (pilviverho pois koko kartalta,
   tallentuu) ja kaikki nimetyt `LOC`-paikat `flags.disc`:iin (rauniot, portaalit, kummut, riimukivet, arvotut paikat). `resetFog` tyhjentää
