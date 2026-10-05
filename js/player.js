@@ -81,25 +81,36 @@ function updatePlayer(dt){
       tRx=a;tRz=-.12;eRo=k<hk?Math.min(0,-p-a):Math.min(0,-p-a)*Math.max(0,1-(k-hk)/.3);}
     else{// viistoisku: vuorotellen vasen-ylhäältä → oikea-alas ja oikea-ylhäältä → vasen-alas
       const hz=sd>0?.62:-.7,lz=sd>0?-.55:.5;
-      [tRx,tRz]=two?swingPose(k,hk,-2.6,hz,-.7,lz,hold):swingPose(k,hk,-2.4,hz*.9,-.9,lz*.9,hold);}
+      [tRx,tRz]=two?swingPose(k,hk,-2.25,hz*.55,-.75,lz*.7,hold):swingPose(k,hk,-2.4,hz*.9,-.9,lz*.9,hold);}// kahden käden isku: matalampi ja kapeampi nosto, jotta vasen käsi ylettyy varteen
     rate=k<hk+.12?30:6;if(two&&(k<hk+.3||hold)){grip=true;tSh=.31;}}
   if(P.crouchK>.4&&!P.atk&&!P.blocking&&!P.drawing){const K=P.crouchK;tLx=lerp(tLx,-.5,K);tLz=lerp(tLz,.85,K);tRx=lerp(tRx,-.25,K);tRz=lerp(tRz,-.75,K);eLo=-.95*K;}// kyykky: vasen käsi koukussa sivulla ja alhaalla, oikea sivulla
 
   if(P.blocking){tLx=-.65+Math.sin(playTime*3)*.03;tLz=-.8;eLo=-1.2;}// torjunta: vasen käsi koukussa oikealle ruumiin eteen, kilpi eteenpäin
-  if(P.drawing){tLx=-1.5;tRx=-1.5;tRz=.5;}
-  if(heldMesh&&ITEMS[heldId].cat==='bow'){if(P.drawing)tLz=-.1;}
+  // Jousen veto: jousikäsi suoraan eteen hieman sisäänpäin (jänne vedetään leuan kohdalle), vetokäsi IK:lla jänteelle
+  if(P.drawing){tLx=-1.58;tRx=-1.5;tRz=.5;}
+  if(heldMesh&&ITEMS[heldId].cat==='bow'){if(P.drawing)tLz=-.3;}
   if(P.atk)P.recT=.55;else P.recT=Math.max(0,(P.recT||0)-dt);if(!P.atk&&P.recT>0&&!P.drawing&&!P.blocking)rate=Math.min(rate,5);// iskun jälkeen kädet palaavat lepoon pehmeästi
   const e=Math.min(1,dt*rate);
   armSh+=(tSh-armSh)*e;fig.armL.position.x=armSh;fig.armR.position.x=-armSh;
   fig.armR.rotation.x=lerpAngle(fig.armR.rotation.x,tRx,e);fig.armR.rotation.z=lerpAngle(fig.armR.rotation.z,tRz,e);
-  if(grip&&heldMesh){const g=gripAngles();tLx=g[0];tLz=g[1];}
   fig.armL.rotation.x=lerpAngle(fig.armL.rotation.x,tLx,e);fig.armL.rotation.z=lerpAngle(fig.armL.rotation.z,tLz,e);
   // Kyynärpäät taipuvat sitä enemmän mitä korkeammalle käsivarsi nousee (jousella vetokäsi taipuu, jousikäsi suorana)
   {const bendR=-(.14+clamp(-fig.armR.rotation.x,0,2.8)*.28),bendL=-(.14+clamp(-fig.armL.rotation.x,0,2.8)*.28);
    let tR=eRo!==null?eRo:bendR,tL=eLo!==null?eLo:bendL;if(P.drawing){tL=-.05;tR=-(.5+P.bowDraw*.9);}
    fig.elbowR.rotation.x=lerp(fig.elbowR.rotation.x,tR,Math.min(1,dt*(P.atk?20:8)));fig.elbowL.rotation.x=lerp(fig.elbowL.rotation.x,tL,Math.min(1,dt*(P.atk?20:8)));}
   // Jousi pysyy pystyssä (kämmenen kierto kumotaan käsivarren kulmalla); jänne ja nuoli seuraavat vetoa.
-  if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-fig.armL.rotation.x,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
+  if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-fig.armL.rotation.x-fig.elbowL.rotation.x,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
+  // Kahden käden ote kirveestä: vasen käsi tarttuu varteen (IK, gripK pehmentää otteeseen menon ja irrotuksen).
+  P.gripK=lerp(P.gripK||0,grip&&heldMesh?1:0,Math.min(1,dt*(grip?22:10)));
+  if(P.gripK>.01&&heldMesh&&ITEMS[heldId].chop){fig.g.updateMatrixWorld(true);
+    // Otekohta varrella: lähin piste vasempaan olkaan varren välillä 0,11–0,42 m oikeasta kädestä (kädet eivät mene päällekkäin)
+    // Oikea käsi tuodaan tarvittaessa keskilinjaa kohti, jotta vasen ylettyy (kädet ≤ 0,58 m vasemmasta olasta)
+    fig.armL.getWorldPosition(_ikS);fig.hand.getWorldPosition(_ikH);const ex=_ikH.distanceTo(_ikS)-.58;
+    if(ex>0){_ikH.addScaledVector(_ikT.copy(_ikS).sub(_ikH).normalize(),ex*P.gripK);armIK(fig.armR,fig.elbowR,_ikH,1);fig.g.updateMatrixWorld(true);fig.armL.getWorldPosition(_ikS);}
+    heldMesh.worldToLocal(_ikS);_gp.set(0,0,clamp(_ikS.z,.11,.42));heldMesh.localToWorld(_gp);armIK(fig.armL,fig.elbowL,_gp,P.gripK);}
+  // Jousen veto: oikea käsi jänteellä nuolen kannan kohdalla.
+  P.drawK=lerp(P.drawK||0,P.drawing&&heldMesh&&ITEMS[heldId].cat==='bow'?1:0,Math.min(1,dt*14));
+  if(P.drawK>.01&&heldMesh&&heldMesh.userData.bow){fig.g.updateMatrixWorld(true);const b=heldMesh.userData.bow;_gp.set(0,0,b.ar.position.z+.02);heldMesh.localToWorld(_gp);armIK(fig.armR,fig.elbowR,_gp,P.drawK);}
   // Kilpi torjunnassa: käännetään (pehmeästi, blockK) osoittamaan eteenpäin – kämmenen kierto kumotaan niin että kilven normaali (x) on hahmon +z
   if(offMesh&&offId&&ITEMS[offId].cat==='shield'){P.blockK=lerp(P.blockK||0,P.blocking?1:0,Math.min(1,dt*10));
     if(P.blockK>.01){fig.g.updateMatrixWorld(true);fig.handL.getWorldQuaternion(_qh);fig.g.getWorldQuaternion(_qf);_qd.copy(_qf).multiply(_qt.setFromEuler(_eb.set(0,-Math.PI/2,0)));
@@ -134,12 +145,17 @@ function swingPose(k,hk,hx,hz,lx,lz,hold){const wk=hk*.55;let t;
   if(k<hk){t=sstep(0,1,(k-wk)/(hk-wk));return[lerp(hx,lx,t),lerp(hz,lz,t)];}
   if(hold){t=sstep(0,1,(k-hk)/(1-hk));return[lerp(lx,-.2,t),lerp(lz,0,t)];}
   t=Math.min(1,(k-hk)/.3);return[lerp(lx,0,t),lerp(lz,0,t)];}
-// Vasemman käsivarren kulmat niin, että se osoittaa kirveen varteen.
-const _gp=new V3();
-function gripAngles(){fig.g.updateMatrixWorld(true);
-  _gp.set(0,0,.35);heldMesh.localToWorld(_gp);fig.g.worldToLocal(_gp);
-  _gp.x-=fig.armL.position.x;_gp.y-=fig.armL.position.y;_gp.z-=fig.armL.position.z;_gp.normalize();
-  return[Math.atan2(-_gp.z,-_gp.y),Math.asin(clamp(_gp.x,-1,1))];}
+// Kahden nivelen IK: käsivarsi (olka rx, rz) ja kyynärpää (taivutus eteenpäin) niin, että kämmen osuu maailman pisteeseen T.
+// Olkavarsi a = 0,35 m, kyynärvarsi b = 0,33 m. Olka: U = Rx·Rz·(0,−1,0); kyynärvarsi taipuu olkavarren paikallista +z:aa kohti.
+// Ratkaisu: d = |T − S| → taivutus f (kosinilause); V = p·U + q·Z', p = a + b·cos f, q = b·sin f → rz = asin(Vx/p), rx = atan2(Vz,Vy) − atan2(q,−p·cos rz).
+// w = paino (0 = nykyinen asento, 1 = täysi ote).
+const _gp=new V3(),IK_A=.35,IK_B=.33;
+function armIK(arm,elbow,T,w){const V=arm.parent.worldToLocal(_ikV.copy(T)).sub(arm.position);
+  const d=clamp(V.length(),.12,IK_A+IK_B-.004),f=Math.PI-Math.acos(clamp((IK_A*IK_A+IK_B*IK_B-d*d)/(2*IK_A*IK_B),-1,1));
+  const p=IK_A+IK_B*Math.cos(f),q=IK_B*Math.sin(f),s=V.length()>1e-4?d/V.length():1,vx=V.x*s,vy=V.y*s,vz=V.z*s;
+  const rz=Math.asin(clamp(vx/p,-1,1)),rx=Math.atan2(vz,vy)-Math.atan2(q,-p*Math.cos(rz));
+  arm.rotation.x=lerpAngle(arm.rotation.x,rx,w);arm.rotation.z=lerpAngle(arm.rotation.z,rz,w);elbow.rotation.x=lerp(elbow.rotation.x,-f,w);}
+const _ikV=new V3(),_ikS=new V3(),_ikH=new V3(),_ikT=new V3();
 function lerpAngle(a,b,t){let d=((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;return a+d*t;}
 function playerDie(){
   if(P.dead)return;P.dead=true;P.deaths++;P.hp=0;sfx('die');

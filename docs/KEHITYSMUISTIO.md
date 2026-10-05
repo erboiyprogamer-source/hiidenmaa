@@ -58,6 +58,26 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.68 (erä 43: kirveen ote, jousi, Kalmanpesän murskaus, äänet)
+- **Kahden nivelen IK (`armIK`, player.js):** käsivarsi (olka rx/rz) ja kyynärpää lasketaan niin, että kämmen osuu annettuun pisteeseen
+  (olkavarsi 0,35 m, kyynärvarsi 0,33 m; ratkaisu ja kaavat funktion kommentissa). Korvaa vanhan `gripAngles`-suuntauksen, joka ei
+  huomioinut kyynärpään taivutusta.
+- **Kirveen ote:** kahden käden iskussa vasen käsi tarttuu varteen kohtaan, joka on lähimpänä vasenta olkaa (0,11–0,42 m oikeasta kädestä,
+  kädet eivät mene päällekkäin). Jos oikea käsi on yli 0,58 m vasemmasta olasta, se tuodaan keskilinjaa kohti (IK), jotta ote ylettyy.
+  Kahden käden nosto matalampi ja kapeampi (−2,25 / sivukulma × 0,55). Testi: käsi on 0,01–0,02 m varresta koko iskun ajan.
+  Ote pehmenee sisään/ulos (`P.gripK`).
+- **Jousi oikein päin:** jousen malli oli käännetty 180°, joten kaari osoitti ampujaan ja jänne venyi eteenpäin. Kääntö poistettu: selkä
+  eteenpäin, jänne ja nuoli vedetään ampujaa kohti. Jousi pysyy pystyssä myös kyynärpään taivutuksella. Vedossa jousikäsi suoraan eteen
+  hieman sisäänpäin (rz −0,3) ja **vetokäsi IK:lla jänteelle** nuolen kannan kohdalle (leuan korkeus) (`P.drawK`).
+- **Kalmanpesä tuhottavissa hakulla:** kestävyys 240 (`SPW_HP`), vahinko = louhintateho (9 + 3 × hakun taso, laatu +25 %/★);
+  kivihakulla 20 iskua. Muut aseet: "Kalmanpesän voi murskata vain hakulla." Isku näyttää jäljellä olevan prosentin. Tuhottuna pesä,
+  törmäys ja hehku poistuvat, tilalle rauniot (kivet ja luut), saalis 4 luunsirua + 4 kiveä (+ Kalmankammiossa 3 kuparia, Aarnihaudassa
+  1 hiidenkivi), 40 XP. Tila tallentuu `flags.sd[ulottuvuus]` (ei tallennusversion muutosta: vanhoissa ei ole kenttää).
+- **Äänet:** `sfx(nimi, sävel, voimakkuus)`; jokainen soitto vaihtelee sävelkorkeutta satunnaisesti ±3,5 %. Uudet äänet: `chopFinal`
+  (viimeinen isku ennen rungon katkeamista, hieman kimeämpi + ritinä), `chopLog` (tukin hakkuu, ontompi), `logBreak` (tukki katkeaa),
+  `thud` (kaatunut puu osuu maahan: matala jytinä, sävel puun koon mukaan, voimakkuus etäisyyden mukaan), `rockBreak` (kivi hajoaa),
+  `crumble` (kivirakenne tai Kalmanpesä murtuu), `woodBreak` (puurakenne hajoaa tai puretaan).
+
 ### v0.67 (erä 42: ehdotukset ja haku)
 - **Ehdotukset-välilehti** on oletuksena ensimmäinen sekä rakennusvalikossa (B) että valmistuksessa (reppu), Alkupeli toisena.
   - Valmistus (`suggestCrafts`, enintään 8): avoimet ja tunnetut ohjeet pisteytetään. Aineet valmiina +4 (työpiste puuttuu +2,5,
@@ -975,7 +995,7 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 1. Piirtoetäisyys vapauttaa muistia: maasto ruutuihin, rajalla vahva sumu/blur, rajan takana maastoa, puita, kiviä ja objekteja ei piirretä.
 2. Yleinen optimointi ilman suuria visuaalisia haittoja.
 
-**Erä 38 – Mobien mallit (11)**
+**Erä 38 – Mobien mallit (11)** – yhdistetty eriin 44–45
 1. Kaikki eläimet ja hirviöt pelaajahahmon tyyliin (ei palikkamaisia): pehmeät low-poly-muodot, nivelet, yksityiskohdat.
 
 #### Käyttäjän päivityslista (v0.65 jälkeen, 8 kohtaa) – vastaukset tarkentaviin kysymyksiin kirjattu
@@ -998,12 +1018,28 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 1. Nahkavaatteet: uusi tekstuuri ja paksumpi malli, vaaleat reunat, siteet, selässä repeävä roikkuva nahkaliuska joka heiluu kävellessä.
    Muille haarniskoille (kupari, rauta, hiidenpanssari) omaan tyyliinsä sopivat yksityiskohdat.
 2. Äänet: puun kaatuminen ja tömähdys matalammaksi, viimeinen isku ennen rungon katkeamista hieman kimeämpi, kaikkiin toistuviin
-   ääniin pieni satunnainen sävelkorkeuden vaihtelu (jokainen lyönti hieman eri).
+   ääniin pieni satunnainen sävelkorkeuden vaihtelu (jokainen lyönti hieman eri). – ✅ tehty v0.68 (erä 43)
 
 **Erä 42 – Ehdotukset ja haku** – ✅ tehty v0.67
 1. Rakennusvalikon ja valmistuksen ensimmäinen (oletus)välilehti "Ehdotukset": todennäköisesti seuraavaksi tarvittavat ja ne,
    joihin aineet ovat jo valmiina. Alkupeli toisena.
 2. Haku kummassakin valikossa (rakennusosat / tavarat).
+
+#### Käyttäjän päivityslista (v0.67 jälkeen, 5 kohtaa)
+
+**Erä 43 – Ote, jousi, Kalmanpesä ja äänet (1, 3, 4, 5)** – ✅ tehty v0.68
+1. Vasen käsi paremmin kiinni kirveen varteen.
+2. Mob-spawnerit (Kalmanpesät) tuhottaviksi hakulla.
+3. Jousi oikein päin pelaajan kädessä, myös vedossa.
+4. Äänien sävelvaihtelu hakatessa; puun tömähdys maahan matala; tukin lyönti ja viimeinen isku omat äänensä; sama kaikkeen tuhoamiseen.
+
+**Erä 44 – Pomot ja humanoidit yksityiskohtaisiksi (2)**
+1. Pomot ensin (käyttäjän kuvissa Kalmanvartija ja Kalmon ylimys): pelaajahahmon tyyli (pyöristetyt low-poly-muodot, nivelet kyynärpäissä
+   ja polvissa, kasvot, vaatteet/haarniska, yksityiskohdat), sitten ulottuvuuksien pomot (Jäätär, Kalmaherra, Aarnihirviö).
+2. Humanoidit: kalmo, hiisi, kivivartija, routa- ja muut ulottuvuuksien viholliset.
+
+**Erä 45 – Eläimet yksityiskohtaisiksi (2)**
+1. Peura, karju, susi, routasusi ja muut nelijalkaiset: pehmeämmät muodot, nivelletyt jalat, pää ja häntä, turkki- ja sarviyksityiskohdat.
 
 ### Avoimet: käyttäjän ehdotuksista toteuttamatta tai osittain (tarkistettu v0.62, koko keskusteluhistoria käyty läpi)
 1. **Portaalisuoja ei estä pelaajan omia iskuja** (kohta 5: "silloin pelaajakaan ei voi lyödä ketään"). Nyt suoja estää vain vihollisten

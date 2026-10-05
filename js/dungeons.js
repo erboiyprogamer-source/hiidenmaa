@@ -9,6 +9,7 @@ const REALMS={
   portal3:{n:'Aarnihauta',gen:'cave',W:47,H:47,wall:0x6f8a5a,floor:0x4a5a3a,tc:0x9aff7a,fog:0x050c06,glow:0x7aff9a,mist:0x9fd8a0,boss:'aarnihirvio',mobs:['hiisi','hiisi','susi','kivivartija'],dens:.03,spw:'hiisi',lock:'aarniavain',key:null,alt:()=>!!fo('rb').portal2,hint:()=>'Aarniavain on Kalmaherralla Kalmankammiossa.',reveal:'portal2'},
 };
 const SPW_T=20; // spawnerin tauko (s) sen jälkeen, kun sen kaikki viholliset ovat kuolleet
+const SPW_HP=240; // Kalmanpesän kestävyys: murskataan hakulla (louhintateho per isku), tuhottu pesä tallentuu (flags.sd[ulottuvuus])
 const RCH=7.6; // sisätilan kattokorkeus (pomojen pää ei osu kattoon)
 const REALM_IDS=Object.keys(REALMS);
 REALM_IDS.forEach((id,k)=>{REALMS[id].cx=DUN.x+(k+1)*230;REALMS[id].cz=DUN.z;});
@@ -139,7 +140,7 @@ function ensureRealm(id){
   const cell=(ix,iz)=>({x:D.cx+(ix-W/2+.5)*DC,z:D.cz+(iz-H/2+.5)*DC});
   const add=o=>{R.g.add(o);return o;};
   const box=(a,b,c,d,e,f)=>{const o=addBox(a,b,c,d,e,f,'static');R.cols.push(o);return o;};
-  const lit=(x,y,z,c,i)=>{const l={x,y,z,c,i,on:()=>true,dun:true};lightSources.push(l);R.ls.push(l);};
+  const lit=(x,y,z,c,i)=>{const l={x,y,z,c,i,on:()=>true,dun:true};lightSources.push(l);R.ls.push(l);return l;};
   const isW=(x,z)=>x<0||z<0||x>=W||z>=H||g[z][x]==='#';
   const vis=(x,z)=>{for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)if(!isW(x+b,z+a))return true;return false;};
   const wallsV=[];for(let z=0;z<H;z++)for(let x=0;x<W;x++)if(g[z][x]==='#'&&vis(x,z))wallsV.push([x,z]);
@@ -168,11 +169,13 @@ function ensureRealm(id){
     bones:D.gen==='rooms'?.32:.2,stal:cave?.38:.14,puddles:cave?.09:.035,cave,rk:id,stalM:new THREE.MeshStandardMaterial({color:rockC(D.wall,.3),roughness:.35,metalness:.1,flatShading:true})});
   L.barrels.forEach(([ix,iz,dir,n],i)=>{const p=cell(ix,iz);for(let k=0;k<n;k++){const off=(k-(n-1)/2)*.95,ox=dir?dir[0]*1.05+(dir[1]?off:0):off,oz=dir?dir[1]*1.05+(dir[0]?off:0):0;
     buildBarrel(add,R.cols,R.its,p.x+ox,y0,p.z+oz,`${id}:b${i}:${k}`,i*3+k+(seed&15));}});
-  if(L.spw){const p=cell(L.spw.ix,L.spw.iz),gm=new THREE.MeshBasicMaterial({color:D.glow});
-    add(bx(1.8,.5,1.8,mat(0x3a3632),p.x,y0+.25,p.z));add(bx(.7,1.5,.7,mat(0x2a2622),p.x,y0+1.2,p.z));box(p.x-.9,y0,p.z-.9,p.x+.9,y0+.5,p.z+.9);box(p.x-.35,y0,p.z-.35,p.x+.35,y0+1.95,p.z+.35);
-    for(let k=0;k<8;k++){const a=k/8*TAU;add(bx(.24,.22,.27,BONE_M,p.x+Math.cos(a)*1.3,y0+.62,p.z+Math.sin(a)*1.3,false));}
-    const cr=new THREE.Mesh(new THREE.OctahedronGeometry(.45,0),gm);cr.position.set(p.x,y0+2.6,p.z);add(cr);lit(p.x,y0+2.8,p.z,D.glow,2);
-    R.spw={x:p.x,z:p.z,y:y0+2.6,cr,t:SPW_T-2,list:[]};}
+  if(L.spw){const p=cell(L.spw.ix,L.spw.iz);
+    if(fo('sd')[id])spwRubble(R,p.x,y0,p.z);
+    else{const gm=new THREE.MeshBasicMaterial({color:D.glow}),sg=add(new THREE.Group()),sc=[],sb=(a,b,c,d,e,f)=>{const o=addBox(a,b,c,d,e,f,'static');sc.push(o);R.cols.push(o);};
+      sg.add(bx(1.8,.5,1.8,mat(0x3a3632),p.x,y0+.25,p.z));sg.add(bx(.7,1.5,.7,mat(0x2a2622),p.x,y0+1.2,p.z));sb(p.x-.9,y0,p.z-.9,p.x+.9,y0+.5,p.z+.9);sb(p.x-.35,y0,p.z-.35,p.x+.35,y0+1.95,p.z+.35);
+      for(let k=0;k<8;k++){const a=k/8*TAU;sg.add(bx(.24,.22,.27,BONE_M,p.x+Math.cos(a)*1.3,y0+.62,p.z+Math.sin(a)*1.3,false));}
+      const cr=new THREE.Mesh(new THREE.OctahedronGeometry(.45,0),gm);cr.position.set(p.x,y0+2.6,p.z);sg.add(cr);
+      R.spw={x:p.x,z:p.z,y:y0+2.6,y0,cr,t:SPW_T-2,list:[],hp:SPW_HP,g:sg,cols:sc,light:lit(p.x,y0+2.8,p.z,D.glow,2)};}}
   R.entry=cell(L.ent.ix,L.ent.iz);R.boss=cell(L.boss.ix,L.boss.iz);
   R.mobs=L.mobs.map(m=>({...cell(m.ix,m.iz),type:m.type}));
   L.chests.forEach((c,i)=>{const p=cell(c.ix,c.iz),key=id+':'+i,sarc=D.gen==='rooms';
@@ -277,6 +280,22 @@ function realmBossAI(m,dt,dx,dz,dist){
 }
 
 /* ---------------- PÄIVITYS ---------------- */
+// Kalmanpesän murskaus hakulla. Palauttaa true, jos isku osui pesään (muut aseet eivät tee vahinkoa).
+let spwWarnT=0;
+function hitSpawner(w){if(!P.inDun||!P.realm)return false;const R=BUILT[P.realm],S=R&&R.spw;if(!S)return false;
+  const dx=S.x-P.pos.x,dz=S.z-P.pos.z,d=Math.hypot(dx,dz),fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);
+  if(d>w.range+1.1||(d>1.2&&(dx*fx+dz*fz)/d<.4))return false;
+  if(!w.pick){if(playTime>spwWarnT){spwWarnT=playTime+3;msg('Kalmanpesän voi murskata vain hakulla.','warn');}sfx('hit');return true;}
+  S.hp-=(9+w.pick*3)*(1+.25*((w.q||1)-1));const D=REALMS[P.realm];shake(.1);burst(S.x,S.y0+1.4,S.z,0x6e665c,8,4);burst(S.x,S.y,S.z,D.glow,5,3);
+  if(S.hp>0){sfx('pick');floatText(Math.ceil(S.hp/SPW_HP*100)+' %',S.x,S.y0+3.3,S.z,'#d9d2c3');return true;}
+  // tuhoutui
+  R.g.remove(S.g);for(const c of S.cols){gridRemove(c);const i=R.cols.indexOf(c);if(i>=0)R.cols.splice(i,1);}if(S.light)S.light.on=()=>false;
+  spwRubble(R,S.x,S.y0,S.z);fo('sd')[P.realm]=1;R.spw=null;sfx('crumble');shake(.5);shockwave(S.x,S.y0+.2,S.z,4,D.glow);burst(S.x,S.y0+1,S.z,0x6e665c,24,7);
+  for(const [id,n] of [['luu',4],['kivi',4],...(P.realm==='portal2'?[['kupari',3]]:P.realm==='portal3'?[['hiidenkivi',1]]:[])])if(ITEMS[id])for(let j=0;j<n;j++)spawnDrop(id,1,S.x+(Math.random()-.5)*1.6,S.y0+1,S.z+(Math.random()-.5)*1.6);
+  addXp(40,'Kalmanpesä murskattu');msg('Murskasit Kalmanpesän – se ei enää nostata vihollisia.','loot');return true;}
+// Murskatun pesän rauniot: matalia kiviä ja luita (ei törmäystä)
+function spwRubble(R,x,y0,z){const r=mulberry32(((x*73)^(z*37))|0);for(let k=0;k<9;k++){const a=r()*TAU,d=r()*1.1,s=.25+r()*.35;const m=bx(s,.12+r()*.25,s*(.7+r()*.6),mat(k%3?0x3a3632:0x2a2622),x+Math.cos(a)*d,y0+.08,z+Math.sin(a)*d,false);m.rotation.y=r()*3;R.g.add(m);}
+  for(let k=0;k<5;k++){const a=r()*TAU,d=.6+r()*.9;const m=bx(.22,.2,.25,BONE_M,x+Math.cos(a)*d,y0+.1,z+Math.sin(a)*d,false);m.rotation.set(r(),r()*3,r());R.g.add(m);}}
 let bbOwn=false;
 function updateDungeons(dt){
   if(P.spawnProt>0)P.spawnProt-=dt;

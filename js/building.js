@@ -169,7 +169,7 @@ function removeLooked(){
   for(const [id,n] of Object.entries(PIECES[p.t].req))giveOrDrop(id,n,p.x,p.y+1,p.z);
   if(p.data.lv)for(let i=1;i<=p.data.lv;i++)for(const [id,n] of Object.entries(STORE_UP[i]))giveOrDrop(id,n,p.x,p.y+1,p.z);
   if(p.t==='sulatin'){if(p.data.ore)giveOrDrop('malmi',p.data.ore,p.x,p.y+1,p.z);if(p.data.iore)giveOrDrop('rautamalmi',p.data.iore,p.x,p.y+1,p.z);if(p.data.done)giveOrDrop('kupari',p.data.done,p.x,p.y+1,p.z);if(p.data.idone)giveOrDrop('rauta',p.data.idone,p.x,p.y+1,p.z);}
-  removePiece(p);sfx('build');burst(p.x,p.y+.5,p.z,0x8a5a32,8,3);
+  removePiece(p);sfx(/^kivi/.test(p.t)?'crumble':'woodBreak');burst(p.x,p.y+.5,p.z,0x8a5a32,8,3);
 }
-function damagePiece(p,d,src){if(src==='mob'&&PIECES[p.t].mobProof)return;p.hp-=d;burst(p.x,p.y+1,p.z,0x8a5a32,4,2);if(p.hp>0)setPieceDamage(p);if(p.hp<=0){removePiece(p);msg(`${PIECES[p.t].n} tuhoutui!`,'warn');if(PIECES[p.t].store)p.data.items.forEach(s=>s&&spawnDrop(s.id,s.n,p.x,p.y+.5,p.z,s.q));}}
+function damagePiece(p,d,src){if(src==='mob'&&PIECES[p.t].mobProof)return;p.hp-=d;burst(p.x,p.y+1,p.z,0x8a5a32,4,2);if(p.hp>0)setPieceDamage(p);if(p.hp<=0){removePiece(p);sfx(/^kivi/.test(p.t)?'crumble':'woodBreak',1,clamp(1.1-Math.hypot(P.pos.x-p.x,P.pos.z-p.z)/60,.15,1));msg(`${PIECES[p.t].n} tuhoutui!`,'warn');if(PIECES[p.t].store)p.data.items.forEach(s=>s&&spawnDrop(s.id,s.n,p.x,p.y+.5,p.z,s.q));}}
 function reqText(req){return Object.entries(req).map(([id,n])=>`${n} ${ITEMS[id].n.toLowerCase()}`).join(', ');}
