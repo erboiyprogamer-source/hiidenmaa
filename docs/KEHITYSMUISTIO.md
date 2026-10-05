@@ -55,6 +55,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.61 (kartan merkit vain paljastetulla alueella)
+- Löydetyn paikan merkki (◆ + nimi) näkyy kartalla ja minikartalla vain, jos sen kohta on paljastettu (pelaaja on käynyt ~12 m
+  säteellä, `isExplored`, ui.js). Riimukivi tai tavoite voi edelleen kertoa paikan (`flags.disc`), jolloin suunta ja etäisyys näkyvät
+  tehtävässä, mutta merkki pysyy pilviverhon takana, kunnes alue on tutkittu.
+
 ### v0.60 (puun kaatuminen ja minikartan zoom)
 - **Oksat irtoavat jo kaatumisen aikana:** jokaisella oksalla oma irtoamishetki 30–90 % kaatumisesta (`b.userData.det`), loput maahan
   osuessa. Irronnut oksa saa alkunopeuden kaatumissuuntaan, pyörähtää ilmassa, jää maahan ja vajoaa (`dropBranch(b,ivx,ivz)`).

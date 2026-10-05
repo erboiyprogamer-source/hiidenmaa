@@ -180,9 +180,12 @@ const FOGTMP=document.createElement('canvas');FOGTMP.width=FOGTMP.height=640;
 let mapZ=1,mapCX=0,mapCZ=0,mapRAF=0,mapDrag=null;
 function mapView(){const sw=MAPW/mapZ;return{sw,x0:clamp(mapCX+HALF-sw/2,0,MAPW-sw),y0:clamp(mapCZ+HALF-sw/2,0,MAPW-sw)};}
 function mapLoop(){if(openPanel!=='map'){mapRAF=0;return;}drawBigMap();mapRAF=requestAnimationFrame(mapLoop);}
+// Onko kohta paljastettu kartalla (pelaaja on käynyt ~12 m säteellä). Löydetyn paikan merkki näkyy vain paljastetulla alueella,
+// vaikka riimukivi tai tavoite olisi jo kertonut paikan (suunta näkyy silloin tehtävässä) – pilviverhon takana ei näy merkkejä.
+function isExplored(x,z){const cx=Math.floor((x+HALF)/4),cz=Math.floor((z+HALF)/4);for(let dz=-3;dz<=3;dz++)for(let dx=-3;dx<=3;dx++){const X=cx+dx,Z=cz+dz;if(X<0||Z<0||X>=EXN||Z>=EXN)continue;if(explored[Z*EXN+X])return true;}return false;}
 function mapMarkers(g,sx,ox,oz){
   const pt=(x,z)=>[(x+ox)*sx,(z+oz)*sx];
-  for(const k in flags.disc){const L=LOC[k];if(!L)continue;const [x,y]=pt(L.x,L.z);g.fillStyle='#8fd8cf';g.save();g.translate(x,y);g.rotate(Math.PI/4);g.fillRect(-4,-4,8,8);g.restore();if(sx>1){g.fillStyle='#eee5d3';g.font='600 12px Alegreya Sans, sans-serif';g.fillText(L.name,x+8,y+4);}}
+  for(const k in flags.disc){const L=LOC[k];if(!L||!isExplored(L.x,L.z))continue;const [x,y]=pt(L.x,L.z);g.fillStyle='#8fd8cf';g.save();g.translate(x,y);g.rotate(Math.PI/4);g.fillRect(-4,-4,8,8);g.restore();if(sx>1){g.fillStyle='#eee5d3';g.font='600 12px Alegreya Sans, sans-serif';g.fillText(L.name,x+8,y+4);}}
   for(const p of pieces)if(p.t==='tyopenkki'||p.t==='sanky'){const [x,y]=pt(p.x,p.z);g.fillStyle='#e8893b';g.fillRect(x-3,y-3,6,6);}
   // Pääkallo näkyy kunnes hautakasan tavarat on kerätty.
   for(const gr of graves){const [x,y]=pt(gr.x,gr.z),r=sx>1?8:6;g.save();g.translate(x,y);g.fillStyle='#f2ecdc';g.strokeStyle='#7a1a12';g.lineWidth=1.6;g.beginPath();g.arc(0,-r*.15,r*.8,0,TAU);g.fill();g.stroke();g.fillRect(-r*.45,r*.4,r*.9,r*.6);g.strokeRect(-r*.45,r*.4,r*.9,r*.6);g.fillStyle='#1a1410';g.beginPath();g.arc(-r*.33,-r*.2,r*.22,0,TAU);g.arc(r*.33,-r*.2,r*.22,0,TAU);g.fill();g.restore();}
