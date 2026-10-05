@@ -11,9 +11,16 @@ addEventListener('keydown',e=>{
   if(e.code==='Tab'){e.preventDefault();}
   if(e.code===BIND.full&&!e.repeat&&(state==='play'||state==='ui'||state==='paused'))toggleFullscreen();
   if(state==='paused'&&e.code==='Escape'&&!e.repeat&&performance.now()-pausedAt>400){if(!$('#settings').hidden)$('#settings').hidden=true;else $('#bResume').click();return;}
+  // v0.80: kuoleman ruudulla Enter herättää (hiiren lisäksi); kuollessa muut näppäimet eivät avaa valikoita
+  if(state==='dead'){if((e.code==='Enter'||e.code==='NumpadEnter')&&!e.repeat){e.preventDefault();respawn();}return;}
+  if(P.dead)return;
   if(state!=='play'&&state!=='ui')return;
   if(e.repeat)return;
   const c=e.code;
+  if(DEV&&c==='Quote'){togglePanel('dev');return;}// DEV: Ä avaa/sulkee kehitysvalikon
+  // v0.75: E sulkee avoimen valikon; repussa Q pudottaa valitusta yhden, Shift+Q kaikki
+  if(openPanel&&c===BIND.interact){e.preventDefault();closePanels(false,true);return;}
+  if(openPanel==='inv'&&c==='KeyQ'&&selSlot>=0&&inv[selSlot]){dropSel(e.shiftKey);return;}
   if(c===BIND.inv||(c==='KeyI'&&BIND.inv==='Tab'))togglePanel('inv');
   else if(c===BIND.map)togglePanel('map');
   else if(c===BIND.minizoom)cycleMiniZoom();
@@ -23,11 +30,11 @@ addEventListener('keydown',e=>{
   else if(c==='Escape'){if(openPanel){e.preventDefault();closePanels(false,true);}else if(state==='play'&&locked){pauseGame();releaseLock();}}
   else if(state==='play'){
     if(c===BIND.interact)interact();
-    else if(c===BIND.rot){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}
-    else if(c===BIND.snap){if(equipped('weapon')&&equipped('weapon').id==='vasara')cycleSnap();}
-    else if(c===BIND.vsnap){if(equipped('weapon')&&equipped('weapon').id==='vasara')cycleVMode();}
-    else if(c===BIND.up)liftBuild(1);
-    else if(c===BIND.down)liftBuild(-1);
+    else if(c===BIND.rot){if(isBuilding()){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}}
+    else if(c===BIND.snap){if(isBuilding())cycleSnap();}
+    else if(c===BIND.vsnap){if(isBuilding())cycleVMode();}
+    else if(c===BIND.up){if(isBuilding())liftBuild(1);}
+    else if(c===BIND.down){if(isBuilding())liftBuild(-1);}
     else if(c===BIND.remove)removeLooked();
     else if(c===BIND.repair)repairLooked();
     else if(/^Digit[1-8]$/.test(c)){hotSel=+c.slice(5)-1;invDirty=true;useSlot(hotSel);}

@@ -105,8 +105,23 @@ Käyttäjän toive: vasara roikkuu **vyöllä takana**, pää selän suuntaisest
 (player.js). Älä palauta vasaraa selän työkalupaikalle.
 
 ### 15. Väliaikainen kehitystila DEV – v0.74
-`const DEV=true` (core.js) on käyttäjän pyytämä testitila (ääretön kestävyys, max taso, ei painorajaa, Ö = 10× nopeus). Älä poista
+`const DEV=true` (core.js) on käyttäjän pyytämä testitila (ääretön kestävyys, max taso, ei painorajaa, V = 10× nopeus (v0.77; ennen Alt/Ö), Ä = DEV-valikko: sää, aika, terveys, kylläisyys, kartan + kohteiden paljastus v0.78). Älä poista
 koukkuja; kun käyttäjä pyytää pois, aseta `DEV=false`. Tarkistus- ja tasapainotestit kannattaa ajaa myös DEV=false-tilassa.
+
+### 16. Rakennusnäppäimet ilmoittivat rakentamatta – v0.79
+**Oire:** Shift+R (ja G/H) näytti ilmoituksen ("Asento vaihtuu…", "Kohdistus: …"), vaikka pelaaja ei rakentanut.
+**Korjaus (input.js):** jokainen rakennusnäppäin tarkistaa `isBuilding()` (vasara + `buildSel`). Uudet rakennusnäppäimet samalla ehdolla.
+```js
+else if(c===BIND.rot){if(isBuilding()){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}}
+```
+
+### 17. Valikot jäivät auki kuollessa – v0.80
+**Oire:** jos reppu, kartta, DEV tai päävalikko oli auki kuollessa, se jäi kuoleman ruudun päälle/alle.
+**Korjaus:** `closeAllForDeath()` (player.js) kutsutaan `playerDie`:ssä heti ja kuoleman ruudun avautuessa. Uusi valikko/ikkuna → lisää se
+tähän listaan. Kuollessa `togglePanel` ja `pauseGame` eivät toimi; Enter herättää (`input.js`, tila `dead`).
+```js
+function closeAllForDeath(){if(openPanel)closePanels(false,true);if(state==='paused'||state==='ui')state='play';for(const id of ['#menu','#settings','#keyDlg'])if($(id))$(id).hidden=true;…}
+```
 
 ## Herkät kohdat (lue ennen muokkausta)
 

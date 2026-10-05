@@ -51,6 +51,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   360 s, kestävyys +45 %), voimistunut, lämmin, suojassa, hiipii.
 - **Kylmä tulee:** märkänä, lumisateessa vuorilla tai yöllä ulkona ilman lämpimiä vaatteita, ellei tulen lähellä.
 - **Lepo ja uni:** sänky asettaa herätyspaikan; nukkuminen vaatii yön, katon eikä vihollisia 20 m sisällä → seuraava aamu, levännyt.
+- **Kuoleman ruutu (Kaaduit):** kaikki valikot ja päävalikko sulkeutuvat, kursori näkyy, herätys napista tai Enterillä.
 - **Kuolema:** koko reppu jää hautakasaan (valomajakka lähellä, pääkallo kartalla), herätys sängyltä tai rannalta. Kasaa ei voi poimia,
   ellei kaikki mahdu reppuun.
 
@@ -77,11 +78,16 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Jouset: metsästysjousi, hiidenjousi. Kilvet: puu, kupari, rauta. Panssarit: nahka, kupari, rauta, hiiden.
 - **Laatu (★1–3):** kehittäminen parantaa vahinkoa, nopeutta ja jousen vetoa; käsisoihdun palamisaika +50 % per taso.
 - **Löydetyt arkut ja tynnyrit:** avautuvat arkkuikkunaan kuten omat arkut; sisältö pysyy (`flags.fc`), esineitä voi ottaa ja jättää.
+- **Repun käyttö:** napsautus valitsee, toinen napsautus siirtää/vaihtaa paikat, oikea puolittaa pinon, kaksoisnapsautus käyttää,
+  Q pudottaa yhden, Shift+Q kaikki. Arkuissa napsautus–napsautus siirtää, Shift+napsautus siirtää heti. E sulkee valikot.
 - **Ehdotukset ja haku:** valmistuksen ja rakennusvalikon oletusvälilehti *Ehdotukset* näyttää syineen ne, joihin aineet ovat valmiina,
   puuttuvat tai paremmat varusteet ja pelin vaiheeseen sopivat rakennukset (työpenkki → nuotio → sänky → suoja → sulatin/ahjo).
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
+- **Tuli:** palava käsisoihtu sytyttää lyödyn, tulinuoli osumansa: 5–10 s, 5 hp/s; sade tai vesi sammuttaa heti.
+- **Ammukset:** piikivinuolet ja tulinuolet (+ pihka). Oletuksena käytetään heikointa ensin (`AMMO`-järjestys); repusta voi valita ammuksen
+  ("Käytä ammuksena"), uusi painallus palauttaa automaattiseen.
 - **Hiipiminen (kyykky):** paikallaan eläimet eivät huomaa; liikkuessa 1,5 m (eläin katsoo kohti) / 0,9 m (selin). Kävely 7 m, juoksu 16 m, ase ×1,4.
 - **Kahden käden ote:** kirveellä vasen käsi tarttuu varteen (IK `armIK` napavektorilla, kyynärpää alas-ulos); jousen vedossa vetokäsi on jänteellä.
 - **Lyönnit:** nosto pään/olan yli → isku viistosti alas vartalon eteen → loppuliike edessä; vuorottelevat suunnat. Kädet eivät mene vartalon läpi (`armClear`).
@@ -109,6 +115,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   - Seinä/palkki kääntyy katsotun reunan suuntaiseksi (seinän päällä samaan suuntaan). Ruudukkotiloissa lattian yläpinta ja sivujen
     keskiosat kohdistuvat tavalliseen ruudukkoon. Ei vinoille (45°) kohteille, katoille, portaille eikä tikkaille.
 - **Kääntö:** R = 45°, Shift+R = asento (kolmiot/vinoseinät 4 asentoa, palkit 5 kulmaa, portaat 3 jyrkkyyttä).
+- **Rakennusnäppäimet** (R, Shift+R, G, H, Q, Z) toimivat ja ilmoittavat vain rakennustilassa: vasara kädessä ja osa valittuna (`isBuilding`).
 - **Säännöt (`validPlace`):** sama osa samaan paikkaan kielletty, ei liian syvälle veteen, katto ei pelaajan päälle, maksu repusta.
 - **Kunto:** 3 vauriotasoa näkyvät tekstuurissa; vasara: X purkaa (materiaalit takaisin), F korjaa. Paaluaita kestää mobit (piikit vahingoittavat).
 - **Ovet:** kaksipuoliset, aukeavat pelaajasta poispäin. Katoilla voi kävellä.
@@ -131,6 +138,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Torjunta (hiiren oikea, kilpi):** vain edestä, kestävyys = 90 % iskusta, vähennys kilven `block` (max 95 %); kestävyyden loppuessa torjunta murtuu.
 - **Panssari:** vahinko × 20 / (20 + panssari). Iskun jälkeen 0,25 s suoja.
 - **Keihäs** osoittaa kohdetta, kirves lyö viistosti vuorotellen.
+
+- **Pomojen terveys:** isot pomot eivät parane; ulottuvuuspomon ja vartijan terveys säilyy poistuttaessa. Alttarin hiidenkivet jäävät
+  alttarille, jos vartija vajoaa takaisin – uusi herätys ilman uusia kiviä.
 
 ## 9. Viholliset ja eläimet (mobs.js, ai.js)
 
@@ -173,6 +183,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 - **Rauniotalot ja arkkukivet** arkkuineen ja vartijoineen; löytyvät kartalle 30 m päästä.
 - **Riimukivet:** 3 kiinteää + 6 arvottua; vihjeet laskevat suunnan ja etäisyyden ja merkitsevät paikkoja karttaan.
+- **Karttapilvet:** kartta paljastuu kulkiessa (`explored`); löydetty paikka näkyy vain paljastetulla alueella. DEV-valikossa (Ä) voi paljastaa koko kartan ja kaikki kohteet.
 - **Tehtäväketju (`QUESTS`, 13 kpl):** näkyy oikeassa yläkulmassa suunnan ja etäisyyden kanssa; +60 XP.
 - **Tavoitteet (`GOALS`), saavutukset (`ACH`, pysyvät bonukset), taso ja XP** (J-paneeli); reseptejä aukeaa tasoilla.
 

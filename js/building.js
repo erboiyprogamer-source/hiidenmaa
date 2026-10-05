@@ -6,6 +6,8 @@
 let buildSel=null,buildRot=0,buildPose=0,ghost=null,ghostOk=false,ghostPos=null;
 const poseOf=t=>{const d=PIECES[t];return d&&(d.flip||d.poses)?buildPose%(d.poses||4):0;};
 // Shift+R: kolmion/vinoseinän asento (normaali, peilattu, ylösalaisin, ylösalaisin peilattu).
+// Rakennustila = vasara kädessä ja rakennusosa valittuna. R, Shift+R, G, H, Q/Z toimivat (ja ilmoittavat) vain silloin (v0.79).
+function isBuilding(){const w=equipped('weapon');return !!(buildSel&&w&&w.id==='vasara');}
 function cyclePose(){const d=buildSel&&PIECES[buildSel];if(!d||!(d.flip||d.poses)){msg('Asento vaihtuu kolmiolla, vinoseinällä, palkilla ja portailla.');return;}const n=d.poses||4;buildPose=(buildPose+1)%n;setBuildSel(buildSel);msg(`Asento ${buildPose%n+1}/${n}`);}
 const raycaster=new THREE.Raycaster();
 function setBuildSel(t){buildSel=t;if(ghost){scene.remove(ghost);ghost=null;}if(typeof gridHelper!=='undefined'&&gridHelper)gridHelper.visible=false;if(t){ghost=buildPieceMesh(t,poseOf(t));ghost.traverse(m=>{if(m.isMesh){m.material=MAT.ghostOk;m.castShadow=false;m.receiveShadow=false;}});scene.add(ghost);}}

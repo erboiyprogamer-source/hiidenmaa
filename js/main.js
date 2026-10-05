@@ -22,7 +22,7 @@ function scrollHints(el){
   setTimeout(upd,50);return upd;}
 let started=false,confirmNew=false;
 function startPlay(){started=true;state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();invDirty=true;}
-function pauseGame(){if(state!=='play'||openPanel)return;state='paused';pausedAt=performance.now();$('#menu').hidden=false;$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
+function pauseGame(){if(state!=='play'||openPanel||P.dead)return;state='paused';pausedAt=performance.now();$('#menu').hidden=false;$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
 addEventListener('beforeunload',e=>{if(started&&!flags.won&&!reloading){e.preventDefault();e.returnValue='';}});
 // Maailma rakennetaan skriptien latautuessa, joten kartan vaihto = sivun uudelleenlataus.
 let reloading=false;

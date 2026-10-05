@@ -58,6 +58,46 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.80 (kuoleman ruutu)
+- Kuollessa kaikki valikot sulkeutuvat heti ja uudelleen ruudun ilmestyessä (`closeAllForDeath`, player.js): reppu, rakennus, kartta,
+  arkku, edistyminen, loki, DEV, päävalikko, asetukset ja näppäinikkuna. Vain "Kaaduit"-ruutu jää. Kuolinanimaation aikana (1,4 s)
+  näppäimet eivät avaa valikoita eikä Esc avaa päävalikkoa (`P.dead`-ehto `togglePanel`/`pauseGame`/keydown).
+- Kuoleman ruudulla **Enter** (tai Numpad Enter) herättää hiiren lisäksi; hiiren kursori näkyy ruudulla (`#deadS{cursor:default}`).
+  `respawn()` toimii vain tilassa `dead` (ei tuplaherätystä).
+
+### v0.79 (rakennusnäppäimet vain rakennettaessa)
+- R, Shift+R, G, H, Q ja Z toimivat ja antavat ilmoituksen vain rakennustilassa (`isBuilding()`, building.js: vasara kädessä **ja**
+  rakennusosa valittuna). Ennen Shift+R ilmoitti "Asento vaihtuu…" ilman vasaraakin, ja G/H ilmoittivat pelkällä vasaralla.
+
+### v0.78 (DEV: kartan paljastus)
+- DEV-valikkoon (Ä) rivi **Kartta → Paljasta kartta ja kohteet** (`devRevealMap`, ui.js): `explored` täyteen (pilviverho pois koko kartalta,
+  tallentuu) ja kaikki nimetyt `LOC`-paikat `flags.disc`:iin (rauniot, portaalit, kummut, riimukivet, arvotut paikat). `resetFog` tyhjentää
+  sumukankaan suoraan, kun kaikki on paljastettu (ei 90 000 gradienttia latauksessa).
+
+### v0.77 (DEV: V-nopeus ja Ä-valikko)
+- DEV-tilan 10× nopeus näppäimeen **V** (ennen vasen Alt). **Ä** (`Quote`) avaa DEV-valikon (`#devP`, `renderDev`): sää (kaikki `WEATHERS`,
+  pysyy 10 min), kellonaika (liukusäädin + aamu/päivä/ilta/yö), terveys ja kylläisyys liukusäätimillä; E/Ä/✕ sulkee. DEV-merkki ruudun yläreunaan.
+
+### v0.76 (ammusten järjestys)
+- Ammukset listassa `AMMO` heikoimmasta parhaaseen (piikivinuolet → tulinuolet → tulevat). Ilman valintaa jousi käyttää heikointa jota on;
+  valittu ammus ensin ja sen loputtua taas heikoimmasta. Valitun napin uusi painallus palauttaa automaattiseen. Ominaisuuslistassa "Ammus".
+
+### v0.75 (pomot, alttari, reppu ja arkut, tuli, tulinuolet)
+- **Isot pomot eivät parane:** Kalmanvartija (ennen +30 hp/s pelaajan kuoltua) ja ulottuvuuksien pomot (+40 hp/s) eivät enää palauta
+  terveyttä. Ulottuvuuspomon terveys säilyy poistuttaessa (`flags.rbHp[ulottuvuus]`), Kalmanvartijan maahan vajotessa (`flags.bossHp`).
+- **Alttarin hiidenkivet eivät katoa:** kun vartija vajoaa takaisin (pelaaja > 90 m tai luolastossa), kivet jäävät alttarille pysyvästi
+  (`flags.altarSt`) eikä niitä pudoteta maahan katoaviksi esineiksi; uusi herätys alttarilta ilman uusia kiviä, terveys säilyy.
+- **Valikot:** E sulkee avoimen valikon. Repussa: napsautus valitsee, toinen napsautus toiseen paikkaan siirtää/vaihtaa paikat (sama esine
+  pinoutuu), saman paikan napsautus poistaa valinnan; hiiren oikea puolittaa pinon tyhjään paikkaan; kaksoisnapsautus käyttää;
+  **Q** pudottaa valitusta yhden, **Shift+Q** koko pinon. Arkut ja löydetyt säiliöt: napsautus valitsee esineen (arkusta tai repusta) ja
+  seuraava napsautus siirtää/vaihtaa sen valittuun paikkaan; **Shift+napsautus** siirtää heti toiselle puolelle; oikea puolittaa repussa.
+- **Tuli (uusi fysiikka):** kädessä palava soihtu sytyttää lyödyn mobin/eläimen; palaa satunnaisesti 5–10 s, 5 hp/s (palkki näkyy,
+  liekit ja kipinät mobissa). Sade (> 0,5) tai vesi (mobi y < −0,9) sammuttaa heti. Palava eläin pakenee (lyöty-tila).
+- **Tulinuolet** (uusi esine, `tulinuolet`): puu 2 + piikivi 2 + pihka 1 → 15 (työpenkki, taso 3, kuten piikivinuolet + pihka).
+  Liekki kärjessä, osuma sytyttää kohteen samoin kuin soihtu. Ammuksen valinta repusta: "Käytä ammuksena" (`flags.ammo`);
+  jos valittua ei ole, käytetään toista.
+- **DEV-nopeus** vasempaan Altiin (ennen Ö); Alt ei avaa selaimen valikkoa.
+
 ### v0.74 (⚠ väliaikainen kehitystila)
 - `const DEV=true` (core.js) – käyttäjän pyynnöstä testailua varten: kestävyys ei kulu, korkein taso (kaikki ohjeet auki), ei painorajaa
   (ei ylikuormitusta), **Ö pohjassa (näppäinkoodi `Semicolon`) liike 10× nopeampi**, vasemmassa alakulmassa merkki "DEV-tila".
