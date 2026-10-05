@@ -28,6 +28,7 @@ const ITEMS={
   sienipaisti:{n:'Paistettu sieni',w:.3,s:30,c:'#9b6a3a',food:{h:18,hp:10},d:'Nuotiolla kypsennetty herkkutatti.'},
   hiili:{n:'Puuhiili',w:.5,s:50,c:'#2a2623',fuel:10,d:'Palaa kymmenen kertaa pidempään kuin puu. Nuotioon, sulatusuuniin ja seisoviin soihtuihin. Syntyy ylipaistetusta ruoasta tai nuotiolla puusta.'},
   nuolet:{n:'Piikivinuolet',w:.1,s:100,c:'#6d6a60',d:'Ammuksia jouselle.'},
+  tulinuolet:{n:'Tulinuolet',w:.12,s:100,c:'#e8893b',d:'Pihkaan kastetut nuolet syttyvät lennossa: osuma sytyttää kohteen tuleen 5–10 sekunniksi (5 terveyttä sekunnissa). Sade ja vesi sammuttavat.'},
   kirves:{n:'Kivikirves',w:2,s:1,c:'#9a8a70',cat:'weapon',dmg:8,dt:'slash',chop:1,range:2.3,st:6,spd:.5,d:'Kaataa puita. Kelpaa hätätilassa aseeksi.'},
   kuparikirves:{n:'Kuparikirves',w:2.5,s:1,c:'#d98a4e',cat:'weapon',dmg:13,dt:'slash',chop:2,range:2.4,st:6,spd:.48,d:'Kaataa puut puolet nopeammin.'},
   nuija:{n:'Puunuija',w:3,s:1,c:'#7b5434',cat:'weapon',dmg:12,dt:'blunt',range:2.3,st:9,spd:.62,d:'Murskaava ase. Puree hyvin luuhun ja kiveen.'},
@@ -67,6 +68,7 @@ const RECIPES=[
   {id:'keihas',st:'tyopenkki',req:{puu:5,piikivi:4,nahka:1},lvl:2},
   {id:'jousi',st:'tyopenkki',req:{puu:8,nahka:3},lvl:3},
   {id:'nuolet',st:'tyopenkki',req:{puu:2,piikivi:2},n:15,lvl:3},
+  {id:'tulinuolet',st:'tyopenkki',req:{puu:2,piikivi:2,pihka:1},n:15,lvl:3},
   {id:'nahkavaatteet',st:'tyopenkki',req:{nahka:8},lvl:2},
   {id:'varras',st:'nuotio',req:{paisti:1,sieni:2,marjat:3},lvl:2},
   {id:'miekka',st:'ahjo',req:{kupari:6,puu:2,nahka:2},lvl:4},
@@ -88,7 +90,7 @@ const RECIPE_BY={};RECIPES.forEach(r=>RECIPE_BY[r.id]=r);
 const STATION_NAME={tyopenkki:'Työpenkki',nuotio:'Nuotio',ahjo:'Ahjo'};
 // Valmistusvälilehdet: Alkupeli (alku:1) on oletus, muut ryhmitellään esineen tyypin mukaan.
 const CRAFT_CATS=[['alku','Alkupeli'],['tyokalut','Työkalut'],['aseet','Aseet'],['varusteet','Varusteet'],['ruoka','Ruoka'],['muut','Muut']];
-function recipeCat(r){const d=ITEMS[r.id];if(d.food)return 'ruoka';if(d.cat==='armor'||d.cat==='shield')return 'varusteet';if(d.cat==='weapon'&&(d.chop||d.pick))return 'tyokalut';if(d.cat==='shovel'||d.cat==='hammer')return 'tyokalut';if(d.cat==='weapon'||d.cat==='bow'||r.id==='nuolet')return 'aseet';return 'muut';}
+function recipeCat(r){const d=ITEMS[r.id];if(d.food)return 'ruoka';if(d.cat==='armor'||d.cat==='shield')return 'varusteet';if(d.cat==='weapon'&&(d.chop||d.pick))return 'tyokalut';if(d.cat==='shovel'||d.cat==='hammer')return 'tyokalut';if(d.cat==='weapon'||d.cat==='bow'||r.id==='nuolet'||r.id==='tulinuolet')return 'aseet';return 'muut';}
 
 /* ---------------- ICONS ---------------- */
 const ICON={};
@@ -119,6 +121,7 @@ function icon(id){
     case 'sieni':g.fillStyle='#efe6d2';g.fillRect(20,24,8,16);poly([[8,26],[14,12],[24,8],[34,12],[40,26]],'#9b6a3a','#5e3b1f');break;
     case 'varras':line(8,40,40,8,2.5,'#c9b48a');[[16,32,'#8d4b2b'],[24,24,'#c8a26b'],[32,16,'#8d4b2b']].forEach(p=>circ(p[0],p[1],5.5,p[2]));circ(20,28,3,'#c82a3c');break;
     case 'nuolet':for(let i=0;i<3;i++){line(10+i*5,40,32+i*5,10,2,'#c9b48a');poly([[32+i*5,10],[36+i*5,6],[34+i*5,14]],'#4d535c');}break;
+    case 'tulinuolet':for(let i=0;i<3;i++){line(10+i*5,40,30+i*5,13,2,'#c9b48a');circ(33+i*5,9,4,'#ff7a1a');circ(34+i*5,8,2.2,'#ffd36a');}break;
     case 'hiili':poly([[10,34],[16,18],[28,14],[38,24],[34,38],[16,40]],'#2a2623','#0f0d0c');poly([[18,22],[26,18],[24,26]],'#4a4540');circ(30,30,2.5,'#ff7a2a');break;
     case 'sienipaisti':g.fillStyle='#e4d4b2';g.fillRect(20,24,8,16);poly([[8,26],[14,12],[24,8],[34,12],[40,26]],'#7a4a22','#3a2210');break;
     case 'kilpi':case 'kuparikilpi':case 'rautakilpi':{const T={kilpi:['#8a5a32','#b88652','#6e7680','#3a3f45'],kuparikilpi:['#c87a3e','#f0a868','#e9b07a','#7a4318'],rautakilpi:['#8c97a4','#c3cdd8','#d6dee8','#454d58']}[id];

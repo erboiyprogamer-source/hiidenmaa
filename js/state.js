@@ -143,13 +143,14 @@ function shockwave(x,y,z,r,color=0x8ffff0){const m=new THREE.Mesh(new THREE.Ring
 
 /* ---------------- PROJECTILES ---------------- */
 const projs=[];
-function shootArrow(from,dir,speed,dmg,owner,grav){const m=new THREE.Group();m.add(bx(.04,.04,.8,mat(0xc9b48a),0,0,0,false),bx(.07,.07,.12,mat(0x4d535c),0,0,.42,false));m.position.copy(from);scene.add(m);projs.push({m,v:dir.clone().multiplyScalar(speed),dmg,owner,t:0,g:grav||7,kind:'arrow'});}
+function shootArrow(from,dir,speed,dmg,owner,grav,fire){const m=new THREE.Group();m.add(bx(.04,.04,.8,mat(0xc9b48a),0,0,0,false),bx(.07,.07,.12,mat(0x4d535c),0,0,.42,false));
+  if(fire){const fl=new THREE.Mesh(new THREE.ConeGeometry(.06,.2,6),MAT.flame);fl.rotation.x=-Math.PI/2;fl.position.z=.36;m.add(fl);m.add(bx(.08,.08,.06,mat(0x3a2a1c),0,0,.34,false));}m.position.copy(from);scene.add(m);projs.push({m,v:dir.clone().multiplyScalar(speed),dmg,owner,t:0,g:grav||7,kind:'arrow',fire:!!fire});}
 function throwRock(from,target,dmg){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,0),mat(0x5d5a54));m.castShadow=true;m.position.copy(from);scene.add(m);const d=_tmpV.subVectors(target,from);const T=1.1;const v=new V3(d.x/T,(d.y+.5*14*T*T)/T,d.z/T);projs.push({m,v,dmg,owner:'boss',t:0,g:14,kind:'rock'});}
 function updateProjs(dt){
   for(let i=projs.length-1;i>=0;i--){const p=projs[i];p.t+=dt;if(p.stuck){if(p.t>6){scene.remove(p.m);projs.splice(i,1);}continue;}
     p.v.y-=p.g*dt;p.m.position.addScaledVector(p.v,dt);if(p.kind==='arrow')p.m.lookAt(_tmpV.copy(p.m.position).add(p.v));else{p.m.rotation.x+=dt*5;}
     const pos=p.m.position;let hit=false;
-    if(p.owner==='player'){for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);hit=true;break;}}}
+    if(p.owner==='player'){for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);if(p.fire)igniteMob(m);hit=true;break;}}}
     else{if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<(p.kind==='rock'?2.2*2.2:.6)&&pos.y<P.pos.y+2.2&&pos.y>P.pos.y-.5){hurtPlayer(p.dmg,pos.x-p.v.x,pos.z-p.v.z);hit=true;}}
     const g=P.inDun?DUN.y:terrainH(pos.x,pos.z);
     if(!hit&&(pos.y<g||pointBlocked(pos.x,pos.y,pos.z))){if(p.kind==='rock'){shockwave(pos.x,g,pos.z,3);burst(pos.x,g+.3,pos.z,0x5d5a54,10,5);sfx('slam');if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<9)hurtPlayer(p.dmg,pos.x,pos.z);scene.remove(p.m);projs.splice(i,1);continue;}p.stuck=true;p.t=0;continue;}

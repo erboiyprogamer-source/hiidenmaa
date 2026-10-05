@@ -58,6 +58,22 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.75 (pomot, alttari, reppu ja arkut, tuli, tulinuolet)
+- **Isot pomot eivät parane:** Kalmanvartija (ennen +30 hp/s pelaajan kuoltua) ja ulottuvuuksien pomot (+40 hp/s) eivät enää palauta
+  terveyttä. Ulottuvuuspomon terveys säilyy poistuttaessa (`flags.rbHp[ulottuvuus]`), Kalmanvartijan maahan vajotessa (`flags.bossHp`).
+- **Alttarin hiidenkivet eivät katoa:** kun vartija vajoaa takaisin (pelaaja > 90 m tai luolastossa), kivet jäävät alttarille pysyvästi
+  (`flags.altarSt`) eikä niitä pudoteta maahan katoaviksi esineiksi; uusi herätys alttarilta ilman uusia kiviä, terveys säilyy.
+- **Valikot:** E sulkee avoimen valikon. Repussa: napsautus valitsee, toinen napsautus toiseen paikkaan siirtää/vaihtaa paikat (sama esine
+  pinoutuu), saman paikan napsautus poistaa valinnan; hiiren oikea puolittaa pinon tyhjään paikkaan; kaksoisnapsautus käyttää;
+  **Q** pudottaa valitusta yhden, **Shift+Q** koko pinon. Arkut ja löydetyt säiliöt: napsautus valitsee esineen (arkusta tai repusta) ja
+  seuraava napsautus siirtää/vaihtaa sen valittuun paikkaan; **Shift+napsautus** siirtää heti toiselle puolelle; oikea puolittaa repussa.
+- **Tuli (uusi fysiikka):** kädessä palava soihtu sytyttää lyödyn mobin/eläimen; palaa satunnaisesti 5–10 s, 5 hp/s (palkki näkyy,
+  liekit ja kipinät mobissa). Sade (> 0,5) tai vesi (mobi y < −0,9) sammuttaa heti. Palava eläin pakenee (lyöty-tila).
+- **Tulinuolet** (uusi esine, `tulinuolet`): puu 2 + piikivi 2 + pihka 1 → 15 (työpenkki, taso 3, kuten piikivinuolet + pihka).
+  Liekki kärjessä, osuma sytyttää kohteen samoin kuin soihtu. Ammuksen valinta repusta: "Käytä ammuksena" (`flags.ammo`);
+  jos valittua ei ole, käytetään toista.
+- **DEV-nopeus** vasempaan Altiin (ennen Ö); Alt ei avaa selaimen valikkoa.
+
 ### v0.74 (⚠ väliaikainen kehitystila)
 - `const DEV=true` (core.js) – käyttäjän pyynnöstä testailua varten: kestävyys ei kulu, korkein taso (kaikki ohjeet auki), ei painorajaa
   (ei ylikuormitusta), **Ö pohjassa (näppäinkoodi `Semicolon`) liike 10× nopeampi**, vasemmassa alakulmassa merkki "DEV-tila".

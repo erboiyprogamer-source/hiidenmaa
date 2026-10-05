@@ -105,7 +105,7 @@ Käyttäjän toive: vasara roikkuu **vyöllä takana**, pää selän suuntaisest
 (player.js). Älä palauta vasaraa selän työkalupaikalle.
 
 ### 15. Väliaikainen kehitystila DEV – v0.74
-`const DEV=true` (core.js) on käyttäjän pyytämä testitila (ääretön kestävyys, max taso, ei painorajaa, Ö = 10× nopeus). Älä poista
+`const DEV=true` (core.js) on käyttäjän pyytämä testitila (ääretön kestävyys, max taso, ei painorajaa, vasen Alt = 10× nopeus, v0.75 alkaen; ennen Ö). Älä poista
 koukkuja; kun käyttäjä pyytää pois, aseta `DEV=false`. Tarkistus- ja tasapainotestit kannattaa ajaa myös DEV=false-tilassa.
 
 ## Herkät kohdat (lue ennen muokkausta)

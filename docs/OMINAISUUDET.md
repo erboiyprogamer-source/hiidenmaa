@@ -77,11 +77,15 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Jouset: metsästysjousi, hiidenjousi. Kilvet: puu, kupari, rauta. Panssarit: nahka, kupari, rauta, hiiden.
 - **Laatu (★1–3):** kehittäminen parantaa vahinkoa, nopeutta ja jousen vetoa; käsisoihdun palamisaika +50 % per taso.
 - **Löydetyt arkut ja tynnyrit:** avautuvat arkkuikkunaan kuten omat arkut; sisältö pysyy (`flags.fc`), esineitä voi ottaa ja jättää.
+- **Repun käyttö:** napsautus valitsee, toinen napsautus siirtää/vaihtaa paikat, oikea puolittaa pinon, kaksoisnapsautus käyttää,
+  Q pudottaa yhden, Shift+Q kaikki. Arkuissa napsautus–napsautus siirtää, Shift+napsautus siirtää heti. E sulkee valikot.
 - **Ehdotukset ja haku:** valmistuksen ja rakennusvalikon oletusvälilehti *Ehdotukset* näyttää syineen ne, joihin aineet ovat valmiina,
   puuttuvat tai paremmat varusteet ja pelin vaiheeseen sopivat rakennukset (työpenkki → nuotio → sänky → suoja → sulatin/ahjo).
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
+- **Tuli:** palava käsisoihtu sytyttää lyödyn, tulinuoli osumansa: 5–10 s, 5 hp/s; sade tai vesi sammuttaa heti.
+- **Ammukset:** piikivinuolet ja tulinuolet (+ pihka); valinta repusta "Käytä ammuksena".
 - **Hiipiminen (kyykky):** paikallaan eläimet eivät huomaa; liikkuessa 1,5 m (eläin katsoo kohti) / 0,9 m (selin). Kävely 7 m, juoksu 16 m, ase ×1,4.
 - **Kahden käden ote:** kirveellä vasen käsi tarttuu varteen (IK `armIK` napavektorilla, kyynärpää alas-ulos); jousen vedossa vetokäsi on jänteellä.
 - **Lyönnit:** nosto pään/olan yli → isku viistosti alas vartalon eteen → loppuliike edessä; vuorottelevat suunnat. Kädet eivät mene vartalon läpi (`armClear`).
@@ -131,6 +135,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Torjunta (hiiren oikea, kilpi):** vain edestä, kestävyys = 90 % iskusta, vähennys kilven `block` (max 95 %); kestävyyden loppuessa torjunta murtuu.
 - **Panssari:** vahinko × 20 / (20 + panssari). Iskun jälkeen 0,25 s suoja.
 - **Keihäs** osoittaa kohdetta, kirves lyö viistosti vuorotellen.
+
+- **Pomojen terveys:** isot pomot eivät parane; ulottuvuuspomon ja vartijan terveys säilyy poistuttaessa. Alttarin hiidenkivet jäävät
+  alttarille, jos vartija vajoaa takaisin – uusi herätys ilman uusia kiviä.
 
 ## 9. Viholliset ja eläimet (mobs.js, ai.js)
 

@@ -15,13 +15,14 @@ function nearestOpening(m){let best=null,bd=1e9;for(const p of pieces){const b=b
 function updateMobs(dt){
   refreshFire(dt);
   for(let i=mobs.length-1;i>=0;i--){const m=mobs[i];
-    if(m.dead){m.deadT+=dt;m.f.g.rotation.z=Math.min(Math.PI/2,m.deadT*4);m.f.g.position.y=m.pos.y-m.deadT*.3;if(m.deadT>2.2)mobRemove(m);continue;}
+    if(m.dead){if(m.fireFx)stopBurn(m);m.deadT+=dt;m.f.g.rotation.z=Math.min(Math.PI/2,m.deadT*4);m.f.g.position.y=m.pos.y-m.deadT*.3;if(m.deadT>2.2)mobRemove(m);continue;}
     const d=m.def,dx=P.pos.x-m.pos.x,dz=P.pos.z-m.pos.z,dist=Math.hypot(dx,dz);
     if(!m.dun&&m!==boss&&dist>120){mobRemove(m);continue;}
     // Piirtoetäisyyden ulkopuolella (sumun takana) mobia ei piirretä eikä animoida
     if(m!==boss&&!m.dun){const far=dist>scene.fog.far+8;if(far!==!m.f.g.visible){m.f.g.visible=!far;}if(far){m.f.g.position.copy(m.pos);}}
     if(m.dun!==P.inDun){continue;}
     m.flash=Math.max(0,m.flash-dt);for(const mt of m.mats)mt.emissive.setHex(m.flash>0?0x661111:0x000000);
+    if(m.burnT>0&&updateBurn(m,dt))continue;
     m.atkCd-=dt;
     let tx=0,tz=0,spd=0;
     if(d.ai==='boss'){bossAI(m,dt,dx,dz,dist);continue;}
@@ -119,8 +120,8 @@ function bossAI(m,dt,dx,dz,dist){
     else if(a.k==='charge'){if(a.t<.6){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*6);f.g.rotation.x=-.2;}else{moveMob(m,Math.sin(m.yaw),Math.cos(m.yaw),15*spd,dt);if(!a.hit&&dist<2.8){a.hit=1;hurtPlayer(26,m.pos.x,m.pos.z);P.vel.x+=Math.sin(m.yaw)*10;P.vel.z+=Math.cos(m.yaw)*10;}}if(a.t>1.6){m.act=null;f.g.rotation.x=0;}}
     else if(a.k==='throw'){f.armR.rotation.x=-2.8*Math.min(1,a.t/.8);if(a.t>=.8&&!a.hit){a.hit=1;const hp=new V3();f.hand.getWorldPosition(hp);throwRock(hp,new V3(P.pos.x+P.vel.x*.6,P.pos.y,P.pos.z+P.vel.z*.6),20);}if(a.t>1.3)m.act=null;}
     m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;return;}
-  if(dist2(P.pos.x,P.pos.z,L.x,L.z)>90*90||P.inDun){mobRemove(m);for(let i=0;i<3;i++)spawnDrop('hiidenkivi',1,L.x,7.5,L.z);circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));$('#bossbar').hidden=true;msg('Vartija vajosi takaisin maahan. Hiidenkivet jäivät alttarille.','warn');return;}
-  if(P.dead){moveMob(m,L.x-m.pos.x,L.z-m.pos.z,m.def.walk,dt);m.hp=Math.min(m.maxHp,m.hp+30*dt);animMob(m,dt);return;}
+  if(dist2(P.pos.x,P.pos.z,L.x,L.z)>90*90||P.inDun){mobRemove(m);flags.altarSt=1;flags.bossHp=m.hp;/* v0.75: kivet jäävät alttarille pysyvästi (ei maahan katoavina esineinä), hp säilyy */circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));$('#bossbar').hidden=true;msg('Vartija vajosi takaisin maahan. Hiidenkivet jäivät alttarille – herätä se uudelleen alttarilta (terveys säilyy).','warn');return;}
+  if(P.dead){moveMob(m,L.x-m.pos.x,L.z-m.pos.z,m.def.walk,dt);animMob(m,dt);return;}// v0.75: iso pomo ei parane
   if(m.atkCd<=0){
     if(dist<5){m.act={k:Math.random()<.55?'swipe':'slam',t:0};m.atkCd=(m.phase2?1.1:1.6);}
     else if(dist>9&&dist<30){m.act={k:Math.random()<.5?'charge':'throw',t:0};m.atkCd=m.phase2?1.6:2.4;}

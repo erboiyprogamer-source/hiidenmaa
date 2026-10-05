@@ -239,10 +239,10 @@ function enterRealm(id){fadeTo(()=>{
   spawnRealmMobs(id);msg(`${REALMS[id].n}. Portin suoja: et ole haavoittuva 3 sekuntiin.`);});}
 function exitRealm(){fadeTo(()=>{
   const id=P.realm,F=portalFront(id);P.inDun=false;P.realm=null;P.pos.set(F.x,terrainH(F.x,F.z),F.z);P.vy=0;P.vel.set(0,0,0);camYaw=Math.atan2(-F.fx,-F.fz);P.spawnProt=3.2;
-  for(const m of [...mobs])if(m.dun)mobRemove(m);});}
+  for(const m of [...mobs])if(m.dun){if(m.def.ai==='rboss'&&!m.dead)fo('rbHp')[m.realm]=m.hp;mobRemove(m);}});}// v0.75: pomon hp säilyy
 function spawnRealmMobs(id){const R=BUILT[id],dk=fo('rm')[id]||(fo('rm')[id]={});
   R.mobs.forEach((s,i)=>{if(dk[i])return;const m=spawnMob(s.type,s.x,s.z,{y:DUN.y,dun:true});m.realm=id;m.rmIdx=i;});
-  if(!fo('rb')[id]){const b=spawnMob(REALMS[id].boss,R.boss.x,R.boss.z,{y:DUN.y,dun:true});b.realm=id;b.rmIdx='B';b.state='sleep';}}
+  if(!fo('rb')[id]){const b=spawnMob(REALMS[id].boss,R.boss.x,R.boss.z,{y:DUN.y,dun:true});b.realm=id;b.rmIdx='B';b.state='sleep';const hp=fo('rbHp')[id];if(hp)b.hp=Math.min(b.maxHp,hp);}}
 // Kutsutaan, kun mobi kuolee: tallentaa vartijoiden, sisätilojen vihollisten ja pomojen kaatumisen.
 function onMobKilled(m){
   if(m.siteK)fo('gk')[m.siteK+':'+m.gi]=1;
@@ -261,7 +261,7 @@ function realmBossAI(m,dt,dx,dz,dist){
     if(m.t>2){m.state='chase';m.phase=1;sfx('roar');shake(.5);msg(`${d.n} herää!`,'warn');}return;}
   const ph=m.hp>m.maxHp*.66?1:m.hp>m.maxHp*.33?2:3;
   if(ph>(m.phase||1)){m.phase=ph;m.act=null;sfx('roar');shake(.6);shockwave(m.pos.x,m.pos.y,m.pos.z,10,REALMS[m.realm].glow);msg(`${d.n} raivostuu!`,'warn');if(d.sum.includes(ph))summonMinions(m,ph===2?2:3);}
-  if(P.dead){moveMob(m,m.home.x-m.pos.x,m.home.z-m.pos.z,d.walk,dt);m.hp=Math.min(m.maxHp,m.hp+40*dt);m.state='sleep';animMob(m,dt);return;}
+  if(P.dead){moveMob(m,m.home.x-m.pos.x,m.home.z-m.pos.z,d.walk,dt);m.state='sleep';animMob(m,dt);return;}// v0.75: ei parane
   const sp=ph===3?1.25:ph===2?1.1:1,pr=P.spawnProt>0;
   if(m.act){const a=m.act;a.t+=dt;
     if(a.k==='swipe'){f.armR.rotation.x=a.t<.8?-2.6*a.t/.8:lerp(-2.6,-.2,Math.min(1,(a.t-.8)/.2));if(a.t>=.8&&!a.hit){a.hit=1;sfx('swing');if(dist<d.range+.8&&(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1)>.1)hurtPlayer(d.dmg,m.pos.x,m.pos.z);}if(a.t>1.4)m.act=null;}
