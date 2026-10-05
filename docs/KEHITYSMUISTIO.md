@@ -6,12 +6,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ## Peli lyhyesti
 
 - Pelaaja haaksirikkoutuu Hiidenmaan saarelle. Saarta hallitsee kivinen **Kalmanvartija**.
-- Pelattavaa noin 30–60 min: keräily → kivikirves → työpenkki → suoja ja nuotio → metsästys →
-  piikivihakku ja kupari → sulatusuuni ja ahjo → kuparivarusteet → kolme hiidenkiveä
-  Hautakummusta → pomotaistelu Kalmankehässä.
-- Biomit: niitty, metsä, vuori (lumihuiput), kalmanummi, ranta, järvi, meri.
-- Paikat (`LOC`): aloitusranta, kolme raunioita aarrearkkuineen, kolme riimukiveä (kertovat
-  tarinan ja merkitsevät paikkoja karttaan), Hautakumpu (luolasto), Kalmankehä (pomo).
+- Kulku: keräily → kivikirves → työpenkki → suoja ja nuotio → metsästys → piikivihakku ja kupari → sulatusuuni ja ahjo →
+  kupari- ja rautavarusteet → Hautakummun hiidenkivet → ulottuvuudet avainketjussa (Routaluola, Kalmankammio, Aarnihauta) →
+  pomotaistelu Kalmankehässä.
+- 6 karttaa, biomit: niitty, metsä, aarnimetsä, vuori (lumihuiput), kalmanummi, ranta, järvi, meri.
+- **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
 ## Pysyvät päätökset
 
@@ -36,6 +35,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Asia | Arvo |
 | --- | --- |
 | Pelaajan kävely / juoksu | 4,6 / 8 m/s |
+| Käsisoihdun paloaika `TORCH_T` | 120 s (pihka +60 s) |
+| Vihollisten nopeuskerroin `MOB_SPD` | 0,85 |
+| Puiden uusiutuminen | kerran yössä, 100 m säteellä |
+| Rakennusalueen suoja (`nearBase`) | 15 m osasta, työpenkki 26 m |
 | Terveys / kestävyys / max paino | 60 / 100 / 160 |
 | Vuorokauden pituus `DAY_LEN` | 720 s (12 min) |
 | Rakennusruudukko `G` / seinän korkeus `WH` | 2,5 m / 2,6 m |
@@ -54,6 +57,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
 
 ## Versioloki
+
+### Dokumentaatio (v0.64 jälkeen)
+- Uusi `docs/OMINAISUUDET.md`: kaikki pelin järjestelmät, säännöt ja fysiikan arvot yhdessä viiteoppaassa (maailma, liikkuminen,
+  selviytyminen, keräily ja puut, valmistus, rakentaminen ja kohdistus, tuli ja valo, taistelu, viholliset, pomot, luolastot,
+  tarina, sää, kartta, asetukset, tallennus). "Peli lyhyesti" ja tasapainoarvot päivitetty.
 
 ### v0.64 (rakennuskohdistus, ähky, auringon hehku, koivun oksat näkyvämmiksi)
 - **G-kohdistustilat:** ruudukko (G = 2,5 m), **1 m** (kaikki osat 1 m välein, 1 m ruudukko näkyy), puoli, **3D** (vaakaruudukko +

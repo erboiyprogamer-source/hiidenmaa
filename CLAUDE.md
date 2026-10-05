@@ -5,7 +5,8 @@ rakentaminen, taistelu, luolasto ja yksi pomo. Valheim on inspiraatio, mutta pel
 **älä käytä Valheimin nimiä, hahmoja, grafiikkaa tai muuta suojattua sisältöä.**
 
 Lue tämän lisäksi aina `docs/KEHITYSMUISTIO.md`. Siinä ovat tehdyt päätökset, tasapainoarvot,
-versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
+versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen. Pelin kaikki ominaisuudet, säännöt ja
+fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`.
 
 ## Käyttäjä ja työtapa
 
@@ -14,7 +15,8 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 - Älä tilaa tai ota käyttöön mitään maksullista ilman lupaa.
 - Muutokset tehdään erissä (3–6 toisiinsa liittyvää muutosta). Jokaisen erän jälkeen:
   1. testaa (ks. Testaus),
-  2. päivitä `docs/KEHITYSMUISTIO.md` (versioloki, muuttuneet arvot, uudet päätökset, ideajono),
+  2. päivitä `docs/KEHITYSMUISTIO.md` (versioloki, muuttuneet arvot, uudet päätökset, ideajono) ja
+     `docs/OMINAISUUDET.md` (muuttuneet ominaisuudet, säännöt ja arvot),
   3. päivitä tämä tiedosto, jos rakenne tai säännöt muuttuivat,
   4. tee commit suomenkielisellä viestillä. Pushaa, kun käyttäjä pyytää.
 - Pidä tämä tiedosto lyhyenä (alle 200 riviä). Yksityiskohdat kuuluvat kehitysmuistioon.
