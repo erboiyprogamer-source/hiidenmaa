@@ -21,7 +21,7 @@ function updatePlayer(dt){
   let speed=4.6;const wantRun=kd('run')&&!P.crouch;
   P.running=false;
   if(wantRun&&dl>0&&!over&&P.stam>0&&!P.blocking&&!P.drawing){speed=8;P.running=true;P.stam-=13*dt;P.stamDelay=.8;}
-  if(P.blocking||P.drawing)speed=2.4;if(over)speed*=.55;if(armor&&ITEMS[armor.id].slow)speed*=1-ITEMS[armor.id].slow;if(P.atk)speed*=.45;if(P.crouch)speed=Math.min(speed,2.3);speed*=P.fx.speed;if(DEV&&keys.KeyV)speed*=10;// DEV: V pohjassa 10× nopeampi
+  if(P.blocking||P.drawing)speed=2.4;if(over)speed*=.55;if(armor&&ITEMS[armor.id].slow)speed*=1-ITEMS[armor.id].slow;if(P.atk)speed*=.45;if(P.crouch)speed=Math.min(speed,2.3);if(P.zone==='suo'&&!P.inDun&&!P.swim)speed*=.85;speed*=P.fx.speed;if(DEV&&keys.KeyV)speed*=10;// DEV: V pohjassa 10× nopeampi
   P.inWater=P.pos.y<-.9&&!P.inDun;P.swim=P.pos.y<-1.3&&!P.inDun;
   if(P.swim){speed=2.6;P.stam-=(dl>0?6:2)*dt;P.stamDelay=.6;if(P.stam<=0){P.hp-=4*dt;if(P.hp<=0)playerDie();}}
   // stamina regen

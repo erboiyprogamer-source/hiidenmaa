@@ -230,3 +230,12 @@ input.isdef{filter:brightness(1.25)}
 
 /* v0.80: hiiren kursori näkyy aina kuoleman ruudulla */
 #deadS,#deadS *{cursor:default}#deadS .mbtn{cursor:pointer}
+
+/* v0.82: uusi alue -ilmoitus (häivytys sisään 1 s, näkyy 3 s, ulos 1,5 s) ja repun biomilaatikko */
+#zoneBan{position:fixed;left:50%;top:17%;transform:translateX(-50%);text-align:center;pointer-events:none;opacity:0;transition:opacity 1.5s ease;z-index:6;text-shadow:0 2px 12px rgba(0,0,0,.85)}
+#zoneBan.on{opacity:1;transition:opacity 1s ease}
+#zoneBan small{display:block;font:600 15px var(--font-b);letter-spacing:.32em;text-transform:uppercase;color:#e8dcc0}
+#zoneBan b{display:block;font:400 54px var(--font-d);color:#f4ead2;margin-top:4px}
+#zoneBan i{display:block;width:260px;height:2px;margin:8px auto 0;background:linear-gradient(90deg,transparent,var(--ember),transparent)}
+#biomeBox{margin-top:10px}#biomeBox h3{margin:0 0 4px}#biomeBox .bRow{display:flex;gap:8px;font-size:13px;line-height:1.35}#biomeBox .bRow span:first-child{min-width:92px;opacity:.7}
+#biomeBox .bNote{font-size:12.5px;color:#ffd28a;margin-top:3px}

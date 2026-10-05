@@ -98,6 +98,11 @@ const terrainMesh=(function buildTerrain(){
     else if(b==='forest')c=[.25+n,.42+n,.17];
     else if(b==='aarni')c=[.15+n*.6,.25+n*.6,.12];
     else if(b==='moor')c=[.36+n,.32+n,.3+n*.5];
+    else if(b==='koivu')c=[.4+n,.58+n,.25];                                            // v0.82 uudet biomit
+    else if(b==='suo'){const w=vnoise(x*.22+5,z*.22-3);c=w>.6?[.17+n*.5,.2+n*.5,.13]:[.29+n,.33+n,.16];}  // mättäät + märät painanteet
+    else if(b==='kangas')c=[.5+n,.53+n,.41+n*.5];                                        // vaalea jäkälä
+    else if(b==='tunturi')c=[.44+n,.42+n,.27+n*.5];                                     // ruskehtava varvikko
+    else if(b==='rakka')c=[.44+n,.44+n,.43+n];
     else c=[.48+n,.47+n,.44+n];
     if(h>33){const t=sstep(33,38,h);c=[lerp(c[0],.92,t),lerp(c[1],.94,t),lerp(c[2],.96,t)];}
     if(slope>.75&&b!=='sea'&&b!=='beach'){const t=sstep(.75,1.3,slope);c=[lerp(c[0],.45,t),lerp(c[1],.44,t),lerp(c[2],.41,t)];}

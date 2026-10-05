@@ -8,6 +8,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## 1. Maailma
 
+- **Biomit (`biomeAt`/`zoneAt`/`BIOMES`, world.js, v0.82):** Rantaniitty (aloitus), Koivulehto, Korpimetsä, Upposuo (liike −15 %, lätäköt),
+  Jäkäläkangas (männyt, piikivi), Aarnimetsä, Kalmanummi, Tunturikangas, Rakka (lohkareet, kupari), Kivivuori, Routahuiput (> 33 m),
+  Hietaranta. Nimi näkyy minikartan alla, ominaisuudet repussa. Ensimmäisellä käynnillä "Uusi alue löydetty: …" (häivytys), `flags.bio`.
 - **Kartat (`MAPS`, world.js):** 6 karttaa – Hiidenmaa, Kalmansaaret (saaristo), Tunturinniemi (iso vuoristo), Routasaari (vuoristo idässä,
   laajat tunturit), Aarnikorpi (neljä aarnimetsää), Nummiluodot (iso keskijärvi, laaja nummi). Uusi peli arpoo kartan; vaihto lataa sivun.
 - **Koko:** noin ±350 m (`HALF`), korkeusruudukko 2 m (`GS`), skaala `WS` = 1,75. Reunat laskevat mereen.

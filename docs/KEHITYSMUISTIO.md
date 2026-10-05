@@ -9,7 +9,8 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - Kulku: keräily → kivikirves → työpenkki → suoja ja nuotio → metsästys → piikivihakku ja kupari → sulatusuuni ja ahjo →
   kupari- ja rautavarusteet → Hautakummun hiidenkivet → ulottuvuudet avainketjussa (Routaluola, Kalmankammio, Aarnihauta) →
   pomotaistelu Kalmankehässä.
-- 6 karttaa, biomit: niitty, metsä, aarnimetsä, vuori (lumihuiput), kalmanummi, ranta, järvi, meri.
+- 6 karttaa, biomit (v0.82): Rantaniitty, Koivulehto, Korpimetsä, Upposuo, Jäkäläkangas, Aarnimetsä, Kalmanummi, Tunturikangas, Rakka,
+  Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
 ## Pysyvät päätökset
@@ -57,6 +58,26 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
 
 ## Versioloki
+
+### v0.82 (uudet biomit ja alueet – päivityslista kohta 3)
+- **Uudet biomit** vievät tilaa metsältä ja niityltä (`biomeAt`, world.js); vuori, nummi, aarnimetsä ja ranta ennallaan, aloitusniitty pysyy:
+  - `suo` **Upposuo**: matalat alueet (h < 4,2) kosteuskohinalla `fbm(.025)` > 0,6, järvien ympärillä kosteus +0,18. Tumma maa ja märät
+    painanteet, lätäköt (`lampare`, deco), kelot, pienet koivut, puolukat. **Liike 15 % hitaampaa** (`P.zone==='suo'`, player.js).
+  - `kangas` **Jäkäläkangas**: kuivat harjut h > 6 ja `fbm(.022)` > 0,58. Vaalea jäkälä, uusi puu **mänty** (`manty`: puu 4–6, pihka 0–2,
+    korkeus 8,4 m), kivet, piikivi, vähän kuparia.
+  - `koivu` **Koivulehto**: rengas aloitusniityn ympärillä (40–52 m) ja niityn/metsän raja (`meadowT`…+0,07). Koivuja, marjoja, sieniä.
+  - `tunturi` **Tunturikangas**: rinne `mtnH−6`…`mtnH` (puurajan yläpuoli): kääpiökoivut, varvikko, marjat, kivet.
+  - `rakka` **Rakka**: louhikko samassa vyöhykkeessä (`ridge(.035)` > 0,62): paljon lohkareita ja kuparisuonia.
+- **Nimet** (`BIOMES`, world.js): Rantaniitty, Koivulehto, Korpimetsä, Upposuo, Jäkäläkangas, Aarnimetsä, Kalmanummi, Tunturikangas, Rakka,
+  Kivivuori, Routahuiput (`zoneAt`: vuori yli 33 m), Hietaranta, Meri. Jokaisella: lämpö, vaarallisuus, eläimet, viholliset, resurssit, huomio.
+- **Näkyvyys:** biomin nimi minikartan alla kellorivillä; repussa laatikko "Alue: …" (`renderBiome`) + löydetyt alueet x / 13.
+- **Uusi alue löydetty** (`updateZone` 0,4 s välein, `flags.bio`): iso keskiteksti (häivytys sisään 1 s, näkyy 3 s, ulos 1,5 s), hiljainen
+  kolmisointu `sfx('discover')` ja lokiviesti. Vain ensimmäisellä kerralla. Uusi peli: `bio={meadow:1}`; latauksessa nykyinen alue merkitään
+  hiljaa (`zoneQuiet`).
+- `SPAWN`-taulut uusille biomeille (kohta 2 säätää päivä/yö-jakauman).
+- **Tallennus v9:** solmujen numerointi muuttui → v < 9 kaadettujen/siirrettyjen puiden lista ohitetaan (puut ovat taas pystyssä).
+- Jakauma kartalla 0 (maa-alasta): korpimetsä 28 %, aarni 11 %, huiput 11 %, nummi 10 %, kivivuori 8 %, niitty 7 %, koivulehto 6 %,
+  kangas 6 %, ranta 5 %, suo 5 %, tunturi 2 %, rakka 1,5 %.
 
 ### v0.81 (eläinmallien liitokset – päivityslista kohta 1)
 - `makeAnimal`: jalan nivel on rungon sisällä (`by − 0,1·s`, ennen `lh` eli rungon alapuolella → peuralla näkyvä rako). Jokaisen jalan
@@ -916,7 +937,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
 2. Mobien spawnaus: yöllä suurin osa, vähän kauempana (jahtaavat); osa lähelle mieluiten esteen taakse. Päivällä max 2, vain tiheä metsä /
    suo / kuiva biomi; tumma aarnimetsä hyvin todennäköinen, hirviöt siellä 20 % nopeampia + ilmoitus biomille astuessa.
-3. Uusia biomeja + nimet; nykyinen biomi näkyy, repussa biomin ominaisuudet; "Uusi alue löydetty: …" fade in/out vain ensimmäisellä kerralla
+3. TEHTY v0.82. Uusia biomeja + nimet; nykyinen biomi näkyy, repussa biomin ominaisuudet; "Uusi alue löydetty: …" fade in/out vain ensimmäisellä kerralla
    (aloitusbiomi merkitty löydetyksi ilman ilmoitusta).
 4. Tuulensuunta: vaihtuu hitaasti satunnaisesti (minuutteja, kääntyy hitaasti); kartalla suunta ja nopeus; pilvet liikkuvat tuulen suuntaan.
 5. 4 uutta eläintä (samaa tyyliä) + 2 joskus vihamielistä + harvinaisia pelottavia (seuraa 30–60 s, poistuu 5 s ja unohtaa); luonteen mukaiset

@@ -144,6 +144,12 @@ const SPAWN={
   mountain:{day:[['susi',.5],['peura',.5]],night:[['susi',1]]},
   beach:{day:[['karju',.5],['peura',.5]],night:[['susi',.6],['hiisi',.4]]},
   aarni:{day:[['hiisi',.5],['susi',.3],['peura',.2]],night:[['susi',.5],['hiisi',.5]]},
+  // v0.82 uudet biomit (kohta 2 säätää päivä/yö-jakauman)
+  koivu:{day:[['peura',.75],['karju',.25]],night:[['susi',.4],['hiisi',.2],['peura',.4]]},
+  suo:{day:[['karju',.5],['hiisi',.5]],night:[['hiisi',.55],['susi',.45]]},
+  kangas:{day:[['peura',.7],['karju',.3]],night:[['susi',.7],['hiisi',.3]]},
+  tunturi:{day:[['peura',.6],['susi',.4]],night:[['susi',1]]},
+  rakka:{day:[['susi',.5],['peura',.5]],night:[['susi',1]]},
 };
 function spawner(dt){
   spawnT-=dt;if(spawnT>0||P.inDun||P.dead)return;spawnT=2.5;

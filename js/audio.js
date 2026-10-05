@@ -24,6 +24,7 @@ function sfx(type,pitch=1,vol=1){
     case 'build':noise(.09,400,150,.45,2);break;
     case 'eat':noise(.15,1200,700,.15,1.5);break;
     case 'craft':tone(440,660,.12,.1,'triangle');break;
+    case 'discover':tone(392,392,1.1,.06,'sine');tone(587,587,1.3,.05,'sine',.18);tone(784,784,1.6,.035,'sine',.36);break; // v0.82 uusi alue: hiljainen kolmisointu
     case 'bow':tone(300,120,.15,.18,'triangle');break;
     case 'roar':tone(110,45,1.2,.4,'sawtooth');break;
     case 'slam':noise(.5,300,60,.6,1);tone(80,30,.5,.4,'sine');break;

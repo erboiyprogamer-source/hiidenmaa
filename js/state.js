@@ -11,7 +11,8 @@ const TORCH_T=120; // käsisoihdun paloaika (s) tasolla ★1; pihka lisää 60 s
 const torchMax=s=>TORCH_T*(1+.5*(((s&&s.q)||1)-1));
 function torchSlot(){const s=equipped('offhand');return s&&s.id==='soihtu'?s:null;}
 function torchLit(){const s=torchSlot();return !!s&&s.lit!==false&&(s.fuel??torchMax(s))>0;}
-let playTime=0, dayT=.3, dayN=1, weather={cur:'selkea',until:200}, flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{},xp:0,cnt:{},ach:{},first:{},gv:2}, graves=[], drops=[];
+let zoneQuiet=true; // v0.82: true = seuraava alue merkitään löydetyksi ilman ilmoitusta (uusi peli / lataus)
+let playTime=0, dayT=.3, dayN=1, weather={cur:'selkea',until:200}, flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{},xp:0,cnt:{},ach:{},first:{},gv:2,bio:{meadow:1}}, graves=[], drops=[];
 let camYaw=Math.PI, camPitch=.35, camDist=6;
 const EXN=Math.ceil(HALF/2); // tutkimusruudukko 4 m ruuduin
 const explored=new Uint8Array(EXN*EXN);

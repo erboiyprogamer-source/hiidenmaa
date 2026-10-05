@@ -89,11 +89,37 @@ function biomeAt(x,z,h){
   if(Math.hypot(u-MAP.moor[0],v-MAP.moor[1])<(MAP.moorR||68)+(fbm(u*.05,v*.05,2)-.5)*24)return 'moor';
   if(h>(MAP.mtnH||23))return 'mountain';
   if(h>1.6&&h<Math.min(20,(MAP.mtnH||23)-1)&&inAarni(x,z))return 'aarni';
-  const C=MAP.center||MAP.loc.spawn,d=Math.hypot(u-C[0],v-C[1]);
-  if(d<40+(fbm(u*.04+9,v*.04,2)-.5)*26)return 'meadow';
-  if(fbm(u*.02-40,v*.02+12,3)<(MAP.meadowT??.33))return 'meadow';
+  const C=MAP.center||MAP.loc.spawn,d=Math.hypot(u-C[0],v-C[1]),dn=(fbm(u*.04+9,v*.04,2)-.5)*26;
+  if(d<40+dn)return 'meadow';                                   // aloitusniitty pysyy aina niittynä
+  // v0.82: uudet biomit vievät tilaa metsältä ja niityltä (vuori, nummi, aarnimetsä ja ranta ennallaan)
+  const mH=MAP.mtnH||23;
+  if(h>mH-6){if(ridge(u*.035+11,v*.035-4)>.62)return 'rakka';return 'tunturi';}  // puurajan yläpuolinen rinne + louhikot
+  let wet=fbm(u*.025+21,v*.025-8,3);for(const [lx,lz,lr] of MAP.lakes){const ld=Math.hypot(u-lx,v-lz);if(ld<lr*1.7)wet+=.18*(1-ld/(lr*1.7));}
+  if(h<4.2&&wet>.6)return 'suo';
+  if(h>6&&fbm(u*.022+77,v*.022-33,3)>.58)return 'kangas';       // kuivat harjut
+  const mv=fbm(u*.02-40,v*.02+12,3),mt=MAP.meadowT??.33;
+  if(d<52+dn)return 'koivu';                                    // aloitusniittyä kiertää koivulehto
+  if(mv<mt)return 'meadow';
+  if(mv<mt+.07)return 'koivu';                                  // niityn ja metsän välissä
   return 'forest';
 }
+// v0.82: biomien nimet ja ominaisuudet (näkyvät minikartan alla ja repussa). zoneAt = biomi + lumihuiput erikseen.
+const BIOMES={
+  meadow:{n:'Rantaniitty',temp:'Leuto',danger:1,life:'Peurat ja villikarjut',foe:'Öisin sudet ja hiidet',res:'Oksat, kivet, puolukat, yksittäiset koivut'},
+  koivu:{n:'Koivulehto',temp:'Leuto',danger:1,life:'Peuroja tavallista enemmän',foe:'Vähän vihollisia',res:'Koivut, puolukat, sienet, oksat'},
+  forest:{n:'Korpimetsä',temp:'Viileä',danger:2,life:'Peurat ja villikarjut',foe:'Sammalhiidet, öisin sudet',res:'Kuuset, koivut, sienet, kuparisuonet'},
+  suo:{n:'Upposuo',temp:'Kostea ja viileä',danger:2,life:'Villikarjut',foe:'Sammalhiidet, öisin sudet',res:'Puolukat, kelot, sienet',note:'Upottava maa: liike 15 % hitaampaa'},
+  kangas:{n:'Jäkäläkangas',temp:'Kuiva',danger:1,life:'Peurat',foe:'Öisin sudet',res:'Männyt (pihka), kivet, piikivi',note:'Piikiveä ja kiviä tavallista enemmän'},
+  aarni:{n:'Aarnimetsä',temp:'Kolea',danger:3,life:'Harvinaisia',foe:'Sammalhiidet ja sudet',res:'Aarnipuut (vaatii rautakirveen), sienet'},
+  moor:{n:'Kalmanummi',temp:'Kolea',danger:3,life:'Villikarjut',foe:'Kalmot',res:'Kelot, kivet'},
+  tunturi:{n:'Tunturikangas',temp:'Kylmä',danger:2,life:'Peurat',foe:'Sudet',res:'Kääpiökoivut, variksenmarjat, kivet'},
+  rakka:{n:'Rakka',temp:'Kylmä',danger:2,life:'Vähän eläimiä',foe:'Sudet',res:'Lohkareet, kuparisuonet',note:'Kuparisuonia tavallista enemmän'},
+  mountain:{n:'Kivivuori',temp:'Kylmä',danger:2,life:'Peurat',foe:'Sudet',res:'Rautasuonet, lohkareet, kuuset'},
+  peak:{n:'Routahuiput',temp:'Jäätävä',danger:3,life:'Ei juuri eläimiä',foe:'Sudet',res:'Rautasuonet',note:'Kylmä: lämmin varustus tarpeen'},
+  beach:{n:'Hietaranta',temp:'Leuto',danger:1,life:'Peurat ja villikarjut',foe:'Öisin sudet ja hiidet',res:'Kivet, oksat'},
+  sea:{n:'Meri',temp:'Kylmä vesi',danger:1,life:'–',foe:'–',res:'–',note:'Uiminen kuluttaa kestävyyttä'},
+};
+function zoneAt(x,z){const h=terrainH(x,z),b=biomeAt(x,z,h);return b==='mountain'&&h>33?'peak':b;}
 const HGT=new Float32Array(HN*HN);
 for(let iz=0;iz<HN;iz++)for(let ix=0;ix<HN;ix++)HGT[iz*HN+ix]=heightFn(-HALF+ix*GS,-HALF+iz*GS);
 const HGT0=HGT.slice(),TERRA={}; // alkuperäinen korkeuskartta ja lapiolla muokatut kärjet (indeksi → korkeus)

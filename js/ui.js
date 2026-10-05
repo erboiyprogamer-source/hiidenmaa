@@ -56,7 +56,7 @@ function updateHUD(dt){
   const fxs=effects();$('#status').innerHTML=fxs.map(e=>`<div class="chip ${e.kind}" title="${e.desc}"><b></b>${e.name}${e.t?' '+fmtT(e.t):''}</div>`).join('');
   if(openPanel==='inv'&&performance.now()-fxAt>400){fxAt=performance.now();renderEffects(fxs);}
   // clock
-  const hh=Math.floor(dayT*24),mm=Math.floor((dayT*24-hh)*60/10)*10;$('#clock').innerHTML=`Päivä ${dayN} · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')} <span>· ${P.inDun?(P.realm?REALMS[P.realm].n:'Hautakumpu'):WEATHERS[weather.cur].n}</span>`;
+  const hh=Math.floor(dayT*24),mm=Math.floor((dayT*24-hh)*60/10)*10;$('#clock').innerHTML=`Päivä ${dayN} · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')} <span>· ${P.inDun?(P.realm?REALMS[P.realm].n:'Hautakumpu'):WEATHERS[weather.cur].n}${!P.inDun&&P.zone&&BIOMES[P.zone]?' · '+BIOMES[P.zone].n:''}</span>`;
   if(invDirty){invDirty=false;updateBack();$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1).replace('class="slot','class="slot'+(i===hotSel?' hsel':''))).join('');if(openPanel==='inv')renderInv();if(openPanel==='chest')renderChest();if(openPanel==='build')renderBuild();}
   if(boss&&!boss.dead){$('#bossbar i').style.width=(boss.hp/boss.maxHp*100)+'%';}
   drawMinimap();
@@ -79,10 +79,21 @@ function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=d
   $('#devMap').onclick=()=>{devRevealMap();msg('Kartta ja kaikki kohteet paljastettu.','loot');};}
 // DEV: poistaa karttapilvet kokonaan ja merkitsee kaikki nimetyt paikat (rauniot, portaalit, riimukivet…) löydetyiksi.
 function devRevealMap(){explored.fill(1);resetFog();for(const k in LOC){const L=LOC[k];if(k!=='spawn'&&L&&L.name)flags.disc[k]=1;}}
+// v0.82: alueet (biomit). Nykyinen alue P.zone tarkistetaan 0,4 s välein; ensimmäisellä kerralla "Uusi alue löydetty" (flags.bio).
+let zoneT=0,zoneBanT=0;
+function updateZone(dt){zoneT-=dt;if(zoneT>0)return;zoneT=.4;if(P.inDun||P.dead)return;
+  const z=zoneAt(P.pos.x,P.pos.z);if(z===P.zone&&!zoneQuiet)return;const ch=z!==P.zone;P.zone=z;if(!flags.bio)flags.bio={meadow:1};
+  if(!flags.bio[z]){flags.bio[z]=1;if(!zoneQuiet)showZoneBanner(BIOMES[z].n);}zoneQuiet=false;if(ch&&openPanel==='inv')renderBiome();}
+function showZoneBanner(name){const el=$('#zoneBan');$('#zoneBanN').textContent=name;el.classList.add('on');sfx('discover');msg(`Uusi alue löydetty: ${name}`,'loot');
+  clearTimeout(zoneBanT);zoneBanT=setTimeout(()=>el.classList.remove('on'),4000);}
+function renderBiome(){const B=$('#biomeBox');if(!B)return;if(P.inDun||!P.zone||!BIOMES[P.zone]){B.innerHTML='';return;}const b=BIOMES[P.zone],dg=['','Rauhallinen','Kohtalainen','Vaarallinen'][b.danger]||'';
+  B.innerHTML=`<h3>Alue: ${b.n}</h3><div class="bRow"><span>Sää ja lämpö</span><span>${b.temp}</span></div><div class="bRow"><span>Vaarallisuus</span><span>${dg}</span></div>
+  <div class="bRow"><span>Eläimet</span><span>${b.life}</span></div><div class="bRow"><span>Viholliset</span><span>${b.foe}</span></div><div class="bRow"><span>Resurssit</span><span>${b.res}</span></div>${b.note?`<div class="bNote">${b.note}</div>`:''}
+  <div class="bRow" style="margin-top:4px"><span>Löydetyt alueet</span><span>${Object.keys(flags.bio||{}).filter(k=>BIOMES[k]).length} / ${Object.keys(BIOMES).length}</span></div>`;}
 function renderLog(){const fm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
   $('#logBody').innerHTML=msgLog.length?[...msgLog].reverse().map(m=>`<div class="lg ${m.cls}"><span class="num">${fm(m.at)}</span>${m.t.replace(/</g,'&lt;')}</div>`).join(''):'<div class="note">Ei ilmoituksia vielä.</div>';}
 function togglePanel(name){if(openPanel===name){closePanels();return;}if(P.dead)return;panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';releaseLock();mouseL=false;mouseR=false;P.drawing=false;
-  if(name==='inv'){$('#inv').hidden=false;renderInv();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){$('#devP').hidden=false;renderDev();}}
+  if(name==='inv'){$('#inv').hidden=false;renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){$('#devP').hidden=false;renderDev();}}
 function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;if(!keep){state='play';if(!skipLock)requestLock();}}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
 function nearStations(){const s={};for(const p of pieces){const k=isFirePiece(p.t)?'nuotio':p.t;if(['tyopenkki','nuotio','ahjo'].includes(k)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(k==='nuotio'?4:8)**2&&!P.inDun){if(k==='nuotio'&&p.data.fuel<=0)continue;s[k]=1;}}return s;}

@@ -8,8 +8,10 @@ const NODE={
   kuusi:{kind:'tree',hp:30,drops:[['puu',3,5],['pihka',0,1]],r:.38,respawn:1500},
   koivu:{kind:'tree',hp:24,drops:[['puu',3,4]],r:.3,respawn:1500},
   kelo:{kind:'tree',hp:18,drops:[['puu',2,3]],r:.32,respawn:1500},
+  manty:{kind:'tree',hp:28,drops:[['puu',4,6],['pihka',0,2]],r:.36,respawn:1500},
   aarnipuu:{kind:'tree',hp:220,drops:[['pihka',1,2]],r:.66,respawn:3000,tier:3},
   pensas:{kind:'deco',r:0},
+  lampare:{kind:'deco',r:0},
   tukki:{kind:'log',hp:20,drops:[['puu',3,4]],r:0},
   lohkare:{kind:'rock',hp:45,drops:[['kivi',5,8]],r:1.05,respawn:1800,tier:1},
   kuparisuoni:{kind:'rock',hp:70,drops:[['malmi',3,5],['kivi',1,3]],r:1.1,respawn:2400,tier:1},
@@ -46,7 +48,13 @@ const NGEO={
   kuusi:mergeParts([part(new THREE.BoxGeometry(.4,2.2,.4),0x5a3a22,0,1.1,0),part(new THREE.ConeGeometry(1.7,2.5,7),0x2e5a2e,0,2.7,0),part(new THREE.ConeGeometry(1.3,2.1,7),0x356836,0,3.9,0),part(new THREE.ConeGeometry(.85,1.7,7),0x3b7440,0,5,0)]),
   koivu:mergeParts([...koivuBase(),...brParts('koivu')]),
   kelo:mergeParts([part(new THREE.BoxGeometry(.36,4.2,.36),0x6d665c,0,2.1,0),part(new THREE.BoxGeometry(.16,1.4,.16),0x6d665c,.5,3,0,0,0,-.8),part(new THREE.BoxGeometry(.14,1.1,.14),0x6d665c,-.4,3.6,.1,0,0,.9)]),
+  // v0.82 mänty (Jäkäläkangas): pitkä punaruskea runko (alaosa harmaampi), latvus vain ylhäällä litteinä havutupsuina
+  manty:mergeParts([part(new THREE.BoxGeometry(.36,2.6,.36,1,4,1),0x6e5a4a,0,1.3,0),part(new THREE.BoxGeometry(.32,4.4,.32,1,10,1),0xa8643a,0,4.8,0),
+    part(new THREE.BoxGeometry(.12,1.2,.12),0xa8643a,.45,6.2,0,0,0,-.9),part(new THREE.BoxGeometry(.12,1,.12),0xa8643a,-.4,6.7,.2,0,0,.9),
+    part(new THREE.IcosahedronGeometry(1.25,0),0x2f5530,0,7.3,0,0,0,0,1.3,.55,1.2),part(new THREE.IcosahedronGeometry(.95,0),0x386236,.9,6.6,.2,0,0,0,1.2,.5,1),
+    part(new THREE.IcosahedronGeometry(.9,0),0x2a4d2c,-.8,7,-.3,0,0,0,1.2,.5,1.1),part(new THREE.IcosahedronGeometry(.7,0),0x386236,.1,8,.1,0,0,0,1.1,.6,1)]),
   aarnipuu:aarniGeo(),
+  lampare:mergeParts([part(new THREE.CylinderGeometry(1.1,1.1,.12,9),0x141b16,0,-.03,0,0,0,0,1,1,.7),part(new THREE.CylinderGeometry(.7,.7,.13,8),0x1b2620,.45,-.02,.25)]),  // suon lätäkkö (painuu maahan)
   pensas:mergeParts([part(new THREE.IcosahedronGeometry(.9,0),0x2a4a2a,0,.55,0,0,0,0,1.3,.75,1.2),part(new THREE.IcosahedronGeometry(.65,0),0x335a30,.7,.45,.3,0,0,0,1,.8,1),part(new THREE.IcosahedronGeometry(.6,0),0x24412a,-.6,.4,-.35,0,0,0,1.1,.7,1)]),
   lohkare:mergeParts([part(new THREE.IcosahedronGeometry(1.2,0),0x85837d,0,.55,0,0,0,0,1,.75,1),part(new THREE.IcosahedronGeometry(.7,0),0x77756f,.7,.35,.3)]),
   kuparisuoni:mergeParts([part(new THREE.IcosahedronGeometry(1.25,0),0x66605a,0,.6,0,0,0,0,1,.8,1),part(new THREE.BoxGeometry(.3,.3,.3),0xd9874a,.6,.9,.6,.5,.5),part(new THREE.BoxGeometry(.28,.28,.28),0xd9874a,-.7,.6,.5,.3,.8),part(new THREE.BoxGeometry(.25,.25,.25),0xe39a5a,.1,1.3,-.5,.2,.4),part(new THREE.BoxGeometry(.3,.3,.3),0xd9874a,-.3,.8,-.8)]),
@@ -73,8 +81,8 @@ treeMat.onBeforeCompile=sh=>{sh.uniforms.uTime=SWAY.uTime;sh.uniforms.uWind=SWAY
   float swH=max(0.,position.y-1.5);
   transformed.x+=sin(uTime*1.7+swPh)*uWind*swH*.05;transformed.z+=cos(uTime*1.3+swPh)*uWind*swH*.035;`);};
 // Puiden korkeus kertoimella s=1 (tukkien pituutta varten).
-const TREE_H={kuusi:5.8,koivu:6.2,kelo:4.8,aarnipuu:21};
-const POOL={kuusi:400,koivu:400,aarnipuu:60}; // varapaikat öisin kasvaville puille
+const TREE_H={kuusi:5.8,koivu:6.2,kelo:4.8,manty:8.4,aarnipuu:21};
+const POOL={kuusi:400,koivu:400,manty:200,aarnipuu:60}; // varapaikat öisin kasvaville puille
 const treeS=()=>.6+Math.pow(rng(),1.6)*1.4;   // puun koko .6–2.0, pienet yleisimpiä
 let nodeIdN=0;
 const CHN=10,CHS=HALF*2/CHN,CHUNK_IMS=[];
@@ -93,6 +101,11 @@ function chunkOf(x,z){return clamp(Math.floor((z+HALF)/CHS),0,CHN-1)*CHN+clamp(M
     else if(b==='meadow'){if(r<.035)add('koivu',px,pz,treeS());}
     else if(b==='moor'){if(r<.05)add('kelo',px,pz,.8+rng()*.4);}
     else if(b==='mountain'){if(h<31&&r<.14)add('kuusi',px,pz,.6+rng()*.6);}
+    // v0.82 uudet biomit
+    else if(b==='koivu'){if(r<.3)add('koivu',px,pz,treeS());else if(r<.34)add('kuusi',px,pz,treeS());if(rng()<.06)add('pensas',px+(rng()-.5)*2.5,pz+(rng()-.5)*2.5,.5+rng()*.5);}
+    else if(b==='suo'){if(r<.035)add('kelo',px,pz,.6+rng()*.4);else if(r<.09)add('koivu',px,pz,.45+rng()*.35);else if(r<.11)add('kuusi',px,pz,.5+rng()*.3);if(rng()<.22)add('lampare',px+(rng()-.5)*2,pz+(rng()-.5)*2,.6+rng()*.8);if(rng()<.14)add('pensas',px+(rng()-.5)*2.5,pz+(rng()-.5)*2.5,.4+rng()*.4);}
+    else if(b==='kangas'){if(r<.2)add('manty',px,pz,.7+rng()*.6);else if(r<.23)add('kuusi',px,pz,.6+rng()*.4);}
+    else if(b==='tunturi'){if(r<.05)add('koivu',px,pz,.32+rng()*.2);if(rng()<.1)add('pensas',px+(rng()-.5)*2.5,pz+(rng()-.5)*2.5,.3+rng()*.3);}
   }
   const AR=(HALF-10)*2;
   for(let i=0;i<2600*WS*WS;i++){
@@ -104,6 +117,11 @@ function chunkOf(x,z){return clamp(Math.floor((z+HALF)/CHS),0,CHN-1)*CHN+clamp(M
     else if(b==='forest'||b==='aarni'){if(r<.2)add('oksa',px,pz);else if(r<.3)add('kivikasa',px,pz);else if(r<.42)add('sieni',px,pz);else if(r<.5)add('marjat',px,pz);else if(r<.58)add('lohkare',px,pz,.8+rng()*.6);else if(r<.625)add('kuparisuoni',px,pz,.9+rng()*.3);}
     else if(b==='mountain'){if(r<.3)add('lohkare',px,pz,1+rng()*.8);else if(r<.38)add('kuparisuoni',px,pz,1);else if(r<.5)add('kivikasa',px,pz);}
     else if(b==='moor'){if(r<.15)add('kivikasa',px,pz);else if(r<.25)add('lohkare',px,pz,.8+rng()*.4);}
+    else if(b==='koivu'){if(r<.2)add('oksa',px,pz);else if(r<.27)add('kivikasa',px,pz);else if(r<.4)add('marjat',px,pz);else if(r<.5)add('sieni',px,pz);}
+    else if(b==='suo'){if(r<.1)add('oksa',px,pz);else if(r<.3)add('marjat',px,pz);else if(r<.38)add('sieni',px,pz);else if(r<.41)add('lohkare',px,pz,.6+rng()*.4);}
+    else if(b==='kangas'){if(r<.14)add('oksa',px,pz);else if(r<.34)add('kivikasa',px,pz);else if(r<.44)add('piikivi',px,pz);else if(r<.52)add('lohkare',px,pz,.8+rng()*.5);else if(r<.55)add('kuparisuoni',px,pz,1);}
+    else if(b==='tunturi'){if(r<.18)add('kivikasa',px,pz);else if(r<.3)add('marjat',px,pz);else if(r<.42)add('lohkare',px,pz,.8+rng()*.6);}
+    else if(b==='rakka'){if(r<.38)add('lohkare',px,pz,.9+rng()*.9);else if(r<.5)add('kuparisuoni',px,pz,1);else if(r<.62)add('kivikasa',px,pz);}
   }
   // rautasuonet: harvinaisia (~25) korkealla vuorilla
   for(let i=0,c=0;i<40000&&c<25;i++){const px=(rng()-.5)*AR,pz=(rng()-.5)*AR,h=terrainH(px,pz);if(h<=22||biomeAt(px,pz,h)!=='mountain'||!clear(px,pz))continue;add('rautasuoni',px,pz,1+rng()*.25);c++;}
@@ -185,7 +203,7 @@ function restoreNode(n){if(n.x!==n.ox||n.z!==n.oz||n.s!==n.s0)moveNode(n,n.ox,n.
 /* ---------------- TUKIT (kaatuneet puut) ---------------- */
 const logs=[];
 // Rungon kuoren väri puulajeittain (tukit ja oksat saavat alkuperäisen puun värin) ja kuoren sisäväri (lohkeamat ja kolot).
-const TRUNK_C={kuusi:0x5a3a22,koivu:0xe9e6dc,kelo:0x6d665c,aarnipuu:0x4a3524},LEAF_C={kuusi:0x2e5a2e,koivu:0x7aa641,kelo:0,aarnipuu:0x1c3a22},WOOD_IN=0xc08a52;
+const TRUNK_C={kuusi:0x5a3a22,koivu:0xe9e6dc,kelo:0x6d665c,manty:0xa8643a,aarnipuu:0x4a3524},LEAF_C={kuusi:0x2e5a2e,koivu:0x7aa641,kelo:0,manty:0x2f5530,aarnipuu:0x1c3a22},WOOD_IN=0xc08a52;
 const logMats={};const logMatOf=t=>logMats[t]||(logMats[t]=mat(TRUNK_C[t]||0x6b4a2e));
 function spawnLogs(n,a){
   const H=(TREE_H[n.type]||5)*n.s,rad=(n.type==='aarnipuu'?.55:.2)*n.s,cnt=n.s>1.3||n.type==='aarnipuu'?2:1;

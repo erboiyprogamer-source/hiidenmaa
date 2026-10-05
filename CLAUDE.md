@@ -38,7 +38,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | Tiedosto | Sisältö |
 | --- | --- |
 | `js/core.js` | `$`, `clamp`, `lerp`, `sstep`, kohina (`fbm`, `ridge`), `mulberry32` |
-| `js/world.js` | `WS` (skaala), `MAPS`/`MAP`/`MAP_ID` (6 karttaa), `dirIn`, `HALF`, `LOC` (+ arvotut `SITE_DEFS`-paikat), `AARNI`, `DUN`, `heightFn`, `biomeAt`, `terrainH` |
+| `js/world.js` | `WS` (skaala), `MAPS`/`MAP`/`MAP_ID` (6 karttaa), `dirIn`, `HALF`, `LOC` (+ arvotut `SITE_DEFS`-paikat), `AARNI`, `DUN`, `heightFn`, `biomeAt`, `zoneAt`, `BIOMES` (nimet + ominaisuudet), `terrainH` |
 | `js/render.js` | renderer, scene, camera, valot, tekstuurit, `MAT`, `mat()`, `bx()`, maasto, vesi, taivas, sade |
 | `js/collision.js` | törmäysruudukko: `addBox`, `addCircle`, `groundAt`, `collideXZ`, `pointBlocked`, `STEPUP` |
 | `js/items.js` | `ITEMS`, `RECIPES`, `RECIPE_BY`, `icon(id)` (canvas-kuvakkeet) |
