@@ -58,6 +58,23 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.72 (vasara vyölle, luonnolliset lyönnit ilman läpimenoa, napavektori-IK, erä 45: eläimet)
+- **Vasara vyöllä takana:** kun vasara ei ole kädessä, se roikkuu vyön yläreunasta selän puolella (ripustus y 0,94, z −0,24): pää vyön päällä
+  selän suuntaisesti (90° pystyakselin ympäri aiemmasta, jolloin pää sojotti taaksepäin), varsi alas. Heiluu askelten tahdissa ja kallistuu
+  juostessa taaksepäin (`backHang`, aina ≥ 0 eli ei vartalon sisään). Muu työkalu/ase näkyy selässä kuten ennen.
+- **Lyöntianimaatio uusittu:** avainasennot [olka rx, rz, kyynärpää] nosto W → osuma H → loppuliike E → lepo (`swingPose`). Vuorotellen
+  pään yli → alas oikealle eteen ja oikean olan yli → alas vartalon eteen; kahden käden nosto pään yläpuolella edessä (ei pään takana).
+  Loppuliike nopeutui (palautus 6 → 13 /s) ja laskeutuu vartalon eteen.
+- **Kädet eivät mene vartalon läpi:** `armClear` tarkistaa kämmenen ja kyynärpään vartaloellipsiä vasten (x 0,27, z 0,16, korkeus 0,78–1,55 m)
+  ja nostaa olkaa eteen (vaakatasossa ulospäin) kunnes ulkona. Mittaus: kirves ja nuija molempiin suuntiin, 0 läpimenoa (ennen kirveen
+  loppuliikkeessä molemmat kädet vatsan sisällä).
+- **IK napavektorilla (`armIK(arm,elbow,T,w,pole)`):** kyynärpää osoittaa luonnolliseen suuntaan (oletus alas-ulos), olan asento kantavektoreista
+  (kvaternio). Vanha rx/rz-IK jätti vasemman kyynärpään rinnan sisään kirveen nostossa. Vedossa oikea kyynärpää taakse-ulos.
+- **Eläimet (erä 45, `makeAnimal`):** peura, villikarju, harmaasusi ja routasusi pelaajahahmon tyyliin – rinta/keskivartalo/lantio, vaaleampi
+  vatsa, kaula, kallo ja kuono, silmät, korvat, nivelletyt jalat (reisi, polvi, sääri, kavio/tassu), häntä. Peura: haarautuvat sarvet, valkoinen
+  peili ja häntä, täplät. Karju: harjas, kärsälevy ja torahampaat. Susi: turkkikaulus, tuuhea häntä tummalla kärjellä. Routasusi: jääpiikit
+  selässä. Animaatio: polvet koukistuvat askeleissa, häntä heiluu (jahdissa nopeammin).
+
 ### v0.71 (erä 44: pomot ja humanoidit yksityiskohtaisiksi; äänet ja koivu)
 - **Uusi `makeHumanoid` (models.js):** kaksijalkainen pelaajahahmon tyyliin – pyöristetyt raajat, nivelpallot, kyynärpää- ja polvinivel,
   kämmenet peukaloineen, jalkaterät, kaula ja pallopää; luurankotila (`skel`: selkäranka, kaarevat kylkiluut, lantio) ja kivitila (`flat`).
@@ -1089,7 +1106,7 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 1. Jäätär, Kalmaherra ja Aarnihirviö: laatikkomaiset lisäosat (kylkiluut, olkapäät, sarvet, viitat) pyöristetyiksi ja nivelellisiksi
    samaan tyyliin kuin Kalmanvartija ja ylimys v0.71.
 
-**Erä 45 – Eläimet yksityiskohtaisiksi (2)**
+**Erä 45 – Eläimet yksityiskohtaisiksi (2)** – ✅ tehty v0.72
 1. Peura, karju, susi, routasusi ja muut nelijalkaiset: pehmeämmät muodot, nivelletyt jalat, pää ja häntä, turkki- ja sarviyksityiskohdat.
 
 ### Avoimet: käyttäjän ehdotuksista toteuttamatta tai osittain (tarkistettu v0.62, koko keskusteluhistoria käyty läpi)

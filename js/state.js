@@ -20,10 +20,13 @@ let state='menu';
 const fig=makePlayer();
 scene.add(fig.g);let heldMesh=null,heldId=null,offMesh=null,offId=null,armorId=null;
 // Repussa olevat mutta käyttämättömät aseet, kilvet ja työkalut näkyvät pelaajan selässä (kilpi keskellä, jousi vinossa, työkalut varret ylöspäin).
-const backG=new THREE.Group();fig.rig.add(backG);let backKey='';
+const backG=new THREE.Group();fig.rig.add(backG);let backKey='',backHang=null;
 function updateBack(){const items=inv.filter(s=>s&&!s.eq&&['weapon','bow','shield','shovel','hammer'].includes(ITEMS[s.id].cat));
-  const sh=items.find(s=>ITEMS[s.id].cat==='shield'),one=items.find(s=>ITEMS[s.id].cat!=='shield'),bo=one&&ITEMS[one.id].cat==='bow'?one:null,tl=one&&!bo?[one]:[];
-  const key=[sh,bo,...tl].map(s=>s?s.id:'-').join();if(key===backKey)return;backKey=key;while(backG.children.length)backG.remove(backG.children[0]);
+  const sh=items.find(s=>ITEMS[s.id].cat==='shield'),hm=items.find(s=>s.id==='vasara'),one=items.find(s=>ITEMS[s.id].cat!=='shield'&&s.id!=='vasara'),bo=one&&ITEMS[one.id].cat==='bow'?one:null,tl=one&&!bo?[one]:[];
+  const key=[sh,bo,hm,...tl].map(s=>s?s.id:'-').join();if(key===backKey)return;backKey=key;while(backG.children.length)backG.remove(backG.children[0]);backHang=null;
+  // Vasara roikkuu vyöllä takana (v0.72): pää vyön päällä selän suuntaisesti (pää 90° pystyakselin ympäri aiemmasta), varsi alas.
+  // Ripustuspiste = vyön yläreuna selän puolella (y 0,94, z −0,24); heiluu kävellessä (player.js, backHang).
+  if(hm){const m=makeHeld(hm.id),o=new THREE.Group();m.rotation.x=-Math.PI/2;m.position.set(0,-.47,0);o.add(m);o.position.set(.13,.94,-.24);o.rotation.y=.18;backG.add(o);backHang=o;}
   if(sh){const m=makeShield(sh.id);const o=new THREE.Group();m.rotation.y=Math.PI/2;m.position.set(0,0,0);o.add(m);o.position.set(0,1.2,-.1);o.scale.setScalar(.85);backG.add(o);}
   if(bo){const m=makeHeld(bo.id),o=new THREE.Group();o.add(m);o.position.set(.08,1.2,-.19);o.rotation.set(0,0,.5);o.scale.setScalar(.95);backG.add(o);}
   tl.forEach((s,i)=>{const m=makeHeld(s.id),i2=new THREE.Group(),o=new THREE.Group();m.rotation.z=Math.PI/2;/* terät/piikit sivusuuntaan = selänmyötäisesti, ei selkää vasten */i2.rotation.x=-Math.PI/2;i2.add(m);o.add(i2);o.position.set(.12,.78,sh?-.29:-.17);o.rotation.z=-.12;o.scale.setScalar(.85);backG.add(o);});}

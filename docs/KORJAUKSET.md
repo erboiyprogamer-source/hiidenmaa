@@ -91,6 +91,19 @@ Sama periaate kaikkiin huojuviin osiin: pitkät osat jaetaan korkeussegmentteihi
 Käytä `makeHumanoid`:ia (ei `makeBiped`), jotta tyyli ja nivelet ovat samat. Lisäosat kiinnitetään `torso`/`head`/`hand`-ryhmiin
 (ei skaalattuihin mesheihin). Heiluvat osat `swayAdd(f,mesh,amp,taajuus)` – `animMob` liikuttaa niitä. Tarkista kuvakaappauksella.
 
+### 13. Käsi menee vartalon läpi lyönnissä – v0.72
+**Syy:** iskun asennot (olkakulmat) toivat kämmenen vatsan kohdalle; kahden käden otteen IK (rx/rz) jätti kyynärpään rinnan sisään.
+**Korjaus:** `armClear(arm,elbow,hand)` jokaisen kehyksen lopussa + IK napavektorilla. Tarkistus: `tools/tarkistus.mjs` → "lyönti ei mene
+vartalon läpi". Jos muutat iskujen avainasentoja (`swingPose` W/H/E), aja tarkistus ja katso kuvat (ks. swing-testi: kämmenen polku edessä).
+```js
+function armClear(arm,elbow,hand){…if(arm.rotation.x>-1.45)arm.rotation.x-=.06;else arm.rotation.z+=sx*.06;…}
+```
+**Huom:** `armIK` asettaa olan kvaterniona (voi jättää y-kierron) → tavallisessa asennossa `rotation.y` palautetaan nollaan.
+
+### 14. Vasaran paikka selässä – v0.72
+Käyttäjän toive: vasara roikkuu **vyöllä takana**, pää selän suuntaisesti (ei sojota taakse). `updateBack` (state.js) + heilunta `backHang`
+(player.js). Älä palauta vasaraa selän työkalupaikalle.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

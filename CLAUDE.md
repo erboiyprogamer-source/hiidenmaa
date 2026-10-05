@@ -43,7 +43,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/collision.js` | törmäysruudukko: `addBox`, `addCircle`, `groundAt`, `collideXZ`, `pointBlocked`, `STEPUP` |
 | `js/items.js` | `ITEMS`, `RECIPES`, `RECIPE_BY`, `icon(id)` (canvas-kuvakkeet) |
 | `js/audio.js` | `sfx(nimi, sävel, voimakkuus)` – proseduraaliset äänet, satunnainen sävelvaihtelu |
-| `js/models.js` | `makeHumanoid` (yksityiskohtaiset kaksijalkaiset), `makeBiped`, `makeQuad`, `makeHeld`, `makeShield`, pelaaja `makePlayer` |
+| `js/models.js` | `makeHumanoid` (yksityiskohtaiset kaksijalkaiset), `makeAnimal` (eläimet), `makeBiped`, `makeQuad`, `makeHeld`, `makeShield`, pelaaja `makePlayer` |
 | `js/resources.js` | `NODE`, `NGEO`, sijoittelu ruutuihin (`CHN`, `VIS_R`), `nodes`, tukit (`logs`), `regrowForest` |
 | `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`), `wallTorch`, `brazier`, `rockC` |
 | `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, `PIECES`, `pieceBoxes`, `buildPieceMesh`, `addPiece`, `removePiece` |
@@ -56,7 +56,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/actions.js` | hyökkäys, vahinko, syöminen, `interact()`, alttari, luolastoon meno |
 | `js/building.js` | rakennushaamu, ruudukkoon kohdistus, reunakohdistus `smartSnap`, `validPlace`, purku |
 | `js/environment.js` | päivä/yö (`DAY_LEN`), sää, valot, selviytyminen (nälkä, kylmä, lepo) |
-| `js/player.js` | liike, fysiikka, animaatio (käsien IK `armIK`), kuolema, uudelleensyntyminen, nukkuminen |
+| `js/player.js` | liike, fysiikka, animaatio (lyönnit `swingPose`, käsien IK `armIK`, läpäisyn esto `armClear`), kuolema, uudelleensyntyminen, nukkuminen |
 | `js/ai.js` | vihollisten tekoäly, pomon hyökkäykset, `SPAWN`-taulukot, työpisteiden päivitys |
 | `js/camera.js` | kolmannen persoonan kamera |
 | `js/ui.js` | HUD, viestit, paneelit, kartta |

@@ -71,6 +71,62 @@ function makeHumanoid(o){
   g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
   return{g,legL,legR,kneeL,kneeR,armL,armR,elbowL,elbowR,head,torso,hand,handL,s,biped:true,human:true};
 }
+// Yksityiskohtaiset eläimet (v0.72, pelaajahahmon tyyli): pyöreä runko (rinta, keskivartalo, lantio, vaaleampi vatsa), kaula, pää
+// kuono-osineen, silmät, korvat, nivelletyt jalat (reisi, polvi, sääri, kavio/tassu) ja häntä. Rajapinta kuten makeQuad
+// (g, legs[4], head, body, s, quad) – tekoälyn animaatio toimii; jalan polvi on legs[i].userData.knee (animMob koukistaa).
+// kind: 'deer' (peura), 'boar' (villikarju), 'wolf' (susi); ice: routasusi (jääpiikit). Mitat kuten makeQuad (legH, len).
+function makeAnimal(o){
+  const s=o.s||1,L=o.len||1,lh=o.legH||.7,g=new THREE.Group(),k=o.kind,F=c=>smat(c,{flatShading:true});
+  const mB=F(o.body),mD=F(o.dark||o.legs||o.body),mL=F(o.legs||o.body),mBel=F(o.belly||o.body),mH=F(o.headC||o.body),mHoof=F(o.hoof||0x2a2420);
+  const by=(lh+.3)*s,bz=.62*s*L;
+  // runko: rinta, keskivartalo, lantio, vatsa
+  const body=new THREE.Group();g.add(body);
+  const chestR=(k==='boar'?.36:.3)*s,hipR=(k==='boar'?.3:k==='deer'?.27:.26)*s;
+  rnd(body,0,by+(k==='boar'?.06*s:.02*s),.34*s*L,chestR,mB,1,1.05,1.15,10);
+  rnd(body,0,by,0,.27*s,mB,1,.95,1.9*L,10);
+  rnd(body,0,by+.02*s,-.36*s*L,hipR,o.rump?F(o.rump):mB,1,1,1.1,10);
+  rnd(body,0,by-.12*s,.02*s*L,.22*s,mBel,1.05,.6,2*L,8);
+  // kaula ja pää (pää-ryhmä samassa kohdassa kuin makeQuad:ssa, jotta animaation pään kallistus toimii)
+  const head=new THREE.Group();head.position.set(0,(lh+.5)*s,bz);g.add(head);
+  const neckUp=k==='deer'?.32:k==='boar'?.02:.12;
+  tube(g,.13*s*(k==='boar'?1.4:1),.17*s*(k==='boar'?1.4:1),.42*s,mB,0,by+neckUp*s*.6,bz-.08*s,1,1,8).rotation.x=k==='deer'?.55:k==='boar'?1.35:1.0;
+  head.position.y+=neckUp*s;
+  rnd(head,0,.08*s,.06*s,.17*s,mH,1,1,1.15,10);                        // kallo
+  const sn=k==='wolf'?[.09,.08,.28]:k==='boar'?[.11,.1,.3]:[.08,.08,.24];
+  tube(head,sn[0]*s,sn[1]*s*1.5,sn[2]*s,mH,0,.01*s,.22*s+sn[2]*s/2,1,1,8).rotation.x=Math.PI/2; // kuono
+  const tip=.22*s+sn[2]*s,nm=new THREE.MeshBasicMaterial({color:0x151110});
+  if(k==='boar'){const disc=tube(head,.085*s,.085*s,.04*s,F(0x8a6a5a),0,.01*s,tip+.02*s,1,1,10);disc.rotation.x=Math.PI/2;for(const x of [-.03,.03])rnd(disc,x*s,.022*s,0,.015*s,nm,1,1,1,5);
+    const tk=F(0xeeeadd);for(const sd of [-1,1]){const t=new THREE.Mesh(new THREE.ConeGeometry(.022*s,.14*s,6),tk);t.position.set(sd*.08*s,.02*s,tip-.08*s);t.rotation.set(-.5,0,-sd*.5);head.add(t);}}
+  else rnd(head,0,.03*s,tip,.035*s,nm,1.2,.9,.9,6);                    // nenä
+  prt(head,.1*s,.012*s,.02*s,nm,0,-.04*s,tip-.04*s);                    // suu
+  const em=new THREE.MeshBasicMaterial({color:o.eyes||0x120c08});for(const sd of [-1,1])rnd(head,sd*.11*s,.13*s,.17*s,.026*s,em,1,1,.7,6);
+  // korvat
+  for(const sd of [-1,1]){const er=k==='deer'?[.06,.2]:k==='wolf'?[.055,.17]:[.05,.11];const e=new THREE.Mesh(new THREE.ConeGeometry(er[0]*s,er[1]*s,5),mH);
+    e.position.set(sd*.1*s,.26*s,0);e.rotation.set(-.2,0,-sd*(k==='deer'?.9:.25));e.scale.set(1,1,.45);e.castShadow=true;head.add(e);}
+  if(k==='deer'&&o.antlers){const am=F(0xd8c7a0);for(const sd of [-1,1]){const b=new THREE.Group();b.position.set(sd*.07*s,.25*s,.02*s);b.rotation.z=-sd*.35;head.add(b);
+    tube(b,.018*s,.026*s,.42*s,am,0,.21*s,0,1,1,6).rotation.x=-.25;
+    for(const [y,a,l] of [[.12,.9,.16],[.26,.7,.18],[.38,.5,.14]]){const t=tube(b,.012*s,.016*s,l*s,am,sd*.04*s,y*s+l*s*.3,-.04*s+y*.1*s,1,1,5);t.rotation.set(-.5,0,-sd*a);}}}
+  // harja ja turkki
+  if(k==='boar')for(let i=0;i<9;i++){const c=new THREE.Mesh(new THREE.ConeGeometry(.04*s,(.12+(i%3)*.04)*s,4),mD);c.position.set(0,by+.27*s-Math.abs(i-3)*.012*s,(.45-i*.11)*s*L);c.rotation.x=-.4;c.castShadow=true;g.add(c);}
+  if(k==='wolf'){for(const [x,y,z,r] of [[0,.1,.42,.2],[-.15,.02,.38,.15],[.15,.02,.38,.15],[0,-.05,.5,.16]])rnd(g,x*s,by+y*s,z*s*L,r*s,o.ruff?F(o.ruff):mB,1,1,.9,8);}
+  if(o.ice){const ic=smat(0xdff6ff,{flatShading:true,emissive:0x2a6080,emissiveIntensity:.5});for(let i=0;i<6;i++){const c=new THREE.Mesh(new THREE.ConeGeometry(.04*s,(.16+(i%2)*.08)*s,4),ic);c.position.set((i%2?.05:-.05)*s,by+.28*s,(.38-i*.14)*s*L);c.rotation.set(-.3,0,(i%2?-.25:.25));c.castShadow=true;g.add(c);}}
+  if(k==='deer'){rnd(g,0,by+.08*s,-.6*s*L,.12*s,F(0xf1ebe0),1,1.1,.6,8);for(let i=0;i<7;i++)rnd(g,((i%2)?.17:-.17)*s,by+.12*s-(i%3)*.04*s,(.25-i*.08)*s*L,.022*s,F(0xe6dccb),1,1,1,5);}
+  // jalat: reisi, polvi, sääri, kavio/tassu (polvi koukistuu animaatiossa)
+  const legs=[];for(const [x,z,fr] of [[-.17,.44,1],[.17,.44,1],[-.17,-.44,0],[.17,-.44,0]]){
+    const p=new THREE.Group();p.position.set(x*s,lh*s,z*s*L);g.add(p);const th=k==='deer'?.06:k==='boar'?.09:.07;
+    tube(p,(th+.04)*s,th*s,lh*.52*s,fr?mL:mB,0,-lh*.24*s,0,1,1,7);
+    const kn=new THREE.Group();kn.position.set(0,-lh*.5*s,0);p.add(kn);rnd(kn,0,0,0,th*.9*s,mL,1,1,1,6);
+    tube(kn,th*.8*s,th*.65*s,lh*.48*s,mL,0,-lh*.24*s,0,1,1,6);
+    if(k==='wolf')rnd(kn,0,-lh*.49*s,.03*s,th*1.15*s,mD,1,.6,1.4,6);else tube(kn,th*.75*s,th*.9*s,.06*s,mHoof,0,-lh*.48*s,.01*s,1,1,6);
+    p.userData.knee=kn;p.userData.front=fr;legs.push(p);}
+  // häntä
+  const tl=new THREE.Group();tl.position.set(0,by+.12*s,-.62*s*L);g.add(tl);
+  if(k==='wolf'){for(let i=0;i<3;i++)rnd(tl,0,-i*.09*s,-.1*s-i*.1*s,(.09-i*.012)*s,i===2?F(o.tailTip||0x2a2a2c):mB,1,1,1.6,7);tl.rotation.x=.5;}
+  else if(k==='boar'){tube(tl,.015*s,.02*s,.25*s,mD,0,-.12*s,-.03*s,1,1,5).rotation.x=.3;rnd(tl,0,-.25*s,-.07*s,.035*s,mD,1,1.4,1,5);}
+  else{rnd(tl,0,0,-.04*s,.06*s,F(0xf4efe6),1,1.3,.7,6);}
+  g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
+  return{g,legs,head,body,tail:tl,s,quad:true,animal:true};
+}
 function makePlayer(){
   const g=new THREE.Group(),rig=new THREE.Group(),hip=.8,F=(c,o)=>smat(c,Object.assign({flatShading:true},o||{}));g.add(rig);
   const skin=F(0xe2b48c),hairM=smat(0x4a2e1a),leather=F(0x5e4026),fur=F(0xa18a68),cloth=F(0x8a6a46),pant=F(0x5a4632),boot=F(0x3f2d1c);

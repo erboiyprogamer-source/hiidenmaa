@@ -103,7 +103,9 @@ function animMob(m,dt){
     if(f.kneeL){f.kneeL.rotation.x=.08+Math.max(0,-sw)*.9;f.kneeR.rotation.x=.08+Math.max(0,sw)*.9;f.elbowL.rotation.x=f.elbowR.rotation.x=-.25-(m.wind>0?.5:0);}
     if(f.sway&&m.def.ai!=='rboss')for(const w of f.sway){w.m.rotation.z=w.bz+Math.sin(playTime*w.f+w.p)*w.a;w.m.rotation.x=w.bxr+Math.cos(playTime*w.f*.8+w.p)*w.a*.6+Math.min(.5,(m.speedNow||0)*.08);}
     if(m.wind>0){f.armR.rotation.x=-2.6;f.armL.rotation.x=-2.2;}else if(m.wind<=0&&m.atkCd>m.def.cd-.25){f.armR.rotation.x=-.3;}}
-  else{f.legs[0].rotation.x=sw;f.legs[3].rotation.x=sw;f.legs[1].rotation.x=-sw;f.legs[2].rotation.x=-sw;f.head.rotation.x=m.wind>0?-.5:(m.atkCd>m.def.cd-.2?.4:0);}
+  else{f.legs[0].rotation.x=sw;f.legs[3].rotation.x=sw;f.legs[1].rotation.x=-sw;f.legs[2].rotation.x=-sw;
+    // nivelletyt jalat (makeAnimal): polvi koukistuu jalan noustessa (etujalat taaksepäin, takajalat eteenpäin), häntä heiluu
+    if(f.animal){for(const l of f.legs){const a=l.rotation.x,kn=l.userData.knee;kn.rotation.x=l.userData.front?.05+Math.max(0,a)*1.1:-.05-Math.max(0,-a)*1.1;}if(f.tail)f.tail.rotation.y=Math.sin(playTime*(m.state==='chase'?9:3)+m.walkPh)*.25;}f.head.rotation.x=m.wind>0?-.5:(m.atkCd>m.def.cd-.2?.4:0);}
   if(m.anim>0)m.anim-=dt;
 }
 function bossAI(m,dt,dx,dz,dist){
