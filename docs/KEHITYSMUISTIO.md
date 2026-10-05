@@ -55,6 +55,20 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.63 (erä 35: myrskyn puut, koivun oksat, nopeudet, soihtu, salama, leijuvat luut)
+- **Myrsky kaataa puita noin 5 s välein** (4–6 s, `stormT`) satunnaisesta puusta 9–100 m päässä pelaajasta (ei aarnipuita eikä
+  rakennusalueelta, `nearBase`). Kaatuminen on normaali `fallTree` (murskaa alle jäävän, oksat, tukit/tavarat, tärähdys lähellä).
+  Viesti "Myrsky kaataa puita!" enintään 30 s välein ja vain jos puu kaatui alle 40 m päässä. Aiemmin vain 12 % salamoista kaatoi
+  puun alle 40 m säteellä.
+- **Koivun oksat näkyvät pystypuussa:** `TREE_BR.koivu` (6 oksaa: korkeus, kulma, pituus, kallistus) + `brParts()` rakentaa ne koivun
+  geometriaan (resources.js). Kaatuva koivu käyttää runkoa ilman oksia (`NGEO_FALL.koivu`) ja samat oksat erillisinä, jotka irtoavat
+  kaatuessa (sama asettelu, koko ja puun kierto `n.rot`). Kaatuva puu kääntyy nyt samaan asentoon kuin pystypuu (`m.rotation.y=n.rot`).
+- **Vihollisten ja eläinten nopeus −15 %** (`MOB_SPD=.85` `moveMob`issa, koskee kaikkea liikettä myös pomojen rynnäkköä).
+- **Käsisoihtu palaa 2× kauemmin:** `TORCH_T` 60 → 120 s, pihka lisää 60 s (ennen 30 s).
+- **Salaman välähdys kevyemmäksi:** `flash` 1 → 0,45 ja häipyy nopeammin; taivaan, auringon, hemi- ja ympäristövalon lisäys pienempi.
+- **Leijuvat kallot korjattu:** Hautakummun portin kalloja pinottiin korkeutta kasvattaen (k·0,13 m), vaikka paikat arvottiin eri
+  kohtiin → leijuivat. Nyt jokainen kallo on maassa omassa kohdassaan (`terrainH`).
+
 ### v0.62 (korjaus: haamupuut latauksen jälkeen)
 - **Uudelleen kasvaneen puun läpi pystyi kävelemään eikä sitä voinut hakata.** Syy: uusiutuva puu siirtyy enintään 5 m alkuperäisestä
   paikastaan; tallennus muistaa siirron (`moved`), mutta latauksessa `moveNode` siirsi vain törmäyksen, hakkuukohteen ja korkeuden,
@@ -872,6 +886,23 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 - Harmaasuden juoksunopeus 4,6 m/s.
 
 - (ideajono muuten tyhjä – odottaa käyttäjän listaa)
+
+### Käyttäjän 11 ideaa (v0.62 jälkeen) – erät 35–38
+**Erä 35 – Pelattavuus ja korjaukset (2, 3, 4, 5, 8, 10)** – TEHTY (v0.63)
+1. Myrsky kaataa puita ~1 / 5 s 100 m säteellä (oikea kaatumisfysiikka). 2. Koivun oksat näkyvät jo pystypuussa ja ovat samat, jotka irtoavat.
+3. Mobien nopeus −15 %. 4. Käsisoihtu palaa 100 % kauemmin. 5. Salaman välähdys kevyemmäksi. 6. Leijuvat luut/koristeet maahan.
+
+**Erä 36 – Pomot ja saalis (6, 7)**
+1. Pomon terveyspalkki kerroksina: 1 palkki = pelaajan maksimiterveys (esim. 340 hp / 100 → 3,4 palkkia päällekkäin), luku palkin alla.
+2. Maailman arkut: parempaa ja monipuolisempaa saalista. Ulottuvuuksien arkut ja tynnyrit: tosi hyvää saalista, ~40 % todennäköisyydellä
+   valmis hyvä työkalu/ase.
+
+**Erä 37 – Piirtoetäisyys ja optimointi (1, 9)**
+1. Piirtoetäisyys vapauttaa muistia: maasto ruutuihin, rajalla vahva sumu/blur, rajan takana maastoa, puita, kiviä ja objekteja ei piirretä.
+2. Yleinen optimointi ilman suuria visuaalisia haittoja.
+
+**Erä 38 – Mobien mallit (11)**
+1. Kaikki eläimet ja hirviöt pelaajahahmon tyyliin (ei palikkamaisia): pehmeät low-poly-muodot, nivelet, yksityiskohdat.
 
 ### Avoimet: käyttäjän ehdotuksista toteuttamatta tai osittain (tarkistettu v0.62, koko keskusteluhistoria käyty läpi)
 1. **Portaalisuoja ei estä pelaajan omia iskuja** (kohta 5: "silloin pelaajakaan ei voi lyödä ketään"). Nyt suoja estää vain vihollisten

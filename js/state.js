@@ -6,7 +6,7 @@
 const P={pos:new V3(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z),vy:0,yaw:Math.PI,onGround:true,hp:60,stam:100,hunger:80,stamDelay:0,atk:null,blocking:false,bowDraw:0,drawing:false,heal:0,buffs:{},wetT:0,restT:0,inWater:false,dead:false,invul:0,stagger:0,walkPh:0,spawn:null,deaths:0,kills:0,hurtFlash:0,inDun:false,crouch:false,crouchK:0,packLv:0,fx:{speed:1,dmg:1,stamRegen:1,hpRegen:1},crampT:0};
 let inv=new Array(32).fill(null);
 // Käsisoihtu: palaa yhteensä 60 s (juostessa 20 % nopeammin), sammuu sateessa, syttyy toisen liekin vieressä. Tila tallentuu esineeseen (fuel, lit).
-const TORCH_T=60;
+const TORCH_T=120; // käsisoihdun paloaika (s); pihka lisää 60 s
 function torchSlot(){const s=equipped('offhand');return s&&s.id==='soihtu'?s:null;}
 function torchLit(){const s=torchSlot();return !!s&&s.lit!==false&&(s.fuel??TORCH_T)>0;}
 let playTime=0, dayT=.3, dayN=1, weather={cur:'selkea',until:200}, flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{},xp:0,cnt:{},ach:{},first:{},gv:2}, graves=[], drops=[];
@@ -104,15 +104,18 @@ function updateFx(dt){updateEmbers(dt);
 // maahan osuessa; irronneet oksat putoavat ja vajoavat hitaasti maan alle. Pieni puu (koko < SMALL_TREE) ei jätä tukkeja, vaan
 // muuttuu suoraan tavaroiksi (puu ym.) maahan osuessaan. Lähellä kaatuva puu tärähdyttää ruutua.
 const SMALL_TREE=.8,BRANCH_C={koivu:0x4f4237};
-function fallTree(n,dir,crush){const g=new THREE.Group();const m=new THREE.Mesh(NGEO[n.type],vcMat);m.scale.setScalar(n.s);g.add(m);g.position.set(n.x,n.y,n.z);scene.add(g);
+function fallTree(n,dir,crush){const g=new THREE.Group();const m=new THREE.Mesh(NGEO_FALL[n.type]||NGEO[n.type],vcMat);m.scale.setScalar(n.s);m.rotation.y=n.rot||0;g.add(m);g.position.set(n.x,n.y,n.z);scene.add(g);
   const a=dir??Math.atan2(n.x-P.pos.x,n.z-P.pos.z),H=(TREE_H[n.type]||5)*n.s,dur=(1+.3*n.s)*(n.type==='aarnipuu'?2:1),brs=[],big=n.type==='aarnipuu',small=!big&&n.s<SMALL_TREE;
   const bm=mat(BRANCH_C[n.type]||TRUNK_C[n.type]||0x5a3a22),lc=LEAF_C[n.type],lm=lc?mat(lc):null,nb=big?7:n.type==='koivu'?6:5;
-  for(let i=0;i<nb;i++){const phi=i/nb*TAU+rng()*.8,h=H*(.28+.55*i/nb),L=(.6+rng()*.5)*n.s*(big?2.5:1),th=.07*n.s*(big?2:1);
+  const lay=TREE_BR[n.type];
+  for(let i=0;i<(lay?lay.length:nb);i++){let phi=i/nb*TAU+rng()*.8,h=H*(.28+.55*i/nb),L=(.6+rng()*.5)*n.s*(big?2.5:1),th=.07*n.s*(big?2:1),tilt=.35+rng()*.3;
+    // koivu: täsmälleen pystypuun oksat (sama asettelu, puun kierto ja koko)
+    if(lay){const q=lay[i];h=q[0]*n.s;phi=q[1]+(n.rot||0);L=q[2]*n.s;tilt=q[3];}
     const b=new THREE.Group();b.add(bx(L,th,th,bm,L/2,0,0));
     if(lm){if(n.type==='kuusi'){for(let k=0;k<3;k++){const nd=new THREE.Mesh(new THREE.ConeGeometry(L*.16,L*.42,5),lm);nd.position.x=L*(.35+k*.27);nd.rotation.z=-Math.PI/2;nd.castShadow=true;b.add(nd);}}
       else{const lf=new THREE.Mesh(new THREE.IcosahedronGeometry(L*(n.type==='koivu'?.34:.3),0),lm);lf.position.x=L*.85;lf.castShadow=true;b.add(lf);
-        if(n.type==='koivu'){const l2=new THREE.Mesh(new THREE.IcosahedronGeometry(L*.22,0),lm);l2.position.set(L*.5,L*.12,0);b.add(l2);b.add(bx(L*.4,th*.6,th*.6,bm,L*.55,L*.08,0));}}}
-    b.position.set(Math.cos(phi)*.12*n.s,h,-Math.sin(phi)*.12*n.s);b.rotation.set(0,phi,.35+rng()*.3);g.add(b);brs.push(b);b.userData.det=.3+rng()*.6;}
+}}
+    b.position.set(Math.cos(phi)*.12*n.s,h,-Math.sin(phi)*.12*n.s);b.rotation.set(0,phi,tilt);g.add(b);brs.push(b);b.userData.det=.3+rng()*.6;}
   fx.push({obj:g,t:0,update:(f,dt)=>{const k=Math.min(1,f.t/dur);g.rotation.set(0,0,0);g.rotateOnWorldAxis(_tmpV.set(Math.cos(a),0,-Math.sin(a)),Math.pow(k,2.6)*Math.PI/2);
     for(const b of brs)if(!b.userData.off&&k>=b.userData.det&&k<1){b.userData.off=1;g.updateMatrixWorld(true);dropBranch(b,Math.sin(a)*k*4,Math.cos(a)*k*4);}
     if(f.t>dur&&!f.dropped){f.dropped=1;sfx('chop');if(crush)crushPlayer(n,a);

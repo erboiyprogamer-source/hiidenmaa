@@ -40,7 +40,7 @@ for(const k of ['ruinF','ruinM','ruinC']){const L=LOC[k],{chest,y}=buildRuin(L,k
   for(const s of [-1,1]){const bz=ez+s*3.4;stoneBox(.7,1.1,.7,ex+3.2,y+.5,bz,0,dk);statics.add(bx(.3,.45,.3,MAT.flame,ex+3.2,y+1.3,bz,false));
     lightSources.push({x:ex+3.2,y:y+1.8,z:bz,c:0xff9a40,i:1.5,on:()=>true});
     const sl=stoneBox(.35,2.6,1.1,ex+2,y+1.2,ez+s*5,s*.35,mat(0x6a6c70));sl.add(bx(.04,1.5,.5,MAT.glow,.2,0,0,false));
-    for(let k=0;k<4;k++)statics.add(bx(.22,.2,.24,mat(0xe7e1cf),ex+4+r()*1.2,y+.1+k*.13,ez+s*(1.2+r()*.8),false));}
+    for(let k=0;k<4;k++){const kx=ex+4+r()*1.2,kz=ez+s*(1.2+r()*.8),sk=bx(.22,.2,.24,mat(0xe7e1cf),kx,terrainH(kx,kz)+.1,kz,false);sk.rotation.y=r()*3;statics.add(sk);}}
   for(let i=0;i<6;i++){const a=i/6*TAU+.3,rx=L.x+Math.cos(a)*6.4,rz=L.z+Math.sin(a)*6.4,h=2+r()*1.4;if(Math.hypot(rx-ex,rz-ez)<5)continue;stoneBox(.9,h,.6,rx,terrainH(rx,rz)+h/2-.2,rz,-a+Math.PI/2,mat(0x5f5c57));}
   stoneBox(1.6,1.1,1.6,L.x,terrainH(L.x,L.z)+.4,L.z,.5,dk);statics.add(bx(.35,.55,.35,MAT.glow,L.x,terrainH(L.x,L.z)+1.2,L.z,false));
 })();
