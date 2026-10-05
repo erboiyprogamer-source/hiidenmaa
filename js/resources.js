@@ -33,9 +33,16 @@ function aarniGeo(){const P=[],r=mulberry32(4242);
     const tx=Math.cos(droop)*len,ty=-Math.sin(droop)*len;P.push(part(new THREE.ConeGeometry(len*.2,len*.35,5),col,c*tx,y+ty-len*.1,-s*tx,Math.PI,0,0));}});
   P.push(part(new THREE.ConeGeometry(1.4,3.4,7),0x274b2e,0,21.5,0));
   return mergeParts(P);}
+// Koivun oksat: sama asettelu pystyssä olevassa puussa ja kaatuvassa puussa (fallTree), joten kaatuessa irtoavat oksat ovat
+// samat, jotka näkyivät pystypuussa. Rivi: [korkeus, kulma, pituus, kallistus ylöspäin] (koko s=1, ennen puun omaa kiertoa).
+const TREE_BR={koivu:[[1.7,.3,1.45,.62],[2.15,2.4,1.6,.58],[2.6,4.3,1.5,.66],[3.0,1.3,1.35,.72],[3.4,3.4,1.25,.78],[3.8,5.4,1.1,.85],[2.35,5.9,1.0,.7]]},BR_COL={koivu:[0x4f4237,0x7aa641]};
+function brParts(type){const P=[],[bc,lc]=BR_COL[type];for(const [h,phi,L,t] of TREE_BR[type]){const c=Math.cos(t),s=Math.sin(t),cp=Math.cos(phi),sp=Math.sin(phi),x0=.12*cp,z0=-.12*sp;
+  P.push(part(new THREE.BoxGeometry(L,.09,.09),bc,x0+L/2*c*cp,h+L/2*s,z0-L/2*c*sp,0,phi,t));
+  P.push(part(new THREE.IcosahedronGeometry(L*.3,0),lc,x0+L*.85*c*cp,h+L*.85*s,z0-L*.85*c*sp));}return P;}
+const koivuBase=()=>[part(new THREE.BoxGeometry(.32,4.6,.32),0xe9e6dc,0,2.3,0),part(new THREE.BoxGeometry(.34,.1,.2),0x222222,0,1.4,.02),part(new THREE.BoxGeometry(.34,.08,.2),0x222222,0,2.6,-.02),part(new THREE.IcosahedronGeometry(1.7,0),0x7aa641,0,4.7,0),part(new THREE.IcosahedronGeometry(1.2,0),0x8bb84c,.6,5.5,.3)];
 const NGEO={
   kuusi:mergeParts([part(new THREE.BoxGeometry(.4,2.2,.4),0x5a3a22,0,1.1,0),part(new THREE.ConeGeometry(1.7,2.5,7),0x2e5a2e,0,2.7,0),part(new THREE.ConeGeometry(1.3,2.1,7),0x356836,0,3.9,0),part(new THREE.ConeGeometry(.85,1.7,7),0x3b7440,0,5,0)]),
-  koivu:mergeParts([part(new THREE.BoxGeometry(.32,4.6,.32),0xe9e6dc,0,2.3,0),part(new THREE.BoxGeometry(.34,.1,.2),0x222222,0,1.4,.02),part(new THREE.BoxGeometry(.34,.08,.2),0x222222,0,2.6,-.02),part(new THREE.IcosahedronGeometry(1.7,0),0x7aa641,0,4.7,0),part(new THREE.IcosahedronGeometry(1.2,0),0x8bb84c,.6,5.5,.3)]),
+  koivu:mergeParts([...koivuBase(),...brParts('koivu')]),
   kelo:mergeParts([part(new THREE.BoxGeometry(.36,4.2,.36),0x6d665c,0,2.1,0),part(new THREE.BoxGeometry(.16,1.4,.16),0x6d665c,.5,3,0,0,0,-.8),part(new THREE.BoxGeometry(.14,1.1,.14),0x6d665c,-.4,3.6,.1,0,0,.9)]),
   aarnipuu:aarniGeo(),
   pensas:mergeParts([part(new THREE.IcosahedronGeometry(.9,0),0x2a4a2a,0,.55,0,0,0,0,1.3,.75,1.2),part(new THREE.IcosahedronGeometry(.65,0),0x335a30,.7,.45,.3,0,0,0,1,.8,1),part(new THREE.IcosahedronGeometry(.6,0),0x24412a,-.6,.4,-.35,0,0,0,1.1,.7,1)]),
@@ -48,6 +55,8 @@ const NGEO={
   marjat:mergeParts([part(new THREE.IcosahedronGeometry(.5,0),0x3f6a2c,0,.35,0,0,0,0,1,.7,1),part(new THREE.BoxGeometry(.1,.1,.1),0xc8263a,.3,.5,.2),part(new THREE.BoxGeometry(.1,.1,.1),0xc8263a,-.25,.45,.25),part(new THREE.BoxGeometry(.1,.1,.1),0xc8263a,.05,.62,-.25),part(new THREE.BoxGeometry(.1,.1,.1),0xc8263a,-.3,.4,-.2)]),
   sieni:mergeParts([part(new THREE.BoxGeometry(.12,.25,.12),0xefe6d2,0,.12,0),part(new THREE.ConeGeometry(.24,.18,6),0x9b6a3a,0,.3,0)]),
 };
+// Kaatuvan puun runko ilman irtoavia oksia (oksat lisätään erikseen, jotta ne voivat irrota)
+const NGEO_FALL={koivu:mergeParts(koivuBase())};
 const nodes=[]; const nodeIM={};
 // Puiden latvat huojuvat tuulessa (vahvemmin tuulisella säällä ja myrskyssä).
 const SWAY={uTime:{value:0},uWind:{value:.15}};

@@ -74,8 +74,10 @@ function updateMobs(dt){
 }
 // Iskun ulottuvuus 3D:ssä: vaakaetäisyys + pystyväli mobin iskukohdasta pelaajan vartaloon (0–1,8 m).
 function mobReach(m,dist){const sy=m.pos.y+(m.f.biped?1:.6)*(m.f.s||1),gap=Math.max(0,sy-(P.pos.y+1.8),P.pos.y-sy);return Math.hypot(dist,gap);}
+// Kaikkien vihollisten ja eläinten liikenopeus × MOB_SPD (−15 %, v0.63)
+const MOB_SPD=.85;
 function moveMob(m,tx,tz,spd,dt){
-  const l=Math.hypot(tx,tz);
+  spd*=MOB_SPD;const l=Math.hypot(tx,tz);
   if(l>.01){const ty=Math.atan2(tx,tz);m.yaw=lerpAngle(m.yaw,ty,Math.min(1,dt*8));}
   let vx=0,vz=0;if(l>.01&&spd>0){vx=Math.sin(m.yaw)*spd;vz=Math.cos(m.yaw)*spd;}
   m.vel.x*=Math.max(0,1-dt*6);m.vel.z*=Math.max(0,1-dt*6);

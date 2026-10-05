@@ -20,26 +20,33 @@ function buildRaycast(){
   else if(tt!==null){res={pt:o.clone().addScaledVector(d,tt),n:new V3(0,1,0),piece:null};}
   return res;
 }
-// Kohdistustilat (vaihto G): ruudukko, puoliruudukko, vapaa, reunajatko.
-const SNAP_NAMES=['ruudukko','puoli','vapaa','reuna'];
-let snapMode=0,ghostRot=0,gridHelper=null,gridDiv=0,gridHelper2=null;
+// Kohdistustilat (vaihto G): ruudukko (G = 2,5 m), 1 m ruudukko, puoliruudukko, 3D (vaaka- ja pystyruudukko), vapaa, reunajatko.
+// Ruudukkotiloissa kaikki osat kohdistuvat: lattiat ruutujen keskelle, seinät reunoille, pylväät kulmiin, muut ruudun keskelle.
+const SNAP_NAMES=['ruudukko','1 m','puoli','3D','vapaa','reuna'];
+let snapMode=0,ghostRot=0,gridHelper=null,gridDiv=0,gridHelper2=null,gridV=null;
 // Pystykohdistus (H): auto, pysty (korkeus .65 m:n portain, Q/Z nostaa/laskee) ja 3D (myös seuraava kerros näkyy ruudukkona).
 const VNAMES=['auto','pysty','3D'],VSTEP=WH/4;let vMode=0,buildLift=0;
 function cycleVMode(){vMode=(vMode+1)%3;buildLift=0;msg(`Pystykohdistus: ${VNAMES[vMode]}${vMode?' (Q nostaa, Z laskee)':''}`);}
-function liftBuild(d){if(!vMode)return;buildLift=clamp(buildLift+d,-8,12);}
+function liftBuild(d){if(!vMode&&SNAP_NAMES[snapMode]!=='3D')return;buildLift=clamp(buildLift+d,-8,12);}
 function cycleSnap(){snapMode=(snapMode+1)%SNAP_NAMES.length;msg(`Kohdistus: ${SNAP_NAMES[snapMode]}`);}
 // Läpinäkyvä ruudukko haamun ympärillä (ruudukko- ja puolitilassa).
-function updateGrid(on,cx,y,cz){const div=snapMode===1?20:10;
-  if(on&&vMode===2&&!gridHelper2){gridHelper2=new THREE.GridHelper(10*G,10,0xbfe6ff,0xbfe6ff);gridHelper2.material=new THREE.LineBasicMaterial({color:0xbfe6ff,transparent:true,opacity:.3,depthWrite:false});scene.add(gridHelper2);}
-  if(gridHelper2){gridHelper2.visible=on&&vMode===2;if(gridHelper2.visible)gridHelper2.position.set(cx,y+WH+.04,cz);}
+function updateGrid(on,cx,y,cz){const mode=SNAP_NAMES[snapMode],m1=mode==='1 m',m3=mode==='3D',div=m1?25:mode==='puoli'?20:10;
+  // 3D-tilassa pystyruudukko (G välein pystyviivat, kerroskorkeuden puolikkaan välein vaakaviivat) haamun kohdalla, kameraa kohti käännettynä
+  if(on&&m3&&!gridV){const pts=[];for(let i=-5;i<=5;i++)pts.push(i*G,0,0,i*G,3*WH,0);for(let j=0;j<=6;j++)pts.push(-5*G,j*WH/2,0,5*G,j*WH/2,0);
+    const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));gridV=new THREE.LineSegments(gg,new THREE.LineBasicMaterial({color:0xbfe6ff,transparent:true,opacity:.28,depthWrite:false}));scene.add(gridV);}
+  if(gridV){gridV.visible=on&&m3;if(gridV.visible){const d=new V3();camera.getWorldDirection(d);gridV.rotation.y=Math.abs(d.x)>Math.abs(d.z)?Math.PI/2:0;gridV.position.set(cx,y,cz);}}
+  if(on&&(vMode===2||m3)&&!gridHelper2){gridHelper2=new THREE.GridHelper(10*G,10,0xbfe6ff,0xbfe6ff);gridHelper2.material=new THREE.LineBasicMaterial({color:0xbfe6ff,transparent:true,opacity:.3,depthWrite:false});scene.add(gridHelper2);}
+  if(gridHelper2){gridHelper2.visible=on&&(vMode===2||m3);if(gridHelper2.visible)gridHelper2.position.set(cx,y+WH+.04,cz);}
   if(on&&(!gridHelper||gridDiv!==div)){if(gridHelper){scene.remove(gridHelper);gridHelper.geometry.dispose();}
-    gridHelper=new THREE.GridHelper(10*G,div,0xffffff,0xffffff);gridHelper.material=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.42,depthWrite:false});gridDiv=div;scene.add(gridHelper);}
+    gridHelper=new THREE.GridHelper(m1?25:10*G,div,0xffffff,0xffffff);gridHelper.material=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.42,depthWrite:false});gridDiv=div;scene.add(gridHelper);}
   if(gridHelper){gridHelper.visible=on;if(on)gridHelper.position.set(cx,y+.04,cz);}}
 const isFloor=p=>{const b=bt(p.t);return b==='lattia'||b==='tervaslattia';};
 const sgn=v=>v<0?-1:1;
 // Reunajatko: katsottavan osan reunaan jatkoksi (seinän jatke, viereinen lattia, päälle pinoaminen).
 function edgeSnap(def,hit){const p=hit.piece,n=hit.n,pt=hit.pt,top=n.y>.6,fl=isFloor(p),wall=!fl&&PIECES[p.t].snap==='wall',dx=pt.x-p.x,dz=pt.z-p.z;
   if(def.snap==='wall'){
+    // seinän yläreunan lähellä (ylin 0,5 m) → uusi seinä päälle jatkoksi, muuten sivulle
+    if(wall&&!top){const b=PIECES[bt(p.t)],ph=b.dim?b.dim[1]:WH;if(!/palkki/.test(bt(p.t))&&pt.y>p.y+ph-.5)return{x:p.x,z:p.z,y:p.y+ph,rot:p.rot};}
     if(wall&&!top){const a=p.rot*Math.PI/4,ax=Math.cos(a),az=-Math.sin(a),s=sgn(dx*ax+dz*az);return{x:p.x+ax*s*G,z:p.z+az*s*G,y:p.y,rot:p.rot};}
     if(wall&&top)return{x:p.x,z:p.z,y:pt.y,rot:p.rot};
     if(fl&&top){if(Math.abs(dx)>Math.abs(dz))return{x:p.x+sgn(dx)*G/2,z:p.z,y:p.y,rot:2};return{x:p.x,z:p.z+sgn(dz)*G/2,y:p.y,rot:0};}
@@ -51,7 +58,7 @@ function edgeSnap(def,hit){const p=hit.piece,n=hit.n,pt=hit.pt,top=n.y>.6,fl=isF
 function updateGhost(){
   if(!ghost){updateGrid(false);return;}const hit=buildRaycast();
   if(!hit||dist2(hit.pt.x,hit.pt.z,P.pos.x,P.pos.z)>9*9){ghost.visible=false;ghostPos=null;updateGrid(false);return;}
-  ghost.visible=true;const t=buildSel,def=PIECES[t],hx=hit.pt.x,hz=hit.pt.z,mode=SNAP_NAMES[snapMode],hf=mode==='puoli';let x,y,z,rot=buildRot,ox=0,oz=0,yAlign=null;
+  ghost.visible=true;const t=buildSel,def=PIECES[t],hx=hit.pt.x,hz=hit.pt.z,mode=SNAP_NAMES[snapMode],hf=mode==='puoli',m1=mode==='1 m',m3=mode==='3D',r1=v=>Math.round(v);let x,y,z,rot=buildRot,ox=0,oz=0,yAlign=null;
   // Maahan tähdätessä viereinen lattia määrää ruudukon paikan ja korkeuden.
   if(!hit.piece){let best=null,bd=(1.6*G)**2;for(const p of pieces){if(!isFloor(p))continue;const d=dist2(p.x,p.z,hx,hz);if(d<bd&&Math.abs(terrainH(hx,hz)-p.y)<1.6){bd=d;best=p;}}if(best){ox=best.x-G/2;oz=best.z-G/2;yAlign=best.y;}}
   else if(isFloor(hit.piece)){ox=hit.piece.x-G/2;oz=hit.piece.z-G/2;}
@@ -60,22 +67,23 @@ function updateGhost(){
   const es=mode==='reuna'&&hit.piece?edgeSnap(def,hit):null;
   if(es){x=es.x;z=es.z;y=es.y;if(es.rot!==undefined)rot=es.rot;}
   else if(mode==='vapaa'){x=fr(hx);z=fr(hz);y=hit.piece?baseY:def.snap==='floor'?Math.round(baseY*4)/4+.1:def.snap==='cell'?baseY:terrainH(x,z);}
-  else if(def.snap==='floor'||def.snap==='cell'){x=hf?half(hx,ox):cell(hx,ox);z=hf?half(hz,oz):cell(hz,oz);
+  else if(def.snap==='floor'||def.snap==='cell'){x=m1?r1(hx):hf?half(hx,ox):cell(hx,ox);z=m1?r1(hz):hf?half(hz,oz):cell(hz,oz);
     y=hit.piece?baseY:def.snap==='floor'?(yAlign!==null?yAlign:Math.round(baseY*4)/4+.1):baseY;}
   else if(def.snap==='wall'){const diag=rot%2===1,alongX=!diag&&((rot>>1)&1)===0;
-    if(hf){x=half(hx,ox);z=half(hz,oz);}
+    if(m1){x=r1(hx);z=r1(hz);}
+    else if(hf){x=half(hx,ox);z=half(hz,oz);}
     else if(diag){x=cell(hx,ox);z=cell(hz,oz);}
     else if(alongX){x=def.span2?edge(hx,ox):cell(hx,ox);z=edge(hz,oz);}
     else{x=edge(hx,ox);z=def.span2?edge(hz,oz):cell(hz,oz);}
     y=hit.piece?baseY:yAlign!==null?yAlign:Math.min(terrainH(x-G/2,z),terrainH(x+G/2,z),terrainH(x,z-G/2),terrainH(x,z+G/2))-.05;
     // Seinä ja ovi asettuvat viereisen lattian pintaan, ettei aukko jää lattiaa matalammaksi.
     const fl=floorAtEdge(x,z,y);if(fl!==null)y=fl;}
-  else{x=hf?half(hx,ox):cell(hx,ox);z=hf?half(hz,oz):cell(hz,oz);if(def.snap==='free'&&!hf){x=fr(hx);z=fr(hz);}y=hit.piece?baseY:terrainH(x,z);}
-  if(vMode){const ref=hit.piece?hit.piece.y:0;y=ref+Math.round((y-ref)/VSTEP)*VSTEP+buildLift*VSTEP;}
+  else{if(m1){x=r1(hx);z=r1(hz);}else if(hf){x=half(hx,ox);z=half(hz,oz);}else if(def.col){x=edge(hx,ox);z=edge(hz,oz);}else{x=cell(hx,ox);z=cell(hz,oz);}y=hit.piece?baseY:terrainH(x,z);}
+  if(vMode||m3){const ref=hit.piece?hit.piece.y:0;y=ref+Math.round((y-ref)/VSTEP)*VSTEP+buildLift*VSTEP;}
   ghost.position.set(x,y,z);ghost.rotation.y=rot*Math.PI/4;ghostPos={x,y,z};ghostRot=rot;
   ghostOk=validPlace(t,x,y,z,rot,poseOf(t));
   const m=ghostOk?MAT.ghostOk:MAT.ghostBad;ghost.traverse(o=>{if(o.isMesh)o.material=m;});
-  const step=hf?G/2:G;updateGrid(mode==='ruudukko'||hf,ox+Math.round((x-ox)/step)*step,y,oz+Math.round((z-oz)/step)*step);
+  const step=m1?1:hf?G/2:G,go=m1?0:1;updateGrid(mode==='ruudukko'||hf||m1||m3,go*ox+Math.round((x-go*ox)/step)*step,y,go*oz+Math.round((z-go*oz)/step)*step);
 }
 function floorAtEdge(x,z,y){let best=null;for(const p of pieces){if(!isFloor(p))continue;if(Math.abs(p.y-y)>1.3)continue;if(dist2(p.x,p.z,x,z)<=(G/2+.05)**2&&(best===null||p.y>best))best=p.y;}return best;}
 let lastInvalid='';

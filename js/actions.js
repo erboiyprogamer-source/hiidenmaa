@@ -126,8 +126,9 @@ function hurtPlayer(dmg,fx,fz){
   if(P.hp<=0)playerDie();
 }
 P.vel=new V3();
-function eat(s){const f=ITEMS[s.id].food;if(P.hunger>=96&&!f.buff){msg('Olet kylläinen.','warn');return;}
-  if(P.hunger>=85&&!f.raw){P.buffs.vatsakipu=75;msg('Söit liikaa – vatsaa kivistää.','warn');}
+// Ähky tulee vain, jos kylläisyys on jo täynnä (≥99) ja syö silti; palkin täyttyminen syödessä ei aiheuta sitä. Kesto 52 s (−30 %).
+function eat(s){const f=ITEMS[s.id].food;
+  if(P.hunger>=99&&!f.raw&&!f.buff){P.buffs.vatsakipu=52;msg('Söit vaikka olit jo täynnä – vatsaa kivistää.','warn');}
   P.hunger=Math.min(100,P.hunger+f.h);if(f.hp)P.heal+=f.hp;if(f.st)P.stam=Math.min(maxStam(),P.stam+f.st);
   if(f.raw&&Math.random()<.45){P.buffs.pahoinvointi=40;msg('Raaka liha kääntää vatsaa.','warn');}
   if(f.buff)P.buffs[f.buff]=300;if(!f.raw)flags.ate=1;
