@@ -58,6 +58,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.81 (eläinmallien liitokset – päivityslista kohta 1)
+- `makeAnimal`: jalan nivel on rungon sisällä (`by − 0,1·s`, ennen `lh` eli rungon alapuolella → peuralla näkyvä rako). Jokaisen jalan
+  yläpäässä lihaksikas lapa (edessä) / reisi (takana, `rump`-väri), joka sulautuu kylkeen. Polven korkeus maasta ennallaan (`lh/2`).
+- Kaula lasketaan rinnasta pään tyveen (pituus ja kulma `atan2`), ennen kiinteä 0,42 m putki → peuran pää leijui 0,2 m irti.
+- Tarkastettu kuvin: peura, villikarju, harmaasusi, routasusi (edestä, sivulta, takaa, kävelyasento).
+
 ### v0.80 (kuoleman ruutu)
 - Kuollessa kaikki valikot sulkeutuvat heti ja uudelleen ruudun ilmestyessä (`closeAllForDeath`, player.js): reppu, rakennus, kartta,
   arkku, edistyminen, loki, DEV, päävalikko, asetukset ja näppäinikkuna. Vain "Kaaduit"-ruutu jää. Kuolinanimaation aikana (1,4 s)
@@ -905,6 +911,26 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ## Ideajono
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
+1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
+2. Mobien spawnaus: yöllä suurin osa, vähän kauempana (jahtaavat); osa lähelle mieluiten esteen taakse. Päivällä max 2, vain tiheä metsä /
+   suo / kuiva biomi; tumma aarnimetsä hyvin todennäköinen, hirviöt siellä 20 % nopeampia + ilmoitus biomille astuessa.
+3. Uusia biomeja + nimet; nykyinen biomi näkyy, repussa biomin ominaisuudet; "Uusi alue löydetty: …" fade in/out vain ensimmäisellä kerralla
+   (aloitusbiomi merkitty löydetyksi ilman ilmoitusta).
+4. Tuulensuunta: vaihtuu hitaasti satunnaisesti (minuutteja, kääntyy hitaasti); kartalla suunta ja nopeus; pilvet liikkuvat tuulen suuntaan.
+5. 4 uutta eläintä (samaa tyyliä) + 2 joskus vihamielistä + harvinaisia pelottavia (seuraa 30–60 s, poistuu 5 s ja unohtaa); luonteen mukaiset
+   säikähdys/reaktiot. Karhu: iso, lyö kauas ja nopeasti, kaataa eteen jäävät puut tukeiksi, HP 200 % pelaajasta, palautuu jos ei lyöty 1 min.
+6. Kalmanvartija: harvemmin liuku/ryntäys, iskulla pidempi viive. Kaikki kiviä heittävät pomot: kivi 30 % hitaampi, hyökkäysviive +10 %.
+7. Haarniskoille kunnon painavat erottuvat mallit.
+8. Ulottuvuuksien mobeille enemmän yksityiskohtia (vaatetus, koristeet, silmäanimaatiot, liekit silmissä).
+9. Hirviöille (sammalhiisi, kalmo) harppaavammat askeleet, lyöntiulottuma +10 %.
+10. Kalmanvartija vajoaa maahan (ei katoa) ilmoituksen aikana, maapartikkeleita.
+11. Kuokka nostaa maata enemmän, oikea klikkaus palauttaa alkuperäisen värin; lapio syvempi kuoppa, oikea klikkaus = ruskea polku.
+12. Aluevartijat: alue ×2, jäävät rajalle taistelemaan, 1–10 s päästä palaavat, kunnes huomaavat pelaajan taas.
+13. Kivikasat arkun ympärillä liian tiiviit – arkulle pääsy.
+14. Hylätyt leiripaikat (1–2 / kartta): sammunut nuotio (sytytys puulla), teltta jossa sänky.
+15. Ruoho: pystyheinää laajalti, eri pituuksia, heiluu tuulessa (kallistuu tuulen suuntaan); grafiikka-asetus pois/oletus/täysi.
 
 ### Käyttäjän ideat 0–11 (erät 23–31) – ryhmittely teemoittain
 Kirjattu v0.35:n jälkeen. Jokainen erä: testaa, päivitä muistio, versio+`?v=`, commit, push, PR. Järjestys on ehdotus; ensimmäinen on 23.

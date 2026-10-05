@@ -89,8 +89,10 @@ function makeAnimal(o){
   // kaula ja pää (pää-ryhmä samassa kohdassa kuin makeQuad:ssa, jotta animaation pään kallistus toimii)
   const head=new THREE.Group();head.position.set(0,(lh+.5)*s,bz);g.add(head);
   const neckUp=k==='deer'?.32:k==='boar'?.02:.12;
-  tube(g,.13*s*(k==='boar'?1.4:1),.17*s*(k==='boar'?1.4:1),.42*s,mB,0,by+neckUp*s*.6,bz-.08*s,1,1,8).rotation.x=k==='deer'?.55:k==='boar'?1.35:1.0;
   head.position.y+=neckUp*s;
+  // v0.81: kaula lasketaan rinnasta (A) pään tyveen (B) → pää ei leiju irti (ennen kiinteä 0,42 m putki jäi peuralla 0,2 m vajaaksi).
+  {const ay=by+.1*s,az=bz-.16*s,byH=head.position.y+.02*s,bzH=head.position.z,dy=byH-ay,dz=bzH-az,len=Math.hypot(dy,dz)+.12*s,nr=k==='boar'?1.4:1;
+   tube(g,.12*s*nr,.17*s*nr,len,mB,0,(ay+byH)/2,(az+bzH)/2,1,1,8).rotation.x=Math.atan2(dz,dy);}
   rnd(head,0,.08*s,.06*s,.17*s,mH,1,1,1.15,10);                        // kallo
   const sn=k==='wolf'?[.09,.08,.28]:k==='boar'?[.11,.1,.3]:[.08,.08,.24];
   tube(head,sn[0]*s,sn[1]*s*1.5,sn[2]*s,mH,0,.01*s,.22*s+sn[2]*s/2,1,1,8).rotation.x=Math.PI/2; // kuono
@@ -111,11 +113,14 @@ function makeAnimal(o){
   if(k==='wolf'){for(const [x,y,z,r] of [[0,.1,.42,.2],[-.15,.02,.38,.15],[.15,.02,.38,.15],[0,-.05,.5,.16]])rnd(g,x*s,by+y*s,z*s*L,r*s,o.ruff?F(o.ruff):mB,1,1,.9,8);}
   if(o.ice){const ic=smat(0xdff6ff,{flatShading:true,emissive:0x2a6080,emissiveIntensity:.5});for(let i=0;i<6;i++){const c=new THREE.Mesh(new THREE.ConeGeometry(.04*s,(.16+(i%2)*.08)*s,4),ic);c.position.set((i%2?.05:-.05)*s,by+.28*s,(.38-i*.14)*s*L);c.rotation.set(-.3,0,(i%2?-.25:.25));c.castShadow=true;g.add(c);}}
   if(k==='deer'){rnd(g,0,by+.08*s,-.6*s*L,.12*s,F(0xf1ebe0),1,1.1,.6,8);for(let i=0;i<7;i++)rnd(g,((i%2)?.17:-.17)*s,by+.12*s-(i%3)*.04*s,(.25-i*.08)*s*L,.022*s,F(0xe6dccb),1,1,1,5);}
-  // jalat: reisi, polvi, sääri, kavio/tassu (polvi koukistuu animaatiossa)
-  const legs=[];for(const [x,z,fr] of [[-.17,.44,1],[.17,.44,1],[-.17,-.44,0],[.17,-.44,0]]){
-    const p=new THREE.Group();p.position.set(x*s,lh*s,z*s*L);g.add(p);const th=k==='deer'?.06:k==='boar'?.09:.07;
-    tube(p,(th+.04)*s,th*s,lh*.52*s,fr?mL:mB,0,-lh*.24*s,0,1,1,7);
-    const kn=new THREE.Group();kn.position.set(0,-lh*.5*s,0);p.add(kn);rnd(kn,0,0,0,th*.9*s,mL,1,1,1,6);
+  // jalat: lapa/reisi, polvi, sääri, kavio/tassu (polvi koukistuu animaatiossa)
+  // v0.81: nivel on rungon sisällä (by − 0,1) ja yläpäässä lihaksikas lapa/reisi, joka sulautuu kylkeen → jalka ei irtoa rungosta
+  // (ennen nivel oli rungon alapuolella y = lh, jolloin peuralla jäi näkyvä rako). Polven korkeus maasta on ennallaan (lh/2).
+  const legs=[],pivY=by-.1*s,up=pivY-lh*.5*s;for(const [x,z,fr] of [[-.17,.44,1],[.17,.44,1],[-.17,-.44,0],[.17,-.44,0]]){
+    const p=new THREE.Group();p.position.set(x*s,pivY,z*s*L);g.add(p);const th=k==='deer'?.06:k==='boar'?.09:.07;
+    rnd(p,0,-.05*s,0,(th+.075)*s,fr?mB:(o.rump?F(o.rump):mB),.8,1.75,1.3,8);   // lapa (edessä) / reisi (takana)
+    tube(p,(th+.045)*s,th*s,up+.04*s,fr?mL:mB,0,-up/2,0,1,1,7);
+    const kn=new THREE.Group();kn.position.set(0,-up,0);p.add(kn);rnd(kn,0,0,0,th*.9*s,mL,1,1,1,6);
     tube(kn,th*.8*s,th*.65*s,lh*.48*s,mL,0,-lh*.24*s,0,1,1,6);
     if(k==='wolf')rnd(kn,0,-lh*.49*s,.03*s,th*1.15*s,mD,1,.6,1.4,6);else tube(kn,th*.75*s,th*.9*s,.06*s,mHoof,0,-lh*.48*s,.01*s,1,1,6);
     p.userData.knee=kn;p.userData.front=fr;legs.push(p);}

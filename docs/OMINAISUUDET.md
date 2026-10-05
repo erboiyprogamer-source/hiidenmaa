@@ -147,7 +147,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Nopeudet −15 %** (`MOB_SPD` 0,85 kaikessa liikkeessä).
 - **Terveyspalkit:** mobin yläpuolella (mallin korkeus + 0,45 m), nimi ja pääkallot palkin yllä; näkyy kun katse osuu mobiin (~11°, vahvat ~9°)
   alle 12 m (vahvat 70 m) tai 10 s osuman jälkeen. Pomoilla oma palkki ruudun yläreunassa.
-- **Eläinmallit:** `makeAnimal` (nivelletyt jalat, kuono, korvat, häntä; peuran sarvet, karjun harjas ja torahampaat, suden kaulus, routasuden jääpiikit).
+- **Eläinmallit:** `makeAnimal` (nivelletyt jalat – nivel rungon sisällä, lapa/reisi kylkeen; kaula rinnasta pään tyveen, kuono, korvat, häntä; peuran sarvet, karjun harjas ja torahampaat, suden kaulus, routasuden jääpiikit).
 - **Eläimet** (peura, villikarju): säikähtävät kävellen 7 m, juosten 16 m, ase kädessä × 1,4, kyykyssä paikallaan ei lainkaan, hiipiessä 1,5 m (kohti) / 0,9 m (selin); lyöty pelkää 10 s.
 - **Viholliset** (sammalhiisi, harmaasusi, kalmo, ylimys, kivivartija, routasusi): tarvitsevat näköyhteyden; huomaavat pelaajan aina 10 s
   vahingon jälkeen (myös jousella); kyykky puolittaa huomausetäisyyden, yö × 1,35. Ilman näköyhteyttä 3 s → luopuvat.
