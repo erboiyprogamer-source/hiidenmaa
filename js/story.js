@@ -32,10 +32,12 @@ function buildPoiRock(k){const L=LOC[k],y=terrainH(L.x,L.z),r=mulberry32(k.charC
   lightSources.push({x:L.x,y:y+2,z:L.z,c:0x7fd6cc,i:.8,on:()=>true});
 }
 function chestUse(k,mesh,x,y,z,noBox){
-  interactables.push({x,y:y+.6,z,r:2.6,label:()=>fo('poi')[k]?'Tyhjä arkku':'Avaa arkku',use:()=>{if(fo('poi')[k])return;
+  const fk='poi:'+k;
+  interactables.push({x,y:y+.6,z,r:2.6,label:()=>foundEmpty(fk)?'Arkku (tyhjä)':'Avaa arkku',use:()=>{const first=!fo('poi')[k];
+    openFound(fk,LOC[k].name||'Arkku',first?POI_LOOT[k]||[['kupari',3]]:null);if(!first)return;
     const guards=mobs.filter(m=>m.siteK===k&&!m.dead&&dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<14*14);
     fo('poi')[k]=1;mesh.children[0].position.x=.5;mesh.children[0].rotation.z=.3;
-    for(const [id,n] of POI_LOOT[k]||[['kupari',3]])giveOrDrop(id,n,x,y+1,z);msg(guards.length?'Arkku aukesi – vartijat eivät ole tyytyväisiä!':'Arkku avattiin.','loot');sfx('pickup');addXp(25,'Löytö');burst(x,y+1,z,0x7fd6cc,12,3);}});
+    msg(guards.length?'Arkku aukesi – vartijat eivät ole tyytyväisiä!':'Arkku avattiin.','loot');addXp(25,'Löytö');burst(x,y+1,z,0x7fd6cc,12,3);}});
 }
 for(const k of SITE_KEYS){if(LOC[k].kind==='ruin')buildPoiRuin(k);else if(LOC[k].kind==='rock')buildPoiRock(k);}
 

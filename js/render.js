@@ -30,7 +30,11 @@ torchLight.shadow.mapSize.set(40,40);torchLight.shadow.camera.far=3.2;torchLight
 // Kiinteiden valojen varjokartta päivitetään harvoin; ympäristön muuttuessa (rakennus lisätty/purettu/rikottu, ovi liikkuu, puu kaatuu) lippu nostetaan ja päivitys tehdään heti.
 let shDirty=true,bldDirty=true;const markShadowDirty=()=>{shDirty=true;bldDirty=true;};
 const QUAL={lvl:0,pointShadow:true,sunSize:2048,max:3};
-function setQuality(l){QUAL.lvl=l;QUAL.pointShadow=l<3&&SET.shadow==='high'&&SET.ptShadow!==false;const base=+SET.sunRes||2048,ss=(l>=2||SET.shadow==='low')?Math.max(512,base/2):base;if(ss!==QUAL.sunSize){QUAL.sunSize=ss;sun.shadow.mapSize.set(ss,ss);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}}
+// Kun tulien/soihdun varjot kytketään pois (laatutaso 3 tai asetus), myös valojen castShadow pois: muuten vanha varjokartta jää
+// käyttöön eikä enää päivity (varjot "jähmettyivät"). Takaisin kytkettäessä kartta päivitetään heti. Ks. docs/KORJAUKSET.md.
+function setQuality(l){QUAL.lvl=l;const ps=l<3&&SET.shadow==='high'&&SET.ptShadow!==false;
+  if(ps!==QUAL.pointShadow||LIGHTS[0].castShadow!==ps){for(const L of [LIGHTS[0],torchLight]){L.castShadow=ps;if(ps)L.shadow.needsUpdate=true;}}
+  QUAL.pointShadow=ps;const base=+SET.sunRes||2048,ss=(l>=2||SET.shadow==='low')?Math.max(512,base/2):base;if(ss!==QUAL.sunSize){QUAL.sunSize=ss;sun.shadow.mapSize.set(ss,ss);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}}
 
 function canvasTex(fn,size=64){const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');fn(g,size);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;}
 const texR=mulberry32(77);

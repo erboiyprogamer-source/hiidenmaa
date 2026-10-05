@@ -58,6 +58,102 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.74 (⚠ väliaikainen kehitystila)
+- `const DEV=true` (core.js) – käyttäjän pyynnöstä testailua varten: kestävyys ei kulu, korkein taso (kaikki ohjeet auki), ei painorajaa
+  (ei ylikuormitusta), **Ö pohjassa (näppäinkoodi `Semicolon`) liike 10× nopeampi**, vasemmassa alakulmassa merkki "DEV-tila".
+  Kytkennät: player.js (`over`, kestävyys, nopeus), environment.js (ylikuormitusmerkki), progress.js (`lvlInfo`), ui.js (merkki).
+  **Poista ennen julkaisua: `DEV=false`** (muu peli ennallaan, tallennusmuoto ei muutu).
+
+### v0.73 (mobien terveyspalkit)
+- **Palkki ja pääkallot korkeammalle:** palkin korkeus lasketaan mallin todellisesta korkeudesta (`m.barH`, rajauslaatikko kerran mobia kohden)
+  + 0,45 m – ennen `r × 2,8 + 0,8`, joka osui uusien mallien päähän/sarviin. Pääkallot nimen yläpuolelle (ennen palkin alla).
+- **Näkyy vasta tarkasti katsottaessa:** katseen ja mobin keskikohdan välinen kulma ≤ ~11° (vahvat ☠≥3: ~9°), ennen 22° / 18°.
+  Etäisyysrajat ennallaan (12 m, vahvat 70 m); lyöty mobi näkyy 10 s katseesta riippumatta.
+
+### v0.72 (vasara vyölle, luonnolliset lyönnit ilman läpimenoa, napavektori-IK, erä 45: eläimet)
+- **Vasara vyöllä takana:** kun vasara ei ole kädessä, se roikkuu vyön yläreunasta selän puolella (ripustus y 0,94, z −0,24): pää vyön päällä
+  selän suuntaisesti (90° pystyakselin ympäri aiemmasta, jolloin pää sojotti taaksepäin), varsi alas. Heiluu askelten tahdissa ja kallistuu
+  juostessa taaksepäin (`backHang`, aina ≥ 0 eli ei vartalon sisään). Muu työkalu/ase näkyy selässä kuten ennen.
+- **Lyöntianimaatio uusittu:** avainasennot [olka rx, rz, kyynärpää] nosto W → osuma H → loppuliike E → lepo (`swingPose`). Vuorotellen
+  pään yli → alas oikealle eteen ja oikean olan yli → alas vartalon eteen; kahden käden nosto pään yläpuolella edessä (ei pään takana).
+  Loppuliike nopeutui (palautus 6 → 13 /s) ja laskeutuu vartalon eteen.
+- **Kädet eivät mene vartalon läpi:** `armClear` tarkistaa kämmenen ja kyynärpään vartaloellipsiä vasten (x 0,27, z 0,16, korkeus 0,78–1,55 m)
+  ja nostaa olkaa eteen (vaakatasossa ulospäin) kunnes ulkona. Mittaus: kirves ja nuija molempiin suuntiin, 0 läpimenoa (ennen kirveen
+  loppuliikkeessä molemmat kädet vatsan sisällä).
+- **IK napavektorilla (`armIK(arm,elbow,T,w,pole)`):** kyynärpää osoittaa luonnolliseen suuntaan (oletus alas-ulos), olan asento kantavektoreista
+  (kvaternio). Vanha rx/rz-IK jätti vasemman kyynärpään rinnan sisään kirveen nostossa. Vedossa oikea kyynärpää taakse-ulos.
+- **Eläimet (erä 45, `makeAnimal`):** peura, villikarju, harmaasusi ja routasusi pelaajahahmon tyyliin – rinta/keskivartalo/lantio, vaaleampi
+  vatsa, kaula, kallo ja kuono, silmät, korvat, nivelletyt jalat (reisi, polvi, sääri, kavio/tassu), häntä. Peura: haarautuvat sarvet, valkoinen
+  peili ja häntä, täplät. Karju: harjas, kärsälevy ja torahampaat. Susi: turkkikaulus, tuuhea häntä tummalla kärjellä. Routasusi: jääpiikit
+  selässä. Animaatio: polvet koukistuvat askeleissa, häntä heiluu (jahdissa nopeammin).
+
+### v0.71 (erä 44: pomot ja humanoidit yksityiskohtaisiksi; äänet ja koivu)
+- **Uusi `makeHumanoid` (models.js):** kaksijalkainen pelaajahahmon tyyliin – pyöristetyt raajat, nivelpallot, kyynärpää- ja polvinivel,
+  kämmenet peukaloineen, jalkaterät, kaula ja pallopää; luurankotila (`skel`: selkäranka, kaarevat kylkiluut, lantio) ja kivitila (`flat`).
+  Rajapinta kuten `makeBiped`, joten tekoälyn animaatiot toimivat; `torso`/`head` ovat skaalaamattomia ryhmiä. Animaatio (`animMob`):
+  polvi koukistuu taakse jäävässä jalassa, kyynärpäät koukussa, viitat ja rievut heiluvat (`f.sway`).
+- **Kalmanvartija** (`figGolem(3.1,true)`): lohkareista koottu kivijätti – rinta- ja selkälohkareet, hehkuvat riimuhalkeamat rinnassa ja
+  käsivarsissa, sammaloituneet olkalohkareet piikkeineen, kivinyrkit, polvilohkareet, kivilaattalannevaate, kulmakaari ja hehkuva suu,
+  7-piikkinen kivikruunu, selässä riimumonoliitti. **Kivivartija** samalla rungolla (s 1,3, ilman monoliittia).
+- **Kalmon ylimys** (`figYlimys`): luurankoaatelinen – kallo silmäkuopissa liekkisilmät, nenäaukko, leuka ja hampaat, pronssikruunu
+  punaisin kivin, ruostunut olkapanssari, tabardi, vyö kallosoljella, heiluva repaleinen viitta, pitkä ruostunut miekka.
+- **Kalmo** (`figKalmo`): luurankosoturi, syaanit silmät, riepulannevaate (heiluu), olkalevy, ruostunut kirves.
+- **Sammalhiisi** (`figHiisi`): iso pää, suippokorvat, kyömynenä, suu kulmahampain, oksasarvet, sammaltupsut, lehtihame, piikkinuija.
+- **Ulottuvuuksien pomot** (Jäätär, Kalmaherra, Aarnihirviö): runko vaihdettu `makeHumanoid`:iin (nivelet, pyöreät raajat); omat
+  yksityiskohdat ennallaan. Täysi uudelleensuunnittelu ideajonossa (erä 44b).
+- Mobin materiaalikloonit jaetaan saman mobin sisällä (yksityiskohtaisissa malleissa 8–13 materiaalia 50–96 osalle).
+- **Äänet uudelleen (käyttäjän toive):** puun ja tukin jokainen isku on sama kirveenisku (sävel vaihtelee ±3,5 %). Pystypuun viimeinen isku
+  lähes sama, vain hiljainen ritinä; kaatunut puu tömähtää tummasti (`thud`). Tukin viimeinen isku = sama isku + pehmeä tumma tömähdys.
+  Kiven viimeinen isku = sama hakkuääni + pehmeä tumma murtuminen.
+- **Koivun mustat täplät heiluvat rungon mukana:** runko jaettu 12 korkeussegmenttiin (huojunta ei ole lineaarinen korkeuden suhteen).
+
+### v0.70 (korjauksia: varjojen jähmettyminen, hiipiminen, korjausmuistio, ominaisuustarkistus)
+- **Varjot jähmettyivät:** automaattisen laadun tasolla 3 (tai tulien varjot pois) pistevalojen varjokarttoja ei enää päivitetty, mutta
+  valot heittivät varjoa vanhasta kartasta. Nyt `setQuality` kytkee `castShadow`:n samalla pois/päälle. Kaukana tulesta varjojen
+  päivitysväli 60/120 → 12/30 kehystä (pimeä/päivä).
+- **Eläimet säikähtivät kyykyssä:** kyykyssä paikallaan ei huomata; hiipiessä 1,5 m (eläin katsoo kohti) tai 0,9 m (selin). Ennen 3,5 m ja
+  alle 4 m aina, jolloin hiiviskelyisku ei koskaan ylettynyt. Kävely 7 m / juoksu 16 m ennallaan.
+- **Uusi `docs/KORJAUKSET.md`:** toistuvat viat, syyt ja korjaukset koodinpätkineen + pakolliset tarkistukset.
+- **Uusi `tools/tarkistus.mjs`:** 39 ominaisuuden regressiotesti (G-tilat, 3D-hila, H, reunakohdistus, kartat, ulottuvuudet, tehtävät,
+  asetukset, puut, myrsky, soihtu, kartta, päivitykset, ehdotukset, haku, IK, jousi, Kalmanpesä, löydetyt arkut, varjot, hiipiminen…).
+
+### v0.69 (korjauksia: 3D-hila, löydetyt arkut, haku, tukin ääni, ominaisuustarkistus)
+- **3D-ruudukko näkyväksi:** 3D-tila oli koodissa, mutta pystyruudukko oli niin haalea (opasiteetti 0,28, yksi kameraa kohti käännetty
+  taso), ettei sitä erottanut. Nyt `gridV` on oikea 3D-hila: pystytolpat jokaisessa ruudukon kulmassa (7 × 7, kaksi kerrosta korkeita) ja
+  vaakaruudukot puolen kerroksen välein (WH/2) kahteen kerrokseen, opasiteetti 0,5. Seuraavan kerroksen ruudukko 0,3 → 0,45.
+- **Löydetyt arkut, kirstut ja tynnyrit avautuvat arkkuikkunaan** kuten omat arkut (ulottuvuuksien arkut, hautakirstut ja tynnyrit,
+  Hautakummun kirstut ja tynnyrit, raunioiden aarrearkut, löytöpaikkojen arkut). Sisältö luodaan ensimmäisellä avauksella saalistaulukosta
+  ja tallentuu `flags.fc[avain]`; esineitä voi ottaa ja jättää. Vanhassa tallennuksessa jo avattu paikka on tyhjä (saalis annettiin jo).
+  Ensimmäisen avauksen vaikutukset (XP, vartijaviesti, kannen avaus, tehtäväliput) säilyvät. Ei laajennusnappia löydetyissä.
+- **Haku:** `body{user-select:none}` periytyi hakukenttään, mikä estää kirjoittamisen esim. Safarissa → hakukentille `user-select:text`.
+- **Tukin viimeinen isku** tummemmaksi: matala halkeava rusahdus, puun repeämisen jyrinä ja raskas tömähdys (ei kirkasta napsahdusta).
+  Pystypuun viimeiseen iskuun lisätty selkeämpi ritinä.
+- **Korjaus:** tynnyrin kannen tila luettiin latauksessa ennen kuin `flags` oli olemassa (kaatoi skriptin) → luetaan laiskasti.
+- **Ominaisuustarkistus:** kaikki muistioissa mainitut tunnisteet tarkistettu koodia vasten (puuttuvat olivat vain vanhoja nimiä:
+  `palkki_iso` → `palkki2`, `gripWithLeft` → `armIK`, `KEYLIST` → `ACTIONS`/`BIND`, ukkosen ääni poistettu tarkoituksella v0.36) ja
+  34 keskeistä ominaisuutta testattu pelissä (G-tilat, H-tila, reunakohdistus, kartat, ulottuvuudet, tehtävät, asetukset, puut, myrskyt,
+  soihtu, kartta, päivitykset, ehdotukset, haku, IK, Kalmanpesä, arkut ym.): kaikki toiminnassa.
+
+### v0.68 (erä 43: kirveen ote, jousi, Kalmanpesän murskaus, äänet)
+- **Kahden nivelen IK (`armIK`, player.js):** käsivarsi (olka rx/rz) ja kyynärpää lasketaan niin, että kämmen osuu annettuun pisteeseen
+  (olkavarsi 0,35 m, kyynärvarsi 0,33 m; ratkaisu ja kaavat funktion kommentissa). Korvaa vanhan `gripAngles`-suuntauksen, joka ei
+  huomioinut kyynärpään taivutusta.
+- **Kirveen ote:** kahden käden iskussa vasen käsi tarttuu varteen kohtaan, joka on lähimpänä vasenta olkaa (0,11–0,42 m oikeasta kädestä,
+  kädet eivät mene päällekkäin). Jos oikea käsi on yli 0,58 m vasemmasta olasta, se tuodaan keskilinjaa kohti (IK), jotta ote ylettyy.
+  Kahden käden nosto matalampi ja kapeampi (−2,25 / sivukulma × 0,55). Testi: käsi on 0,01–0,02 m varresta koko iskun ajan.
+  Ote pehmenee sisään/ulos (`P.gripK`).
+- **Jousi oikein päin:** jousen malli oli käännetty 180°, joten kaari osoitti ampujaan ja jänne venyi eteenpäin. Kääntö poistettu: selkä
+  eteenpäin, jänne ja nuoli vedetään ampujaa kohti. Jousi pysyy pystyssä myös kyynärpään taivutuksella. Vedossa jousikäsi suoraan eteen
+  hieman sisäänpäin (rz −0,3) ja **vetokäsi IK:lla jänteelle** nuolen kannan kohdalle (leuan korkeus) (`P.drawK`).
+- **Kalmanpesä tuhottavissa hakulla:** kestävyys 240 (`SPW_HP`), vahinko = louhintateho (9 + 3 × hakun taso, laatu +25 %/★);
+  kivihakulla 20 iskua. Muut aseet: "Kalmanpesän voi murskata vain hakulla." Isku näyttää jäljellä olevan prosentin. Tuhottuna pesä,
+  törmäys ja hehku poistuvat, tilalle rauniot (kivet ja luut), saalis 4 luunsirua + 4 kiveä (+ Kalmankammiossa 3 kuparia, Aarnihaudassa
+  1 hiidenkivi), 40 XP. Tila tallentuu `flags.sd[ulottuvuus]` (ei tallennusversion muutosta: vanhoissa ei ole kenttää).
+- **Äänet:** `sfx(nimi, sävel, voimakkuus)`; jokainen soitto vaihtelee sävelkorkeutta satunnaisesti ±3,5 %. Uudet äänet: `chopFinal`
+  (viimeinen isku ennen rungon katkeamista, hieman kimeämpi + ritinä), `chopLog` (tukin hakkuu, ontompi), `logBreak` (tukki katkeaa),
+  `thud` (kaatunut puu osuu maahan: matala jytinä, sävel puun koon mukaan, voimakkuus etäisyyden mukaan), `rockBreak` (kivi hajoaa),
+  `crumble` (kivirakenne tai Kalmanpesä murtuu), `woodBreak` (puurakenne hajoaa tai puretaan).
+
 ### v0.67 (erä 42: ehdotukset ja haku)
 - **Ehdotukset-välilehti** on oletuksena ensimmäinen sekä rakennusvalikossa (B) että valmistuksessa (reppu), Alkupeli toisena.
   - Valmistus (`suggestCrafts`, enintään 8): avoimet ja tunnetut ohjeet pisteytetään. Aineet valmiina +4 (työpiste puuttuu +2,5,
@@ -975,7 +1071,7 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 1. Piirtoetäisyys vapauttaa muistia: maasto ruutuihin, rajalla vahva sumu/blur, rajan takana maastoa, puita, kiviä ja objekteja ei piirretä.
 2. Yleinen optimointi ilman suuria visuaalisia haittoja.
 
-**Erä 38 – Mobien mallit (11)**
+**Erä 38 – Mobien mallit (11)** – yhdistetty eriin 44–45
 1. Kaikki eläimet ja hirviöt pelaajahahmon tyyliin (ei palikkamaisia): pehmeät low-poly-muodot, nivelet, yksityiskohdat.
 
 #### Käyttäjän päivityslista (v0.65 jälkeen, 8 kohtaa) – vastaukset tarkentaviin kysymyksiin kirjattu
@@ -998,12 +1094,32 @@ suorakulmaisena ja päätykolmio on tasakylkinen kattoon sopiva kolmio.)
 1. Nahkavaatteet: uusi tekstuuri ja paksumpi malli, vaaleat reunat, siteet, selässä repeävä roikkuva nahkaliuska joka heiluu kävellessä.
    Muille haarniskoille (kupari, rauta, hiidenpanssari) omaan tyyliinsä sopivat yksityiskohdat.
 2. Äänet: puun kaatuminen ja tömähdys matalammaksi, viimeinen isku ennen rungon katkeamista hieman kimeämpi, kaikkiin toistuviin
-   ääniin pieni satunnainen sävelkorkeuden vaihtelu (jokainen lyönti hieman eri).
+   ääniin pieni satunnainen sävelkorkeuden vaihtelu (jokainen lyönti hieman eri). – ✅ tehty v0.68 (erä 43)
 
 **Erä 42 – Ehdotukset ja haku** – ✅ tehty v0.67
 1. Rakennusvalikon ja valmistuksen ensimmäinen (oletus)välilehti "Ehdotukset": todennäköisesti seuraavaksi tarvittavat ja ne,
    joihin aineet ovat jo valmiina. Alkupeli toisena.
 2. Haku kummassakin valikossa (rakennusosat / tavarat).
+
+#### Käyttäjän päivityslista (v0.67 jälkeen, 5 kohtaa)
+
+**Erä 43 – Ote, jousi, Kalmanpesä ja äänet (1, 3, 4, 5)** – ✅ tehty v0.68
+1. Vasen käsi paremmin kiinni kirveen varteen.
+2. Mob-spawnerit (Kalmanpesät) tuhottaviksi hakulla.
+3. Jousi oikein päin pelaajan kädessä, myös vedossa.
+4. Äänien sävelvaihtelu hakatessa; puun tömähdys maahan matala; tukin lyönti ja viimeinen isku omat äänensä; sama kaikkeen tuhoamiseen.
+
+**Erä 44 – Pomot ja humanoidit yksityiskohtaisiksi (2)** – ✅ tehty v0.71 (ulottuvuuksien pomoista vain runko, ks. 44b)
+1. Pomot ensin (käyttäjän kuvissa Kalmanvartija ja Kalmon ylimys): pelaajahahmon tyyli (pyöristetyt low-poly-muodot, nivelet kyynärpäissä
+   ja polvissa, kasvot, vaatteet/haarniska, yksityiskohdat), sitten ulottuvuuksien pomot (Jäätär, Kalmaherra, Aarnihirviö).
+2. Humanoidit: kalmo, hiisi, kivivartija, routa- ja muut ulottuvuuksien viholliset.
+
+**Erä 44b – Ulottuvuuksien pomot kokonaan uusiksi**
+1. Jäätär, Kalmaherra ja Aarnihirviö: laatikkomaiset lisäosat (kylkiluut, olkapäät, sarvet, viitat) pyöristetyiksi ja nivelellisiksi
+   samaan tyyliin kuin Kalmanvartija ja ylimys v0.71.
+
+**Erä 45 – Eläimet yksityiskohtaisiksi (2)** – ✅ tehty v0.72
+1. Peura, karju, susi, routasusi ja muut nelijalkaiset: pehmeämmät muodot, nivelletyt jalat, pää ja häntä, turkki- ja sarviyksityiskohdat.
 
 ### Avoimet: käyttäjän ehdotuksista toteuttamatta tai osittain (tarkistettu v0.62, koko keskusteluhistoria käyty läpi)
 1. **Portaalisuoja ei estä pelaajan omia iskuja** (kohta 5: "silloin pelaajakaan ei voi lyödä ketään"). Nyt suoja estää vain vihollisten

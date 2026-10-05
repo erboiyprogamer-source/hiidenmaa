@@ -135,7 +135,7 @@ function effects(){const e=[],wt=invWeight(),b=P.buffs,add=(key,name,kind,desc,t
   else if(P.hunger<25)add('nalkainen','Nälkäinen','bad','Isku −10 %, kestävyys palautuu 15 % ja terveys 50 % hitaammin. Syö pian.');
   if(b.pahoinvointi)add('pahoinvointi','Pahoinvointi','bad','Raa\'asta lihasta: terveys ei palaudu itsestään, kestävyys palautuu puolet hitaammin.',b.pahoinvointi);
   if(b.vatsakipu)add('vatsakipu','Vatsakipu','bad','Liiasta syömisestä: kävely −10 %, kestävyys palautuu 30 % hitaammin ja kramppi vie välillä kestävyyttä.',b.vatsakipu);
-  if(wt>MAXW)add('kuorma','Ylikuormitus','bad','Kävely −45 %, et voi juosta etkä hypätä. Pudota tavaroita tai päivitä reppu.');
+  if(!DEV&&wt>MAXW)add('kuorma','Ylikuormitus','bad','Kävely −45 %, et voi juosta etkä hypätä. Pudota tavaroita tai päivitä reppu.');
   if(b.levannyt)add('levannyt','Levännyt','good','Kestävyys palautuu 45 % nopeammin ja terveys palautuu nopeammin.',b.levannyt);
   if(b.voima)add('voima','Voimistunut','good','Isku +15 %, enimmäisterveys +15, enimmäiskestävyys +25.',b.voima);
   if(fireCache)add('lampo','Lämmin','good','Tulen lähellä et kylmety ja kuivut nopeasti.');

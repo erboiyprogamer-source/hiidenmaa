@@ -156,6 +156,7 @@ textarea{width:100%;min-height:70px;background:rgba(0,0,0,.35);color:var(--bone)
 
 /* Erä 22: taso, saavutukset, valmistusvälilehdet */
 #craftTabs{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 8px}
+.search,input[type=search],input[type=text]{user-select:text;-webkit-user-select:text}
 .search{display:block;width:100%;max-width:min(680px,calc(100vw - 70px));box-sizing:border-box;margin:0 0 8px;padding:6px 10px;font:inherit;font-size:14px;color:var(--bone);background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:3px;outline:none}
 .search:focus{border-color:var(--frost)}.search::placeholder{color:var(--dim)}
 .tab.sug{color:#f3d58a}.tab.sug.on{color:#ffe9b0}
@@ -173,7 +174,7 @@ textarea{width:100%;min-height:70px;background:rgba(0,0,0,.35);color:var(--bone)
 @media(max-width:700px){#progP .cols{grid-template-columns:1fr}}
 
 /* Erä 25: terveyspalkin pääkallot */
-.mobbar .sk{position:absolute;top:7px;bottom:auto;left:50%;transform:translateX(-50%);font-size:11px;color:#e8e2d0;letter-spacing:1px;white-space:nowrap;text-shadow:0 1px 2px #000}
+.mobbar .sk{position:absolute;bottom:22px;top:auto;left:50%;transform:translateX(-50%);font-size:11px;color:#e8e2d0;letter-spacing:1px;white-space:nowrap;text-shadow:0 1px 2px #000}
 
 /* Erä 27: soihdun palamismittari */
 .slot .fu{position:absolute;left:4px;right:4px;bottom:3px;height:4px;background:rgba(0,0,0,.6);border-radius:2px;overflow:hidden}

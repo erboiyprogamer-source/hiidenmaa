@@ -25,7 +25,8 @@ function buildRuin(L,seed){const r=mulberry32(seed),y=terrainH(L.x,L.z);
   return{chest,y};}
 const RUIN_LOOT={ruinF:{piikivi:6,nahka:3,nuolet:15},ruinM:{kupari:5,malmi:3,pihka:3},ruinC:{piikivi:8,pihka:4,kupari:3}};
 for(const k of ['ruinF','ruinM','ruinC']){const L=LOC[k],{chest,y}=buildRuin(L,k.length*31+L.x|0);
-  interactables.push({x:L.x,y:y+.5,z:L.z,r:2.4,label:()=>flags.ruins[k]?'Tyhjä aarrearkku':'Avaa aarrearkku',use:()=>{if(flags.ruins[k])return;flags.ruins[k]=1;for(const [id,n] of Object.entries(RUIN_LOOT[k]))giveOrDrop(id,n,L.x,y+1,L.z);msg('Arkussa oli tarvikkeita!','loot');sfx('pickup');}});}
+  interactables.push({x:L.x,y:y+.5,z:L.z,r:2.4,label:()=>foundEmpty('ruin:'+k)?'Aarrearkku (tyhjä)':'Avaa aarrearkku',use:()=>{const first=!flags.ruins[k];
+    openFound('ruin:'+k,'Aarrearkku',first?Object.entries(RUIN_LOOT[k]):null);if(first){flags.ruins[k]=1;msg('Arkussa on tarvikkeita!','loot');}}});}
 // Barrow entrance: luolamainen kivinen portti kummun kyljessä, ympärillä rosoisia lohkareita, soihtuja, kalloja ja riimulaattoja
 (function(){const L=LOC.barrow,dx=10.5,ex=L.x+dx,ez=L.z,y=terrainH(ex,ez),r=mulberry32(4242),dk=mat(0x6a665e),mos=mat(0x4d6a3a);
   stoneBox(1.2,4.4,1.2,ex,y+2,ez-2.2,0,dk);stoneBox(1.2,4.4,1.2,ex,y+2,ez+2.2,0,dk);stoneBox(1.6,.9,6.2,ex,y+4.6,ez,0,dk);
@@ -91,7 +92,7 @@ const dunCell=(ix,iz)=>({x:DUN.x+(ix-DW/2+.5)*DC,z:DUN.z+(iz-DH/2+.5)*DC});
     if(ch==='k'||ch==='B')dunSpawns.push({x:p.x,z:p.z,type:ch==='B'?'ylimys':'kalmo'});
     if(ch==='t'){const dirs=[[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b])=>(DMAP[iz+b]||'')[ix+a]==='#'),L=dirs.length?wallTorch(statics,p.x,DUN.y,p.z,dirs[0]):brazier(statics,p.x,DUN.y,p.z);lightSources.push({x:L.x,y:L.y,z:L.z,c:0xff8a36,i:1.8,on:()=>true,dun:true});}
     if(ch==='C'){const idx=sarcs.length;const base=bx(1.1,.8,2.2,MAT.stone,p.x,DUN.y+.4,p.z);const lid=bx(1.2,.18,2.3,mat(0x6f6a62),0,.5,0);base.add(lid);statics.add(base);addBox(p.x-.55,DUN.y,p.z-1.1,p.x+.55,DUN.y+.8,p.z+1.1,'static');sarcs.push({lid,p});
-      interactables.push({x:p.x,y:DUN.y+.8,z:p.z,r:2.6,label:()=>flags.sarc[idx]?'Avattu hautakirstu':'Avaa hautakirstu',use:()=>openSarc(idx)});}
+      interactables.push({x:p.x,y:DUN.y+.8,z:p.z,r:2.6,label:()=>foundEmpty('sarc:'+idx)?'Hautakirstu (tyhjä)':'Avaa hautakirstu',use:()=>openSarc(idx)});}
   }));
   im.instanceMatrix.needsUpdate=true;statics.add(im);
   const W=DW*DC,H=DH*DC;

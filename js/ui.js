@@ -1,6 +1,7 @@
 /* Hiidenmaa – ui.js
    HUD, viestit, paneelit (reppu, valmistus, rakennus, arkku), kartta, tavoitteet */
 'use strict';
+if(DEV){const d=document.createElement('div');d.textContent='DEV-tila · Ö = 10× nopeus';d.style.cssText='position:fixed;left:8px;bottom:4px;z-index:50;font:700 12px sans-serif;color:#ffd36a;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:3px;pointer-events:none';document.body.appendChild(d);}
 
 /* ---------------- UI ---------------- */
 // Viestin näkyvyysaika riippuu pituudesta: 3 s + 70 ms / merkki, rajattuna 4–13 s.
@@ -14,12 +15,16 @@ const mobBars=[];for(let i=0;i<8;i++){const d=document.createElement('div');d.cl
 // Terveyspalkit: näkyvät 10 s iskusta tai kun pelaaja katsoo mobia läheltä (< 12 m); vaikeat (≥3 pääkalloa) jo kaukaa (< 70 m).
 // Yksi kerros = pelaajan perusterveys (60); useampikerroksinen palkki on pidempi ja kerrokset eri värisiä. Alla pääkallot vaikeustasosta.
 const HP_LAYER=60,LAYER_C=['#c0392b','#e07a2a','#d9b43a','#7fae3a','#3a9ad9','#9a5ad9'],_cd=new V3();
+const _mbB=new THREE.Box3();
 function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
   for(const m of mobs){if(k>=mobBars.length)break;if(m.dead||m===boss||m.def.ai==='rboss'||m.dun!==P.inDun)continue;
     const sk=MOB_SKULL[m.type]||0,d=Math.hypot(m.pos.x-P.pos.x,m.pos.z-P.pos.z),recent=playTime-m.hurtT<10;
-    const ex=m.pos.x-camera.position.x,ey=m.pos.y+1-camera.position.y,ez=m.pos.z-camera.position.z,el=Math.hypot(ex,ey,ez)||1,look=(ex*_cd.x+ey*_cd.y+ez*_cd.z)/el>(sk>=3?.95:.93);
+    // Mallin todellinen korkeus (kerran mobia kohden): palkki 0,45 m pään/sarvien yläpuolelle (v0.73, ennen r × 2,8 + 0,8 → osui päähän).
+    if(m.barH===undefined){m.f.g.updateMatrixWorld(true);_mbB.setFromObject(m.f.g);m.barH=Math.max(.6,_mbB.max.y-m.f.g.position.y);}
+    // Näkyy vain, kun katse osuu mobiin selvästi (kulma ~11°, vahvoilla ~9°) – ennen 22°/18°; lyöty mobi näkyy 10 s aina.
+    const ex=m.pos.x-camera.position.x,ey=m.pos.y+m.barH*.55-camera.position.y,ez=m.pos.z-camera.position.z,el=Math.hypot(ex,ey,ez)||1,look=(ex*_cd.x+ey*_cd.y+ez*_cd.z)/el>(sk>=3?.988:.982);
     if(!(recent||(look&&(d<12||(sk>=3&&d<70)))))continue;
-    _tmpV.set(m.pos.x,m.pos.y+(m.def.r*2.8+.8),m.pos.z).project(camera);if(_tmpV.z>1||Math.abs(_tmpV.x)>1.1||Math.abs(_tmpV.y)>1.1)continue;
+    _tmpV.set(m.pos.x,m.pos.y+m.barH+.45,m.pos.z).project(camera);if(_tmpV.z>1||Math.abs(_tmpV.x)>1.1||Math.abs(_tmpV.y)>1.1)continue;
     const b=mobBars[k++],layers=Math.ceil(m.maxHp/HP_LAYER),L=Math.max(1,Math.ceil(m.hp/HP_LAYER)),fill=(m.hp-(L-1)*HP_LAYER)/Math.min(HP_LAYER,m.maxHp);
     b.hidden=false;b.style.left=((_tmpV.x+1)/2*innerWidth)+'px';b.style.top=((1-_tmpV.y)/2*innerHeight)+'px';b.style.width=Math.round(56*Math.min(3,1+(layers-1)*.4))+'px';
     b.style.background=L>1?LAYER_C[(L-2)%6]:'rgba(0,0,0,.6)';b.firstChild.style.width=clamp(fill*100,0,100)+'%';b.firstChild.style.background=LAYER_C[(L-1)%6];
@@ -198,7 +203,13 @@ function itemProps(s,q){const d=ITEMS[s.id],o=[],f1=v=>v.toFixed(1).replace('.',
   o.push(['Paino',f1(d.w*s.n)+(s.n>1?` (${f1(d.w)} / kpl)`:'')]);if(d.s>1)o.push(['Määrä',`${s.n} / ${d.s}`]);
   return o;}
 function openChest(p){togglePanel('chest');curChest=p;renderChest();}
-function renderChest(){if(!curChest)return;const items=curChest.data.items;$('#chestTitle').textContent=PIECES[curChest.t].n+(curChest.data.lv?` (taso ${curChest.data.lv+1})`:'');
+// Löydetyt arkut, kirstut ja tynnyrit avautuvat arkkuikkunaan kuten omat arkut. Sisältö luodaan ensimmäisellä avauksella saalistaulukosta
+// ja tallentuu flags.fc[avain] (myös pelaajan sinne jättämät esineet). Jos paikka on avattu vanhassa tallennuksessa (saalis jo annettu), se on tyhjä.
+function foundItems(key,loot,slots=8){const fc=fo('fc');if(!fc[key]){const it=[];for(const [id,n,q] of loot||[])if(ITEMS[id])it.push({id,n,q:q||1});while(it.length<slots)it.push(null);fc[key]=it;}return fc[key];}
+function openFound(key,title,loot){const items=foundItems(key,loot);if(openPanel)closePanels(true);togglePanel('chest');curChest={found:true,title,data:{items}};sfx('pickup');renderChest();}
+const foundEmpty=key=>{const it=fo('fc')[key];return !!it&&!it.some(Boolean);};
+function renderChest(){if(!curChest)return;const items=curChest.data.items;$('#chestTitle').textContent=curChest.found?curChest.title:PIECES[curChest.t].n+(curChest.data.lv?` (taso ${curChest.data.lv+1})`:'');
+  if(curChest.found)$('#chestUp').innerHTML='';else
   upBtn($('#chestUp'),STORE_UP[(curChest.data.lv||0)+1],`Laajenna (taso ${(curChest.data.lv||0)+2})`,()=>{curChest.data.lv=(curChest.data.lv||0)+1;while(items.length<storeSlots(curChest))items.push(null);msg('Säilytystila kasvoi.','loot');},'chest',
     [['Paikkoja',storeSlots(curChest),storeSlots(curChest)+8]],renderChest,PIECES[curChest.t].n);
   $('#chestGrid').innerHTML=items.map(s=>slotHTML(s)).join('');$('#chestInv').innerHTML=inv.map(s=>slotHTML(s)).join('');

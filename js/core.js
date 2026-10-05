@@ -1,6 +1,9 @@
 /* Hiidenmaa – core.js
    Apuvälineet: matematiikka, kohina, satunnaisluvut */
 'use strict';
+// ⚠ VÄLIAIKAINEN KEHITYSTILA (käyttäjän pyyntö v0.74): DEV=true → kestävyys ei kulu, korkein taso (kaikki ohjeet auki), ei painorajaa,
+// Ö pohjassa (näppäinkoodi Semicolon) liikkuu 10× nopeammin, vasemmassa alakulmassa merkki "DEV-tila". Poista käytöstä: DEV=false.
+const DEV=true;
 
 /* =========================================================
    HIIDENMAA – pieni viikinkihenkinen selviytymispeli

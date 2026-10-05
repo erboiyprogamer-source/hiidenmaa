@@ -11,7 +11,7 @@ let torchFl=null,torchBarT=0,torchIgn=0,shDark=0;const torchPh=[Math.random()*TA
 function updatePlayer(dt){
   if(P.dead)return;
   P.invul=Math.max(0,P.invul-dt);P.stagger=Math.max(0,P.stagger-dt);P.hurtFlash=Math.max(0,P.hurtFlash-dt);
-  const w=curWeapon();const wt=invWeight(),over=wt>MAXW;
+  const w=curWeapon();const wt=invWeight(),over=!DEV&&wt>MAXW;
   const fwd=_tmpV.set(-Math.sin(camYaw),0,-Math.cos(camYaw)),right=_tmpV2.set(Math.cos(camYaw),0,-Math.sin(camYaw));
   let mx=0,mz=0;if(state==='play'&&P.stagger<=0){if(kd('fwd'))mx+=1;if(kd('back'))mx-=1;if(kd('right'))mz+=1;if(kd('left'))mz-=1;}
   let dx=fwd.x*mx+right.x*mz,dz=fwd.z*mx+right.z*mz;const dl=Math.hypot(dx,dz);if(dl>0){dx/=dl;dz/=dl;}
@@ -21,13 +21,13 @@ function updatePlayer(dt){
   let speed=4.6;const wantRun=kd('run')&&!P.crouch;
   P.running=false;
   if(wantRun&&dl>0&&!over&&P.stam>0&&!P.blocking&&!P.drawing){speed=8;P.running=true;P.stam-=13*dt;P.stamDelay=.8;}
-  if(P.blocking||P.drawing)speed=2.4;if(over)speed*=.55;if(armor&&ITEMS[armor.id].slow)speed*=1-ITEMS[armor.id].slow;if(P.atk)speed*=.45;if(P.crouch)speed=Math.min(speed,2.3);speed*=P.fx.speed;
+  if(P.blocking||P.drawing)speed=2.4;if(over)speed*=.55;if(armor&&ITEMS[armor.id].slow)speed*=1-ITEMS[armor.id].slow;if(P.atk)speed*=.45;if(P.crouch)speed=Math.min(speed,2.3);speed*=P.fx.speed;if(DEV&&keys.Semicolon)speed*=10;// DEV: Ö pohjassa 10× nopeampi
   P.inWater=P.pos.y<-.9&&!P.inDun;P.swim=P.pos.y<-1.3&&!P.inDun;
   if(P.swim){speed=2.6;P.stam-=(dl>0?6:2)*dt;P.stamDelay=.6;if(P.stam<=0){P.hp-=4*dt;if(P.hp<=0)playerDie();}}
   // stamina regen
   P.stamDelay-=dt;if(P.stamDelay<=0&&!P.swim){let r=22*P.fx.stamRegen;P.stam=Math.min(maxStam(),P.stam+r*dt);}
   if(P.blocking&&P.stam<=0)P.blocking=false;
-  P.stam=Math.max(0,P.stam);
+  P.stam=Math.max(0,P.stam);if(DEV)P.stam=maxStam();// DEV: kestävyys ei kulu
   // velocity
   P.vel.x=lerp(P.vel.x,dx*speed,Math.min(1,dt*(P.onGround?12:3)));P.vel.z=lerp(P.vel.z,dz*speed,Math.min(1,dt*(P.onGround?12:3)));
   if(state==='play'&&kd('jump')&&P.onGround&&!P.swim&&P.stam>=8&&!over){P.vy=7.2;P.onGround=false;P.stam-=8;P.stamDelay=.8;}
@@ -79,32 +79,51 @@ function updatePlayer(dt){
     if(P.atk.w.id==='keihas'){// työntö: nostokulma = kohteen suunta; käsi vedetään taakse ja ojennetaan
       const p=P.atk.aimP||0,tw=P.turnWait>0?0:1;let a;if(k<hk*.8)a=lerp(-.1,.5,sstep(0,1,k/(hk*.8)));else if(k<hk)a=lerp(.5,-p,sstep(0,1,(k-hk*.8)/(hk*.2)));else a=lerp(-p,0,Math.min(1,(k-hk)/.3));
       tRx=a;tRz=-.12;eRo=k<hk?Math.min(0,-p-a):Math.min(0,-p-a)*Math.max(0,1-(k-hk)/.3);}
-    else{// viistoisku: vuorotellen vasen-ylhäältä → oikea-alas ja oikea-ylhäältä → vasen-alas
-      const hz=sd>0?.62:-.7,lz=sd>0?-.55:.5;
-      [tRx,tRz]=two?swingPose(k,hk,-2.6,hz,-.7,lz,hold):swingPose(k,hk,-2.4,hz*.9,-.9,lz*.9,hold);}
-    rate=k<hk+.12?30:6;if(two&&(k<hk+.3||hold)){grip=true;tSh=.31;}}
+    else{// viistoisku (v0.72): avainasennot [olka rx, olka rz, kyynärpää] – nosto olan yli (kyynärpää koukussa, ase pään takana),
+      // isku viistosti alas vartalon eteen, loppuliike vartalon edessä. Vuorotellen oikean olan yli (sd<0) ja vasemman olan yli (sd>0).
+      // armR: rz > 0 = kohti keskilinjaa/vasenta, rz < 0 = ulospäin oikealle; rx < 0 = eteen/ylös.
+      const W=two?(sd>0?[-2.05,.22,-1.45]:[-2.15,-.08,-1.4]):(sd>0?[-2.3,.45,-1.35]:[-2.5,-.3,-1.2]);
+      const H=two?(sd>0?[-1.0,-.25,-.25]:[-.95,.25,-.25]):(sd>0?[-1.0,-.38,-.25]:[-.95,.42,-.25]);
+      const E=two?(sd>0?[-.78,-.15,-.4]:[-.75,.28,-.4]):(sd>0?[-.72,-.22,-.35]:[-.7,.45,-.35]);// loppuliike laskeutuu vartalon eteen (ei käsivartta sivulle)
+      let el;[tRx,tRz,el]=swingPose(k,hk,W,H,E,hold);eRo=el;}
+    rate=k<hk+.12?30:13;if(two&&(k<hk+.3||hold)){grip=true;tSh=.31;}}
   if(P.crouchK>.4&&!P.atk&&!P.blocking&&!P.drawing){const K=P.crouchK;tLx=lerp(tLx,-.5,K);tLz=lerp(tLz,.85,K);tRx=lerp(tRx,-.25,K);tRz=lerp(tRz,-.75,K);eLo=-.95*K;}// kyykky: vasen käsi koukussa sivulla ja alhaalla, oikea sivulla
 
   if(P.blocking){tLx=-.65+Math.sin(playTime*3)*.03;tLz=-.8;eLo=-1.2;}// torjunta: vasen käsi koukussa oikealle ruumiin eteen, kilpi eteenpäin
-  if(P.drawing){tLx=-1.5;tRx=-1.5;tRz=.5;}
-  if(heldMesh&&ITEMS[heldId].cat==='bow'){if(P.drawing)tLz=-.1;}
+  // Jousen veto: jousikäsi suoraan eteen hieman sisäänpäin (jänne vedetään leuan kohdalle), vetokäsi IK:lla jänteelle
+  if(P.drawing){tLx=-1.58;tRx=-1.5;tRz=.5;}
+  if(heldMesh&&ITEMS[heldId].cat==='bow'){if(P.drawing)tLz=-.3;}
   if(P.atk)P.recT=.55;else P.recT=Math.max(0,(P.recT||0)-dt);if(!P.atk&&P.recT>0&&!P.drawing&&!P.blocking)rate=Math.min(rate,5);// iskun jälkeen kädet palaavat lepoon pehmeästi
   const e=Math.min(1,dt*rate);
   armSh+=(tSh-armSh)*e;fig.armL.position.x=armSh;fig.armR.position.x=-armSh;
-  fig.armR.rotation.x=lerpAngle(fig.armR.rotation.x,tRx,e);fig.armR.rotation.z=lerpAngle(fig.armR.rotation.z,tRz,e);
-  if(grip&&heldMesh){const g=gripAngles();tLx=g[0];tLz=g[1];}
+  fig.armR.rotation.y=lerpAngle(fig.armR.rotation.y,0,e);fig.armL.rotation.y=lerpAngle(fig.armL.rotation.y,0,e);fig.armR.rotation.x=lerpAngle(fig.armR.rotation.x,tRx,e);fig.armR.rotation.z=lerpAngle(fig.armR.rotation.z,tRz,e);
   fig.armL.rotation.x=lerpAngle(fig.armL.rotation.x,tLx,e);fig.armL.rotation.z=lerpAngle(fig.armL.rotation.z,tLz,e);
   // Kyynärpäät taipuvat sitä enemmän mitä korkeammalle käsivarsi nousee (jousella vetokäsi taipuu, jousikäsi suorana)
   {const bendR=-(.14+clamp(-fig.armR.rotation.x,0,2.8)*.28),bendL=-(.14+clamp(-fig.armL.rotation.x,0,2.8)*.28);
    let tR=eRo!==null?eRo:bendR,tL=eLo!==null?eLo:bendL;if(P.drawing){tL=-.05;tR=-(.5+P.bowDraw*.9);}
    fig.elbowR.rotation.x=lerp(fig.elbowR.rotation.x,tR,Math.min(1,dt*(P.atk?20:8)));fig.elbowL.rotation.x=lerp(fig.elbowL.rotation.x,tL,Math.min(1,dt*(P.atk?20:8)));}
   // Jousi pysyy pystyssä (kämmenen kierto kumotaan käsivarren kulmalla); jänne ja nuoli seuraavat vetoa.
-  if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-fig.armL.rotation.x,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
+  if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-fig.armL.rotation.x-fig.elbowL.rotation.x,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
+  // Kahden käden ote kirveestä: vasen käsi tarttuu varteen (IK, gripK pehmentää otteeseen menon ja irrotuksen).
+  P.gripK=lerp(P.gripK||0,grip&&heldMesh?1:0,Math.min(1,dt*(grip?22:10)));
+  if(!(P.drawK>.5))armClear(fig.armR,fig.elbowR,fig.hand);
+  if(P.gripK>.01&&heldMesh&&ITEMS[heldId].chop){fig.g.updateMatrixWorld(true);
+    // Otekohta varrella: lähin piste vasempaan olkaan varren välillä 0,11–0,42 m oikeasta kädestä (kädet eivät mene päällekkäin)
+    // Oikea käsi tuodaan tarvittaessa keskilinjaa kohti, jotta vasen ylettyy (kädet ≤ 0,58 m vasemmasta olasta)
+    fig.armL.getWorldPosition(_ikS);fig.hand.getWorldPosition(_ikH);const ex=_ikH.distanceTo(_ikS)-.58;
+    if(ex>0){_ikH.addScaledVector(_ikT.copy(_ikS).sub(_ikH).normalize(),ex*P.gripK);armIK(fig.armR,fig.elbowR,_ikH,1,_poleR);if(armClear(fig.armR,fig.elbowR,fig.hand))fig.g.updateMatrixWorld(true);fig.armL.getWorldPosition(_ikS);}
+    heldMesh.worldToLocal(_ikS);_gp.set(0,0,clamp(_ikS.z,.11,.42));heldMesh.localToWorld(_gp);armIK(fig.armL,fig.elbowL,_gp,P.gripK);}
+  armClear(fig.armL,fig.elbowL,fig.handL);
+  // Jousen veto: oikea käsi jänteellä nuolen kannan kohdalla.
+  P.drawK=lerp(P.drawK||0,P.drawing&&heldMesh&&ITEMS[heldId].cat==='bow'?1:0,Math.min(1,dt*14));
+  if(P.drawK>.01&&heldMesh&&heldMesh.userData.bow){fig.g.updateMatrixWorld(true);const b=heldMesh.userData.bow;_gp.set(0,0,b.ar.position.z+.02);heldMesh.localToWorld(_gp);armIK(fig.armR,fig.elbowR,_gp,P.drawK,_poleBow);}
   // Kilpi torjunnassa: käännetään (pehmeästi, blockK) osoittamaan eteenpäin – kämmenen kierto kumotaan niin että kilven normaali (x) on hahmon +z
   if(offMesh&&offId&&ITEMS[offId].cat==='shield'){P.blockK=lerp(P.blockK||0,P.blocking?1:0,Math.min(1,dt*10));
     if(P.blockK>.01){fig.g.updateMatrixWorld(true);fig.handL.getWorldQuaternion(_qh);fig.g.getWorldQuaternion(_qf);_qd.copy(_qf).multiply(_qt.setFromEuler(_eb.set(0,-Math.PI/2,0)));
       _qh.invert().multiply(_qd);offMesh.quaternion.identity().slerp(_qh,P.blockK);offMesh.position.set(0,0,P.blockK*.0);}
     else offMesh.quaternion.identity();}
+  // vyöllä roikkuva vasara heiluu askelten tahdissa ja kallistuu hieman taakse juostessa
+  if(backHang){const hv2=Math.hypot(P.vel.x,P.vel.z);backHang.rotation.x=.05+Math.min(.22,hv2*.022)+Math.sin(P.walkPh*2)*.05*Math.min(1,hv2/4);/* > 0 = varren alapää taaksepäin, ei vartalon sisään */backHang.rotation.z=Math.sin(P.walkPh)*.06*Math.min(1,hv2/4);}
   fig.g.visible=camDist>1.8;
   // torch light
   const ts=torchSlot();let torch=false;
@@ -129,17 +148,36 @@ function updatePlayer(dt){
 // Isku: nosto ylävasemmalle, isku alaoikealle (osuma iskun lopussa). Palautus lepoon, tai jos
 // lyöntinappi on pohjassa, suoraan seuraavan iskun nostoasentoon (käsi pysyy aseessa).
 let armSh=.35;
-function swingPose(k,hk,hx,hz,lx,lz,hold){const wk=hk*.55;let t;
-  if(k<wk){t=sstep(0,1,k/wk);return[lerp(-.2,hx,t),lerp(0,hz,t)];}
-  if(k<hk){t=sstep(0,1,(k-wk)/(hk-wk));return[lerp(hx,lx,t),lerp(hz,lz,t)];}
-  if(hold){t=sstep(0,1,(k-hk)/(1-hk));return[lerp(lx,-.2,t),lerp(lz,0,t)];}
-  t=Math.min(1,(k-hk)/.3);return[lerp(lx,0,t),lerp(lz,0,t)];}
-// Vasemman käsivarren kulmat niin, että se osoittaa kirveen varteen.
-const _gp=new V3();
-function gripAngles(){fig.g.updateMatrixWorld(true);
-  _gp.set(0,0,.35);heldMesh.localToWorld(_gp);fig.g.worldToLocal(_gp);
-  _gp.x-=fig.armL.position.x;_gp.y-=fig.armL.position.y;_gp.z-=fig.armL.position.z;_gp.normalize();
-  return[Math.atan2(-_gp.z,-_gp.y),Math.asin(clamp(_gp.x,-1,1))];}
+// Avainasennot W (nosto), H (osuma), E (loppuliike), lepo REST. Nosto 55 % osumaan asti, isku nopeasti, loppuliike ja palautus pehmeästi.
+const REST=[-.2,0,-.3],L3=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+function swingPose(k,hk,W,H,E,hold){const wk=hk*.55;
+  if(k<wk)return L3(REST,W,sstep(0,1,k/wk));
+  if(k<hk)return L3(W,H,sstep(0,1,(k-wk)/(hk-wk)));
+  const kf=Math.min(1,(k-hk)/.16);if(kf<1)return L3(H,E,sstep(0,1,kf));
+  return L3(E,REST,sstep(0,1,Math.min(1,(k-hk-.16)/Math.max(.05,1-hk-.16))));}
+// Kädet eivät mene vartalon läpi: vartalo = ellipsi rig-koordinaateissa (x 0,27, z 0,16, korkeus 0,78–1,55 m). Jos kämmen tai
+// kyynärpää on sisällä, olkaa nostetaan ensin eteenpäin (rx, vartalon eteen) ja vasta vaakatasossa ulospäin (rz), kunnes ulkona. Palauttaa käytettyjen askelten määrän.
+const _bp=new V3();
+function bodyPen(o,r){o.getWorldPosition(_bp);fig.rig.worldToLocal(_bp);if(_bp.y<.78||_bp.y>1.55)return 0;const e=(_bp.x/(.27+r))**2+(_bp.z/(.16+r))**2;return e<1?1-e:0;}
+function armClear(arm,elbow,hand){let i=0;const sx=Math.sign(arm.position.x)||1;for(;i<16;i++){fig.g.updateMatrixWorld(true);if(bodyPen(hand,.07)<=0&&bodyPen(elbow,.06)<=0)break;if(arm.rotation.x>-1.45)arm.rotation.x-=.06;else arm.rotation.z+=sx*.06;}return i;}
+// Kahden nivelen IK napavektorilla (v0.72): kämmen osuu maailman pisteeseen T ja kyynärpää osoittaa luonnolliseen suuntaan (pole,
+// vanhemman eli rigin koordinaateissa; oletus alas ja ulospäin). Olkavarsi a = 0,35 m, kyynärvarsi b = 0,33 m.
+// Kyynärpää E = S + a·U, U = cosα·D + sinα·N (D = suunta kohteeseen, N = napavektorin D:tä vastaan kohtisuora osa, α kosinilauseesta).
+// Olan asento kantavektoreista: paikallinen −y = U, +z = kyynärvarren taivutuspuoli (D:n U:ta vastaan kohtisuora osa), x = y × z.
+// Kyynärpää taipuu paikallisen x:n ympäri: rotation.x = −f, f = π − kyynärpään sisäkulma. w = paino (slerp nykyisestä asennosta).
+// Vanha versio (v0.68–0.71) käytti vain rx/rz-kulmia → taivutustaso kiinteä, kyynärpää saattoi jäädä rinnan sisään. Ks. KORJAUKSET.md.
+const _gp=new V3(),IK_A=.35,IK_B=.33,_ikQ=new THREE.Quaternion(),_ikM=new THREE.Matrix4(),_ikX=new V3(),_ikY=new V3(),_ikZ=new V3(),_ikU=new V3(),_ikD=new V3(),_ikN=new V3();
+function armIK(arm,elbow,T,w,pole){const V=arm.parent.worldToLocal(_ikV.copy(T)).sub(arm.position),L=V.length()||1e-4;
+  const d=clamp(L,.12,IK_A+IK_B-.004);_ikD.copy(V).divideScalar(L);
+  const sx=Math.sign(arm.position.x)||1,px=pole?pole.x:sx*.7,py=pole?pole.y:-1,pz=pole?pole.z:.3;
+  _ikN.set(px,py,pz);_ikN.addScaledVector(_ikD,-_ikN.dot(_ikD));if(_ikN.lengthSq()<1e-6)_ikN.set(0,-1,0).addScaledVector(_ikD,_ikD.y);_ikN.normalize();
+  const cA=clamp((IK_A*IK_A+d*d-IK_B*IK_B)/(2*IK_A*d),-1,1),sA=Math.sqrt(1-cA*cA);
+  _ikU.copy(_ikD).multiplyScalar(cA).addScaledVector(_ikN,sA);
+  const f=Math.PI-Math.acos(clamp((IK_A*IK_A+IK_B*IK_B-d*d)/(2*IK_A*IK_B),-1,1));
+  _ikY.copy(_ikU).negate();_ikZ.copy(_ikD).addScaledVector(_ikU,-_ikD.dot(_ikU));if(_ikZ.lengthSq()<1e-6)_ikZ.copy(_ikN).negate();_ikZ.normalize();
+  _ikX.crossVectors(_ikY,_ikZ).normalize();_ikM.makeBasis(_ikX,_ikY,_ikZ);_ikQ.setFromRotationMatrix(_ikM);
+  arm.quaternion.slerp(_ikQ,w);elbow.rotation.x=lerp(elbow.rotation.x,-f,w);}
+const _ikV=new V3(),_ikS=new V3(),_ikH=new V3(),_ikT=new V3(),_poleR=new V3(-.7,-1,.3),_poleBow=new V3(-.7,0,-1);
 function lerpAngle(a,b,t){let d=((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;return a+d*t;}
 function playerDie(){
   if(P.dead)return;P.dead=true;P.deaths++;P.hp=0;sfx('die');

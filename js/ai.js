@@ -43,9 +43,12 @@ function updateMobs(dt){
     const hurt=playTime-m.lastHit<10;
     // Paikallaan oleville vaikeille vihollisille: iskuttomana 30 s → parantuvat hitaasti (1 %/s).
     if((MOB_SKULL[m.type]||0)>=3&&playTime-m.lastHit>30&&m.hp<m.maxHp)m.hp=Math.min(m.maxHp,m.hp+m.maxHp*.01*dt);
-    if(d.ai==='flee'){// säikähdysetäisyys: kävely 7 m, juoksu 16 m, ase kädessä ×1.4, kyykyssä 3.5 m. Vahingoitettu pelkää 10 s.
-      const w=curWeapon(),armed=(w.cat==='weapon'||w.cat==='bow')&&!P.crouch;let sr=P.crouch?3.5:P.running?16:7;if(armed)sr*=1.4;
-      if(hurt||(!P.dead&&dist<sr&&(m.los||dist<4))){if(m.state!=='flee'){m.state='flee';m.fleeT=0;}}else if(m.state==='flee'&&dist>28)m.state='idle';}
+    if(d.ai==='flee'){// säikähdysetäisyys: kävely 7 m, juoksu 16 m, ase kädessä ×1.4. Vahingoitettu pelkää 10 s.
+      // Kyykyssä (v0.70): paikallaan ei huomata lainkaan; hiipiessä vain 1,5 m (eläin katsoo pelaajaa kohti) tai 0,9 m (selin), jotta
+      // hiiviskelyisku ylettyy (aseen ulottuma ~2,3 m). Ennen kyykky = 3,5 m ja alle 4 m aina → eläin pakeni ennen kuin ylettyi lyömään.
+      const w=curWeapon(),armed=(w.cat==='weapon'||w.cat==='bow')&&!P.crouch,mv=Math.hypot(P.vel.x,P.vel.z)>.3,face=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1)>0;
+      let sr=P.crouch?(mv?(face?1.5:.9):0):P.running?16:7;if(armed)sr*=1.4;
+      if(hurt||(!P.dead&&dist<sr&&(m.los||P.crouch||dist<4))){if(m.state!=='flee'){m.state='flee';m.fleeT=0;}}else if(m.state==='flee'&&dist>28)m.state='idle';}
     else if(hostile&&!P.dead&&!(P.spawnProt>0)&&((m.los&&dist<aggroR)||hurt)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
     else if(m.state==='chase'&&!hurt&&(dist>aggroR*1.6||P.dead||m.noLos>3)){m.state='idle';if(m.noLos>3){m.angry=false;m.lastHit=-99;}m.noLos=0;}
     if(m.state==='flee'){// pakosuunta pois pelaajasta satunnaisella poikkeamalla, vaihtuu 1.2–3 s välein
@@ -96,8 +99,13 @@ function animMob(m,dt){
   const f=m.f;f.g.position.copy(m.pos);f.g.rotation.y=m.yaw;
   m.walkPh+=(m.speedNow||0)*dt*2.2;const sw=Math.sin(m.walkPh)*Math.min(1,(m.speedNow||0)/3)*.7;
   if(f.biped){f.legL.rotation.x=sw;f.legR.rotation.x=-sw;f.armL.rotation.x=-sw*.6;f.armR.rotation.x=sw*.6;
+    // yksityiskohtaiset mallit (makeHumanoid): polvi koukistuu taakse jäävässä jalassa, kyynärpäät hieman koukussa; viitat ja rievut heiluvat
+    if(f.kneeL){f.kneeL.rotation.x=.08+Math.max(0,-sw)*.9;f.kneeR.rotation.x=.08+Math.max(0,sw)*.9;f.elbowL.rotation.x=f.elbowR.rotation.x=-.25-(m.wind>0?.5:0);}
+    if(f.sway&&m.def.ai!=='rboss')for(const w of f.sway){w.m.rotation.z=w.bz+Math.sin(playTime*w.f+w.p)*w.a;w.m.rotation.x=w.bxr+Math.cos(playTime*w.f*.8+w.p)*w.a*.6+Math.min(.5,(m.speedNow||0)*.08);}
     if(m.wind>0){f.armR.rotation.x=-2.6;f.armL.rotation.x=-2.2;}else if(m.wind<=0&&m.atkCd>m.def.cd-.25){f.armR.rotation.x=-.3;}}
-  else{f.legs[0].rotation.x=sw;f.legs[3].rotation.x=sw;f.legs[1].rotation.x=-sw;f.legs[2].rotation.x=-sw;f.head.rotation.x=m.wind>0?-.5:(m.atkCd>m.def.cd-.2?.4:0);}
+  else{f.legs[0].rotation.x=sw;f.legs[3].rotation.x=sw;f.legs[1].rotation.x=-sw;f.legs[2].rotation.x=-sw;
+    // nivelletyt jalat (makeAnimal): polvi koukistuu jalan noustessa (etujalat taaksepäin, takajalat eteenpäin), häntä heiluu
+    if(f.animal){for(const l of f.legs){const a=l.rotation.x,kn=l.userData.knee;kn.rotation.x=l.userData.front?.05+Math.max(0,a)*1.1:-.05-Math.max(0,-a)*1.1;}if(f.tail)f.tail.rotation.y=Math.sin(playTime*(m.state==='chase'?9:3)+m.walkPh)*.25;}f.head.rotation.x=m.wind>0?-.5:(m.atkCd>m.def.cd-.2?.4:0);}
   if(m.anim>0)m.anim-=dt;
 }
 function bossAI(m,dt,dx,dz,dist){
@@ -168,7 +176,8 @@ function updateStations(dt){
    // Pelaaja (ja hänen varjonsa) on lähimmän tulen varjokameran kantamalla (15 m + marginaali) → tiheä päivitys. Kun pelaaja poistuu kantamalta,
    // kartta päivitetään vielä kerran, jottei pelaajan vanha varjo jää maahan (aiemmin säde oli 9 m ja varjo jäi näkyviin harvan päivityksen ajaksi).
    const nearL=dist2(LIGHTS[0].position.x,LIGHTS[0].position.z,P.pos.x,P.pos.z)<17*17,left=shNearPrev&&!nearL;shNearPrev=nearL;
-   const fF=Math.max(1,Math.round((nearL?(dark?2:4):(dark?60:120))*(q>=1?2:1)*rate));
+   // kaukana tulesta: pimeällä 12, päivällä 30 kehyksen välein (ennen 60/120 → tulen lähellä liikkuvien varjot näyttivät jähmettyvän)
+   const fF=Math.max(1,Math.round((nearL?(dark?2:4):(dark?12:30))*(q>=1?2:1)*rate));
    if(SET.shRate==='slow'&&shFrame%3===0)sun.shadow.needsUpdate=true;
    if(QUAL.pointShadow){if(torchLight.intensity>0&&shFrame%fT===0)torchLight.shadow.needsUpdate=true;if(LIGHTS[0].intensity>0){if(shFrame%fF===0||shDirty||left)LIGHTS[0].shadow.needsUpdate=true;shDirty=false;}}}
   // Valokatto: pelaajan kohdalle osuva yhteisvalo (summa etäisyyden mukaan vaimennettuna) ei ylitä LIGHT_CAP:ia – päällekkäiset valot eivät kirkastu loputtomiin.

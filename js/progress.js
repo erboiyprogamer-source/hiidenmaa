@@ -9,7 +9,8 @@ const LVL_MAX=20,needXp=n=>50+30*n; // XP tasolta n tasolle n+1
 function fixFlags(){flags.xp=flags.xp||0;flags.cnt=flags.cnt||{};flags.ach=flags.ach||{};flags.first=flags.first||{};}
 const cnt=k=>(flags.cnt&&flags.cnt[k])||0;
 function bump(k,n=1){fixFlags();flags.cnt[k]=(flags.cnt[k]||0)+n;}
-function lvlInfo(){let xp=flags.xp||0,L=1;while(L<LVL_MAX&&xp>=needXp(L)){xp-=needXp(L);L++;}return{L,xp,need:L>=LVL_MAX?0:needXp(L)};}
+function lvlInfo(){if(DEV)return{L:LVL_MAX,xp:0,need:0};// DEV: korkein taso
+  let xp=flags.xp||0,L=1;while(L<LVL_MAX&&xp>=needXp(L)){xp-=needXp(L);L++;}return{L,xp,need:L>=LVL_MAX?0:needXp(L)};}
 const playerLevel=()=>lvlInfo().L;
 function addXp(n,why){if(!n||P.dead)return;fixFlags();const b=playerLevel();flags.xp+=n;const a=playerLevel();
   if(n>=10&&why)msg(`+${n} XP · ${why}`,'xp');
