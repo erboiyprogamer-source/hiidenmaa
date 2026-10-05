@@ -161,11 +161,21 @@ function drawBld(){bldDirty=false;bldG.clearRect(0,0,MAPW,MAPW);
     if(o===0||o===3)bldG.fillRect(Math.round(x-1.25),Math.round(z-1.25),3,3);
     else if(o===1){if(p.rot%4===0)bldG.fillRect(Math.round(x-1.25),Math.round(z-.5),3,1);else bldG.fillRect(Math.round(x-.5),Math.round(z-1.25),1,3);}
     else bldG.fillRect(Math.round(x-.5),Math.round(z-.5),2,2);}}
-// Liikkuvat pilvet kartalla (vain kun kartta on auki): läpikuultava pilvikuvio liukuu sumun päällä
-const CLOUDC=(function(){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d'),im=g.createImageData(256,256),k=TAU/256;for(let y=0;y<256;y++)for(let x=0;x<256;x++){
-  // jaksollinen (saumaton) kohina: siniaaltojen summa, jaksot jakavat 256:n
-  const wx=x+Math.sin(y*k*2)*14+Math.sin(y*k*5)*5,wy=y+Math.sin(x*k*3)*12+Math.sin(x*k*7)*4,v=.5+.2*Math.sin(wx*k*3)*Math.cos(wy*k*2)+.12*Math.sin(wx*k*6+wy*k*4)*Math.cos(wy*k*5)+.06*Math.sin(wx*k*11)*Math.sin(wy*k*9);
-  const o=(y*256+x)*4,a=clamp((v-.42)*2,0,1);im.data[o]=235;im.data[o+1]=238;im.data[o+2]=245;im.data[o+3]=a*95;}g.putImageData(im,0,0);return c;})();
+// Liikkuvat pilvet kartalla (vain kun kartta on auki). Kaksi saumatonta pilvikerrosta: jaksollinen arvokohina (fbm, 5 oktaavia)
+// muotoillaan pyöreiksi kumpupilviksi (kynnys + pehmeä reuna), valaistaan luoteesta (vaalea yläreuna, harmaa pohja) ja
+// alle piirretään pilven varjo. Kerrokset liukuvat eri nopeuksilla ja eri suuntiin, jolloin pilvet näyttävät muuttavan muotoaan.
+function mkMapClouds(S,seed,cover,scale){const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d'),im=g.createImageData(S,S),r=mulberry32(seed);
+  const oct=[];for(let o=0;o<5;o++){const n=(scale<<o),v=new Float32Array(n*n);for(let i=0;i<v.length;i++)v[i]=r();oct.push({n,v,a:Math.pow(.52,o)});}
+  const val=(O,x,y)=>{const n=O.n,fx=x*n,fy=y*n,ix=Math.floor(fx),iy=Math.floor(fy),tx=fx-ix,ty=fy-iy,sx=tx*tx*(3-2*tx),sy=ty*ty*(3-2*ty),
+    i0=((ix%n)+n)%n,i1=(i0+1)%n,j0=((iy%n)+n)%n,j1=(j0+1)%n,v=O.v;return lerp(lerp(v[j0*n+i0],v[j0*n+i1],sx),lerp(v[j1*n+i0],v[j1*n+i1],sx),sy);};
+  const fb=(x,y)=>{let s=0,w=0;for(const O of oct){s+=val(O,x,y)*O.a;w+=O.a;}return s/w;};
+  const H=new Float32Array(S*S);for(let y=0;y<S;y++)for(let x=0;x<S;x++)H[y*S+x]=fb(x/S,y/S);
+  for(let y=0;y<S;y++)for(let x=0;x<S;x++){const h=H[y*S+x],d=clamp((h-cover)/.14,0,1),dens=d*d*(3-2*d);
+    const hs=H[((y+S-3)%S)*S+(x+S-3)%S],lit=clamp(.82+(h-hs)*5,.55,1.08),o=(y*S+x)*4;
+    im.data[o]=235*lit;im.data[o+1]=238*lit;im.data[o+2]=246*Math.min(1,lit+.04);im.data[o+3]=dens*215;}
+  g.putImageData(im,0,0);return c;}
+const CLOUDC=mkMapClouds(256,911,.52,4),CLOUDC2=mkMapClouds(256,377,.56,3);
+const CLOUDSH=(function(){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');g.globalAlpha=.25;for(const [dx,dy] of [[0,0],[2,1],[-2,1],[1,-2],[-1,2]])for(const ox of [-256,0,256])for(const oy of [-256,0,256])g.drawImage(CLOUDC,dx+ox,dy+oy);g.globalAlpha=1;g.globalCompositeOperation='source-in';g.fillStyle='#000';g.fillRect(0,0,256,256);return c;})();
 const FOGTMP=document.createElement('canvas');FOGTMP.width=FOGTMP.height=640;
 let mapZ=1,mapCX=0,mapCZ=0,mapRAF=0,mapDrag=null;
 function mapView(){const sw=MAPW/mapZ;return{sw,x0:clamp(mapCX+HALF-sw/2,0,MAPW-sw),y0:clamp(mapCZ+HALF-sw/2,0,MAPW-sw)};}
@@ -182,7 +192,8 @@ function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),W=c.width,v=mapV
   g.imageSmoothingEnabled=true;g.drawImage(MAPC,v.x0,v.y0,v.sw,v.sw,0,0,W,W);
   if(bldDirty)drawBld();g.imageSmoothingEnabled=false;g.drawImage(BLDC,v.x0,v.y0,v.sw,v.sw,0,0,W,W);g.imageSmoothingEnabled=true;
   const t=FOGTMP.getContext('2d');t.globalCompositeOperation='source-over';t.clearRect(0,0,W,W);t.drawImage(FOGC,v.x0*FOGK,v.y0*FOGK,v.sw*FOGK,v.sw*FOGK,0,0,W,W);
-  t.globalCompositeOperation='source-atop';{const tt=performance.now()/1000,ox=(tt*9)%256,oy=(tt*4)%256;t.save();t.translate(ox,oy);t.fillStyle=t.createPattern(CLOUDC,'repeat');t.fillRect(-256,-256,W+512,W+512);t.restore();}
+  t.globalCompositeOperation='source-atop';{const tt=performance.now()/1000,lay=(img,sp,dx,dy,sc,al)=>{t.save();t.globalAlpha=al;t.scale(sc,sc);t.translate((tt*sp*dx)%256,(tt*sp*dy)%256);t.fillStyle=t.createPattern(img,'repeat');t.fillRect(-256,-256,W/sc+512,W/sc+512);t.restore();};
+    lay(CLOUDSH,6,1,.45,2.2,.22);lay(CLOUDC2,4,.8,.6,2.6,.55);lay(CLOUDC,7,1,.4,2,.85);}
   t.globalCompositeOperation='source-over';g.drawImage(FOGTMP,0,0);
   mapMarkers(g,S,HALF-v.x0,HALF-v.y0);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF-v.x0)*S,(P.pos.z+HALF-v.y0)*S,9);
   g.fillStyle='rgba(238,229,211,.8)';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='left';g.fillText(mapZ>1?`Zoom ×${mapZ.toFixed(1)} · vedä siirtääksesi · kaksoisnapsautus keskittää`:'Rulla = zoom',10,630);}
@@ -196,10 +207,13 @@ function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),W=c.width,v=mapV
   c.addEventListener('dblclick',()=>{mapCX=P.pos.x;mapCZ=P.pos.z;});})();
 // Minikartan zoomitasot (näppäin BIND.minizoom): 60 m (oletus), 35 m, 110 m säde
 const MINI_R=[60,35,110];let miniZ=0;
-function cycleMiniZoom(){miniZ=(miniZ+1)%MINI_R.length;msg(`Minikartta: ${MINI_R[miniZ]} m`);}
+function cycleMiniZoom(){miniZ=(miniZ+1)%MINI_R.length;msg(`Minikartta: ${MINI_R[miniZ]} m säde (${keyLabel(BIND.minizoom)} vaihtaa)`);}
+// Minikartan napsautus vaihtaa myös zoomia (toimii kun hiiri on vapaana, esim. Esc)
+$('#mini').addEventListener('click',e=>{e.stopPropagation();cycleMiniZoom();});
 function drawMinimap(){const c=$('#mini'),g=c.getContext('2d'),W=c.width,R=MINI_R[miniZ],S=W/(R*2);g.save();g.clearRect(0,0,W,W);g.beginPath();g.arc(W/2,W/2,W/2,0,TAU);g.clip();g.fillStyle='#1d1a16';g.fillRect(0,0,W,W);
   if(!P.inDun){const sx=P.pos.x+HALF-R,sz=P.pos.z+HALF-R;g.drawImage(MAPC,sx,sz,R*2,R*2,0,0,W,W);if(bldDirty)drawBld();g.imageSmoothingEnabled=false;g.drawImage(BLDC,sx,sz,R*2,R*2,0,0,W,W);g.imageSmoothingEnabled=true;g.drawImage(FOGC,sx*FOGK,sz*FOGK,R*2*FOGK,R*2*FOGK,0,0,W,W);mapMarkers(g,S,-(P.pos.x-R),-(P.pos.z-R));
     for(const m of mobs){if(m.dead||m.dun)continue;const x=(m.pos.x-P.pos.x+R)*S,y=(m.pos.z-P.pos.z+R)*S;if(m.state==='chase'||m===boss){g.fillStyle=m===boss?'#8fd8cf':'#c8463b';g.beginPath();g.arc(x,y,m===boss?5:2.5,0,TAU);g.fill();}}}
   else{g.fillStyle='#a99d89';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='center';g.fillText('Hautakumpu',W/2,W/2+30);}
   drawPlayerArrow(g,W/2,W/2,7);g.restore();
-  g.fillStyle='#eee5d3';g.font='800 11px Alegreya Sans, sans-serif';g.textAlign='center';g.fillText('P',W/2,12);}
+  g.fillStyle='#eee5d3';g.font='800 11px Alegreya Sans, sans-serif';g.textAlign='center';g.fillText('P',W/2,12);
+  g.font='700 10px Alegreya Sans, sans-serif';g.fillStyle='rgba(19,17,14,.65)';g.fillRect(W/2-22,W-17,44,13);g.fillStyle='#d8cdb6';g.fillText(`${R} m · ${keyLabel(BIND.minizoom)}`,W/2,W-7);}

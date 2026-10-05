@@ -48,7 +48,7 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 | `js/dungeons.js` | `REALMS` (3 ulottuvuutta, avainketju `lock`/`key`/`alt`), generaattorit, `ensureRealm`, koristeet (`dressFloor`, tynnyrit, spawneri), portaalit, `realmBossAI`, usva/höyry/pisarat, `P.spawnProt`, `fo(k)` |
 | `js/story.js` | löytöpaikat (`SITE_KEYS`, rauniot, arkkukivet), vartijat (`GUARDS`), lisäriimukivet (`XRUNES`), tehtävät (`QUESTS`) |
 | `js/state.js` | `P` (pelaaja), `inv`, `flags`, pelaajahahmo, reppu, maahan pudonneet esineet, partikkelit, ammukset |
-| `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET` (asetukset), `applyGfx()`, asetusvalikko |
+| `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET`/`SET_DEF` (oletus = yleisin taso), `SET_PAGES`, `applyGfx()`, asetusvalikko (Grafiikka, Varjot, …) |
 | `js/input.js` | näppäimet, hiiri, hiiren lukitus |
 | `js/actions.js` | hyökkäys, vahinko, syöminen, `interact()`, alttari, luolastoon meno |
 | `js/building.js` | rakennushaamu, ruudukkoon kohdistus, `validPlace`, purku |
@@ -80,6 +80,11 @@ versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen.
 - **Vihollinen tai eläin:** `MOBDEF` (malli `fig`, `ai`: flee/neutral/hostile/boss) ja `ai.js`:n `SPAWN`.
 - **Tavoite:** `GOALS` (`progress.js`, id + xp), järjestyksellä on väliä. Saavutus: `ACH`. Valmistusohjeen tasovaatimus: `lvl`.
 - **Rakennusosan kategoria:** `cat` (+ `alku:1` = Alkupeli-välilehti) ja `BUILD_CATS` (`pieces.js`). Kiviversio: `base:'x',stone:1`.
+
+## Grafiikka-asetukset
+
+- Uusi asetus: lisää `SET_DEF`:iin (oletus = nykyinen ulkoasu), sivun avainlistaan `SET_PAGES` ja riviksi `setRow()`:lla
+  (oletusmerkintä ja sivun palautus tulevat automaattisesti). Ota käyttöön `applyGfx()`:ssa.
 
 ## Etenemisketju
 

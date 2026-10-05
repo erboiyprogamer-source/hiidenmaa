@@ -112,7 +112,14 @@ function makeChunkIM(type,k,cap){const cx=k%CHN,cz=(k/CHN)|0,x0=-HALF+cx*CHS,z0=
   const im=new THREE.InstancedMesh(geo,NODE[type].kind==='tree'?treeMat:vcMat,cap);im.castShadow=NODE[type].kind!=='pick'&&NODE[type].kind!=='deco';im.receiveShadow=true;
   im.userData.cx=x0+CHS/2;im.userData.cz=z0+CHS/2;im.userData.k=k;im.userData.vis=VIS_R[NODE[type].kind]||140;scene.add(im);nodeIM[type].push(im);CHUNK_IMS.push(im);return im;}
 // Kaukaiset ruudut piiloon (sumu peittää ne joka tapauksessa).
-function updateChunkVis(){const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far;
+// Staattiset kohteet (riimukivet, rauniot, portaalit, kumpu, löytöpaikat): piirtoetäisyyden (sumun) takana olevia ei piirretä.
+// Keskipiste ja säde lasketaan kerran (userData.cs). Luolaston sisätilat näkyvät vain kun pelaaja on siellä.
+let statT=0;const _sb=new THREE.Box3(),_sv=new THREE.Vector3();
+function cullStatics(){const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far+30;
+  for(const o of statics.children){let c=o.userData.cs;if(!c){if(o.isInstancedMesh){_sb.makeEmpty();for(let i=0;i<o.count;i++){o.getMatrixAt(i,_m4);_sb.expandByPoint(_sv.setFromMatrixPosition(_m4));}}else _sb.setFromObject(o);if(_sb.isEmpty()){o.userData.cs=c={x:o.position.x,z:o.position.z,r:1,dun:false};}else{_sb.getCenter(_sv);c=o.userData.cs={x:_sv.x,z:_sv.z,r:Math.min(400,_sb.getSize(_sv).length()/2),dun:_sb.min.y>DUN.y-5&&_sb.max.y<DUN.y+20&&Math.abs(_sb.min.x)>HALF+50};}}
+    const vis=c.dun?P.inDun:(!P.inDun&&dist2(cx,cz,c.x,c.z)<(f+c.r)*(f+c.r));if(o.visible!==vis)o.visible=vis;}}
+function updateChunkVis(){statT-=1/30;if(statT<=0){statT=.5;cullStatics();}
+  const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far;
   for(const im of CHUNK_IMS){const R=Math.min(f,im.userData.vis*RDK*(im.userData.vis<80?DETK:1))+CHS*.72;im.visible=im.count>0&&!P.inDun&&dist2(cx,cz,im.userData.cx,im.userData.cz)<R*R;}}
 function initNode(n){n.ox=n.x;n.oz=n.z;n.s0=n.s;n.id=nodeIdN++;n.def=NODE[n.type];n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?n.s*n.s*1.2:1);n.hp=n.maxHp;n.alive=true;n.respawnAt=0;
   setNodeMatrix(n,true);
@@ -141,8 +148,10 @@ function respawnNode(n){const kind=n.def.kind;
     for(let t=0;t<10;t++){const a=rng()*TAU,d=Math.sqrt(rng())*R,x=n.ox+Math.cos(a)*d,z=n.oz+Math.sin(a)*d,h=terrainH(x,z);
       if(h<=1||biomeAt(x,z,h)!==b0||nearBase(x,z)||locMin(x,z)<lm)continue;if(nodesNear(x,z,kind==='tree'?2.5:1,tmp).length)continue;
       px=x;pz=z;ps=kind==='tree'?(n.type==='aarnipuu'?.8+rng()*.35:treeS()):1;break;}
+    // Ei sopivaa paikkaa: alkuperäinenkään paikka ei kelpaa, jos se on rakennusalueella → yritetään myöhemmin uudelleen
+    if(nearBase(px,pz)){n.respawnAt=playTime+60;return false;}
     moveNode(n,px,pz,ps);}
-  syncNodeY(n);reviveNode(n);}
+  syncNodeY(n);reviveNode(n);return true;}
 // Palauttaa solmun alkuperäiseen paikkaan ja kokoon (uusi peli / lataus).
 function syncNodeY(n){const y=terrainH(n.x,n.z);if(Math.abs(y-n.y)<.001)return;n.y=y;if(n.alive)setNodeMatrix(n,true);if(n.col){n.col.minY=y-1;n.col.maxY=n.def.kind==='tree'?y+6*n.s:y+1.2*n.s;}}
 // Maanmuokkaus (lapio): korkeuskartta, maastoverkko, solmujen korkeudet. Muokatut kärjet tallentuvat (`TERRA`).
@@ -187,9 +196,18 @@ function plantTree(type,x,z,s){const k=chunkOf(x,z),im=(nodeIM[type]||[]).find(m
   const n={type,x,z,y:terrainH(x,z),s,rot:rng()*TAU,idx:im.userData.used++,im,planted:true};im.count=im.userData.used;initNode(n);ngridAdd(n);return n;}
 function unplantAll(){for(let i=nodes.length-1;i>=0;i--){const n=nodes[i];if(!n.planted)continue;setNodeMatrix(n,false);if(n.col)gridRemove(n.col);ngridRemove(n);nodes.splice(i,1);}
   for(const k in nodeIM)for(const im of nodeIM[k]){im.userData.used=im.userData.base;im.count=im.userData.base;}nodeIdN=nodes.length?Math.max(...nodes.map(n=>n.id))+1:0;}
-// Rakennusten (myös arkku, sänky, työpenkki) läheisyyteen ei uusiudu eikä synny mitään: säde BENCH_R × 1,5.
-function nearBase(x,z){const r=BENCH_R*1.5;for(const p of pieces)if(dist2(p.x,p.z,x,z)<r*r)return true;return false;}
+// Pelaajan rakentamien osien läheisyyteen ei uusiudu eikä kasva puita tai kasveja: 15 m jokaisesta rakennusosasta
+// ja työpenkin rakennusalue + 30 % (BENCH_R × 1,3 = 26 m).
+const BASE_PIECE_R=15;
+function nearBase(x,z){for(const p of pieces){const r=p.t==='tyopenkki'?BENCH_R*1.3:BASE_PIECE_R;if(dist2(p.x,p.z,x,z)<r*r)return true;}return false;}
 // Yöllä nukkuessa: kaadetut puut ja poimitut kasvit uusiutuvat (ei uusia), paitsi rakennusten lähellä.
-function regrowForest(){let revived=0;
-  for(const n of nodes)if(!n.alive&&(n.def.kind==='tree'||n.def.kind==='pick')&&!nearBase(n.x,n.z)){respawnNode(n);revived++;}
+function regrowForest(){let revived=nightRegrow();
+  for(const n of nodes)if(!n.alive&&n.def.kind==='pick'&&!nearBase(n.x,n.z)){if(respawnNode(n))revived++;}
   return{revived,planted:0};}
+// Kaadetut puut yrittävät kasvaa takaisin vain kerran yössä ja vain pelaajan 100 m säteellä (ei rakennusalueelle).
+// Yön tunnus: illan tunnit kuuluvat kuluvaan päivään, aamuyö edelliseen (flags.rgN = viimeisin yö, jona yritettiin).
+const REGROW_R=100;
+function nightId(){return dayN-(dayT<.5?1:0);}
+function nightRegrow(){const id=nightId();if(flags.rgN===id)return 0;flags.rgN=id;let c=0;
+  for(const n of nodes)if(!n.alive&&n.def.kind==='tree'&&dist2(n.x,n.z,P.pos.x,P.pos.z)<REGROW_R*REGROW_R&&!nearBase(n.x,n.z)){if(respawnNode(n))c++;}
+  return c;}

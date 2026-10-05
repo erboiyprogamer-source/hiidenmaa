@@ -99,28 +99,36 @@ function updateFx(dt){updateEmbers(dt);
   for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.t-=dt;p.vy-=12*dt;p.m.position.x+=p.vx*dt;p.m.position.y+=p.vy*dt;p.m.position.z+=p.vz*dt;p.m.scale.setScalar(Math.max(.01,p.t));if(p.t<=0){scene.remove(p.m);parts.splice(i,1);}}
   for(let i=fx.length-1;i>=0;i--){const f=fx[i];f.t+=dt;if(f.update(f,dt)){scene.remove(f.obj);fx.splice(i,1);}}
 }
-// Kaatuva puu: isompi puu kaatuu hitaammin ja alku on hidas (k^2.6). Rungon sivuilla on oksia, jotka irtoavat maahan osuessa ja
-// vajoavat hitaasti maan alle. Lähellä kaatuva puu tärähdyttää ruutua.
+// Kaatuva puu: isompi puu kaatuu hitaammin ja alku on hidas (k^2.6). Rungon sivuilla on oksia (kuusi: neulasoksat, koivu: tummat
+// lehvästöiset oksat, aarnipuu: isot), jotka irtoavat jo kaatumisen aikana (kukin omalla hetkellään 30–90 % kaatumisesta) ja loput
+// maahan osuessa; irronneet oksat putoavat ja vajoavat hitaasti maan alle. Pieni puu (koko < SMALL_TREE) ei jätä tukkeja, vaan
+// muuttuu suoraan tavaroiksi (puu ym.) maahan osuessaan. Lähellä kaatuva puu tärähdyttää ruutua.
+const SMALL_TREE=.8,BRANCH_C={koivu:0x4f4237};
 function fallTree(n,dir,crush){const g=new THREE.Group();const m=new THREE.Mesh(NGEO[n.type],vcMat);m.scale.setScalar(n.s);g.add(m);g.position.set(n.x,n.y,n.z);scene.add(g);
-  const a=dir??Math.atan2(n.x-P.pos.x,n.z-P.pos.z),H=(TREE_H[n.type]||5)*n.s,dur=(1+.3*n.s)*(n.type==='aarnipuu'?2:1),brs=[];
-  const bm=mat(TRUNK_C[n.type]||0x5a3a22),lc=LEAF_C[n.type],lm=lc?mat(lc):null,nb=n.type==='aarnipuu'?7:4;
-  for(let i=0;i<nb;i++){const phi=i/nb*TAU+rng()*.8,h=H*(.3+.5*i/nb),L=(.6+rng()*.5)*n.s*(n.type==='aarnipuu'?2.5:1),th=.07*n.s*(n.type==='aarnipuu'?2:1);
-    const b=new THREE.Group();b.add(bx(L,th,th,bm,L/2,0,0));if(lm){const lf=new THREE.Mesh(new THREE.IcosahedronGeometry(L*.3,0),lm);lf.position.x=L*.9;lf.castShadow=true;b.add(lf);}
-    b.position.set(Math.cos(phi)*.12*n.s,h,-Math.sin(phi)*.12*n.s);b.rotation.set(0,phi,.35+rng()*.3);g.add(b);brs.push(b);}
+  const a=dir??Math.atan2(n.x-P.pos.x,n.z-P.pos.z),H=(TREE_H[n.type]||5)*n.s,dur=(1+.3*n.s)*(n.type==='aarnipuu'?2:1),brs=[],big=n.type==='aarnipuu',small=!big&&n.s<SMALL_TREE;
+  const bm=mat(BRANCH_C[n.type]||TRUNK_C[n.type]||0x5a3a22),lc=LEAF_C[n.type],lm=lc?mat(lc):null,nb=big?7:n.type==='koivu'?6:5;
+  for(let i=0;i<nb;i++){const phi=i/nb*TAU+rng()*.8,h=H*(.28+.55*i/nb),L=(.6+rng()*.5)*n.s*(big?2.5:1),th=.07*n.s*(big?2:1);
+    const b=new THREE.Group();b.add(bx(L,th,th,bm,L/2,0,0));
+    if(lm){if(n.type==='kuusi'){for(let k=0;k<3;k++){const nd=new THREE.Mesh(new THREE.ConeGeometry(L*.16,L*.42,5),lm);nd.position.x=L*(.35+k*.27);nd.rotation.z=-Math.PI/2;nd.castShadow=true;b.add(nd);}}
+      else{const lf=new THREE.Mesh(new THREE.IcosahedronGeometry(L*(n.type==='koivu'?.34:.3),0),lm);lf.position.x=L*.85;lf.castShadow=true;b.add(lf);
+        if(n.type==='koivu'){const l2=new THREE.Mesh(new THREE.IcosahedronGeometry(L*.22,0),lm);l2.position.set(L*.5,L*.12,0);b.add(l2);b.add(bx(L*.4,th*.6,th*.6,bm,L*.55,L*.08,0));}}}
+    b.position.set(Math.cos(phi)*.12*n.s,h,-Math.sin(phi)*.12*n.s);b.rotation.set(0,phi,.35+rng()*.3);g.add(b);brs.push(b);b.userData.det=.3+rng()*.6;}
   fx.push({obj:g,t:0,update:(f,dt)=>{const k=Math.min(1,f.t/dur);g.rotation.set(0,0,0);g.rotateOnWorldAxis(_tmpV.set(Math.cos(a),0,-Math.sin(a)),Math.pow(k,2.6)*Math.PI/2);
+    for(const b of brs)if(!b.userData.off&&k>=b.userData.det&&k<1){b.userData.off=1;g.updateMatrixWorld(true);dropBranch(b,Math.sin(a)*k*4,Math.cos(a)*k*4);}
     if(f.t>dur&&!f.dropped){f.dropped=1;sfx('chop');if(crush)crushPlayer(n,a);
       const mx=n.x+Math.sin(a)*H*.5,mz=n.z+Math.cos(a)*H*.5,dd=Math.hypot(P.pos.x-mx,P.pos.z-mz);if(!P.inDun&&dd<H+8)shake(Math.min(.5,.12+.35*(1-dd/(H+8))*Math.min(1.5,n.s)));
       burst(n.x+Math.sin(a)*3,n.y+.5,n.z+Math.cos(a)*3,0x6b4527,10,4);
-      for(const [id,lo,hi] of n.def.drops){if(id==='puu')continue;const c=Math.round(rint(rng,lo,hi)*n.s);for(let j=0;j<c;j++){const t=1+j*1.2;spawnDrop(id,1,n.x+Math.sin(a)*t,n.y+1,n.z+Math.cos(a)*t);}}
-      g.updateMatrixWorld(true);for(const b of brs)dropBranch(b);
-      spawnLogs(n,a);}
+      for(const [id,lo,hi] of n.def.drops){if(id==='puu'&&!small)continue;const c=Math.max(id==='puu'?1:0,Math.round(rint(rng,lo,hi)*n.s));for(let j=0;j<c;j++){const t=.8+j*H/(c+1);spawnDrop(id,1,n.x+Math.sin(a)*t,n.y+1,n.z+Math.cos(a)*t);}}
+      g.updateMatrixWorld(true);for(const b of brs)if(!b.userData.off)dropBranch(b);
+      if(small){m.visible=false;for(let j=0;j<5;j++)burst(n.x+Math.sin(a)*H*j/5,n.y+.4,n.z+Math.cos(a)*H*j/5,WOOD_IN,5,3);}
+      else spawnLogs(n,a);}
     return f.t>dur+.4;}});}
 // Irronnut oksa: putoaa maahan, jää hetkeksi ja vajoaa ~6 s:ssa hitaasti maan alle.
-function dropBranch(b){scene.attach(b);const vx=(Math.random()-.5)*1.5,vz=(Math.random()-.5)*1.5;let vy=0;
+function dropBranch(b,ivx=0,ivz=0){scene.attach(b);const vx=(Math.random()-.5)*1.5+ivx,vz=(Math.random()-.5)*1.5+ivz;let vy=ivx||ivz?1:0;
   fx.push({obj:b,t:0,update:(f,dt)=>{const gy=terrainH(b.position.x,b.position.z);
-    if(f.t<1.2){vy-=14*dt;b.position.x+=vx*dt;b.position.z+=vz*dt;b.position.y=Math.max(gy+.05,b.position.y+vy*dt);b.rotation.z*=.97;}
-    else if(f.t>3){b.position.y-=.12*dt;}
-    if(f.t>9){b.traverse(o=>{if(o.geometry)o.geometry.dispose();});return true;}return false;}});}
+    if(f.t<2.2){vy-=14*dt;const air=b.position.y>gy+.1;if(air){b.position.x+=vx*dt;b.position.z+=vz*dt;b.rotation.x+=vx*dt*.6;}b.position.y=Math.max(gy+.05,b.position.y+vy*dt);b.rotation.z*=.97;}
+    else if(f.t>4){b.position.y-=.12*dt;}
+    if(f.t>10){b.traverse(o=>{if(o.geometry)o.geometry.dispose();});return true;}return false;}});}
 function crushPlayer(n,a){if(P.dead||P.inDun)return;const H=(TREE_H[n.type]||5)*n.s,dx=P.pos.x-n.x,dz=P.pos.z-n.z,along=dx*Math.sin(a)+dz*Math.cos(a),lat=Math.abs(dx*Math.cos(a)-dz*Math.sin(a));
   if(along>0&&along<H&&lat<1.4*Math.max(1,n.s)&&Math.abs(P.pos.y-n.y)<3){const d=maxHp()*.8;P.hp-=d;P.hurtFlash=.8;shake(.6);sfx('hurt');floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,P.pos.z,'#e0614f');msg('Kaatuva puu osui sinuun!','warn');if(P.hp<=0)playerDie();}}
 function shockwave(x,y,z,r,color=0x8ffff0){const m=new THREE.Mesh(new THREE.RingGeometry(.8,1,32),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.8,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.set(x,y+.15,z);scene.add(m);fx.push({obj:m,t:0,update:(f)=>{const k=f.t/.5;m.scale.setScalar(.5+k*r);m.material.opacity=.8*(1-k);return k>=1;}});}
