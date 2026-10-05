@@ -156,6 +156,7 @@ textarea{width:100%;min-height:70px;background:rgba(0,0,0,.35);color:var(--bone)
 
 /* Erä 22: taso, saavutukset, valmistusvälilehdet */
 #craftTabs{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 8px}
+.devRow{display:flex;flex-direction:column;gap:5px;margin:0 0 12px;min-width:min(420px,calc(100vw - 70px))}.devRow input[type=range]{width:100%}.devBtns{display:flex;flex-wrap:wrap;gap:4px}
 .search,input[type=search],input[type=text]{user-select:text;-webkit-user-select:text}
 .search{display:block;width:100%;max-width:min(680px,calc(100vw - 70px));box-sizing:border-box;margin:0 0 8px;padding:6px 10px;font:inherit;font-size:14px;color:var(--bone);background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:3px;outline:none}
 .search:focus{border-color:var(--frost)}.search::placeholder{color:var(--dim)}

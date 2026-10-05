@@ -58,6 +58,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.77 (DEV: V-nopeus ja Ä-valikko)
+- DEV-tilan 10× nopeus näppäimeen **V** (ennen vasen Alt). **Ä** (`Quote`) avaa DEV-valikon (`#devP`, `renderDev`): sää (kaikki `WEATHERS`,
+  pysyy 10 min), kellonaika (liukusäädin + aamu/päivä/ilta/yö), terveys ja kylläisyys liukusäätimillä; E/Ä/✕ sulkee. DEV-merkki ruudun yläreunaan.
+
 ### v0.76 (ammusten järjestys)
 - Ammukset listassa `AMMO` heikoimmasta parhaaseen (piikivinuolet → tulinuolet → tulevat). Ilman valintaa jousi käyttää heikointa jota on;
   valittu ammus ensin ja sen loputtua taas heikoimmasta. Valitun napin uusi painallus palauttaa automaattiseen. Ominaisuuslistassa "Ammus".

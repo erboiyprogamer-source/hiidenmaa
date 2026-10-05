@@ -2,7 +2,7 @@
    Apuvälineet: matematiikka, kohina, satunnaisluvut */
 'use strict';
 // ⚠ VÄLIAIKAINEN KEHITYSTILA (käyttäjän pyyntö v0.74): DEV=true → kestävyys ei kulu, korkein taso (kaikki ohjeet auki), ei painorajaa,
-// vasen Alt pohjassa liikkuu 10× nopeammin (v0.75, ennen Ö), vasemmassa alakulmassa merkki "DEV-tila". Poista käytöstä: DEV=false.
+// V pohjassa liikkuu 10× nopeammin (v0.77; ennen Alt/Ö), Ä avaa DEV-valikon (sää, aika, terveys, kylläisyys), vasemmassa alakulmassa merkki "DEV-tila". Poista käytöstä: DEV=false.
 const DEV=true;
 
 /* =========================================================

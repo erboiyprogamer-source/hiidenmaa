@@ -8,12 +8,13 @@ const canvas=renderer.domElement;
 addEventListener('keydown',e=>{
   if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
   keys[e.code]=true;
-  if(e.code==='Tab'||e.code==='AltLeft'){e.preventDefault();}// AltLeft: DEV-nopeus (ei selaimen valikkoa)
+  if(e.code==='Tab'){e.preventDefault();}
   if(e.code===BIND.full&&!e.repeat&&(state==='play'||state==='ui'||state==='paused'))toggleFullscreen();
   if(state==='paused'&&e.code==='Escape'&&!e.repeat&&performance.now()-pausedAt>400){if(!$('#settings').hidden)$('#settings').hidden=true;else $('#bResume').click();return;}
   if(state!=='play'&&state!=='ui')return;
   if(e.repeat)return;
   const c=e.code;
+  if(DEV&&c==='Quote'){togglePanel('dev');return;}// DEV: Ä avaa/sulkee kehitysvalikon
   // v0.75: E sulkee avoimen valikon; repussa Q pudottaa valitusta yhden, Shift+Q kaikki
   if(openPanel&&c===BIND.interact){e.preventDefault();closePanels(false,true);return;}
   if(openPanel==='inv'&&c==='KeyQ'&&selSlot>=0&&inv[selSlot]){dropSel(e.shiftKey);return;}
