@@ -55,6 +55,16 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.60 (puun kaatuminen ja minikartan zoom)
+- **Oksat irtoavat jo kaatumisen aikana:** jokaisella oksalla oma irtoamishetki 30–90 % kaatumisesta (`b.userData.det`), loput maahan
+  osuessa. Irronnut oksa saa alkunopeuden kaatumissuuntaan, pyörähtää ilmassa, jää maahan ja vajoaa (`dropBranch(b,ivx,ivz)`).
+  Kuusessa 5 neulasoksaa (kartiot), **koivussa 6 tummaa oksaa lehvästöineen** (`BRANCH_C.koivu`, aiemmin valkoiset ohuet oksat
+  eivät erottuneet), aarnipuussa 7 isoa.
+- **Pieni puu (koko < `SMALL_TREE` 0,8) muuttuu suoraan tavaroiksi** maahan osuessaan: puu (`drops`, vähintään 1) + pihka ym.
+  kaatumislinjalle, ei tukkeja; puusäleitä pöllähtää. Isommat puut jättävät tukit kuten ennen.
+- **Minikartan zoom:** koodissa ei löytynyt vikaa (N vaihtaa 60 → 35 → 110 m testissä). Varmuudeksi: zoomitaso ja näppäin näkyvät
+  aina minikartan alareunassa, minikarttaa voi napsauttaa (kun hiiri on vapaana) ja näppäin toimii myös paneelien ollessa auki.
+
 ### v0.59 (puiden uusiutuminen yöllä)
 - **Kaadetut puut kasvavat takaisin vain kerran yössä ja vain pelaajan 100 m säteellä** (`nightRegrow`, `REGROW_R`, resources.js).
   Yritys tehdään yön alkaessa (`isNight`, tarkistus 1 s välein, ei luolastossa) tai nukkuessa (`regrowForest`); jos jo tehty samana

@@ -214,3 +214,4 @@ textarea{width:100%;min-height:70px;background:rgba(0,0,0,.35);color:var(--bone)
 select.isdef{color:#f3ead8;background-color:rgba(120,96,70,.55)}
 option.def{color:#fbf3e2;background:#6a4c2c;font-weight:700}
 input.isdef{filter:brightness(1.25)}
+#mini{pointer-events:auto;cursor:pointer}

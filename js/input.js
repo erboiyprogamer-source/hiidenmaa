@@ -16,6 +16,7 @@ addEventListener('keydown',e=>{
   const c=e.code;
   if(c===BIND.inv||(c==='KeyI'&&BIND.inv==='Tab'))togglePanel('inv');
   else if(c===BIND.map)togglePanel('map');
+  else if(c===BIND.minizoom)cycleMiniZoom();
   else if(c===BIND.prog)togglePanel('prog');
   else if(c===BIND.log)togglePanel('log');
   else if(c===BIND.build){const w=equipped('weapon');if(w&&w.id==='vasara')togglePanel('build');else msg('Ota vasara käteen rakentaaksesi.','warn');}
@@ -29,7 +30,6 @@ addEventListener('keydown',e=>{
     else if(c===BIND.down)liftBuild(-1);
     else if(c===BIND.remove)removeLooked();
     else if(c===BIND.repair)repairLooked();
-    else if(c===BIND.minizoom)cycleMiniZoom();
     else if(/^Digit[1-8]$/.test(c)){hotSel=+c.slice(5)-1;invDirty=true;useSlot(hotSel);}
   }
 });
