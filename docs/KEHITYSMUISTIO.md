@@ -72,6 +72,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.29 (v1.25:n valikko palautettu)
+- Käyttäjän WebGL toimii taas (selaimen uudelleenkäynnistys). `MENU_V2_OFF=false` → valikossa taas animoidut kuvat (oletus) ja
+  asetus "Valikon tausta" (kuvat / 3D-kamera). Testattu: vanhan version tallennus → kuvat näkyvät (Öinen leiri), "Jatka matkaa" ja
+  "Uusi peli" käynnistävät pelin; 3D-kamera-tila toimii; karttavaihdon uudelleenlataus toimii (tarkistusrivi).
+- Huom: peli on aina käyttänyt WebGL:ää (three.js); valikon kuvat ovat 2D-canvasta (eivät tarvitse näytönohjainta) → keventävät valikkoa.
+
 ### v1.28 (WebGL-varmistus – käyttäjän ongelman todellinen syy)
 - Käyttäjän virhelaatikko paljasti syyn: selain ei antanut WebGL:ää (KORJAUKSET 24). `render.js`: piirturi 3 yrityksellä + `webglFail()`-ohje
   (myös `webglcontextlost`). Käyttäjälle: sulje koko selain ja avaa uudelleen, grafiikkakiihdytys päälle, chrome://gpu.
@@ -1332,7 +1338,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19, kohdat 10–12 v1.20, kohta 13 v1.21, kohta 14 v1.22, kohdat 15–17 v1.23. LISTA 2 KAIKKI TEHTY – odotetaan käyttäjän palautetta ja Mergeä (PR #24).
-**v1.27:** valikkokameran muutokset väliaikaisesti pois (`MENU_V2_OFF`). **RATKAISTU v1.28:** käyttäjän "ei käynnisty" = selaimen WebGL estetty (KORJAUKSET 24); valikkokameran muutokset voi palauttaa
+**v1.27:** valikkokameran muutokset väliaikaisesti pois (`MENU_V2_OFF`). **v1.29:** v1.25:n valikko palautettu käyttöön. **RATKAISTU v1.28:** käyttäjän "ei käynnisty" = selaimen WebGL estetty (KORJAUKSET 24); valikkokameran muutokset voi palauttaa
 (`MENU_V2_OFF=false`), kun käyttäjä haluaa. **(vanha merkintä) AVOIN ONGELMA (v1.26):** käyttäjällä peli ei käynnistynyt / kuvat eivät näkyneet (versio 1.23 näkyi) – odotetaan, mitä commit-linkki ja
 käynnistysvahdin laatikko näyttävät. **TEHTY v1.25:** valikon tausta animoiduiksi 2D-kuviksi (10 kuvaa, molemmat tyylit: low poly + maalauksellinen), sivun avauksessa aina öinen leiri
 (nuotion valo ja kipinät, vilkkuvat silmät puskassa), sitten arvottu 20 s välein häivytyksellä; valikossa ei piirretä 3D:tä. Asetus "Valikon tausta":

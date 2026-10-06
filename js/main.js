@@ -6,7 +6,7 @@
 let frameErrShown=false;
 /* v1.27: KÄYTTÄJÄN PYYNTÖ – valikkokameran muutokset (v1.15 3D-kierros, v1.25 animoidut kuvat) väliaikaisesti pois.
    true = alkuperäinen valikkokamera (kiertää kartan keskikohtaa). Palautus: false. Koodi säilyy (menuCam, menubg.js). */
-const MENU_V2_OFF=true;
+const MENU_V2_OFF=false;   // v1.29: palautettu käyttöön (v1.27 väliaikaisesti true)
 function menuCamOld(dt){menuA+=dt*.03;const cx=Math.cos(menuA)*60,cz=Math.sin(menuA)*60;camera.position.set(cx,terrainH(cx,cz)+22,cz);camera.lookAt(0,6,6);P.pos.set(0,5,6);updateEnvironment(dt);if(!started)fig.g.visible=true;}
 const MENU_SHOT_T=20;let menuShot=null,menuSpots=null,menuDeco=[],menuMob=null,menuLight=null,menuFading=false;
 
