@@ -71,6 +71,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.03 (linnake vaikeammaksi + kierreportaat, kiviröykkiöt)
+- **Arkkukivilinnake:** hyppypilarit kapeammat (0,75–0,85 m) ja siksakissa (säde vuorotellen 8,2 / 10,2 m), nousu 0,8 m (huippu 4,0 m),
+  välit reunasta reunaan 2,0–2,4 m → vaatii juoksuhypyn; viimeiseltä pudotaan 0,5 m muurin harjalle. Sisäpuolella **kierreportaat** muurin
+  sisäpintaa pitkin 0,3 m askelin (~11 askelmaa, ~300°) pilarireitin kohdalta alas. Testattu: juoksuhypyt kaikille pilareille ja muurille,
+  portaat kävellen arkulle.
+- **Kiviröykkiöt** (`STASHES`, story.js, käyttäjän pyyntö "perinteiset kivipaikat joissa arkku näkyvillä"): 2 per kartta, v0.98-tyylinen
+  avoin kivirengas kahdella kulkuaukolla, matala laatta ja arkku keskellä; sijoitus kasvillisuuden jälkeen (ei muuta maisemaa/tallennuksia).
+  Saalis: kupari 2, nuolet 10, liha 2 / pihka 3, kivi 8, luu 3; +20 XP. `LOC.kiviN` "Kiviröykkiö", löytyy 30 m:stä.
+
 ### v1.02 (ruoho kevyemmäksi, käyttäjän palaute)
 - Ruoho oli "kauhea" (liian tiheä, tumma, paksu). Nyt: läpikuultava (opacity 0,62, depthWrite pois), 5 ohutta kortta (leveys 0,018–0,032,
   pituus 0,22–0,58), vaaleampi (tyvi 0,7 × väri, kärki 1,15 ×), **laikuittain**: kasvaa vain kohinan muodostamissa ryhmissä
@@ -1137,12 +1146,14 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ (päivitetty v0.94):** kohdat 1–9 tehty (v0.81–v0.92) + käyttäjän välilisäykset v0.93 (hautakasa arkkuna, Kalmanpesä
-millä vain, DEV-jumalvoimatäpät, harppova juoksu) ja v0.94 (Shift-tietoikkuna). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
-(auki – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Kohdat 10 (v0.95) ja 11 (v0.96) tehty. KAIKKI KOHDAT 1–15 TEHTY (v0.81–v1.00)**. Arkkukivilinnake tehty v1.01. Ruoho: käyttäjä haluaa kevyemmän, ohuemman, läpikuultavan ja laikuittaisen (ei koko maata täyteen) → v1.02, kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
-`?v=` → commit, push, PR #23 kuvaus → testilinkki `https://raw.githack.com/erboiyprogamer-source/hiidenmaa/claude/hiidenmaa-survival-game-fmxt0m/index.html`.
-Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kallistus + edestakainen heilunta kuten puut), asetus pois/oletus/täysi.
+**JATKA TÄSTÄ (päivitetty v1.03, käyttäjä pyysi tauon):** päivityslistan KAIKKI kohdat 1–15 tehty (v0.81–v1.00) + välilisäykset:
+v0.93 (hautakasa arkkuna, Kalmanpesä millä vain, DEV-jumalvoimatäpät, harppova juoksu), v0.94 (Shift-tietoikkuna), v1.01–v1.03 (arkkukivi
+suljetuksi linnakkeeksi: korkea muuri, vaikeat siksak-hyppypilarit, kierreportaat; ruoho kevyemmäksi ja laikuittaiseksi; kiviröykkiöt 2/kartta).
+Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23 auki (tarkista ennen jatkoa onko yhdistetty; jos on, aloita origin/mainista
+tarkistettuasi ettei commiteja katoa). Avoimet: käyttäjä testaa ruohon (v1.02) ja linnakkeen; kysy palaute (ruohon tiheys/pituus,
+hyppyjen vaikeus). Mahdolliset jatkot: realm-pomojen laatikkomaiset lisäosat (Erä 44b), pelaajan soihdun varjoasetus ja kartan piirto
+vain tapahtumista (Erä 40), DEV=false kun käyttäjä pyytää. Työtapa: välikommentit heti, sitten jatketaan; 1–5 tarkentavaa kysymystä per kohta;
+kun käyttäjä ei voi vastata, tee kohdat joihin vastauksia ei tarvita ja kirjaa oletukset.
 1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
 2. TEHTY v0.83. Mobien spawnaus: yöllä suurin osa, vähän kauempana (jahtaavat); osa lähelle mieluiten esteen taakse. Päivällä max 2, vain tiheä metsä /
    suo / kuiva biomi; tumma aarnimetsä hyvin todennäköinen, hirviöt siellä 20 % nopeampia + ilmoitus biomille astuessa.

@@ -309,7 +309,7 @@ function fogReveal(wx,wz,r){const x=(wx+HALF)*FOGK,y=(wz+HALF)*FOGK,rr=r*FOGK,gr
 function resetFog(){if(explored.every(v=>v)){fogG.clearRect(0,0,FOGS,FOGS);return;}fogG.putImageData(FOGIMG,0,0);for(let i=0;i<explored.length;i++)if(explored[i])fogReveal(((i%EXN)+.5)*4-HALF,(((i/EXN)|0)+.5)*4-HALF,7);}
 // Tutkittu alue: 4 m ruudut, säde 3 ruutua (12 m, aiemmin 24 m)
 function exploreTick(){if(P.inDun)return;const cx=Math.floor((P.pos.x+HALF)/4),cz=Math.floor((P.pos.z+HALF)/4);for(let z=cz-3;z<=cz+3;z++)for(let x=cx-3;x<=cx+3;x++){if(x<0||z<0||x>=EXN||z>=EXN)continue;if((x-cx)**2+(z-cz)**2>9)continue;const i=z*EXN+x;if(!explored[i]){explored[i]=1;fogReveal((x+.5)*4-HALF,(z+.5)*4-HALF,7);}}
-  for(const k of ['ruinF','ruinM','ruinC','barrow','circle',...CAMPS.map(c=>c.k)]){const L=LOC[k];if(!flags.disc[k]&&dist2(L.x,L.z,P.pos.x,P.pos.z)<30*30){flags.disc[k]=1;msg(`Löysit paikan: ${L.name}`,'loot');}}}
+  for(const k of ['ruinF','ruinM','ruinC','barrow','circle',...CAMPS.map(c=>c.k),...STASHES.map(c=>c.k)]){const L=LOC[k];if(!flags.disc[k]&&dist2(L.x,L.z,P.pos.x,P.pos.z)<30*30){flags.disc[k]=1;msg(`Löysit paikan: ${L.name}`,'loot');}}}
 // Rakennukset kartalle ylhäältä: 1 pikseli / metri (BLDC), päivitetään kun rakennukset muuttuvat
 const BLDC=document.createElement('canvas');BLDC.width=BLDC.height=MAPW;const bldG=BLDC.getContext('2d');
 function drawBld(){bldDirty=false;bldG.clearRect(0,0,MAPW,MAPW);

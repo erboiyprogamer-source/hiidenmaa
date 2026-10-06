@@ -30,12 +30,17 @@ function buildPoiRock(k){const L=LOC[k],y=terrainH(L.x,L.z),r=mulberry32(k.charC
   // muuri: 18 lohkoa renkaana (alaosa maan alle rinteen varalta), sammalta harjalla
   for(let i=0;i<18;i++){const a=i/18*TAU,[x,z]=P2(WR,a),gy=Math.min(y,terrainH(x,z)),h=WH+(y-gy)+1,len=WR*TAU/18+.35;
     const m=stoneBox(WT,h,len,x,gy-1+h/2,z,-a,stoneM());m.add(bx(WT*1.02,.15,len*.95,mossM,0,h/2,0,false));}
-  // hyppypilarit: kiertävät muuria 8,1 m säteellä, korkeudet 0,7…3,5 m, viimeinen 1,6 m muurin ulkoreunasta
-  const PH=[.7,1.4,2.1,2.8,3.5];let a=a0;
-  PH.forEach((ph,i)=>{const rr=i<4?8.4:8.1,[x,z]=P2(rr,a),gy=terrainH(x,z),top=y+ph,h=top-gy+1,w=.95+r()*.15;stoneBox(w,h,w,x,top-h/2,z,r()*3,stoneM()).add(bx(w*1.01,.12,w*1.01,mossM,0,h/2,0,false));
-    f.pillars.push({x,z,top,w});a-=(1.0+1.6+r()*.3)/rr;});
-  // sisäportaat muurin harjalta (3,5) alas 0,5 m askelin pilareiden puolelta (kulma a0)
-  for(let s=1;s<=7;s++){const top=y+WH-s*.5;if(top<=y+.05)break;const rr=WR-WT/2-.3-s*.62+.31,[x,z]=P2(rr,a0+.15);const h=top-y+1;stoneBox(.62,h,1.3,x,top-h/2,z,-a0-.15,stoneM());f.steps.push({x,z,top});}
+  // v1.03 vaikeammat hypyt: 5 kapeaa pilaria (0,75–0,85 m) siksakissa (säde vuorotellen 8,2 / 10,2 m), nousu 0,8 m (huippu 4,0 m),
+  // välit reunasta reunaan 2,0–2,4 m → vaatii juoksuhypyn (kävellen ~2,4 m, juosten ~4 m). Viimeiseltä pudotaan 0,5 m muurin harjalle (väli 1,6 m).
+  const PH=[.8,1.6,2.4,3.2,4.0];let a=a0,prevP=null;
+  PH.forEach((ph,i)=>{const w=.75+r()*.1,rr=i===4?8.1:(i%2?10.2:8.2);let x,z;
+    if(prevP){const gap=2+r()*.4,need=gap+(w+prevP.w)/2;let lo=0,hi=1.5;for(let t=0;t<30;t++){const mid=(lo+hi)/2,[tx,tz]=P2(rr,a-mid);if(Math.hypot(tx-prevP.x,tz-prevP.z)<need)lo=mid;else hi=mid;}a-=hi;}
+    [x,z]=P2(rr,a);const gy=terrainH(x,z),top=y+ph,h=top-gy+1;stoneBox(w,h,w,x,top-h/2,z,r()*3,stoneM()).add(bx(w*1.01,.12,w*1.01,mossM,0,h/2,0,false));
+    f.pillars.push({x,z,top,w});prevP={x,z,w};});
+  // v1.03 kierreportaat: muurin sisäpintaa kiertävä portaikko harjalta (3,5 m) alas 0,3 m askelin (askelma 1,2 m leveä, ~0,75 m syvä),
+  // kiertää ~300° ja päättyy maahan; samaa tietä takaisin ylös. Alkaa pilarireitin kohdalta (viimeisen pilarin kulma).
+  {const aw=Math.atan2(f.pillars[4].z-L.z,f.pillars[4].x-L.x),rs=WR-WT/2-.62,n=Math.round(WH/.3);let a2=aw;
+   for(let s=1;s<n;s++){const top=y+WH-s*.3;a2+=.78/rs;const [x,z]=P2(rs,a2),h=top-y+1;stoneBox(.82,h,1.24,x,top-h/2,z,-a2+Math.PI/2,stoneM()).add(bx(.84,.06,1.26,mossM,0,h/2,0,false));f.steps.push({x,z,top});}}
   stoneBox(2.2,.5,2.2,L.x,y,L.z,.4,mat(0x5b5853),false);
   const g=bx(.5,1.2,.04,MAT.glow,0,0,0,false);{const [gx,gz]=P2(WR-WT/2-.03,a0+Math.PI);g.position.set(gx,y+2.2,gz);g.rotation.y=-(a0+Math.PI)+Math.PI/2;statics.add(g);}   // hehkuva riimu muurin sisäpinnalla
   const ch=bx(.9,.6,.6,MAT.wood,L.x,y+.55,L.z);ch.add(bx(.94,.1,.64,mat(0x4a4a4a),0,.16,0));statics.add(ch);
@@ -138,3 +143,22 @@ function ensureCamps(){if(flags.camps)return;flags.camps=1;
     const [tx,tz]=fw(-3.2,0);addPiece('teltta',tx,terrainH(tx,tz),tz,c.rot);addPiece('sanky',tx,terrainH(tx,tz),tz-0,c.rot);
     addPiece('nuotio',c.x,terrainH(c.x,c.z),c.z,0,undefined,{fuel:0,burn:0});
     const [lx,lz]=fw(1.6,1.4);addPiece('palkki',lx,terrainH(lx,lz)+.2,lz,(c.rot+2)%8);}}
+
+/* ---------------- KIVIRÖYKKIÖT (v1.03, käyttäjän pyyntö) ---------------- */
+// Perinteiset avoimet kivikasat, joissa arkku näkyy (v0.98:n tyyli): kivirengas kahdella vastakkaisella kulkuaukolla, matala laatta ja arkku
+// keskellä. 2 per kartta, sijoitus kasvillisuuden jälkeen (kuten leirit) → ei muuta maisemaa eikä tallennuksia. Saalis vaatimattomampi kuin
+// arkkukivilinnakkeissa. LOC.kiviN = "Kiviröykkiö" (löytyy 30 m:stä, merkki kartalle).
+const STASHES=(function(){const r=mulberry32(24680+MAP_ID*104729),out=[],tmp=[];
+  for(let t=0;t<8000&&out.length<2;t++){const loose=t>=4000,x=(r()-.5)*HALF*1.6,z=(r()-.5)*HALF*1.6,h=terrainH(x,z);if(h<1.5||h>(loose?30:22))continue;
+    const b=biomeAt(x,z,h);if(['sea','beach','peak'].includes(b))continue;
+    let flat=true;for(const [ox,oz] of [[4,0],[-4,0],[0,4],[0,-4]])if(Math.abs(terrainH(x+ox,z+oz)-h)>(loose?1.2:.8))flat=false;if(!flat)continue;
+    let far=true;for(const k in LOC){const L=LOC[k];if(dist2(x,z,L.x,L.z)<(loose?35:55)**2){far=false;break;}}for(const c of out)if(dist2(x,z,c.x,c.z)<100*100)far=false;if(!far)continue;
+    nodesNear(x,z,5.5,tmp);if(tmp.some(o=>o.alive&&(o.def.kind==='tree'||o.def.kind==='rock')))continue;
+    const k='kivi'+(out.length+1);LOC[k]={x,z,name:'Kiviröykkiö',kind:'stash'};out.push({k,x,z,y:h});}
+  for(const c of out){const y=c.y,rr=mulberry32((c.x*31^c.z*17)|0),gap=rr()*TAU,inGap=a=>{for(const g0 of [gap,gap+Math.PI]){const da=Math.abs(((a-g0)%TAU+TAU+Math.PI)%TAU-Math.PI);if(da<.8)return true;}return false;};
+    const n=7;for(let i=0;i<n;i++){const a=i/n*TAU+rr()*.3,w=1.4+rr()*1.1,hh=1.3+rr()*1.8,d=2.3+w*.6+rr()*.6;if(inGap(a))continue;const x=c.x+Math.cos(a)*d,z=c.z+Math.sin(a)*d;
+      const m=stoneBox(w,hh,w*(.7+rr()*.4),x,y+hh/2-.2,z,a+Math.PI/2+(rr()-.5)*.4,mat(rockC(0x6f6c66,rr())));m.add(bx(w*.9,.22,w*.8,mossM,0,hh/2,0,false));}
+    stoneBox(2,.45,2,c.x,y,c.z,.3,mat(0x5b5853),false);const ch=bx(.9,.6,.6,MAT.wood,c.x,y+.52,c.z);ch.add(bx(.94,.1,.64,mat(0x4a4a4a),0,.16,0));statics.add(ch);
+    const key='stash:'+c.k,loot=[[['kupari',2],['nuolet',10],['liha',2]],[['pihka',3],['kivi',8],['luu',3]]][out.indexOf(c)%2];
+    interactables.push({x:c.x,y:y+.6,z:c.z,r:2.6,label:()=>foundEmpty(key)?'Arkku (tyhjä)':'Avaa arkku',use:()=>{const first=!fo('fc')[key];openFound(key,'Kiviröykkiön arkku',loot);if(first)addXp(20,'Kiviröykkiö tutkittu');}});}
+  return out;})();
