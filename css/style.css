@@ -268,3 +268,4 @@ input.isdef{filter:brightness(1.25)}
   animation:pcIn .8s ease-out;transition:opacity 1.5s ease}
 #pcHint svg{color:var(--ember);flex:none}#pcHint.fade{opacity:0}#pcHint[hidden]{display:none}
 @keyframes pcIn{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
+#menuFade{position:fixed;inset:0;background:#000;opacity:0;transition:opacity .8s ease;pointer-events:none}

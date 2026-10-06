@@ -24,7 +24,7 @@ let started=false,confirmNew=false;
 // v1.14 (lista 2, kohta 5): "Toimii parhaiten tietokoneella…" näkyy ruudun yläkeskellä kerran per käynnistys 6 s ja häipyy 1,5 s:ssa
 (function(){const h=$('#pcHint');if(!h)return;/* ajastin alkaa vasta kun valikko on piirretty (2. kehys), jotta latausaika ei syö näkymisaikaa */
   requestAnimationFrame(()=>requestAnimationFrame(()=>{if(started)return;h.hidden=false;setTimeout(()=>h.classList.add('fade'),6000);setTimeout(()=>{h.hidden=true;},7600);}));})();
-function startPlay(){started=true;{const h=$('#pcHint');if(h&&!h.hidden){h.classList.add('fade');setTimeout(()=>h.hidden=true,1600);}}state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();invDirty=true;}
+function startPlay(){if(typeof menuClear==='function')menuClear();{const f=$('#menuFade');if(f)f.style.opacity=0;}fig.g.visible=true;started=true;{const h=$('#pcHint');if(h&&!h.hidden){h.classList.add('fade');setTimeout(()=>h.hidden=true,1600);}}state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();invDirty=true;}
 function pauseGame(){if(state!=='play'||openPanel||P.dead)return;state='paused';pausedAt=performance.now();$('#menu').hidden=false;$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
 addEventListener('beforeunload',e=>{if(started&&!flags.won&&!reloading){e.preventDefault();e.returnValue='';}});
 // Maailma rakennetaan skriptien latautuessa, joten kartan vaihto = sivun uudelleenlataus.
@@ -64,7 +64,47 @@ function update(dt){
   saveT+=dt;if(saveT>90){saveT=0;saveGame(true);}
   updateZone(dt);updateHUD(dt);
 }
-function menuCam(dt){menuA+=dt*.03;const cx=Math.cos(menuA)*60,cz=Math.sin(menuA)*60;camera.position.set(cx,terrainH(cx,cz)+22,cz);camera.lookAt(0,6,6);P.pos.set(0,5,6);updateEnvironment(dt);if(!started)fig.g.visible=true;}
+/* v1.15 (lista 2, kohta 6): valikon taustakamera näyttää satunnaisia kohteita lähikuvina: luontokohteet (biomit, järvi), hylätty
+   leiri päivällä ja yöllä (nuotio palaa) ja eläimiä (kamera seuraa). 20 s per kohde, hidas 30° kierto ja hieman laskeutuen, vaihto
+   mustan kautta (#menuFade 0,8 s). Ensimmäinen kohde arvotaan joka latauksella. Pelin aikana (Esc) tausta on pelaajan oma paikka. */
+const MENU_SHOT_T=20;let menuShot=null,menuSpots=null,menuDeco=[],menuMob=null,menuLight=null,menuFading=false;
+function buildMenuSpots(){const S=[],r=Math.random,used=new Set(),want=['koivu','forest','suo','kangas','aarni','tunturi','rakka','beach','meadow','mountain'];
+  for(let t=0;t<8000&&used.size<want.length;t++){const x=(r()-.5)*HALF*1.7,z=(r()-.5)*HALF*1.7,h=terrainH(x,z),b=biomeAt(x,z,h);if(h<.6||!want.includes(b)||used.has(b))continue;
+    if(Math.abs(terrainH(x+3,z)-h)>1.5||Math.abs(terrainH(x,z+3)-h)>1.5)continue;used.add(b);S.push({k:'nature',x,z,b});}
+  for(const [lx,lz,lr] of (MAP.lakes||[]).slice(0,2)){const cx=lx*WS,cz=lz*WS;for(let t=0;t<40;t++){const a=r()*TAU,d=lr*WS*(.9+t*.03),x=cx+Math.cos(a)*d,z=cz+Math.sin(a)*d;if(terrainH(x,z)>.8){S.push({k:'lake',x,z,lx:cx,lz:cz});break;}}}
+  for(const c of CAMPS)S.push({k:'camp',x:c.x,z:c.z,c,night:false},{k:'camp',x:c.x,z:c.z,c,night:true});
+  const land=S.filter(s=>s.k==='nature'&&s.b!=='beach'&&s.b!=='mountain');
+  for(const t of ['peura','poro','karhu','kettu','hirvi','janis'])if(land.length&&MOBDEF[t]){const s=land[(r()*land.length)|0];S.push({k:'animal',x:s.x,z:s.z,t});}
+  return S;}
+function menuClear(){for(const o of menuDeco)scene.remove(o);menuDeco=[];if(menuMob){mobRemove(menuMob);menuMob=null;}
+  if(menuLight){const i=lightSources.indexOf(menuLight);if(i>=0)lightSources.splice(i,1);menuLight=null;}}
+function newMenuShot(){menuClear();if(!menuSpots)menuSpots=buildMenuSpots();if(!menuSpots.length)return;
+  let s;for(let i=0;i<6;i++){s=menuSpots[(Math.random()*menuSpots.length)|0];if(!menuShot||s!==menuShot.s)break;}
+  const an=s.k==='animal';menuShot={s,t:0,a0:Math.random()*TAU,dist:an?5+Math.random()*1.5:8+Math.random()*4,hgt:an?1.4+Math.random()*.6:2+Math.random()*1.6};
+  dayT=s.k==='camp'?(s.night?.9:.47):[.3,.42,.52,.66][(Math.random()*4)|0];weather.cur='selkea';
+  if(s.k==='camp'){const c=s.c,a=c.rot*Math.PI/4,fw=(d,q)=>[c.x+Math.sin(a)*d+Math.cos(a)*q,c.z+Math.cos(a)*d-Math.sin(a)*q];
+    if(!pieces.some(p=>dist2(p.x,p.z,c.x,c.z)<49)){const [tx,tz]=fw(-3.2,0);
+      for(const [t,x,z,rot] of [['teltta',tx,tz,c.rot],['nuotio',c.x,c.z,0]]){const m=buildPieceMesh(t);m.position.set(x,terrainH(x,z),z);m.rotation.y=rot*Math.PI/4;scene.add(m);menuDeco.push(m);
+        if(m.userData.flame)for(const f of m.userData.flame)f.visible=s.night;}}
+    if(s.night){menuLight={x:c.x,y:terrainH(c.x,c.z)+.9,z:c.z,c:0xff8a3a,i:2.4,on:()=>true};lightSources.push(menuLight);}}
+  if(s.k==='animal'){menuMob=spawnMob(s.t,s.x,s.z);if(menuMob){menuMob.yaw=Math.random()*TAU;menuMob.menu=true;}}
+  P.pos.set(s.x,terrainH(s.x,s.z),s.z);updateLights();}
+function menuCam(dt){if(!started)fig.g.visible=false;
+  if(!menuShot)newMenuShot();if(!menuShot){updateEnvironment(dt);return;}
+  const sh=menuShot,s=sh.s;sh.t+=dt;const fade=$('#menuFade');
+  if(sh.t>MENU_SHOT_T-.85&&!menuFading){menuFading=true;if(fade)fade.style.opacity=1;}
+  if(sh.t>MENU_SHOT_T){newMenuShot();menuFading=false;if(fade)setTimeout(()=>{fade.style.opacity=0;},60);}
+  let tx=s.x,tz=s.z;const m=menuMob;
+  if(m&&!m.dead){m.yaw+=Math.sin(sh.t*.35+sh.a0)*.25*dt;moveMob(m,Math.sin(m.yaw),Math.cos(m.yaw),(m.def.walk||1.5)*.8,dt);animMob(m,dt);tx=m.pos.x;tz=m.pos.z;}
+  const k=Math.min(1,sh.t/MENU_SHOT_T),ty=terrainH(tx,tz);
+  if(s.k==='lake'){const a=Math.atan2(s.z-s.lz,s.x-s.lx),cx=s.x+Math.cos(a)*4,cz=s.z+Math.sin(a)*4;camera.position.set(cx,Math.max(terrainH(cx,cz),0)+3.5-k,cz);
+    const pa=a+Math.PI+(k-.5)*.5;camera.lookAt(s.x+Math.cos(pa)*40,1.2,s.z+Math.sin(pa)*40);}
+  else{const ang=sh.a0+k*Math.PI/6,d=sh.dist*(1-.12*k),cx=tx+Math.cos(ang)*d,cz=tz+Math.sin(ang)*d;
+    camera.position.set(cx,Math.max(terrainH(cx,cz)+1.2,ty+sh.hgt*(1-.25*k)),cz);
+    /* kohde kuvan oikealle puolelle (valikon tekstit ovat vasemmalla): katsepistettä siirretään kameran vasemmalle 30 % etäisyydestä */
+    const fx=tx-cx,fz=tz-cz,fl=Math.hypot(fx,fz)||1,off=d*.3;camera.lookAt(tx+fz/fl*off,ty+(s.k==='animal'?.7:1.1),tz-fx/fl*off);}
+  P.pos.set(tx,ty,tz);updateEnvironment(dt);if(typeof updateChunkVis==='function')updateChunkVis();
+  if(menuLight){const l=LIGHTS.find(l=>l.position.x===menuLight.x&&l.position.z===menuLight.z);if(l)l.intensity=menuLight.i*1.15*(.85+.1*Math.sin(playTime*13+sh.t*7)+.05*Math.sin(sh.t*31));}}
 // Mukautuva laatu: liukuva keskiarvo kehysajasta; >36 ms 3 s → laatu −1 taso, <18 ms 12 s → +1 taso (min 6 s välein).
 let fAvg=.016,qBadT=0,qGoodT=0,qCool=0;
 function autoQuality(raw){if(raw>.5)return;fAvg+=(raw-fAvg)*.05;qCool-=raw;
