@@ -176,6 +176,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## 9. Viholliset ja eläimet (mobs.js, ai.js)
 
 - **Nopeudet −15 %** (`MOB_SPD` 0,85 kaikessa liikkeessä).
+- **Terveyspalkit (v1.21):** rivi = 100 hp, rivit päällekkäin (enint. 5, ylin tyhjenee ensin), yli 500 hp:lla toinen värikerros (oranssi).
 - **Terveyspalkit:** mobin yläpuolella (mallin korkeus + 0,45 m), nimi ja pääkallot palkin yllä; näkyy kun katse osuu mobiin (~11°, vahvat ~9°)
   alle 12 m (vahvat 70 m) tai 10 s osuman jälkeen. Pomoilla oma palkki ruudun yläreunassa.
 - **Juoksu (v0.93):** harppova juoksuanimaatio (takajalka taakse, polvi ylös, kädet koukussa); kävelyaskel hieman pidempi.

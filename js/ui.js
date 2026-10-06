@@ -12,10 +12,13 @@ function updateMsgs(dt){for(let i=msgEls.length-1;i>=0;i--){const d=msgEls[i];d.
 const floaters=[];
 function floatText(t,x,y,z,color){const el=document.createElement('div');el.className='floater';el.textContent=t;el.style.color=color||'#eee';$('#floaters').appendChild(el);floaters.push({el,p:new V3(x,y,z),t:0});if(floaters.length>24){const o=floaters.shift();o.el.remove();}}
 function updateFloaters(dt){for(let i=floaters.length-1;i>=0;i--){const f=floaters[i];f.t+=dt;f.p.y+=dt*1.2;_tmpV.copy(f.p).project(camera);if(_tmpV.z>1||f.t>1){f.el.remove();floaters.splice(i,1);continue;}f.el.style.left=((_tmpV.x+1)/2*innerWidth)+'px';f.el.style.top=((1-_tmpV.y)/2*innerHeight)+'px';f.el.style.opacity=1-f.t;}}
-const mobBars=[];for(let i=0;i<8;i++){const d=document.createElement('div');d.className='mobbar';d.innerHTML='<i></i><span class="nm"></span><span class="sk"></span>';d.hidden=true;$('#floaters').appendChild(d);mobBars.push(d);}
+// v1.21 (lista 2, kohta 13): palkki = 100 hp, rivit päällekkäin (enint. 5), ylin tyhjenee ensin; yli 500 hp:n mobeilla toinen
+// värikerros (oranssi) rivien päällä. Nimi ja kallot nousevat rivien mukana (pino kasvaa ylöspäin, ei peitä mobia).
+// Pomot, joilla on ruudun yläreunan palkki (Kalmanvartija, ulottuvuuspomot), eivät saa palkkia pään päälle.
+const mobBars=[];for(let i=0;i<8;i++){const d=document.createElement('div');d.className='mobbar';d.innerHTML='<div class="rows">'+'<div class="r"><i class="a"></i><i class="b"></i></div>'.repeat(5)+'</div><span class="nm"></span><span class="sk"></span>';d.hidden=true;$('#floaters').appendChild(d);mobBars.push(d);}
 // Terveyspalkit: näkyvät 10 s iskusta tai kun pelaaja katsoo mobia läheltä (< 12 m); vaikeat (≥3 pääkalloa) jo kaukaa (< 70 m).
 // Yksi kerros = pelaajan perusterveys (60); useampikerroksinen palkki on pidempi ja kerrokset eri värisiä. Alla pääkallot vaikeustasosta.
-const HP_LAYER=60,LAYER_C=['#c0392b','#e07a2a','#d9b43a','#7fae3a','#3a9ad9','#9a5ad9'],_cd=new V3();
+const HP_ROW=100,HP_ROWS=5,_cd=new V3();
 const _mbB=new THREE.Box3();
 function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
   for(const m of mobs){if(k>=mobBars.length)break;if(m.dead||m===boss||m.def.ai==='rboss'||m.dun!==P.inDun)continue;
@@ -26,10 +29,12 @@ function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
     const ex=m.pos.x-camera.position.x,ey=m.pos.y+m.barH*.55-camera.position.y,ez=m.pos.z-camera.position.z,el=Math.hypot(ex,ey,ez)||1,look=(ex*_cd.x+ey*_cd.y+ez*_cd.z)/el>(sk>=3?.988:.982);
     if(!(recent||(look&&(d<12||(sk>=3&&d<70)))))continue;
     _tmpV.set(m.pos.x,m.pos.y+m.barH+.45,m.pos.z).project(camera);if(_tmpV.z>1||Math.abs(_tmpV.x)>1.1||Math.abs(_tmpV.y)>1.1)continue;
-    const b=mobBars[k++],layers=Math.ceil(m.maxHp/HP_LAYER),L=Math.max(1,Math.ceil(m.hp/HP_LAYER)),fill=(m.hp-(L-1)*HP_LAYER)/Math.min(HP_LAYER,m.maxHp);
-    b.hidden=false;b.style.left=((_tmpV.x+1)/2*innerWidth)+'px';b.style.top=((1-_tmpV.y)/2*innerHeight)+'px';b.style.width=Math.round(56*Math.min(3,1+(layers-1)*.4))+'px';
-    b.style.background=L>1?LAYER_C[(L-2)%6]:'rgba(0,0,0,.6)';b.firstChild.style.width=clamp(fill*100,0,100)+'%';b.firstChild.style.background=LAYER_C[(L-1)%6];
-    b.children[1].textContent=`${m.def.n} ${Math.ceil(m.hp)}/${m.maxHp}${layers>1?' ×'+L:''}`;b.children[2].textContent='☠'.repeat(sk);}
+    const b=mobBars[k++],cap=HP_ROW*HP_ROWS,n=Math.min(HP_ROWS,Math.ceil(Math.min(m.maxHp,cap)/HP_ROW)),hp=Math.max(0,m.hp),rows=b.firstChild.children;
+    b.hidden=false;b.style.left=((_tmpV.x+1)/2*innerWidth)+'px';b.style.top=((1-_tmpV.y)/2*innerHeight)+'px';
+    for(let j=0;j<HP_ROWS;j++){const r=rows[HP_ROWS-1-j];if(j>=n){r.style.display='none';continue;}r.style.display='';   // j = rivi alhaalta
+      const c=Math.min(HP_ROW,Math.min(m.maxHp,cap)-j*HP_ROW),c2=Math.min(HP_ROW,Math.max(0,m.maxHp-cap-j*HP_ROW));
+      r.children[0].style.width=clamp((hp-j*HP_ROW)/c*100,0,100)+'%';r.children[1].style.width=c2>0?clamp((hp-cap-j*HP_ROW)/HP_ROW*100,0,100)+'%':'0%';}
+    b.children[1].textContent=`${m.def.n} ${Math.ceil(m.hp)}/${m.maxHp}`;b.children[2].textContent='☠'.repeat(sk);}
   for(;k<mobBars.length;k++)mobBars[k].hidden=true;}
 function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}" data-it="${s.id}" data-q="${s.q||1}" data-n="${s.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${s.id==='soihtu'?`<span class="fu${s.lit===false?' off':''}"><i style="width:${Math.max(0,(s.fuel??torchMax(s))/torchMax(s)*100)}%"></i></span>`:''}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
 let hudT=0,msgHidden=false;

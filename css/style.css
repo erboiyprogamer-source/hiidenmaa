@@ -60,9 +60,11 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 #fade{position:fixed;inset:0;background:#000;opacity:0;transition:opacity .35s;pointer-events:none}
 #hurt{position:fixed;inset:0;pointer-events:none;opacity:0;box-shadow:inset 0 0 160px 40px rgba(170,30,20,.75);transition:opacity .3s}
 .floater{position:absolute;font-weight:800;font-size:16px;text-shadow:0 1px 3px #000;pointer-events:none;transform:translate(-50%,-50%);white-space:nowrap}
-.mobbar{position:absolute;width:56px;height:5px;background:rgba(0,0,0,.6);transform:translate(-50%,-50%);pointer-events:none}
-.mobbar i{display:block;height:100%;background:var(--blood)}
-.mobbar span{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;white-space:nowrap;text-shadow:0 1px 2px #000}
+.mobbar{position:absolute;width:56px;transform:translate(-50%,-100%);pointer-events:none}   /* v1.21: pino kasvaa ylöspäin */
+.mobbar .rows{display:flex;flex-direction:column;gap:2px}
+.mobbar .r{position:relative;height:5px;background:rgba(0,0,0,.6)}
+.mobbar .r i{position:absolute;left:0;top:0;bottom:0;display:block}.mobbar .r i.a{background:var(--blood)}.mobbar .r i.b{background:#e8862a}
+.mobbar span{position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;white-space:nowrap;text-shadow:0 1px 2px #000}
 
 /* Panels */
 .panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--panel);border:1px solid var(--line2);box-shadow:0 20px 60px rgba(0,0,0,.6);padding:18px;max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);overflow:auto;border-radius:4px}
@@ -175,7 +177,7 @@ textarea{width:100%;min-height:70px;background:rgba(0,0,0,.35);color:var(--bone)
 @media(max-width:700px){#progP .cols{grid-template-columns:1fr}}
 
 /* Erä 25: terveyspalkin pääkallot */
-.mobbar .sk{position:absolute;bottom:22px;top:auto;left:50%;transform:translateX(-50%);font-size:11px;color:#e8e2d0;letter-spacing:1px;white-space:nowrap;text-shadow:0 1px 2px #000}
+.mobbar .sk{position:absolute;bottom:calc(100% + 17px);top:auto;left:50%;transform:translateX(-50%);font-size:11px;color:#e8e2d0;letter-spacing:1px;white-space:nowrap;text-shadow:0 1px 2px #000}
 
 /* Erä 27: soihdun palamismittari */
 .slot .fu{position:absolute;left:4px;right:4px;bottom:3px;height:4px;background:rgba(0,0,0,.6);border-radius:2px;overflow:hidden}

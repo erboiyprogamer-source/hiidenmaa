@@ -72,6 +72,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.21 (lista 2, kohta 13: terveyspalkit riveinä)
+- Mobin pään päällä: yksi rivi = 100 hp (`HP_ROW`), rivit päällekkäin enint. 5 (`HP_ROWS`), ylin tyhjenee ensin; yli 500 hp:n mobilla
+  toinen värikerros (oranssi) rivien päällä. Pino kasvaa ylöspäin (`translate(-50%,-100%)`), nimi ja kallot rivien yläpuolella → eivät
+  peitä mobia. Korvaa v0.7x:n värikerrospalkin (`HP_LAYER` 60 poistettu). Pomot, joilla on ruudun yläreunan palkki, eivät saa pääpalkkia.
+
 ### v1.20 (lista 2, kohdat 10–12: kartan pilvet, tekstien varjot, terveys tasoilla)
 - **Iso kartta:** avatun alueen päällä liikkuu ohut pilvikerros (alfa 0,2, `CLOUDC`-kuvio, sama tuulisiirtymä `mapCO`).
 - **Karttatekstit:** löytöpaikkojen nimille ja alareunan tekstille pehmeä varjo (shadowBlur 3, siirto 1 px) → näkyvät lumisilla vuorilla.
@@ -1274,7 +1279,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19, kohdat 10–12 v1.20. Seuraavaksi kohta 13. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19, kohdat 10–12 v1.20, kohta 13 v1.21. Seuraavaksi kohta 14. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.
@@ -1287,7 +1292,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 10. TEHTY v1.20. Ohuet liikkuvat pilvet avatulla alueella (20 %).
 11. TEHTY v1.20. Pehmeä varjo karttateksteille.
 12. TEHTY v1.20. Terveys 60 → 100 portaittain tasoilla 2–5, lisäys heti.
-13. Monikertaisen terveyden mobeille useita päällekkäisiä hp-palkkeja; palkit ja kallot nousevat määrän mukaan (eivät mobin edessä).
+13. TEHTY v1.21. 100 hp / rivi, enint. 5 riviä, > 500 hp toinen värikerros; nimi + kallot rivien yllä.
 14. Jousi: jänne venyy väärään suuntaan → korjaa; latauksessa jousi keskelle eteen ja oikea käsi vetää jänteen pään oikealle puolelle;
     jousi heiluu käden mukana kävellessä.
 15. Nuolten tiedot näkyviin; sulkanuolet kauemmas, tasaisemmin ja nopeammin; tulinuoli = tavallinen + sytyttää; palamisesta tulisempi + valo maahan.

@@ -93,6 +93,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.19 kaatuva puu osuu pelaajaan ja mobeihin (ei kaatajaan), myrskyn suunta, taipuminen',()=>typeof treeHit==='function'&&/fallTree\(n,undefined,true\)/.test(doMeleeHit.toString())&&/src/.test(crushPlayer.toString())&&/Math\.atan2\(WIND\.x,WIND\.z\)/.test(stormFellTree.toString())&&/3\.4\*Math\.pow/.test(updateWind.toString())||'puuttuu');
   t('v1.20 terveys tasoilla 60→100, kartan tekstivarjo ja ohuet pilvet',()=>{const o=lvlInfo;lvlInfo=()=>({L:5,xp:0,need:1});const h5=lvlHp();lvlInfo=()=>({L:1,xp:0,need:1});const h1=lvlHp();lvlInfo=o;
     return h5===40&&h1===0&&/shadowBlur/.test(mapMarkers.toString())&&/globalAlpha=\.2/.test(drawBigMap.toString())||'puuttuu';});
+  t('v1.21 terveyspalkit: 100 hp / rivi, enint. 5, toinen kerros',()=>HP_ROW===100&&HP_ROWS===5&&document.querySelectorAll('.mobbar .r').length===40&&!!document.querySelector('.mobbar .r i.b')||'palkit puuttuvat');
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 for(const [k,v] of Object.entries(r))console.log(v===true?'OK ':'XX ',k,v===true?'':v);
