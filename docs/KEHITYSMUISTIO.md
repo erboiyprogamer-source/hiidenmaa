@@ -71,6 +71,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.01 (arkkukivi = suljettu kivilinnake, käyttäjän pyyntö)
+- `buildPoiRock` (story.js) korvaa v0.98:n avoimen kivikasan: **umpinainen 3,5 m kivimuuri** (18 lohkoa, säde 5,5 m, paksuus 0,8 m, sammal
+  harjalla), ulkopuolella **5 hyppypilaria** (nousu 0,7 m > askelnousu → hypättävä, välit reunasta reunaan 1,6–1,9 m = "vaikea"),
+  viimeiseltä hypätään muurin harjalle; sisällä **kiviportaat** 0,5 m askelin alas arkulle ja takaisin ylös. Hehkuva riimu muurin sisäpinnalla.
+- Testattu pelin fysiikalla (hyppy 7,2 m/s, painovoima 22 → huippu ~1,18 m): laskeutuu kaikille pilareille ja muurille, portaat arkulle asti,
+  muurista ei pääse läpi. Reittitiedot `FORT[k]` (tarkistus: pilarien nousut ≤ 0,75 m, portaat ≤ 0,55 m).
+
 ### v1.00 (ruoho – kohta 15, päivityslistan kohdat 1–15 valmiit)
 - Pystyheinätupsut (`GRASS_GEO` 7 korren tupsu, `rebuildGrass`/`updateGrass`, resources.js) instansseina pelaajan ympärillä: biomi tallennetaan
   maaston rakennuksessa (`TBIOME`, render.js), tiheys/pituus/väri `GRASS_DEF` (niitty tihein, koivikko, metsä, suo pitkä, kangas harva,
@@ -1127,7 +1134,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 **JATKA TÄSTÄ (päivitetty v0.94):** kohdat 1–9 tehty (v0.81–v0.92) + käyttäjän välilisäykset v0.93 (hautakasa arkkuna, Kalmanpesä
 millä vain, DEV-jumalvoimatäpät, harppova juoksu) ja v0.94 (Shift-tietoikkuna). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Kohdat 10 (v0.95) ja 11 (v0.96) tehty. KAIKKI KOHDAT 1–15 TEHTY (v0.81–v1.00)**. Käyttäjän uusi pyyntö: arkkukivistä haastavampia (korkeat muurit, kiviä joita pitkin hypitään ylös, kiviportaat alas) – kysy tarkennukset, kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
+Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Kohdat 10 (v0.95) ja 11 (v0.96) tehty. KAIKKI KOHDAT 1–15 TEHTY (v0.81–v1.00)**. Arkkukivilinnake tehty v1.01. Ruoho: käyttäjä haluaa kevyemmän, ohuemman, läpikuultavan ja laikuittaisen (ei koko maata täyteen) → v1.02, kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
 `?v=` → commit, push, PR #23 kuvaus → testilinkki `https://raw.githack.com/erboiyprogamer-source/hiidenmaa/claude/hiidenmaa-survival-game-fmxt0m/index.html`.
 Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kallistus + edestakainen heilunta kuten puut), asetus pois/oletus/täysi.
 1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
