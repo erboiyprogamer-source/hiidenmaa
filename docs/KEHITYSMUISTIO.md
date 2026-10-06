@@ -1162,7 +1162,8 @@ v0.93 (hautakasa arkkuna, Kalmanpesä millä vain, DEV-jumalvoimatäpät, harppo
 suljetuksi linnakkeeksi: korkea muuri, vaikeat siksak-hyppypilarit, kierreportaat; ruoho kevyemmäksi ja laikuittaiseksi; kiviröykkiöt 2/kartta).
 Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23 auki (tarkista ennen jatkoa onko yhdistetty; jos on, aloita origin/mainista
 tarkistettuasi ettei commiteja katoa). Linnake hyväksytty. v1.04: ruoho kasoina, kasvillisuuden esto kohteissa, tuulinäyttö, leirien yksityiskohdat. Avoin: käyttäjä testaa ruohon (v1.04). Mahdolliset jatkot: realm-pomojen laatikkomaiset lisäosat (Erä 44b), pelaajan soihdun varjoasetus ja kartan piirto
-vain tapahtumista (Erä 40), DEV=false kun käyttäjä pyytää. Työtapa: välikommentit heti, sitten jatketaan; 1–5 tarkentavaa kysymystä per kohta;
+vain tapahtumista (Erä 40), DEV=false kun käyttäjä pyytää. Linkit: haaralinkki = aina uusin (välimuistiviive), commit-linkki = tarkka versio heti (selitetty käyttäjälle, kirjattu CLAUDE.md:hen).
+Työtapa: välikommentit heti, sitten jatketaan; 1–5 tarkentavaa kysymystä per kohta;
 kun käyttäjä ei voi vastata, tee kohdat joihin vastauksia ei tarvita ja kirjaa oletukset.
 1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
 2. TEHTY v0.83. Mobien spawnaus: yöllä suurin osa, vähän kauempana (jahtaavat); osa lähelle mieluiten esteen taakse. Päivällä max 2, vain tiheä metsä /
