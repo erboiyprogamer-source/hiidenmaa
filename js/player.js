@@ -116,7 +116,9 @@ function updatePlayer(dt){
    let tR=eRo!==null?eRo:bendR,tL=eLo!==null?eLo:bendL;if(P.drawing){tL=-.05;tR=-(.5+P.bowDraw*.9);}
    fig.elbowR.rotation.x=lerp(fig.elbowR.rotation.x,tR,Math.min(1,dt*(P.atk?20:8)));fig.elbowL.rotation.x=lerp(fig.elbowL.rotation.x,tL,Math.min(1,dt*(P.atk?20:8)));}
   // Jousi pysyy pystyssä (kämmenen kierto kumotaan käsivarren kulmalla); jänne ja nuoli seuraavat vetoa.
-  if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-fig.armL.rotation.x-fig.elbowL.rotation.x,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
+  // v1.22 (lista 2, kohta 14): levossa jousi heiluu käden mukana kuten muutkin esineet (ennen käden kierto kumottiin → jousi jäykkänä);
+  // vedossa asento lasketaan alempana (bowAim).
+  if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-.15,0,0);heldMesh.position.set(0,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
   // Kahden käden ote kirveestä: vasen käsi tarttuu varteen (IK, gripK pehmentää otteeseen menon ja irrotuksen).
   P.gripK=lerp(P.gripK||0,grip&&heldMesh?1:0,Math.min(1,dt*(grip?22:10)));
   if(!(P.drawK>.5))armClear(fig.armR,fig.elbowR,fig.hand);
@@ -129,7 +131,7 @@ function updatePlayer(dt){
   armClear(fig.armL,fig.elbowL,fig.handL);
   // Jousen veto: oikea käsi jänteellä nuolen kannan kohdalla.
   P.drawK=lerp(P.drawK||0,P.drawing&&heldMesh&&ITEMS[heldId].cat==='bow'?1:0,Math.min(1,dt*14));
-  if(P.drawK>.01&&heldMesh&&heldMesh.userData.bow){fig.g.updateMatrixWorld(true);const b=heldMesh.userData.bow;_gp.set(0,0,b.ar.position.z+.02);heldMesh.localToWorld(_gp);armIK(fig.armR,fig.elbowR,_gp,P.drawK,_poleBow);}
+  {const bk=P.drawK>.01&&heldMesh&&heldMesh.userData.bow?P.drawK:0;fig.rig.rotation.y=-.55*bk;fig.head.rotation.y=.55*bk;if(bk)bowAim(heldMesh,bk);}   // v1.22 ampuja-asento: vartalo sivuttain, pää eteen
   // Kilpi torjunnassa: käännetään (pehmeästi, blockK) osoittamaan eteenpäin – kämmenen kierto kumotaan niin että kilven normaali (x) on hahmon +z
   if(offMesh&&offId&&ITEMS[offId].cat==='shield'){P.blockK=lerp(P.blockK||0,P.blocking?1:0,Math.min(1,dt*10));
     if(P.blockK>.01){fig.g.updateMatrixWorld(true);fig.handL.getWorldQuaternion(_qh);fig.g.getWorldQuaternion(_qf);_qd.copy(_qf).multiply(_qt.setFromEuler(_eb.set(0,-Math.PI/2,0)));
@@ -190,7 +192,20 @@ function armIK(arm,elbow,T,w,pole){const V=arm.parent.worldToLocal(_ikV.copy(T))
   _ikY.copy(_ikU).negate();_ikZ.copy(_ikD).addScaledVector(_ikU,-_ikD.dot(_ikU));if(_ikZ.lengthSq()<1e-6)_ikZ.copy(_ikN).negate();_ikZ.normalize();
   _ikX.crossVectors(_ikY,_ikZ).normalize();_ikM.makeBasis(_ikX,_ikY,_ikZ);_ikQ.setFromRotationMatrix(_ikM);
   arm.quaternion.slerp(_ikQ,w);elbow.rotation.x=lerp(elbow.rotation.x,-f,w);}
-const _ikV=new V3(),_ikS=new V3(),_ikH=new V3(),_ikT=new V3(),_poleR=new V3(-.7,-1,.3),_poleBow=new V3(-.7,0,-1);
+const _ikV=new V3(),_ikS=new V3(),_ikH=new V3(),_ikT=new V3(),_poleR=new V3(-.7,-1,.3),_poleBow=new V3(-.7,0,-1),_poleBowL=new V3(.9,-.6,0);
+/* v1.22 (lista 2, kohta 14) jousen veto: jousi tuodaan keskelle eteen (vasen käsi IK:lla), jänne vedetään taakse pään oikealle puolelle
+   (oikea käsi IK:lla). Ennen jänne ja oikea käsi menivät hahmon vasemmalle puolelle (jousen asento seurasi vasemman käden kiertoa).
+   Pisteet hahmon suunnassa: F = eteen, Lv = vasemmalle (+x), y = posken korkeus. Jousen paikallinen +z = tähtäyssuunta (jänteeltä kahvaan). */
+const _bwN=new V3(),_bwG=new V3(),_bwH=new V3(),_bwX=new V3(),_bwY=new V3(),_bwZ=new V3(),_bwM=new THREE.Matrix4(),_bwQ=new THREE.Quaternion(),_bwP=new THREE.Quaternion(),_bwO=new V3();
+function bowAim(hm,k){const b=hm.userData.bow;fig.g.updateMatrixWorld(true);fig.head.getWorldPosition(_bwH);
+  const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),lx=Math.cos(P.yaw),lz=-Math.sin(P.yaw),o=fig.g.position,y=_bwH.y+.22,full=.12-(b.tipZ-(.1+.32));
+  _bwN.set(o.x+fx*.06-lx*.12,y,o.z+fz*.06-lz*.12);   // jänteen kohta täydessä vedossa: posken oikea puoli
+  _bwG.set(_bwN.x+fx*full+lx*.08,y-.02,_bwN.z+fz*full+lz*.08);   // kahva keskellä edessä (n. 4 cm vasemmalla keskilinjasta)
+  armIK(fig.armL,fig.elbowL,_bwG,k,_poleBowL);fig.g.updateMatrixWorld(true);
+  _bwZ.subVectors(_bwG,_bwN).normalize();_bwY.set(0,1,0).addScaledVector(_bwZ,-_bwZ.y).normalize();_bwX.crossVectors(_bwY,_bwZ);_bwM.makeBasis(_bwX,_bwY,_bwZ);
+  _bwQ.setFromRotationMatrix(_bwM);hm.parent.getWorldQuaternion(_bwP);_bwQ.premultiply(_bwP.invert());hm.quaternion.slerp(_bwQ,k);
+  _bwO.set(0,0,.12).applyQuaternion(hm.quaternion).negate();hm.position.lerp(_bwO,k);hm.updateMatrixWorld(true);
+  _gp.set(0,0,b.ar.position.z+.02);hm.localToWorld(_gp);armIK(fig.armR,fig.elbowR,_gp,k,_poleBow);}
 function lerpAngle(a,b,t){let d=((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;return a+d*t;}
 function playerDie(){
   if(devOn('god')){P.hp=Math.max(1,P.hp);return;}   // DEV: kuolemattomuus

@@ -72,6 +72,14 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.22 (lista 2, kohta 14: jousen veto oikein)
+- **Vika:** täydessä vedossa jänne ja oikea käsi menivät hahmon vasemmalle puolelle (~35 cm), jousi ei ollut edessä keskellä
+  (jousen asento seurasi vasemman käden kiertoa). Mitattu pisteinä (eteen, sivu, korkeus).
+- **Korjaus** (`bowAim`, player.js): ampuja-asento – vartalo kiertyy −0,55 rad (vasen olka eteen), pää kääntyy takaisin eteen;
+  kahva keskellä edessä (eteen 0,7 m, sivu −0,04), jänne posken oikealla puolella (eteen 0,01, sivu −0,12, posken korkeus);
+  vasen käsi IK:lla kahvaan, jousen paikallinen +z = tähtäys (jänteeltä kahvaan), oikea käsi IK:lla jänteelle. Kaikki pehmeästi `drawK`:lla.
+- Vedon pituus `.42 → .32` (käsi ylettyy). **Levossa** jousi heiluu käden mukana (ennen käden kierto kumottiin).
+
 ### v1.21 (lista 2, kohta 13: terveyspalkit riveinä)
 - Mobin pään päällä: yksi rivi = 100 hp (`HP_ROW`), rivit päällekkäin enint. 5 (`HP_ROWS`), ylin tyhjenee ensin; yli 500 hp:n mobilla
   toinen värikerros (oranssi) rivien päällä. Pino kasvaa ylöspäin (`translate(-50%,-100%)`), nimi ja kallot rivien yläpuolella → eivät
@@ -1279,7 +1287,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19, kohdat 10–12 v1.20, kohta 13 v1.21. Seuraavaksi kohta 14. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19, kohdat 10–12 v1.20, kohta 13 v1.21, kohta 14 v1.22. Seuraavaksi kohdat 15–17 (jouset ja nuolet). PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.
@@ -1293,8 +1301,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 11. TEHTY v1.20. Pehmeä varjo karttateksteille.
 12. TEHTY v1.20. Terveys 60 → 100 portaittain tasoilla 2–5, lisäys heti.
 13. TEHTY v1.21. 100 hp / rivi, enint. 5 riviä, > 500 hp toinen värikerros; nimi + kallot rivien yllä.
-14. Jousi: jänne venyy väärään suuntaan → korjaa; latauksessa jousi keskelle eteen ja oikea käsi vetää jänteen pään oikealle puolelle;
-    jousi heiluu käden mukana kävellessä.
+14. TEHTY v1.22. Ampuja-asento: jousi keskellä edessä, jänne posken oikealle puolelle, levossa heiluu käden mukana.
 15. Nuolten tiedot näkyviin; sulkanuolet kauemmas, tasaisemmin ja nopeammin; tulinuoli = tavallinen + sytyttää; palamisesta tulisempi + valo maahan.
 16. Paremmat aseet/työkalut = paremmat ominaisuudet (esim. hiidenjousi latautuu nopeammin, kantama, nopeus ja vahinko isommat).
 17. Jousen tähtäysympyrä: alkaa isona ja pienenee latautuessa, keltainen → punainen; vajaa lataus = nuoli satunnaisesti ympyrän alueelle,

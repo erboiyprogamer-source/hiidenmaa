@@ -94,6 +94,9 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.20 terveys tasoilla 60→100, kartan tekstivarjo ja ohuet pilvet',()=>{const o=lvlInfo;lvlInfo=()=>({L:5,xp:0,need:1});const h5=lvlHp();lvlInfo=()=>({L:1,xp:0,need:1});const h1=lvlHp();lvlInfo=o;
     return h5===40&&h1===0&&/shadowBlur/.test(mapMarkers.toString())&&/globalAlpha=\.2/.test(drawBigMap.toString())||'puuttuu';});
   t('v1.21 terveyspalkit: 100 hp / rivi, enint. 5, toinen kerros',()=>HP_ROW===100&&HP_ROWS===5&&document.querySelectorAll('.mobbar .r').length===40&&!!document.querySelector('.mobbar .r i.b')||'palkit puuttuvat');
+  t('v1.22 jousen veto: jänne pään oikealla puolella, kahva edessä keskellä',()=>{if(typeof bowAim!=='function')return 'bowAim puuttuu';const s0=inv.slice(),y0=P.yaw;inv=new Array(invN()).fill(null);invAdd('jousi',1);toggleEquip(inv[0]);updateGear();
+    P.drawing=true;P.drawK=1;P.bowDraw=1;bowAim(heldMesh,1);const b=heldMesh.userData.bow,o=fig.g.position,fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),w=z=>{const q=heldMesh.localToWorld(new THREE.Vector3(0,0,z));const dx=q.x-o.x,dz=q.z-o.z;return[dx*fx+dz*fz,dx*fz-dz*fx];};
+    const g=w(.12),nk=w(b.ar.position.z);P.drawing=false;P.drawK=0;inv=s0;invDirty=true;updateGear();return g[0]>.5&&Math.abs(g[1])<.15&&nk[0]<.2&&nk[1]<0||'veto väärin: '+JSON.stringify([g,nk]);});
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 for(const [k,v] of Object.entries(r))console.log(v===true?'OK ':'XX ',k,v===true?'':v);
