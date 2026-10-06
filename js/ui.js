@@ -347,7 +347,7 @@ function mkMapClouds(S,seed,cover,scale){const c=document.createElement('canvas'
 const CLOUDC=mkMapClouds(256,911,.52,4),CLOUDC2=mkMapClouds(256,377,.56,3);
 const CLOUDSH=(function(){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');g.globalAlpha=.25;for(const [dx,dy] of [[0,0],[2,1],[-2,1],[1,-2],[-1,2]])for(const ox of [-256,0,256])for(const oy of [-256,0,256])g.drawImage(CLOUDC,dx+ox,dy+oy);g.globalAlpha=1;g.globalCompositeOperation='source-in';g.fillStyle='#000';g.fillRect(0,0,256,256);return c;})();
 const FOGTMP=document.createElement('canvas');FOGTMP.width=FOGTMP.height=640;
-let mapZ=1,mapCX=0,mapCZ=0,mapRAF=0,mapDrag=null;
+let mapZ=1,mapCX=0,mapCZ=0,mapRAF=0,mapDrag=null,mapMouse=null,mapWindA=.9;
 function mapView(){const sw=MAPW/mapZ;return{sw,x0:clamp(mapCX+HALF-sw/2,0,MAPW-sw),y0:clamp(mapCZ+HALF-sw/2,0,MAPW-sw)};}
 function mapLoop(){if(openPanel!=='map'){mapRAF=0;return;}drawBigMap();mapRAF=requestAnimationFrame(mapLoop);}
 // Onko kohta paljastettu kartalla (pelaaja on käynyt ~12 m säteellä). Löydetyn paikan merkki näkyy vain paljastetulla alueella,
@@ -366,12 +366,12 @@ function windArrow(g,x,y,L,col){g.save();g.translate(x,y);g.rotate(Math.atan2(WI
   g.beginPath();g.moveTo(-L*.5,0);g.lineTo(L*.32,0);g.stroke();g.beginPath();g.moveTo(L*.5,0);g.lineTo(L*.18,-L*.2);g.lineTo(L*.18,L*.2);g.closePath();g.fill();
   g.beginPath();g.moveTo(-L*.5,0);g.lineTo(-L*.62,-L*.16);g.moveTo(-L*.38,0);g.lineTo(-L*.5,-L*.16);g.stroke();g.restore();}
 // v1.04 selkeämpi tuulinäyttö: isompi kompassi (r 46), paksu nuoli, "Tuuli lounaasta" + iso nopeus "6 m/s", voimakkuuspalkki (0–22 m/s)
-function drawWindCompass(g,x,y,r){g.save();g.fillStyle='rgba(19,17,14,.72)';g.beginPath();g.arc(x,y,r,0,TAU);g.fill();g.strokeStyle='rgba(232,164,74,.9)';g.lineWidth=2;g.stroke();
+function drawWindCompass(g,x,y,r){g.save();g.fillStyle='rgba(19,17,14,.42)';g.beginPath();g.arc(x,y,r,0,TAU);g.fill();g.strokeStyle='rgba(232,164,74,.9)';g.lineWidth=2;g.stroke();
   g.strokeStyle='rgba(238,229,211,.25)';g.lineWidth=1;for(let i=0;i<16;i++){const a=i/16*TAU,l=i%4?5:9;g.beginPath();g.moveTo(x+Math.cos(a)*(r-2),y+Math.sin(a)*(r-2));g.lineTo(x+Math.cos(a)*(r-2-l),y+Math.sin(a)*(r-2-l));g.stroke();}
   g.fillStyle='#eee5d3';g.font='800 13px Alegreya Sans, sans-serif';g.textAlign='center';g.textBaseline='middle';
   for(const [t,dx,dy] of [['P',0,-1],['I',1,0],['E',0,1],['L',-1,0]])g.fillText(t,x+dx*(r-17),y+dy*(r-17));
   windArrow(g,x,y,r*1.35,'#8fd8cf');g.textBaseline='alphabetic';
-  const W=150,top=y+r+8;g.fillStyle='rgba(19,17,14,.78)';g.fillRect(x-W/2,top,W,50);g.strokeStyle='rgba(232,164,74,.6)';g.strokeRect(x-W/2+.5,top+.5,W-1,49);
+  const W=150,top=y+r+8;g.fillStyle='rgba(19,17,14,.5)';g.fillRect(x-W/2,top,W,50);g.strokeStyle='rgba(232,164,74,.6)';g.strokeRect(x-W/2+.5,top+.5,W-1,49);
   g.fillStyle='#d8cdb6';g.font='700 12px Alegreya Sans, sans-serif';g.fillText(`Tuuli ${windFromText()}`,x,top+15);
   g.fillStyle='#8fd8cf';g.font='800 18px Alegreya Sans, sans-serif';g.fillText(`${WIND.spd.toFixed(1).replace('.',',')} m/s`,x,top+35);
   const k=Math.min(1,WIND.spd/22);g.fillStyle='rgba(238,229,211,.15)';g.fillRect(x-W/2+10,top+41,W-20,4);g.fillStyle=k>.65?'#e0614f':k>.35?'#e8a44a':'#8fd8cf';g.fillRect(x-W/2+10,top+41,(W-20)*k,4);g.restore();}
@@ -389,16 +389,19 @@ function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),W=c.width,v=mapV
     const lay=(img,sp,dx,dy,sc,al)=>{t.save();t.globalAlpha=al;t.scale(sc,sc);t.translate((mapCO.x*sp*dx+mapCO.y*sp*(1-dx)*.3)%256,(mapCO.y*sp*dx-mapCO.x*sp*(1-dx)*.3)%256);t.fillStyle=t.createPattern(img,'repeat');t.fillRect(-256,-256,W/sc+512,W/sc+512);t.restore();};
     lay(CLOUDSH,6,1,.45,2.2,.22);lay(CLOUDC2,4,.8,.6,2.6,.55);lay(CLOUDC,7,1,.4,2,.85);}
   t.globalCompositeOperation='source-over';g.drawImage(FOGTMP,0,0);
-  mapMarkers(g,S,HALF-v.x0,HALF-v.y0);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF-v.x0)*S,(P.pos.z+HALF-v.y0)*S,9);
   drawWindStreaks(g,W);
-  /* v1.06 tuulikompassi kartan vasemmalle puolelle omaan kankaaseensa (ei kartan päälle) */
-  {const wc=$('#mapWind');if(wc){const wg=wc.getContext('2d');wg.clearRect(0,0,wc.width,wc.height);drawWindCompass(wg,85,50,46);}}
+  /* v1.07 tuulikompassi kartan päällä oikeassa yläkulmassa, mutta ei peitä mitään: läpikuultava tausta, häipyy (alfa ~0,12) kun hiiri
+     on sen kohdalla, ja kartan merkit + pelaajan nuoli piirretään sen PÄÄLLE (ennen v1.06 kompassi peitti ne) */
+  {const hov=mapMouse&&mapMouse.x>W-175&&mapMouse.y<180;mapWindA+=((hov?.12:.9)-mapWindA)*.25;g.save();g.globalAlpha=mapWindA;drawWindCompass(g,W-90,62,46);g.restore();}
+  mapMarkers(g,S,HALF-v.x0,HALF-v.y0);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF-v.x0)*S,(P.pos.z+HALF-v.y0)*S,9);
   g.fillStyle='rgba(238,229,211,.8)';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='left';g.fillText(mapZ>1?`Zoom ×${mapZ.toFixed(1)} · vedä siirtääksesi · kaksoisnapsautus keskittää`:'Rulla = zoom',10,630);}
 // Kartan zoom (rulla) ja siirto (vetäminen)
 (function(){const c=$('#bigmap');
   c.addEventListener('wheel',e=>{e.preventDefault();const r=c.getBoundingClientRect(),W=c.width,v=mapView(),fx=(e.clientX-r.left)/r.width,fy=(e.clientY-r.top)/r.height,wx=v.x0+fx*v.sw-HALF,wz=v.y0+fy*v.sw-HALF;
     mapZ=clamp(mapZ*(e.deltaY<0?1.25:.8),1,6);const v2=MAPW/mapZ;mapCX=wx-(fx-.5)*v2;mapCZ=wz-(fy-.5)*v2;},{passive:false});
   c.addEventListener('mousedown',e=>{mapDrag={x:e.clientX,y:e.clientY};});
+  /* v1.07 hiiren paikka kartan kankaan koordinaateissa (tuulikompassin häivytys) */
+  c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();mapMouse={x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height};});c.addEventListener('mouseleave',()=>{mapMouse=null;});
   addEventListener('mouseup',()=>{mapDrag=null;});
   addEventListener('mousemove',e=>{if(!mapDrag||openPanel!=='map')return;const r=c.getBoundingClientRect(),v=mapView(),k=v.sw/r.width;mapCX-=(e.clientX-mapDrag.x)*k;mapCZ-=(e.clientY-mapDrag.y)*k;mapDrag={x:e.clientX,y:e.clientY};});
   c.addEventListener('dblclick',()=>{mapCX=P.pos.x;mapCZ=P.pos.z;});})();

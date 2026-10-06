@@ -71,11 +71,17 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.07 (tuulikompassi takaisin kartan päälle – ei peitä mitään)
+- Käyttäjän toive: kompassi pysyy kartan päällä oikeassa yläkulmassa kuten ennen v1.06:ta, mutta se ei saa peittää karttaa eikä muuta.
+  Ratkaisu (`drawBigMap`, ui.js): (1) taustat läpikuultavat (ympyrä 0,42, laatikko 0,5), (2) kompassi häipyy alfaan ~0,12, kun hiiri on
+  sen kohdalla (`mapMouse`, `mapWindA`, pehmeä siirtymä), (3) kartan merkit (työpisteet, löydetyt paikat, hauta) ja pelaajan nuoli
+  piirretään kompassin päälle. Erillinen `#mapWind`-kangas ja `.mapRow` poistettu; kartan leveys taas `min(78vh, 100vw − 60px)`.
+
 ### v1.06 (nuija, takaraivon hiukset, tuulikompassi kartan viereen)
 - **Nuija toisin päin:** varren kartio oli väärin päin (paksu pää kädessä, ohut kärjessä). Nyt `CylinderGeometry(.095,.034)`: paksu pää
   kärjessä vanteineen, ohut kahva nupin kanssa kädessä (myös selässä, sama malli).
 - **Pelaajan takaraivo:** 11 hiustupsua (r 0,075) takaraivoon ja niskaan (y 0,13–0,38, z −0,12…−0,2); kuuluvat `hairTop`-listaan, joten kypärä piilottaa ne.
-- **Tuulikompassi isolla kartalla** siirretty kartan päältä oikeasta yläkulmasta kartan vasemmalle puolelle omaan kankaaseen `#mapWind`
+- **Tuulikompassi isolla kartalla** (v1.07: palautettu kartan päälle, ks. v1.07) siirretty kartan päältä oikeasta yläkulmasta kartan vasemmalle puolelle omaan kankaaseen `#mapWind`
   (170×172, `.mapRow` flex). Kartan leveys `min(78vh, 100vw − 250px)`. Tuuliviirut jäävät kartan päälle.
 
 ### v1.05 (DEV-esinehaku + jousen laukaisun korjaus)
@@ -1171,7 +1177,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ (päivitetty v1.06):** v1.06 nuija oikein päin (paksu pää kärkeen), takaraivon hiukset, tuulikompassi kartan vasemmalle puolelle. v1.05 lisäsi DEV-esinehaun (Ä-valikko, määrä hakunapin vieressä) ja korjasi jousen laukaisun. Aiempi tila: päivityslistan KAIKKI kohdat 1–15 tehty (v0.81–v1.00) + välilisäykset:
+**JATKA TÄSTÄ (päivitetty v1.06):** v1.06 nuija oikein päin (paksu pää kärkeen), takaraivon hiukset, tuulikompassi kartan vasemmalle puolelle – v1.07 palautettu kartan päälle läpikuultavana, häipyy hiiren alla, merkit sen päällä. v1.05 lisäsi DEV-esinehaun (Ä-valikko, määrä hakunapin vieressä) ja korjasi jousen laukaisun. Aiempi tila: päivityslistan KAIKKI kohdat 1–15 tehty (v0.81–v1.00) + välilisäykset:
 v0.93 (hautakasa arkkuna, Kalmanpesä millä vain, DEV-jumalvoimatäpät, harppova juoksu), v0.94 (Shift-tietoikkuna), v1.01–v1.03 (arkkukivi
 suljetuksi linnakkeeksi: korkea muuri, vaikeat siksak-hyppypilarit, kierreportaat; ruoho kevyemmäksi ja laikuittaiseksi; kiviröykkiöt 2/kartta).
 Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23 auki (tarkista ennen jatkoa onko yhdistetty; jos on, aloita origin/mainista
