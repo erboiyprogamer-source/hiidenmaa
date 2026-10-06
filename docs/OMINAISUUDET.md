@@ -104,6 +104,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   **v1.08 (reppu ja arkku):** valittu ruutu sykkii oranssina ja nousee, sen kuvake seuraa hiirtä haamuna, kohderuudussa vihje
   Siirrä / Pinoa / Vaihda ja tietolaatikossa ohjeteksti. Valittuna oikea napsautus toiseen ruutuun siirtää puolet (tyhjään tai samaan
   esineeseen). Raahaus (hiiri pohjassa) siirtää ruutuun / pikapalkkiin; paneelin ulkopuolelle raahattu esine putoaa maahan.
+- **Valmistusehdotukset (v1.16):** kaksi osiota: "Voit valmistaa nyt" (aineet repussa, enint. 6; puuttuva työpiste merkitään, rakentamaton työpiste
+  → myös toiseen osioon) ja "Hyödyllistä seuraavaksi" (enint. 4, pelin vaiheeseen sopivat). Järjestys: ei koskaan valmistettu → usein
+  tarvittavat (nuolet, soihdut, ruoka) → valmistettu mutta ei mukana → välituotteet. Tarpeettomia varusteita ei ehdoteta.
 - **Ehdotukset ja haku:** valmistuksen ja rakennusvalikon oletusvälilehti *Ehdotukset* näyttää syineen ne, joihin aineet ovat valmiina,
   puuttuvat tai paremmat varusteet ja pelin vaiheeseen sopivat rakennukset (työpenkki → nuotio → sänky → suoja → sulatin/ahjo).
   Hakukenttä hakee kaikista välilehdistä nimen osalla.

@@ -170,9 +170,11 @@ function renderInv(){initSearch();renderEffects();
   // Haku ohittaa välilehdet ja hakee kaikista tunnetuista ohjeista; Ehdotukset = suggestCrafts().
   const qs=searchQ('#craftSearch'),sug=!qs&&craftTab==='suos'?suggestCrafts(st):null;
   for(const [id,nm] of [['suos','Ehdotukset'],...CRAFT_CATS]){const b=document.createElement('button');b.className='tab'+(id===craftTab&&!qs?' on':'')+(id==='suos'?' sug':'');b.textContent=nm;b.onclick=()=>{craftTab=id;$('#craftSearch').value='';renderInv();};tabs.appendChild(b);}
-  const list=qs?RECIPES.filter(r=>recipeKnown(r)&&searchHit(ITEMS[r.id].n,qs)):sug?sug.map(x=>x.r):RECIPES.filter(r=>recipeKnown(r)&&(craftTab==='alku'?r.alku:recipeCat(r)===craftTab));
+  const sugL=sug?[...(sug.now.length?[{h:'Voit valmistaa nyt'}]:[]),...sug.now,...(sug.next.length?[{h:'Hyödyllistä seuraavaksi'}]:[]),...sug.next]:null;
+  const list=qs?RECIPES.filter(r=>recipeKnown(r)&&searchHit(ITEMS[r.id].n,qs)):sugL?sugL.map(x=>x.h?x:x.r):RECIPES.filter(r=>recipeKnown(r)&&(craftTab==='alku'?r.alku:recipeCat(r)===craftTab));
   if(!list.length)cl.innerHTML=`<div class="note">${qs?'Ei osumia haulle “'+esc(qs)+'”.':'Ei ehdotuksia juuri nyt.'}</div>`;
-  for(const r of list){const why=sug?sug.find(x=>x.r===r).why:'';
+  for(let li=0;li<list.length;li++){const r=list[li];if(r.h){const h=document.createElement('div');h.className='sugH';h.textContent=r.h;cl.appendChild(h);continue;}
+    const why=sugL?sugL[li].why:'';
     const open=recipeOpen(r);
     const okSt=!r.st||st[r.st];const okMat=Object.entries(r.req).every(([id,n])=>invCount(id)>=n);
     const el=document.createElement('div');el.className='rec'+(okSt&&okMat&&open?'':' na');
@@ -197,18 +199,35 @@ const recipeKnown=r=>Object.keys(r.req).some(id=>flags.seen[id])||!r.st;
 function gearKey(d){return d.cat==='weapon'?(d.chop?'chop':d.pick?'pick':'weapon'):d.cat;}
 function gearPow(d){return d.chop?d.chop*10+d.dmg*.01:d.pick?d.pick*10+d.dmg*.01:d.cat==='armor'?d.arm:d.cat==='shield'?d.block:d.dmg||1;}
 function bestOwned(key){let b=-1;for(const s of inv)if(s&&ITEMS[s.id].cat&&gearKey(ITEMS[s.id])===key)b=Math.max(b,gearPow(ITEMS[s.id]));return b;}
-// Valmistusehdotukset: aineet jo repussa, puuttuva tai parempi varuste, pelin vaihe (myöhemmän tason ohjeet edellä). Enintään 8.
-function suggestCrafts(st){const L=lvlInfo().L,out=[],hasBow=inv.some(s=>s&&ITEMS[s.id].cat==='bow');
-  for(const r of RECIPES){if(!recipeKnown(r)||!recipeOpen(r))continue;const d=ITEMS[r.id];let sc=Math.min(r.lvl||1,L)*.5;const why=[];
-    const okMat=Object.entries(r.req).every(([id,n])=>invCount(id)>=n),okSt=!r.st||st[r.st];
-    const have=Object.entries(r.req).reduce((a,[id,n])=>a+Math.min(1,invCount(id)/n),0)/Object.keys(r.req).length;
-    if(okMat&&okSt){sc+=4;why.push('Aineet valmiina');}else if(okMat){sc+=2.5;why.push('Aineet valmiina · '+STATION_NAME[r.st]);}else sc+=2*have;
-    if(d.cat&&d.cat!=='offhand'){const k=gearKey(d),b=bestOwned(k);if(b<0){sc+=3;why.unshift('Sinulla ei ole vielä');}else if(gearPow(d)>b){sc+=3;why.unshift('Parempi kuin nykyinen');}else sc-=8;}
-    else if(r.id==='nuolet'){if(hasBow&&invCount('nuolet')<20){sc+=3;why.unshift('Nuolet vähissä');}else if(!hasBow)sc-=3;}
-    else if(r.id==='soihtu'){if(!inv.some(s=>s&&s.id==='soihtu')){sc+=2.5;why.unshift('Valoa öihin');}else sc-=4;}
-    else if(d.food){if(P.hunger<60&&okMat){sc+=1.5;why.unshift('Nälkä');}else sc-=1;}
-    if(sc>=2.5)out.push({r,sc,why:why.join(' · ')});}
-  return out.sort((a,b)=>b.sc-a.sc).slice(0,8);}
+// v1.16 (lista 2, kohta 7) Valmistusehdotukset kahdessa osiossa:
+//  now  = "Voit valmistaa nyt": aineet repussa (enint. 6). Työpiste puuttuu läheltä → merkintä; jos työpistettä ei ole rakennettu
+//         ollenkaan, esine näkyy myös next-osiossa.
+//  next = "Hyödyllistä seuraavaksi": aineita puuttuu, mutta esine on hyödyllinen ja pelin vaiheeseen sopiva (enint. 4).
+//  Järjestys kummassakin: 1) ei koskaan valmistettu, 2) usein tarvittavat (nuolet, soihdut, ruoka, hiili), 3) valmistettu ennen mutta ei
+//  mukana, 4) välituotteet, joita tarvitaan sinulle uuden esineen valmistukseen. Tarpeettomia (huonompi/jo omistettu varuste) ei ehdoteta.
+const SUG_REPEAT=['nuolet','sulkanuolet','tulinuolet','soihtu','hiili','varras'];
+function suggestCrafts(st){const hasBow=inv.some(s=>s&&ITEMS[s.id].cat==='bow'),made=id=>!!(flags.first&&flags.first['c_'+id]),own=id=>invCount(id)>0;
+  const stBuilt=k=>pieces.some(p=>k==='nuotio'?isFirePiece(p.t):p.t===k||PIECES[p.t].base===k);
+  // pelin vaihe: korkein omistetun varusteen ohjetaso (keskeneräiset myöhemmät tasot eivät hyppää kärkeen)
+  let stage=1;for(const x of inv)if(x&&RECIPE_BY[x.id]&&ITEMS[x.id].cat)stage=Math.max(stage,RECIPE_BY[x.id].lvl||1);
+  const newUse=id=>RECIPES.some(r=>r.id!==id&&r.req[id]&&recipeKnown(r)&&recipeOpen(r)&&!made(r.id)&&invCount(id)<r.req[id]);
+  const useful=r=>{const d=ITEMS[r.id];
+    if(d.cat==='shovel'||d.cat==='hammer')return own(r.id)?null:'Sinulla ei ole vielä';
+    if(d.cat==='offhand'||r.id==='soihtu')return own(r.id)?null:'Valoa öihin';
+    if(d.cat){const k=gearKey(d),b=bestOwned(k);if(b<0)return 'Sinulla ei ole vielä';if(gearPow(d)>b)return 'Parempi kuin nykyinen';return null;}
+    if(/nuolet$/.test(r.id))return hasBow&&invCount(r.id)<40?(invCount('nuolet')+invCount('sulkanuolet')+invCount('tulinuolet')<20?'Nuolet vähissä':'Lisää nuolia'):null;
+    if(d.food)return P.hunger<70||!inv.some(x=>x&&ITEMS[x.id].food&&!ITEMS[x.id].food.raw)?'Ruokaa':null;
+    if(newUse(r.id))return 'Tarvitaan uuteen esineeseen';return null;};
+  const bucket=r=>{const d=ITEMS[r.id];if(!made(r.id)&&!own(r.id))return SUG_REPEAT.includes(r.id)?1:0;if(SUG_REPEAT.includes(r.id)||d.food)return 1;if(!own(r.id))return 2;return 3;};
+  const now=[],next=[];
+  for(const r of RECIPES){if(!recipeKnown(r)||!recipeOpen(r))continue;const u=useful(r);if(!u)continue;
+    const okMat=Object.entries(r.req).every(([id,n])=>invCount(id)>=n),okSt=!r.st||st[r.st],built=!r.st||stBuilt(r.st);
+    const have=Object.entries(r.req).reduce((a,[id,n])=>a+Math.min(1,invCount(id)/n),0)/Object.keys(r.req).length,b=newUse(r.id)&&!ITEMS[r.id].cat&&!ITEMS[r.id].food&&!SUG_REPEAT.includes(r.id)?3:bucket(r);
+    const d0=ITEMS[r.id],pri=(d0.chop||d0.pick||d0.cat==='hammer'?0:d0.cat==='bow'||d0.cat==='weapon'?1:d0.cat==='armor'||d0.cat==='shield'?2:d0.cat==='shovel'?3:1.5)*.8;   // tasapelissä: keräystyökalut → aseet/jousi → suojat → lapio/kuokka
+    const why=[u];if(!okSt)why.push('Tarvitset: '+STATION_NAME[r.st]+(built?'':' (rakenna ensin)'));
+    if(okMat){now.push({r,b,sc:b*10+(okSt?0:5)+pri-have,why:why.join(' · ')});if(!built)next.push({r,b,sc:b*10+pri-have,why:why.join(' · ')});}
+    else if((r.lvl||1)<=stage+2)next.push({r,b,sc:b*10+(1-have)*4+((r.lvl||1)-stage)*.6+pri,why:why.join(' · ')});}
+  return{now:now.sort((a,b)=>a.sc-b.sc).slice(0,6),next:next.sort((a,b)=>a.sc-b.sc).slice(0,4)};}
 // Rakennusehdotukset: puuttuvat perusasiat (työpenkki, nuotio, sänky, suoja, arkku, sulatin, ahjo), varaa rakentaa, ei vielä rakennettu. Enintään 10.
 function suggestBuilds(hasBench){const out=[],has=t=>pieces.some(p=>p.t===t||PIECES[p.t].base===t),wallN=pieces.filter(p=>PIECES[p.t].snap==='wall'||isFloor(p)).length;
   const ore=invCount('malmi')+invCount('rautamalmi'),full=inv.filter(Boolean).length/inv.length;

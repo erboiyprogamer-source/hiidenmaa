@@ -86,6 +86,8 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.13 sivukeinunta ja pehmennetty juoksukerroin',()=>{const f=updatePlayer.toString();return /P\.runKs/.test(f)&&/rig\.rotation\.z=tz/.test(f)||'keinunta puuttuu';});
   t('v1.14 "Toimii parhaiten" kerran yläkeskellä, ei valikossa',()=>!!$('#pcHint')&&![...document.querySelectorAll('#menu .note')].some(e=>/Toimii parhaiten/.test(e.textContent))||'vihje väärässä paikassa');
   t('v1.15 valikon taustakamera: kohteet (luonto, järvi, leiri yö/päivä, eläimet)',()=>{const S=buildMenuSpots();return typeof menuCam==='function'&&!!$('#menuFade')&&S.some(s=>s.k==='nature')&&S.some(s=>s.k==='animal')&&(CAMPS.length===0||S.some(s=>s.k==='camp'&&s.night))||'kohteita puuttuu';});
+  t('v1.16 ehdotukset: valmistettavat + hyödylliset, ei hiidenvarusteita alussa',()=>{const s0=inv.slice(),f0=flags.first;inv=new Array(invN()).fill(null);invAdd('puu',12);invAdd('kivi',8);flags.first={};
+    const s=suggestCrafts({});inv=s0;flags.first=f0;invDirty=true;return Array.isArray(s.now)&&Array.isArray(s.next)&&s.now.some(x=>x.r.id==='kirves')&&![...s.now,...s.next].some(x=>/^hiiden|^rauta/.test(x.r.id))||'ehdotukset väärin';});
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 for(const [k,v] of Object.entries(r))console.log(v===true?'OK ':'XX ',k,v===true?'':v);

@@ -72,6 +72,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.16 (lista 2, kohta 7: valmistusehdotukset uudelleen)
+- `suggestCrafts` palauttaa `{now, next}`: **Voit valmistaa nyt** (aineet repussa, enint. 6) ja **Hyödyllistä seuraavaksi** (enint. 4).
+  Työpiste ei lähellä → merkintä "Tarvitset: X"; jos työpistettä ei ole rakennettu lainkaan → "(rakenna ensin)" ja esine myös next-osioon.
+- Järjestys molemmissa (käyttäjän määrittely): 1) ei koskaan valmistettu (`flags.first['c_'+id]`), 2) usein tarvittavat (`SUG_REPEAT`:
+  nuolet, soihtu, hiili, varras + ruoka), 3) valmistettu ennen mutta ei mukana, 4) välituotteet uuteen esineeseen. Tasapelissä
+  keräystyökalut → aseet/jousi → suojat → lapio/kuokka, sitten aineiden osuus. Tarpeettomat (huonompi tai jo omistettu varuste) pois.
+- Pelin vaihe: next-osiossa vain ohjeet, joiden taso ≤ korkein omistetun varusteen ohjetaso + 2 (ei hiidenvarusteita alussa, vaikka
+  DEV-tilassa taso olisi korkea). Väliotsikot `.sugH`.
+
 ### v1.15 (lista 2, kohta 6: valikon taustakamera kiertää kohteita)
 - `main.js` `menuCam`: kohdelista `buildMenuSpots` (luonto: 10 biomia, järvi kaukaa rannalta, hylätyt leirit päivällä ja yöllä,
   eläimet: peura, poro, karhu, kettu, hirvi, jänis). 20 s / kohde (`MENU_SHOT_T`), hidas 30° kierto ja hieman laskeutuen, lähikuva
@@ -1233,14 +1242,14 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15. Seuraavaksi kohta 7. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Seuraavaksi välilisäykset 4–7 (täysi reppu estää poiminnan, katoamisajastin vain samassa ulottuvuudessa, pomojen ryntäys max 1/10 s, maahaniskun 0,8 s lataus), sitten kohta 8. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.
 4. TEHTY v1.11 (tarkennettu): asetuksissa luki "kuten Minecraftissa" → poistettu. Pelin teksteissä ei mainita muita pelejä.
 5. TEHTY v1.14. "Toimii parhaiten…" ruudun yläkeskelle, kerran per käynnistys 6 s, häipyy.
 6. TEHTY v1.15. Valikon tausta: luonto, järvi, leiri päivällä/yöllä, eläimet lähikuvina; 20 s, vaihto mustan kautta.
-7. Ehdotukset-kategoria: ensin mihin on varaa (repun materiaalit), toissijaisesti mitä pelaajalta puuttuu ja olisi hyödyllistä (pelin vaihe).
+7. TEHTY v1.16. Ehdotukset: "Voit valmistaa nyt" + "Hyödyllistä seuraavaksi", järjestys uudet → toistuvat → ei mukana → välituotteet.
 8. Tehtävät ja tavoitteet piiloon/näkyviin napista; piilotettuna pieni teksti "piilotettu – näytä painamalla (näppäin)".
 9. Puut kallistuvat tuulen suuntaan (runko taipuu, myrskyllä paljon); myrskyssä kaatuminen 70 % tuulen suuntaan;
    puu pelaajan päälle = 80 % suurimmasta kestosta (terveys + suojat).
