@@ -3,11 +3,27 @@
 'use strict';
 
 /* ---------------- THREE SETUP ---------------- */
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+/* v1.28 (KORJAUKSET 24): 3D-piirturin luonti varmistettuna. Jos selain ei anna WebGL-yhteyttä (esim. Chrome on estänyt WebGL:n sivulta
+   näytönohjaimen kaatumisen jälkeen, laitteistokiihdytys pois, liikaa 3D-välilehtiä), yritetään kevyemmillä asetuksilla; jos mikään ei
+   onnistu, näytetään ohje (ennen kaikki skriptit kaatuivat → "Cannot access '_e' before initialization", musta valikko). */
+const renderer=(function(){const tries=[{antialias:true,powerPreference:'high-performance'},{antialias:false,powerPreference:'default'},
+    {antialias:false,powerPreference:'low-power',failIfMajorPerformanceCaveat:false,precision:'mediump'}];
+  for(const o of tries){try{const r=new THREE.WebGLRenderer(o);if(r.getContext())return r;}catch(e){console.warn('WebGL-yritys epäonnistui',o,e&&e.message);}}
+  webglFail();throw new Error('WebGL ei käytettävissä');})();
+function webglFail(lost){const d=document.createElement('div');d.id='webglErr';d.style.cssText='position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(10,8,6,.94);color:#eee5d3;font:16px/1.5 sans-serif;padding:20px';
+  d.innerHTML=`<div style="max-width:620px"><h2 style="margin:0 0 10px;color:#e8a44a">${lost?'3D-grafiikka katkesi':'Selain ei salli 3D-grafiikkaa (WebGL)'}</h2>
+  <p>${lost?'Selaimen näytönohjainyhteys katkesi kesken pelin.':'Hiidenmaa tarvitsee WebGL-yhteyden, mutta selain kieltäytyi antamasta sitä tälle sivulle.'} Kokeile järjestyksessä:</p>
+  <ol><li><b>Sulje koko selain</b> (kaikki ikkunat) ja avaa uudelleen – Chrome estää WebGL:n sivulta näytönohjaimen kaatumisen jälkeen, ja esto poistuu vasta uudelleenkäynnistyksellä.</li>
+  <li>Sulje muut 3D-pelejä tai -videoita sisältävät välilehdet.</li>
+  <li>Chromen asetukset → Järjestelmä → <b>Käytä grafiikkakiihdytystä, kun se on mahdollista</b> päälle, ja käynnistä selain uudelleen.</li>
+  <li>Tarkista osoitteesta <b>chrome://gpu</b>, että WebGL on "Hardware accelerated".</li></ol>
+  <p style="opacity:.7;font-size:13px">Tallennuksesi ovat tallessa selaimen muistissa. (Hiidenmaa versio ${window.HV||'?'})</p><button onclick="location.reload()" style="margin-top:8px;padding:8px 16px;font:inherit;cursor:pointer">Yritä uudelleen</button></div>`;
+  (document.body||document.documentElement).appendChild(d);}
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
 renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 $('#game').appendChild(renderer.domElement);
+renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();if(!document.getElementById('webglErr'))webglFail(true);});   // v1.28
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x8fbfe0);
 scene.fog=new THREE.Fog(0x8fbfe0,60,220);

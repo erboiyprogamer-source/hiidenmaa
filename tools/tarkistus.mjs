@@ -101,6 +101,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.25 valikon animoidut kuvat: 10 kuvaa, oletus kuvat, 3D-kamera asetuksena',()=>MBG_SCENES.length===10&&MBG_SCENES[0].n==='Öinen leiri'&&SET_DEF.menuBg==='img'&&typeof mbgFrame==='function'&&/skip3d/.test(frame.toString())||'puuttuu');
   t('v1.26 käynnistysvahti: HV = valikon versio, ei virhelaatikkoa',()=>!!window.HV&&document.querySelector('.title small').textContent.includes(window.HV)&&!document.getElementById('bootErr')&&typeof window.__bootBox==='function'||'vahti/versio ristiriidassa');
   t('v1.27 valikkokamera: v1.15/v1.25-muutokset väliaikaisesti pois (alkuperäinen kamera)',()=>MENU_V2_OFF===true&&typeof menuCamOld==='function'&&/MENU_V2_OFF\)menuCamOld/.test(frame.toString())||'valikkokamera');
+  t('v1.28 WebGL-varmistus: varayritykset + ohje',()=>typeof webglFail==='function'&&!document.getElementById('webglErr')||'webgl');
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua

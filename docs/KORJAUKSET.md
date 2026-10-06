@@ -170,6 +170,18 @@ näkyvät ruudulla versionumeron kanssa; jos `window.__game` ei synny 20 s:ssa �
 **Ohje käyttäjälle:** testaa commit-linkillä (ei välimuistiviivettä), tarkista valikon versionumero, Ctrl+F5. `window.HV` = versio, päivitä
 samalla kuin `?v=`.
 
+### 24. Selain ei anna WebGL:ää → kaikki kaatuu ("Script error", "Cannot access '_e' before initialization") – v1.28
+**Oire (käyttäjän käynnistysvahdin laatikko, v1.27):** "Script error." + "Cannot access '_e' before initialization (render.js:74)" +
+"scene is not defined (landmarks.js:8)" + "Peli ei käynnistynyt". Valikko musta, napit eivät tee mitään. Käyttäjä vahvisti: selain ei saa
+WebGL:ää päälle.
+**Syy:** `render.js`:n ensimmäinen rivi `new THREE.WebGLRenderer()` heittää virheen (three.js-tiedosto on toiselta palvelimelta → "Script error.").
+render.js keskeytyy ennen `const _e/scene…` -rivejä, ja kaikki myöhemmät skriptit kaatuvat niihin (TDZ). Koodi oli sama kuin toimivassa
+v1.07:ssä → syy selaimessa: Chrome estää WebGL:n sivulta näytönohjaimen kaatumisen/jumin jälkeen (esim. v1.23:n kaatumiset ja toistuvat
+lataukset), laitteistokiihdytys pois tai liikaa 3D-välilehtiä. Esto poistuu, kun koko selain käynnistetään uudelleen.
+**Korjaus:** piirturi luodaan kolmella yrityksellä (antialias + high-performance → ilman antialiasia → low-power/mediump); jos mikään ei onnistu,
+`webglFail()` näyttää koko ruudun suomenkielisen ohjeen (sulje koko selain, grafiikkakiihdytys, chrome://gpu, "Yritä uudelleen"). Myös
+`webglcontextlost` kesken pelin näyttää ohjeen. Testattu Chromiumilla `--disable-webgl`: ohje näkyy; normaali käynnistys ennallaan.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`
