@@ -35,16 +35,17 @@ function validateKey(action,code){
 /* ---------------- ASETUKSET ---------------- */
 // Oletukset = taso, jolla suurin osa pelaa. Varjot: sunRes = auringon varjokartta (px), shDist = auringon varjoalueen säde (m),
 // shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
-const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,particles:1,detail:'high',bldDetail:true,
+const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,grass:1,particles:1,detail:'high',bldDetail:true,
   renderDist:165,lights:6,mist:1,clouds:1,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false};
 // Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
-const SET_PAGES={gfx:['res','autoQ','renderDist','detail','bldDetail','particles','lights','mist','clouds','shafts','sway'],shadow:['shadow','sunRes','shDist','shRate','ptShadow','ptRes'],ctl:['wheelHotbar','zoom','sound','invY']};
+const SET_PAGES={gfx:['res','autoQ','renderDist','detail','bldDetail','particles','lights','mist','clouds','shafts','sway','grass'],shadow:['shadow','sunRes','shDist','shRate','ptShadow','ptRes'],ctl:['wheelHotbar','zoom','sound','invY']};
 const SET=Object.assign({},SET_DEF);
 try{Object.assign(SET,JSON.parse(localStorage.getItem('hiidenmaa_set')||'{}'));}catch(e){}
 function saveSet(){try{localStorage.setItem('hiidenmaa_set',JSON.stringify(SET));}catch(e){}}
 let RDK=1,DETK=1,PF=1,hotSel=0,lastShadowOn=null;
 // Ottaa asetukset käyttöön (kutsutaan käynnistyksessä ja kun asetusta muutetaan)
 function applyGfx(){
+  if(typeof grassDirty!=='undefined')grassDirty=true;   // v1.00 ruohon tiheys vaihtui
   const dpr=devicePixelRatio||1,pr=SET.res==='native'?Math.min(dpr,2):Math.min(dpr,1.5)*(+SET.res||1);
   if(Math.abs(renderer.getPixelRatio()-pr)>.001){renderer.setPixelRatio(pr);renderer.setSize(innerWidth,innerHeight);}
   {const d=+SET.shDist||55,sc=sun.shadow.camera;if(sc.right!==d){sc.left=-d;sc.right=d;sc.top=d;sc.bottom=-d;sc.updateProjectionMatrix();}}
@@ -96,7 +97,8 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       setRow('Usva ja höyry','mist',[[1,'Kaikki'],[.5,'Puolet'],[0,'Pois']])+
       setRow('Pilvet','clouds',[[1,'Kaikki'],[.6,'Vähemmän'],[.3,'Vähän'],[0,'Pois']])+
       setRow('Auringon valonsäteet','shafts')+
-      setRow('Puiden heiluminen','sway')
+      setRow('Puiden heiluminen','sway')+
+      setRow('Ruoho','grass',[[2,'Täysi (tiheä)'],[1,'Normaali'],[0,'Pois']],'pystyheinä maassa, heiluu tuulessa')
     }</div><p class="note">Vaaleana näkyvä valinta on oletus. Asetukset tallentuvat selaimeen.</p>`+resetBtn;
     bindSet(SET_PAGES.gfx);$('#bPageReset').onclick=()=>resetPage('gfx');
   }else if(setTab==='shadow'){

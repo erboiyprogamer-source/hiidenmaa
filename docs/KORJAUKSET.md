@@ -129,6 +129,11 @@ samalla rivillä jatkuneen koodin (minimoidussa tyylissä monta lausetta yhdell�
 **Korjaus:** lisää kommentti omalle rivilleen tai käytä `/* … */`, kun rivillä voi olla jatkoa. Tarkista muutoksen jälkeen syntaksi
 (`node -e "new Function(fs.readFileSync(f,'utf8'))"`) JA aja testi, joka kutsuu muutettua funktiota.
 
+### 19. Peli ei käynnisty: `Identifier '_gp' has already been declared` – v1.00
+**Syy:** uusi ylimmän tason `const _gp` oli jo olemassa toisessa tiedostossa (kaikki skriptit jakavat saman globaalin näkyvyyden).
+**Korjaus:** nimeä apumuuttujat yksilöllisesti (ruoho: `_grM, _grQ, _grS, _grP, _grC`). Tarkista ennen uutta nimeä:
+`grep -n "const _xx\b\|,_xx=" js/*.js`. Pelkkä `new Function`-syntaksitarkistus ei huomaa tätä – aja aina latausesti (`window.__game`).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

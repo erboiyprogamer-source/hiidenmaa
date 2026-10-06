@@ -83,6 +83,8 @@ const vcMat=new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,r
 
 /* ---------------- TERRAIN MESH ---------------- */
 const terrainColors=new Float32Array(HN*HN*3);
+// v1.00 maaston kärkien biomi ruohoa varten (indeksi GRASS_BIOMES-listaan, 255 = ei biomia)
+const GRASS_BIOMES=['meadow','koivu','forest','suo','kangas','aarni','moor','tunturi','rakka','mountain','beach'],TBIOME=new Uint8Array(HN*HN).fill(255);
 const terrainMesh=(function buildTerrain(){
   const pos=new Float32Array(HN*HN*3);
   for(let iz=0;iz<HN;iz++)for(let ix=0;ix<HN;ix++){
@@ -90,7 +92,7 @@ const terrainMesh=(function buildTerrain(){
     pos[i*3]=x;pos[i*3+1]=h;pos[i*3+2]=z;
     const hx=HGT[iz*HN+Math.min(ix+1,GN)]-HGT[iz*HN+Math.max(ix-1,0)],hz=HGT[Math.min(iz+1,GN)*HN+ix]-HGT[Math.max(iz-1,0)*HN+ix];
     const slope=Math.hypot(hx,hz)/(GS*2);
-    const b=biomeAt(x,z,h); let c;
+    const b=biomeAt(x,z,h); let c;{const bi=GRASS_BIOMES.indexOf(b);if(bi>=0&&!(b==='mountain'&&h>33))TBIOME[i]=bi;}
     const n=(vnoise(x*.35,z*.35)-.5)*.1+(vnoise(x*.05,z*.05)-.5)*.08;
     if(b==='sea')c=[.42,.38,.28];
     else if(b==='beach')c=[.78,.7,.5];

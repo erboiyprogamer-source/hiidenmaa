@@ -69,6 +69,7 @@ const NGEO={
 const NGEO_FALL={koivu:mergeParts(koivuBase())};
 const nodes=[]; const nodeIM={};
 // Puiden latvat huojuvat tuulessa (vahvemmin tuulisella säällä ja myrskyssä).
+let grassDirty=true;   // v1.00 ruoho rakennetaan uudelleen (määritelty ennen mudFlushia, ks. KORJAUKSET 1)
 const SWAY={uTime:{value:0},uWind:{value:.15},uWDir:{value:new V3(0,0,1)},uLean:{value:0}}; // uWDir/uLean: tuulen suunta ja kallistus (v0.84)
 const treeMat=vcMat.clone();
 treeMat.onBeforeCompile=sh=>{sh.uniforms.uTime=SWAY.uTime;sh.uniforms.uWind=SWAY.uWind;sh.uniforms.uWDir=SWAY.uWDir;sh.uniforms.uLean=SWAY.uLean;
@@ -201,7 +202,7 @@ function resetTerra(){for(const i in TERRA){HGT[i]=HGT0[i];terrainMesh.geometry.
 // Multaisuus (0–1) maaston kärjissä: lapio lisää (tummat polut), kuokka vähentää. Väri sekoittuu alkuperäisestä kohti tummaa multaa.
 const MUD=new Float32Array(HN*HN),TCOL0=terrainColors.slice(),MUDC=[.25,.18,.12];
 function mudSet(i,v){v=clamp(v,0,1);if(v<.01)v=0;MUD[i]=v;const c=terrainMesh.geometry.attributes.color.array,j=((i*2654435761)>>>0)%100/100*.16+.92;for(let k=0;k<3;k++)c[i*3+k]=lerp(TCOL0[i*3+k],MUDC[k]*j,v);}
-function mudFlush(){terrainMesh.geometry.attributes.color.needsUpdate=true;}
+function mudFlush(){terrainMesh.geometry.attributes.color.needsUpdate=true;grassDirty=true;}
 function mudList(){const o=[];for(let i=0;i<MUD.length;i++)if(MUD[i]>0)o.push([i,+MUD[i].toFixed(2)]);return o;}
 function applyMud(list){for(const [i,v] of list)mudSet(i,v);mudFlush();}
 function resetMud(){for(let i=0;i<MUD.length;i++)if(MUD[i]>0)mudSet(i,0);mudFlush();}
@@ -249,3 +250,45 @@ function nightId(){return dayN-(dayT<.5?1:0);}
 function nightRegrow(){const id=nightId();if(flags.rgN===id)return 0;flags.rgN=id;let c=0;
   for(const n of nodes)if(!n.alive&&n.def.kind==='tree'&&dist2(n.x,n.z,P.pos.x,P.pos.z)<REGROW_R*REGROW_R&&!nearBase(n.x,n.z)){if(respawnNode(n))c++;}
   return c;}
+
+/* ---------------- RUOHO (v1.00, kohta 15) ---------------- */
+// Pystyheinätupsut pelaajan ympärillä (instanssit): tiheys, pituus ja väri biomin mukaan (TBIOME, render.js), ei poluilla (multa), vedessä,
+// jyrkänteillä eikä rakennusten alla. Paikat ovat 2D-ruudukossa hajautettuja (sama kohta → sama tupsu), joten ruoho ei vaihdu liikkuessa;
+// lista rakennetaan uudelleen, kun pelaaja on liikkunut 6 m. Asetus SET.grass: 0 pois, 1 normaali (32 m, väli 1,15 m), 2 täysi (44 m, 0,72 m).
+// Heilunta: sama tuuli kuin puilla (SWAY.uWind/uWDir/uLean): kallistus tuulen suuntaan (korren korkeuden neliönä) + edestakainen heilunta.
+//                     tiheys pituus  väri (tyvi → kärki)
+const GRASS_DEF=[[1,1,0x3d6a22,0x9ccf52],[.9,.95,0x3a6624,0x8cc04a],[.5,.8,0x2c4e1e,0x6e9a3a],[.75,1.35,0x40502a,0x9aa060],[.35,.55,0x5a6a3a,0xb8c08a],
+  [.2,.9,0x1f3a1c,0x4f7a34],[.3,.75,0x4a4436,0x8a7f60],[.55,.55,0x5a5a30,0xa09a58],[.08,.5,0x5a5a3a,0x9a9a70],[.15,.6,0x50583a,0x8a9060],[.1,.8,0x8a8a5a,0xd0c890]];
+let grassC={x:1e9,z:1e9},grassIM=null;
+const GRASS_MAT=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
+GRASS_MAT.onBeforeCompile=sh=>{sh.uniforms.uTime=SWAY.uTime;sh.uniforms.uWind=SWAY.uWind;sh.uniforms.uWDir=SWAY.uWDir;sh.uniforms.uLean=SWAY.uLean;
+  sh.vertexShader='uniform float uTime;uniform float uWind;uniform vec3 uWDir;uniform float uLean;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+  float gPh=instanceMatrix[3].x*.31+instanceMatrix[3].z*.27;float gh=max(0.,position.y);float gk=gh*gh;
+  mat3 gM=mat3(instanceMatrix);vec3 gL=vec3(dot(gM[0],uWDir),dot(gM[1],uWDir),dot(gM[2],uWDir));gL/=max(length(gL),1e-4);
+  float gs=(.1+uWind*.25)*sin(uTime*2.3+gPh)+uLean*(.35+.12*sin(uTime*1.7+gPh*1.3));
+  transformed.x+=gL.x*gs*gk;transformed.z+=gL.z*gs*gk;transformed.y-=abs(gs)*gk*.25;
+  transformed.x+=sin(uTime*3.1+gPh*2.)*.025*gh*(.3+uWind);`);};
+// Tupsu: 7 kortta eri suuntiin ja pituuksiin (kolmio, tyvi tumma → kärki vaalea), kaarevuus pieni kallistus ulospäin.
+const GRASS_GEO=(function(){const pos=[],col=[],r=mulberry32(4711);
+  for(let i=0;i<7;i++){const a=r()*TAU,h=.28+r()*.42,w=.045+r()*.03,ox=(r()-.5)*.25,oz=(r()-.5)*.25,tx=Math.cos(a)*.12,tz=Math.sin(a)*.12,cx=Math.sin(a)*w,cz=-Math.cos(a)*w;
+    pos.push(ox-cx,0,oz-cz, ox+cx,0,oz+cz, ox+tx,h,oz+tz);col.push(.42,.45,.38, .42,.45,.38, 1,1,1);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(pos.map((v,i)=>i%3===1?1:0),3));   // normaalit ylös → valaistus kuin maastolla, ei mustaa kääntöpuolta
+  g.boundingSphere=new THREE.Sphere(new V3(0,0,0),80);return g;})();
+// Värit: kärjen väri = vertex 1, tyvi = 0 → sekoitetaan instanssiväreillä (instanceColor = tyvi, kärki shaderissa ei erikseen: käytetään kahta
+// geometrian väriä kertoimena ja instanssiväriä sävynä).
+const _grM=new THREE.Matrix4(),_grQ=new THREE.Quaternion(),_grS=new V3(),_grP=new V3(),_grC=new THREE.Color(),_grC2=new THREE.Color();
+function grassHash(i,j){let h=Math.imul(i,374761393)+Math.imul(j,668265263)|0;h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296;}
+function rebuildGrass(){const lv=+(SET.grass??1);grassDirty=false;
+  if(grassIM){scene.remove(grassIM);grassIM.dispose();grassIM=null;}if(!lv||P.inDun)return;
+  const R=lv>=2?44:32,sp=lv>=2?.72:1.15,cx=P.pos.x,cz=P.pos.z,N=Math.ceil(Math.PI*R*R/(sp*sp))+10;
+  const im=new THREE.InstancedMesh(GRASS_GEO,GRASS_MAT,N);im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);im.castShadow=false;im.receiveShadow=true;im.frustumCulled=false;
+  let n=0;const i0=Math.floor((cx-R)/sp),i1=Math.ceil((cx+R)/sp),j0=Math.floor((cz-R)/sp),j1=Math.ceil((cz+R)/sp);
+  for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const h1=grassHash(i,j),h2=grassHash(j+7919,i-104729);const x=(i+h1)*sp,z=(j+h2)*sp;if((x-cx)**2+(z-cz)**2>R*R)continue;
+    const gi=Math.round((x+HALF)/GS),gj=Math.round((z+HALF)/GS);if(gi<0||gj<0||gi>=HN||gj>=HN)continue;const k=gj*HN+gi,bi=TBIOME[k];if(bi===255)continue;const D=GRASS_DEF[bi];
+    if(grassHash(i*3+1,j*5+2)>D[0]||MUD[k]>.22)continue;const y=terrainH(x,z);if(y<.35)continue;
+    if(Math.abs(terrainH(x+.8,z)-y)>.9||Math.abs(terrainH(x,z+.8)-y)>.9)continue;if(pointBlocked(x,y+.3,z))continue;
+    const s=(.55+grassHash(i+31,j+17)*.9)*D[1];_grQ.setFromAxisAngle(_up,grassHash(i-5,j+9)*TAU);_grS.set(s*(.8+h1*.4),s,s*(.8+h2*.4));_grP.set(x,y-.03,z);_grM.compose(_grP,_grQ,_grS);im.setMatrixAt(n,_grM);
+    _grC.setHex(D[3]).lerp(_grC2.setHex(D[2]),grassHash(i+77,j-3)*.5);im.setColorAt(n,_grC);n++;if(n>=N)break;}
+  im.count=n;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;scene.add(im);grassIM=im;grassC={x:cx,z:cz};}
+function updateGrass(){if(P.inDun){if(grassIM)grassIM.visible=false;return;}if(grassIM)grassIM.visible=true;
+  if(grassDirty||dist2(P.pos.x,P.pos.z,grassC.x,grassC.z)>36)rebuildGrass();}

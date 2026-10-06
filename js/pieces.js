@@ -220,6 +220,7 @@ function worldBoxes(t,x,y,z,rot,f=0){const R8=((rot%8)+8)%8,boxes=pieceBoxes(t,f
       out.push({minX:x+wx-hw/2,maxX:x+wx+hw/2,minY:y+cy-h/2,maxY:y+cy+h/2,minZ:z+wz-hd/2,maxZ:z+wz+hd/2,door:b[6]==='door'});}}
   return out;}
 function addPiece(t,x,y,z,rot,hp,data,f=0){
+  if(typeof grassDirty!=='undefined')grassDirty=true;   // v1.00 ruoho väistää rakennuksia
   const def=PIECES[t],mesh=buildPieceMesh(t,f);mesh.position.set(x,y,z);mesh.rotation.y=rot*Math.PI/4;
   // Päällekkäisten pintojen välkkyminen (z-fighting) estetään antamalla jokaiselle osalle hieman erilainen mittakaava.
   {let h=(Math.imul(Math.round(x*8),374761393)+Math.imul(Math.round(y*8),668265263)+Math.imul(Math.round(z*8),2147483629))|0;h=Math.imul(h^(h>>>13),1274126177);h^=h>>>16;const hs=h>>>0;mesh.scale.set(1+(hs%8)*.0006,1+((hs>>>3)%8)*.0006,1+((hs>>>6)%8)*.0006);}

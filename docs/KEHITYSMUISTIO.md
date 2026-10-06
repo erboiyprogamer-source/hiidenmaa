@@ -71,6 +71,17 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.00 (ruoho – kohta 15, päivityslistan kohdat 1–15 valmiit)
+- Pystyheinätupsut (`GRASS_GEO` 7 korren tupsu, `rebuildGrass`/`updateGrass`, resources.js) instansseina pelaajan ympärillä: biomi tallennetaan
+  maaston rakennuksessa (`TBIOME`, render.js), tiheys/pituus/väri `GRASS_DEF` (niitty tihein, koivikko, metsä, suo pitkä, kangas harva,
+  tunturi lyhyt, nummi kuiva, ranta dyyniheinä…). Ei poluilla (multa > 0,22), vedessä, jyrkänteillä eikä rakennusten alla; paikat hajautettu
+  ruudukkoon (sama kohta → sama tupsu), lista rakennetaan uudelleen 6 m:n liikkeen, polun tai rakennuksen jälkeen (`grassDirty`).
+- Tuuli: sama `SWAY`-tuuli kuin puilla – kallistus tuulen suuntaan (korkeus²) + edestakainen heilunta + pieni värinä; "Puiden heiluminen"
+  pois → kallistus pois. Normaalit ylös (ei mustaa kääntöpuolta).
+- **Asetus Grafiikka → Ruoho:** Pois / Normaali (oletus: 32 m, väli 1,15 m, ~2 400 tupsua) / Täysi (44 m, 0,72 m, ~11 700).
+- Korjattu latausvirhe: `_gp` oli jo määritelty → apumuuttujat `_grM…` (CLAUDE.md: sama ylimmän tason nimi vain kerran); `grassDirty` määritelty
+  ennen `mudFlush`ia (TDZ, KORJAUKSET 1).
+
 ### v0.99 (hylätyt leirit – kohta 14)
 - `CAMPS` + `ensureCamps` (story.js): 1–2 leiriä per kartta (siemen `MAP_ID`), paikka valitaan kasvillisuuden sijoittelun jälkeen tasaiselta
   maalta ilman puita/kiviä 7 m:n säteellä, ≥ 60 m muista paikoista (väljempi toinen haku vuorisille kartoille: 35 m, myös tunturi/suo/aarni/vuori)
@@ -1116,7 +1127,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 **JATKA TÄSTÄ (päivitetty v0.94):** kohdat 1–9 tehty (v0.81–v0.92) + käyttäjän välilisäykset v0.93 (hautakasa arkkuna, Kalmanpesä
 millä vain, DEV-jumalvoimatäpät, harppova juoksu) ja v0.94 (Shift-tietoikkuna). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Kohdat 10 (v0.95) ja 11 (v0.96) tehty. Seuraavaksi kohta 15** (ruoho) (12 tehty v0.97, 13 v0.98, 14 v0.99), kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
+Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Kohdat 10 (v0.95) ja 11 (v0.96) tehty. KAIKKI KOHDAT 1–15 TEHTY (v0.81–v1.00)**. Käyttäjän uusi pyyntö: arkkukivistä haastavampia (korkeat muurit, kiviä joita pitkin hypitään ylös, kiviportaat alas) – kysy tarkennukset, kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
 `?v=` → commit, push, PR #23 kuvaus → testilinkki `https://raw.githack.com/erboiyprogamer-source/hiidenmaa/claude/hiidenmaa-survival-game-fmxt0m/index.html`.
 Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kallistus + edestakainen heilunta kuten puut), asetus pois/oletus/täysi.
 1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
@@ -1136,7 +1147,7 @@ Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kall
 12. TEHTY v0.97. Aluevartijat: alue ×2, jäävät rajalle taistelemaan, 1–10 s päästä palaavat, kunnes huomaavat pelaajan taas.
 13. TEHTY v0.98. Kivikasat arkun ympärillä liian tiiviit – arkulle pääsy.
 14. TEHTY v0.99. Hylätyt leiripaikat (1–2 / kartta): sammunut nuotio (sytytys puulla), teltta jossa sänky.
-15. Ruoho: pystyheinää laajalti, eri pituuksia, heiluu tuulessa (kallistuu tuulen suuntaan); grafiikka-asetus pois/oletus/täysi.
+15. TEHTY v1.00. Ruoho: pystyheinää laajalti, eri pituuksia, heiluu tuulessa (kallistuu tuulen suuntaan); grafiikka-asetus pois/oletus/täysi.
 
 ### Käyttäjän ideat 0–11 (erät 23–31) – ryhmittely teemoittain
 Kirjattu v0.35:n jälkeen. Jokainen erä: testaa, päivitä muistio, versio+`?v=`, commit, push, PR. Järjestys on ehdotus; ensimmäinen on 23.
