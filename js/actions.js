@@ -60,7 +60,7 @@ function doMeleeHit(w){
     if(!losClear(P.pos.x,P.pos.y+1.3,P.pos.z,m.pos.x,mobEyeY(m),m.pos.z))continue;
     const sneak=P.crouch&&m.def.ai!=='boss'&&m.state!=='chase'&&m.state!=='flee';
     if(sneak)floatText('Hiiviskelyisku!',m.pos.x,m.pos.y+2.6,m.pos.z,'#ffd36a');
-    damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz,w.kb||4);hitMob=true;if(torchLit())igniteMob(m);}
+    damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz,(w.kb||1.5)*KB_V);hitMob=true;if(torchLit())igniteMob(m);}
   // Tulta ja seisovaa soihtua lyömällä ne sammuvat.
   if(!hitMob)for(const p of pieces){const lit=isFirePiece(p.t)?p.data.fuel>0:p.t==='soihtuteline'&&p.data.burn>0;if(!lit)continue;const dx=p.x-P.pos.x,dz=p.z-P.pos.z,d=Math.hypot(dx,dz);
     if(d>w.range+.5||(d>.6&&(dx*fx+dz*fz)/d<.5))continue;if(isFirePiece(p.t)){p.data.fuel=0;p.data.burn=0;}else p.data.burn=0;
@@ -87,6 +87,8 @@ function doMeleeHit(w){
     if(n.hp<=0){killNode(n);bump('rocks');burst(n.x,n.y+.6,n.z,0x8f8d86,16,6);for(const [id,lo,hi] of n.def.drops){const c=rint(rng,lo,hi);for(let j=0;j<c;j++)spawnDrop(id,1,n.x,n.y+.8,n.z);}}}
 }
 // v0.92: kb = tönäisyn alkunopeus (m/s, oletus 4); vaimenee 6/s → matka ≈ kb/7,5 m (mitattu). Isot olennot vastustavat (säde > 0,6 / 0,8).
+/* v1.31: tönäisyarvo N (ITEMS.kb, näytetään ilman yksikköä) = N/2 m tavalliseen viholliseen (10 → 5 m). Nopeus N·3,75 m/s, vaimennus 6/s. Isot olennot (r > .6 / .8) lentävät 70 % / 40 %. Lennon ajan vihollinen on kyvytön (ai.js). */
+const KB_V=3.75;   // mitattu: arvo 10 → 5 m (harmaasusi)
 function damageMob(m,dmg,dt,kx,kz,kb=4){
   if(m.dead||m.sinking)return;   // v0.95: vajoava/nouseva vartija on haavoittumaton
   const mult=(m.def.weak&&m.def.weak[dt])||1;dmg*=mult;

@@ -103,6 +103,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.29 valikkokamera: v1.25 kuvat käytössä (MENU_V2_OFF=false), vanha kamera tallessa',()=>MENU_V2_OFF===false&&typeof menuCamOld==='function'&&/MENU_V2_OFF\)menuCamOld/.test(frame.toString())||'valikkokamera');
   t('v1.28 WebGL-varmistus: varayritykset + ohje',()=>typeof webglFail==='function'&&!document.getElementById('webglErr')||'webgl');
   t('v1.30 oikea napsautus ottaa puolet (haamu + vihje), raahaus oikealla',()=>typeof pickHalf==='function'&&slotHint.length>=5&&/half/.test(updGhost.toString())&&/button===2/.test(slotUX.toString())||'puolikas puuttuu');
+  t('v1.31 Q hiiren alla, tönäisy 10 = 5 m + kyvytön, kivivartija 220/2,8',()=>typeof dropAt==='function'&&KB_V===3.75&&ITEMS.nuija.kb===6&&MOBDEF.kivivartija.hp===220&&Math.abs(MOBDEF.kivivartija.range-2.8)<.02&&/Math\.hypot\(m\.vel\.x,m\.vel\.z\)>\.5/.test(updateMobs.toString())||'puuttuu');
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua

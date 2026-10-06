@@ -78,7 +78,7 @@ let invDirty=true;
 
 /* ---------------- DROPS ---------------- */
 const dropGeo=new THREE.BoxGeometry(.32,.32,.32);
-function spawnDrop(id,n,x,y,z,q=1,silent){const me=new THREE.Mesh(dropGeo,mat(new THREE.Color(ITEMS[id].c).getHex()));me.castShadow=true;me.position.set(x,y,z);scene.add(me);drops.push({id,n,q,mesh:me,vx:(Math.random()-.5)*3,vy:3+Math.random()*2,vz:(Math.random()-.5)*3,t:0,rest:false,dim:curDim()});}
+function spawnDrop(id,n,x,y,z,q=1,silent,byPlayer){const me=new THREE.Mesh(dropGeo,mat(new THREE.Color(ITEMS[id].c).getHex()));me.castShadow=true;me.position.set(x,y,z);scene.add(me);drops.push({id,n,q,mesh:me,vx:(Math.random()-.5)*3,vy:3+Math.random()*2,vz:(Math.random()-.5)*3,t:0,rest:false,dim:curDim(),noPick:!!byPlayer});}
 // v1.17: ulottuvuus, jossa pelaaja on ('world', 'barrow' = Hautakumpu tai ulottuvuuden id). Maassa olevan esineen katoamisajastin käy vain samassa ulottuvuudessa.
 function curDim(){return P.inDun?(P.realm||'barrow'):'world';}
 let dropFullT=0;
@@ -89,7 +89,8 @@ function updateDrops(dt){
     if(d.t>DROP_LIFE){scene.remove(m);drops.splice(i,1);continue;}m.visible=d.t<DROP_LIFE-15||((d.t*5)|0)%2===0;
     if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=groundAt(m.position.x,m.position.z,.2,m.position.y+.5)+.18;if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
     else{m.position.y=d.baseY+.12+Math.sin(d.t*3)*.06;m.rotation.y+=dt*1.5;}
-    if(d.t>.5&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');}else if(dropFullT<=0){dropFullT=4;msg('Reppu on täynnä – et voi poimia.','warn');}d.n=left;if(left<=0){scene.remove(m);drops.splice(i,1);}}
+    if(d.noPick&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))>2.5*2.5)d.noPick=false;   // v1.31: itse pudotettu poimitaan vasta, kun on käyty kauempana
+    if(d.t>.5&&!d.noPick&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');}else if(dropFullT<=0){dropFullT=4;msg('Reppu on täynnä – et voi poimia.','warn');}d.n=left;if(left<=0){scene.remove(m);drops.splice(i,1);}}
     if(m.position.y<-20){scene.remove(m);drops.splice(i,1);}
   }
 }

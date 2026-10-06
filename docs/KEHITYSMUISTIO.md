@@ -68,9 +68,20 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Harmaasusi | 44 | 4,6 | 11 | öisin pareittain, sama kuin pelaajan kävely |
 | Kalmo | 50 | 4,6 | 13 | heikko murskaavalle |
 | Kalmon ylimys | 150 | 4,2 | 20 | luolaston miniboss |
+| Kivivartija | 220 (v1.31) | 3,8 | 17 | ulottuma 2,8 m (v1.31) |
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.31 (Q hiiren alla, tönäisyarvot ja kyvyttömyys, kivivartija, valikon kuva arvottu)
+- **Q / Shift+Q** pudottaa hiiren alla olevan esineen repussa ja arkussa ilman valintaa (`hoverSlot`, `dropAt`). Itse pudotettu esine
+  ei imeydy heti takaisin (`drop.noPick`, poimitaan vasta kun pelaaja on käynyt yli 2,5 m päässä) – ennen se palasi reppuun 0,5 s:ssa.
+- **Tönäisy** näytetään arvona ilman yksikköä: arvo N = N/2 m tavalliseen viholliseen (10 = 5 m), isot olennot vähemmän (r > .6 70 %,
+  r > .8 40 %). Fysiikka: nopeus N·3,75 m/s (`KB_V`), vaimennus 6/s. Mitattu susi: 10 → 5,0 m, nuija 6 → 2,9 m, kivikirves 2 → 1,0 m;
+  karhu nuijalla 1,0 m. Uudet arvot: kivikirves 2, kuparikirves 2,5, rautakirves 3, nuija 6, hakut 1,5/1,5/2, keihäs 3, miekat 2/2,5,
+  hiidenmiekka 3,5, nyrkki 1,5. **Kyvytön lennon ajan** (ai.js: nopeus > 0,5 m/s → ei kävele, ei lyö, isku keskeytyy; mitattu 0,4–0,7 s).
+- **Kivivartija:** terveys 110 → 220, ulottuma 2 → 2,55 (× harppova 1,1 = 2,8 m).
+- **Valikon kuva** aina arvottu, myös sivun avauksessa (ennen avauksessa Öinen leiri).
 
 ### v1.30 (oikea napsautus ottaa puolet, vihje 3 s)
 - **Oikea napsautus** pinoon (ilman valintaa): ottaa puolet valituksi samalla sykkivällä korostuksella ja haamukuvakkeella (haamussa
@@ -1345,12 +1356,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19, kohdat 10–12 v1.20, kohta 13 v1.21, kohta 14 v1.22, kohdat 15–17 v1.23. LISTA 2 KAIKKI TEHTY – odotetaan käyttäjän palautetta ja Mergeä (PR #24).
-**v1.27:** valikkokameran muutokset väliaikaisesti pois (`MENU_V2_OFF`). **v1.29:** v1.25:n valikko palautettu käyttöön. **RATKAISTU v1.28:** käyttäjän "ei käynnisty" = selaimen WebGL estetty (KORJAUKSET 24); valikkokameran muutokset voi palauttaa
-(`MENU_V2_OFF=false`), kun käyttäjä haluaa. **(vanha merkintä) AVOIN ONGELMA (v1.26):** käyttäjällä peli ei käynnistynyt / kuvat eivät näkyneet (versio 1.23 näkyi) – odotetaan, mitä commit-linkki ja
-käynnistysvahdin laatikko näyttävät. **TEHTY v1.25:** valikon tausta animoiduiksi 2D-kuviksi (10 kuvaa, molemmat tyylit: low poly + maalauksellinen), sivun avauksessa aina öinen leiri
-(nuotion valo ja kipinät, vilkkuvat silmät puskassa), sitten arvottu 20 s välein häivytyksellä; valikossa ei piirretä 3D:tä. Asetus "Valikon tausta":
-kuvat (oletus) / 3D-kamera (käyttää oikeaa aikaa, ei hidastu matalalla FPS:llä). PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ (nykytila v1.31):** Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #24 auki (ei vielä yhdistetty; main = v1.07).
+Lista 2 (17 kohtaa) + välilisäykset TEHTY v1.08–v1.23. Sen jälkeen: v1.24 korjaus (karttavaihdon käynnistys, KORJAUKSET 22),
+v1.25 valikon animoidut kuvat, v1.26 käynnistysvahti (virheet ruudulle), v1.27 valikko väliaikaisesti vanhaksi, v1.28 WebGL-varmistus
+(käyttäjän ongelma oli selaimen estämä WebGL → ratkesi selaimen uudelleenkäynnistyksellä, KORJAUKSET 24), v1.29 valikko palautettu,
+v1.30 oikea napsautus ottaa puolet + vihje 3 s, v1.31 Q hiiren alla pudottaa, tönäisyarvot (10 = 5 m) + kyvyttömyys lennon ajan,
+kivivartija 220 hp / 2,8 m, valikon kuva aina arvottu, itse pudotettu ei imeydy heti takaisin.
+Ei avoimia ongelmia. Seuraavaksi: odotetaan käyttäjän testiä ja Mergeä, sitten uusi lista. Testaa aina commit-linkillä (välimuisti).
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.

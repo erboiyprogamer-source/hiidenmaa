@@ -20,6 +20,7 @@ addEventListener('keydown',e=>{
   if(DEV&&c==='Quote'){togglePanel('dev');return;}// DEV: Ä avaa/sulkee kehitysvalikon
   // v0.75: E sulkee avoimen valikon; repussa Q pudottaa valitusta yhden, Shift+Q kaikki
   if(openPanel&&c===BIND.interact){e.preventDefault();closePanels(false,true);return;}
+  if((openPanel==='inv'||openPanel==='chest')&&c==='KeyQ'&&hoverSlot&&dropAt(hoverSlot.g,hoverSlot.i,e.shiftKey))return;   // v1.31 hiiren alla
   if(openPanel==='inv'&&c==='KeyQ'&&selSlot>=0&&inv[selSlot]){dropSel(e.shiftKey);return;}
   if(c===BIND.inv||(c==='KeyI'&&BIND.inv==='Tab'))togglePanel('inv');
   else if(c===BIND.map)togglePanel('map');

@@ -24,6 +24,8 @@ function updateMobs(dt){
     m.flash=Math.max(0,m.flash-dt);for(const mt of m.mats)mt.emissive.setHex(m.flash>0?0x661111:0x000000);
     if(m.burnT>0&&updateBurn(m,dt))continue;
     m.atkCd-=dt;
+    // v1.31: tönäisty vihollinen on kyvytön lennon ajan (ei kävele eikä lyö; isku keskeytyy)
+    if(d.ai!=='boss'&&d.ai!=='rboss'&&Math.hypot(m.vel.x,m.vel.z)>.5){m.wind=0;moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
     let tx=0,tz=0,spd=0;
     if(d.ai==='boss'){bossAI(m,dt,dx,dz,dist);continue;}
     if(d.ai==='rboss'){realmBossAI(m,dt,dx,dz,dist);continue;}

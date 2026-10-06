@@ -137,9 +137,9 @@ function mbgSize(){const W=Math.max(320,Math.round(innerWidth*MBG_RES)),H=Math.m
   if(MBG.W!==W||MBG.H!==H){MBG.W=W;MBG.H=H;MBG.cv.width=MBG.st.width=W;MBG.cv.height=MBG.st.height=H;return true;}return false;}
 function mbgSet(i,keepT){mbgSize();MBG.i=i;const S=MBG_SCENES[i],u=Math.min(MBG.W/1000,MBG.H/560);MBG.u=u;MBG.sg.clearRect(0,0,MBG.W,MBG.H);
   S.bg(MBG.sg,MBG.W,MBG.H,mulberry32(1000+i*77),u);if(!keepT){MBG.t=0;MBG.s={};}}
-// Sivun avauksessa aina Öinen leiri (indeksi 0); sen jälkeen arvottu, ei sama kahdesti peräkkäin.
+// v1.31: aina arvottu kuva (myös sivun avauksessa), ei sama kahdesti peräkkäin.
 function mbgNext(){let j=MBG.i;while(j===MBG.i)j=(Math.random()*MBG_SCENES.length)|0;return j;}
-function mbgShow(on){mbgInit();if(on===MBG.shown)return;MBG.shown=on;MBG.cv.style.display=on?'block':'none';if(on&&MBG.i<0)mbgSet(0);MBG.last=performance.now();}
+function mbgShow(on){mbgInit();if(on===MBG.shown)return;MBG.shown=on;MBG.cv.style.display=on?'block':'none';if(on&&MBG.i<0)mbgSet((Math.random()*MBG_SCENES.length)|0);   /* v1.31: aina arvottu (ennen avauksessa Öinen leiri) */MBG.last=performance.now();}
 function mbgFrame(now){mbgShow(true);const raw=Math.min(.25,(now-MBG.last)/1000);MBG.acc+=raw;MBG.last=now;if(MBG.acc<1/MBG_FPS)return;const dt=MBG.acc;MBG.acc=0;
   MBG.t+=dt;if(MBG.t>MBG_T)mbgSet(mbgNext());
   const g=MBG.g,W=MBG.W,H=MBG.H,S=MBG_SCENES[MBG.i];g.globalAlpha=1;g.globalCompositeOperation='source-over';g.drawImage(MBG.st,0,0);

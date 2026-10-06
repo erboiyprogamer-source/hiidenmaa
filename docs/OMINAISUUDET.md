@@ -59,8 +59,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Kylmä tulee:** märkänä, lumisateessa vuorilla tai yöllä ulkona ilman lämpimiä vaatteita, ellei tulen lähellä.
 - **Lepo ja uni:** sänky asettaa herätyspaikan; nukkuminen vaatii yön, katon eikä vihollisia 20 m sisällä → seuraava aamu, levännyt.
 - **Kuoleman ruutu (Kaaduit):** kaikki valikot ja päävalikko sulkeutuvat, kursori näkyy, herätys napista tai Enterillä.
-- **Päävalikon tausta (v1.25):** oletuksena 10 animoitua kuvaa (ei 3D-piirtoa valikossa); sivun avauksessa aina Öinen leiri (nuotio, kipinät, vilkkuvat silmät),
-  sitten arvottu 20 s välein. Asetus "Valikon tausta": kuvat / 3D-kamera (alla, v1.15).
+- **Päävalikon tausta (v1.25):** oletuksena 10 animoitua kuvaa (ei 3D-piirtoa valikossa); kuva arvotaan aina (v1.31, myös sivun avauksessa),
+  vaihtuu 20 s välein. Asetus "Valikon tausta": kuvat / 3D-kamera (alla, v1.15).
 - **Päävalikon tausta (v1.15):** kamera näyttää satunnaisia kohteita lähikuvina (biomit, järvi, hylätty leiri päivällä ja yöllä, eläimet),
   20 s / kohde, hidas kierto, vaihto mustan kautta; ensimmäinen kohde arvotaan joka latauksella.
 - **Päävalikko (v1.14):** "Toimii parhaiten tietokoneella hiirellä ja näppäimistöllä" näkyy ruudun yläkeskellä kerran per käynnistys 3 s (v1.30) ja häipyy.
@@ -106,7 +106,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Laatu (★1–3):** kehittäminen parantaa vahinkoa, nopeutta ja jousen vetoa; käsisoihdun palamisaika +50 % per taso.
 - **Löydetyt arkut ja tynnyrit:** avautuvat arkkuikkunaan kuten omat arkut; sisältö pysyy (`flags.fc`), esineitä voi ottaa ja jättää.
 - **Repun käyttö:** napsautus valitsee, toinen napsautus siirtää/vaihtaa paikat, oikea puolittaa pinon, kaksoisnapsautus käyttää,
-  Q pudottaa yhden, Shift+Q kaikki. Arkuissa napsautus–napsautus siirtää, Shift+napsautus siirtää heti. E sulkee valikot.
+  Q pudottaa yhden, Shift+Q kaikki (v1.31: hiiren alla oleva esine, myös arkussa, ilman valintaa; itse pudotettu ei imeydy heti takaisin). Arkuissa napsautus–napsautus siirtää, Shift+napsautus siirtää heti. E sulkee valikot.
   **v1.08 (reppu ja arkku):** valittu ruutu sykkii oranssina ja nousee, sen kuvake seuraa hiirtä haamuna, kohderuudussa vihje
   Siirrä / Pinoa / Vaihda ja tietolaatikossa ohjeteksti. Valittuna oikea napsautus toiseen ruutuun siirtää puolet (tyhjään tai samaan
   esineeseen). Raahaus (hiiri pohjassa) siirtää ruutuun / pikapalkkiin; paneelin ulkopuolelle raahattu esine putoaa maahan.
@@ -192,7 +192,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   **v1.13:** runko keinuu sivuttain edessä olevan jalan puolelle (kävely ±2°, juoksu ±5°); juoksusta kävelyyn etukeno ja askel palautuvat pehmeästi (~1,2 s).
 - **Kalmanpesä (v0.93):** murskautuu millä tahansa, muulla kuin hakulla kaksi kertaa hitaammin; murskatun pesän ympärille ei synny mobeja.
 - **Harppovat hirviöt (v0.92):** kaksijalkaiset hirviöt liikkuvat 10 % nopeammin pitkin, keinuvin askelin ja lyövät 10 % kauemmas.
-- **Tönäisy (v0.92):** jokaisella aseella tönäisyarvo (tiedoissa metreinä); nuija tönäisee eniten (~1,9 m), isot olennot vähemmän.
+- **Tönäisy (v1.31):** arvo ilman yksikköä, N = N/2 m tavalliseen viholliseen (10 = 5 m); nuija 6 (eniten), kivikirves 2, keihäs ja rautakirves 3,
+  hiidenmiekka 3,5; isot olennot lentävät vähemmän. Tönäisty vihollinen on kyvytön lennon ajan (ei kävele eikä lyö).
 - **Ulottuvuusmobit (v0.91):** teeman mukaiset koristeet (huurre/jää, hautavaatteet ja pronssikorut, sammal ja hohtavat sienet), liekkimäisesti
   sykkivät silmät ulottuvuuden värillä (kirkastuvat jahdatessa, räpäyttävät), +10 % terveys ja lisäsaalis. Ulkomaailman mobit ennallaan.
 - **Haarniskat (v0.90):** jokaisella oma painava malli ja kypärä/huppu (kasvot näkyvät; Hiidenpanssarissa suljettu visiiri): nahkavaatteet,
