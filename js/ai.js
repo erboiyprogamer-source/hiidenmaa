@@ -308,7 +308,8 @@ function updateStations(dt){
     if(p.t==='sulatin'){const run=(p.data.ore>0||p.data.iore>0)&&p.data.wood>0;p.mesh.userData.glow.visible=run;if(run){p.data.t+=dt;const iron=p.data.ore<=0;if(p.data.t>=(iron?10:7)){p.data.t=0;p.data.wood--;if(iron){p.data.iore--;p.data.idone++;}else{p.data.ore--;p.data.done++;}}}}
   }
   for(const g of graves){const near=dist2(g.x,g.z,P.pos.x,P.pos.z)<50*50&&!P.inDun;g.beam.visible=near;if(near)g.beam.material.opacity=.28+Math.sin(playTime*3)*.1;}
-  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i];const u=l.userData.fl||(l.userData.fl={cur:1,target:1,t:Math.random()*.2});l.intensity=!l.userData.base?0:l.userData.base*flick(u,dt)*(.95+Math.sin(playTime*(7+i*1.7)+i*3)*.05);}
+  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i];{const s=l.userData.src;if(s&&s.move)l.position.set(s.x,s.y,s.z);}   /* v1.23 liikkuvat valot (tulinuoli, palava mob) */
+    const u=l.userData.fl||(l.userData.fl={cur:1,target:1,t:Math.random()*.2});l.intensity=!l.userData.base?0:l.userData.base*flick(u,dt)*(.95+Math.sin(playTime*(7+i*1.7)+i*3)*.05);}
   // Pistevalojen varjokartat päivitetään harvemmin (autoUpdate pois, needsUpdate nostetaan itse): pimeällä joka 2. (soihtu) / 3. (tuli) kehys,
   // päivällä harvemmin; vain jos valo palaa. Kun lähin tuli vaihtuu (updateLights), kartta päivitetään heti. Laatutaso (`QUAL`) voi harventaa lisää.
   {shFrame++;const dark=P.inDun||isNight()||indoorK>.5||wDark>.55,q=QUAL.lvl,rate=SET.shRate==='fast'?.5:SET.shRate==='slow'?2.5:1,fT=SET.shRate==='slow'?2:1;

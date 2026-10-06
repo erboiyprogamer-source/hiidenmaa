@@ -51,7 +51,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/dungeons.js` | `REALMS` (3 ulottuvuutta, avainketju `lock`/`key`/`alt`), generaattorit, `ensureRealm`, koristeet (`dressFloor`, tynnyrit, spawneri), portaalit, `realmBossAI`, Kalmanpesän murskaus `hitSpawner`, usva/höyry/pisarat, `P.spawnProt`, `fo(k)` |
 | `js/story.js` | löytöpaikat (`SITE_KEYS`, rauniot, arkkukivilinnakkeet `FORT`), vartijat (`GUARDS`), lisäriimukivet (`XRUNES`), tehtävät (`QUESTS`), leirit `CAMPS`/`ensureCamps`, kiviröykkiöt `STASHES` |
 | `js/state.js` | `P` (pelaaja), `inv`, `flags`, pelaajahahmo, reppu, maahan pudonneet esineet, partikkelit, ammukset |
-| `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET`/`SET_DEF` (oletus = yleisin taso), `SET_PAGES`, `applyGfx()`, asetusvalikko (Grafiikka, Varjot, …) |
+| `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET`/`SET_DEF` (oletus = yleisin taso), `SET_PAGES`, `applyGfx()`, asetusvalikko (Grafiikka, Varjot, …); automaattisäätö `AUTO`/`autoOn`, väliotsikot. |
 | `js/input.js` | näppäimet, hiiri, hiiren lukitus |
 | `js/actions.js` | hyökkäys, vahinko, syöminen, `interact()`, alttari, luolastoon meno |
 | `js/building.js` | rakennushaamu, ruudukkoon kohdistus, reunakohdistus `smartSnap`, `validPlace`, purku |
@@ -59,10 +59,10 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/player.js` | liike, fysiikka, animaatio (lyönnit `swingPose`, käsien IK `armIK`, läpäisyn esto `armClear`), kuolema, uudelleensyntyminen, nukkuminen |
 | `js/ai.js` | vihollisten tekoäly (luonteet `per`, `temperAI`, `stalkAI`), pomon hyökkäykset, `SPAWN`-taulukot, `spawnScary`, työpisteiden päivitys |
 | `js/camera.js` | kolmannen persoonan kamera |
-| `js/ui.js` | HUD, viestit, paneelit, kartta |
+| `js/ui.js` | HUD, viestit, paneelit, kartta; esineiden siirto/raahaus (`slotUX`, `#ghostIt`), tehtävän/tavoitteen piilotus (`applyHudMode`), terveyspalkkirivit (`HP_ROW`). |
 | `js/progress.js` | `bump`, XP ja taso (`lvlInfo`), saavutukset (`ACH`, `BON`), `GOALS`, edistymispaneeli (J) |
 | `js/save.js` | `serialize`, `loadData`, `saveGame`, `SKEY` |
-| `js/main.js` | valikko, pääsilmukka `frame()`, mukautuva laatu, testirajapinta `window.__game` |
+| `js/main.js` | valikko, pääsilmukka `frame()`, mukautuva laatu, testirajapinta `window.__game`; valikon taustakameran kierros (`menuCam`, `buildMenuSpots`), automaattisäätö (`autoQuality`), FPS (`updateFps`). |
 
 ## Mittayksiköt ja sopimukset
 

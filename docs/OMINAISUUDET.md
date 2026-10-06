@@ -125,6 +125,11 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Selässä kannettavat:** kilpi ja jousi selässä, yksi muu työkalu/ase selässä; vasara roikkuu vyöllä takana (heiluu kävellessä).
 - **Jousi:** hiiren vasen pohjassa jännittää, vapautus laukaisee (veto > 0,15). Täysi veto 1,6 s (laatu 2: 1,3 s, laatu 3: 1,07 s); vajaa veto = vähemmän vahinkoa, hitaampi nuoli, jyrkempi kaari.
   **Vetoasento (v1.22):** vartalo kääntyy sivuttain, jousi keskellä edessä, oikea käsi vetää jänteen posken oikealle puolelle; levossa jousi heiluu käden mukana.
+  **Tähtäys (v1.23):** ympyrä = hajonta: vedon alussa n. 10°, pienenee vedettäessä (keltainen → punainen), täysi veto paikallaan = 0° (pieni ympyrä + piste); liike lisää 2–3°.
+  **Jouset (v1.23):** hiidenjousi vetää 1,15 s, nuoli +25 % nopeampi, hajonta ×0,7; ★ nopeuttaa vetoa ja pienentää hajontaa.
+- **Nuolet (v1.23):** piikivi = perus; sulitettu +25 % nopeus, −40 % pudotus, +15 % vahinko, tuuli puolet; tulinuoli = perus + sytyttää. Asetus: tulinuolten valo (oletus pois).
+- **Kestävyys / isku (v1.23):** kupari −10 %, rauta −20 %, hiiden −30 %; kilven torjunta kuluttaa puu 90 %, kupari 75 %, rauta 60 % iskusta.
+- **Palava mob (v1.23):** isommat liekit, kipinöitä ja savua, oranssi valo maahan.
 - **Reppu:** 32 paikkaa, kehitys +8 paikkaa / +40 painoa (2 tasoa). Arkku 16→24→32, tynnyri 10→16→22.
 - **Avaimet:** Jääavain, Luuavain, Aarniavain (ulottuvuuksien portit).
 

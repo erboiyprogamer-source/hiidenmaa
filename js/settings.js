@@ -38,9 +38,9 @@ function validateKey(action,code){
 // shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
 const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,grass:1,particles:1,detail:'high',bldDetail:true,
   renderDist:165,lights:6,mist:1,clouds:1,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
-  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',hudMode:0};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
+  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',hudMode:0,arrowLight:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
 // Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
-const SET_PAGES={gfx:['res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','shafts','particles','mist','autoFx','bldDetail'],shadow:['shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes'],ctl:['wheelHotbar','zoom','sound','invY']};
+const SET_PAGES={gfx:['res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','shafts','arrowLight','particles','mist','autoFx','bldDetail'],shadow:['shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes'],ctl:['wheelHotbar','zoom','sound','invY']};
 const SET=Object.assign({},SET_DEF);
 try{Object.assign(SET,JSON.parse(localStorage.getItem('hiidenmaa_set')||'{}'));}catch(e){}
 function saveSet(){try{localStorage.setItem('hiidenmaa_set',JSON.stringify(SET));}catch(e){}}
@@ -111,6 +111,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       sub('Valo')+
       setRow('Valonlähteitä yhtä aikaa','lights',[[6,'Paljon (6)'],[4,'Normaali (4)'],[2,'Vähän (2)']],'tulet, soihdut, portaalit')+
       setRow('Auringon valonsäteet','shafts')+
+      setRow('Tulinuolten valo','arrowLight',null,'tulinuoli valaisee ympäristöä lentäessään (käyttää valonlähteen)')+
       sub('Partikkelit')+
       setRow('Hiukkaset (kipinät, sade, lumi)','particles',[[1,'Kaikki'],[.5,'Puolet'],[.25,'Vähän'],[0,'Pois']])+
       setRow('Usva ja höyry','mist',[[2,'Korkea'],[1,'Normaali'],[.5,'Matala'],[0,'Pois']])+

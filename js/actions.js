@@ -38,8 +38,8 @@ function onSecondary(){const w=curWeapon();if(w.cat==='hammer'){togglePanel('bui
 function startAttack(){
   if(P.atk||P.inWater&&P.swim)return;
   const w=curWeapon();
-  if(P.stam<w.st){if(playTime-lastStamMsgT>1.2){msg('Liian uupunut.','warn');lastStamMsgT=playTime;}return;}
-  P.stam-=w.st;P.stamDelay=1;P.atk={t:0,dur:w.spd+.2,hitAt:w.spd*.55,done:false,w,offBusy:!!equipped('offhand')};
+  const stc=w.st*matStamK(w.id);if(P.stam<stc){if(playTime-lastStamMsgT>1.2){msg('Liian uupunut.','warn');lastStamMsgT=playTime;}return;}
+  P.stam-=stc;P.stamDelay=1;P.atk={t:0,dur:w.spd+.2,hitAt:w.spd*.55,done:false,w,offBusy:!!equipped('offhand')};
   // Vuorotellen vasen-ylhäältä / oikea-ylhäältä viistoiskut
   P.swingSide=-(P.swingSide||1);P.atk.side=P.swingSide;
   // Kääntyminen kursorin suuntaan ei ole hetkellinen: pieni viive (iskun ajastin odottaa)
@@ -100,13 +100,16 @@ function damageMob(m,dmg,dt,kx,kz,kb=4){
 function igniteMob(m){if(m.dead)return;if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9))return;const fresh=!(m.burnT>0);m.burnT=5+Math.random()*5;
   if(!m.fireFx){const g=new THREE.Group(),h=(m.barH||m.def.r*2.8)*.55,r=Math.max(.25,m.def.r*.7);
     for(const [x,z,s] of [[0,0,1],[r*.6,.1,.7],[-r*.6,-.1,.75],[.05,r*.5,.6]]){const a=new THREE.Mesh(new THREE.ConeGeometry(.16*s*r*2,.6*s*r*2,6),MAT.flame),b=new THREE.Mesh(new THREE.ConeGeometry(.09*s*r*2,.4*s*r*2,6),MAT.flame2);a.position.set(x,h,z);b.position.set(x,h-.03,z);g.add(a,b);}
+    for(let i=0;i<4;i++){const c=new THREE.Mesh(new THREE.ConeGeometry(.1*r*2,.45*r*2,5),MAT.flame);const a2=i/4*TAU;c.position.set(Math.cos(a2)*r*.8,h*.55,Math.sin(a2)*r*.8);g.add(c);}   // v1.23 tulisempi: lisää liekkejä vartalolla
     m.f.g.add(g);m.fireFx=g;}
+  if(!m.fireLight){m.fireLight={x:m.pos.x,y:m.pos.y+.4,z:m.pos.z,c:0xff7a2a,i:2.2,on:()=>true,move:true};lightSources.push(m.fireLight);updateLights();}   // v1.23 valo maahan mobin alle
   if(fresh){sfx('build',1.4,.6);floatText('Syttyi!',m.pos.x,m.pos.y+(m.barH||2)+.6,m.pos.z,'#ff9a3a');}m.hurtT=playTime;}
-function stopBurn(m){m.burnT=0;if(m.fireFx){m.f.g.remove(m.fireFx);m.fireFx=null;}}
+function stopBurn(m){m.burnT=0;if(m.fireFx){m.f.g.remove(m.fireFx);m.fireFx=null;}if(m.fireLight){const i=lightSources.indexOf(m.fireLight);if(i>=0)lightSources.splice(i,1);m.fireLight=null;updateLights();}}
 // Palavan mobin päivitys: palauttaa true, jos mobi kuoli tulessa.
 function updateBurn(m,dt){if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9)){stopBurn(m);burst(m.pos.x,m.pos.y+1,m.pos.z,0x9a9a9a,6,2);return false;}
   m.burnT-=dt;m.hp-=5*dt;m.hurtT=playTime;m.lastHit=playTime;
-  if(m.fireFx){const t=playTime*9;m.fireFx.children.forEach((c,i)=>{c.scale.y=.8+.35*Math.abs(Math.sin(t+i*1.7));});if(Math.random()<dt*6)emitEmber(m.pos.x+(Math.random()-.5)*.5,m.pos.y+(m.barH||1.5)*.7,m.pos.z+(Math.random()-.5)*.5,'spark');}
+  if(m.fireFx){const t=playTime*9;m.fireFx.children.forEach((c,i)=>{c.scale.y=.8+.35*Math.abs(Math.sin(t+i*1.7));});if(Math.random()<dt*14)emitEmber(m.pos.x+(Math.random()-.5)*.7,m.pos.y+(m.barH||1.5)*(.3+Math.random()*.6),m.pos.z+(Math.random()-.5)*.7,'spark');if(Math.random()<dt*3)emitEmber(m.pos.x,m.pos.y+(m.barH||1.5),m.pos.z,'smoke');}
+  if(m.fireLight){m.fireLight.x=m.pos.x;m.fireLight.y=m.pos.y+.4;m.fireLight.z=m.pos.z;}
   if(m.hp<=0){stopBurn(m);killMob(m);return true;}
   if(m.burnT<=0)stopBurn(m);return false;}
 // Ammukset heikoimmasta parhaaseen (v0.76). Jos ammusta ei ole valittu (flags.ammo), käytetään heikointa jota on; valittu ammus käytetään
@@ -120,19 +123,34 @@ function killMob(m){m.dead=true;m.deadT=0;sfx('die');P.kills++;bump('kills');bum
   onMobKilled(m);
 }
 // Jousi: täysi vetoaika 1,6 s (laatu 2: 1,3 s, laatu 3: 1,07 s). Vajaa veto = vähemmän vahinkoa, hitaampi nuoli ja jyrkempi kaari; laatu suoristaa ja pidentää lentoa.
-function bowDrawTime(){const w=curWeapon();return 1.6/(1+.25*((w.q||1)-1));}
+/* v1.23 (lista 2, kohdat 15–17) jouset ja nuolet:
+   BOW_STATS: veto (s), nuolen nopeus- ja tarkkuuskerroin. Hiidenjousi vetää 1,15 s, nuoli +25 % nopeampi, hajonta ×0,7.
+   AMMO_STATS: sulitettu +25 % nopeus, −40 % pudotus, +15 % vahinko, puolet tuulesta; tulinuoli = piikivinuoli + sytyttää.
+   Hajonta (asteina): 10° × (1 − veto) + liike (juoksu 2°, ilmassa 3°), × jousen tarkkuus, ★-laatu pienentää. Täysi veto paikallaan = 0°. */
+const BOW_STATS={jousi:{draw:1.6,spd:1,acc:1},hiidenjousi:{draw:1.15,spd:1.25,acc:.7}};
+const AMMO_STATS={nuolet:{spd:1,grav:1,dmg:1,wind:1},sulkanuolet:{spd:1.25,grav:.6,dmg:1.15,wind:.5},tulinuolet:{spd:1,grav:1,dmg:1,wind:1,fire:1}};
+function bowStats(w){return BOW_STATS[w.id]||BOW_STATS.jousi;}
+function bowDrawTime(){const w=curWeapon();return bowStats(w).draw/(1+.25*((w.q||1)-1));}
+function bowSpread(){const w=curWeapon(),q=w.q||1,k=Math.min(1,P.bowDraw||0),hv=Math.hypot(P.vel.x,P.vel.z),mv=!P.onGround?1.5:hv>.6?1:0;
+  return (10*(1-k)+mv*2)*bowStats(w).acc/(1+.3*(q-1));}
+// v1.23 (kohta 16): paremmat materiaalit kuluttavat vähemmän kestävyyttä per isku (kivi/puu 1, kupari .9, rauta .8, hiiden .7)
+function matStamK(id){return !id?1:id.startsWith('hiiden')?.7:id.startsWith('rauta')?.8:(id.startsWith('kupari')||id==='miekka')?.9:1;}
+const SHIELD_COST={kilpi:.9,kuparikilpi:.75,rautakilpi:.6};
 function fireBow(){
   const w=curWeapon();const k=Math.min(1,P.bowDraw),am=ammoId();if(!am)return;invRemove(am,1);bump('shots');
   const from=new V3(P.pos.x,P.pos.y+1.5,P.pos.z);
   const tgt=camRayPoint(70);const dir=tgt.sub(from).normalize();
   from.addScaledVector(dir,.6);
-  const q=w.q||1;const fe=am==='sulkanuolet';shootArrow(from,dir,(14+36*k)*(1+.1*(q-1))*(fe?1.12:1),weaponDmg(w)*(.2+.8*k)*(fe?1.15:1),'player',7/(1+.3*(q-1)),am==='tulinuolet');if(fe)projs[projs.length-1].steady=1;sfx('bow');P.yaw=camYaw+Math.PI;
+  {const sp=bowSpread()*Math.PI/180;if(sp>1e-4){const r=Math.sqrt(Math.random())*Math.tan(sp),ph=Math.random()*TAU,ux=_tmpV2.set(-dir.z,0,dir.x).normalize(),vy=new V3().crossVectors(dir,ux);
+    dir.addScaledVector(ux,Math.cos(ph)*r).addScaledVector(vy,Math.sin(ph)*r).normalize();}}   // vajaa veto: nuoli lähtee tähtäysympyrän alueelle
+  const q=w.q||1,a=AMMO_STATS[am]||AMMO_STATS.nuolet,b=bowStats(w);shootArrow(from,dir,(14+36*k)*(1+.1*(q-1))*b.spd*a.spd,weaponDmg(w)*(.2+.8*k)*a.dmg,'player',7/(1+.3*(q-1))*a.grav,!!a.fire);
+  if(a.wind<1)projs[projs.length-1].steady=1;sfx('bow');P.yaw=camYaw+Math.PI;
 }
 function hurtPlayer(dmg,fx,fz){
   if(P.dead||P.invul>0||P.spawnProt>0||devOn('god'))return;
   let d=dmg;const dx=fx-P.pos.x,dz=fz-P.pos.z,l=Math.hypot(dx,dz)||1;
   if(P.blocking){const facing=(Math.sin(P.yaw)*dx+Math.cos(P.yaw)*dz)/l;const sh=equipped('shield');const blk=sh?ITEMS[sh.id].block*(1+.1*((sh.q||1)-1)):.3;
-    if(facing>.2){const cost=d*.9;if(P.stam>=cost){P.stam-=cost;P.stamDelay=1;d*=1-Math.min(.95,blk);sfx('block');burst(P.pos.x+dx/l*.7,P.pos.y+1.2,P.pos.z+dz/l*.7,0xffe08a,6,3);}else{P.stam=0;P.stagger=1.2;msg('Torjunta murtui!','warn');}}}
+    if(facing>.2){const cost=d*(sh?SHIELD_COST[sh.id]||.9:.9);if(P.stam>=cost){P.stam-=cost;P.stamDelay=1;d*=1-Math.min(.95,blk);sfx('block');burst(P.pos.x+dx/l*.7,P.pos.y+1.2,P.pos.z+dz/l*.7,0xffe08a,6,3);}else{P.stam=0;P.stagger=1.2;msg('Torjunta murtui!','warn');}}}
   const a=equipped('armor');if(a)d*=20/(20+ITEMS[a.id].arm*(1+.2*((a.q||1)-1)));
   if(d>=1){P.hp-=d;P.hurtFlash=.6;sfx('hurt');shake(.25);floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,'#e0614f');P.vel.x-=dx/l*5;P.vel.z-=dz/l*5;}
   P.invul=.25;

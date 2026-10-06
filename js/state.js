@@ -160,11 +160,14 @@ function shockwave(x,y,z,r,color=0x8ffff0){const m=new THREE.Mesh(new THREE.Ring
 /* ---------------- PROJECTILES ---------------- */
 const projs=[];
 function shootArrow(from,dir,speed,dmg,owner,grav,fire){const m=new THREE.Group();m.add(bx(.04,.04,.8,mat(0xc9b48a),0,0,0,false),bx(.07,.07,.12,mat(0x4d535c),0,0,.42,false));
-  if(fire){const fl=new THREE.Mesh(new THREE.ConeGeometry(.06,.2,6),MAT.flame);fl.rotation.x=-Math.PI/2;fl.position.z=.36;m.add(fl);m.add(bx(.08,.08,.06,mat(0x3a2a1c),0,0,.34,false));}m.position.copy(from);scene.add(m);projs.push({m,v:dir.clone().multiplyScalar(speed),dmg,owner,t:0,g:grav||7,kind:'arrow',fire:!!fire});}
+  if(fire){const fl=new THREE.Mesh(new THREE.ConeGeometry(.06,.2,6),MAT.flame);fl.rotation.x=-Math.PI/2;fl.position.z=.36;m.add(fl);m.add(bx(.08,.08,.06,mat(0x3a2a1c),0,0,.34,false));}m.position.copy(from);scene.add(m);const pr={m,v:dir.clone().multiplyScalar(speed),dmg,owner,t:0,g:grav||7,kind:'arrow',fire:!!fire};projs.push(pr);
+  if(fire&&SET.arrowLight){pr.light={x:from.x,y:from.y,z:from.z,c:0xff8a3a,i:1.5,on:()=>true,move:true};lightSources.push(pr.light);updateLights();}}   // v1.23 asetus: tulinuolen valo
 function throwRock(from,target,dmg){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,0),mat(0x5d5a54));m.castShadow=true;m.position.copy(from);scene.add(m);const d=_tmpV.subVectors(target,from);const T=1.1/.7;   // v0.89: kivi lentää 30 % hitaammin (ennen 1,1 s)
   const v=new V3(d.x/T,(d.y+.5*14*T*T)/T,d.z/T);projs.push({m,v,dmg,owner:'boss',t:0,g:14,kind:'rock'});}
 function updateProjs(dt){
-  for(let i=projs.length-1;i>=0;i--){const p=projs[i];p.t+=dt;if(p.stuck){if(p.t>6){scene.remove(p.m);projs.splice(i,1);}continue;}
+  const dropLight=p=>{if(p.light){const j=lightSources.indexOf(p.light);if(j>=0)lightSources.splice(j,1);p.light=null;updateLights();}};
+  for(let i=projs.length-1;i>=0;i--){const p=projs[i];p.t+=dt;if(p.light){p.light.x=p.m.position.x;p.light.y=p.m.position.y;p.light.z=p.m.position.z;if(p.stuck&&p.t>3)dropLight(p);}
+    if(p.stuck){if(p.t>6){dropLight(p);scene.remove(p.m);projs.splice(i,1);}continue;}
     p.v.y-=p.g*dt;if(p.kind==='arrow'&&!P.inDun){const wa=WIND.spd*.08*dt*(p.steady?.5:1);p.v.x+=WIND.x*wa;p.v.z+=WIND.z*wa;} // v0.84: tuuli kallistaa nuolen rataa (13 m/s ≈ 0,5 m / 30 m)
     p.m.position.addScaledVector(p.v,dt);if(p.kind==='arrow')p.m.lookAt(_tmpV.copy(p.m.position).add(p.v));else{p.m.rotation.x+=dt*5;}
     const pos=p.m.position;let hit=false;
@@ -172,6 +175,6 @@ function updateProjs(dt){
     else{if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<(p.kind==='rock'?2.2*2.2:.6)&&pos.y<P.pos.y+2.2&&pos.y>P.pos.y-.5){hurtPlayer(p.dmg,pos.x-p.v.x,pos.z-p.v.z);hit=true;}}
     const g=P.inDun?DUN.y:terrainH(pos.x,pos.z);
     if(!hit&&(pos.y<g||pointBlocked(pos.x,pos.y,pos.z))){if(p.kind==='rock'){shockwave(pos.x,g,pos.z,3);burst(pos.x,g+.3,pos.z,0x5d5a54,10,5);sfx('slam');if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<9)hurtPlayer(p.dmg,pos.x,pos.z);scene.remove(p.m);projs.splice(i,1);continue;}p.stuck=true;p.t=0;continue;}
-    if(hit||p.t>8){if(p.kind==='rock'){shockwave(pos.x,pos.y-.5,pos.z,3);sfx('slam');}scene.remove(p.m);projs.splice(i,1);}
+    if(hit||p.t>8){if(p.kind==='rock'){shockwave(pos.x,pos.y-.5,pos.z,3);sfx('slam');}dropLight(p);scene.remove(p.m);projs.splice(i,1);}
   }
 }

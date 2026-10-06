@@ -42,7 +42,11 @@ function updateHUD(dt){
   hudT-=dt;updateMsgs(dt);updateFloaters(dt);updateMobBars();
   $('#hurt').style.opacity=Math.min(1,P.hurtFlash*1.5+(P.hp<maxHp()*.25&&!P.dead?.35:0));
   // prompt
-  $('#cross').className=P.drawing?'aim':'';
+  // v1.23 (kohta 17): tähtäysympyrä = nuolen hajonta: iso alussa, pienenee vedettäessä, keltainen → punainen, täysi veto = pieni + piste
+  {const c=$('#cross');if(P.drawing){const sp=bowSpread(),k=Math.min(1,P.bowDraw||0),R=Math.max(4,Math.tan(sp*Math.PI/180)/Math.tan(camera.fov*Math.PI/360)*innerHeight/2);
+      c.className='aim'+(sp<.35?' full':'');c.style.width=c.style.height=(R*2)+'px';c.style.margin=`${-R-2}px 0 0 ${-R-2}px`;
+      c.style.borderColor=`rgb(${Math.round(lerp(232,224,k))},${Math.round(lerp(196,72,k))},${Math.round(lerp(90,60,k))})`;}
+    else if(c.className){c.className='';c.style.width=c.style.height=c.style.margin=c.style.borderColor='';}}
   // Ruudun ilmoitukset piilotetaan kun jokin valikko/paneeli on auki (tai peli tauolla); ne säilyvät T-lokissa ja palaavat valikon sulkeuduttua.
   {const hide=!!openPanel||state!=='play';if(hide!==msgHidden){msgHidden=hide;$('#msgs').style.visibility=hide?'hidden':'';}}
   if(hudT>0)return;hudT=.1;
@@ -279,10 +283,14 @@ function upBtn(el,cost,label,fn,key,chg,rerender,what){if(!cost){el.innerHTML=`<
 // Tavaran ominaisuudet listana [nimi, arvo] annetulla ★-tasolla (tietopaneeli ja päivityksen vertailu).
 function itemProps(s,q){const d=ITEMS[s.id],o=[],f1=v=>v.toFixed(1).replace('.',','),pc=v=>Math.round(v*100)+' %',mss=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')} min`,mq=d.cat&&d.cat!=='hammer'&&RECIPE_BY[s.id];
   if(mq)o.push(['Taso','★'+q+' / ★3']);
-  if(d.cat==='weapon'){const w={...d,q};o.push(['Vahinko',weaponDmg(w).toFixed(0)],['Vahinkotyyppi',{slash:'viiltävä',blunt:'murskaava',pierce:'pistävä',fire:'tuli'}[d.dt]||'–'],['Kestävyyttä / isku',String(d.st)]);
+  if(d.cat==='weapon'){const w={...d,q};o.push(['Vahinko',weaponDmg(w).toFixed(0)],['Vahinkotyyppi',{slash:'viiltävä',blunt:'murskaava',pierce:'pistävä',fire:'tuli'}[d.dt]||'–'],['Kestävyyttä / isku',f1(d.st*matStamK(s.id))+(matStamK(s.id)<1?` (−${Math.round((1-matStamK(s.id))*100)} %)`:'')]);
     if(d.chop)o.push(['Hakkuuteho',((5+d.chop*4)*(1+.25*(q-1))).toFixed(0)]);if(d.pick)o.push(['Louhintateho',((9+d.pick*3)*(1+.25*(q-1))).toFixed(0)]);if(d.range)o.push(['Ulottuvuus',f1(d.range)+' m']);if(d.kb)o.push(['Tönäisy',f1(d.kb/7.5)+' m'+(d.kb>=10?' (vahva)':'')]);}
-  if(d.cat==='bow')o.push(['Vahinko enintään',weaponDmg({...d,q}).toFixed(0)],['Jännitysaika',f1(1.6/(1+.25*(q-1)))+' s'],['Nuolen nopeus',((14+36)*(1+.1*(q-1))).toFixed(0)+' m/s']);
-  if(d.cat==='shield')o.push(['Torjuu',pc(Math.min(.95,d.block*(1+.1*(q-1))))]);
+  if(d.cat==='bow'){const b=bowStats(s);o.push(['Vahinko enintään',weaponDmg({...d,q}).toFixed(0)],['Jännitysaika',f1(b.draw/(1+.25*(q-1)))+' s'],['Nuolen nopeus',((14+36)*(1+.1*(q-1))*b.spd).toFixed(0)+' m/s'],
+    ['Hajonta vajaalla vedolla','enint. '+f1(10*b.acc/(1+.3*(q-1)))+'°']);}
+  if(d.cat==='shield')o.push(['Torjuu',pc(Math.min(.95,d.block*(1+.1*(q-1))))],['Torjunnan kestävyys',pc(SHIELD_COST[s.id]||.9)+' iskusta']);
+  // v1.23 (kohta 15): nuolten tiedot
+  if(AMMO_STATS[s.id]){const a=AMMO_STATS[s.id],r=v=>v===1?'normaali':(v>1?'+':'−')+Math.round(Math.abs(v-1)*100)+' %';
+    o.push(['Lentonopeus',r(a.spd)],['Kaaren pudotus',r(a.grav)],['Vahinko',r(a.dmg)],['Tuulen vaikutus',a.wind<1?'puolet':'normaali']);if(a.fire)o.push(['Sytyttää','5–10 s, 5 terveyttä/s (sade sammuttaa)']);}
   if(d.cat==='shovel')o.push(...(s.id==='kuokka'?[['Vasen','nostaa maata 0,3 m'],['Oikea','palauttaa maan värin']]:[['Vasen','kaivaa kuoppaa 0,3 m'],['Oikea','ruskea polku']]),['Kestävyyttä / käyttö','6']);
   if(d.cat==='armor'){const a=d.arm*(1+.2*(q-1));o.push(['Suoja',a.toFixed(0)],['Vahinko pienenee',pc(1-20/(20+a))]);if(d.warm)o.push(['Lämmin','kyllä']);}
   if(AMMO.includes(s.id))o.push(['Ammus',flags.ammo===s.id?'valittu':ammoId()===s.id?'käytössä (automaattinen)':flags.ammo?'ei käytössä':'automaattinen: heikoimmasta parhaaseen']);

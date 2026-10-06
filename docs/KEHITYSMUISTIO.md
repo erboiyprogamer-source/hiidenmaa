@@ -72,6 +72,20 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.23 (lista 2, kohdat 15–17: nuolet, paremmat jouset/aseet, tähtäysympyrä)
+- **Nuolet** (`AMMO_STATS`): sulitettu nopeus ×1,25 (ennen 1,12), pudotus ×0,6, vahinko ×1,15, tuuli puolet; tulinuoli = piikivinuoli +
+  sytyttää. Nuolten tiedot tietolaatikossa (lentonopeus, kaaren pudotus, vahinko, tuuli, sytyttää).
+- **Tulinuolen valo**: uusi grafiikka-asetus `SET.arrowLight` (Valo-osio, oletus pois) → lentävä tulinuoli kantaa valoa (valolähde
+  `move:true`, sijainti päivitetään joka kehys `ai.js`:n valosilmukassa; `updateLights` tallettaa `l.userData.src`).
+- **Palava mob:** 4 lisäliekkiä vartalolla, kipinöitä ×2,3 ja savua, oranssi valo mobin alla (`m.fireLight`, poistuu `stopBurn`).
+- **Jouset** (`BOW_STATS`): hiidenjousi veto 1,15 s (ennen 1,6), nuolen nopeus ×1,25, hajonta ×0,7. ★-laatu nopeuttaa vetoa (ennallaan)
+  ja pienentää hajontaa (÷ 1 + 0,3·(★−1)).
+- **Aseiden kestävyys / isku** `matStamK`: kivi/puu ×1, kupari ×0,9, rauta ×0,8, hiiden ×0,7. **Kilvet** torjunnan kestävyyskulutus
+  (`SHIELD_COST`): puu 90 %, kupari 75 %, rauta 60 % iskusta (ennen kaikilla 90 %). Näkyy tiedoissa.
+- **Tähtäys** (`bowSpread`): hajonta 10° × (1 − veto) + liike (juoksu 2°, ilmassa 3°), × jousi/★. Laukaistessa nuolen suunta arvotaan
+  ympyrän sisältä. `#cross.aim` koko = hajonta ruudulla (FOV:n mukaan), väri keltainen → punainen, täysi veto = pieni ympyrä + piste.
+  Mitattu 100 laukausta: veto 20 % → enint. 7,9°, täysi veto → 0°.
+
 ### v1.22 (lista 2, kohta 14: jousen veto oikein)
 - **Vika:** täydessä vedossa jänne ja oikea käsi menivät hahmon vasemmalle puolelle (~35 cm), jousi ei ollut edessä keskellä
   (jousen asento seurasi vasemman käden kiertoa). Mitattu pisteinä (eteen, sivu, korkeus).
@@ -1287,7 +1301,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19, kohdat 10–12 v1.20, kohta 13 v1.21, kohta 14 v1.22. Seuraavaksi kohdat 15–17 (jouset ja nuolet). PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19, kohdat 10–12 v1.20, kohta 13 v1.21, kohta 14 v1.22, kohdat 15–17 v1.23. LISTA 2 KAIKKI TEHTY – odotetaan käyttäjän palautetta ja Mergeä (PR #24). PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.
@@ -1302,10 +1316,9 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 12. TEHTY v1.20. Terveys 60 → 100 portaittain tasoilla 2–5, lisäys heti.
 13. TEHTY v1.21. 100 hp / rivi, enint. 5 riviä, > 500 hp toinen värikerros; nimi + kallot rivien yllä.
 14. TEHTY v1.22. Ampuja-asento: jousi keskellä edessä, jänne posken oikealle puolelle, levossa heiluu käden mukana.
-15. Nuolten tiedot näkyviin; sulkanuolet kauemmas, tasaisemmin ja nopeammin; tulinuoli = tavallinen + sytyttää; palamisesta tulisempi + valo maahan.
-16. Paremmat aseet/työkalut = paremmat ominaisuudet (esim. hiidenjousi latautuu nopeammin, kantama, nopeus ja vahinko isommat).
-17. Jousen tähtäysympyrä: alkaa isona ja pienenee latautuessa, keltainen → punainen; vajaa lataus = nuoli satunnaisesti ympyrän alueelle,
-    täysi lataus = pieni ympyrä + piste, nuoli suoraan.
+15. TEHTY v1.23. Nuolten tiedot, sulitettu +25 %/−40 % pudotus, tulinuoli = tavallinen + sytyttää (+ valoasetus), palava mob tulisempi + valo.
+16. TEHTY v1.23. Hiidenjousi nopeampi veto/lento/tarkkuus, ★ tarkkuus, aseiden kestävyyskulutus materiaalin mukaan, kilpien torjuntakulutus.
+17. TEHTY v1.23. Tähtäysympyrä = hajonta (enint. ~10°), keltainen → punainen, täysi veto pieni + piste ja suora nuoli.
 
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (päivitetty v1.06):** v1.06 nuija oikein päin (paksu pää kärkeen), takaraivon hiukset, tuulikompassi kartan vasemmalle puolelle – v1.07 palautettu kartan päälle läpikuultavana, häipyy hiiren alla, merkit sen päällä. v1.05 lisäsi DEV-esinehaun (Ä-valikko, määrä hakunapin vieressä) ja korjasi jousen laukaisun. Aiempi tila: päivityslistan KAIKKI kohdat 1–15 tehty (v0.81–v1.00) + välilisäykset:
