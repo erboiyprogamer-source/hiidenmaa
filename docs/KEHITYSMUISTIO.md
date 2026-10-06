@@ -71,6 +71,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.94 (Shift-tietoikkuna)
+- Kun **Shift** on pohjassa, hiiren alla olevan esineen tiedot (nimi, kuvaus, `itemProps`-taulukko) näkyvät kursorin vieressä (`#itemTip`,
+  `updateItemTip`, ui.js): repun ja pikapalkin paikat, arkut/hautakasa (`slotHTML` data-it/q/n) ja valmistuslistan rivit. Päivittyy hiirtä
+  liikutettaessa ja Shiftin painalluksella, katoaa Shiftin noustessa. Ei vaikuta Shift+napsautussiirtoon.
+
 ### v0.93 (käyttäjän välilisäys)
 - **Hautakasa** ei katoa koskaan itsestään (kuten ennenkin); pääkallo kartalla kunnes kasa on tyhjä. Jos kaikki mahtuu reppuun, tavarat
   otetaan kerralla; muuten kasa avautuu arkkuikkunaan (`curChest.grave`, ota mitä mahtuu, loput jäävät ja tallentuvat). Tyhjä kasa vajoaa

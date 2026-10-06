@@ -31,7 +31,7 @@ function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
     b.style.background=L>1?LAYER_C[(L-2)%6]:'rgba(0,0,0,.6)';b.firstChild.style.width=clamp(fill*100,0,100)+'%';b.firstChild.style.background=LAYER_C[(L-1)%6];
     b.children[1].textContent=`${m.def.n} ${Math.ceil(m.hp)}/${m.maxHp}${layers>1?' ×'+L:''}`;b.children[2].textContent='☠'.repeat(sk);}
   for(;k<mobBars.length;k++)mobBars[k].hidden=true;}
-function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${s.id==='soihtu'?`<span class="fu${s.lit===false?' off':''}"><i style="width:${Math.max(0,(s.fuel??torchMax(s))/torchMax(s)*100)}%"></i></span>`:''}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
+function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}" data-it="${s.id}" data-q="${s.q||1}" data-n="${s.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${s.id==='soihtu'?`<span class="fu${s.lit===false?' off':''}"><i style="width:${Math.max(0,(s.fuel??torchMax(s))/torchMax(s)*100)}%"></i></span>`:''}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
 let hudT=0,msgHidden=false;
 function updateHUD(dt){
   hudT-=dt;updateMsgs(dt);updateFloaters(dt);updateMobBars();
@@ -96,6 +96,16 @@ function renderBiome(){const B=$('#biomeBox');if(!B)return;if(P.inDun||!P.zone||
   B.innerHTML=`<h3>Alue: ${b.n}</h3><div class="bRow"><span>Sää ja lämpö</span><span>${b.temp}</span></div><div class="bRow"><span>Vaarallisuus</span><span>${dg}</span></div>
   <div class="bRow"><span>Eläimet</span><span>${b.life}</span></div><div class="bRow"><span>Viholliset</span><span>${b.foe}</span></div><div class="bRow"><span>Resurssit</span><span>${b.res}</span></div>${b.note?`<div class="bNote">${b.note}</div>`:''}
   <div class="bRow" style="margin-top:4px"><span>Löydetyt alueet</span><span>${Object.keys(flags.bio||{}).filter(k=>BIOMES[k]).length} / ${Object.keys(BIOMES).length}</span></div>`;}
+// v0.93 Shift-tietoikkuna: kun Shift on pohjassa, hiiren alla olevan esineen (reppu, pikapalkki, arkku, valmistuslista) tiedot näkyvät
+// kursorin vieressä – Shift pohjassa voi selata tietoja pelkästään hiirellä esineiden yli liikkumalla.
+let tipEv=null;
+function updateItemTip(){const tip=$('#itemTip');if(!tip)return;const e=tipEv,el=e&&e.shiftKey&&document.elementFromPoint(e.clientX,e.clientY);const t=el&&el.closest&&el.closest('[data-it]');
+  if(!t||!ITEMS[t.dataset.it]){tip.hidden=true;return;}const id=t.dataset.it,d=ITEMS[id],q=+t.dataset.q||1,s={id,n:+t.dataset.n||1,q};
+  tip.innerHTML=`<div class="t">${d.n}${q>1?` <span class="qs">★${q}</span>`:''}</div><div class="s">${d.d||''}</div><table class="props">${itemProps(s,q).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`;
+  tip.hidden=false;const W=tip.offsetWidth,H=tip.offsetHeight;tip.style.left=Math.min(innerWidth-W-8,e.clientX+18)+'px';tip.style.top=Math.max(8,Math.min(innerHeight-H-8,e.clientY+14))+'px';}
+addEventListener('mousemove',e=>{tipEv=e;updateItemTip();});
+addEventListener('keydown',e=>{if(e.key==='Shift'&&tipEv){tipEv=Object.assign({},{clientX:tipEv.clientX,clientY:tipEv.clientY,shiftKey:true});updateItemTip();}});
+addEventListener('keyup',e=>{if(e.key==='Shift'){const t=$('#itemTip');if(t)t.hidden=true;if(tipEv)tipEv={clientX:tipEv.clientX,clientY:tipEv.clientY,shiftKey:false};}});
 function renderLog(){const fm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
   $('#logBody').innerHTML=msgLog.length?[...msgLog].reverse().map(m=>`<div class="lg ${m.cls}"><span class="num">${fm(m.at)}</span>${m.t.replace(/</g,'&lt;')}</div>`).join(''):'<div class="note">Ei ilmoituksia vielä.</div>';}
 function togglePanel(name){if(openPanel===name){closePanels();return;}if(P.dead)return;panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';releaseLock();mouseL=false;mouseR=false;P.drawing=false;
@@ -152,6 +162,7 @@ function renderInv(){initSearch();renderEffects();
     const open=recipeOpen(r);
     const okSt=!r.st||st[r.st];const okMat=Object.entries(r.req).every(([id,n])=>invCount(id)>=n);
     const el=document.createElement('div');el.className='rec'+(okSt&&okMat&&open?'':' na');
+    el.dataset.it=r.id;el.dataset.n=r.n||1;
     el.innerHTML=`<div class="ic" style="background-image:url(${icon(r.id)})"></div><div><div class="nm">${ITEMS[r.id].n}${r.n?` ×${r.n}`:''}${why?` <span class="why">${why}</span>`:''}</div><div class="rq">${Object.entries(r.req).map(([id,n])=>`<span class="${invCount(id)>=n?'':'miss'}">${n} ${ITEMS[id].n.toLowerCase()}</span>`).join(', ')}${r.st?` · <span class="${okSt?'':'miss'}">${STATION_NAME[r.st]}</span>`:''}${open?'':` · <span class="miss">Taso ${r.lvl}</span>`}</div></div>`;
     const b=document.createElement('button');b.className='btn pri';b.textContent=open?'Valmista':'Lukittu';b.disabled=!(okSt&&okMat&&open);b.onclick=()=>craft(r);el.appendChild(b);cl.appendChild(el);}
 }
