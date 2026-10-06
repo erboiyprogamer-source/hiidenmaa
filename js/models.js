@@ -154,6 +154,12 @@ function makeAnimal(o){
   else if(k==='boar'){tube(tl,.015*s,.02*s,.25*s,mD,0,-.12*s,-.03*s,1,1,5).rotation.x=.3;rnd(tl,0,-.25*s,-.07*s,.035*s,mD,1,1.4,1,5);}
   else{rnd(tl,0,0,-.04*s,.06*s,o.elk||o.rein?mD:F(0xf4efe6),1,1.3,.7,6);}
   if(o.chest)rnd(g,0,by+.04*s,bz+.02*s,.12*s,F(o.chest),.9,1.25,.7,8);
+  // v0.88 pelottavat: hehkuvat silmät (additiivinen hehku), selkäpiikit/sammal, kalmasuden kylkiluut
+  if(o.glow){const gm=new THREE.MeshBasicMaterial({color:o.glow,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false,fog:false});
+    for(const sd of [-1,1]){const hx=new THREE.Mesh(new THREE.SphereGeometry(.06*s,8,6),gm);hx.position.set(sd*.11*s,.13*s,.18*s);head.add(hx);}}
+  if(o.spikes){const sp=F(o.spikes),ms=F(0x3e5a2a);for(let i=0;i<8;i++){const c=new THREE.Mesh(new THREE.ConeGeometry(.05*s,(.18+(i%3)*.08)*s,5),sp);c.position.set((i%2?.06:-.06)*s,by+.38*s-Math.abs(i-3)*.02*s,(.45-i*.13)*s*L);c.rotation.set(-.35,0,i%2?-.3:.3);c.castShadow=true;g.add(c);}
+    for(const [x,z,r] of [[-.25,.1,.14],[.22,-.2,.12],[0,-.4,.13],[.2,.35,.1]])rnd(g,x*s,by+.22*s,z*s*L,r*s,ms,1.2,.5,1.2,6);}
+  if(o.ribs){const rm=F(o.ribs);for(const sd of [-1,1])for(let i=0;i<5;i++){const r=rnd(g,sd*.255*s,by+.02*s,(.28-i*.1)*s*L,.03*s,rm,.4,3.2,.5,5);r.rotation.x=.15;}}
   if(o.spots){const sm=F(o.spots);const r=mulberry32(77);for(let i=0;i<16;i++){const a=r()*Math.PI-Math.PI/2,sd=r()<.5?-1:1,z=(r()-.5)*1.1*s*L;rnd(g,sd*.26*s*Math.cos(a*.6),by+.12*s*Math.sin(a),z,.028*s,sm,.4,1,1,5);}}   // ilveksen täplät
   if(o.stripes){const sm=F(o.stripes);for(const sd of [-1,0,1])rnd(g,sd*.12*s,by+.2*s-Math.abs(sd)*.06*s,0,.05*s,sm,.4,.4,5.5*L,6);}   // porsaan raidat
   if(o.band){const bm=F(o.band);for(const sd of [-1,1])rnd(g,sd*.245*s,by-.02*s,-.05*s*L,.075*s,bm,.35,.55,4*L,6);}   // ahman vaalea kylkijuova   // vaalea rinta (kettu)

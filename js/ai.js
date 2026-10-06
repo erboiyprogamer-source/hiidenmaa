@@ -45,6 +45,7 @@ function updateMobs(dt){
     // Paikallaan oleville vaikeille vihollisille: iskuttomana 30 s → parantuvat hitaasti (1 %/s).
     if(d.regen){if(playTime-m.lastHit>d.regen.after&&m.hp<m.maxHp)m.hp=Math.min(m.maxHp,m.hp+m.maxHp*d.regen.rate*dt);}
     else if((MOB_SKULL[m.type]||0)>=3&&playTime-m.lastHit>30&&m.hp<m.maxHp)m.hp=Math.min(m.maxHp,m.hp+m.maxHp*.01*dt);
+    if(d.stalk){if(stalkAI(m,dt,dx,dz,dist,hurt))continue;}
     if(d.temper){if(temperAI(m,dt,dx,dz,dist,hurt,night))continue;}
     else if(m.mom&&!m.mom.dead&&m.state!=='flee'&&dist2(m.pos.x,m.pos.z,m.mom.pos.x,m.mom.pos.z)>16){m.wander={x:m.mom.pos.x+(Math.random()-.5)*3,z:m.mom.pos.z+(Math.random()-.5)*3};m.t=1.5;}  // porsas seuraa emoa
     if(d.ai==='flee'){// säikähdysetäisyys: kävely 7 m, juoksu 16 m, ase kädessä ×1.4. Vahingoitettu pelkää 10 s.
@@ -62,8 +63,8 @@ function updateMobs(dt){
       if(m.state==='freeze'){m.frzT-=dt;m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*3));if(m.frzT<=0)startFlee(m,dx,dz);moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
       if(m.state==='watch'){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*2.5));moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
       if(m.fly){flyMob(m,dt);animMob(m,dt);continue;}}
-    else if(hostile&&!P.dead&&!(P.spawnProt>0)&&((m.los&&dist<aggroR)||hurt)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
-    else if(m.state==='chase'&&!hurt&&(dist>aggroR*1.6||P.dead||m.noLos>3)){m.state='idle';if(m.noLos>3){m.angry=false;m.lastHit=-99;}m.noLos=0;}
+    else if(hostile&&!P.dead&&!(P.spawnProt>0)&&!(m.forgetT>0)&&((m.los&&dist<aggroR)||hurt)&&Math.abs(P.pos.y-m.pos.y)<6)m.state='chase';
+    else if(m.state==='chase'&&!hurt&&(P.dead||(!d.stalk&&(dist>aggroR*1.6||m.noLos>3)))){m.state='idle';if(m.noLos>3){m.angry=false;m.lastHit=-99;}m.noLos=0;}
     if(m.state==='flee'){// pakosuunta pois pelaajasta satunnaisella poikkeamalla, vaihtuu 1.2–3 s välein
       const zig=d.per&&d.per.zig;m.fleeT=(m.fleeT||0)-dt;if(m.fleeT<=0){m.fleeT=zig?.35+Math.random()*.35:1.2+Math.random()*1.8;m.fleeA=(m.herdA??Math.atan2(-dx,-dz))+(Math.random()-.5)*(zig?2.2:hurt?1.6:.8);m.herdA=null;}
       tx=Math.sin(m.fleeA);tz=Math.cos(m.fleeA);spd=d.run;}
@@ -102,6 +103,27 @@ function temperAI(m,dt,dx,dz,dist,hurt,night){const d=m.def,t=d.temper;
   else if(t==='ahma'){if(see&&invCount('liha')>0)anger('Ahma haistaa lihan ja hyökkää!');}
   else if(t==='bear'){if(see&&dist<8)anger('Karhu hyökkää!');else if(m.los&&dist<14&&playTime-(m.growlT||-99)>12){m.growlT=playTime;sfx('roar',.55,.7);msg('Karhu murisee varoittavasti – pysy kaukana!','warn');m.state='idle';m.wander=null;m.yaw=Math.atan2(dx,dz);}}
   else if(t==='sow'){if(mobs.some(k=>k.mom===m&&!k.dead&&dist2(k.pos.x,k.pos.z,P.pos.x,P.pos.z)<49))anger('Emakko puolustaa porsaitaan!');}
+  return false;}
+// v0.88 harvinaiset pelottavat (def.stalk): huomatessaan pelaajan seuraavat 30–60 s (eivät luovu jahdista näköyhteyden katketessa),
+// sitten poistuvat 5 s poispäin ja unohtavat (2 s jonka aikana eivät huomaa). Lyönti poistumisen aikana suututtaa uudelleen.
+// Suonäkki nousee maasta 2 s:ssa (rise), Hiidenhirven sarvista nousee usvaa (mist). Palauttaa true, jos kehys käsiteltiin.
+function stalkAI(m,dt,dx,dz,dist,hurt){const d=m.def;
+  if(m.riseT!==undefined&&m.riseT<2){m.riseT+=dt;const g=terrainH(m.pos.x,m.pos.z);m.pos.y=g-2.4*(1-Math.min(1,m.riseT/2));if(Math.random()<dt*12)burst(m.pos.x,g+.2,m.pos.z,0x3a3020,3,2);m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*2);m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;return true;}
+  if(d.mist&&m.f.g.visible&&Math.random()<dt*8){const h=m.f.head;h.getWorldPosition(_tmpV);emitEmber(_tmpV.x+(Math.random()-.5)*1.4,_tmpV.y+.8+Math.random()*.6,_tmpV.z+(Math.random()-.5)*1.4,'smoke');}
+  if(m.forgetT>0)m.forgetT-=dt;
+  if(!isNight()&&m.state!=='chase'&&dist>45&&!m.dun){mobRemove(m);return true;}   // aamun tullen katoaa (kun ei jahtaa ja on kaukana)
+  if(m.leaveT>0){if(hurt&&playTime-m.lastHit<.2){m.leaveT=0;m.stalkT=30+Math.random()*30;m.state='chase';return false;}
+    m.leaveT-=dt;m.state='flee';moveMob(m,-dx,-dz,d.run*.8,dt);animMob(m,dt);if(m.leaveT<=0){m.state='idle';m.forgetT=2;m.wander=null;}return true;}
+  if(m.state==='chase'){if(!(m.stalkT>0)){m.stalkT=30+Math.random()*30;if(!m.helloed&&d.hello){m.helloed=1;msg(d.hello,'warn');sfx('roar',.5,.8);shake(.2);}}
+    m.stalkT-=dt;if(m.stalkT<=0){m.leaveT=5;m.stalkT=0;m.state='flee';}}
+  return false;}
+const SCARY={aarni:['hiidenkarhu','hiidenhirvi'],forest:['hiidenkarhu','kalmasusi'],moor:['hiidenhirvi','kalmasusi'],tunturi:['kalmasusi'],rakka:['kalmasusi'],suo:['suonakki']};
+// Yöllä pieni todennäköisyys (0,8 % / 2,5 s yritys ≈ kerran 5 minuutissa) spawnata pelottava 40–60 m päähän, enintään yksi kerrallaan.
+function spawnScary(){if(mobs.some(o=>o.def.stalk&&!o.dead))return false;
+  for(let t=0;t<8;t++){const a=Math.random()*TAU,dd=40+Math.random()*20;let x=P.pos.x+Math.sin(a)*dd,z=P.pos.z+Math.cos(a)*dd;const h=terrainH(x,z);if(h<.5)continue;
+    const L=SCARY[biomeAt(x,z,h)];if(!L||nearBase(x,z)||nearSite(x,z,40))continue;const type=L[Math.random()*L.length|0];
+    if(type==='suonakki'){nodesNear(x,z,12,_fellN);const pd=_fellN.find(n=>n.type==='lampare');if(pd){x=pd.x;z=pd.z;}}
+    const m=spawnMob(type,x,z);if(MOBDEF[type].rise)m.riseT=0;if(MOBDEF[type].howl){sfx('howl',1,.9);msg('Kaukaa kuuluu kalmea ulvonta…','warn');}return m;}
   return false;}
 // v0.87 karhu kaataa jahdatessaan edessään (1,6 m) olevat puut (ei aarnipuita) sivulle tukeiksi, 0,25 s välein.
 const _fellN=[];
@@ -218,6 +240,7 @@ function spawnSpot(night){
 function spawner(dt){
   spawnT-=dt;if(spawnT>0||P.inDun||P.dead)return;
   const night=isNight(),inA=P.zone==='aarni';spawnT=night&&inA?1.5:2.5;
+  if(night&&Math.random()<.008&&spawnScary())return;
   const alive=mobs.filter(m=>!m.dun&&!m.dead&&m!==boss&&!m.guard);const cap=night?(inA?18:14):10;
   if(alive.length>=cap)return;
   const dayFoes=alive.filter(m=>m.def.ai==='hostile').length;

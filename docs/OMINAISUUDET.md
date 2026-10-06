@@ -161,6 +161,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Karhu (v0.87):** 120 hp, murisee 14 m:ssä ja hyökkää alle 8 m:ssä tai lyötynä; lyö liikkeestä pysähtymättä, tönäisee ~3,5 m, kaataa
   jahdatessaan edessään olevat puut tukeiksi, palautuu (5 %/s), jos sitä ei lyödä minuuttiin. Pelaaja pääsee juosten karkuun. Saalis
   karhuntalja → Karhuntaljamatto.
+- **Harvinaiset pelottavat (v0.88):** vain öisin (≈ kerran 5 min, yksi kerrallaan): Hiidenkarhu, Hiidenhirvi, Kalmasusi (ulvoo ensin),
+  Suonäkki (nousee suon lätäköstä). Huomatessaan pelaajan seuraavat 30–60 s, poistuvat 5 s ja unohtavat – suuttuvat uudelleen vain nähdessään
+  pelaajan. Katoavat aamulla, jos eivät jahtaa.
 - **Eläinmallit:** `makeAnimal` (nivelletyt jalat – nivel rungon sisällä, lapa/reisi kylkeen; kaula rinnasta pään tyveen, kuono, korvat, häntä; peuran sarvet, karjun harjas ja torahampaat, suden kaulus, routasuden jääpiikit).
 - **Eläimet** (peura, villikarju): säikähtävät kävellen 7 m, juosten 16 m, ase kädessä × 1,4, kyykyssä paikallaan ei lainkaan, hiipiessä 1,5 m (kohti) / 0,9 m (selin); lyöty pelkää 10 s.
 - **Viholliset** (sammalhiisi, harmaasusi, kalmo, ylimys, kivivartija, routasusi): tarvitsevat näköyhteyden; huomaavat pelaajan aina 10 s

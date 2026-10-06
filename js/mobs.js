@@ -86,6 +86,18 @@ function figHiisi(){
   for(let i=0;i<7;i++){const a=i/7*TAU;cone(T,.07*s,.26*s,Math.sin(a)*.2*s,-.42*s,Math.cos(a)*.13*s,leaf,Math.PI+Math.cos(a)*.25,0,-Math.sin(a)*.25,4);}
   const cl=f.hand;tube(cl,.03*s,.045*s,.6*s,bark,0,-.02*s,.28*s).rotation.x=Math.PI/2;rnd(cl,0,-.02*s,.6*s,.1*s,bark,1,1,1.3,7);for(let i=0;i<3;i++)cone(cl,.02*s,.07*s,(i-1)*.07*s,.06*s,.62*s,tooth);
   return f;}
+// v0.88 Suonäkki: suon sammaloitunut, pitkäkätinen olento: roikkuva sammal ja kaislat heiluvat, hehkuvat keltaiset silmät, kynnet.
+function figSuonakki(){
+  const s=1.25,f=makeHumanoid({s,body:0x2e3a22,skin:0x3e4a2a,legs:0x2a2a1c,boot:0x1e1e14,eyes:0xffe36a,headS:1.15,thin:1}),T=f.torso,H=f.head,hs=1.15*s;
+  const moss=SM(0x4a6a2a),dark=SM(0x22301a),reed=SM(0x8a8a4a),claw=SM(0xd8d0b0),mud=SM(0x3a2e20);
+  const gm=new THREE.MeshBasicMaterial({color:0xffe36a,transparent:true,opacity:.6,blending:THREE.AdditiveBlending,depthWrite:false,fog:false});
+  for(const sd of [-1,1]){const e=new THREE.Mesh(new THREE.SphereGeometry(.05*hs,8,6),gm);e.position.set(sd*.08*hs,.22*hs,.2*hs);H.add(e);}
+  for(let i=0;i<9;i++){const a=i/9*TAU;swayAdd(f,prt(H,.05*hs,.35*hs,.03*hs,i%2?moss:dark,Math.sin(a)*.16*hs,.05*hs,Math.cos(a)*.14*hs),.15,1.1+i*.13);}   // sammalhiukset
+  for(let i=0;i<10;i++){const a=i/10*TAU;swayAdd(f,prt(T,.07*s,.5*s,.04*s,i%3?moss:mud,Math.sin(a)*.22*s,-.25*s,Math.cos(a)*.14*s),.12,.9+i*.1);}   // roikkuva sammal
+  for(let i=0;i<5;i++)cone(T,.012*s,.6*s,(i-2)*.07*s,.45*s,-.15*s,reed,-.3,0,(i-2)*.15,4);   // kaislat selässä
+  for(const a of [f.armL,f.armR])for(let i=0;i<3;i++)swayAdd(f,prt(a,.06*s,.5,.05*s,moss,(i-1)*.06*s,-.45*s-i*.08,.08*s),.15,1.3+i*.2);
+  for(const h of [f.hand,f.handL])for(let i=0;i<3;i++)cone(h,.02*s,.2*s,(i-1)*.05*s,-.12*s,.06*s,claw,Math.PI,0,0,4);
+  return f;}
 // Jäätär: köyristynyt jääakka, pitkät jääpiikkihiukset, jääkruunu, repaleinen huurrevaippa ja kynnet
 function figJaatar(){
   const f=makeHumanoid({s:1.85,body:0x9ab8d0,skin:0xcfe4f2,legs:0x7f9db5,eyes:0xbff4ff,wide:1.15,armMat:0xa9c6dc,headS:1.05}),T=f.torso,H=f.head,hip=.8*1.85;
@@ -153,6 +165,12 @@ const MOBDEF={
   // v0.87 Karhu: neutraali (murisee 14 m:ssä, hyökkää alle 8 m:ssä tai lyötynä), lyö liikkeestä ilman pysähdystä (mobile), tönäisee kauas (kb 16),
   // kaataa jahdatessaan edessään olevat puut tukeiksi (fells), paranee 5 %/s jos ei lyöty 60 s (regen). Enintään yksi kerrallaan.
   karhu:{n:'Karhu',hp:120,r:.9,ai:'neutral',temper:'bear',walk:1.5,run:7.2,aggro:16,dmg:18,range:2.6,cd:.65,wind:.18,kb:16,mobile:1,fells:1,regen:{after:60,rate:.05},eye:1.6,fh:2.6,drops:[['karhuntalja',1,1],['liha',4,6]],fig:()=>makeAnimal({kind:'bear',s:1.5,body:0x4a3424,dark:0x2a1c12,legs:0x3e2c1e,belly:0x3a2a1c,headC:0x4e3828,legH:.5,len:1,eyes:0x120a04})},
+  // v0.88 harvinaiset pelottavat (ai hostile + stalk): huomatessaan pelaajan seuraavat 30–60 s, sitten poistuvat 5 s ja unohtavat (pitää nähdä
+  // uudelleen suuttuakseen). Vain öisin, enintään yksi kerrallaan (spawner SCARY). hello = viesti kun huomaa pelaajan.
+  hiidenkarhu:{n:'Hiidenkarhu',hp:260,r:1.2,ai:'hostile',stalk:1,walk:1.5,run:7.5,aggro:32,dmg:26,range:3.2,cd:.8,wind:.22,kb:18,mobile:1,fells:1,eye:2.2,fh:3.4,hello:'Pimeydestä nousee Hiidenkarhu – sen silmät hehkuvat punaisina!',drops:[['karhuntalja',1,2],['liha',5,7],['luu',2,4]],fig:()=>makeAnimal({kind:'bear',s:2.1,body:0x1c1612,dark:0x0e0a08,legs:0x16110d,belly:0x1a140f,headC:0x201914,legH:.5,len:1.05,eyes:0xff3a1a,glow:0xff4a1a,spikes:0xd8d0b8})},
+  hiidenhirvi:{n:'Hiidenhirvi',hp:220,r:1,ai:'hostile',stalk:1,walk:1.6,run:9,aggro:34,dmg:22,range:2.8,cd:1.2,wind:.4,kb:14,mist:1,eye:2.8,fh:3.6,hello:'Usvasta astuu esiin Hiiden hirvi – kalman sarvet kantavat sumua.',drops:[['nahka',3,4],['liha',4,6],['hiidenkivi',0,1]],fig:()=>makeAnimal({kind:'deer',elk:1,antlers:1,s:1.9,body:0x1a1612,dark:0x0c0a08,legs:0x2a2420,belly:0x16120e,rump:0x1c1814,headC:0x221c16,hoof:0x0a0806,legH:1.05,len:1.1,eyes:0x9affd0,glow:0x7affc0})},
+  kalmasusi:{n:'Kalmasusi',hp:140,r:.7,ai:'hostile',stalk:1,walk:2,run:9.5,aggro:30,dmg:18,range:2.1,cd:.9,wind:.28,howl:1,eye:1.6,fh:2.4,hello:'Kalmasusi on vainunnut sinut!',drops:[['nahka',2,3],['luu',2,4]],fig:()=>makeAnimal({kind:'wolf',s:1.4,body:0xc8c4b8,dark:0x6e6a62,legs:0xa8a49a,belly:0xd8d4ca,ruff:0xe0dcd2,headC:0xbcb8ae,tailTip:0x5a5650,legH:.72,len:1.15,eyes:0x7ad8ff,glow:0x5ac8ff,ribs:0xeeeadc})},
+  suonakki:{n:'Suonäkki',hp:160,r:.6,ai:'hostile',stalk:1,walk:1.3,run:5.5,aggro:26,dmg:20,range:2.4,cd:1.3,wind:.5,rise:1,eye:2.6,fh:3.2,weak:{fire:1.5},hello:'Lätäkkö kuplii – Suonäkki nousee suosta!',drops:[['pihka',2,4],['luu',1,3]],fig:figSuonakki},
   hiisi:{n:'Sammalhiisi',hp:34,r:.45,ai:'hostile',walk:1.5,run:5.2,aggro:12,dmg:9,range:1.7,cd:1.4,wind:.42,drops:[['pihka',0,2],['kivi',0,1]],fig:figHiisi},
   susi:{n:'Harmaasusi',hp:44,r:.5,ai:'hostile',walk:2,run:4.6,aggro:18,dmg:11,range:1.7,cd:1.15,wind:.3,drops:[['nahka',1,2]],fig:()=>makeAnimal({kind:'wolf',s:.9,body:0x6e6e70,dark:0x3e3e40,legs:0x5e5e60,belly:0xa9a49a,ruff:0x8a8a88,headC:0x7c7c7e,tailTip:0x2a2a2c,legH:.6,len:1.05,eyes:0xffcc55})},
   kalmo:{n:'Kalmo',hp:50,r:.45,ai:'hostile',walk:1.4,run:4.6,aggro:14,dmg:13,range:1.8,cd:1.5,wind:.5,weak:{blunt:1.6,pierce:.6,fire:1.3},drops:[['luu',1,3],['kivi',0,1]],fig:figKalmo},
@@ -165,7 +183,7 @@ const MOBDEF={
   aarnihirvio:{n:'Aarnihirviö',hp:720,r:1.1,ai:'rboss',walk:2.2,run:4,aggro:18,dmg:26,range:3.8,cd:1.7,wind:.8,fh:5,eye:3.2,weak:{blunt:1.2,pierce:.8,fire:1.6},kit:['swipe','charge','slam','summon'],sum:[3],drops:[['rauta',4,6],['hiidenkivi',1,1],['kupari',5,7],['pihka',3,5]],fig:figAarni},
 };
 // Vaikeustaso pääkalloina terveyspalkin alla (≥3 = vaikea: palkki näkyy jo kaukaa katsottaessa, parantuu 30 s iskuttomuuden jälkeen).
-const MOB_SKULL={karhu:3,hirvi:2,ilves:1,ahma:1,emakko:1,porsas:0,janis:0,kettu:0,metso:0,poro:0,peura:0,karju:1,hiisi:1,susi:2,kalmo:2,ylimys:3,vartija:5,kivivartija:3,routasusi:2,jaajattari:5,kalmaherra:5,aarnihirvio:5};
+const MOB_SKULL={hiidenkarhu:4,hiidenhirvi:4,kalmasusi:3,suonakki:3,karhu:3,hirvi:2,ilves:1,ahma:1,emakko:1,porsas:0,janis:0,kettu:0,metso:0,poro:0,peura:0,karju:1,hiisi:1,susi:2,kalmo:2,ylimys:3,vartija:5,kivivartija:3,routasusi:2,jaajattari:5,kalmaherra:5,aarnihirvio:5};
 let mobs=[], boss=null;
 function mobEyeY(m){return m.pos.y+(m.type==='vartija'?4:(m.def.eye||1.2));}
 function spawnMob(type,x,z,opts={}){

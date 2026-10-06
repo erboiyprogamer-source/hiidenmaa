@@ -60,6 +60,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Ilves | 30 | 8,5 | 10 | yöllä haavoittuneen kimppuun |
 | Ahma | 28 | 6 | 9 | suuttuu raa'asta lihasta |
 | Emakko / porsas | 45 / 8 | 6 / 6,5 | 10 / – | puolustaa porsaita |
+| Hiidenkarhu / Hiidenhirvi / Kalmasusi / Suonäkki | 260 / 220 / 140 / 160 | 7,5 / 9 / 9,5 / 5,5 | 26 / 22 / 18 / 20 | harvinaiset, vainoavat 30–60 s |
 | Karhu | 120 | 7,2 | 18 (+tönäisy 16) | lyö liikkeestä, kaataa puita, palautuu 60 s jälkeen |
 | Villikarju | 40 | 5,8 | 8 | hyökkää vain jos lyöty |
 | Sammalhiisi | 34 | 5,2 | 9 | |
@@ -69,6 +70,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
 
 ## Versioloki
+
+### v0.88 (harvinaiset pelottavat – kohta 5d, kohta 5 valmis)
+- `def.stalk` + `stalkAI` (ai.js): huomatessaan pelaajan (aggro × 1,35 yöllä) jahtaa 30–60 s **eikä luovu** etäisyyden tai näköyhteyden
+  katketessa; sitten poistuu 5 s poispäin (80 % juoksusta) ja unohtaa (2 s `forgetT`, jona ei huomaa). Uusi huomaaminen vaatii näköyhteyden
+  ja aggro-etäisyyden. Lyönti poistumisen aikana suututtaa heti uudelleen. Ensimmäisellä huomaamisella viesti (`hello`), murina ja tärähdys.
+  Aamulla katoaa, jos ei jahtaa ja on yli 45 m päässä.
+- `spawnScary`: vain yöllä, 0,8 % per spawn-yritys (≈ kerran 5 min), 40–60 m päähän, enintään yksi kerrallaan, biomin mukaan `SCARY`:
+  aarni → Hiidenkarhu/Hiidenhirvi, metsä → Hiidenkarhu/Kalmasusi, nummi → Hiidenhirvi/Kalmasusi, tunturi/rakka → Kalmasusi, suo → Suonäkki.
+  - **Hiidenkarhu** 260 hp, isku 26, kb 18, lyö liikkeestä ja kaataa puita (kuten karhu), musta, hehkuvat punaiset silmät, luupiikit + sammal.
+  - **Hiidenhirvi** 220 hp, juoksu 9, isku 22, kb 14, musta jättihirvi, vihreänhehkuiset silmät, sarvista nousee usvaa (`mist`). Saalis voi sisältää hiidenkiven.
+  - **Kalmasusi** 140 hp, juoksu 9,5, isku 18, kalpea jättisusi kylkiluineen, siniset silmät; ilmestyessä ulvonta `howl` + viesti.
+  - **Suonäkki** 160 hp, isku 20, tuli ×1,5, sammaloitunut pitkäkätinen olento (`figSuonakki`), nousee lätäköstä 2 s:ssa (`rise`, multaa).
 
 ### v0.87 (karhu – kohta 5c)
 - **Karhu** (`MOBDEF.karhu`, temper `bear`): 120 hp (= 2 × pelaajan 60), juoksu 7,2 (× MOB_SPD ≈ 6,1 < pelaajan juoksu 8), isku 18, ulottuma 2,6,
@@ -1006,7 +1019,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (tauko v0.84:n jälkeen):** kohdat 1, 2, 3 ja 4 tehty (v0.81–v0.84). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki, ei vielä yhdistetty – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-Kohdat 5a (v0.85), 5b (v0.86) ja 5c karhu (v0.87) tehty; seuraavaksi 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
+KOHTA 5 VALMIS (v0.85–v0.88). Seuraavaksi kohta 6 (Kalmanvartijan nerffaus + kiviä heittävät pomot) – kysy 1–5 tarkentavaa. Vanha muistiinpano: 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
 jänis, kettu, hirvi, metso/teeri), mitkä 2 "joskus vihamielistä" (ehdotus: ilves, villisika-emakko/hirvi kiima-aikaan), harvinaiset pelottavat
 (ehdotus: "Korpinpeikko"/hiidenhirvi yöllä aarnimetsässä), karhun saalis ja biomit. Karhu-vaatimukset kirjattu alla (kohta 5).
 Käytä `makeAnimal`-tyyliä (v0.81 liitokset). Sen jälkeen 6 → 15 järjestyksessä, kukin: kysymykset → toteutus → kuvat/testi → tarkistusrivi
@@ -1020,7 +1033,7 @@ heilunta, kuten puut v0.84); grafiikka-asetus pois/oletus (ei niin tuuhea)/täys
 3. TEHTY v0.82. Uusia biomeja + nimet; nykyinen biomi näkyy, repussa biomin ominaisuudet; "Uusi alue löydetty: …" fade in/out vain ensimmäisellä kerralla
    (aloitusbiomi merkitty löydetyksi ilman ilmoitusta).
 4. TEHTY v0.84. Tuulensuunta: vaihtuu hitaasti satunnaisesti (minuutteja, kääntyy hitaasti); kartalla suunta ja nopeus; pilvet liikkuvat tuulen suuntaan.
-5. OSITTAIN (5a v0.85). 4 uutta eläintä (samaa tyyliä) + 2 joskus vihamielistä + harvinaisia pelottavia (seuraa 30–60 s, poistuu 5 s ja unohtaa); luonteen mukaiset
+5. TEHTY v0.85–v0.88. 4 uutta eläintä (samaa tyyliä) + 2 joskus vihamielistä + harvinaisia pelottavia (seuraa 30–60 s, poistuu 5 s ja unohtaa); luonteen mukaiset
    säikähdys/reaktiot. Karhu: iso, lyö kauas ja nopeasti, kaataa eteen jäävät puut tukeiksi, HP 200 % pelaajasta, palautuu jos ei lyöty 1 min.
 6. Kalmanvartija: harvemmin liuku/ryntäys, iskulla pidempi viive. Kaikki kiviä heittävät pomot: kivi 30 % hitaampi, hyökkäysviive +10 %.
 7. Haarniskoille kunnon painavat erottuvat mallit.
