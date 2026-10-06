@@ -285,7 +285,7 @@ function grassHash(i,j){let h=Math.imul(i,374761393)+Math.imul(j,668265263)|0;h=
 // v1.04 (käyttäjän palaute: "kevyempi, ohuempi, vähemmän, kasoja, läpinäkyvä"): ruoho on harvaan sirottuneita pieniä **kasoja** – ruudukon
 // solu (normaali 2,6 m, täysi 1,8 m) saa todennäköisyydellä tiheys × laikku × 0,6 yhden kasan, jossa 3–6 tupsua 0,5 m säteellä.
 function siteBlockedG(x,z){for(const k in LOC){const L=LOC[k],r=(SITE_CLEAR[L.kind]||(k==='barrow'?13:k==='circle'?15:k.startsWith('rune')?3.5:k.startsWith('ruin')?10:0))*.6;if(r&&dist2(x,z,L.x,L.z)<r*r)return true;}return false;}
-function rebuildGrass(){const lv=+(SET.grass??1);grassDirty=false;
+function rebuildGrass(){let lv=+(SET.grass??1);grassDirty=false;if(AUTO.fx>=2)lv=0;else if(AUTO.fx>=1&&lv>=2)lv=1;   /* v1.12 automaattisäätö */
   if(grassIM){scene.remove(grassIM);grassIM.dispose();grassIM=null;}if(!lv||P.inDun)return;
   const R=lv>=2?40:30,C=lv>=2?1.8:2.6,cx=P.pos.x,cz=P.pos.z,N=Math.ceil(Math.PI*R*R/(C*C))*6+10;
   const im=new THREE.InstancedMesh(GRASS_GEO,GRASS_MAT,N);im.castShadow=false;im.receiveShadow=true;im.frustumCulled=false;

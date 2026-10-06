@@ -371,7 +371,7 @@ function updateMist(dt){
   /* v1.10 (lista 2, kohta 3): SET.mist 2 = Korkea (entinen ulkonäkö), 1 = Normaali (oletus), .5 = Matala, 0 = Pois.
      Normaalilla höyryä ja sisäkiehkuroita on puolet vähemmän, mutta haituvat ovat 1,2× isompia ja 1,39× tiheämpiä
      (määrä × koko² × peitto ≈ sama), joten ne näyttävät yhtä paksuilta. Maanpinnan usva pysyy täysimääräisenä Normaalilla. */
-  const dun=P.inDun,D=dun&&P.realm?REALMS[P.realm]:null,ML=SET.mist??1,hi=ML>=2,q0=QUAL.lvl>=2?.4:1,q=q0*Math.min(1,ML),fxN=q0*(hi?1:ML>=1?.5:ML*.5),szK=hi?1:1.2,opK=hi?1:1.39;
+  const dun=P.inDun,D=dun&&P.realm?REALMS[P.realm]:null,ML=SET.mist??1,hi=ML>=2,q0=AUTO_K.fx[AUTO.fx],q=q0*Math.min(1,ML),fxN=q0*(hi?1:ML>=1?.5:ML*.5),szK=hi?1:1.2,opK=hi?1:1.39;
   let ax=P.pos.x,az=P.pos.z,on=dun,col=D?D.mist:0xa8a49a;
   if(!dun){let bd=60*60;for(const k in LOC){const L=LOC[k];if(L.kind!=='portal'&&L.kind!=='rock'&&L.kind!=='ruin'&&k!=='barrow')continue;const d2=dist2(L.x,L.z,P.pos.x,P.pos.z);if(d2<bd){bd=d2;ax=L.x;az=L.z;on=true;}}col=0xc9d6da;}
   const n=MIST.length*q;

@@ -72,6 +72,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.12 (välilisäykset 1–2: grafiikka-asetusten väliotsikot, automaattisäätö, FPS; rautakypärä, huppu)
+- **Asetukset:** Grafiikka-sivulla väliotsikot Yleiset / Luonto / Valo / Partikkelit / Rakennukset (`.setSub`), Varjot-sivulla
+  Auringon varjot / Tulien ja soihtujen varjot. "Automaattinen laatu" (varjot, `autoQ`) siirretty Varjot-sivulle.
+- **Yleinen automaattinen säätö** `SET.autoAll` + osa-alueet `autoRes` (3D-resoluutio ×1/.85/.7/.55), `autoFx` (hiukkaset + usva ×1/.5/.25,
+  ruoho Täysi→Normaali→pois), `autoDist` (piirtoetäisyys ×1/.8/.6) ja `autoQ` (varjot, `QUAL.lvl`). `AUTO`/`AUTO_K`/`autoOn` (settings.js),
+  `autoQuality` (main.js): nykiessä (>36 ms 3 s) lasketaan yksi askel järjestyksessä varjot → fx → resoluutio → etäisyys, sujuessa
+  (<18 ms 12 s) palautetaan käänteisesti, 6 s välein. Usva ei enää riipu varjojen tasosta vaan `AUTO.fx`:stä.
+- **FPS-näyttö** `SET.fps` (Pois / oikea ylä / vasen ylä / oikea ala / vasen ala), `#fps` HUD:ssa, päivitys 0,5 s, väri ≥50 vihreä, ≥30 keltainen.
+- **Rautakypärä:** rengasverho kiinni kypärän reunassa (yläsäde = reunan säde, z-skaala 1,08, y .37 → .2, kapenee kaulaan, edestä avoin
+  .5π) + alareunan nauha takana. Ennen verho oli leveämpi ja matalampi → näytti irrallisilta laatoilta poskissa.
+- **Nahka- ja karhuhuppu:** hiukset jäävät näkyviin hupun alta (`hoodHair`: piiloon vain hupun läpi puhkaisevat tupsut), huppu r .255.
+
 ### v1.11 (lista 2, kohta 4: ei muiden pelien mainintoja)
 - Asetus "Hiiren rulla vaihtaa pikapaikkaa": selite "kuten Minecraftissa; …" → "rulla vaihtaa pikapaikkaa zoomin sijaan; zoom säädetään alta".
   Koko koodi tarkistettu (js, index.html, css): ei muita mainintoja. Tarkistusrivi estää paluun.
@@ -1200,7 +1212,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset: 1–2 TEHTY v1.12; 3 (kävelyn/juoksun sivukeinunta, pehmeä juoksu→kävely) seuraavaksi, sitten kohta 5. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.

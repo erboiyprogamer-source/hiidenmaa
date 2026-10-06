@@ -255,6 +255,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   E käytä, B rakennus, R/G/H/Q/Z/X/F rakentaminen, Tab reppu, M kartta, J taso, T ilmoitukset, K koko näyttö, N minikartan zoom.
 - **Grafiikka:** 3D-resoluutio, automaattinen laatu, piirtoetäisyys 60–400 m, yksityiskohdat, rakennusten yksityiskohdat, hiukkaset,
   valonlähteiden määrä, usva ja höyry, pilvet, valonsäteet, puiden heiluminen.
+  **Väliotsikot (v1.12):** Yleiset, Luonto, Valo, Partikkelit, Rakennukset; Varjot-sivulla Auringon varjot ja Tulien varjot.
+  **Automaattinen säätö (v1.12):** yleinen kytkin + osa-alueet (resoluutio, hiukkaset/usva/ruoho, piirtoetäisyys, varjot); nykiessä yksi
+  askel kerrallaan 6 s välein, sujuessa takaisin. **FPS-näyttö:** valittava kulma (oletus pois, ensimmäinen vaihtoehto oikea yläkulma).
   **Usva ja höyry (v1.10):** Korkea (entinen), Normaali (oletus: höyry ja sisäkiehkurat puolet haituvista, 1,2× isommat ja 1,39× tiheämmät
   → sama paksuus), Matala, Pois. Maanpinnan usva täysimääräinen Korkealla ja Normaalilla.
 - **Varjot:** laatu, auringon varjojen tarkkuus ja etäisyys, päivitystiheys, tulien varjot ja niiden tarkkuus.

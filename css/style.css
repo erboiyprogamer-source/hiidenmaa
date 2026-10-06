@@ -255,3 +255,9 @@ input.isdef{filter:brightness(1.25)}
 #ghostIt{position:fixed;display:none;width:40px;height:40px;margin:12px 0 0 12px;background-size:contain;background-repeat:no-repeat;background-position:center;opacity:.55;pointer-events:none;z-index:9999;filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))}
 #ghostIt.drag{opacity:.9;margin:-20px 0 0 -20px;width:46px;height:46px}
 #detail .selHint{font-size:12px;color:var(--ember);font-weight:700;margin-bottom:4px}
+
+/* v1.12 asetusten väliotsikot ja FPS-näyttö */
+.setSub{margin:10px 0 0;font:700 13px 'Alegreya Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--ember);border-bottom:1px solid rgba(232,164,74,.3);padding-bottom:3px}
+.setGrid .setSub:first-child{margin-top:0}
+#fps{position:fixed;z-index:30;font:800 12px 'Alegreya Sans',sans-serif;padding:1px 6px;background:rgba(19,17,14,.55);border-radius:3px;pointer-events:none;text-shadow:0 1px 2px #000}
+#fps.fps_tr{top:2px;right:4px}#fps.fps_tl{top:2px;left:4px}#fps.fps_br{bottom:2px;right:4px}#fps.fps_bl{bottom:2px;left:4px}

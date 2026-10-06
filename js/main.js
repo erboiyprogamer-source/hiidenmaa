@@ -66,11 +66,20 @@ function menuCam(dt){menuA+=dt*.03;const cx=Math.cos(menuA)*60,cz=Math.sin(menuA
 let fAvg=.016,qBadT=0,qGoodT=0,qCool=0;
 function autoQuality(raw){if(raw>.5)return;fAvg+=(raw-fAvg)*.05;qCool-=raw;
   if(fAvg>.036){qBadT+=raw;qGoodT=0;}else if(fAvg<.018){qGoodT+=raw;qBadT=0;}else{qBadT=Math.max(0,qBadT-raw);qGoodT=Math.max(0,qGoodT-raw);}
-  if(qCool<=0){if(qBadT>3&&QUAL.lvl<QUAL.max){setQuality(QUAL.lvl+1);qCool=6;qBadT=0;}else if(qGoodT>12&&QUAL.lvl>0){setQuality(QUAL.lvl-1);qCool=6;qGoodT=0;}}}
+  /* v1.12: osa-alueet laskevat järjestyksessä varjot → hiukkaset/usva/ruoho → resoluutio → piirtoetäisyys (vain päällä olevat),
+     ja palautuvat käänteisessä järjestyksessä. Yksi askel kerrallaan, vähintään 6 s välein. */
+  if(qCool<=0){const C=[['q',()=>QUAL.lvl,QUAL.max],['fx',()=>AUTO.fx,2],['res',()=>AUTO.res,3],['dist',()=>AUTO.dist,2]].filter(c=>autoOn(c[0]));
+    const step=(k,d)=>{if(k==='q')setQuality(QUAL.lvl+d);else{AUTO[k]+=d;applyGfx();}qCool=6;};
+    if(qBadT>3){const c=C.find(c=>c[1]()<c[2]);if(c){step(c[0],1);qBadT=0;}}
+    else if(qGoodT>12){const c=[...C].reverse().find(c=>c[1]()>0);if(c){step(c[0],-1);qGoodT=0;}}}}
+// v1.12 FPS-näyttö (asetus fps): päivittyy 2 kertaa sekunnissa, väri sujuvuuden mukaan
+let fpsN=0,fpsT=0;
+function updateFps(raw){if(SET.fps==='off')return;fpsN++;fpsT+=raw;if(fpsT<.5)return;const f=Math.round(fpsN/fpsT),el=$('#fps');fpsN=0;fpsT=0;
+  if(el){el.textContent=f+' FPS';el.style.color=f>=50?'#8fd8a0':f>=30?'#e8c45a':'#e0614f';}}
 function frame(now){
   requestAnimationFrame(frame);
   const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;
-  if(state==='play'&&SET.autoQ)autoQuality(raw);
+  if(state==='play'&&SET.autoAll)autoQuality(raw);updateFps(raw);
   try{
     if(state==='play'||state==='ui')update(dt);
     else if(state==='menu')menuCam(dt);
