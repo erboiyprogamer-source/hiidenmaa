@@ -72,6 +72,17 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.27 (valikkokameran muutokset väliaikaisesti pois – käyttäjän pyyntö)
+- `main.js`: `MENU_V2_OFF=true` → valikossa alkuperäinen kamera (`menuCamOld`, kiertää kartan keskikohtaa 60 m säteellä, 22 m korkeudella),
+  ei v1.15:n 3D-kierrosta eikä v1.25:n animoituja kuvia; "Valikon tausta" -asetus piilotettu. Koodi säilyy (`menuCam`, `js/menubg.js`):
+  palautus = `MENU_V2_OFF=false`. Testattu: vanhan version tallennus → "Jatka matkaa" ja "Uusi peli" käynnistävät pelin.
+
+### v1.26 (käynnistysvahti ja virheet näkyviin)
+- Käyttäjä: "painan pelaa, mitään ei tapahdu, uudet kuvat eivät näy" – ruudulla versio 1.23 (vanha, rikkinäinen). Paikallisesti
+  toistettuna (vanhan version tallennus + asetukset) kaikki toimii → todennäköisesti välimuistissa vanha versio (KORJAUKSET 23).
+- `index.html`: `window.HV` (versio), `#bootErr`-laatikko näyttää virheet + version, 20 s vahti "Peli ei käynnistynyt…".
+  `main.js` näyttää myös pelisilmukan ensimmäisen virheen. **Päivitä `window.HV` aina version mukana.**
+
 ### v1.25 (valikon tausta animoiduiksi kuviksi)
 - Uusi tiedosto `js/menubg.js` (ennen main.js): 10 proseduraalista animoitua 2D-kuvaa (`MBG_SCENES`): Öinen leiri (nuotio + valon
   lepatus + kipinät + vilkkuvat silmät puskassa), Iltarusko järvellä, Revontulet tunturilla, Sumuinen aarnimetsä (sumu + tulikärpäset),
@@ -1317,7 +1328,8 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19, kohdat 10–12 v1.20, kohta 13 v1.21, kohta 14 v1.22, kohdat 15–17 v1.23. LISTA 2 KAIKKI TEHTY – odotetaan käyttäjän palautetta ja Mergeä (PR #24).
-**TEHTY v1.25:** valikon tausta animoiduiksi 2D-kuviksi (10 kuvaa, molemmat tyylit: low poly + maalauksellinen), sivun avauksessa aina öinen leiri
+**v1.27:** valikkokameran muutokset väliaikaisesti pois (`MENU_V2_OFF`). **AVOIN ONGELMA (v1.26):** käyttäjällä peli ei käynnistynyt / kuvat eivät näkyneet (versio 1.23 näkyi) – odotetaan, mitä commit-linkki ja
+käynnistysvahdin laatikko näyttävät. **TEHTY v1.25:** valikon tausta animoiduiksi 2D-kuviksi (10 kuvaa, molemmat tyylit: low poly + maalauksellinen), sivun avauksessa aina öinen leiri
 (nuotion valo ja kipinät, vilkkuvat silmät puskassa), sitten arvottu 20 s välein häivytyksellä; valikossa ei piirretä 3D:tä. Asetus "Valikon tausta":
 kuvat (oletus) / 3D-kamera (käyttää oikeaa aikaa, ei hidastu matalalla FPS:llä). PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.

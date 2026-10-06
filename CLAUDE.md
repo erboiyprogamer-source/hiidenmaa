@@ -120,7 +120,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 - Käyttäjä työskentelee yleensä pilvisessiossa. Kun erä on valmis ja testattu: commit, push ja
   pull request `main`-haaraan. Kerro käyttäjälle lyhyesti mitä muuttui ja muistuta yhdistämään PR
   (Merge), jos et voi tehdä sitä itse.
-- Päivitä valikon versionumero (`index.html`, "Selviytymispeli · versio X") ja versioloki samalla.
+- Päivitä valikon versionumero (`index.html`, "Selviytymispeli · versio X"), `window.HV` (käynnistysvahti) ja versioloki samalla.
 - **Välimuisti:** nosta samalla `index.html`:n kaikkien `<script src>`- ja `css`-linkkien `?v=X`, muuten
   raw.githack/selain voi näyttää vanhoja JS-tiedostoja. Anna testilinkki myös commit-SHA:lla.
 - **Linkit:** haaralinkki näyttää aina haaran uusimman version (välimuistin takia voi viivästyä); commit-SHA-linkki näyttää täsmälleen

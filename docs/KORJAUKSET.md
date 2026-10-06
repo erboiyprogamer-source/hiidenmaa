@@ -159,6 +159,17 @@ Testit eivät kulkeneet uudelleenlatauspolun kautta (ne kutsuivat `newGame()` su
 että peli käynnistyy. **Sääntö:** kaikki ylimmän tason `let/const`, joita `startPlay`/`newGame`/`loadData` käyttävät, ennen tiedoston
 alun automaattista aloitusta. Ks. myös 19.
 
+### 23. "Painan pelaa, mitään ei tapahdu, uudet kuvat eivät näy" – v1.26
+**Tilanne:** käyttäjän ruudulla valikossa luki "versio 1.23" (rikkinäinen versio, ks. 22), vaikka haarassa oli jo 1.25.
+**Syy (todennäköisin):** raw.githackin haaralinkki ja selaimen välimuisti voivat näyttää vanhaa `index.html`:ää minuutteja push-jälkeen.
+Paikallinen toisto vanhan version tallennuksella ja asetuksilla (`real.mjs`-tyyppinen testi: v1.07 → pelaa, tallenna, muuta asetuksia →
+avaa uusi versio samalla localStoragella): "Jatka matkaa" ja "Uusi peli" toimivat, kuvat näkyvät, ei virheitä. Pilvisessiosta ei pääse
+raw.githackiin eikä GitHub Pagesiin, joten käyttäjän näkymää ei voi tarkistaa suoraan.
+**Korjaus / suoja:** `index.html`:n käynnistysvahti (`window.HV`, `#bootErr`): kaikki käsittelemättömät virheet ja pelisilmukan virheet
+näkyvät ruudulla versionumeron kanssa; jos `window.__game` ei synny 20 s:ssa → "Peli ei käynnistynyt. Päivitä sivu (Ctrl+F5)".
+**Ohje käyttäjälle:** testaa commit-linkillä (ei välimuistiviivettä), tarkista valikon versionumero, Ctrl+F5. `window.HV` = versio, päivitä
+samalla kuin `?v=`.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

@@ -97,7 +97,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
     const sub=t=>`<h4 class="setSub">${t}</h4>`,autoN=k=>SET.autoAll?'':' (vaatii yleisen automaattisäädön)';   // v1.12 väliotsikot
     body.innerHTML=`<div class="setGrid">${
       sub('Yleiset')+
-      setRow('Valikon tausta','menuBg',[['img','Animoidut kuvat (kevyt)'],['3d','3D-kamera (raskas)']],'kuvat eivät kuormita konetta valikossa')+
+      (typeof MENU_V2_OFF!=='undefined'&&MENU_V2_OFF?'':setRow('Valikon tausta','menuBg',[['img','Animoidut kuvat (kevyt)'],['3d','3D-kamera (raskas)']],'kuvat eivät kuormita konetta valikossa'))+
       setRow('3D-resoluutio','res',[['native','Terävä (näytön tarkkuus)'],[1,'Normaali'],[.85,'85 %'],[.7,'70 %'],[.55,'55 %'],[.4,'40 %']],'pienempi = kevyempi, käyttöliittymä pysyy terävänä')+
       setRow('Automaattinen säätö','autoAll',null,'laskee grafiikkaa jos peli nykii ja palauttaa kun sujuu (alla olevat osa-alueet)')+
       setRow('– Resoluutio automaattisesti','autoRes',null,'enintään 55 %'+autoN())+
