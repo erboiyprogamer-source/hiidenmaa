@@ -197,7 +197,12 @@ function animMob(m,dt){
   if(m.eyeFx)animEyes(m,dt);
   if(m.anim>0)m.anim-=dt;
 }
-const BOSS_SLOW=1.1;   // v0.89: kiviä heittävien pomojen hyökkäysviive +10 % (Kalmanvartija, Jäätär)
+const BOSS_SLOW=1.1;
+// v1.17 (välilisäys 7): maahanisku – kädet nousevat ylös, pysyvät ylhäällä latautumassa 0,8 s (tärisevät), sitten isku (osuma hitT:ssä).
+function slamArms(f,t,hitT){const rise=Math.max(.15,hitT-.94),hold=hitT-.14;
+  f.armR.rotation.x=f.armL.rotation.x=t<rise?-3*t/rise:t<hold?-3+Math.sin(t*38)*.06:t<hitT?lerp(-3,-3.3,(t-hold)/.14):lerp(-3.3,-.6,Math.min(1,(t-hitT)/.15));}
+// v1.17 (välilisäys 6): pomojen ryntäys enintään kerran 10 s:ssa
+const BOSS_CHARGE_GAP=10;   // v0.89: kiviä heittävien pomojen hyökkäysviive +10 % (Kalmanvartija, Jäätär)
 function bossAI(m,dt,dx,dz,dist){
   const L=LOC.circle;
   if(m.state==='intro'){m.t+=dt;m.yaw=Math.atan2(dx,dz);m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;m.f.armL.rotation.x=m.f.armR.rotation.x=-2.8*Math.min(1,m.t);if(m.t>2.2){m.state='chase';sfx('roar');shake(.5);}return;}
@@ -207,7 +212,7 @@ function bossAI(m,dt,dx,dz,dist){
   // (0,8 → 1,12 s ja 1,1 → 1,54 s), iskujen väli +20 %, ryntäys puolet harvemmin (25 %, vähintään 8 s välein).
   if(m.act){m.act.t+=dt/BOSS_SLOW;const a=m.act;const f=m.f;
     if(a.k==='swipe'){f.armR.rotation.x=a.t<1.12?-2.6*a.t/1.12:lerp(-2.6,-.2,Math.min(1,(a.t-1.12)/.2));if(a.t>=1.12&&!a.hit){a.hit=1;sfx('swing');if(dist<4.8+.4){const fc=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(fc>.1)hurtPlayer(22,m.pos.x,m.pos.z);}}if(a.t>1.75)m.act=null;}
-    else if(a.k==='slam'){const up=a.t<1.54;f.armR.rotation.x=f.armL.rotation.x=up?-3*a.t/1.54:lerp(-3,-.6,Math.min(1,(a.t-1.54)/.15));if(a.t>=1.54&&!a.hit){a.hit=1;sfx('slam');shake(.6);const fx=m.pos.x+Math.sin(m.yaw)*2.5,fz=m.pos.z+Math.cos(m.yaw)*2.5;shockwave(fx,m.pos.y,fz,7);burst(fx,m.pos.y+.3,fz,0x5d5a54,16,7);if(dist2(fx,fz,P.pos.x,P.pos.z)<7*7&&P.pos.y-m.pos.y<1.5)hurtPlayer(28,fx,fz);}if(a.t>2.35)m.act=null;}
+    else if(a.k==='slam'){slamArms(f,a.t,1.54);if(a.t>=1.54&&!a.hit){a.hit=1;sfx('slam');shake(.6);const fx=m.pos.x+Math.sin(m.yaw)*2.5,fz=m.pos.z+Math.cos(m.yaw)*2.5;shockwave(fx,m.pos.y,fz,7);burst(fx,m.pos.y+.3,fz,0x5d5a54,16,7);if(dist2(fx,fz,P.pos.x,P.pos.z)<7*7&&P.pos.y-m.pos.y<1.5)hurtPlayer(28,fx,fz);}if(a.t>2.35)m.act=null;}
     else if(a.k==='charge'){if(a.t<.6){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*6);f.g.rotation.x=-.2;}else{moveMob(m,Math.sin(m.yaw),Math.cos(m.yaw),15*spd,dt);if(!a.hit&&dist<2.8){a.hit=1;hurtPlayer(26,m.pos.x,m.pos.z);P.vel.x+=Math.sin(m.yaw)*10;P.vel.z+=Math.cos(m.yaw)*10;}}if(a.t>1.6){m.act=null;f.g.rotation.x=0;}}
     else if(a.k==='throw'){f.armR.rotation.x=-2.8*Math.min(1,a.t/.8);if(a.t>=.8&&!a.hit){a.hit=1;const hp=new V3();f.hand.getWorldPosition(hp);throwRock(hp,new V3(P.pos.x+P.vel.x*.6,P.pos.y,P.pos.z+P.vel.z*.6),20);}if(a.t>1.3)m.act=null;}
     m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;return;}
@@ -225,7 +230,7 @@ function bossAI(m,dt,dx,dz,dist){
   if(P.dead){moveMob(m,L.x-m.pos.x,L.z-m.pos.z,m.def.walk,dt);animMob(m,dt);return;}// v0.75: iso pomo ei parane
   if(m.atkCd<=0){
     if(dist<5){m.act={k:Math.random()<.55?'swipe':'slam',t:0};m.atkCd=(m.phase2?1.1:1.6)*1.2*BOSS_SLOW;}
-    else if(dist>9&&dist<30){const ch=Math.random()<.25&&playTime-(m.chargeT||-99)>8;if(ch)m.chargeT=playTime;m.act={k:ch?'charge':'throw',t:0};m.atkCd=(m.phase2?1.6:2.4)*1.2*BOSS_SLOW;}
+    else if(dist>9&&dist<30){const ch=Math.random()<.25&&playTime-(m.chargeT||-99)>BOSS_CHARGE_GAP;if(ch)m.chargeT=playTime;m.act={k:ch?'charge':'throw',t:0};m.atkCd=(m.phase2?1.6:2.4)*1.2*BOSS_SLOW;}
   }
   if(!m.act){moveMob(m,dx,dz,dist>4?m.def.run*spd:0,dt);if(dist<=4)m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*4);animMob(m,dt);}
   else{m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;}

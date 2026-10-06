@@ -89,7 +89,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Myrsky kaataa puun noin 5 s välein** 9–100 m päässä (ei aarnipuita eikä rakennusalueelta).
 - **Työkalutasot:** kirves/hakku taso 1–3 (piikivi/kivi, kupari, rauta); aarnipuu vaatii tason 3, rautasuoni tason 2.
 - **Maanmuokkaus:** lapio tasoittaa ja tekee maasta multaisen (polut), kuokka nostaa maata ja palauttaa alkuperäisen (`TERRA`, `MUD`, tallentuu).
-- **Esineet maassa** katoavat 5 min jälkeen; maahan pudonneita ei tallenneta.
+- **Esineet maassa** katoavat 5 min jälkeen (v1.17: aika kuluu vain, kun olet samassa ulottuvuudessa); maahan pudonneita ei tallenneta.
+- **Täysi reppu (v1.17):** poiminta ei onnistu, jos kaikki ei mahdu (esine jää paikalleen), viesti "Reppu on täynnä – et voi poimia".
 
 ## 5. Valmistus ja esineet (items.js)
 
@@ -214,6 +215,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 - **Kalmanvartija (Kalmankehä):** herätetään 3 hiidenkivellä alttarilla; vaihe 2 alle 50 % (kalmot maasta); palaa maahan > 90 m päässä
   (kivet jäävät alttarille). Kaatuminen = voitto.
+- **Pomojen iskut (v1.17):** ryntäys enintään kerran 10 s:ssa; maahaniskussa kädet ylhäällä latautumassa 0,8 s ennen iskua.
 - **Ulottuvuuksien pomot** (Jäätär, Kalmaherra, Aarnihirviö, `realmBossAI`): nukkuvat kunnes < 17 m; vaiheet 100–66 / 66–33 / 33–0 %
   (nopeampi). Iskut: pyyhkäisy, maahanlyönti, rynnäkkö, kiven heitto, nova (vaihe 3, väistä hyppäämällä), kutsu (apulaiset, max 4).
   Pudottavat raudan, kuparin, hiidenkiven ja seuraavan avaimen (suoraan reppuun).

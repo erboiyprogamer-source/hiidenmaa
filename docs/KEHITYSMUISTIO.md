@@ -72,6 +72,16 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.17 (välilisäykset 4–7: täysi reppu, katoamisajastin, pomojen ryntäys ja maahanisku)
+- **Täysi reppu:** solmun (kivi, oksa, marjat…) poiminta ei onnistu, jos kaikki ei mahdu; osittain lisätty perutaan ja solmu jää
+  (ennen loput hävisivät). Maassa oleva esine: jos mitään ei mahdu, viesti "Reppu on täynnä – et voi poimia" enint. 4 s välein.
+- **Katoamisajastin** (`DROP_LIFE` 300 s): jokaisella pudotuksella `dim` (`curDim()`: 'world' / 'barrow' / ulottuvuuden id); ajastin ja
+  fysiikka käyvät vain, kun pelaaja on samassa ulottuvuudessa.
+- **Pomojen ryntäys** enintään kerran 10 s:ssa (`BOSS_CHARGE_GAP`): Kalmanvartija (ennen 8 s) ja ulottuvuuspomot (ennen ei rajaa,
+  `m.chargeT`). Mitattu Kalmanvartijalla 600 päätöstä: lyhin väli 11 s.
+- **Maahanisku** (`slamArms`): kädet nousevat, pysyvät ylhäällä latautumassa 0,8 s (värisevät), sitten isku. Osuma-ajat ennallaan
+  (Kalmanvartija 1,54 → todellinen 1,69 s, ulottuvuuspomot 1,1).
+
 ### v1.16 (lista 2, kohta 7: valmistusehdotukset uudelleen)
 - `suggestCrafts` palauttaa `{now, next}`: **Voit valmistaa nyt** (aineet repussa, enint. 6) ja **Hyödyllistä seuraavaksi** (enint. 4).
   Työpiste ei lähellä → merkintä "Tarvitset: X"; jos työpistettä ei ole rakennettu lainkaan → "(rakenna ensin)" ja esine myös next-osioon.
@@ -1242,7 +1252,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Seuraavaksi välilisäykset 4–7 (täysi reppu estää poiminnan, katoamisajastin vain samassa ulottuvuudessa, pomojen ryntäys max 1/10 s, maahaniskun 0,8 s lataus), sitten kohta 8. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17. Seuraavaksi kohta 8. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.

@@ -306,7 +306,7 @@ function realmBossAI(m,dt,dx,dz,dist){
   const slow=d.kit.includes('throw')?BOSS_SLOW:1;   // v0.89: kiviä heittävä ulottuvuuspomo +10 % viive
   if(m.act){const a=m.act;a.t+=dt/slow;
     if(a.k==='swipe'){f.armR.rotation.x=a.t<.8?-2.6*a.t/.8:lerp(-2.6,-.2,Math.min(1,(a.t-.8)/.2));if(a.t>=.8&&!a.hit){a.hit=1;sfx('swing');if(dist<d.range+.8&&(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1)>.1)hurtPlayer(d.dmg,m.pos.x,m.pos.z);}if(a.t>1.4)m.act=null;}
-    else if(a.k==='slam'){f.armR.rotation.x=f.armL.rotation.x=a.t<1.1?-3*a.t/1.1:lerp(-3,-.6,Math.min(1,(a.t-1.1)/.15));if(a.t>=1.1&&!a.hit){a.hit=1;sfx('slam');shake(.6);const fx=m.pos.x+Math.sin(m.yaw)*2.5,fz=m.pos.z+Math.cos(m.yaw)*2.5;shockwave(fx,m.pos.y,fz,7,REALMS[m.realm].glow);burst(fx,m.pos.y+.3,fz,REALMS[m.realm].wall,16,7);if(dist2(fx,fz,P.pos.x,P.pos.z)<49&&P.pos.y-m.pos.y<1.5)hurtPlayer(d.dmg*1.2,fx,fz);}if(a.t>1.9)m.act=null;}
+    else if(a.k==='slam'){slamArms(f,a.t,1.1);if(a.t>=1.1&&!a.hit){a.hit=1;sfx('slam');shake(.6);const fx=m.pos.x+Math.sin(m.yaw)*2.5,fz=m.pos.z+Math.cos(m.yaw)*2.5;shockwave(fx,m.pos.y,fz,7,REALMS[m.realm].glow);burst(fx,m.pos.y+.3,fz,REALMS[m.realm].wall,16,7);if(dist2(fx,fz,P.pos.x,P.pos.z)<49&&P.pos.y-m.pos.y<1.5)hurtPlayer(d.dmg*1.2,fx,fz);}if(a.t>1.9)m.act=null;}
     else if(a.k==='charge'){if(a.t<.6){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*6);f.g.rotation.x=-.2;}else{moveMob(m,Math.sin(m.yaw),Math.cos(m.yaw),14*sp,dt);if(!a.hit&&dist<2.8){a.hit=1;hurtPlayer(d.dmg*1.1,m.pos.x,m.pos.z);P.vel.x+=Math.sin(m.yaw)*10;P.vel.z+=Math.cos(m.yaw)*10;}}if(a.t>1.6){m.act=null;f.g.rotation.x=0;}}
     else if(a.k==='throw'){f.armR.rotation.x=-2.8*Math.min(1,a.t/.8);if(a.t>=.8&&!a.hit){a.hit=1;const hp=new V3();f.hand.getWorldPosition(hp);throwRock(hp,new V3(P.pos.x+P.vel.x*.6,P.pos.y,P.pos.z+P.vel.z*.6),22);}if(a.t>1.3)m.act=null;}
     else if(a.k==='nova'){f.armR.rotation.x=f.armL.rotation.x=-2.9*Math.min(1,a.t/1.2);if(a.t>=1.2&&!a.hit){a.hit=1;sfx('slam');shake(.7);shockwave(m.pos.x,m.pos.y,m.pos.z,11,REALMS[m.realm].glow);burst(m.pos.x,m.pos.y+.4,m.pos.z,REALMS[m.realm].glow,22,8);if(dist<11&&P.pos.y-m.pos.y<.9)hurtPlayer(d.dmg*1.1,m.pos.x,m.pos.z);}if(a.t>1.8)m.act=null;}
@@ -317,7 +317,8 @@ function realmBossAI(m,dt,dx,dz,dist){
     const nm=mobs.filter(o=>o.boss===m&&!o.dead).length;
     const kit=d.kit.filter(k=>k!=='nova'||ph>=3).filter(k=>k!=='summon'||(ph>=2&&nm<3&&m.sumT<=0));
     const near=dist<6;let pool=kit.filter(k=>near?(k==='swipe'||k==='slam'||k==='nova'):(k==='charge'||k==='throw'||k==='summon'||k==='nova'));
-    if(!pool.length)pool=kit;m.act={k:pool[(Math.random()*pool.length)|0],t:0};m.atkCd=(ph===1?1.9:ph===2?1.4:1)*slow;
+    if(playTime-(m.chargeT||-99)<BOSS_CHARGE_GAP)pool=pool.filter(k=>k!=='charge');   // v1.17 ryntäys max 1 / 10 s
+    if(!pool.length)pool=kit.filter(k=>k!=='charge'||playTime-(m.chargeT||-99)>=BOSS_CHARGE_GAP);if(!pool.length)pool=['swipe'];m.act={k:pool[(Math.random()*pool.length)|0],t:0};if(m.act.k==='charge')m.chargeT=playTime;m.atkCd=(ph===1?1.9:ph===2?1.4:1)*slow;
   }
   if(!m.act){moveMob(m,dx,dz,dist>d.range*.9?d.run*sp:0,dt);if(dist<=d.range+1)m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*4);animMob(m,dt);}
   else{f.g.position.copy(m.pos);f.g.rotation.y=m.yaw;}
