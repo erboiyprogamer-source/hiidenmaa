@@ -96,6 +96,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Löydetyt arkut ja tynnyrit:** avautuvat arkkuikkunaan kuten omat arkut; sisältö pysyy (`flags.fc`), esineitä voi ottaa ja jättää.
 - **Repun käyttö:** napsautus valitsee, toinen napsautus siirtää/vaihtaa paikat, oikea puolittaa pinon, kaksoisnapsautus käyttää,
   Q pudottaa yhden, Shift+Q kaikki. Arkuissa napsautus–napsautus siirtää, Shift+napsautus siirtää heti. E sulkee valikot.
+  **v1.08 (reppu ja arkku):** valittu ruutu sykkii oranssina ja nousee, sen kuvake seuraa hiirtä haamuna, kohderuudussa vihje
+  Siirrä / Pinoa / Vaihda ja tietolaatikossa ohjeteksti. Valittuna oikea napsautus toiseen ruutuun siirtää puolet (tyhjään tai samaan
+  esineeseen). Raahaus (hiiri pohjassa) siirtää ruutuun / pikapalkkiin; paneelin ulkopuolelle raahattu esine putoaa maahan.
 - **Ehdotukset ja haku:** valmistuksen ja rakennusvalikon oletusvälilehti *Ehdotukset* näyttää syineen ne, joihin aineet ovat valmiina,
   puuttuvat tai paremmat varusteet ja pelin vaiheeseen sopivat rakennukset (työpenkki → nuotio → sänky → suoja → sulatin/ahjo).
   Hakukenttä hakee kaikista välilehdistä nimen osalla.

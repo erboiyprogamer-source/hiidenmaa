@@ -246,3 +246,12 @@ input.isdef{filter:brightness(1.25)}
 .devGive{display:flex;gap:6px}.devGive .search{flex:1;min-width:0}.devGive input[type=number]{width:70px;user-select:text}
 .devList{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;margin-top:4px}.devIt{display:flex;align-items:center;gap:8px;padding:2px 4px;background:rgba(0,0,0,.18);border-radius:4px}
 .devIt .ic{width:28px;height:28px;background-size:cover;flex:none}.devIt .nm{flex:1;font-size:14px}.devIt .btn{padding:3px 10px}
+
+/* v1.08 (lista 2, kohta 1): valitun esineen selkeys, haamukuvake ja kohderuudun vihje */
+.grid .slot.sel{border-color:var(--ember);animation:selPulse 1.1s ease-in-out infinite;z-index:2}
+@keyframes selPulse{0%,100%{box-shadow:0 0 0 1px var(--ember),0 0 6px rgba(232,164,74,.45);transform:translateY(-1px) scale(1.04)}50%{box-shadow:0 0 0 2px var(--ember),0 0 16px rgba(232,164,74,.85);transform:translateY(-3px) scale(1.08)}}
+.grid .slot.tgt{outline:2px dashed var(--frost);outline-offset:-3px}
+.grid .slot.tgt::after{content:attr(data-hint);position:absolute;left:0;right:0;bottom:-1px;text-align:center;font-size:10px;font-weight:800;color:#13110e;background:var(--frost);border-radius:0 0 3px 3px;line-height:13px;pointer-events:none}
+#ghostIt{position:fixed;display:none;width:40px;height:40px;margin:12px 0 0 12px;background-size:contain;background-repeat:no-repeat;background-position:center;opacity:.55;pointer-events:none;z-index:9999;filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))}
+#ghostIt.drag{opacity:.9;margin:-20px 0 0 -20px;width:46px;height:46px}
+#detail .selHint{font-size:12px;color:var(--ember);font-weight:700;margin-bottom:4px}

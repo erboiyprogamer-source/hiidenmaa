@@ -71,6 +71,14 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.08 (lista 2, kohta 1: esineiden siirron selkeys ja raahaus)
+- Käyttäjä hylkäsi "esine tarttuu hiireen" -mallin: nykyinen napsautus–napsautus säilyy, mutta valinta viestitään selvemmin.
+- `ui.js`: `slotUX` (data-g/i, hover-vihje, raahauksen aloitus), `updGhost`/`#ghostIt` (haamukuvake hiiren vieressä; raahatessa isompi),
+  `slotHint` (Siirrä / Pinoa / Vaihda), `moveHalf` (oikea napsautus valittuna), `splitIn` (puolitus myös arkussa), `curSel`, `uxArr`.
+  Raahaus alkaa 6 px liikkeestä; pudotus ruutuun = `moveSlot`, pikapalkkiin = repun ruutu 0–7, paneelin ulkopuolelle = maahan
+  (`spawnDrop`, varuste riisutaan). Raahauksen jälkeinen click syödään (`dragEat`). CSS: `selPulse`-animaatio, `.tgt` + `::after`-vihje.
+- Arkun ohjeteksti `#chestHint` vaihtuu valinnan mukaan.
+
 ### v1.07 (tuulikompassi takaisin kartan päälle – ei peitä mitään)
 - Käyttäjän toive: kompassi pysyy kartan päällä oikeassa yläkulmassa kuten ennen v1.06:ta, mutta se ei saa peittää karttaa eikä muuta.
   Ratkaisu (`drawBigMap`, ui.js): (1) taustat läpikuultavat (ympyrä 0,42, laatikko 0,5), (2) kompassi häipyy alfaan ~0,12, kun hiiri on
@@ -1175,6 +1183,29 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ## Ideajono
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
+**JATKA TÄSTÄ:** PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
+2. Vartijat palaavat alueelleen ajan kanssa (esim. 10 s kävellen); pelaajan tullessa lähelle paluu keskeytyy.
+3. Savut/usvat kohteiden yllä: sama ulkonäkö ja paksuus vähemmillä entiteeteillä (kääntyvät siivut); nykyinen = korkein grafiikka-asetus.
+4. Ohjetekstit pois (kuten Minecraft): "Rulla = zoom" yms.
+5. "Toimii parhaiten tietokoneella…" -teksti valikossa eri paikkaan; näkyy vain ensimmäisellä kerralla ja häipyy.
+6. Valikon taustakuva kuvaa eri kohteita pelissä, vaihtaa kohdetta satunnaisesti.
+7. Ehdotukset-kategoria: ensin mihin on varaa (repun materiaalit), toissijaisesti mitä pelaajalta puuttuu ja olisi hyödyllistä (pelin vaihe).
+8. Tehtävät ja tavoitteet piiloon/näkyviin napista; piilotettuna pieni teksti "piilotettu – näytä painamalla (näppäin)".
+9. Puut kallistuvat tuulen suuntaan (runko taipuu, myrskyllä paljon); myrskyssä kaatuminen 70 % tuulen suuntaan;
+   puu pelaajan päälle = 80 % suurimmasta kestosta (terveys + suojat).
+10. Iso kartta: liikkuvat pilvet näkyvät ohuina myös avatulla alueella.
+11. Kartan valkoisille teksteille pieni varjo (näkyvät valkoisten vuorten päällä).
+12. Tasolla 5 pelaajan maksimiterveys 100.
+13. Monikertaisen terveyden mobeille useita päällekkäisiä hp-palkkeja; palkit ja kallot nousevat määrän mukaan (eivät mobin edessä).
+14. Jousi: jänne venyy väärään suuntaan → korjaa; latauksessa jousi keskelle eteen ja oikea käsi vetää jänteen pään oikealle puolelle;
+    jousi heiluu käden mukana kävellessä.
+15. Nuolten tiedot näkyviin; sulkanuolet kauemmas, tasaisemmin ja nopeammin; tulinuoli = tavallinen + sytyttää; palamisesta tulisempi + valo maahan.
+16. Paremmat aseet/työkalut = paremmat ominaisuudet (esim. hiidenjousi latautuu nopeammin, kantama, nopeus ja vahinko isommat).
+17. Jousen tähtäysympyrä: alkaa isona ja pienenee latautuessa, keltainen → punainen; vajaa lataus = nuoli satunnaisesti ympyrän alueelle,
+    täysi lataus = pieni ympyrä + piste, nuoli suoraan.
 
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (päivitetty v1.06):** v1.06 nuija oikein päin (paksu pää kärkeen), takaraivon hiukset, tuulikompassi kartan vasemmalle puolelle – v1.07 palautettu kartan päälle läpikuultavana, häipyy hiiren alla, merkit sen päällä. v1.05 lisäsi DEV-esinehaun (Ä-valikko, määrä hakunapin vieressä) ja korjasi jousen laukaisun. Aiempi tila: päivityslistan KAIKKI kohdat 1–15 tehty (v0.81–v1.00) + välilisäykset:
