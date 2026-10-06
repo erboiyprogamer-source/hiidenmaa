@@ -274,8 +274,13 @@ function makeHeld(id){
     case 'kirves':case 'kuparikirves':case 'rautakirves':{shaft(g,.85,W);const mm=id==='kirves'?mat(0x8f8d86):metalOf(id==='rautakirves'?0x9aa6b3:0xd98a4e);
       g.add(poly([[.56,.05],[.57,-.04],[.6,-.27],[.82,-.3],[.9,-.14],[.9,.02],[.8,.06]],.05,mm));
       const bind=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.06,8),mat(0x4a2f18));bind.rotation.x=Math.PI/2;bind.position.z=.58;g.add(bind);break;}
-    case 'nuija':{shaft(g,.6,W);const h=new THREE.Mesh(new THREE.SphereGeometry(.17,9,7),smat(0x6b4527));h.scale.set(1,1,1.5);h.position.z=.6;h.castShadow=true;g.add(h);
-      for(const [x,y] of[[.12,0],[-.12,0],[0,.12],[0,-.12]]){const sp=new THREE.Mesh(new THREE.ConeGeometry(.03,.07,5),mat(0x9a9a92));sp.position.set(x,y,.6);sp.rotation.z=x?(x>0?-Math.PI/2:Math.PI/2):(y>0?0:Math.PI);g.add(sp);}break;}
+    case 'nuija':{// v0.92 mailamainen nuija: kapea kahva nupilla ja käärityllä otteella, paksunee tasaisesti pyöreään päähän, kaksi rautavannetta
+      const wd=smat(0x7b5434,{flatShading:true}),dk=smat(0x5a3a22),band=mat(0x4d535c,{metalness:.5,roughness:.5});
+      const bat=new THREE.Mesh(new THREE.CylinderGeometry(.034,.095,.8,10),wd);bat.rotation.x=Math.PI/2;bat.position.z=.34;bat.castShadow=true;g.add(bat);
+      const tip=new THREE.Mesh(new THREE.SphereGeometry(.095,10,7),wd);tip.scale.z=.6;tip.position.z=.74;tip.castShadow=true;g.add(tip);
+      const knob=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.04,10),dk);knob.rotation.x=Math.PI/2;knob.position.z=-.07;g.add(knob);
+      const grip=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.24,8),dk);grip.rotation.x=Math.PI/2;grip.position.z=.06;g.add(grip);
+      for(const z of [.5,.64]){const b=new THREE.Mesh(new THREE.CylinderGeometry(.088+(z-.5)*.06,.088+(z-.5)*.06,.03,10),band);b.rotation.x=Math.PI/2;b.position.z=z;g.add(b);}break;}
     case 'hakku':case 'kuparihakku':case 'rautahakku':{shaft(g,.85,W);const c=id==='hakku'?0x58606b:id==='kuparihakku'?0xd98a4e:0x9aa6b3,R=.45,arc=1.7;
       const geo=new THREE.TorusGeometry(R,.04,6,14,arc);geo.rotateZ(-arc/2);geo.rotateY(-Math.PI/2);geo.translate(0,0,.72-R);const me=new THREE.Mesh(geo,metalOf(c));me.castShadow=true;g.add(me);
       const hub=new THREE.Mesh(new THREE.BoxGeometry(.09,.09,.1),mat(0x3a3a3a));hub.position.z=.72;g.add(hub);break;}

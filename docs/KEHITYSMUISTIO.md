@@ -71,6 +71,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.92 (harppovat hirviöt ja aseiden tönäisy – kohta 9)
+- Kaksijalkaiset hirviöt (sammalhiisi, kalmo, kalmon ylimys, kivivartija, Suonäkki; myös ulottuvuusversiot, `MOBDEF.stride`): liike +10 %
+  (`moveMob`), lyöntiulottuma +10 % (`range × 1,1`), askel ~40 % pidempi ja tahti hitaampi (`walkPh × 1,55` vs 2,2, heilahdus 0,98 vs 0,7,
+  polvi 1,3 vs 0,9), vartalo keinuu sivuttain (±0,07 rad), pomppaa ja kumartuu eteen (jahdatessa 0,12 rad; `f.g.rotation.order='YXZ'`).
+- **Aseiden tönäisy** `ITEMS.kb` (m/s; mobin vaimennus 6/s → matka ≈ kb/7,5 m mitattuna): nuija 14 (≈1,9 m, vahvin), rautakirves 6,5,
+  hiidenmiekka 7, keihäs 6, muut 4–5,5. `damageMob(...,kb)`; isot olennot vastustavat (säde > 0,8 × 0,4, > 0,6 × 0,7), pomot eivät liiku.
+  Tavaran tiedoissa rivi "Tönäisy X m" (≥ 10: "vahva").
+- **Nuija** uudelleen mallinnettu mailamaiseksi: nuppi, käämitty kahva, tasaisesti paksuneva varsi, pyöreä pää, kaksi rautavannetta.
+
 ### v0.91 (ulottuvuuksien mobien yksityiskohdat – kohta 8)
 - `realmize(m,id)` (dungeons.js) kaikkiin ulottuvuuksissa syntyviin tavallisiin mobeihin (huoneet, pomon kutsumat, Kalmanpesä); ulkomaailman
   saman lajin mobit ennallaan, pomot ennallaan. **+10 % terveys** ja **lisäsaalis** `REALM_LOOT` (Routaluola luu 1–2 + rauta 0–1,
@@ -122,7 +131,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - **Karhu** (`MOBDEF.karhu`, temper `bear`): 120 hp (= 2 × pelaajan 60), juoksu 7,2 (× MOB_SPD ≈ 6,1 < pelaajan juoksu 8), isku 18, ulottuma 2,6,
   cd 0,65, wind 0,18, tönäisy kb 16 (≈ 3,5 m). Neutraali: murisee varoittavasti 14 m:ssä (12 s välein), hyökkää alle 8 m:ssä tai lyötynä.
   **Lyö liikkeestä** (`mobile`: iskun aikana nopeus 75 % juoksusta, ei pysähdystä, käpälänisku-animaatio). **Kaataa puita** (`fells`,
-  `fellAhead`): jahdatessa 1,6 m edessä olevat puut (ei aarnipuita) kaatuvat sivulle ja jäävät tukeiksi. **Palautuu** 5 %/s, jos ei lyöty
+  `fellAhead`): jahdatessa 0,9 ja 1,8 m edessä olevat puut (ei aarnipuita) kaatuvat sivulle ja jäävät tukeiksi. **Palautuu** 5 %/s, jos ei lyöty
   60 s (`def.regen`; ohittaa yleisen 30 s säännön). Enintään yksi kerrallaan, ei aloitusalueelle päivällä. Korpimetsä, aarnimetsä, tunturi.
   Malli `bear` (makeAnimal): iso pää, pyöreät korvat, paksut jalat ja käpälät, lapojen kyttyrä.
 - Saalis **Karhuntalja** + liha 4–6. Uusi rakennusosa **Karhuntaljamatto** (Kalusto, 1 talja). Haarniska taljasta → kohta 7.
@@ -1054,7 +1063,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (tauko v0.84:n jälkeen):** kohdat 1, 2, 3 ja 4 tehty (v0.81–v0.84). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki, ei vielä yhdistetty – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-KOHDAT 5–8 (v0.85–v0.91) VALMIIT. Seuraavaksi kohta 9 (hirviöiden harppaavat askeleet + lyöntiulottuma +10 %) – kysy 1–5 tarkentavaa. Vanha muistiinpano: 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
+KOHDAT 5–9 (v0.85–v0.92) VALMIIT. Seuraavaksi kohta 10 (Kalmanvartija vajoaa maahan + maapartikkelit) – kysy 1–5 tarkentavaa. Vanha muistiinpano: 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
 jänis, kettu, hirvi, metso/teeri), mitkä 2 "joskus vihamielistä" (ehdotus: ilves, villisika-emakko/hirvi kiima-aikaan), harvinaiset pelottavat
 (ehdotus: "Korpinpeikko"/hiidenhirvi yöllä aarnimetsässä), karhun saalis ja biomit. Karhu-vaatimukset kirjattu alla (kohta 5).
 Käytä `makeAnimal`-tyyliä (v0.81 liitokset). Sen jälkeen 6 → 15 järjestyksessä, kukin: kysymykset → toteutus → kuvat/testi → tarkistusrivi
@@ -1073,7 +1082,7 @@ heilunta, kuten puut v0.84); grafiikka-asetus pois/oletus (ei niin tuuhea)/täys
 6. TEHTY v0.89. Kalmanvartija: harvemmin liuku/ryntäys, iskulla pidempi viive. Kaikki kiviä heittävät pomot: kivi 30 % hitaampi, hyökkäysviive +10 %.
 7. TEHTY v0.90. Haarniskoille kunnon painavat erottuvat mallit.
 8. TEHTY v0.91. Ulottuvuuksien mobeille enemmän yksityiskohtia (vaatetus, koristeet, silmäanimaatiot, liekit silmissä).
-9. Hirviöille (sammalhiisi, kalmo) harppaavammat askeleet, lyöntiulottuma +10 %.
+9. TEHTY v0.92. Hirviöille (sammalhiisi, kalmo) harppaavammat askeleet, lyöntiulottuma +10 %.
 10. Kalmanvartija vajoaa maahan (ei katoa) ilmoituksen aikana, maapartikkeleita.
 11. Kuokka nostaa maata enemmän, oikea klikkaus palauttaa alkuperäisen värin; lapio syvempi kuoppa, oikea klikkaus = ruskea polku.
 12. Aluevartijat: alue ×2, jäävät rajalle taistelemaan, 1–10 s päästä palaavat, kunnes huomaavat pelaajan taas.

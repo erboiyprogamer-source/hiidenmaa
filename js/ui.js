@@ -227,7 +227,7 @@ function upBtn(el,cost,label,fn,key,chg,rerender,what){if(!cost){el.innerHTML=`<
 function itemProps(s,q){const d=ITEMS[s.id],o=[],f1=v=>v.toFixed(1).replace('.',','),pc=v=>Math.round(v*100)+' %',mss=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')} min`,mq=d.cat&&d.cat!=='hammer'&&RECIPE_BY[s.id];
   if(mq)o.push(['Taso','★'+q+' / ★3']);
   if(d.cat==='weapon'){const w={...d,q};o.push(['Vahinko',weaponDmg(w).toFixed(0)],['Vahinkotyyppi',{slash:'viiltävä',blunt:'murskaava',pierce:'pistävä',fire:'tuli'}[d.dt]||'–'],['Kestävyyttä / isku',String(d.st)]);
-    if(d.chop)o.push(['Hakkuuteho',((5+d.chop*4)*(1+.25*(q-1))).toFixed(0)]);if(d.pick)o.push(['Louhintateho',((9+d.pick*3)*(1+.25*(q-1))).toFixed(0)]);if(d.range)o.push(['Ulottuvuus',f1(d.range)+' m']);}
+    if(d.chop)o.push(['Hakkuuteho',((5+d.chop*4)*(1+.25*(q-1))).toFixed(0)]);if(d.pick)o.push(['Louhintateho',((9+d.pick*3)*(1+.25*(q-1))).toFixed(0)]);if(d.range)o.push(['Ulottuvuus',f1(d.range)+' m']);if(d.kb)o.push(['Tönäisy',f1(d.kb/7.5)+' m'+(d.kb>=10?' (vahva)':'')]);}
   if(d.cat==='bow')o.push(['Vahinko enintään',weaponDmg({...d,q}).toFixed(0)],['Jännitysaika',f1(1.6/(1+.25*(q-1)))+' s'],['Nuolen nopeus',((14+36)*(1+.1*(q-1))).toFixed(0)+' m/s']);
   if(d.cat==='shield')o.push(['Torjuu',pc(Math.min(.95,d.block*(1+.1*(q-1))))]);
   if(d.cat==='shovel')o.push(['Käyttö','tasoittaa maata'],['Kestävyyttä / käyttö','6']);

@@ -66,7 +66,7 @@ function doMeleeHit(w){
     if(!losClear(P.pos.x,P.pos.y+1.3,P.pos.z,m.pos.x,mobEyeY(m),m.pos.z))continue;
     const sneak=P.crouch&&m.def.ai!=='boss'&&m.state!=='chase'&&m.state!=='flee';
     if(sneak)floatText('Hiiviskelyisku!',m.pos.x,m.pos.y+2.6,m.pos.z,'#ffd36a');
-    damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz);hitMob=true;if(torchLit())igniteMob(m);}
+    damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz,w.kb||4);hitMob=true;if(torchLit())igniteMob(m);}
   // Tulta ja seisovaa soihtua lyömällä ne sammuvat.
   if(!hitMob)for(const p of pieces){const lit=isFirePiece(p.t)?p.data.fuel>0:p.t==='soihtuteline'&&p.data.burn>0;if(!lit)continue;const dx=p.x-P.pos.x,dz=p.z-P.pos.z,d=Math.hypot(dx,dz);
     if(d>w.range+.5||(d>.6&&(dx*fx+dz*fz)/d<.5))continue;if(isFirePiece(p.t)){p.data.fuel=0;p.data.burn=0;}else p.data.burn=0;
@@ -92,11 +92,12 @@ function doMeleeHit(w){
     n.hp-=(9+w.pick*3)*(1+.25*((w.q||1)-1));sfx(n.hp<=0?'rockBreak':'pick');burst(n.x,n.y+.8,n.z,n.type==='kuparisuoni'?0xd9874a:n.type==='rautasuoni'?0x8a4f3c:0x8f8d86,6,4);shake(.08);
     if(n.hp<=0){killNode(n);bump('rocks');burst(n.x,n.y+.6,n.z,0x8f8d86,16,6);for(const [id,lo,hi] of n.def.drops){const c=rint(rng,lo,hi);for(let j=0;j<c;j++)spawnDrop(id,1,n.x,n.y+.8,n.z);}}}
 }
-function damageMob(m,dmg,dt,kx,kz){
+// v0.92: kb = tönäisyn alkunopeus (m/s, oletus 4); vaimenee 6/s → matka ≈ kb/7,5 m (mitattu). Isot olennot vastustavat (säde > 0,6 / 0,8).
+function damageMob(m,dmg,dt,kx,kz,kb=4){
   if(m.dead)return;
   const mult=(m.def.weak&&m.def.weak[dt])||1;dmg*=mult;
   m.hp-=dmg;m.flash=.15;m.lastHit=playTime;m.angry=true;m.hurtT=playTime;
-  if(m.def.ai!=='boss'&&m.def.ai!=='rboss'){const l=Math.hypot(kx,kz)||1;m.vel.x+=kx/l*4;m.vel.z+=kz/l*4;m.wind=0;}
+  if(m.def.ai!=='boss'&&m.def.ai!=='rboss'){const l=Math.hypot(kx,kz)||1,k=kb*(m.def.r>.8?.4:m.def.r>.6?.7:1);m.vel.x+=kx/l*k;m.vel.z+=kz/l*k;m.wind=0;}
   floatText(Math.round(dmg)+'',m.pos.x,m.pos.y+(m.type==='vartija'?6:(m.def.fh||1.8)),mult>1.2?'#ffd36a':mult<.9?'#a99d89':'#eee5d3');
   sfx('hit');burst(m.pos.x,m.pos.y+1,m.pos.z,m.type==='kalmo'||m.type==='ylimys'?0xe6e0cf:m.type==='vartija'?0x5d5a54:0x9a2a22,6,3);
   if(m.hp<=0)killMob(m);

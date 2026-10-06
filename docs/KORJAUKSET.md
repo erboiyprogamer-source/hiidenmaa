@@ -123,6 +123,12 @@ tähän listaan. Kuollessa `togglePanel` ja `pauseGame` eivät toimi; Enter her�
 function closeAllForDeath(){if(openPanel)closePanels(false,true);if(state==='paused'||state==='ui')state='play';for(const id of ['#menu','#settings','#keyDlg'])if($(id))$(id).hidden=true;…}
 ```
 
+### 18. Lisätty `//`-kommentti nieli rivin loppuosan – v0.85, v0.92
+**Oire:** `ReferenceError: l is not defined` (moveMob) / spawnerin silmukka puuttui: rivin perään lisätty `// kommentti` kommentoi pois
+samalla rivillä jatkuneen koodin (minimoidussa tyylissä monta lausetta yhdellä rivillä).
+**Korjaus:** lisää kommentti omalle rivilleen tai käytä `/* … */`, kun rivillä voi olla jatkoa. Tarkista muutoksen jälkeen syntaksi
+(`node -e "new Function(fs.readFileSync(f,'utf8'))"`) JA aja testi, joka kutsuu muutettua funktiota.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

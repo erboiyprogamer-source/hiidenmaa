@@ -153,6 +153,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Nopeudet −15 %** (`MOB_SPD` 0,85 kaikessa liikkeessä).
 - **Terveyspalkit:** mobin yläpuolella (mallin korkeus + 0,45 m), nimi ja pääkallot palkin yllä; näkyy kun katse osuu mobiin (~11°, vahvat ~9°)
   alle 12 m (vahvat 70 m) tai 10 s osuman jälkeen. Pomoilla oma palkki ruudun yläreunassa.
+- **Harppovat hirviöt (v0.92):** kaksijalkaiset hirviöt liikkuvat 10 % nopeammin pitkin, keinuvin askelin ja lyövät 10 % kauemmas.
+- **Tönäisy (v0.92):** jokaisella aseella tönäisyarvo (tiedoissa metreinä); nuija tönäisee eniten (~1,9 m), isot olennot vähemmän.
 - **Ulottuvuusmobit (v0.91):** teeman mukaiset koristeet (huurre/jää, hautavaatteet ja pronssikorut, sammal ja hohtavat sienet), liekkimäisesti
   sykkivät silmät ulottuvuuden värillä (kirkastuvat jahdatessa, räpäyttävät), +10 % terveys ja lisäsaalis. Ulkomaailman mobit ennallaan.
 - **Haarniskat (v0.90):** jokaisella oma painava malli ja kypärä/huppu (kasvot näkyvät; Hiidenpanssarissa suljettu visiiri): nahkavaatteet,

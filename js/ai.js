@@ -127,9 +127,9 @@ function spawnScary(){if(mobs.some(o=>o.def.stalk&&!o.dead))return false;
   return false;}
 // v0.87 karhu kaataa jahdatessaan edessään (1,6 m) olevat puut (ei aarnipuita) sivulle tukeiksi, 0,25 s välein.
 const _fellN=[];
-function fellAhead(m,dt){m.fellT=(m.fellT||0)-dt;if(m.fellT>0)return;m.fellT=.25;const ax=m.pos.x+Math.sin(m.yaw)*1.6,az=m.pos.z+Math.cos(m.yaw)*1.6;
-  nodesNear(ax,az,1.4,_fellN);for(const n of _fellN){if(!n.alive||n.def.kind!=='tree'||n.type==='aarnipuu')continue;killNode(n);const side=Math.random()<.5?1:-1;
-    fallTree(n,m.yaw+side*(Math.PI/2)*(.6+Math.random()*.4),false);sfx('woodBreak',.8,clamp(1.1-Math.hypot(n.x-P.pos.x,n.z-P.pos.z)/50,.15,1));shake(.15);}}
+function fellAhead(m,dt){m.fellT=(m.fellT||0)-dt;if(m.fellT>0)return;m.fellT=.25;for(const dd of [.9,1.8]){const ax=m.pos.x+Math.sin(m.yaw)*dd,az=m.pos.z+Math.cos(m.yaw)*dd;
+  nodesNear(ax,az,1.3,_fellN);for(const n of _fellN){if(!n.alive||n.def.kind!=='tree'||n.type==='aarnipuu')continue;killNode(n);const side=Math.random()<.5?1:-1;
+    fallTree(n,m.yaw+side*(Math.PI/2)*(.6+Math.random()*.4),false);sfx('woodBreak',.8,clamp(1.1-Math.hypot(n.x-P.pos.x,n.z-P.pos.z)/50,.15,1));shake(.15);}}}
 // v0.85: pakoon lähtö luonteen mukaan. Metso lehahtaa 14–24 m päähän (kaari 2,5–4 m korkealla), lauma (poro) pakenee yhdessä samaan suuntaan.
 function startFlee(m,dx,dz){m.state='flee';m.fleeT=0;const pr=m.def.per||{};
   if(pr.fly&&!m.dun&&!m.fly){const a=Math.atan2(-dx,-dz)+(Math.random()-.5)*1.2,d=14+Math.random()*10,x1=m.pos.x+Math.sin(a)*d,z1=m.pos.z+Math.cos(a)*d;
@@ -145,7 +145,9 @@ function moveMob(m,tx,tz,spd,dt){
   spd*=MOB_SPD;
   // v0.83: Aarnimetsässä hirviöt ovat vihaisia ja liikkuvat 20 % nopeammin (biomi tarkistetaan sekunnin välein)
   if(!m.dun&&(m.bioT=(m.bioT||0)-dt)<=0){m.bioT=1;m.aarni=biomeHere(m.pos.x,m.pos.z)==='aarni';}
-  if(m.aarni&&(m.def.ai==='hostile'||m.angry))spd*=1.2;const l=Math.hypot(tx,tz);
+  if(m.aarni&&(m.def.ai==='hostile'||m.angry))spd*=1.2;
+  if(m.def.stride)spd*=1.1;   // v0.92 harppovat hirviöt 10 % nopeampia
+  const l=Math.hypot(tx,tz);
   if(l>.01){const ty=Math.atan2(tx,tz);m.yaw=lerpAngle(m.yaw,ty,Math.min(1,dt*8));}
   let vx=0,vz=0;if(l>.01&&spd>0){vx=Math.sin(m.yaw)*spd;vz=Math.cos(m.yaw)*spd;}
   m.vel.x*=Math.max(0,1-dt*6);m.vel.z*=Math.max(0,1-dt*6);
@@ -162,10 +164,12 @@ function moveMob(m,tx,tz,spd,dt){
 function animMob(m,dt){
   if(!m.f.g.visible)return;
   const f=m.f;f.g.position.copy(m.pos);f.g.rotation.y=m.yaw;
-  m.walkPh+=(m.speedNow||0)*dt*2.2;const sw=Math.sin(m.walkPh)*Math.min(1,(m.speedNow||0)/3)*.7;
+  const st=m.def.stride,spn=m.speedNow||0;m.walkPh+=spn*dt*(st?1.55:2.2);const sw=Math.sin(m.walkPh)*Math.min(1,spn/3)*(st?.98:.7);
+  if(st&&f.biped&&m.def.ai!=='boss'){const k=Math.min(1,spn/3);if(f.g.rotation.order!=='YXZ')f.g.rotation.order='YXZ';   // paikallinen kallistus
+    f.g.rotation.z=Math.sin(m.walkPh)*.07*k;f.g.rotation.x=(m.state==='chase'?.12:.04)*k;f.g.position.y+=Math.abs(Math.cos(m.walkPh))*.08*k*(f.s||1);}   // keinunta, kumarrus, pomppu
   if(f.biped){f.legL.rotation.x=sw;f.legR.rotation.x=-sw;f.armL.rotation.x=-sw*.6;f.armR.rotation.x=sw*.6;
     // yksityiskohtaiset mallit (makeHumanoid): polvi koukistuu taakse jäävässä jalassa, kyynärpäät hieman koukussa; viitat ja rievut heiluvat
-    if(f.kneeL){f.kneeL.rotation.x=.08+Math.max(0,-sw)*.9;f.kneeR.rotation.x=.08+Math.max(0,sw)*.9;f.elbowL.rotation.x=f.elbowR.rotation.x=-.25-(m.wind>0?.5:0);}
+    if(f.kneeL){const kb2=st?1.3:.9;f.kneeL.rotation.x=.08+Math.max(0,-sw)*kb2;f.kneeR.rotation.x=.08+Math.max(0,sw)*kb2;f.elbowL.rotation.x=f.elbowR.rotation.x=-.25-(m.wind>0?.5:0);}
     if(f.sway&&m.def.ai!=='rboss')for(const w of f.sway){w.m.rotation.z=w.bz+Math.sin(playTime*w.f+w.p)*w.a;w.m.rotation.x=w.bxr+Math.cos(playTime*w.f*.8+w.p)*w.a*.6+Math.min(.5,(m.speedNow||0)*.08);}
     if(m.wind>0){f.armR.rotation.x=-2.6;f.armL.rotation.x=-2.2;}else if(m.wind<=0&&m.atkCd>m.def.cd-.25){f.armR.rotation.x=-.3;}}
   else if(f.bird){// v0.85 metso: jalat vuorotellen, pää nyökkää kävellessä, siivet räpyttävät lennossa, pyrstö nousee säikähtäessä

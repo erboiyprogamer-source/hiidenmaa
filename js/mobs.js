@@ -182,6 +182,9 @@ const MOBDEF={
   kalmaherra:{n:'Kalmaherra',hp:640,r:.9,ai:'rboss',walk:2.1,run:4,aggro:17,dmg:24,range:3.2,cd:1.7,wind:.75,fh:4.4,eye:3,weak:{blunt:1.4,pierce:.6,fire:1.3},kit:['swipe','charge','summon','nova'],sum:[2,3],drops:[['rauta',3,5],['hiidenkivi',1,1],['kupari',4,6]],fig:figKalmaherra},
   aarnihirvio:{n:'Aarnihirviö',hp:720,r:1.1,ai:'rboss',walk:2.2,run:4,aggro:18,dmg:26,range:3.8,cd:1.7,wind:.8,fh:5,eye:3.2,weak:{blunt:1.2,pierce:.8,fire:1.6},kit:['swipe','charge','slam','summon'],sum:[3],drops:[['rauta',4,6],['hiidenkivi',1,1],['kupari',5,7],['pihka',3,5]],fig:figAarni},
 };
+// v0.92 (kohta 9): kaksijalkaiset hirviöt harppovat – askel ~40 % pidempi ja tahti hitaampi, 10 % nopeampi (moveMob), keinuva vartalo
+// (animMob), lyöntiulottuma +10 %. Koskee myös ulottuvuusversioita; pomot ja eläimet ennallaan.
+for(const k of ['hiisi','kalmo','ylimys','kivivartija','suonakki']){MOBDEF[k].stride=1;MOBDEF[k].range=+(MOBDEF[k].range*1.1).toFixed(2);}
 // Vaikeustaso pääkalloina terveyspalkin alla (≥3 = vaikea: palkki näkyy jo kaukaa katsottaessa, parantuu 30 s iskuttomuuden jälkeen).
 const MOB_SKULL={hiidenkarhu:4,hiidenhirvi:4,kalmasusi:3,suonakki:3,karhu:3,hirvi:2,ilves:1,ahma:1,emakko:1,porsas:0,janis:0,kettu:0,metso:0,poro:0,peura:0,karju:1,hiisi:1,susi:2,kalmo:2,ylimys:3,vartija:5,kivivartija:3,routasusi:2,jaajattari:5,kalmaherra:5,aarnihirvio:5};
 let mobs=[], boss=null;
