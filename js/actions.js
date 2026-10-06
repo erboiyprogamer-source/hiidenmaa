@@ -116,7 +116,7 @@ function updateBurn(m,dt){if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9)){stopBurn
   if(m.burnT<=0)stopBurn(m);return false;}
 // Ammukset heikoimmasta parhaaseen (v0.76). Jos ammusta ei ole valittu (flags.ammo), käytetään heikointa jota on; valittu ammus käytetään
 // ensin ja sen loputtua taas heikoimmasta alkaen. Uusi ammus lisätään listaan oikeaan kohtaan (esim. tulevat rautanuolet).
-const AMMO=['nuolet','tulinuolet'];
+const AMMO=['nuolet','sulkanuolet','tulinuolet'];
 function ammoId(){if(flags.ammo&&invCount(flags.ammo)>0)return flags.ammo;return AMMO.find(id=>invCount(id)>0)||null;}
 function killMob(m){m.dead=true;m.deadT=0;sfx('die');P.kills++;bump('kills');bump('k_'+m.type);addXp(Math.round(m.def.hp/(m.type==='vartija'?2:5))+3,m.def.n);
   for(const [id,lo,hi] of m.def.drops){const c=rint(rng,lo,hi);if(c>0)spawnDrop(id,c,m.pos.x,m.pos.y+1,m.pos.z);}
@@ -131,7 +131,7 @@ function fireBow(){
   const from=new V3(P.pos.x,P.pos.y+1.5,P.pos.z);
   const tgt=camRayPoint(70);const dir=tgt.sub(from).normalize();
   from.addScaledVector(dir,.6);
-  const q=w.q||1;shootArrow(from,dir,(14+36*k)*(1+.1*(q-1)),weaponDmg(w)*(.2+.8*k),'player',7/(1+.3*(q-1)),am==='tulinuolet');sfx('bow');P.yaw=camYaw+Math.PI;
+  const q=w.q||1;const fe=am==='sulkanuolet';shootArrow(from,dir,(14+36*k)*(1+.1*(q-1))*(fe?1.12:1),weaponDmg(w)*(.2+.8*k)*(fe?1.15:1),'player',7/(1+.3*(q-1)),am==='tulinuolet');if(fe)projs[projs.length-1].steady=1;sfx('bow');P.yaw=camYaw+Math.PI;
 }
 function hurtPlayer(dmg,fx,fz){
   if(P.dead||P.invul>0||P.spawnProt>0)return;

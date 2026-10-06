@@ -137,6 +137,12 @@ function figAarni(){
 const MOBDEF={
   peura:{n:'Peura',hp:25,r:.5,ai:'flee',walk:1.6,run:8.5,drops:[['nahka',1,2],['liha',1,2]],fig:()=>makeAnimal({kind:'deer',s:1,body:0x8a6440,dark:0x6b4a2e,legs:0x7a5636,belly:0xcdb796,rump:0x8f6a46,headC:0x7a5636,hoof:0x2a2420,antlers:1,legH:.85,len:1.05})},
   karju:{n:'Villikarju',hp:40,r:.55,ai:'neutral',walk:1.4,run:5.8,dmg:8,range:1.5,cd:1.5,wind:.35,drops:[['nahka',1,1],['liha',1,3]],fig:()=>makeAnimal({kind:'boar',s:.95,body:0x4a3a2e,dark:0x2e241c,legs:0x3a2c22,belly:0x5a4a3c,headC:0x45362a,hoof:0x1e1814,legH:.5,len:.9,eyes:0x2a0a0a})},
+  // v0.85 uudet eläimet. per = luonne: scare (säikähdysetäisyyden kerroin), freeze (s, jähmettyy ensin), zig (siksak-pako),
+  // fly (lehahtaa lentoon), herd (lauma pakenee yhdessä), curious (jää katsomaan matkan päästä), safe (pakoetäisyys, jonka jälkeen rauhoittuu)
+  janis:{n:'Metsäjänis',hp:8,r:.3,ai:'flee',walk:1.2,run:9.5,per:{scare:1.3,freeze:.6,zig:1,safe:30},drops:[['liha',1,1],['nahka',0,1]],fig:()=>makeAnimal({kind:'hare',s:.55,body:0x8c7b62,dark:0x5e5244,legs:0x7a6a54,belly:0xe6ddcc,headC:0x857358,earTip:0x1c1814,legH:.36,len:.85,eyes:0x2a1a0a})},
+  kettu:{n:'Kettu',hp:16,r:.35,ai:'flee',walk:1.5,run:8,per:{scare:1.4,curious:1,safe:35},drops:[['nahka',1,1],['liha',0,1]],fig:()=>makeAnimal({kind:'wolf',fox:1,s:.62,body:0xc0642a,dark:0x2a1e18,legs:0x2e221a,belly:0xf0e6d8,headC:0xc86c30,chest:0xf2ead8,tailTip:0xf6f2ea,earTip:0x2a1e18,legH:.5,len:1.05,eyes:0xd8a030})},
+  metso:{n:'Metso',hp:10,r:.3,ai:'flee',walk:.9,run:4.5,per:{scare:.55,fly:1,safe:22},drops:[['liha',1,1],['sulka',1,3]],fig:()=>makeBird({s:1.1})},
+  poro:{n:'Poro',hp:35,r:.55,ai:'flee',walk:1.4,run:7.5,per:{scare:.75,herd:1,safe:32},drops:[['nahka',1,2],['liha',2,3]],fig:()=>makeAnimal({kind:'deer',rein:1,s:1,body:0x7a6e60,dark:0x4e443a,legs:0x5a5046,belly:0xd8d0c2,rump:0xb8ae9e,headC:0x6e6254,hoof:0x2a2420,mane:0xeee8dc,legH:.75,len:1.05})},
   hiisi:{n:'Sammalhiisi',hp:34,r:.45,ai:'hostile',walk:1.5,run:5.2,aggro:12,dmg:9,range:1.7,cd:1.4,wind:.42,drops:[['pihka',0,2],['kivi',0,1]],fig:figHiisi},
   susi:{n:'Harmaasusi',hp:44,r:.5,ai:'hostile',walk:2,run:4.6,aggro:18,dmg:11,range:1.7,cd:1.15,wind:.3,drops:[['nahka',1,2]],fig:()=>makeAnimal({kind:'wolf',s:.9,body:0x6e6e70,dark:0x3e3e40,legs:0x5e5e60,belly:0xa9a49a,ruff:0x8a8a88,headC:0x7c7c7e,tailTip:0x2a2a2c,legH:.6,len:1.05,eyes:0xffcc55})},
   kalmo:{n:'Kalmo',hp:50,r:.45,ai:'hostile',walk:1.4,run:4.6,aggro:14,dmg:13,range:1.8,cd:1.5,wind:.5,weak:{blunt:1.6,pierce:.6,fire:1.3},drops:[['luu',1,3],['kivi',0,1]],fig:figKalmo},
@@ -149,7 +155,7 @@ const MOBDEF={
   aarnihirvio:{n:'Aarnihirviö',hp:720,r:1.1,ai:'rboss',walk:2.2,run:4,aggro:18,dmg:26,range:3.8,cd:1.7,wind:.8,fh:5,eye:3.2,weak:{blunt:1.2,pierce:.8,fire:1.6},kit:['swipe','charge','slam','summon'],sum:[3],drops:[['rauta',4,6],['hiidenkivi',1,1],['kupari',5,7],['pihka',3,5]],fig:figAarni},
 };
 // Vaikeustaso pääkalloina terveyspalkin alla (≥3 = vaikea: palkki näkyy jo kaukaa katsottaessa, parantuu 30 s iskuttomuuden jälkeen).
-const MOB_SKULL={peura:0,karju:1,hiisi:1,susi:2,kalmo:2,ylimys:3,vartija:5,kivivartija:3,routasusi:2,jaajattari:5,kalmaherra:5,aarnihirvio:5};
+const MOB_SKULL={janis:0,kettu:0,metso:0,poro:0,peura:0,karju:1,hiisi:1,susi:2,kalmo:2,ylimys:3,vartija:5,kivivartija:3,routasusi:2,jaajattari:5,kalmaherra:5,aarnihirvio:5};
 let mobs=[], boss=null;
 function mobEyeY(m){return m.pos.y+(m.type==='vartija'?4:(m.def.eye||1.2));}
 function spawnMob(type,x,z,opts={}){

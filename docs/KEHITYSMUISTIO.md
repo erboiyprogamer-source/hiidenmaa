@@ -52,6 +52,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Olento | HP | Juoksu m/s | Vahinko | Huom. |
 | --- | --- | --- | --- | --- |
 | Peura | 25 | 8,5 | – | pakenee |
+| Metsäjänis | 8 | 9,5 | – | jähmettyy, siksak |
+| Kettu | 16 | 8 | – | utelias, katsoo |
+| Metso | 10 | 4,5 | – | lehahtaa 14–24 m |
+| Poro | 35 | 7,5 | – | lauma 3–5 |
 | Villikarju | 40 | 5,8 | 8 | hyökkää vain jos lyöty |
 | Sammalhiisi | 34 | 5,2 | 9 | |
 | Harmaasusi | 44 | 4,6 | 11 | öisin pareittain, sama kuin pelaajan kävely |
@@ -60,6 +64,21 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
 
 ## Versioloki
+
+### v0.85 (uudet eläimet ja luonteet – päivityslista kohta 5a)
+- Kohta 5 jaettu eriin: **5a** jänis, kettu, metso, poro + luonteet (TEHTY), **5b** hirvi, ilves, ahma, emakko porsaineen (joskus vihaiset),
+  **5c** karhu, **5d** harvinaiset pelottavat: Hiidenkarhu, Hiidenhirvi, Kalmasusi, Suonäkki (käyttäjä valitsi kaikki).
+- **Luonteet** `MOBDEF[x].per` (ai.js flee-haara): `scare` säikähdysetäisyyden kerroin, `freeze` jähmettyy ensin (s), `zig` siksak-pako
+  (suunta 0,35–0,7 s välein ±1,1 rad), `fly` lehahtaa 14–24 m (kaari 2,5–4 m, `startFlee`/`flyMob`, ääni `flap`), `herd` lauma (25 m)
+  pakenee samaan suuntaan, `curious` jää katsomaan (tila `watch`, alle 26 m näköyhteydellä), `safe` rauhoittumisetäisyys.
+- **Metsäjänis** (8 hp, juoksu 9,5, scare 1,3, freeze 0,6 s, siksak, loikka-animaatio `hop`): niitty, koivulehto, tunturi, rakka.
+  **Kettu** (16 hp, 8, scare 1,4, utelias): öisin niityllä/koivikossa/metsässä/kankaalla. **Metso** (10 hp, scare 0,55 → antaa tulla lähelle,
+  lehahtaa; `makeBird`): metsä, koivulehto, kangas; saalis liha + **Metson sulka** 1–3. **Poro** (35 hp, 7,5, scare 0,75, lauma 3–5):
+  tunturi, rakka, kivivuori, kangas.
+- Mallit: `makeAnimal` kind `hare` (litteät pitkät mustakärkiset korvat, pitkät takakäpälät, valkoinen häntätupsu), `fox` (wolf + tuuhea
+  valkokärkinen häntä, mustat sukat, vaalea rinta), `rein` (deer + taakse-eteen kaartuvat sarvet piikkeineen, vaalea kaulaharja).
+- **Sulitetut nuolet** (puu 2, piikivi 2, sulka 1 → 15, taso 4): lento +12 %, vahinko +15 %, tuulen vaikutus puolet. `AMMO` =
+  nuolet → sulkanuolet → tulinuolet.
 
 ### v0.84 (tuuli – päivityslista kohta 4)
 - `WIND` + `updateWind` (environment.js), tila `flags.wind` (tallentuu). Suunta pysyy 2–6 min, kääntyy 40–90 s:ssa (smoothstep) uuteen
@@ -961,7 +980,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (tauko v0.84:n jälkeen):** kohdat 1, 2, 3 ja 4 tehty (v0.81–v0.84). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki, ei vielä yhdistetty – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-Seuraavaksi **kohta 5 (uudet eläimet + karhu)**: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
+Kohta 5a tehty v0.85; seuraavaksi 5b (hirvi, ilves, ahma, emakko porsaineen), 5c karhu, 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
 jänis, kettu, hirvi, metso/teeri), mitkä 2 "joskus vihamielistä" (ehdotus: ilves, villisika-emakko/hirvi kiima-aikaan), harvinaiset pelottavat
 (ehdotus: "Korpinpeikko"/hiidenhirvi yöllä aarnimetsässä), karhun saalis ja biomit. Karhu-vaatimukset kirjattu alla (kohta 5).
 Käytä `makeAnimal`-tyyliä (v0.81 liitokset). Sen jälkeen 6 → 15 järjestyksessä, kukin: kysymykset → toteutus → kuvat/testi → tarkistusrivi
@@ -975,7 +994,7 @@ heilunta, kuten puut v0.84); grafiikka-asetus pois/oletus (ei niin tuuhea)/täys
 3. TEHTY v0.82. Uusia biomeja + nimet; nykyinen biomi näkyy, repussa biomin ominaisuudet; "Uusi alue löydetty: …" fade in/out vain ensimmäisellä kerralla
    (aloitusbiomi merkitty löydetyksi ilman ilmoitusta).
 4. TEHTY v0.84. Tuulensuunta: vaihtuu hitaasti satunnaisesti (minuutteja, kääntyy hitaasti); kartalla suunta ja nopeus; pilvet liikkuvat tuulen suuntaan.
-5. 4 uutta eläintä (samaa tyyliä) + 2 joskus vihamielistä + harvinaisia pelottavia (seuraa 30–60 s, poistuu 5 s ja unohtaa); luonteen mukaiset
+5. OSITTAIN (5a v0.85). 4 uutta eläintä (samaa tyyliä) + 2 joskus vihamielistä + harvinaisia pelottavia (seuraa 30–60 s, poistuu 5 s ja unohtaa); luonteen mukaiset
    säikähdys/reaktiot. Karhu: iso, lyö kauas ja nopeasti, kaataa eteen jäävät puut tukeiksi, HP 200 % pelaajasta, palautuu jos ei lyöty 1 min.
 6. Kalmanvartija: harvemmin liuku/ryntäys, iskulla pidempi viive. Kaikki kiviä heittävät pomot: kivi 30 % hitaampi, hyökkäysviive +10 %.
 7. Haarniskoille kunnon painavat erottuvat mallit.
