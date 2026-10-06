@@ -71,6 +71,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.98 (arkkukivien kivikasat – kohta 13)
+- `buildPoiRock` (story.js): kivet kauempana (sisäreuna ≥ 2,4 m keskeltä, leveys 1,6–2,8 m, tangentiaalisesti), kaksi vastakkaista ~90°
+  kulkuaukkoa (arvottu suunta), keskilaatta matala (yläpinta 0,25 m < askelnousu, ei törmäystä), arkku laatan päällä. Ennen kivet olivat
+  1,9–3,1 m päässä ja jopa 3,6 m leveitä, ja laatta 0,8 m korkea → arkulle ei päässyt. Tarkistus: vähintään yksi esteetön suunta.
+
 ### v0.97 (aluevartijat – kohta 12)
 - Löytöpaikkojen vartijoiden alue ×2 (portaalit 32 m, muut 30 m; `story.js` m.guard.r). Rajan ylittyessä vartija ei palaa heti: se jää
   rajalle (ei liiku ulospäin, kääntyy pelaajaan ja lyö, jos ulottuu) ja arpoo 1–10 s, jonka jälkeen palaa alueelleen paranen 5 %/s kuten
@@ -1101,7 +1106,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 **JATKA TÄSTÄ (päivitetty v0.94):** kohdat 1–9 tehty (v0.81–v0.92) + käyttäjän välilisäykset v0.93 (hautakasa arkkuna, Kalmanpesä
 millä vain, DEV-jumalvoimatäpät, harppova juoksu) ja v0.94 (Shift-tietoikkuna). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Kohdat 10 (v0.95) ja 11 (v0.96) tehty. Seuraavaksi kohta 13** (kivikasat arkun ympärillä) → 14 → 15 (12 tehty v0.97), kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
+Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Kohdat 10 (v0.95) ja 11 (v0.96) tehty. Seuraavaksi kohta 14** (leiripaikat) → 15 (12 tehty v0.97, 13 v0.98), kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
 `?v=` → commit, push, PR #23 kuvaus → testilinkki `https://raw.githack.com/erboiyprogamer-source/hiidenmaa/claude/hiidenmaa-survival-game-fmxt0m/index.html`.
 Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kallistus + edestakainen heilunta kuten puut), asetus pois/oletus/täysi.
 1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
@@ -1119,7 +1124,7 @@ Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kall
 10. TEHTY v0.95. Kalmanvartija vajoaa maahan (ei katoa) ilmoituksen aikana, maapartikkeleita.
 11. TEHTY v0.96. Kuokka nostaa maata enemmän, oikea klikkaus palauttaa alkuperäisen värin; lapio syvempi kuoppa, oikea klikkaus = ruskea polku.
 12. TEHTY v0.97. Aluevartijat: alue ×2, jäävät rajalle taistelemaan, 1–10 s päästä palaavat, kunnes huomaavat pelaajan taas.
-13. Kivikasat arkun ympärillä liian tiiviit – arkulle pääsy.
+13. TEHTY v0.98. Kivikasat arkun ympärillä liian tiiviit – arkulle pääsy.
 14. Hylätyt leiripaikat (1–2 / kartta): sammunut nuotio (sytytys puulla), teltta jossa sänky.
 15. Ruoho: pystyheinää laajalti, eri pituuksia, heiluu tuulessa (kallistuu tuulen suuntaan); grafiikka-asetus pois/oletus/täysi.
 

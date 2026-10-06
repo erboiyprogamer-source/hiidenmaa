@@ -22,12 +22,14 @@ function buildPoiRuin(k){const L=LOC[k],y=terrainH(L.x,L.z),r=mulberry32(k.charC
   chestUse(k,ch,cx,y,cz);
 }
 function buildPoiRock(k){const L=LOC[k],y=terrainH(L.x,L.z),r=mulberry32(k.charCodeAt(4)*733+(L.z|0));
-  const n=6+((r()*3)|0),big=[];
-  for(let i=0;i<n;i++){const a=i/n*TAU+r()*.3,d=1.9+r()*1.2,w=1.8+r()*1.8,h=1.6+r()*2.4;if(i===0)continue;const x=L.x+Math.cos(a)*d,z=L.z+Math.sin(a)*d;
-    const m=stoneBox(w,h,w*(.7+r()*.5),x,y+h/2-.2,z,r()*3,mat(rockC(0x6f6c66,r())));m.add(bx(w*.9,.25,w*.8,mossM,0,h/2,0,false));if(w>2.6)big.push(m);}
-  stoneBox(2.4,1.2,2.4,L.x,y+.2,L.z,.4,mat(0x5b5853),false);
+  // v0.98 (kohta 13): kivet kauempana (sisäreuna ≥ 2,4 m keskeltä) ja kaksi vastakkaista ~90° kulkuaukkoa → arkulle pääsee aina;
+  // keskilaatta matala (yläpinta 0,25 m, alle askelnousun), arkku sen päällä.
+  const n=6+((r()*3)|0),big=[],gap=r()*TAU,inGap=a=>{for(const g0 of [gap,gap+Math.PI]){const da=Math.abs(((a-g0)%TAU+TAU+Math.PI)%TAU-Math.PI);if(da<.8)return true;}return false;};
+  for(let i=0;i<n;i++){const a=i/n*TAU+r()*.3,w=1.6+r()*1.2,h=1.6+r()*2.4,d=2.4+w*.6+r()*.8;if(inGap(a))continue;const x=L.x+Math.cos(a)*d,z=L.z+Math.sin(a)*d;
+    const m=stoneBox(w,h,w*(.7+r()*.4),x,y+h/2-.2,z,a+Math.PI/2+(r()-.5)*.4,mat(rockC(0x6f6c66,r())));m.add(bx(w*.9,.25,w*.8,mossM,0,h/2,0,false));if(w>2.2)big.push(m);}
+  stoneBox(2.2,.5,2.2,L.x,y,L.z,.4,mat(0x5b5853),false);
   const g=bx(.5,1.2,.04,MAT.glow,0,0,0,false);(big[0]||statics).add(g);if(big[0])g.position.set(0,0,big[0].geometry.parameters.depth/2+.03);
-  const ch=bx(.9,.6,.6,MAT.wood,L.x,y+.7,L.z);ch.add(bx(.94,.1,.64,mat(0x4a4a4a),0,.16,0));statics.add(ch);
+  const ch=bx(.9,.6,.6,MAT.wood,L.x,y+.55,L.z);ch.add(bx(.94,.1,.64,mat(0x4a4a4a),0,.16,0));statics.add(ch);
   chestUse(k,ch,L.x,y+.4,L.z,true);
   lightSources.push({x:L.x,y:y+2,z:L.z,c:0x7fd6cc,i:.8,on:()=>true});
 }
