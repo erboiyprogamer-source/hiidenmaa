@@ -25,6 +25,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Etäisyydet ja suunnat lasketaan** (`dirIn`, `dirText`): tarinateksteissä ei ole kiinteitä ilmansuuntia (pohjoinen = −z).
 
 ## 2. Pelaaja ja liikkumisen fysiikka (player.js)
+- **Enimmäisterveys (v1.20):** 60 tasolla 1, +10 per taso tasoille 2–5 (taso 5: 100), lisäksi saavutukset ja voima; tason nousu lisää terveyttä heti.
 
 | Asia | Arvo |
 | --- | --- |
@@ -255,6 +256,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## 14. Kartta (ui.js)
 
+- **Kartta (v1.20):** avatun alueen päällä ohuet liikkuvat pilvet (20 %); paikkojen nimillä pehmeä varjo (näkyvät lumisilla vuorilla).
 - **Iso kartta (M):** paljastettu alue 12 m säteellä (pehmeä), tutkimaton pilviverhon takana (liikkuvat kumpupilvet vain kartta auki),
   zoom rullalla, raahaus, rakennukset ylhäältä pikseleinä. **Merkit näkyvät vain paljastetulla alueella.**
 - **Minikartta:** 3 zoomia (60 / 35 / 110 m, N tai napsautus), taso näkyy alareunassa.

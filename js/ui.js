@@ -416,7 +416,8 @@ function mapLoop(){if(openPanel!=='map'){mapRAF=0;return;}drawBigMap();mapRAF=re
 function isExplored(x,z){const cx=Math.floor((x+HALF)/4),cz=Math.floor((z+HALF)/4);for(let dz=-3;dz<=3;dz++)for(let dx=-3;dx<=3;dx++){const X=cx+dx,Z=cz+dz;if(X<0||Z<0||X>=EXN||Z>=EXN)continue;if(explored[Z*EXN+X])return true;}return false;}
 function mapMarkers(g,sx,ox,oz){
   const pt=(x,z)=>[(x+ox)*sx,(z+oz)*sx];
-  for(const k in flags.disc){const L=LOC[k];if(!L||!isExplored(L.x,L.z))continue;const [x,y]=pt(L.x,L.z);g.fillStyle='#8fd8cf';g.save();g.translate(x,y);g.rotate(Math.PI/4);g.fillRect(-4,-4,8,8);g.restore();if(sx>1){g.fillStyle='#eee5d3';g.font='600 12px Alegreya Sans, sans-serif';g.fillText(L.name,x+8,y+4);}}
+  for(const k in flags.disc){const L=LOC[k];if(!L||!isExplored(L.x,L.z))continue;const [x,y]=pt(L.x,L.z);g.fillStyle='#8fd8cf';g.save();g.translate(x,y);g.rotate(Math.PI/4);g.fillRect(-4,-4,8,8);g.restore();if(sx>1&&L.name){g.save();g.shadowColor='rgba(0,0,0,.9)';g.shadowBlur=3;g.shadowOffsetX=1;g.shadowOffsetY=1;   /* v1.20 (kohta 11): pehmeä varjo, erottuu lumisilla vuorilla */
+    g.fillStyle='#eee5d3';g.font='600 12px Alegreya Sans, sans-serif';g.fillText(L.name,x+8,y+4);g.restore();}}
   for(const p of pieces)if(p.t==='tyopenkki'||p.t==='sanky'){const [x,y]=pt(p.x,p.z);g.fillStyle='#e8893b';g.fillRect(x-3,y-3,6,6);}
   // Pääkallo näkyy kunnes hautakasan tavarat on kerätty.
   for(const gr of graves){const [x,y]=pt(gr.x,gr.z),r=sx>1?8:6;g.save();g.translate(x,y);g.fillStyle='#f2ecdc';g.strokeStyle='#7a1a12';g.lineWidth=1.6;g.beginPath();g.arc(0,-r*.15,r*.8,0,TAU);g.fill();g.stroke();g.fillRect(-r*.45,r*.4,r*.9,r*.6);g.strokeRect(-r*.45,r*.4,r*.9,r*.6);g.fillStyle='#1a1410';g.beginPath();g.arc(-r*.33,-r*.2,r*.22,0,TAU);g.arc(r*.33,-r*.2,r*.22,0,TAU);g.fill();g.restore();}
@@ -450,12 +451,14 @@ function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),W=c.width,v=mapV
     const lay=(img,sp,dx,dy,sc,al)=>{t.save();t.globalAlpha=al;t.scale(sc,sc);t.translate((mapCO.x*sp*dx+mapCO.y*sp*(1-dx)*.3)%256,(mapCO.y*sp*dx-mapCO.x*sp*(1-dx)*.3)%256);t.fillStyle=t.createPattern(img,'repeat');t.fillRect(-256,-256,W/sc+512,W/sc+512);t.restore();};
     lay(CLOUDSH,6,1,.45,2.2,.22);lay(CLOUDC2,4,.8,.6,2.6,.55);lay(CLOUDC,7,1,.4,2,.85);}
   t.globalCompositeOperation='source-over';g.drawImage(FOGTMP,0,0);
+  /* v1.20 (lista 2, kohta 10): ohuet pilvet liikkuvat tuulen mukana myös avatun alueen päällä (n. 20 % peitto) */
+  {g.save();g.globalAlpha=.2;g.scale(2.4,2.4);g.translate((mapCO.x*5+mapCO.y*.5)%256,(mapCO.y*5-mapCO.x*.5)%256);g.fillStyle=g.createPattern(CLOUDC,'repeat');g.fillRect(-256,-256,W/2.4+512,W/2.4+512);g.restore();}
   drawWindStreaks(g,W);
   /* v1.07 tuulikompassi kartan päällä oikeassa yläkulmassa, mutta ei peitä mitään: läpikuultava tausta, häipyy (alfa ~0,12) kun hiiri
      on sen kohdalla, ja kartan merkit + pelaajan nuoli piirretään sen PÄÄLLE (ennen v1.06 kompassi peitti ne) */
   {const hov=mapMouse&&mapMouse.x>W-175&&mapMouse.y<180;mapWindA+=((hov?.12:.9)-mapWindA)*.25;g.save();g.globalAlpha=mapWindA;drawWindCompass(g,W-90,62,46);g.restore();}
   mapMarkers(g,S,HALF-v.x0,HALF-v.y0);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF-v.x0)*S,(P.pos.z+HALF-v.y0)*S,9);
-  g.fillStyle='rgba(238,229,211,.8)';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='left';g.fillText(mapZ>1?`Zoom ×${mapZ.toFixed(1)} · vedä siirtääksesi · kaksoisnapsautus keskittää`:'Rulla = zoom',10,630);}
+  g.shadowColor='rgba(0,0,0,.9)';g.shadowBlur=3;g.shadowOffsetX=1;g.shadowOffsetY=1;g.fillStyle='rgba(238,229,211,.8)';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='left';g.fillText(mapZ>1?`Zoom ×${mapZ.toFixed(1)} · vedä siirtääksesi · kaksoisnapsautus keskittää`:'Rulla = zoom',10,630);}
 // Kartan zoom (rulla) ja siirto (vetäminen)
 (function(){const c=$('#bigmap');
   c.addEventListener('wheel',e=>{e.preventDefault();const r=c.getBoundingClientRect(),W=c.width,v=mapView(),fx=(e.clientX-r.left)/r.width,fy=(e.clientY-r.top)/r.height,wx=v.x0+fx*v.sw-HALF,wz=v.y0+fy*v.sw-HALF;

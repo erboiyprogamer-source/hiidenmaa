@@ -12,7 +12,7 @@ function bump(k,n=1){fixFlags();flags.cnt[k]=(flags.cnt[k]||0)+n;}
 function lvlInfo(){if(devOn('lvl'))return{L:LVL_MAX,xp:0,need:0};// DEV: korkein taso
   let xp=flags.xp||0,L=1;while(L<LVL_MAX&&xp>=needXp(L)){xp-=needXp(L);L++;}return{L,xp,need:L>=LVL_MAX?0:needXp(L)};}
 const playerLevel=()=>lvlInfo().L;
-function addXp(n,why){if(!n||P.dead)return;fixFlags();const b=playerLevel();flags.xp+=n;const a=playerLevel();
+function addXp(n,why){if(!n||P.dead)return;fixFlags();const b=playerLevel(),h0=maxHp();flags.xp+=n;const a=playerLevel();if(maxHp()>h0)P.hp+=maxHp()-h0;   /* v1.20: terveyslisä heti */
   if(n>=10&&why)msg(`+${n} XP · ${why}`,'xp');
   if(a>b){sfx('craft');msg(`Taso ${a}!`,'loot');const un=RECIPES.filter(r=>r.lvl>b&&r.lvl<=a).map(r=>ITEMS[r.id].n);if(un.length)msg(`Uusia ohjeita: ${un.join(', ')}`,'loot');}}
 function xpFirst(key,n,why){fixFlags();if(flags.first[key])return;flags.first[key]=1;addXp(n,why);}

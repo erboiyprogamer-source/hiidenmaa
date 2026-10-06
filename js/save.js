@@ -52,7 +52,7 @@ function resetWorld(){
 }
 function newGame(){
   resetWorld();playTime=0;dayT=.28;dayN=1;weather={cur:'selkea',until:240};flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{},xp:0,cnt:{},ach:{},first:{},gv:2,bio:{meadow:1}};zoneQuiet=true;
-  P.packLv=0;recalcBon();inv=new Array(32).fill(null);P.pos.set(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z);P.hp=60;P.stam=100;P.hunger=80;P.buffs={};P.spawn=null;P.deaths=0;P.kills=0;P.inDun=false;P.realm=null;P.spawnProt=0;P.dead=false;P.heal=0;P.wetT=0;
+  P.packLv=0;recalcBon();inv=new Array(32).fill(null);P.pos.set(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z);P.hp=maxHp();P.stam=100;P.hunger=80;P.buffs={};P.spawn=null;P.deaths=0;P.kills=0;P.inDun=false;P.realm=null;P.spawnProt=0;P.dead=false;P.heal=0;P.wetT=0;
   camYaw=Math.PI*1.1;camPitch=.3;P.yaw=camYaw+Math.PI;fig.g.rotation.x=0;resetFog();invDirty=true;updateGear();goalShown=-1;
   // start with a few mobs around
   ensureCamps();   // v0.99 hylätyt leirit

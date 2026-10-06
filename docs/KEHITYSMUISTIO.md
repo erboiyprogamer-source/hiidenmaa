@@ -43,7 +43,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Vihollisten syntyetäisyys | yö 55–85 m (10 %: 20–30 m), päivä 38–68 m, päivällä max 2 vihollista |
 | Puiden uusiutuminen | kerran yössä, 100 m säteellä |
 | Rakennusalueen suoja (`nearBase`) | 15 m osasta, työpenkki 26 m |
-| Terveys / kestävyys / max paino | 60 / 100 / 160 |
+| Terveys / kestävyys / max paino | 60 (taso 5: 100, v1.20) / 100 / 160 |
 | Vuorokauden pituus `DAY_LEN` | 720 s (12 min) |
 | Rakennusruudukko `G` / seinän korkeus `WH` | 2,5 m / 2,6 m |
 | Oviaukko | 1,7 × 2,3 m |
@@ -71,6 +71,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.20 (lista 2, kohdat 10–12: kartan pilvet, tekstien varjot, terveys tasoilla)
+- **Iso kartta:** avatun alueen päällä liikkuu ohut pilvikerros (alfa 0,2, `CLOUDC`-kuvio, sama tuulisiirtymä `mapCO`).
+- **Karttatekstit:** löytöpaikkojen nimille ja alareunan tekstille pehmeä varjo (shadowBlur 3, siirto 1 px) → näkyvät lumisilla vuorilla.
+  Nimetöntä paikkaa ei piirretä.
+- **Enimmäisterveys tasoilla:** `lvlHp()` = 10 × (taso − 1), enint. 40 → taso 1: 60, 2: 70, 3: 80, 4: 90, 5+: 100 (+ saavutukset, voima).
+  Tason noustessa nykyinen terveys kasvaa saman verran (`addXp`). Uusi peli alkaa täydellä terveydellä (`maxHp()`).
 
 ### v1.19 (lista 2, kohta 9: puut taipuvat tuulessa, myrskyn kaatosuunta, kaatuvan puun osuma)
 - **Taipuminen:** `SWAY.uLean = 3,4 · min(1,1, v/22)^1,6` (ennen min(1,2, v/22)): myrskyssä latva n. 12–17° puuskien mukaan,
@@ -1267,7 +1274,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19. Seuraavaksi kohta 10. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19, kohdat 10–12 v1.20. Seuraavaksi kohta 13. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.
@@ -1277,9 +1284,9 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 7. TEHTY v1.16. Ehdotukset: "Voit valmistaa nyt" + "Hyödyllistä seuraavaksi", järjestys uudet → toistuvat → ei mukana → välituotteet.
 8. TEHTY v1.18. T kiertää tehtävän/tavoitteen näkyvyyttä (4 tilaa), piilotettuna pieni vihje; loki T → L.
 9. TEHTY v1.19. Taipuminen (myrsky ~15°), myrskyn kaato 70 % myötätuuleen, kaikki kaatuvat puut osuvat (80 %, ei suojaa), karhu ei itseensä.
-10. Iso kartta: liikkuvat pilvet näkyvät ohuina myös avatulla alueella.
-11. Kartan valkoisille teksteille pieni varjo (näkyvät valkoisten vuorten päällä).
-12. Tasolla 5 pelaajan maksimiterveys 100.
+10. TEHTY v1.20. Ohuet liikkuvat pilvet avatulla alueella (20 %).
+11. TEHTY v1.20. Pehmeä varjo karttateksteille.
+12. TEHTY v1.20. Terveys 60 → 100 portaittain tasoilla 2–5, lisäys heti.
 13. Monikertaisen terveyden mobeille useita päällekkäisiä hp-palkkeja; palkit ja kallot nousevat määrän mukaan (eivät mobin edessä).
 14. Jousi: jänne venyy väärään suuntaan → korjaa; latauksessa jousi keskelle eteen ja oikea käsi vetää jänteen pään oikealle puolelle;
     jousi heiluu käden mukana kävellessä.

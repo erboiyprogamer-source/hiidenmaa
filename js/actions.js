@@ -147,7 +147,9 @@ function eat(s){const f=ITEMS[s.id].food;
   if(f.buff)P.buffs[f.buff]=300;if(!f.raw)flags.ate=1;
   s.n--;if(s.n<=0)inv[inv.indexOf(s)]=null;invDirty=true;sfx('eat');msg(`Söit: ${ITEMS[s.id].n}`);
 }
-function maxHp(){return 60+(P.buffs.voima?15:0)+BON.hp;}
+// v1.20 (lista 2, kohta 12): perusterveys kasvaa tasoilla 2–5: 60 / 70 / 80 / 90 / 100 (+ saavutukset ja voima päälle)
+function lvlHp(){return Math.min(4,Math.max(0,lvlInfo().L-1))*10;}
+function maxHp(){return 60+lvlHp()+(P.buffs.voima?15:0)+BON.hp;}
 function maxStam(){return 100+(P.buffs.voima?25:0)+BON.stam;}
 
 /* ---------------- INTERACTION ---------------- */
