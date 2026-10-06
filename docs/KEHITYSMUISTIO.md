@@ -72,6 +72,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.24 (KORJAUS: peli ei käynnistynyt karttavaihdon jälkeen)
+- "Uusi peli" → toinen kartta → uudelleenlataus → `startPlay` → `menuClear` käytti alustamatonta `let menuDeco` → musta ruutu.
+  Valikkokameran tila esitelty `main.js`:n alussa. KORJAUKSET 22, tarkistusrivi avaa sivun automaattisen aloituksen tilassa.
+
 ### v1.23 (lista 2, kohdat 15–17: nuolet, paremmat jouset/aseet, tähtäysympyrä)
 - **Nuolet** (`AMMO_STATS`): sulitettu nopeus ×1,25 (ennen 1,12), pudotus ×0,6, vahinko ×1,15, tuuli puolet; tulinuoli = piikivinuoli +
   sytyttää. Nuolten tiedot tietolaatikossa (lentonopeus, kaaren pudotus, vahinko, tuuli, sytyttää).

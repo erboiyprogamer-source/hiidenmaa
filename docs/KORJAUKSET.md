@@ -149,6 +149,16 @@ function onPrimaryUp(){if(P.drawing){P.drawing=false;if(P.bowDraw>.15&&ammoId())
 **Korjaus:** `CylinderGeometry(.095,.034,…)` (paksu = top = kärki). Kartioiville osille: top-säde menee +z:aan, kun rotation.x = +π/2.
 Tarkistuksessa rivi "v1.06 nuija".
 
+### 22. Peli ei käynnisty "Uusi peli" -napin jälkeen, ruutu musta – v1.24
+**Oire:** "Uusi peli" arpoo toisen kartan → sivu latautuu uudelleen → musta ruutu, valikko ei toimi, peliin ei pääse.
+**Syy:** karttavaihdon jälkeinen automaattinen aloitus (`sessionStorage 'hiidenmaa_pending'`) kutsuu `startPlay()`:tä jo `main.js`:n alussa.
+v1.15:ssä `startPlay` alkoi kutsua `menuClear()`:ia, joka käyttää `let menuDeco` -muuttujaa – se esiteltiin vasta myöhemmin tiedostossa
+(TDZ) → `ReferenceError: Cannot access 'menuDeco' before initialization` → koko `main.js` kaatui, pääsilmukka ei käynnistynyt.
+Testit eivät kulkeneet uudelleenlatauspolun kautta (ne kutsuivat `newGame()` suoraan).
+**Korjaus:** valikkokameran tila esitellään `main.js`:n alussa. Uusi tarkistusrivi avaa sivun `hiidenmaa_pending='new'` -tilassa ja varmistaa,
+että peli käynnistyy. **Sääntö:** kaikki ylimmän tason `let/const`, joita `startPlay`/`newGame`/`loadData` käyttävät, ennen tiedoston
+alun automaattista aloitusta. Ks. myös 19.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

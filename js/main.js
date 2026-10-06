@@ -1,6 +1,9 @@
 /* Hiidenmaa – main.js
    Valikko, pääsilmukka ja testirajapinta window.__game */
 'use strict';
+// v1.24 KORJAUS (KORJAUKSET 22): valikkokameran tila esitellään ennen kuin startPlay voidaan kutsua (karttavaihdon jälkeinen automaattinen
+// aloitus tapahtuu jo tiedoston alussa; ennen let-muuttujat olivat vielä alustamatta → ReferenceError → peli jäi mustaksi).
+const MENU_SHOT_T=20;let menuShot=null,menuSpots=null,menuDeco=[],menuMob=null,menuLight=null,menuFading=false;
 
 /* ---------------- MENU ---------------- */
 function hasSave(){try{return!!localStorage.getItem(SKEY);}catch(e){return false;}}
@@ -67,7 +70,7 @@ function update(dt){
 /* v1.15 (lista 2, kohta 6): valikon taustakamera näyttää satunnaisia kohteita lähikuvina: luontokohteet (biomit, järvi), hylätty
    leiri päivällä ja yöllä (nuotio palaa) ja eläimiä (kamera seuraa). 20 s per kohde, hidas 30° kierto ja hieman laskeutuen, vaihto
    mustan kautta (#menuFade 0,8 s). Ensimmäinen kohde arvotaan joka latauksella. Pelin aikana (Esc) tausta on pelaajan oma paikka. */
-const MENU_SHOT_T=20;let menuShot=null,menuSpots=null,menuDeco=[],menuMob=null,menuLight=null,menuFading=false;
+/* menuShot ym. esitelty tiedoston alussa (KORJAUKSET 22) */
 function buildMenuSpots(){const S=[],r=Math.random,used=new Set(),want=['koivu','forest','suo','kangas','aarni','tunturi','rakka','beach','meadow','mountain'];
   for(let t=0;t<8000&&used.size<want.length;t++){const x=(r()-.5)*HALF*1.7,z=(r()-.5)*HALF*1.7,h=terrainH(x,z),b=biomeAt(x,z,h);if(h<.6||!want.includes(b)||used.has(b))continue;
     if(Math.abs(terrainH(x+3,z)-h)>1.5||Math.abs(terrainH(x,z+3)-h)>1.5)continue;used.add(b);S.push({k:'nature',x,z,b});}
