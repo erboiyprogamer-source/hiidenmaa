@@ -9,38 +9,31 @@ function onPrimary(){
   if(P.dead||P.stagger>0)return;
   const w=curWeapon();
   if(w.cat==='hammer'){placeBuild();return;}
-  if(w.cat==='shovel'){if(w.id==='kuokka')useHoe();else useShovel();return;}
+  if(w.cat==='shovel'){useTool(false);return;}
   if(w.cat==='bow'){if(!ammoId()){msg('Ei nuolia.','warn');return;}P.drawing=true;P.bowDraw=0;return;}
   startAttack();
 }
-// Lapio: tasoittaa maata pehmeästi kohti pelaajan jalkojen korkeutta (±.4 m / käyttö).
+// v0.96 (kohta 11) maanmuokkaustyökalut, vasen = ensisijainen, oikea = toissijainen (pohjassa pitäen toistuu 0,45 s välein, kestävyys −6):
+//  kuokka vasen: nostaa maata 0,3 m (keskellä eniten, enint. +3 m alkuperäisestä) ja palauttaa maan biomin perusvärin (multa pois)
+//  kuokka oikea: palauttaa vain maan alkuperäisen värin (ei korkeutta)
+//  lapio vasen: kaivaa kuoppaa 0,3 m (enint. −3 m), väri biomin perusväri; lapio oikea: ruskea polku (tasoittaa jalkojen korkeudelle + multa)
 let shovelCd=0;const _sh=[];
-function useShovel(){
+function terraTool(mode){
   if(P.dead||P.inDun||state!=='play'||playTime<shovelCd)return;
   if(P.stam<6){if(playTime-lastStamMsgT>1.2){msg('Liian uupunut.','warn');lastStamMsgT=playTime;}return;}
   const c=camRayPoint(6);if(dist2(c.x,c.z,P.pos.x,P.pos.z)>7*7)return;
-  const R=3.2;for(const p of pieces)if(dist2(p.x,p.z,c.x,c.z)<(R+G*.6)**2){msg('Rakennus on tiellä.','warn');shovelCd=playTime+.8;return;}
+  const R=mode==='path'?3.2:2.6;for(const p of pieces)if(dist2(p.x,p.z,c.x,c.z)<(R+G*.6)**2){msg('Rakennus on tiellä.','warn');shovelCd=playTime+.8;return;}
   P.stam-=6;P.stamDelay=1;shovelCd=playTime+.45;P.atk={t:0,dur:.45,hitAt:.2,done:true,w:{},offBusy:true};P.yaw=camYaw+Math.PI;
   const h0=P.pos.y,i0=Math.max(0,Math.floor((c.x-R+HALF)/GS)),i1=Math.min(GN,Math.ceil((c.x+R+HALF)/GS)),j0=Math.max(0,Math.floor((c.z-R+HALF)/GS)),j1=Math.min(GN,Math.ceil((c.z+R+HALF)/GS));
-  for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const x=-HALF+i*GS,z=-HALF+j*GS,d=Math.hypot(x-c.x,z-c.z);if(d>=R)continue;
-    const k=j*HN+i,w=sstep(R,R*.4,d),dh=clamp((h0-HGT[k])*w,-.4,.4);if(Math.abs(dh)>.002)terraSetVertex(k,HGT[k]+dh);
-    if(d<R*.65)mudSet(k,MUD[k]+.4*sstep(R*.65,R*.2,d));}
+  for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const x=-HALF+i*GS,z=-HALF+j*GS,d=Math.hypot(x-c.x,z-c.z);if(d>=R)continue;const k=j*HN+i;
+    if(mode==='path'){const w=sstep(R,R*.4,d),dh=clamp((h0-HGT[k])*w,-.4,.4);if(Math.abs(dh)>.002)terraSetVertex(k,HGT[k]+dh);if(d<R*.65)mudSet(k,MUD[k]+.4*sstep(R*.65,R*.2,d));}
+    else if(mode==='raise'){const w=sstep(R,R*.25,d);if(Math.hypot(x-P.pos.x,z-P.pos.z)>.9)terraSetVertex(k,Math.min(HGT0[k]+3,HGT[k]+.3*w));mudSet(k,MUD[k]-w);}
+    else if(mode==='dig'){const w=sstep(R,R*.25,d);terraSetVertex(k,Math.max(HGT0[k]-3,HGT[k]-.3*w));mudSet(k,MUD[k]-w);}
+    else if(mode==='restore'){mudSet(k,MUD[k]-sstep(R,R*.25,d));}}
   terraFlush();mudFlush();for(const n of nodesNear(c.x,c.z,R+3,_sh))syncNodeY(n);
-  sfx('build');burst(c.x,terrainH(c.x,c.z)+.2,c.z,0x7a5a38,8,3);}
-// Kuokka: nostaa maata kohdassa (+.15 m / käyttö, keskellä eniten) ja vähentää multaisuutta (palauttaa alkuperäisen värin).
-function useHoe(){
-  if(P.dead||P.inDun||state!=='play'||playTime<shovelCd)return;
-  if(P.stam<6){if(playTime-lastStamMsgT>1.2){msg('Liian uupunut.','warn');lastStamMsgT=playTime;}return;}
-  const c=camRayPoint(6);if(dist2(c.x,c.z,P.pos.x,P.pos.z)>7*7)return;
-  const R=2.6;for(const p of pieces)if(dist2(p.x,p.z,c.x,c.z)<(R+G*.6)**2){msg('Rakennus on tiellä.','warn');shovelCd=playTime+.8;return;}
-  P.stam-=6;P.stamDelay=1;shovelCd=playTime+.45;P.atk={t:0,dur:.45,hitAt:.2,done:true,w:{},offBusy:true};P.yaw=camYaw+Math.PI;
-  const i0=Math.max(0,Math.floor((c.x-R+HALF)/GS)),i1=Math.min(GN,Math.ceil((c.x+R+HALF)/GS)),j0=Math.max(0,Math.floor((c.z-R+HALF)/GS)),j1=Math.min(GN,Math.ceil((c.z+R+HALF)/GS));
-  for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const x=-HALF+i*GS,z=-HALF+j*GS,d=Math.hypot(x-c.x,z-c.z);if(d>=R)continue;
-    const k=j*HN+i,w=sstep(R,R*.25,d);if(HGT[k]-HGT0[k]<3&&Math.hypot(x-P.pos.x,z-P.pos.z)>.9)terraSetVertex(k,HGT[k]+.15*w);mudSet(k,MUD[k]-.45*w);}
-  terraFlush();mudFlush();for(const n of nodesNear(c.x,c.z,R+3,_sh))syncNodeY(n);
-  sfx('build');burst(c.x,terrainH(c.x,c.z)+.2,c.z,0x6b5a3a,8,3);}
-function onPrimaryUp(){if(P.drawing){P.drawing=false;if(P.bowDraw>.15&&ammoId())fireBow();P.bowDraw=0;}}
-function onSecondary(){const w=curWeapon();if(w.cat==='hammer'){togglePanel('build');}}
+  sfx('build');burst(c.x,terrainH(c.x,c.z)+.2,c.z,mode==='path'?0x7a5a38:0x6b5a3a,8,3);}
+function useTool(alt){const w=curWeapon();if(w.cat!=='shovel')return;terraTool(w.id==='kuokka'?(alt?'restore':'raise'):(alt?'path':'dig'));}
+function onSecondary(){const w=curWeapon();if(w.cat==='hammer'){togglePanel('build');}else if(w.cat==='shovel')useTool(true);}
 function startAttack(){
   if(P.atk||P.inWater&&P.swim)return;
   const w=curWeapon();

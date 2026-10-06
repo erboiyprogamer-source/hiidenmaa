@@ -71,6 +71,14 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.96 (kuokka ja lapio – kohta 11)
+- `terraTool(mode)` + `useTool(alt)` (actions.js; korvaa `useShovel`/`useHoe`). Vasen = ensisijainen, oikea = toissijainen; pohjassa pitäen
+  toistuu 0,45 s välein, kestävyys −6, ei rakennusten lähellä. Lapion/kuokan kanssa oikea ei torju.
+  - **Kuokka vasen** `raise`: +0,3 m (keskellä, reunoilla vähemmän), enint. +3 m alkuperäisestä, maa saa biomin perusvärin (multa pois).
+  - **Kuokka oikea** `restore`: palauttaa vain alkuperäisen värin (ei korkeutta).
+  - **Lapio vasen** `dig`: kuoppa −0,3 m, enint. −3 m, väri biomin perusväri. **Lapio oikea** `path`: entinen polku (tasoitus jalkojen
+    korkeudelle ±0,4 m + ruskea multa). (Ennen v0.96 lapion vasen teki polun ja hiiren pito käytti aina lapion toimintoa myös kuokalla.)
+
 ### v0.95 (vartija vajoaa ja nousee – kohta 10)
 - Yli 90 m:n päässä (tai luolastossa) Kalmanvartija ei katoa heti: tila `sink` – pysähtyy, nostaa kädet ja vajoaa 3 s:ssa 7,5 m maan alle
   (kiihtyvä k²), multa- ja kivihiukkasia, jyrinä (`slam` + matala `roar`), tärinä lähellä; ilmoitus heti alussa. Vasta lopuksi poisto,
@@ -1088,7 +1096,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 **JATKA TÄSTÄ (päivitetty v0.94):** kohdat 1–9 tehty (v0.81–v0.92) + käyttäjän välilisäykset v0.93 (hautakasa arkkuna, Kalmanpesä
 millä vain, DEV-jumalvoimatäpät, harppova juoksu) ja v0.94 (Shift-tietoikkuna). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Kohta 10 tehty v0.95. Seuraavaksi kohta 11** (kuokka/lapio) → 12 → 15, kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
+Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Kohdat 10 (v0.95) ja 11 (v0.96) tehty. Seuraavaksi kohta 12** (aluevartijat) → 13 → 15, kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
 `?v=` → commit, push, PR #23 kuvaus → testilinkki `https://raw.githack.com/erboiyprogamer-source/hiidenmaa/claude/hiidenmaa-survival-game-fmxt0m/index.html`.
 Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kallistus + edestakainen heilunta kuten puut), asetus pois/oletus/täysi.
 1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
@@ -1104,7 +1112,7 @@ Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kall
 8. TEHTY v0.91. Ulottuvuuksien mobeille enemmän yksityiskohtia (vaatetus, koristeet, silmäanimaatiot, liekit silmissä).
 9. TEHTY v0.92. Hirviöille (sammalhiisi, kalmo) harppaavammat askeleet, lyöntiulottuma +10 %.
 10. TEHTY v0.95. Kalmanvartija vajoaa maahan (ei katoa) ilmoituksen aikana, maapartikkeleita.
-11. Kuokka nostaa maata enemmän, oikea klikkaus palauttaa alkuperäisen värin; lapio syvempi kuoppa, oikea klikkaus = ruskea polku.
+11. TEHTY v0.96. Kuokka nostaa maata enemmän, oikea klikkaus palauttaa alkuperäisen värin; lapio syvempi kuoppa, oikea klikkaus = ruskea polku.
 12. Aluevartijat: alue ×2, jäävät rajalle taistelemaan, 1–10 s päästä palaavat, kunnes huomaavat pelaajan taas.
 13. Kivikasat arkun ympärillä liian tiiviit – arkulle pääsy.
 14. Hylätyt leiripaikat (1–2 / kartta): sammunut nuotio (sytytys puulla), teltta jossa sänky.
