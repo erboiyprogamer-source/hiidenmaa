@@ -43,10 +43,15 @@ function updateMobs(dt){
     // kuluttua se alkaa palata alueelleen (ja paranee kuten ennen), kunnes huomaa pelaajan taas alueen sisällä.
     let atBorder=false;
     if(m.guard){const gx=m.guard.x-m.pos.x,gz=m.guard.z-m.pos.z,gd=Math.hypot(gx,gz),pIn=dist2(P.pos.x,P.pos.z,m.guard.x,m.guard.z)<m.guard.r*m.guard.r;
-      if(m.ret&&pIn&&m.los&&dist<(d.aggro||12)*1.35&&!P.dead){m.ret=false;m.retT=0;m.state='chase';}
-      if(!m.ret&&gd>m.guard.r){atBorder=true;if(!(m.retT>0))m.retT=1+Math.random()*9;m.retT-=dt;if(m.retT<=0||P.dead){m.ret=true;m.retT=0;}}
-      else if(!m.ret&&gd<m.guard.r*.9)m.retT=0;
-      if(m.ret){m.state='idle';m.wind=0;if(gd<3)m.ret=false;else{moveMob(m,gx,gz,d.run,dt);animMob(m,dt);m.hp=Math.min(m.maxHp,m.hp+m.maxHp*.05*dt);continue;}}}
+      // v1.09 (lista 2, kohta 2): paluu kävellen (d.walk, esim. 20 m ≈ 10 s), paranee vain 1 %/s. Paluu keskeytyy, jos pelaaja tulee
+      // alle 8 m päähän (myös alueen ulkopuolella) tai näkyy alueen sisällä. Keskeytyksen jälkeen (m.intr) vartija taistelee alueen
+      // ulkopuolellakin niin kauan kuin pelaaja on alle 8 m päässä; kun pelaaja on kauempana, arvotaan uusi 1–10 s paluuajastin.
+      if(m.ret&&!P.dead&&(dist<8||pIn&&m.los&&dist<(d.aggro||12)*1.35)){m.ret=false;m.retT=0;m.intr=gd>m.guard.r;m.state='chase';}
+      const engaged=m.intr&&dist<8&&!P.dead;
+      if(!m.ret&&gd>m.guard.r&&!engaged){atBorder=true;if(!(m.retT>0))m.retT=1+Math.random()*9;m.retT-=dt;if(m.retT<=0||P.dead){m.ret=true;m.retT=0;m.intr=false;}}
+      else if(engaged)m.retT=0;
+      else if(!m.ret&&gd<m.guard.r*.9){m.retT=0;m.intr=false;}
+      if(m.ret){m.state='idle';m.wind=0;if(gd<3)m.ret=false;else{moveMob(m,gx,gz,d.walk||d.run*.5,dt);animMob(m,dt);m.hp=Math.min(m.maxHp,m.hp+m.maxHp*.01*dt);continue;}}}
     const hurt=playTime-m.lastHit<10;
     // Paikallaan oleville vaikeille vihollisille: iskuttomana 30 s → parantuvat hitaasti (1 %/s).
     if(d.regen){if(playTime-m.lastHit>d.regen.after&&m.hp<m.maxHp)m.hp=Math.min(m.maxHp,m.hp+m.maxHp*d.regen.rate*dt);}

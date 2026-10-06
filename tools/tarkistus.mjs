@@ -78,6 +78,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.07 tuulikompassi kartan päällä, ei peitä (läpikuultava, häipyy hiiren alla, merkit päällä)',()=>{const f=drawBigMap.toString(),a=f.indexOf('drawWindCompass('),b=f.indexOf('mapMarkers(');return !$('#mapWind')&&a>0&&b>a&&/mapWindA/.test(f)||'kompassi peittää merkit tai puuttuu';});
   t('v1.08 esineiden siirto: puolikas, vihje, haamu, raahaus',()=>{const A=[{id:'kivi',n:10,q:1},null,{id:'kivi',n:45,q:1}];moveHalf(A,0,A,1);const ok1=A[0].n===5&&A[1].n===5;moveHalf(A,1,A,2);
     return ok1&&A[2].n===47&&A[1].n===3&&typeof slotUX==='function'&&!!$('#ghostIt')&&typeof updGhost==='function'&&!!$('#chestHint')||'siirto rikki';});
+  t('v1.09 vartija palaa kävellen, 8 m keskeyttää, 1 %/s',()=>{const f=updateMobs.toString();return /d\.walk\|\|d\.run\*\.5/.test(f)&&/dist<8/.test(f)&&/m\.maxHp\*\.01\*dt/.test(f)&&/m\.intr/.test(f)||'vartijan paluu muuttunut';});
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 for(const [k,v] of Object.entries(r))console.log(v===true?'OK ':'XX ',k,v===true?'':v);

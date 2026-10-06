@@ -64,6 +64,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Arkkukivet (v1.01, v1.03):** suljettu 3,5 m kivilinnake: arkulle pääsee juoksuhypyin viittä kapeaa siksak-pilaria pitkin muurin harjalle ja kierreportaita alas.
 - **Kiviröykkiöt (v1.03):** 2 per kartta, avoin kivikasa, arkku näkyvissä keskellä (pieni saalis).
 - **Aluevartijat (v0.97):** vartioalue 30–32 m; rajalla vartija jää seisomaan ja taistelemaan 1–10 s ennen paluuta, palaa jahtiin jos pelaaja tulee alueelle.
+  **v1.09:** paluu kävellen (kalmo 30 m ≈ 21 s), paranee paluun aikana 1 %/s; pelaaja alle 8 m päässä keskeyttää paluun (myös alueen
+  ulkopuolella) ja vartija taistelee niin kauan kuin pelaaja on alle 8 m päässä; sen jälkeen uusi 1–10 s ajastin ja paluu.
 - **Kuokka ja lapio (v0.96):** kuokka vasen nostaa maata 0,3 m (perusväri), oikea palauttaa maan värin; lapio vasen kaivaa 0,3 m kuopan (enint. 3 m), oikea tekee ruskean polun.
 - **Tietoikkuna (v0.94):** Shift pohjassa ja hiiri esineen päällä (reppu, arkku, valmistus) → esineen tiedot kursorin vieressä.
 - **Hautakasa (v0.93):** ei katoa koskaan; jos kaikki ei mahdu reppuun, avautuu arkkuikkunaksi, tyhjänä vajoaa maahan.

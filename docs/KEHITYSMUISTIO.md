@@ -71,6 +71,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.09 (lista 2, kohta 2: vartijoiden paluu ajan kanssa)
+- `ai.js` vartijat (`m.guard`): paluu `d.walk`-nopeudella (ennen `d.run`), parantuminen paluun aikana 1 %/s (ennen 5 %/s).
+  Keskeytys: pelaaja alle 8 m TAI näkyvissä alueen sisällä. `m.intr` = keskeytetty alueen ulkopuolella → ei rajarajoitusta niin kauan
+  kuin pelaaja < 8 m; kun pelaaja kauempana, uusi 1–10 s ajastin ja paluu. Mitattu: kalmo 30 m rajalta kotiin 20,8 s.
+
 ### v1.08 (lista 2, kohta 1: esineiden siirron selkeys ja raahaus)
 - Käyttäjä hylkäsi "esine tarttuu hiireen" -mallin: nykyinen napsautus–napsautus säilyy, mutta valinta viestitään selvemmin.
 - `ui.js`: `slotUX` (data-g/i, hover-vihje, raahauksen aloitus), `updGhost`/`#ghostIt` (haamukuvake hiiren vieressä; raahatessa isompi),
@@ -1187,7 +1192,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ:** PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
-2. Vartijat palaavat alueelleen ajan kanssa (esim. 10 s kävellen); pelaajan tullessa lähelle paluu keskeytyy.
+2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. Savut/usvat kohteiden yllä: sama ulkonäkö ja paksuus vähemmillä entiteeteillä (kääntyvät siivut); nykyinen = korkein grafiikka-asetus.
 4. Ohjetekstit pois (kuten Minecraft): "Rulla = zoom" yms.
 5. "Toimii parhaiten tietokoneella…" -teksti valikossa eri paikkaan; näkyy vain ensimmäisellä kerralla ja häipyy.
