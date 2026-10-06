@@ -71,6 +71,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.95 (vartija vajoaa ja nousee – kohta 10)
+- Yli 90 m:n päässä (tai luolastossa) Kalmanvartija ei katoa heti: tila `sink` – pysähtyy, nostaa kädet ja vajoaa 3 s:ssa 7,5 m maan alle
+  (kiihtyvä k²), multa- ja kivihiukkasia, jyrinä (`slam` + matala `roar`), tärinä lähellä; ilmoitus heti alussa. Vasta lopuksi poisto,
+  `flags.altarSt`/`bossHp` kuten ennen. Herätettäessä tila `rise`: nousee 2,5 s:ssa maasta multaa pöllyten, sitten nykyinen karjaisu (intro).
+  Vajoamisen/nousun ajan `m.sinking` → `damageMob` ei tee vahinkoa eikä vartija hyökkää.
+
 ### v0.94 (Shift-tietoikkuna)
 - Kun **Shift** on pohjassa, hiiren alla olevan esineen tiedot (nimi, kuvaus, `itemProps`-taulukko) näkyvät kursorin vieressä (`#itemTip`,
   `updateItemTip`, ui.js): repun ja pikapalkin paikat, arkut/hautakasa (`slotHTML` data-it/q/n) ja valmistuslistan rivit. Päivittyy hiirtä
@@ -1082,8 +1088,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 **JATKA TÄSTÄ (päivitetty v0.94):** kohdat 1–9 tehty (v0.81–v0.92) + käyttäjän välilisäykset v0.93 (hautakasa arkkuna, Kalmanpesä
 millä vain, DEV-jumalvoimatäpät, harppova juoksu) ja v0.94 (Shift-tietoikkuna). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Seuraavaksi kohta 10** (Kalmanvartija
-vajoaa maahan) → 11 → 15, kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
+Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Kohta 10 tehty v0.95. Seuraavaksi kohta 11** (kuokka/lapio) → 12 → 15, kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
 `?v=` → commit, push, PR #23 kuvaus → testilinkki `https://raw.githack.com/erboiyprogamer-source/hiidenmaa/claude/hiidenmaa-survival-game-fmxt0m/index.html`.
 Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kallistus + edestakainen heilunta kuten puut), asetus pois/oletus/täysi.
 1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
@@ -1098,7 +1103,7 @@ Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kall
 7. TEHTY v0.90. Haarniskoille kunnon painavat erottuvat mallit.
 8. TEHTY v0.91. Ulottuvuuksien mobeille enemmän yksityiskohtia (vaatetus, koristeet, silmäanimaatiot, liekit silmissä).
 9. TEHTY v0.92. Hirviöille (sammalhiisi, kalmo) harppaavammat askeleet, lyöntiulottuma +10 %.
-10. Kalmanvartija vajoaa maahan (ei katoa) ilmoituksen aikana, maapartikkeleita.
+10. TEHTY v0.95. Kalmanvartija vajoaa maahan (ei katoa) ilmoituksen aikana, maapartikkeleita.
 11. Kuokka nostaa maata enemmän, oikea klikkaus palauttaa alkuperäisen värin; lapio syvempi kuoppa, oikea klikkaus = ruskea polku.
 12. Aluevartijat: alue ×2, jäävät rajalle taistelemaan, 1–10 s päästä palaavat, kunnes huomaavat pelaajan taas.
 13. Kivikasat arkun ympärillä liian tiiviit – arkulle pääsy.

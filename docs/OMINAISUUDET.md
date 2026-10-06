@@ -165,7 +165,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   karhuntaljahaarniska (uusi: 2 taljaa + 4 nahkaa, arm 10, ei hidasta), kupari-, rauta- ja Hiidenpanssari. Kilpi ja selkätavarat siirtyvät
   haarniskan pinnalle, kun haarniska on päällä.
 - **Pomot (v0.89):** Kalmanvartija ryntää harvemmin (25 %, väh. 8 s välein) ja sen huitaisun/maahaniskun ennakko on 40 % pidempi;
-  kiviä heittävien pomojen (vartija, Jäätär) hyökkäykset ovat 10 % hitaampia ja kivi lentää 30 % hitaammin. Vajonneen vartijan alttari jää
+  kiviä heittävien pomojen (vartija, Jäätär) hyökkäykset ovat 10 % hitaampia ja kivi lentää 30 % hitaammin. Vartija vajoaa 3 s:ssa maahan ja nousee herätettäessä 2,5 s:ssa (v0.95, haavoittumaton sillä aikaa). Vajonneen vartijan alttari jää
   valmiiksi (3/3 kiveä näkyvissä) – herätys ei vaadi uusia kiviä.
 - **Eläinten luonteet (v0.85, `per`):** jänis jähmettyy ja pakenee siksakkia, kettu jää katsomaan matkan päästä, metso antaa tulla lähelle
   ja lehahtaa 14–24 m, porolauma pakenee yhdessä. Uudet eläimet: metsäjänis, kettu, metso (sulat → sulitetut nuolet), poro.
