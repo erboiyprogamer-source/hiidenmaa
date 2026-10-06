@@ -84,6 +84,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.12 automaattisäätö osa-alueittain + FPS + väliotsikot',()=>typeof AUTO==='object'&&typeof autoOn==='function'&&SET_PAGES.shadow.includes('autoQ')&&!SET_PAGES.gfx.includes('autoQ')&&!!$('#fps')&&typeof updateFps==='function'&&/setSub/.test(renderSettings.toString())&&/AUTO\.fx/.test(rebuildGrass.toString())||'asetukset puuttuvat');
   t('v1.12 huppu näyttää hiukset, rautakypärän verho kiinni',()=>{const f=makePlayer();buildArmor(f,'nahkavaatteet');const vis=f.hairTop.filter(h=>h.visible).length;buildArmor(f,'rautapanssari');return vis>=8&&f.hairTop.every(h=>!h.visible)||'hiukset: '+vis;});
   t('v1.13 sivukeinunta ja pehmennetty juoksukerroin',()=>{const f=updatePlayer.toString();return /P\.runKs/.test(f)&&/rig\.rotation\.z=tz/.test(f)||'keinunta puuttuu';});
+  t('v1.14 "Toimii parhaiten" kerran yläkeskellä, ei valikossa',()=>!!$('#pcHint')&&![...document.querySelectorAll('#menu .note')].some(e=>/Toimii parhaiten/.test(e.textContent))||'vihje väärässä paikassa');
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 for(const [k,v] of Object.entries(r))console.log(v===true?'OK ':'XX ',k,v===true?'':v);

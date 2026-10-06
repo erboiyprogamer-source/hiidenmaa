@@ -261,3 +261,10 @@ input.isdef{filter:brightness(1.25)}
 .setGrid .setSub:first-child{margin-top:0}
 #fps{position:fixed;z-index:30;font:800 12px 'Alegreya Sans',sans-serif;padding:1px 6px;background:rgba(19,17,14,.55);border-radius:3px;pointer-events:none;text-shadow:0 1px 2px #000}
 #fps.fps_tr{top:2px;right:4px}#fps.fps_tl{top:2px;left:4px}#fps.fps_br{bottom:2px;right:4px}#fps.fps_bl{bottom:2px;left:4px}
+
+/* v1.14 kerran näkyvä vihje ruudun yläkeskellä */
+#pcHint{position:fixed;left:50%;top:40px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:8px;padding:7px 14px;background:rgba(19,17,14,.82);
+  border:1px solid rgba(232,164,74,.55);border-radius:4px;color:var(--bone);font:600 14px 'Alegreya Sans',sans-serif;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.4);
+  animation:pcIn .8s ease-out;transition:opacity 1.5s ease}
+#pcHint svg{color:var(--ember);flex:none}#pcHint.fade{opacity:0}#pcHint[hidden]{display:none}
+@keyframes pcIn{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}

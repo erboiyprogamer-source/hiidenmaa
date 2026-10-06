@@ -260,9 +260,8 @@ function buildArmor(f,id){for(const m of f.armorParts)if(m.parent)m.parent.remov
     T(f.rig,.2,.24,.12,fe,0,hip+.78,0,1.05,.8,10);T(f.rig,.27,.27,.08,lt,0,hip+.12,0,1.2,.72,10);   // kaulasuoja, vyö
     pauldron(fe,fd,1.45);tassets(fe,fd,8,.3);greave(fe,fd,true);bracer(fe,fd);
     cap(.245,fe,.3,.42);T(f.head,.25,.25,.05,fd,0,.37,0,1,1.08,12);helmHair();   // kypärä (kupoli otsaan asti)
-    for(const sd of [-1,1]){const r=new THREE.Mesh(new THREE.TorusGeometry(.05,.012,5,10),fd);r.position.set(sd*.07,.31,.21);add(f.head,r);}B(f.head,.035,.12,.03,fd,0,.26,.23);   // silmäsuojat
-    {const av=openRing(.252,.205,.17,mail,.285,.5);av.scale.set(1,1,1.08);   // v1.12 niskasuoja kiinni kypärän reunassa (y .37 → .2), kapenee kaulaan, edestä avoin
-     const bd=new THREE.Mesh(new THREE.TorusGeometry(.207,.014,5,16,TAU*.5),fd);bd.rotation.set(Math.PI/2,0,Math.PI);bd.scale.set(1,1.08,1);bd.position.set(0,.2,-.01);add(f.head,bd);}return;}   // alareunan nauha (takapuoli)
+    for(const sd of [-1,1]){const r=new THREE.Mesh(new THREE.TorusGeometry(.05,.012,5,10),fd);r.position.set(sd*.07,.31,.21);add(f.head,r);}B(f.head,.035,.12,.03,fd,0,.29,.23);   /* v1.14 nenäpalkki ylemmäs (.26 → .29) */   // silmäsuojat
+    openRing(.25,.29,.2,mail,.24,.34);return;}   // niskasuoja (rengasverho, edestä avoin); v1.14 nostettu 4 cm (y .2 → .24) käyttäjän toiveesta
   if(id==='hiidenpanssari'){const st=M(0x2a3036,.3,.6),sd2=M(0x3a434b,.35,.55),gl=new THREE.MeshBasicMaterial({color:0x5fe6d9});
     for(let i=0;i<4;i++)T(f.rig,.25,.26,.15,i%2?sd2:st,0,hip+.2+i*.15,0,1.2,.72,8);for(let i=0;i<4;i++)B(f.rig,.4,.012,.02,gl,0,hip+.27+i*.15,.18);   // kivilevyt + hehkuvat riimusaumat
     B(f.rig,.012,.5,.02,gl,0,hip+.45,.185);T(f.rig,.3,.26,.14,st,0,hip+.74,0,1.12,.78,8);

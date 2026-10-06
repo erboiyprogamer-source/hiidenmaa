@@ -58,6 +58,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Kylmä tulee:** märkänä, lumisateessa vuorilla tai yöllä ulkona ilman lämpimiä vaatteita, ellei tulen lähellä.
 - **Lepo ja uni:** sänky asettaa herätyspaikan; nukkuminen vaatii yön, katon eikä vihollisia 20 m sisällä → seuraava aamu, levännyt.
 - **Kuoleman ruutu (Kaaduit):** kaikki valikot ja päävalikko sulkeutuvat, kursori näkyy, herätys napista tai Enterillä.
+- **Päävalikko (v1.14):** "Toimii parhaiten tietokoneella hiirellä ja näppäimistöllä" näkyy ruudun yläkeskellä kerran per käynnistys 6 s ja häipyy.
 - **Ruoho (v1.00, v1.04 kasoina):** ohuita läpikuultavia heinäkasoja harvakseltaan biomin mukaan (ei kohteiden päällä), heiluu ja kallistuu tuulessa; asetus Grafiikka → Ruoho (Pois / Normaali / Täysi).
 - **Kasvillisuuden esto (v1.04):** puut, kivet ja poimittavat eivät kasva uudelleen leirien, kiviröykkiöiden, linnakkeiden, raunioiden, portaalien ym. päälle (suoja 3,5–15 m).
 - **Hylätyt leirit (v0.99):** 1–2 per kartta: sammunut nuotio (sytytä puulla), teltta jossa sänky (herätyspaikka, nukkuminen), tukki ja säkki tarvikkeineen. Teltan voi myös rakentaa itse (Kalusto).

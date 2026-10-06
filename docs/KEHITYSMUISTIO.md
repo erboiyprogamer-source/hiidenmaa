@@ -72,6 +72,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.14 (lista 2, kohta 5: "Toimii parhaiten…" kerran; rautakypärä palautettu)
+- Valikon alaosan teksti poistettu; tilalle `#pcHint` ruudun yläkeskellä (hiirikuvake + teksti), näkyy kerran per käynnistys 6 s ja
+  häipyy 1,5 s:ssa (`.fade`). Ajastin alkaa toisesta kehyksestä (latausaika ei syö näkymisaikaa); pelin aloitus häivyttää heti.
+- **Rautakypärä:** käyttäjä piti alkuperäisestä mallista enemmän → v1.12:n kapeneva verho + nauha poistettu, alkuperäinen palautettu,
+  mutta rengasverho nostettu 4 cm (y .2 → .24) ja nenäpalkki 3 cm (y .26 → .29).
+
 ### v1.13 (välilisäys 3: sivukeinunta ja pehmeä juoksu → kävely)
 - `player.js`: `P.runKs` = pehmennetty juoksukerroin (nousu 6/s, lasku 2,2/s); käytetään askeleen, käsien ja etukenon laskennassa.
   Mitattu juoksusta kävelyyn: etukeno .13 → .01 rad n. 1,2 s:ssa tasaisesti (ennen hyppäsi heti).
@@ -86,7 +92,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   `autoQuality` (main.js): nykiessä (>36 ms 3 s) lasketaan yksi askel järjestyksessä varjot → fx → resoluutio → etäisyys, sujuessa
   (<18 ms 12 s) palautetaan käänteisesti, 6 s välein. Usva ei enää riipu varjojen tasosta vaan `AUTO.fx`:stä.
 - **FPS-näyttö** `SET.fps` (Pois / oikea ylä / vasen ylä / oikea ala / vasen ala), `#fps` HUD:ssa, päivitys 0,5 s, väri ≥50 vihreä, ≥30 keltainen.
-- **Rautakypärä:** rengasverho kiinni kypärän reunassa (yläsäde = reunan säde, z-skaala 1,08, y .37 → .2, kapenee kaulaan, edestä avoin
+- **Rautakypärä (peruttu v1.14, alkuperäinen palautettu ja nostettu):** rengasverho kiinni kypärän reunassa (yläsäde = reunan säde, z-skaala 1,08, y .37 → .2, kapenee kaulaan, edestä avoin
   .5π) + alareunan nauha takana. Ennen verho oli leveämpi ja matalampi → näytti irrallisilta laatoilta poskissa.
 - **Nahka- ja karhuhuppu:** hiukset jäävät näkyviin hupun alta (`hoodHair`: piiloon vain hupun läpi puhkaisevat tupsut), huppu r .255.
 
@@ -1218,12 +1224,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13. Seuraavaksi kohta 5. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14. Seuraavaksi kohta 6. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.
 4. TEHTY v1.11 (tarkennettu): asetuksissa luki "kuten Minecraftissa" → poistettu. Pelin teksteissä ei mainita muita pelejä.
-5. "Toimii parhaiten tietokoneella…" -teksti valikossa eri paikkaan; näkyy vain ensimmäisellä kerralla ja häipyy.
+5. TEHTY v1.14. "Toimii parhaiten…" ruudun yläkeskelle, kerran per käynnistys 6 s, häipyy.
 6. Valikon taustakuva kuvaa eri kohteita pelissä, vaihtaa kohdetta satunnaisesti.
 7. Ehdotukset-kategoria: ensin mihin on varaa (repun materiaalit), toissijaisesti mitä pelaajalta puuttuu ja olisi hyödyllistä (pelin vaihe).
 8. Tehtävät ja tavoitteet piiloon/näkyviin napista; piilotettuna pieni teksti "piilotettu – näytä painamalla (näppäin)".
