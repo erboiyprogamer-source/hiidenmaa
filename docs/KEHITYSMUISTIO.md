@@ -56,6 +56,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kettu | 16 | 8 | – | utelias, katsoo |
 | Metso | 10 | 4,5 | – | lehahtaa 14–24 m |
 | Poro | 35 | 7,5 | – | lauma 3–5 |
+| Hirvi | 70 | 7 | 14 (+tönäisy 9) | 35 % suuttuu alle 6 m |
+| Ilves | 30 | 8,5 | 10 | yöllä haavoittuneen kimppuun |
+| Ahma | 28 | 6 | 9 | suuttuu raa'asta lihasta |
+| Emakko / porsas | 45 / 8 | 6 / 6,5 | 10 / – | puolustaa porsaita |
 | Villikarju | 40 | 5,8 | 8 | hyökkää vain jos lyöty |
 | Sammalhiisi | 34 | 5,2 | 9 | |
 | Harmaasusi | 44 | 4,6 | 11 | öisin pareittain, sama kuin pelaajan kävely |
@@ -64,6 +68,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
 
 ## Versioloki
+
+### v0.86 (joskus vihaiset eläimet – kohta 5b)
+- `temperAI` (ai.js, `MOBDEF.temper`), ai `neutral`. Vihaisena tavallinen jahti; rauhoittuu, kun pelaaja > aggro × 1,3 eikä lyöty 12 s:iin.
+  Suuttuessa murina (`roar`, sävel lajin mukaan) + viesti (enint. 20 s välein).
+  - **Hirvi** (70 hp, juoksu 7, isku 14, tönäisy `kb` 9): alle 6 m:ssä kerran per lähestyminen 35 % suuttuu ja ryntää, muuten pakenee
+    (nollautuu yli 15 m:ssä). Metsä, suo, koivulehto. Saalis nahka 2–3, liha 3–4. Malli `elk`: lapiosarvet, roikkuva kuono, kaulaparta, kyttyrä.
+  - **Ilves** (30 hp, 8,5, isku 10, cd 0,9): yöllä hyökkää, jos pelaajalla < 50 % terveyttä; muuten väistää alle 10 m:ssä. Metsä, kangas, rakka.
+    Malli `lynx`: korvatupsut, poskiparta, täplät, töpöhäntä.
+  - **Ahma** (28 hp, 6, isku 9): suuttuu nähdessään pelaajan, jolla on raakaa lihaa (`liha`). Tunturi, rakka. Malli `ahma`: matala, vaalea kylkijuova.
+  - **Villikarjuemakko** (45 hp, isku 10, kb 5) + 2–4 **porsasta** (8 hp, pakenevat, seuraavat emoa yli 4 m:n päästä): emakko suuttuu, jos
+    pelaaja on alle 7 m porsaasta. Niitty, metsä. Malli boar `sow` (ei torahampaita), porsaalla vaaleat raidat.
+- **Tönäisy** `P.kbx/kbz` (player.js): erillinen impulssi, vaimenee e^(−4,5 t), matka ≈ kb / 4,5 m (hirvi 2 m). Tavallinen liikefysiikka ennallaan.
 
 ### v0.85 (uudet eläimet ja luonteet – päivityslista kohta 5a)
 - Kohta 5 jaettu eriin: **5a** jänis, kettu, metso, poro + luonteet (TEHTY), **5b** hirvi, ilves, ahma, emakko porsaineen (joskus vihaiset),
@@ -980,7 +996,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (tauko v0.84:n jälkeen):** kohdat 1, 2, 3 ja 4 tehty (v0.81–v0.84). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki, ei vielä yhdistetty – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-Kohta 5a tehty v0.85; seuraavaksi 5b (hirvi, ilves, ahma, emakko porsaineen), 5c karhu, 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
+Kohdat 5a (v0.85) ja 5b (v0.86) tehty; seuraavaksi 5c karhu, 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
 jänis, kettu, hirvi, metso/teeri), mitkä 2 "joskus vihamielistä" (ehdotus: ilves, villisika-emakko/hirvi kiima-aikaan), harvinaiset pelottavat
 (ehdotus: "Korpinpeikko"/hiidenhirvi yöllä aarnimetsässä), karhun saalis ja biomit. Karhu-vaatimukset kirjattu alla (kohta 5).
 Käytä `makeAnimal`-tyyliä (v0.81 liitokset). Sen jälkeen 6 → 15 järjestyksessä, kukin: kysymykset → toteutus → kuvat/testi → tarkistusrivi

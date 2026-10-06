@@ -38,6 +38,8 @@ function updatePlayer(dt){
   else P.vy-=22*dt;
   const feet=P.pos.y;
   P.pos.x+=P.vel.x*dt;P.pos.z+=P.vel.z*dt;
+  // v0.86 erillinen tönäisy (hirvi, karhu: def.kb): ei muuta tavallista liikefysiikkaa, vaimenee e^(−4,5 t) → matka ≈ kb / 4,5 m
+  if(P.kbx||P.kbz){P.pos.x+=P.kbx*dt;P.pos.z+=P.kbz*dt;const kk=Math.exp(-dt*4.5);P.kbx*=kk;P.kbz*=kk;if(Math.abs(P.kbx)+Math.abs(P.kbz)<.05)P.kbx=P.kbz=0;}
   collideXZ(P.pos,.38,1.8,feet);
   P.pos.y+=P.vy*dt;
   const ceil=ceilingAt(P.pos.x,P.pos.z,.38,feet+1.8);if(P.vy>0&&P.pos.y+1.8>ceil){P.pos.y=ceil-1.8;P.vy=0;}
@@ -195,7 +197,7 @@ function removeGrave(g){scene.remove(g.mesh);const i=graves.indexOf(g);if(i>=0)g
 // v0.80: kuollessa kaikki valikot (reppu, kartta, arkku, DEV, päävalikko, asetukset, näppäinikkuna) suljetaan – vain kuoleman ruutu jää.
 function closeAllForDeath(){if(openPanel)closePanels(false,true);if(state==='paused'||state==='ui')state='play';for(const id of ['#menu','#settings','#keyDlg'])if($(id))$(id).hidden=true;mouseL=mouseR=false;P.drawing=false;}
 function respawn(){if(!P.dead||state!=='dead')return;
-  $('#deadS').hidden=true;$('#hud').hidden=false;P.dead=false;P.hp=maxHp()*.6;P.stam=maxStam();P.hunger=Math.max(P.hunger,40);P.buffs={};P.wetT=0;
+  $('#deadS').hidden=true;$('#hud').hidden=false;P.dead=false;P.kbx=P.kbz=0;P.hp=maxHp()*.6;P.stam=maxStam();P.hunger=Math.max(P.hunger,40);P.buffs={};P.wetT=0;
   if(P.inDun){P.inDun=false;P.realm=null;for(const m of [...mobs])if(m.dun)mobRemove(m);}
   const bed=pieces.find(p=>p.t==='sanky'&&P.spawn&&p.x===P.spawn.x&&p.z===P.spawn.z);
   if(bed)P.pos.set(bed.x+1.3,groundAt(bed.x+1.3,bed.z,.3,bed.y+2),bed.z);else P.pos.set(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z);
