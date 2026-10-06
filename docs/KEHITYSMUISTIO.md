@@ -72,6 +72,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.19 (lista 2, kohta 9: puut taipuvat tuulessa, myrskyn kaatosuunta, kaatuvan puun osuma)
+- **Taipuminen:** `SWAY.uLean = 3,4 · min(1,1, v/22)^1,6` (ennen min(1,2, v/22)): myrskyssä latva n. 12–17° puuskien mukaan,
+  10 m/s n. 3°, 3 m/s lähes suora. Ruoho käyttää edelleen enintään 1,2 (`min(uLean,1.2)`), ettei kaadu lattiaan.
+- **Myrsky** (`stormFellTree`): voi kaataa myös pelaajan vieressä olevan puun (ennen vain > 9 m); 70 % tuulen suuntaan ±25°,
+  30 % satunnaisesti (mitattu 200 kaatoa: 74–78 % myötätuuleen).
+- **Osuma** (`treeHit`/`crushPlayer`): kaikki kaatuvat puut (myrsky, pelaajan ja karhun kaatamat) osuvat rungon alle jääviin:
+  pelaaja ja mobit menettävät 80 % suurimmasta terveydestä, haarniska ei suojaa (yli 20 % menettänyt → kuolee). Puun kaatanut karhu ei
+  vahingoitu. DEV "Ei voi kuolla" suojaa. Korkeusehto: kohde alle 3 m maanpinnasta (ennen verrattiin puun y:hyn, joka ei toiminut).
+
 ### v1.18 (lista 2, kohta 8: tehtävä ja tavoite piiloon)
 - Uusi toiminto `hud` (oletus **T**, vaihdettavissa): kierto molemmat → vain tehtävä → vain tavoite → ei kumpaakaan (`SET.hudMode` 0–3,
   muistetaan). Piilotettuna tavoitteen paikalla (tai tavoitteen alla, jos vain tehtävä piilossa) pieni `#hudHint`:
@@ -1258,7 +1267,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18. Seuraavaksi kohta 9. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19. Seuraavaksi kohta 10. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.
@@ -1267,8 +1276,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 6. TEHTY v1.15. Valikon tausta: luonto, järvi, leiri päivällä/yöllä, eläimet lähikuvina; 20 s, vaihto mustan kautta.
 7. TEHTY v1.16. Ehdotukset: "Voit valmistaa nyt" + "Hyödyllistä seuraavaksi", järjestys uudet → toistuvat → ei mukana → välituotteet.
 8. TEHTY v1.18. T kiertää tehtävän/tavoitteen näkyvyyttä (4 tilaa), piilotettuna pieni vihje; loki T → L.
-9. Puut kallistuvat tuulen suuntaan (runko taipuu, myrskyllä paljon); myrskyssä kaatuminen 70 % tuulen suuntaan;
-   puu pelaajan päälle = 80 % suurimmasta kestosta (terveys + suojat).
+9. TEHTY v1.19. Taipuminen (myrsky ~15°), myrskyn kaato 70 % myötätuuleen, kaikki kaatuvat puut osuvat (80 %, ei suojaa), karhu ei itseensä.
 10. Iso kartta: liikkuvat pilvet näkyvät ohuina myös avatulla alueella.
 11. Kartan valkoisille teksteille pieni varjo (näkyvät valkoisten vuorten päällä).
 12. Tasolla 5 pelaajan maksimiterveys 100.

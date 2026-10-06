@@ -80,7 +80,7 @@ function doMeleeHit(w){
     n.hp-=(5+w.chop*4)*(1+.25*((w.q||1)-1));sfx(n.hp<=0?(n.isLog?'logBreak':'chopFinal'):n.isLog?'chopLog':'chop');shake(.08);
     if(n.isLog)chopLog(n);else burst(n.x,n.y+1.2,n.z,0x8a5a32,5,3);
     if(n.hp<=0){if(n.isLog){removeLog(n);const c=Math.max(1,Math.round(rint(rng,3,4)*n.s));for(let j=0;j<c;j++){const t=(j+.5)/c;spawnDrop(n.dropId,1,n.ax+(n.bx-n.ax)*t,n.y+.8,n.az+(n.bz-n.az)*t);}burst(n.x,n.y+.4,n.z,0x6b4527,12,4);}
-      else{killNode(n);fallTree(n);bump('trees');}}}
+      else{killNode(n);fallTree(n,undefined,true);bump('trees');}}}
   else if(n.def.kind==='rock'){if(!w.pick){if(!hitMob){msg('Tarvitset hakun louhiaksesi kiveä.','warn');sfx('hit');}return;}
     if(w.pick<(n.def.tier||1)){if(!hitMob){msg('Tarvitset paremman hakun.','warn');sfx('hit');}return;}
     n.hp-=(9+w.pick*3)*(1+.25*((w.q||1)-1));sfx(n.hp<=0?'rockBreak':'pick');burst(n.x,n.y+.8,n.z,n.type==='kuparisuoni'?0xd9874a:n.type==='rautasuoni'?0x8a4f3c:0x8f8d86,6,4);shake(.08);

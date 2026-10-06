@@ -86,7 +86,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Uusiutuminen:** kaadetut puut kasvavat takaisin **kerran yössä** pelaajan **100 m** säteellä (`nightRegrow`), enintään 5 m alkuperäisestä
   paikasta, samaan biomiin. Muut solmut uusiutuvat ajan kuluttua (> 40 m pelaajasta). Marjat ja kasvit uusiutuvat nukkuessa.
 - **Rakennusalue on suojattu:** ei kasvua 15 m:n säteelle mistään pelaajan rakennusosasta eikä työpenkin alueelle + 30 % (26 m) (`nearBase`).
-- **Myrsky kaataa puun noin 5 s välein** 9–100 m päässä (ei aarnipuita eikä rakennusalueelta).
+- **Myrsky kaataa puun noin 5 s välein** 2–100 m päässä (ei aarnipuita eikä rakennusalueelta); 70 % tuulen suuntaan, 30 % satunnaisesti (v1.19).
+- **Kaatuva puu (v1.19):** kaikki kaatuvat puut (myrsky, kirves, karhu) osuvat rungon alle jääviin: 80 % suurimmasta terveydestä, haarniska ei suojaa;
+  osuu myös mobeihin, ei puun kaatanutta karhua. **Tuulen taivutus:** myrskyssä latva n. 12–17°, 10 m/s n. 3°.
 - **Työkalutasot:** kirves/hakku taso 1–3 (piikivi/kivi, kupari, rauta); aarnipuu vaatii tason 3, rautasuoni tason 2.
 - **Maanmuokkaus:** lapio tasoittaa ja tekee maasta multaisen (polut), kuokka nostaa maata ja palauttaa alkuperäisen (`TERRA`, `MUD`, tallentuu).
 - **Esineet maassa** katoavat 5 min jälkeen (v1.17: aika kuluu vain, kun olet samassa ulottuvuudessa); maahan pudonneita ei tallenneta.

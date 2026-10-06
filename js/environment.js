@@ -80,7 +80,7 @@ function updateWind(dt){const w=windState();
   const t=playTime;WIND.gust=Math.max(0,Math.sin(t*.37)*.5+Math.sin(t*1.13+1.7)*.35+Math.sin(t*2.9)*.15)*.25;
   WIND.spd=w.spd*(1+WIND.gust);WIND.a=w.a+Math.sin(t*.05)*.1+Math.sin(t*.13+2)*.04;WIND.x=Math.sin(WIND.a);WIND.z=Math.cos(WIND.a);
   // puiden (ja tulevan ruohon) kallistus tuulen suuntaan: voimakkuus 0–1 (22 m/s = 1)
-  SWAY.uWDir.value.set(WIND.x,0,WIND.z);SWAY.uLean.value=SET.sway?Math.min(1.2,WIND.spd/22):0;}
+  SWAY.uWDir.value.set(WIND.x,0,WIND.z);SWAY.uLean.value=SET.sway?3.4*Math.pow(Math.min(1.1,WIND.spd/22),1.6):0;}   /* v1.19: myrskyssä latva n. 12–17° (puuskat), 8 m/s n. 2–3° */
 const WIND_DIRS=['pohjoisesta','koillisesta','idästä','kaakosta','etelästä','lounaasta','lännestä','luoteesta'];
 // Mistä tuuli tulee (vastakkainen puhallussuunnalle). Kartan pohjoinen = −z (kuten minikartta "P").
 function windFromText(){const from=Math.atan2(-WIND.x,WIND.z);return WIND_DIRS[((Math.round(from/(Math.PI/4))%8)+8)%8];}
@@ -128,8 +128,9 @@ function updateEnvironment(dt){
 }
 // Myrsky kaataa harvoin puun pelaajan lähellä (3–40 m). Puun alle jäävä menettää 80 % terveydestä.
 const _sl=[];
-function stormFellTree(){const list=nodesNear(P.pos.x,P.pos.z,100,_sl).filter(n=>n.def.kind==='tree'&&n.type!=='aarnipuu'&&dist2(n.x,n.z,P.pos.x,P.pos.z)>9*9&&!nearBase(n.x,n.z));
-  if(!list.length)return null;const n=list[Math.random()*list.length|0];killNode(n);fallTree(n,Math.random()*TAU,true);
+// v1.19: myrsky voi kaataa myös pelaajan vieressä olevan puun (ennen > 9 m); 70 % kaatuu tuulen suuntaan (±25°), 30 % satunnaisesti.
+function stormFellTree(){const list=nodesNear(P.pos.x,P.pos.z,100,_sl).filter(n=>n.def.kind==='tree'&&n.type!=='aarnipuu'&&dist2(n.x,n.z,P.pos.x,P.pos.z)>2*2&&!nearBase(n.x,n.z));
+  if(!list.length)return null;const n=list[Math.random()*list.length|0];killNode(n);const wa=Math.atan2(WIND.x,WIND.z);fallTree(n,Math.random()<.7?wa+(Math.random()-.5)*.87:Math.random()*TAU,true);
   if(dist2(n.x,n.z,P.pos.x,P.pos.z)<40*40&&playTime>stormMsgT){stormMsgT=playTime+30;msg('Myrsky kaataa puita!','warn');}return n;}
 // Sadepisarat elävät maailmakoordinaateissa ja pysähtyvät maahan tai rakennuksen katon yläpintaan (ei sadetta katon läpi).
 const RAIN_STOP=new Float32Array(900);let rainInit=false;

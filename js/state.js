@@ -119,7 +119,7 @@ function updateFx(dt){updateEmbers(dt);
 // maahan osuessa; irronneet oksat putoavat ja vajoavat hitaasti maan alle. Pieni puu (koko < SMALL_TREE) ei jätä tukkeja, vaan
 // muuttuu suoraan tavaroiksi (puu ym.) maahan osuessaan. Lähellä kaatuva puu tärähdyttää ruutua.
 const SMALL_TREE=.8,BRANCH_C={koivu:0x4f4237};
-function fallTree(n,dir,crush){const g=new THREE.Group();const m=new THREE.Mesh(NGEO_FALL[n.type]||NGEO[n.type],vcMat);m.scale.setScalar(n.s);m.rotation.y=n.rot||0;g.add(m);g.position.set(n.x,n.y,n.z);scene.add(g);
+function fallTree(n,dir,crush,src){const g=new THREE.Group();const m=new THREE.Mesh(NGEO_FALL[n.type]||NGEO[n.type],vcMat);m.scale.setScalar(n.s);m.rotation.y=n.rot||0;g.add(m);g.position.set(n.x,n.y,n.z);scene.add(g);
   const a=dir??Math.atan2(n.x-P.pos.x,n.z-P.pos.z),H=(TREE_H[n.type]||5)*n.s,dur=(1+.3*n.s)*(n.type==='aarnipuu'?2:1),brs=[],big=n.type==='aarnipuu',small=!big&&n.s<SMALL_TREE;
   const bm=mat(BRANCH_C[n.type]||TRUNK_C[n.type]||0x5a3a22),lc=LEAF_C[n.type],lm=lc?mat(lc):null,nb=big?7:n.type==='koivu'?6:5;
   const lay=TREE_BR[n.type];
@@ -133,7 +133,7 @@ function fallTree(n,dir,crush){const g=new THREE.Group();const m=new THREE.Mesh(
     b.position.set(Math.cos(phi)*.12*n.s,h,-Math.sin(phi)*.12*n.s);b.rotation.set(0,phi,tilt);g.add(b);brs.push(b);b.userData.det=.3+rng()*.6;}
   fx.push({obj:g,t:0,update:(f,dt)=>{const k=Math.min(1,f.t/dur);g.rotation.set(0,0,0);g.rotateOnWorldAxis(_tmpV.set(Math.cos(a),0,-Math.sin(a)),Math.pow(k,2.6)*Math.PI/2);
     for(const b of brs)if(!b.userData.off&&k>=b.userData.det&&k<1){b.userData.off=1;g.updateMatrixWorld(true);dropBranch(b,Math.sin(a)*k*4,Math.cos(a)*k*4);}
-    if(f.t>dur&&!f.dropped){f.dropped=1;{const dd=Math.hypot(P.pos.x-n.x,P.pos.z-n.z);sfx('thud',1/clamp(n.s,.7,1.6),clamp(1.15-dd/90,.12,1));}if(crush)crushPlayer(n,a);
+    if(f.t>dur&&!f.dropped){f.dropped=1;{const dd=Math.hypot(P.pos.x-n.x,P.pos.z-n.z);sfx('thud',1/clamp(n.s,.7,1.6),clamp(1.15-dd/90,.12,1));}if(crush)crushPlayer(n,a,src);
       const mx=n.x+Math.sin(a)*H*.5,mz=n.z+Math.cos(a)*H*.5,dd=Math.hypot(P.pos.x-mx,P.pos.z-mz);if(!P.inDun&&dd<H+8)shake(Math.min(.5,.12+.35*(1-dd/(H+8))*Math.min(1.5,n.s)));
       burst(n.x+Math.sin(a)*3,n.y+.5,n.z+Math.cos(a)*3,0x6b4527,10,4);
       for(const [id,lo,hi] of n.def.drops){if(id==='puu'&&!small)continue;const c=Math.max(id==='puu'?1:0,Math.round(rint(rng,lo,hi)*n.s));for(let j=0;j<c;j++){const t=.8+j*H/(c+1);spawnDrop(id,1,n.x+Math.sin(a)*t,n.y+1,n.z+Math.cos(a)*t);}}
@@ -147,8 +147,14 @@ function dropBranch(b,ivx=0,ivz=0){scene.attach(b);const vx=(Math.random()-.5)*1
     if(f.t<2.2){vy-=14*dt;const air=b.position.y>gy+.1;if(air){b.position.x+=vx*dt;b.position.z+=vz*dt;b.rotation.x+=vx*dt*.6;}b.position.y=Math.max(gy+.05,b.position.y+vy*dt);b.rotation.z*=.97;}
     else if(f.t>4){b.position.y-=.12*dt;}
     if(f.t>10){b.traverse(o=>{if(o.geometry)o.geometry.dispose();});return true;}return false;}});}
-function crushPlayer(n,a){if(P.dead||P.inDun)return;const H=(TREE_H[n.type]||5)*n.s,dx=P.pos.x-n.x,dz=P.pos.z-n.z,along=dx*Math.sin(a)+dz*Math.cos(a),lat=Math.abs(dx*Math.cos(a)-dz*Math.sin(a));
-  if(along>0&&along<H&&lat<1.4*Math.max(1,n.s)&&Math.abs(P.pos.y-n.y)<3){const d=maxHp()*.8;P.hp-=d;P.hurtFlash=.8;shake(.6);sfx('hurt');floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,P.pos.z,'#e0614f');msg('Kaatuva puu osui sinuun!','warn');if(P.hp<=0)playerDie();}}
+/* v1.19 (lista 2, kohta 9): kaatuva puu (myrsky, pelaajan kaatama, karhun kaatama) osuu kaikkeen rungon alla: pelaaja ja mobit
+   menettävät 80 % suurimmasta terveydestään; haarniska ja kilpi eivät suojaa. Puun kaatanut mob (karhu, src) ei vahingoitu. */
+function treeHit(n,a,x,z,y){const H=(TREE_H[n.type]||5)*n.s,dx=x-n.x,dz=z-n.z,along=dx*Math.sin(a)+dz*Math.cos(a),lat=Math.abs(dx*Math.cos(a)-dz*Math.sin(a));
+  return along>0&&along<H&&lat<1.4*Math.max(1,n.s)&&y-terrainH(x,z)<3;}   // kohde lähellä maata (ei esim. katolla)
+function crushPlayer(n,a,src){
+  for(const m of mobs)if(m!==src&&!m.dead&&!m.dun&&treeHit(n,a,m.pos.x,m.pos.z,m.pos.y)){damageMob(m,m.maxHp*.8,null,Math.sin(a),Math.cos(a),3);}
+  if(P.dead||P.inDun||devOn('god'))return;
+  if(treeHit(n,a,P.pos.x,P.pos.z,P.pos.y)){const d=maxHp()*.8;P.hp-=d;P.hurtFlash=.8;shake(.6);sfx('hurt');floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,P.pos.z,'#e0614f');msg('Kaatuva puu osui sinuun!','warn');if(P.hp<=0)playerDie();}}
 function shockwave(x,y,z,r,color=0x8ffff0){const m=new THREE.Mesh(new THREE.RingGeometry(.8,1,32),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.8,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.set(x,y+.15,z);scene.add(m);fx.push({obj:m,t:0,update:(f)=>{const k=f.t/.5;m.scale.setScalar(.5+k*r);m.material.opacity=.8*(1-k);return k>=1;}});}
 
 /* ---------------- PROJECTILES ---------------- */

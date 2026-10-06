@@ -141,7 +141,7 @@ function spawnScary(){if(mobs.some(o=>o.def.stalk&&!o.dead))return false;
 const _fellN=[];
 function fellAhead(m,dt){m.fellT=(m.fellT||0)-dt;if(m.fellT>0)return;m.fellT=.25;for(const dd of [.9,1.8]){const ax=m.pos.x+Math.sin(m.yaw)*dd,az=m.pos.z+Math.cos(m.yaw)*dd;
   nodesNear(ax,az,1.3,_fellN);for(const n of _fellN){if(!n.alive||n.def.kind!=='tree'||n.type==='aarnipuu')continue;killNode(n);const side=Math.random()<.5?1:-1;
-    fallTree(n,m.yaw+side*(Math.PI/2)*(.6+Math.random()*.4),false);sfx('woodBreak',.8,clamp(1.1-Math.hypot(n.x-P.pos.x,n.z-P.pos.z)/50,.15,1));shake(.15);}}}
+    fallTree(n,m.yaw+side*(Math.PI/2)*(.6+Math.random()*.4),true,m);sfx('woodBreak',.8,clamp(1.1-Math.hypot(n.x-P.pos.x,n.z-P.pos.z)/50,.15,1));shake(.15);}}}
 // v0.85: pakoon lähtö luonteen mukaan. Metso lehahtaa 14–24 m päähän (kaari 2,5–4 m korkealla), lauma (poro) pakenee yhdessä samaan suuntaan.
 function startFlee(m,dx,dz){m.state='flee';m.fleeT=0;const pr=m.def.per||{};
   if(pr.fly&&!m.dun&&!m.fly){const a=Math.atan2(-dx,-dz)+(Math.random()-.5)*1.2,d=14+Math.random()*10,x1=m.pos.x+Math.sin(a)*d,z1=m.pos.z+Math.cos(a)*d;

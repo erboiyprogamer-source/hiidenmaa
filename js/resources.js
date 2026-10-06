@@ -269,7 +269,7 @@ GRASS_MAT.onBeforeCompile=sh=>{sh.uniforms.uTime=SWAY.uTime;sh.uniforms.uWind=SW
   sh.vertexShader='uniform float uTime;uniform float uWind;uniform vec3 uWDir;uniform float uLean;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
   float gPh=instanceMatrix[3].x*.31+instanceMatrix[3].z*.27;float gh=max(0.,position.y);float gk=gh*gh;
   mat3 gM=mat3(instanceMatrix);vec3 gL=vec3(dot(gM[0],uWDir),dot(gM[1],uWDir),dot(gM[2],uWDir));gL/=max(length(gL),1e-4);
-  float gs=(.1+uWind*.25)*sin(uTime*2.3+gPh)+uLean*(.35+.12*sin(uTime*1.7+gPh*1.3));
+  float gs=(.1+uWind*.25)*sin(uTime*2.3+gPh)+min(uLean,1.2)*(.35+.12*sin(uTime*1.7+gPh*1.3));
   transformed.x+=gL.x*gs*gk;transformed.z+=gL.z*gs*gk;transformed.y-=abs(gs)*gk*.25;
   transformed.x+=sin(uTime*3.1+gPh*2.)*.025*gh*(.3+uWind);`);};
 // Tupsu: 7 kortta eri suuntiin ja pituuksiin (kolmio, tyvi tumma → kärki vaalea), kaarevuus pieni kallistus ulospäin.
