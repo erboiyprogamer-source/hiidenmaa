@@ -44,6 +44,8 @@ const PIECES={
   ahjo:{n:'Ahjo',req:{kivi:10,kupari:6,puu:4},hp:300,snap:'free',cat:'tyopisteet'},
   sanky:{n:'Sänky',req:{puu:8,nahka:4},hp:100,snap:'free',cat:'kalusto',alku:1},
   arkku:{n:'Arkku',req:{puu:10},hp:120,snap:'free',cat:'kalusto',alku:1,store:16},
+  teltta:{n:'Teltta',req:{nahka:6,puu:4},hp:90,snap:'free',cat:'kalusto'},
+  karhumatto:{n:'Karhuntaljamatto',req:{karhuntalja:1},hp:60,snap:'free',cat:'kalusto'},
   tynnyri:{n:'Tynnyri',req:{puu:6},hp:90,snap:'free',cat:'kalusto',store:12},
   kiviseina:{n:'Kiviseinä',req:{kivi:5},hp:500,snap:'wall',cat:'kivi',alku:1},
   kivilattia:{n:'Kivilattia',req:{kivi:3},hp:400,snap:'floor',cat:'kivi',base:'lattia',stone:1},
@@ -107,6 +109,8 @@ function pieceBoxes(t,f=0){const def=PIECES[t];t=bt(t);if(def.dim)return[[0,def.
     for(let k=0;k<n;k++){const s=l*(k+.5);out.push([0,s*c,-s*sn,.8,l*c+.1*sn,l*sn+.1*c]);}return out;}
   case 'portaat_ontelo':{const gm=stairGeom(f%3),d=gm.run/STEP_N,h=gm.rise/STEP_N,out=[];for(let i=0;i<STEP_N;i++)out.push([0,h*(i+1)-.05,G/2-d/2-i*d,G,.1,d]);return out;}
   case 'tynnyri':return[[0,.5,0,.9,1,.9]];
+  case 'karhumatto':return[[0,.02,0,1.6,.04,2.2]];
+  case 'teltta':return[[-1.25,.55,0,.12,1.1,2.8],[1.25,.55,0,.12,1.1,2.8],[0,1.1,-1.4,2.6,2.2,.1]];   // sivuseinämät ja takaseinä, edestä avoin
   case 'portaat':{const d=G/STEP_N,h=WH/STEP_N,out=[];for(let i=0;i<STEP_N;i++)out.push([0,h*(i+1)/2,G/2-d/2-i*d,G,h*(i+1),d]);return out;}
   case 'tyopenkki':return[[0,.5,0,1.8,1,.9]];
   case 'nuotio':return[[0,.15,0,1.1,.3,1.1]];
@@ -167,6 +171,14 @@ function buildPieceMesh(t,f=0){
       const food=[];for(let i=0;i<4;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.1,8,6),new THREE.MeshStandardMaterial({color:0xc9554e,roughness:.8}));m.position.set(-.45+i*.3,.88,0);m.scale.set(1,1.3,1);m.visible=false;m.castShadow=true;g.add(m);food.push(m);g.add(bx(.015,.1,.015,im,-.45+i*.3,.98,0,false));}g.userData.food=food;break;}
     case 'sulatin':g.add(bx(1.4,1.1,1.4,MAT.stone,0,.55,0),bx(1.1,1,1.1,MAT.stone,0,1.6,0),bx(.6,.6,.6,MAT.stone,0,2.4,0));{const glow=bx(.5,.4,.05,MAT.flame,0,.5,.71,false);g.add(glow);g.userData.glow=glow;}break;
     case 'ahjo':g.add(bx(1,.8,.7,MAT.stone,-.3,.4,0),bx(.7,.25,.35,mat(0x3a3a3a,{metalness:.6,roughness:.4}),.45,.95,0),bx(.3,.6,.3,mat(0x3a3a3a),.45,.5,0));{const coal=bx(.6,.06,.4,MAT.flame,-.3,.82,0,false);g.add(coal);}break;
+    case 'teltta':{// v0.99 kangasteltta: A-runko, kaksi kaltevaa kangaslapetta, umpinainen takapääty, edestä avoin, harjasalko ja kiilat
+      const cl=mat(0xb8a27a),cl2=mat(0x9a8462),pole=MAT.wood,H=2.2,Wd=2.6,L=2.8,sl=Math.hypot(Wd/2,H),ang=Math.atan2(H,Wd/2);
+      for(const sd of [-1,1]){const f=bx(sl,.05,L,sd<0?cl:cl2,sd*Wd/4,H/2,0);f.rotation.z=sd*(Math.PI/2-ang)*-1+sd*0;f.rotation.z=-sd*ang;g.add(f);}
+      const sh=new THREE.Shape();sh.moveTo(-Wd/2,0);sh.lineTo(Wd/2,0);sh.lineTo(0,H);sh.closePath();const back=new THREE.Mesh(new THREE.ShapeGeometry(sh),Object.assign(cl.clone(),{side:THREE.DoubleSide}));back.position.z=-L/2;back.castShadow=true;g.add(back);
+      g.add(bx(.08,.08,L+.4,pole,0,H+.02,0),bx(.07,H,.07,pole,0,H/2,L/2+.05),bx(.07,H,.07,pole,0,H/2,-L/2-.05));
+      for(const sd of [-1,1])for(const z of [-L/2,L/2])g.add(bx(.06,.25,.06,pole,sd*(Wd/2+.15),.1,z));break;}
+    case 'karhumatto':{const fur=mat(0x4e3828),dk=mat(0x34241a);g.add(bx(1.2,.04,1.5,fur,0,.02,0),bx(.8,.045,.4,fur,0,.022,.85),bx(.5,.06,.4,dk,0,.04,1.02));   // talja: runko, kaula, pää
+      for(const [x,z,r] of [[-.75,.55,.5],[.75,.55,-.5],[-.75,-.55,-.5],[.75,-.55,.5]])g.add(bx(.5,.042,.3,fur,x,.021,z,true));for(const sd of [-1,1])g.add(bx(.14,.08,.12,dk,sd*.2,.06,1.15));break;}
     case 'sanky':g.add(bxw(1.1,.3,2.1,MAT.wood,0,.15,0),bx(1,.12,1.6,mat(0x8a6a4a),0,.36,.2),bx(.8,.14,.35,mat(0xd9cbb0),0,.38,-.8),bxw(1.1,.6,.12,MAT.wood,0,.3,-1.05));break;
     case 'arkku':g.add(bxw(1,.6,.65,W,0,.3,0),bxw(1.04,.14,.69,W,0,.66,0),bx(1.06,.06,.7,mat(0x444444),0,.45,0));break;
     case 'tynnyri':{const b=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,1,12),W);b.position.y=.5;g.add(b);const mid=new THREE.Mesh(new THREE.CylinderGeometry(.46,.46,.9,12),W);mid.position.y=.5;g.add(mid);
@@ -208,6 +220,7 @@ function worldBoxes(t,x,y,z,rot,f=0){const R8=((rot%8)+8)%8,boxes=pieceBoxes(t,f
       out.push({minX:x+wx-hw/2,maxX:x+wx+hw/2,minY:y+cy-h/2,maxY:y+cy+h/2,minZ:z+wz-hd/2,maxZ:z+wz+hd/2,door:b[6]==='door'});}}
   return out;}
 function addPiece(t,x,y,z,rot,hp,data,f=0){
+  if(typeof grassDirty!=='undefined')grassDirty=true;   // v1.00 ruoho väistää rakennuksia
   const def=PIECES[t],mesh=buildPieceMesh(t,f);mesh.position.set(x,y,z);mesh.rotation.y=rot*Math.PI/4;
   // Päällekkäisten pintojen välkkyminen (z-fighting) estetään antamalla jokaiselle osalle hieman erilainen mittakaava.
   {let h=(Math.imul(Math.round(x*8),374761393)+Math.imul(Math.round(y*8),668265263)+Math.imul(Math.round(z*8),2147483629))|0;h=Math.imul(h^(h>>>13),1274126177);h^=h>>>16;const hs=h>>>0;mesh.scale.set(1+(hs%8)*.0006,1+((hs>>>3)%8)*.0006,1+((hs>>>6)%8)*.0006);}

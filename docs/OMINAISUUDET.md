@@ -8,6 +8,12 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## 1. Maailma
 
+- **Vihollisten syntyminen (v0.83):** yöllä 90 % 55–85 m päähän (vaeltavat), 10 % 20–30 m päähän puun/kiven taakse; aarnimetsä vetää
+  vihollisia (yöllä tahti 1,5 s, raja 18). Päivällä enintään 2 vihollista (aarnimetsässä 3) ja vain korpimetsässä, suolla, kankaalla,
+  nummella ja aarnimetsässä. Aarnimetsässä viholliset +20 % nopeampia, ilmoitus alueelle astuessa.
+- **Biomit (`biomeAt`/`zoneAt`/`BIOMES`, world.js, v0.82):** Rantaniitty (aloitus), Koivulehto, Korpimetsä, Upposuo (liike −15 %, lätäköt),
+  Jäkäläkangas (männyt, piikivi), Aarnimetsä, Kalmanummi, Tunturikangas, Rakka (lohkareet, kupari), Kivivuori, Routahuiput (> 33 m),
+  Hietaranta. Nimi näkyy minikartan alla, ominaisuudet repussa. Ensimmäisellä käynnillä "Uusi alue löydetty: …" (häivytys), `flags.bio`.
 - **Kartat (`MAPS`, world.js):** 6 karttaa – Hiidenmaa, Kalmansaaret (saaristo), Tunturinniemi (iso vuoristo), Routasaari (vuoristo idässä,
   laajat tunturit), Aarnikorpi (neljä aarnimetsää), Nummiluodot (iso keskijärvi, laaja nummi). Uusi peli arpoo kartan; vaihto lataa sivun.
 - **Koko:** noin ±350 m (`HALF`), korkeusruudukko 2 m (`GS`), skaala `WS` = 1,75. Reunat laskevat mereen.
@@ -52,6 +58,15 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Kylmä tulee:** märkänä, lumisateessa vuorilla tai yöllä ulkona ilman lämpimiä vaatteita, ellei tulen lähellä.
 - **Lepo ja uni:** sänky asettaa herätyspaikan; nukkuminen vaatii yön, katon eikä vihollisia 20 m sisällä → seuraava aamu, levännyt.
 - **Kuoleman ruutu (Kaaduit):** kaikki valikot ja päävalikko sulkeutuvat, kursori näkyy, herätys napista tai Enterillä.
+- **Ruoho (v1.00, v1.04 kasoina):** ohuita läpikuultavia heinäkasoja harvakseltaan biomin mukaan (ei kohteiden päällä), heiluu ja kallistuu tuulessa; asetus Grafiikka → Ruoho (Pois / Normaali / Täysi).
+- **Kasvillisuuden esto (v1.04):** puut, kivet ja poimittavat eivät kasva uudelleen leirien, kiviröykkiöiden, linnakkeiden, raunioiden, portaalien ym. päälle (suoja 3,5–15 m).
+- **Hylätyt leirit (v0.99):** 1–2 per kartta: sammunut nuotio (sytytä puulla), teltta jossa sänky (herätyspaikka, nukkuminen), tukki ja säkki tarvikkeineen. Teltan voi myös rakentaa itse (Kalusto).
+- **Arkkukivet (v1.01, v1.03):** suljettu 3,5 m kivilinnake: arkulle pääsee juoksuhypyin viittä kapeaa siksak-pilaria pitkin muurin harjalle ja kierreportaita alas.
+- **Kiviröykkiöt (v1.03):** 2 per kartta, avoin kivikasa, arkku näkyvissä keskellä (pieni saalis).
+- **Aluevartijat (v0.97):** vartioalue 30–32 m; rajalla vartija jää seisomaan ja taistelemaan 1–10 s ennen paluuta, palaa jahtiin jos pelaaja tulee alueelle.
+- **Kuokka ja lapio (v0.96):** kuokka vasen nostaa maata 0,3 m (perusväri), oikea palauttaa maan värin; lapio vasen kaivaa 0,3 m kuopan (enint. 3 m), oikea tekee ruskean polun.
+- **Tietoikkuna (v0.94):** Shift pohjassa ja hiiri esineen päällä (reppu, arkku, valmistus) → esineen tiedot kursorin vieressä.
+- **Hautakasa (v0.93):** ei katoa koskaan; jos kaikki ei mahdu reppuun, avautuu arkkuikkunaksi, tyhjänä vajoaa maahan.
 - **Kuolema:** koko reppu jää hautakasaan (valomajakka lähellä, pääkallo kartalla), herätys sängyltä tai rannalta. Kasaa ei voi poimia,
   ellei kaikki mahdu reppuun.
 
@@ -74,6 +89,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## 5. Valmistus ja esineet (items.js)
 
 - **48 esinettä, 27 valmistusohjetta.** Työpisteet: työpenkki, ahjo, nuotio/grilli, sulatusuuni. Ohjeilla tasovaatimus (`lvl`).
+- **Nuija:** mailamainen, ohut kahva kädessä ja paksu pää kärjessä (v1.06). Pelaajalla hiukset myös takaraivossa (piiloon kypärän alle).
 - **Aseet:** puunuija, kivikirves, piikivikeihäs, kupari-/rautamiekka, kupari-/rautakirves, kupari-/rautahakku, hiidenmiekka (harvinainen).
   Jouset: metsästysjousi, hiidenjousi. Kilvet: puu, kupari, rauta. Panssarit: nahka, kupari, rauta, hiiden.
 - **Laatu (★1–3):** kehittäminen parantaa vahinkoa, nopeutta ja jousen vetoa; käsisoihdun palamisaika +50 % per taso.
@@ -92,7 +108,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Kahden käden ote:** kirveellä vasen käsi tarttuu varteen (IK `armIK` napavektorilla, kyynärpää alas-ulos); jousen vedossa vetokäsi on jänteellä.
 - **Lyönnit:** nosto pään/olan yli → isku viistosti alas vartalon eteen → loppuliike edessä; vuorottelevat suunnat. Kädet eivät mene vartalon läpi (`armClear`).
 - **Selässä kannettavat:** kilpi ja jousi selässä, yksi muu työkalu/ase selässä; vasara roikkuu vyöllä takana (heiluu kävellessä).
-- **Jousi:** täysi veto 1,6 s (laatu 2: 1,3 s, laatu 3: 1,07 s); vajaa veto = vähemmän vahinkoa, hitaampi nuoli, jyrkempi kaari.
+- **Jousi:** hiiren vasen pohjassa jännittää, vapautus laukaisee (veto > 0,15). Täysi veto 1,6 s (laatu 2: 1,3 s, laatu 3: 1,07 s); vajaa veto = vähemmän vahinkoa, hitaampi nuoli, jyrkempi kaari.
 - **Reppu:** 32 paikkaa, kehitys +8 paikkaa / +40 painoa (2 tasoa). Arkku 16→24→32, tynnyri 10→16→22.
 - **Avaimet:** Jääavain, Luuavain, Aarniavain (ulottuvuuksien portit).
 
@@ -147,7 +163,30 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Nopeudet −15 %** (`MOB_SPD` 0,85 kaikessa liikkeessä).
 - **Terveyspalkit:** mobin yläpuolella (mallin korkeus + 0,45 m), nimi ja pääkallot palkin yllä; näkyy kun katse osuu mobiin (~11°, vahvat ~9°)
   alle 12 m (vahvat 70 m) tai 10 s osuman jälkeen. Pomoilla oma palkki ruudun yläreunassa.
-- **Eläinmallit:** `makeAnimal` (nivelletyt jalat, kuono, korvat, häntä; peuran sarvet, karjun harjas ja torahampaat, suden kaulus, routasuden jääpiikit).
+- **Juoksu (v0.93):** harppova juoksuanimaatio (takajalka taakse, polvi ylös, kädet koukussa); kävelyaskel hieman pidempi.
+- **Kalmanpesä (v0.93):** murskautuu millä tahansa, muulla kuin hakulla kaksi kertaa hitaammin; murskatun pesän ympärille ei synny mobeja.
+- **Harppovat hirviöt (v0.92):** kaksijalkaiset hirviöt liikkuvat 10 % nopeammin pitkin, keinuvin askelin ja lyövät 10 % kauemmas.
+- **Tönäisy (v0.92):** jokaisella aseella tönäisyarvo (tiedoissa metreinä); nuija tönäisee eniten (~1,9 m), isot olennot vähemmän.
+- **Ulottuvuusmobit (v0.91):** teeman mukaiset koristeet (huurre/jää, hautavaatteet ja pronssikorut, sammal ja hohtavat sienet), liekkimäisesti
+  sykkivät silmät ulottuvuuden värillä (kirkastuvat jahdatessa, räpäyttävät), +10 % terveys ja lisäsaalis. Ulkomaailman mobit ennallaan.
+- **Haarniskat (v0.90):** jokaisella oma painava malli ja kypärä/huppu (kasvot näkyvät; Hiidenpanssarissa suljettu visiiri): nahkavaatteet,
+  karhuntaljahaarniska (uusi: 2 taljaa + 4 nahkaa, arm 10, ei hidasta), kupari-, rauta- ja Hiidenpanssari. Kilpi ja selkätavarat siirtyvät
+  haarniskan pinnalle, kun haarniska on päällä.
+- **Pomot (v0.89):** Kalmanvartija ryntää harvemmin (25 %, väh. 8 s välein) ja sen huitaisun/maahaniskun ennakko on 40 % pidempi;
+  kiviä heittävien pomojen (vartija, Jäätär) hyökkäykset ovat 10 % hitaampia ja kivi lentää 30 % hitaammin. Vartija vajoaa 3 s:ssa maahan ja nousee herätettäessä 2,5 s:ssa (v0.95, haavoittumaton sillä aikaa). Vajonneen vartijan alttari jää
+  valmiiksi (3/3 kiveä näkyvissä) – herätys ei vaadi uusia kiviä.
+- **Eläinten luonteet (v0.85, `per`):** jänis jähmettyy ja pakenee siksakkia, kettu jää katsomaan matkan päästä, metso antaa tulla lähelle
+  ja lehahtaa 14–24 m, porolauma pakenee yhdessä. Uudet eläimet: metsäjänis, kettu, metso (sulat → sulitetut nuolet), poro.
+- **Joskus vihaiset (v0.86, `temper`):** hirvi (35 % suuttuu alle 6 m:ssä, ryntää ja tönäisee ~2 m), ilves (yöllä hyökkää haavoittuneen
+  < 50 % kimppuun, muuten väistää), ahma (suuttuu raa'asta lihasta repussa), emakko (puolustaa 2–4 porsastaan alle 7 m:ssä). Rauhoittuvat
+  12 s:n kuluttua, kun pelaaja on kaukana.
+- **Karhu (v0.87):** 120 hp, murisee 14 m:ssä ja hyökkää alle 8 m:ssä tai lyötynä; lyö liikkeestä pysähtymättä, tönäisee ~3,5 m, kaataa
+  jahdatessaan edessään olevat puut tukeiksi, palautuu (5 %/s), jos sitä ei lyödä minuuttiin. Pelaaja pääsee juosten karkuun. Saalis
+  karhuntalja → Karhuntaljamatto.
+- **Harvinaiset pelottavat (v0.88):** vain öisin (≈ kerran 5 min, yksi kerrallaan): Hiidenkarhu, Hiidenhirvi, Kalmasusi (ulvoo ensin),
+  Suonäkki (nousee suon lätäköstä). Huomatessaan pelaajan seuraavat 30–60 s, poistuvat 5 s ja unohtavat – suuttuvat uudelleen vain nähdessään
+  pelaajan. Katoavat aamulla, jos eivät jahtaa.
+- **Eläinmallit:** `makeAnimal` (nivelletyt jalat – nivel rungon sisällä, lapa/reisi kylkeen; kaula rinnasta pään tyveen, kuono, korvat, häntä; peuran sarvet, karjun harjas ja torahampaat, suden kaulus, routasuden jääpiikit).
 - **Eläimet** (peura, villikarju): säikähtävät kävellen 7 m, juosten 16 m, ase kädessä × 1,4, kyykyssä paikallaan ei lainkaan, hiipiessä 1,5 m (kohti) / 0,9 m (selin); lyöty pelkää 10 s.
 - **Viholliset** (sammalhiisi, harmaasusi, kalmo, ylimys, kivivartija, routasusi): tarvitsevat näköyhteyden; huomaavat pelaajan aina 10 s
   vahingon jälkeen (myös jousella); kyykky puolittaa huomausetäisyyden, yö × 1,35. Ilman näköyhteyttä 3 s → luopuvat.
@@ -183,7 +222,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 - **Rauniotalot ja arkkukivet** arkkuineen ja vartijoineen; löytyvät kartalle 30 m päästä.
 - **Riimukivet:** 3 kiinteää + 6 arvottua; vihjeet laskevat suunnan ja etäisyyden ja merkitsevät paikkoja karttaan.
-- **Karttapilvet:** kartta paljastuu kulkiessa (`explored`); löydetty paikka näkyy vain paljastetulla alueella. DEV-valikossa (Ä) voi paljastaa koko kartan ja kaikki kohteet.
+- **Karttapilvet:** kartta paljastuu kulkiessa (`explored`); löydetty paikka näkyy vain paljastetulla alueella. DEV-valikossa (Ä) voi paljastaa koko kartan ja kaikki kohteet sekä hakea minkä tahansa esineen nimellä haluttu määrä (1–999; ylimenevä putoaa maahan).
 - **Tehtäväketju (`QUESTS`, 13 kpl):** näkyy oikeassa yläkulmassa suunnan ja etäisyyden kanssa; +60 XP.
 - **Tavoitteet (`GOALS`), saavutukset (`ACH`, pysyvät bonukset), taso ja XP** (J-paneeli); reseptejä aukeaa tasoilla.
 
@@ -191,6 +230,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 - **Vuorokausi** 720 s (yö kun `dayT` < 0,21 tai > 0,79), pehmeä hämärä, kuu vaiheineen, tähdet.
 - **Sää:** selkeä, pilvinen, tuulinen, tihku, sade, myrsky (salamat, puiden kaatuminen), lumisade (vuorilla), sumu.
+- **Tuuli (v0.84):** suunta pysyy 2–6 min ja kääntyy hitaasti (40–90 s, enint. 120°); nopeus säästä (selkeä 1–4 … myrsky 15–22 m/s) + puuskat.
+  Pilvet (myös kartalla) liikkuvat tuulen suuntaan, puut kallistuvat ja heiluvat, sade viistää, savu ja kipinät ajautuvat, nuolet kallistuvat
+  (13 m/s ≈ 0,5 m / 30 m). Ison kartan oikeassa yläkulmassa iso kompassi, "Tuuli suunnasta / X m/s" ja voimakkuuspalkki – läpikuultava, häipyy kun hiiri viedään sen päälle, ja kartan merkit + pelaajan nuoli näkyvät sen päällä (v1.07); kartan päällä liukuvat tuuliviirut (v1.04); minikartan reunalla tuulinuoli + m/s.
 - **Pilvet** isoina kerroksina sään mukaan, kaukana häipyvät; pilvikansi rankassa säässä; salaman välähdys kevyt.
 - **Aurinko:** pyöreä hehku (`sunGlow`), säteet selkeällä säällä (häipyvät aurinkoon katsottaessa).
 - **Aarnimetsässä** tiheä sumu ja pimeämpi valo.

@@ -54,12 +54,12 @@ function update(dt){
   playTime+=dt;dayT+=dt/DAY_LEN;if(dayT>=1){dayT-=1;dayN++;msg(`Päivä ${dayN}`);}
   const wasNight=isNight();
   updatePlayer(dt);updateDungeons(dt);updateStory(dt);updateMobs(dt);updateProjs(dt);updateDrops(dt);updateFx(dt);updateStations(dt);spawner(dt);survival(dt);updateWeather();
-  updateEnvironment(dt);updateCamera(dt);updateBenchRings();updateChunkVis();
+  updateEnvironment(dt);updateCamera(dt);updateBenchRings();updateChunkVis();updateGrass();
   if(state==='play'){lookTarget=findInteract();updateGhost();}else if(ghost)ghost.visible=false;
   lightT-=dt;if(lightT<=0){lightT=.4;updateLights();}
   slowT-=dt;if(slowT<=0){slowT=1;exploreTick();updateGoals();if(Math.floor(playTime)%5===0)respawnNodes();if(isNight()&&!P.inDun)nightRegrow();}
   saveT+=dt;if(saveT>90){saveT=0;saveGame(true);}
-  updateHUD(dt);
+  updateZone(dt);updateHUD(dt);
 }
 function menuCam(dt){menuA+=dt*.03;const cx=Math.cos(menuA)*60,cz=Math.sin(menuA)*60;camera.position.set(cx,terrainH(cx,cz)+22,cz);camera.lookAt(0,6,6);P.pos.set(0,5,6);updateEnvironment(dt);if(!started)fig.g.visible=true;}
 // Mukautuva laatu: liukuva keskiarvo kehysajasta; >36 ms 3 s → laatu −1 taso, <18 ms 12 s → +1 taso (min 6 s välein).

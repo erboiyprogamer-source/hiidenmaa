@@ -9,7 +9,8 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - Kulku: keräily → kivikirves → työpenkki → suoja ja nuotio → metsästys → piikivihakku ja kupari → sulatusuuni ja ahjo →
   kupari- ja rautavarusteet → Hautakummun hiidenkivet → ulottuvuudet avainketjussa (Routaluola, Kalmankammio, Aarnihauta) →
   pomotaistelu Kalmankehässä.
-- 6 karttaa, biomit: niitty, metsä, aarnimetsä, vuori (lumihuiput), kalmanummi, ranta, järvi, meri.
+- 6 karttaa, biomit (v0.82): Rantaniitty, Koivulehto, Korpimetsä, Upposuo, Jäkäläkangas, Aarnimetsä, Kalmanummi, Tunturikangas, Rakka,
+  Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
 ## Pysyvät päätökset
@@ -36,7 +37,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | --- | --- |
 | Pelaajan kävely / juoksu | 4,6 / 8 m/s |
 | Käsisoihdun paloaika `TORCH_T` | 120 s (pihka +60 s) |
-| Vihollisten nopeuskerroin `MOB_SPD` | 0,85 |
+| Vihollisten nopeuskerroin `MOB_SPD` | 0,85 (aarnimetsässä viholliset ×1,2, v0.83) |
+| Tuuli (m/s) | selkeä 1–4, pilvi 3–7, sade 4–8, tuulinen 8–13, myrsky 15–22; suunta 2–6 min, käännös 40–90 s |
+| Vihollisten syntyetäisyys | yö 55–85 m (10 %: 20–30 m), päivä 38–68 m, päivällä max 2 vihollista |
 | Puiden uusiutuminen | kerran yössä, 100 m säteellä |
 | Rakennusalueen suoja (`nearBase`) | 15 m osasta, työpenkki 26 m |
 | Terveys / kestävyys / max paino | 60 / 100 / 160 |
@@ -49,14 +52,281 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Olento | HP | Juoksu m/s | Vahinko | Huom. |
 | --- | --- | --- | --- | --- |
 | Peura | 25 | 8,5 | – | pakenee |
+| Metsäjänis | 8 | 9,5 | – | jähmettyy, siksak |
+| Kettu | 16 | 8 | – | utelias, katsoo |
+| Metso | 10 | 4,5 | – | lehahtaa 14–24 m |
+| Poro | 35 | 7,5 | – | lauma 3–5 |
+| Hirvi | 70 | 7 | 14 (+tönäisy 9) | 35 % suuttuu alle 6 m |
+| Ilves | 30 | 8,5 | 10 | yöllä haavoittuneen kimppuun |
+| Ahma | 28 | 6 | 9 | suuttuu raa'asta lihasta |
+| Emakko / porsas | 45 / 8 | 6 / 6,5 | 10 / – | puolustaa porsaita |
+| Hiidenkarhu / Hiidenhirvi / Kalmasusi / Suonäkki | 260 / 220 / 140 / 160 | 7,5 / 9 / 9,5 / 5,5 | 26 / 22 / 18 / 20 | harvinaiset, vainoavat 30–60 s |
+| Karhu | 120 | 7,2 | 18 (+tönäisy 16) | lyö liikkeestä, kaataa puita, palautuu 60 s jälkeen |
 | Villikarju | 40 | 5,8 | 8 | hyökkää vain jos lyöty |
 | Sammalhiisi | 34 | 5,2 | 9 | |
 | Harmaasusi | 44 | 4,6 | 11 | öisin pareittain, sama kuin pelaajan kävely |
 | Kalmo | 50 | 4,6 | 13 | heikko murskaavalle |
 | Kalmon ylimys | 150 | 4,2 | 20 | luolaston miniboss |
-| Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
+| Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.07 (tuulikompassi takaisin kartan päälle – ei peitä mitään)
+- Käyttäjän toive: kompassi pysyy kartan päällä oikeassa yläkulmassa kuten ennen v1.06:ta, mutta se ei saa peittää karttaa eikä muuta.
+  Ratkaisu (`drawBigMap`, ui.js): (1) taustat läpikuultavat (ympyrä 0,42, laatikko 0,5), (2) kompassi häipyy alfaan ~0,12, kun hiiri on
+  sen kohdalla (`mapMouse`, `mapWindA`, pehmeä siirtymä), (3) kartan merkit (työpisteet, löydetyt paikat, hauta) ja pelaajan nuoli
+  piirretään kompassin päälle. Erillinen `#mapWind`-kangas ja `.mapRow` poistettu; kartan leveys taas `min(78vh, 100vw − 60px)`.
+
+### v1.06 (nuija, takaraivon hiukset, tuulikompassi kartan viereen)
+- **Nuija toisin päin:** varren kartio oli väärin päin (paksu pää kädessä, ohut kärjessä). Nyt `CylinderGeometry(.095,.034)`: paksu pää
+  kärjessä vanteineen, ohut kahva nupin kanssa kädessä (myös selässä, sama malli).
+- **Pelaajan takaraivo:** 11 hiustupsua (r 0,075) takaraivoon ja niskaan (y 0,13–0,38, z −0,12…−0,2); kuuluvat `hairTop`-listaan, joten kypärä piilottaa ne.
+- **Tuulikompassi isolla kartalla** (v1.07: palautettu kartan päälle, ks. v1.07) siirretty kartan päältä oikeasta yläkulmasta kartan vasemmalle puolelle omaan kankaaseen `#mapWind`
+  (170×172, `.mapRow` flex). Kartan leveys `min(78vh, 100vw − 250px)`. Tuuliviirut jäävät kartan päälle.
+
+### v1.05 (DEV-esinehaku + jousen laukaisun korjaus)
+- **DEV-esinehaku** (DEV-valikko Ä, `renderDev`/`devGive`, ui.js): hakukenttä (nimi tai id, ääkköset ohitetaan kuten reseptihaussa),
+  määräkenttä 1–999 hakunapin vieressä ja tulosten lista kuvakkeineen ("Anna N"). Täsmäosuma ja alkuosuma ensin, Enter antaa ensimmäisen.
+  Jos reppu täyttyy, loput putoavat maahan pelaajan jalkoihin. Haku ja määrä muistetaan valikon sulkemisen yli. Poistuu `DEV=false`:lla.
+- **Korjaus:** `onPrimaryUp` (actions.js) oli hävinnyt v0.96:n muutoksessa → hiiren vapautus heitti virheen eikä jousi laukaissut
+  (laukesi vain, kun kestävyys loppui). Palautettu (KORJAUKSET 20).
+
+### v1.04 (käyttäjän palaute: ruoho, kasvillisuuden esto, tuulinäyttö, leirit)
+- **Ruoho kasoina** (`rebuildGrass`): harvaan sirottuneita pieniä kasoja (solu 2,6 m / täysi 1,8 m, todennäköisyys tiheys × laikku × 0,6),
+  kasassa 3–6 tupsua 0,5 m säteellä; 4 ohutta kortta (0,012–0,022 m), opacity 0,5, vaaleampi. Normaalilla ~500 tupsua. Ei kohteiden päälle
+  (`siteBlockedG` = 60 % suoja-alueesta).
+- **Kasvillisuus ei uusiudu kohteiden päälle** (`SITE_CLEAR`/`siteBlocked`, resources.js; `respawnNode` sekä ehdokas- että lopputarkistus):
+  leiri 8, kiviröykkiö 6,5, linnake (arkkukivi) 12, rauniot 10, portaali 9, riimukivi 3,5, Hautakumpu 13, Kalmankehä 15 m. Testattu 51 000
+  uudelleenkasvatuksella: 0 kohteen päällä. **Leirin rakennelmat** suojaavat vain 7 m (`nearBase`; pelaajan rakennukset 15 m), joten metsä on lähempänä.
+- **Tuulinäyttö isolla kartalla:** kompassi r 46 + asteikko, paksu nuoli, laatikko "Tuuli idästä / 18,7 m/s" ja voimakkuuspalkki (0–22 m/s,
+  väri vihreä → oranssi → punainen), kartan yli liukuvat tuuliviirut (`drawWindStreaks`, nopeus ja pituus tuulen mukaan). Minikartassa "m/s".
+- **Leirit:** puupino (sahatut päät), nahankuivausteline taljoineen, kaatunut ämpäri ja luita/oksia maassa.
+
+### v1.03 (linnake vaikeammaksi + kierreportaat, kiviröykkiöt)
+- **Arkkukivilinnake:** hyppypilarit kapeammat (0,75–0,85 m) ja siksakissa (säde vuorotellen 8,2 / 10,2 m), nousu 0,8 m (huippu 4,0 m),
+  välit reunasta reunaan 2,0–2,4 m → vaatii juoksuhypyn; viimeiseltä pudotaan 0,5 m muurin harjalle. Sisäpuolella **kierreportaat** muurin
+  sisäpintaa pitkin 0,3 m askelin (~11 askelmaa, ~300°) pilarireitin kohdalta alas. Testattu: juoksuhypyt kaikille pilareille ja muurille,
+  portaat kävellen arkulle.
+- **Kiviröykkiöt** (`STASHES`, story.js, käyttäjän pyyntö "perinteiset kivipaikat joissa arkku näkyvillä"): 2 per kartta, v0.98-tyylinen
+  avoin kivirengas kahdella kulkuaukolla, matala laatta ja arkku keskellä; sijoitus kasvillisuuden jälkeen (ei muuta maisemaa/tallennuksia).
+  Saalis: kupari 2, nuolet 10, liha 2 / pihka 3, kivi 8, luu 3; +20 XP. `LOC.kiviN` "Kiviröykkiö", löytyy 30 m:stä.
+
+### v1.02 (ruoho kevyemmäksi, käyttäjän palaute)
+- Ruoho oli "kauhea" (liian tiheä, tumma, paksu). Nyt: läpikuultava (opacity 0,62, depthWrite pois), 5 ohutta kortta (leveys 0,018–0,032,
+  pituus 0,22–0,58), vaaleampi (tyvi 0,7 × väri, kärki 1,15 ×), **laikuittain**: kasvaa vain kohinan muodostamissa ryhmissä
+  (`vnoise(0,09)·0,7 + vnoise(0,31)·0,3`, sstep 0,52–0,68 → ~30 % maasta, reunat harvenevat). Säde 30 m / 40 m (täysi), väli 0,85 / 0,6 m.
+  Normaalilla ~1 000 tupsua.
+
+### v1.01 (arkkukivi = suljettu kivilinnake, käyttäjän pyyntö)
+- `buildPoiRock` (story.js) korvaa v0.98:n avoimen kivikasan: **umpinainen 3,5 m kivimuuri** (18 lohkoa, säde 5,5 m, paksuus 0,8 m, sammal
+  harjalla), ulkopuolella **5 hyppypilaria** (nousu 0,7 m > askelnousu → hypättävä, välit reunasta reunaan 1,6–1,9 m = "vaikea"),
+  viimeiseltä hypätään muurin harjalle; sisällä **kiviportaat** 0,5 m askelin alas arkulle ja takaisin ylös. Hehkuva riimu muurin sisäpinnalla.
+- Testattu pelin fysiikalla (hyppy 7,2 m/s, painovoima 22 → huippu ~1,18 m): laskeutuu kaikille pilareille ja muurille, portaat arkulle asti,
+  muurista ei pääse läpi. Reittitiedot `FORT[k]` (tarkistus: pilarien nousut ≤ 0,75 m, portaat ≤ 0,55 m).
+
+### v1.00 (ruoho – kohta 15, päivityslistan kohdat 1–15 valmiit)
+- Pystyheinätupsut (`GRASS_GEO` 7 korren tupsu, `rebuildGrass`/`updateGrass`, resources.js) instansseina pelaajan ympärillä: biomi tallennetaan
+  maaston rakennuksessa (`TBIOME`, render.js), tiheys/pituus/väri `GRASS_DEF` (niitty tihein, koivikko, metsä, suo pitkä, kangas harva,
+  tunturi lyhyt, nummi kuiva, ranta dyyniheinä…). Ei poluilla (multa > 0,22), vedessä, jyrkänteillä eikä rakennusten alla; paikat hajautettu
+  ruudukkoon (sama kohta → sama tupsu), lista rakennetaan uudelleen 6 m:n liikkeen, polun tai rakennuksen jälkeen (`grassDirty`).
+- Tuuli: sama `SWAY`-tuuli kuin puilla – kallistus tuulen suuntaan (korkeus²) + edestakainen heilunta + pieni värinä; "Puiden heiluminen"
+  pois → kallistus pois. Normaalit ylös (ei mustaa kääntöpuolta).
+- **Asetus Grafiikka → Ruoho:** Pois / Normaali (oletus: 32 m, väli 1,15 m, ~2 400 tupsua) / Täysi (44 m, 0,72 m, ~11 700).
+- Korjattu latausvirhe: `_gp` oli jo määritelty → apumuuttujat `_grM…` (CLAUDE.md: sama ylimmän tason nimi vain kerran); `grassDirty` määritelty
+  ennen `mudFlush`ia (TDZ, KORJAUKSET 1).
+
+### v0.99 (hylätyt leirit – kohta 14)
+- `CAMPS` + `ensureCamps` (story.js): 1–2 leiriä per kartta (siemen `MAP_ID`), paikka valitaan kasvillisuuden sijoittelun jälkeen tasaiselta
+  maalta ilman puita/kiviä 7 m:n säteellä, ≥ 60 m muista paikoista (väljempi toinen haku vuorisille kartoille: 35 m, myös tunturi/suo/aarni/vuori)
+  → maiseman numerointi ja vanhat tallennukset ennallaan. `LOC.campN` = "Hylätty leiri" (löytyy 30 m:stä, merkki kartalle).
+- Rakennelmat tavallisina rakennusosina (tallentuvat; `flags.camps`, vanhaan tallennukseen luodaan latauksessa): **sammunut nuotio**
+  (fuel 0 → sytytetään puulla kuten oma nuotio), uusi rakennusosa **Teltta** (Kalusto, nahka 6 + puu 4; A-runko, kangaslappeet, umpinainen
+  takapääty, edestä avoin, salot ja kiilat; suojaa → nukkuminen onnistuu), **sänky** teltan sisällä, istuintukki (palkki) ja **hylätty säkki**
+  (löydetty säiliö: liha 2, nahka 2, soihtu, puu 6, nuolet 8; +15 XP).
+- Leirin rakennusosat tekevät siitä "tukikohdan" (`nearBase`): 15 m:n säteelle ei synny vihollisia.
+
+### v0.98 (arkkukivien kivikasat – kohta 13)
+- `buildPoiRock` (story.js): kivet kauempana (sisäreuna ≥ 2,4 m keskeltä, leveys 1,6–2,8 m, tangentiaalisesti), kaksi vastakkaista ~90°
+  kulkuaukkoa (arvottu suunta), keskilaatta matala (yläpinta 0,25 m < askelnousu, ei törmäystä), arkku laatan päällä. Ennen kivet olivat
+  1,9–3,1 m päässä ja jopa 3,6 m leveitä, ja laatta 0,8 m korkea → arkulle ei päässyt. Tarkistus: vähintään yksi esteetön suunta.
+
+### v0.97 (aluevartijat – kohta 12)
+- Löytöpaikkojen vartijoiden alue ×2 (portaalit 32 m, muut 30 m; `story.js` m.guard.r). Rajan ylittyessä vartija ei palaa heti: se jää
+  rajalle (ei liiku ulospäin, kääntyy pelaajaan ja lyö, jos ulottuu) ja arpoo 1–10 s, jonka jälkeen palaa alueelleen paranen 5 %/s kuten
+  ennen. Paluu keskeytyy, jos pelaaja on taas alueen sisällä näköyhteydessä aggro × 1,35 -etäisyydellä (jahti jatkuu).
+
+### v0.96 (kuokka ja lapio – kohta 11)
+- `terraTool(mode)` + `useTool(alt)` (actions.js; korvaa `useShovel`/`useHoe`). Vasen = ensisijainen, oikea = toissijainen; pohjassa pitäen
+  toistuu 0,45 s välein, kestävyys −6, ei rakennusten lähellä. Lapion/kuokan kanssa oikea ei torju.
+  - **Kuokka vasen** `raise`: +0,3 m (keskellä, reunoilla vähemmän), enint. +3 m alkuperäisestä, maa saa biomin perusvärin (multa pois).
+  - **Kuokka oikea** `restore`: palauttaa vain alkuperäisen värin (ei korkeutta).
+  - **Lapio vasen** `dig`: kuoppa −0,3 m, enint. −3 m, väri biomin perusväri. **Lapio oikea** `path`: entinen polku (tasoitus jalkojen
+    korkeudelle ±0,4 m + ruskea multa). (Ennen v0.96 lapion vasen teki polun ja hiiren pito käytti aina lapion toimintoa myös kuokalla.)
+
+### v0.95 (vartija vajoaa ja nousee – kohta 10)
+- Yli 90 m:n päässä (tai luolastossa) Kalmanvartija ei katoa heti: tila `sink` – pysähtyy, nostaa kädet ja vajoaa 3 s:ssa 7,5 m maan alle
+  (kiihtyvä k²), multa- ja kivihiukkasia, jyrinä (`slam` + matala `roar`), tärinä lähellä; ilmoitus heti alussa. Vasta lopuksi poisto,
+  `flags.altarSt`/`bossHp` kuten ennen. Herätettäessä tila `rise`: nousee 2,5 s:ssa maasta multaa pöllyten, sitten nykyinen karjaisu (intro).
+  Vajoamisen/nousun ajan `m.sinking` → `damageMob` ei tee vahinkoa eikä vartija hyökkää.
+
+### v0.94 (Shift-tietoikkuna)
+- Kun **Shift** on pohjassa, hiiren alla olevan esineen tiedot (nimi, kuvaus, `itemProps`-taulukko) näkyvät kursorin vieressä (`#itemTip`,
+  `updateItemTip`, ui.js): repun ja pikapalkin paikat, arkut/hautakasa (`slotHTML` data-it/q/n) ja valmistuslistan rivit. Päivittyy hiirtä
+  liikutettaessa ja Shiftin painalluksella, katoaa Shiftin noustessa. Ei vaikuta Shift+napsautussiirtoon.
+
+### v0.93 (käyttäjän välilisäys)
+- **Hautakasa** ei katoa koskaan itsestään (kuten ennenkin); pääkallo kartalla kunnes kasa on tyhjä. Jos kaikki mahtuu reppuun, tavarat
+  otetaan kerralla; muuten kasa avautuu arkkuikkunaan (`curChest.grave`, ota mitä mahtuu, loput jäävät ja tallentuvat). Tyhjä kasa vajoaa
+  1,6 s:ssa maahan multaa pöllyten (`graveVanish`).
+- **Kalmanpesä** murskautuu millä tahansa (myös nyrkillä): muulla kuin hakulla 6 vahinkoa/isku = puolet kivihakun 12:sta (2× aika).
+  Murskattaessa pesän 12 m:n sisällä olevat huoneen mobit merkitään kaatuneiksi (`fo('rm')`), joten pesän ympärille ei enää synny mobeja.
+- **DEV-täpät** (`DEVF` core.js, `devOn(k)`, muistetaan `localStorage['hiidenmaa_dev']`): Ei voi kuolla (ei vahinkoa, `playerDie` estetty),
+  Ei nälkää, Rajaton kestävyys, Korkein taso, Ei painorajaa + Kaikki päälle / pois. Oletus: aiemmat DEV-edut päällä, uudet pois.
+- **Pelaajan juoksu** (player.js `runK` 0 → 1 välillä 4,8–7,6 m/s): perinteinen harppova juoksu – takajalka ojentuu taakse kantapää ylhäällä,
+  etureisi nousee korkealle (−1,14 rad), polvi koukistuu heilahduksessa, vartalo kallistuu eteen (+0,13), pomppu, kädet koukussa
+  (kyynärpää −1,15) ja heiluvat laajemmin. Tahti 1,8 (ennen 1,9) × (1 − 0,28·runK); kävelyn heilahdus 0,82 (ennen 0,75). Nopeudet ennallaan.
+- **Nuija** tarkistettu kuvilla: kahva kädessä, paksu pää eteen (sama suunta kuin kirveellä).
+
+### v0.92 (harppovat hirviöt ja aseiden tönäisy – kohta 9)
+- Kaksijalkaiset hirviöt (sammalhiisi, kalmo, kalmon ylimys, kivivartija, Suonäkki; myös ulottuvuusversiot, `MOBDEF.stride`): liike +10 %
+  (`moveMob`), lyöntiulottuma +10 % (`range × 1,1`), askel ~40 % pidempi ja tahti hitaampi (`walkPh × 1,55` vs 2,2, heilahdus 0,98 vs 0,7,
+  polvi 1,3 vs 0,9), vartalo keinuu sivuttain (±0,07 rad), pomppaa ja kumartuu eteen (jahdatessa 0,12 rad; `f.g.rotation.order='YXZ'`).
+- **Aseiden tönäisy** `ITEMS.kb` (m/s; mobin vaimennus 6/s → matka ≈ kb/7,5 m mitattuna): nuija 14 (≈1,9 m, vahvin), rautakirves 6,5,
+  hiidenmiekka 7, keihäs 6, muut 4–5,5. `damageMob(...,kb)`; isot olennot vastustavat (säde > 0,8 × 0,4, > 0,6 × 0,7), pomot eivät liiku.
+  Tavaran tiedoissa rivi "Tönäisy X m" (≥ 10: "vahva").
+- **Nuija** uudelleen mallinnettu mailamaiseksi: nuppi, käämitty kahva, tasaisesti paksuneva varsi, pyöreä pää, kaksi rautavannetta. (Varren kartio oli väärin päin – korjattu v1.06.)
+
+### v0.91 (ulottuvuuksien mobien yksityiskohdat – kohta 8)
+- `realmize(m,id)` (dungeons.js) kaikkiin ulottuvuuksissa syntyviin tavallisiin mobeihin (huoneet, pomon kutsumat, Kalmanpesä); ulkomaailman
+  saman lajin mobit ennallaan, pomot ennallaan. **+10 % terveys** ja **lisäsaalis** `REALM_LOOT` (Routaluola luu 1–2 + rauta 0–1,
+  Kalmankammio kupari 1–2 + luu 1–2, Aarnihauta pihka 1–2 + kupari 0–1).
+- Koristeet: **Routaluola** huurrekuori, jääpuikot, jääpiikit päässä; **Kalmankammio** hautakaapu, pronssinen kaulakoru ja käsirenkaat,
+  heiluva selkäriepu, ylimyksellä pronssikruunu ja viitta; **Aarnihauta** sammaltyynyt, hohtavat sienet, heiluvat köynnökset.
+- **Silmät** (`animEyes`, ai.js animMob): pään kirkkaiden MeshBasic-silmien päälle additiivinen halo + ylöspäin lepattava liekinkieli
+  ulottuvuuden värillä (sininen / oranssi / vihreä); epäsäännöllinen sykintä, jahdatessa 35 % kirkkaampi ja liekki korkeampi;
+  räpäytys 3–8 s välein (0,13 s).
+
+### v0.90 (painavat haarniskamallit – kohta 7)
+- `buildArmor(f,id)` (models.js): haarniskan osat kiinnitetään hahmon nivelryhmiin (rig, olkavarret, kyynärvarret, reidet, sääret, pää), joten
+  ne liikkuvat animaation mukana; vanhat osat poistetaan aina ensin (`f.armorParts`). Kypärä piilottaa hiukset (`f.hairTop`), parta jää.
+  Kypärät ja huput ovat edestä avoimia (`cap` kupoli otsaan, `openShell`/`openRing` aukko eteen: huom. sylinterin kulma 0 = +z, pallon π/2 = +z).
+  - **Nahkavaatteet:** nahkatakki nyöreineen, turkiskaulus, vyö, rannesuojat, säärisuojat, helmalevyt, edestä avoin huppu.
+  - **Karhuntaljahaarniska** (uusi, työpenkki: 2 karhuntaljaa + 4 nahkaa, taso 4; arm 10, lämmin, ei hidasta): nahkasuojat + taljaviitta
+    selässä, turkis olkapäillä ja karhun pää huppuna (kuono, korvat, hampaat).
+  - **Kuparipanssari:** 6 suomuriviä, vyö + kultasolki, kerroksiset olkasuojat, helmalevyt, säärisuojat polvisuojineen, kartiokypärä,
+    nenäsuoja ja poskisuojat.
+  - **Rautapanssari:** rengaspaita, rintalevy, kaulasuoja, isot olkalevyt, helmalevyt, sääri-/polvisuojat, rannesuojat ja rautahanskat,
+    kupolikypärä silmäsuojarenkain ja edestä avoin rengasverho.
+  - **Hiidenpanssari:** tummat kivilevyt, turkoosina hehkuvat riimusaumat, piikkiolkasuojat, suljettu kivikypärä hehkuvalla visiirillä ja kruunupiikeillä.
+- Alusvaatteen väri haarniskan mukaan (tumma alusasu).
+- **Selkätavarat haarniskan päällä** (käyttäjän välikommentti): `ARMOR_BACK` (state.js) = mitattu selän ulkonema + 2 cm; kilpi, jousi ja
+  työkalut siirtyvät `ch` ja vyön vasara `bt` verran taaksepäin (karhuntalja 15/10 cm, metallit 5–6,5/2,5 cm), ilman haarniskaa ennallaan.
+
+### v0.89 (pomojen nerffaus – kohta 6)
+- **Kalmanvartija** (`bossAI`): ryntäys 9–30 m:ssä 25 % (ennen 50 %) ja vähintään 8 s välein (`m.chargeT`), muuten kiven heitto
+  (mitattu osuus ~13 %). Huitaisun ennakko 0,8 → 1,12 s, maahaniskun 1,1 → 1,54 s (+40 %), iskujen väli × 1,2.
+- **Kiviä heittävät pomot** (Kalmanvartija + `kit` sisältää 'throw' eli Jäätär): kaikki hyökkäykset +10 % hitaammin (`BOSS_SLOW` 1,1:
+  `a.t += dt/1,1`, `atkCd × 1,1`). Kivi (`throwRock`) lentää 30 % hitaammin: lentoaika 1,1 → 1,57 s (kohdetta kohti).
+  Kokonaisuus: vartijan huitaisu osuu ~1,23 s:n kohdalla.
+- **Alttari:** kun vartija vajoaa maahan, käytetyt hiidenkivet eivät palaa reppuun; alttari pysyy aktiivisena (`flags.altarSt`), siinä näkyy
+  kolme hehkuvaa kiveä (`altarGems`, `syncAltar`) ja teksti "Hiidenkivet valmiina (3/3) – herätä vartija". Herätys ei vaadi uusia kiviä.
+
+### v0.88 (harvinaiset pelottavat – kohta 5d, kohta 5 valmis)
+- `def.stalk` + `stalkAI` (ai.js): huomatessaan pelaajan (aggro × 1,35 yöllä) jahtaa 30–60 s **eikä luovu** etäisyyden tai näköyhteyden
+  katketessa; sitten poistuu 5 s poispäin (80 % juoksusta) ja unohtaa (2 s `forgetT`, jona ei huomaa). Uusi huomaaminen vaatii näköyhteyden
+  ja aggro-etäisyyden. Lyönti poistumisen aikana suututtaa heti uudelleen. Ensimmäisellä huomaamisella viesti (`hello`), murina ja tärähdys.
+  Aamulla katoaa, jos ei jahtaa ja on yli 45 m päässä.
+- `spawnScary`: vain yöllä, 0,8 % per spawn-yritys (≈ kerran 5 min), 40–60 m päähän, enintään yksi kerrallaan, biomin mukaan `SCARY`:
+  aarni → Hiidenkarhu/Hiidenhirvi, metsä → Hiidenkarhu/Kalmasusi, nummi → Hiidenhirvi/Kalmasusi, tunturi/rakka → Kalmasusi, suo → Suonäkki.
+  - **Hiidenkarhu** 260 hp, isku 26, kb 18, lyö liikkeestä ja kaataa puita (kuten karhu), musta, hehkuvat punaiset silmät, luupiikit + sammal.
+  - **Hiidenhirvi** 220 hp, juoksu 9, isku 22, kb 14, musta jättihirvi, vihreänhehkuiset silmät, sarvista nousee usvaa (`mist`). Saalis voi sisältää hiidenkiven.
+  - **Kalmasusi** 140 hp, juoksu 9,5, isku 18, kalpea jättisusi kylkiluineen, siniset silmät; ilmestyessä ulvonta `howl` + viesti.
+  - **Suonäkki** 160 hp, isku 20, tuli ×1,5, sammaloitunut pitkäkätinen olento (`figSuonakki`), nousee lätäköstä 2 s:ssa (`rise`, multaa).
+
+### v0.87 (karhu – kohta 5c)
+- **Karhu** (`MOBDEF.karhu`, temper `bear`): 120 hp (= 2 × pelaajan 60), juoksu 7,2 (× MOB_SPD ≈ 6,1 < pelaajan juoksu 8), isku 18, ulottuma 2,6,
+  cd 0,65, wind 0,18, tönäisy kb 16 (≈ 3,5 m). Neutraali: murisee varoittavasti 14 m:ssä (12 s välein), hyökkää alle 8 m:ssä tai lyötynä.
+  **Lyö liikkeestä** (`mobile`: iskun aikana nopeus 75 % juoksusta, ei pysähdystä, käpälänisku-animaatio). **Kaataa puita** (`fells`,
+  `fellAhead`): jahdatessa 0,9 ja 1,8 m edessä olevat puut (ei aarnipuita) kaatuvat sivulle ja jäävät tukeiksi. **Palautuu** 5 %/s, jos ei lyöty
+  60 s (`def.regen`; ohittaa yleisen 30 s säännön). Enintään yksi kerrallaan, ei aloitusalueelle päivällä. Korpimetsä, aarnimetsä, tunturi.
+  Malli `bear` (makeAnimal): iso pää, pyöreät korvat, paksut jalat ja käpälät, lapojen kyttyrä.
+- Saalis **Karhuntalja** + liha 4–6. Uusi rakennusosa **Karhuntaljamatto** (Kalusto, 1 talja). Haarniska taljasta → kohta 7.
+
+### v0.86 (joskus vihaiset eläimet – kohta 5b)
+- `temperAI` (ai.js, `MOBDEF.temper`), ai `neutral`. Vihaisena tavallinen jahti; rauhoittuu, kun pelaaja > aggro × 1,3 eikä lyöty 12 s:iin.
+  Suuttuessa murina (`roar`, sävel lajin mukaan) + viesti (enint. 20 s välein).
+  - **Hirvi** (70 hp, juoksu 7, isku 14, tönäisy `kb` 9): alle 6 m:ssä kerran per lähestyminen 35 % suuttuu ja ryntää, muuten pakenee
+    (nollautuu yli 15 m:ssä). Metsä, suo, koivulehto. Saalis nahka 2–3, liha 3–4. Malli `elk`: lapiosarvet, roikkuva kuono, kaulaparta, kyttyrä.
+  - **Ilves** (30 hp, 8,5, isku 10, cd 0,9): yöllä hyökkää, jos pelaajalla < 50 % terveyttä; muuten väistää alle 10 m:ssä. Metsä, kangas, rakka.
+    Malli `lynx`: korvatupsut, poskiparta, täplät, töpöhäntä.
+  - **Ahma** (28 hp, 6, isku 9): suuttuu nähdessään pelaajan, jolla on raakaa lihaa (`liha`). Tunturi, rakka. Malli `ahma`: matala, vaalea kylkijuova.
+  - **Villikarjuemakko** (45 hp, isku 10, kb 5) + 2–4 **porsasta** (8 hp, pakenevat, seuraavat emoa yli 4 m:n päästä): emakko suuttuu, jos
+    pelaaja on alle 7 m porsaasta. Niitty, metsä. Malli boar `sow` (ei torahampaita), porsaalla vaaleat raidat.
+- **Tönäisy** `P.kbx/kbz` (player.js): erillinen impulssi, vaimenee e^(−4,5 t), matka ≈ kb / 4,5 m (hirvi 2 m). Tavallinen liikefysiikka ennallaan.
+
+### v0.85 (uudet eläimet ja luonteet – päivityslista kohta 5a)
+- Kohta 5 jaettu eriin: **5a** jänis, kettu, metso, poro + luonteet (TEHTY), **5b** hirvi, ilves, ahma, emakko porsaineen (joskus vihaiset),
+  **5c** karhu, **5d** harvinaiset pelottavat: Hiidenkarhu, Hiidenhirvi, Kalmasusi, Suonäkki (käyttäjä valitsi kaikki).
+- **Luonteet** `MOBDEF[x].per` (ai.js flee-haara): `scare` säikähdysetäisyyden kerroin, `freeze` jähmettyy ensin (s), `zig` siksak-pako
+  (suunta 0,35–0,7 s välein ±1,1 rad), `fly` lehahtaa 14–24 m (kaari 2,5–4 m, `startFlee`/`flyMob`, ääni `flap`), `herd` lauma (25 m)
+  pakenee samaan suuntaan, `curious` jää katsomaan (tila `watch`, alle 26 m näköyhteydellä), `safe` rauhoittumisetäisyys.
+- **Metsäjänis** (8 hp, juoksu 9,5, scare 1,3, freeze 0,6 s, siksak, loikka-animaatio `hop`): niitty, koivulehto, tunturi, rakka.
+  **Kettu** (16 hp, 8, scare 1,4, utelias): öisin niityllä/koivikossa/metsässä/kankaalla. **Metso** (10 hp, scare 0,55 → antaa tulla lähelle,
+  lehahtaa; `makeBird`): metsä, koivulehto, kangas; saalis liha + **Metson sulka** 1–3. **Poro** (35 hp, 7,5, scare 0,75, lauma 3–5):
+  tunturi, rakka, kivivuori, kangas.
+- Mallit: `makeAnimal` kind `hare` (litteät pitkät mustakärkiset korvat, pitkät takakäpälät, valkoinen häntätupsu), `fox` (wolf + tuuhea
+  valkokärkinen häntä, mustat sukat, vaalea rinta), `rein` (deer + taakse-eteen kaartuvat sarvet piikkeineen, vaalea kaulaharja).
+- **Sulitetut nuolet** (puu 2, piikivi 2, sulka 1 → 15, taso 4): lento +12 %, vahinko +15 %, tuulen vaikutus puolet. `AMMO` =
+  nuolet → sulkanuolet → tulinuolet.
+
+### v0.84 (tuuli – päivityslista kohta 4)
+- `WIND` + `updateWind` (environment.js), tila `flags.wind` (tallentuu). Suunta pysyy 2–6 min, kääntyy 40–90 s:ssa (smoothstep) uuteen
+  arvottuun suuntaan enintään ±120°, lisäksi hidas ±8° huojunta. Nopeus säätyypin mukaan `WIND_RANGE` (selkeä 1–4, sumu 1–3, pilvi/tihku/
+  lumi 3–7, sade 4–8, tuulinen 8–13, myrsky 15–22 m/s), tavoite vaihtuu 20–45 s välein, hidas siirtymä + puuskat (enint. +25 %).
+- **Vaikutukset:** pilvet (maailma: `u.ox/u.oz` tuulen suuntaan, nopeus 1,2 + 0,55·m/s; kartan pilvikerrokset kertyvällä siirtymällä `mapCO`),
+  puut (`treeMat`: vanha edestakainen heilunta säilyy + kallistus tuulen suuntaan `uWDir`/`uLean` = m/s / 22, instanssin kierto huomioitu,
+  sykkivä puuska; pois kun "Puiden heilunta" pois), sade viistää ja ajautuu, savu ja kipinät ajautuvat (savu 0,32, kipinä 0,18 × m/s),
+  nuolet (kiihtyvyys 0,08 × m/s → 13 m/s ≈ 0,5 m sivuttain 30 m:llä; ei luolastossa).
+- **Näyttö:** isolla kartalla kompassi (P/I/E/L, nuoli = puhallussuunta) ja "Tuuli: lounaasta 6 m/s"; minikartan reunalla tuulinuoli sillä
+  puolella, josta tuuli tulee, + m/s. Kohdan 15 ruoho käyttää samaa `SWAY.uWDir/uLean`-tuulta.
+
+### v0.83 (vihollisten spawnaus – päivityslista kohta 2)
+- `spawner`/`spawnSpot` (ai.js). **Yö:** 90 % syntyy 55–85 m päähän (ennen 38–68) ja vaeltaa omia reittejään; 10 % 20–30 m päähän,
+  mieluiten puun tai kiven taakse pelaajasta katsottuna (`nodesNear`, 8 yritystä), muuten avoimelle. Lähelle syntyvä susi tulee yksin.
+  **Aarnimetsä** vetää: yöllä muiden biomien ehdokas hyväksytään 55 %:lla, aarnimetsän aina; pelaajan ollessa aarnimetsässä tahti 1,5 s
+  (muuten 2,5 s) ja raja 18 (muuten 14).
+- **Päivä:** eläimet kuten ennen. Vihollisia enintään 2 (aarnimetsässä 3) ja vain `DAY_FOE_BIOMES`: korpimetsä, suo, kangas, nummi, aarni
+  (metsä/suo/aarni: vihollisten osuus ×1,4). Muualla päivällä vain eläimiä.
+- **Aarnimetsässä** viholliset (ja vihaiset neutraalit) liikkuvat 20 % nopeammin (`moveMob`, biomi tarkistetaan 1 s välein `m.aarni`).
+  Aarnimetsään astuessa ilmoitus "Hirviöt ovat vihaisia Aarnimetsässä – ne liikkuvat täällä nopeammin." (enintään kerran minuutissa).
+- Testattu 400 spawnauskierroksella: yö med. 68–71 m, lähelle 8–10 % (min 19 m); päivä max 2 vihollista (aarnin lähellä 3).
+- Raunioiden/portaalien/arkkukivien 50 m suoja ja aloitusalueen päiväsuoja ennallaan.
+
+### v0.82 (uudet biomit ja alueet – päivityslista kohta 3)
+- **Uudet biomit** vievät tilaa metsältä ja niityltä (`biomeAt`, world.js); vuori, nummi, aarnimetsä ja ranta ennallaan, aloitusniitty pysyy:
+  - `suo` **Upposuo**: matalat alueet (h < 4,2) kosteuskohinalla `fbm(.025)` > 0,6, järvien ympärillä kosteus +0,18. Tumma maa ja märät
+    painanteet, lätäköt (`lampare`, deco), kelot, pienet koivut, puolukat. **Liike 15 % hitaampaa** (`P.zone==='suo'`, player.js).
+  - `kangas` **Jäkäläkangas**: kuivat harjut h > 6 ja `fbm(.022)` > 0,58. Vaalea jäkälä, uusi puu **mänty** (`manty`: puu 4–6, pihka 0–2,
+    korkeus 8,4 m), kivet, piikivi, vähän kuparia.
+  - `koivu` **Koivulehto**: rengas aloitusniityn ympärillä (40–52 m) ja niityn/metsän raja (`meadowT`…+0,07). Koivuja, marjoja, sieniä.
+  - `tunturi` **Tunturikangas**: rinne `mtnH−6`…`mtnH` (puurajan yläpuoli): kääpiökoivut, varvikko, marjat, kivet.
+  - `rakka` **Rakka**: louhikko samassa vyöhykkeessä (`ridge(.035)` > 0,62): paljon lohkareita ja kuparisuonia.
+- **Nimet** (`BIOMES`, world.js): Rantaniitty, Koivulehto, Korpimetsä, Upposuo, Jäkäläkangas, Aarnimetsä, Kalmanummi, Tunturikangas, Rakka,
+  Kivivuori, Routahuiput (`zoneAt`: vuori yli 33 m), Hietaranta, Meri. Jokaisella: lämpö, vaarallisuus, eläimet, viholliset, resurssit, huomio.
+- **Näkyvyys:** biomin nimi minikartan alla kellorivillä; repussa laatikko "Alue: …" (`renderBiome`) + löydetyt alueet x / 13.
+- **Uusi alue löydetty** (`updateZone` 0,4 s välein, `flags.bio`): iso keskiteksti (häivytys sisään 1 s, näkyy 3 s, ulos 1,5 s), hiljainen
+  kolmisointu `sfx('discover')` ja lokiviesti. Vain ensimmäisellä kerralla. Uusi peli: `bio={meadow:1}`; latauksessa nykyinen alue merkitään
+  hiljaa (`zoneQuiet`).
+- `SPAWN`-taulut uusille biomeille (kohta 2 säätää päivä/yö-jakauman).
+- **Tallennus v9:** solmujen numerointi muuttui → v < 9 kaadettujen/siirrettyjen puiden lista ohitetaan (puut ovat taas pystyssä).
+- Jakauma kartalla 0 (maa-alasta): korpimetsä 28 %, aarni 11 %, huiput 11 %, nummi 10 %, kivivuori 8 %, niitty 7 %, koivulehto 6 %,
+  kangas 6 %, ranta 5 %, suo 5 %, tunturi 2 %, rakka 1,5 %.
+
+### v0.81 (eläinmallien liitokset – päivityslista kohta 1)
+- `makeAnimal`: jalan nivel on rungon sisällä (`by − 0,1·s`, ennen `lh` eli rungon alapuolella → peuralla näkyvä rako). Jokaisen jalan
+  yläpäässä lihaksikas lapa (edessä) / reisi (takana, `rump`-väri), joka sulautuu kylkeen. Polven korkeus maasta ennallaan (`lh/2`).
+- Kaula lasketaan rinnasta pään tyveen (pituus ja kulma `atan2`), ennen kiinteä 0,42 m putki → peuran pää leijui 0,2 m irti.
+- Tarkastettu kuvin: peura, villikarju, harmaasusi, routasusi (edestä, sivulta, takaa, kävelyasento).
 
 ### v0.80 (kuoleman ruutu)
 - Kuollessa kaikki valikot sulkeutuvat heti ja uudelleen ruudun ilmestyessä (`closeAllForDeath`, player.js): reppu, rakennus, kartta,
@@ -905,6 +1175,34 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ## Ideajono
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
+**JATKA TÄSTÄ (päivitetty v1.06):** v1.06 nuija oikein päin (paksu pää kärkeen), takaraivon hiukset, tuulikompassi kartan vasemmalle puolelle – v1.07 palautettu kartan päälle läpikuultavana, häipyy hiiren alla, merkit sen päällä. v1.05 lisäsi DEV-esinehaun (Ä-valikko, määrä hakunapin vieressä) ja korjasi jousen laukaisun. Aiempi tila: päivityslistan KAIKKI kohdat 1–15 tehty (v0.81–v1.00) + välilisäykset:
+v0.93 (hautakasa arkkuna, Kalmanpesä millä vain, DEV-jumalvoimatäpät, harppova juoksu), v0.94 (Shift-tietoikkuna), v1.01–v1.03 (arkkukivi
+suljetuksi linnakkeeksi: korkea muuri, vaikeat siksak-hyppypilarit, kierreportaat; ruoho kevyemmäksi ja laikuittaiseksi; kiviröykkiöt 2/kartta).
+Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23 auki (tarkista ennen jatkoa onko yhdistetty; jos on, aloita origin/mainista
+tarkistettuasi ettei commiteja katoa). Linnake hyväksytty. v1.04: ruoho kasoina, kasvillisuuden esto kohteissa, tuulinäyttö, leirien yksityiskohdat. Avoin: käyttäjä testaa ruohon (v1.04). Mahdolliset jatkot: realm-pomojen laatikkomaiset lisäosat (Erä 44b), pelaajan soihdun varjoasetus ja kartan piirto
+vain tapahtumista (Erä 40), DEV=false kun käyttäjä pyytää. Linkit: haaralinkki = aina uusin (välimuistiviive), commit-linkki = tarkka versio heti (selitetty käyttäjälle, kirjattu CLAUDE.md:hen).
+Työtapa: välikommentit heti, sitten jatketaan; 1–5 tarkentavaa kysymystä per kohta;
+kun käyttäjä ei voi vastata, tee kohdat joihin vastauksia ei tarvita ja kirjaa oletukset.
+1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
+2. TEHTY v0.83. Mobien spawnaus: yöllä suurin osa, vähän kauempana (jahtaavat); osa lähelle mieluiten esteen taakse. Päivällä max 2, vain tiheä metsä /
+   suo / kuiva biomi; tumma aarnimetsä hyvin todennäköinen, hirviöt siellä 20 % nopeampia + ilmoitus biomille astuessa.
+3. TEHTY v0.82. Uusia biomeja + nimet; nykyinen biomi näkyy, repussa biomin ominaisuudet; "Uusi alue löydetty: …" fade in/out vain ensimmäisellä kerralla
+   (aloitusbiomi merkitty löydetyksi ilman ilmoitusta).
+4. TEHTY v0.84. Tuulensuunta: vaihtuu hitaasti satunnaisesti (minuutteja, kääntyy hitaasti); kartalla suunta ja nopeus; pilvet liikkuvat tuulen suuntaan.
+5. TEHTY v0.85–v0.88. 4 uutta eläintä (samaa tyyliä) + 2 joskus vihamielistä + harvinaisia pelottavia (seuraa 30–60 s, poistuu 5 s ja unohtaa); luonteen mukaiset
+   säikähdys/reaktiot. Karhu: iso, lyö kauas ja nopeasti, kaataa eteen jäävät puut tukeiksi, HP 200 % pelaajasta, palautuu jos ei lyöty 1 min.
+6. TEHTY v0.89. Kalmanvartija: harvemmin liuku/ryntäys, iskulla pidempi viive. Kaikki kiviä heittävät pomot: kivi 30 % hitaampi, hyökkäysviive +10 %.
+7. TEHTY v0.90. Haarniskoille kunnon painavat erottuvat mallit.
+8. TEHTY v0.91. Ulottuvuuksien mobeille enemmän yksityiskohtia (vaatetus, koristeet, silmäanimaatiot, liekit silmissä).
+9. TEHTY v0.92. Hirviöille (sammalhiisi, kalmo) harppaavammat askeleet, lyöntiulottuma +10 %.
+10. TEHTY v0.95. Kalmanvartija vajoaa maahan (ei katoa) ilmoituksen aikana, maapartikkeleita.
+11. TEHTY v0.96. Kuokka nostaa maata enemmän, oikea klikkaus palauttaa alkuperäisen värin; lapio syvempi kuoppa, oikea klikkaus = ruskea polku.
+12. TEHTY v0.97. Aluevartijat: alue ×2, jäävät rajalle taistelemaan, 1–10 s päästä palaavat, kunnes huomaavat pelaajan taas.
+13. TEHTY v0.98. Kivikasat arkun ympärillä liian tiiviit – arkulle pääsy.
+14. TEHTY v0.99. Hylätyt leiripaikat (1–2 / kartta): sammunut nuotio (sytytys puulla), teltta jossa sänky.
+15. TEHTY v1.00. Ruoho: pystyheinää laajalti, eri pituuksia, heiluu tuulessa (kallistuu tuulen suuntaan); grafiikka-asetus pois/oletus/täysi.
 
 ### Käyttäjän ideat 0–11 (erät 23–31) – ryhmittely teemoittain
 Kirjattu v0.35:n jälkeen. Jokainen erä: testaa, päivitä muistio, versio+`?v=`, commit, push, PR. Järjestys on ehdotus; ensimmäinen on 23.

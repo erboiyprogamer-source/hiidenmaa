@@ -83,6 +83,8 @@ const vcMat=new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,r
 
 /* ---------------- TERRAIN MESH ---------------- */
 const terrainColors=new Float32Array(HN*HN*3);
+// v1.00 maaston kärkien biomi ruohoa varten (indeksi GRASS_BIOMES-listaan, 255 = ei biomia)
+const GRASS_BIOMES=['meadow','koivu','forest','suo','kangas','aarni','moor','tunturi','rakka','mountain','beach'],TBIOME=new Uint8Array(HN*HN).fill(255);
 const terrainMesh=(function buildTerrain(){
   const pos=new Float32Array(HN*HN*3);
   for(let iz=0;iz<HN;iz++)for(let ix=0;ix<HN;ix++){
@@ -90,7 +92,7 @@ const terrainMesh=(function buildTerrain(){
     pos[i*3]=x;pos[i*3+1]=h;pos[i*3+2]=z;
     const hx=HGT[iz*HN+Math.min(ix+1,GN)]-HGT[iz*HN+Math.max(ix-1,0)],hz=HGT[Math.min(iz+1,GN)*HN+ix]-HGT[Math.max(iz-1,0)*HN+ix];
     const slope=Math.hypot(hx,hz)/(GS*2);
-    const b=biomeAt(x,z,h); let c;
+    const b=biomeAt(x,z,h); let c;{const bi=GRASS_BIOMES.indexOf(b);if(bi>=0&&!(b==='mountain'&&h>33))TBIOME[i]=bi;}
     const n=(vnoise(x*.35,z*.35)-.5)*.1+(vnoise(x*.05,z*.05)-.5)*.08;
     if(b==='sea')c=[.42,.38,.28];
     else if(b==='beach')c=[.78,.7,.5];
@@ -98,6 +100,11 @@ const terrainMesh=(function buildTerrain(){
     else if(b==='forest')c=[.25+n,.42+n,.17];
     else if(b==='aarni')c=[.15+n*.6,.25+n*.6,.12];
     else if(b==='moor')c=[.36+n,.32+n,.3+n*.5];
+    else if(b==='koivu')c=[.4+n,.58+n,.25];                                            // v0.82 uudet biomit
+    else if(b==='suo'){const w=vnoise(x*.22+5,z*.22-3);c=w>.6?[.17+n*.5,.2+n*.5,.13]:[.29+n,.33+n,.16];}  // mättäät + märät painanteet
+    else if(b==='kangas')c=[.5+n,.53+n,.41+n*.5];                                        // vaalea jäkälä
+    else if(b==='tunturi')c=[.44+n,.42+n,.27+n*.5];                                     // ruskehtava varvikko
+    else if(b==='rakka')c=[.44+n,.44+n,.43+n];
     else c=[.48+n,.47+n,.44+n];
     if(h>33){const t=sstep(33,38,h);c=[lerp(c[0],.92,t),lerp(c[1],.94,t),lerp(c[2],.96,t)];}
     if(slope>.75&&b!=='sea'&&b!=='beach'){const t=sstep(.75,1.3,slope);c=[lerp(c[0],.45,t),lerp(c[1],.44,t),lerp(c[2],.41,t)];}

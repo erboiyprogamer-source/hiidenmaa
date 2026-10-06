@@ -11,7 +11,8 @@ const TORCH_T=120; // käsisoihdun paloaika (s) tasolla ★1; pihka lisää 60 s
 const torchMax=s=>TORCH_T*(1+.5*(((s&&s.q)||1)-1));
 function torchSlot(){const s=equipped('offhand');return s&&s.id==='soihtu'?s:null;}
 function torchLit(){const s=torchSlot();return !!s&&s.lit!==false&&(s.fuel??torchMax(s))>0;}
-let playTime=0, dayT=.3, dayN=1, weather={cur:'selkea',until:200}, flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{},xp:0,cnt:{},ach:{},first:{},gv:2}, graves=[], drops=[];
+let zoneQuiet=true; // v0.82: true = seuraava alue merkitään löydetyksi ilman ilmoitusta (uusi peli / lataus)
+let playTime=0, dayT=.3, dayN=1, weather={cur:'selkea',until:200}, flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{},xp:0,cnt:{},ach:{},first:{},gv:2,bio:{meadow:1}}, graves=[], drops=[];
 let camYaw=Math.PI, camPitch=.35, camDist=6;
 const EXN=Math.ceil(HALF/2); // tutkimusruudukko 4 m ruuduin
 const explored=new Uint8Array(EXN*EXN);
@@ -21,15 +22,19 @@ const fig=makePlayer();
 scene.add(fig.g);let heldMesh=null,heldId=null,offMesh=null,offId=null,armorId=null;
 // Repussa olevat mutta käyttämättömät aseet, kilvet ja työkalut näkyvät pelaajan selässä (kilpi keskellä, jousi vinossa, työkalut varret ylöspäin).
 const backG=new THREE.Group();fig.rig.add(backG);let backKey='',backHang=null;
+const ARMOR_BACK={nahkavaatteet:{ch:.045,bt:.02},karhuhaarniska:{ch:.15,bt:.1},kuparipanssari:{ch:.055,bt:.025},rautapanssari:{ch:.05,bt:.025},hiidenpanssari:{ch:.065,bt:.025}};
 function updateBack(){const items=inv.filter(s=>s&&!s.eq&&['weapon','bow','shield','shovel','hammer'].includes(ITEMS[s.id].cat));
   const sh=items.find(s=>ITEMS[s.id].cat==='shield'),hm=items.find(s=>s.id==='vasara'),one=items.find(s=>ITEMS[s.id].cat!=='shield'&&s.id!=='vasara'),bo=one&&ITEMS[one.id].cat==='bow'?one:null,tl=one&&!bo?[one]:[];
-  const key=[sh,bo,hm,...tl].map(s=>s?s.id:'-').join();if(key===backKey)return;backKey=key;while(backG.children.length)backG.remove(backG.children[0]);backHang=null;
+  // v0.90: haarniska paksuntaa selkää → selkätavarat ja kilpi siirretään haarniskan pinnalle (mitattu selän ulkonema + 2 cm),
+  // ilman haarniskaa ne palaavat entiselle paikalleen. ch = rinnan korkeus (kilpi, jousi, työkalut), bt = vyö (vasara).
+  const ar=equipped('armor'),AB=ARMOR_BACK[ar?ar.id:'']||{ch:0,bt:0};
+  const key=[sh,bo,hm,...tl].map(s=>s?s.id:'-').join()+'|'+(ar?ar.id:'');if(key===backKey)return;backKey=key;while(backG.children.length)backG.remove(backG.children[0]);backHang=null;
   // Vasara roikkuu vyöllä takana (v0.72): pää vyön päällä selän suuntaisesti (pää 90° pystyakselin ympäri aiemmasta), varsi alas.
   // Ripustuspiste = vyön yläreuna selän puolella (y 0,94, z −0,24); heiluu kävellessä (player.js, backHang).
-  if(hm){const m=makeHeld(hm.id),o=new THREE.Group();m.rotation.x=-Math.PI/2;m.position.set(0,-.47,0);o.add(m);o.position.set(.13,.94,-.24);o.rotation.y=.18;backG.add(o);backHang=o;}
-  if(sh){const m=makeShield(sh.id);const o=new THREE.Group();m.rotation.y=Math.PI/2;m.position.set(0,0,0);o.add(m);o.position.set(0,1.2,-.1);o.scale.setScalar(.85);backG.add(o);}
-  if(bo){const m=makeHeld(bo.id),o=new THREE.Group();o.add(m);o.position.set(.08,1.2,-.19);o.rotation.set(0,0,.5);o.scale.setScalar(.95);backG.add(o);}
-  tl.forEach((s,i)=>{const m=makeHeld(s.id),i2=new THREE.Group(),o=new THREE.Group();m.rotation.z=Math.PI/2;/* terät/piikit sivusuuntaan = selänmyötäisesti, ei selkää vasten */i2.rotation.x=-Math.PI/2;i2.add(m);o.add(i2);o.position.set(.12,.78,sh?-.29:-.17);o.rotation.z=-.12;o.scale.setScalar(.85);backG.add(o);});}
+  if(hm){const m=makeHeld(hm.id),o=new THREE.Group();m.rotation.x=-Math.PI/2;m.position.set(0,-.47,0);o.add(m);o.position.set(.13,.94,-.24-AB.bt);o.rotation.y=.18;backG.add(o);backHang=o;}
+  if(sh){const m=makeShield(sh.id);const o=new THREE.Group();m.rotation.y=Math.PI/2;m.position.set(0,0,0);o.add(m);o.position.set(0,1.2,-.1-AB.ch);o.scale.setScalar(.85);backG.add(o);}
+  if(bo){const m=makeHeld(bo.id),o=new THREE.Group();o.add(m);o.position.set(.08,1.2,-.19-AB.ch);o.rotation.set(0,0,.5);o.scale.setScalar(.95);backG.add(o);}
+  tl.forEach((s,i)=>{const m=makeHeld(s.id),i2=new THREE.Group(),o=new THREE.Group();m.rotation.z=Math.PI/2;/* terät/piikit sivusuuntaan = selänmyötäisesti, ei selkää vasten */i2.rotation.x=-Math.PI/2;i2.add(m);o.add(i2);o.position.set(.12,.78,(sh?-.29:-.17)-AB.ch);o.rotation.z=-.12;o.scale.setScalar(.85);backG.add(o);});}
 function updateGear(){updateBack();
   {const w0=equipped('weapon');if(!w0||w0.id!=='vasara')setBuildSel(null);}
   const w=equipped('weapon'),wid=w?w.id:null;
@@ -37,7 +42,7 @@ function updateGear(){updateBack();
   const o=equipped('offhand'),oid=o?o.id:null;
   if(oid!==offId){if(offMesh)fig.handL.remove(offMesh);offMesh=null;offId=oid;if(oid){offMesh=ITEMS[oid].cat==='shield'?makeShield(oid):makeHeld(oid);fig.handL.add(offMesh);}}
   const a=equipped('armor'),aid=a?a.id:null;
-  if(aid!==armorId){armorId=aid;const c=aid==='rautapanssari'?0x7d8894:aid==='kuparipanssari'?0xc07a40:aid==='nahkavaatteet'?0x8a6040:aid==='hiidenpanssari'?0x5fe6d9:0x8a6a46;const cm=smat(c);for(const m of fig.cloth)m.material=cm;}
+  if(aid!==armorId){armorId=aid;const c=aid==='rautapanssari'?0x6c747c:aid==='kuparipanssari'?0x8a5228:aid==='nahkavaatteet'||aid==='karhuhaarniska'?0x6a4a30:aid==='hiidenpanssari'?0x2a3036:0x8a6a46;const cm=smat(c);for(const m of fig.cloth)m.material=cm;buildArmor(fig,aid);}
 }
 
 /* ---------------- INVENTORY ---------------- */
@@ -95,7 +100,8 @@ function emitEmber(x,y,z,kind){if(embers.length>70*PF||Math.random()>PF)return;c
   let mt=emPool.pop();if(!mt)mt=new THREE.MeshBasicMaterial({transparent:true,depthWrite:false,fog:false});mt.color.setHex(c);mt.opacity=sp?1:.35;const m=new THREE.Mesh(emGeo,mt);m.position.set(x,y,z);m.scale.setScalar(.001);scene.add(m);
   embers.push({m,sp,t:0,life:sp?.5+Math.random()*.8:1.1+Math.random()*.9,vx:(Math.random()-.5)*(sp?.8:.3),vy:sp?.9+Math.random()*1.3:.5+Math.random()*.4,vz:(Math.random()-.5)*(sp?.8:.3),r:sp?.018+Math.random()*.014:.07});}
 function updateEmbers(dt){for(let i=embers.length-1;i>=0;i--){const e=embers[i];e.t+=dt;const k=e.t/e.life;if(k>=1){scene.remove(e.m);emPool.push(e.m.material);embers.splice(i,1);continue;}
-  e.m.position.x+=(e.vx+Math.sin(e.t*7+i)*.25)*dt;e.m.position.y+=e.vy*dt;e.m.position.z+=e.vz*dt;
+  const wk=(e.sp?.18:.32)*WIND.spd*Math.min(1,e.t*1.5); // v0.84: savu ja kipinät ajautuvat tuulen mukana (savu enemmän)
+  e.m.position.x+=(e.vx+Math.sin(e.t*7+i)*.25+WIND.x*wk)*dt;e.m.position.y+=e.vy*dt;e.m.position.z+=(e.vz+WIND.z*wk)*dt;
   e.m.scale.setScalar(e.sp?e.r*(1-k*.6):e.r*(1+k*2.6));e.m.material.opacity=e.sp?1-k:.35*(1-k);}}
 // Satunnaistettu välke: arvo hakeutuu satunnaisesti vaihtuvaan tavoitteeseen, joskus pieni "vajaus". Palauttaa kertoimen ~.82–1.04 (vain vähän eloa).
 function flick(u,dt){u.t-=dt;if(u.t<=0){u.t=.04+Math.random()*.16;u.target=.82+Math.random()*.28;if(Math.random()<.04)u.target=.55+Math.random()*.15;}u.cur+=(u.target-u.cur)*Math.min(1,dt*14);return 1+(u.cur-1)*.4;}
@@ -145,10 +151,12 @@ function shockwave(x,y,z,r,color=0x8ffff0){const m=new THREE.Mesh(new THREE.Ring
 const projs=[];
 function shootArrow(from,dir,speed,dmg,owner,grav,fire){const m=new THREE.Group();m.add(bx(.04,.04,.8,mat(0xc9b48a),0,0,0,false),bx(.07,.07,.12,mat(0x4d535c),0,0,.42,false));
   if(fire){const fl=new THREE.Mesh(new THREE.ConeGeometry(.06,.2,6),MAT.flame);fl.rotation.x=-Math.PI/2;fl.position.z=.36;m.add(fl);m.add(bx(.08,.08,.06,mat(0x3a2a1c),0,0,.34,false));}m.position.copy(from);scene.add(m);projs.push({m,v:dir.clone().multiplyScalar(speed),dmg,owner,t:0,g:grav||7,kind:'arrow',fire:!!fire});}
-function throwRock(from,target,dmg){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,0),mat(0x5d5a54));m.castShadow=true;m.position.copy(from);scene.add(m);const d=_tmpV.subVectors(target,from);const T=1.1;const v=new V3(d.x/T,(d.y+.5*14*T*T)/T,d.z/T);projs.push({m,v,dmg,owner:'boss',t:0,g:14,kind:'rock'});}
+function throwRock(from,target,dmg){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,0),mat(0x5d5a54));m.castShadow=true;m.position.copy(from);scene.add(m);const d=_tmpV.subVectors(target,from);const T=1.1/.7;   // v0.89: kivi lentää 30 % hitaammin (ennen 1,1 s)
+  const v=new V3(d.x/T,(d.y+.5*14*T*T)/T,d.z/T);projs.push({m,v,dmg,owner:'boss',t:0,g:14,kind:'rock'});}
 function updateProjs(dt){
   for(let i=projs.length-1;i>=0;i--){const p=projs[i];p.t+=dt;if(p.stuck){if(p.t>6){scene.remove(p.m);projs.splice(i,1);}continue;}
-    p.v.y-=p.g*dt;p.m.position.addScaledVector(p.v,dt);if(p.kind==='arrow')p.m.lookAt(_tmpV.copy(p.m.position).add(p.v));else{p.m.rotation.x+=dt*5;}
+    p.v.y-=p.g*dt;if(p.kind==='arrow'&&!P.inDun){const wa=WIND.spd*.08*dt*(p.steady?.5:1);p.v.x+=WIND.x*wa;p.v.z+=WIND.z*wa;} // v0.84: tuuli kallistaa nuolen rataa (13 m/s ≈ 0,5 m / 30 m)
+    p.m.position.addScaledVector(p.v,dt);if(p.kind==='arrow')p.m.lookAt(_tmpV.copy(p.m.position).add(p.v));else{p.m.rotation.x+=dt*5;}
     const pos=p.m.position;let hit=false;
     if(p.owner==='player'){for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);if(p.fire)igniteMob(m);hit=true;break;}}}
     else{if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<(p.kind==='rock'?2.2*2.2:.6)&&pos.y<P.pos.y+2.2&&pos.y>P.pos.y-.5){hurtPlayer(p.dmg,pos.x-p.v.x,pos.z-p.v.z);hit=true;}}

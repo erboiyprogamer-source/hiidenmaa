@@ -105,7 +105,7 @@ Käyttäjän toive: vasara roikkuu **vyöllä takana**, pää selän suuntaisest
 (player.js). Älä palauta vasaraa selän työkalupaikalle.
 
 ### 15. Väliaikainen kehitystila DEV – v0.74
-`const DEV=true` (core.js) on käyttäjän pyytämä testitila (ääretön kestävyys, max taso, ei painorajaa, V = 10× nopeus (v0.77; ennen Alt/Ö), Ä = DEV-valikko: sää, aika, terveys, kylläisyys, kartan + kohteiden paljastus v0.78). Älä poista
+`const DEV=true` (core.js) on käyttäjän pyytämä testitila (ääretön kestävyys, max taso, ei painorajaa, V = 10× nopeus (v0.77; ennen Alt/Ö), Ä = DEV-valikko: sää, aika, terveys, kylläisyys, kartan + kohteiden paljastus v0.78, jumalvoimatäpät `DEVF` v0.93, esinehaku + määrä `devGive` v1.05). Älä poista
 koukkuja; kun käyttäjä pyytää pois, aseta `DEV=false`. Tarkistus- ja tasapainotestit kannattaa ajaa myös DEV=false-tilassa.
 
 ### 16. Rakennusnäppäimet ilmoittivat rakentamatta – v0.79
@@ -122,6 +122,32 @@ tähän listaan. Kuollessa `togglePanel` ja `pauseGame` eivät toimi; Enter her�
 ```js
 function closeAllForDeath(){if(openPanel)closePanels(false,true);if(state==='paused'||state==='ui')state='play';for(const id of ['#menu','#settings','#keyDlg'])if($(id))$(id).hidden=true;…}
 ```
+
+### 18. Lisätty `//`-kommentti nieli rivin loppuosan – v0.85, v0.92
+**Oire:** `ReferenceError: l is not defined` (moveMob) / spawnerin silmukka puuttui: rivin perään lisätty `// kommentti` kommentoi pois
+samalla rivillä jatkuneen koodin (minimoidussa tyylissä monta lausetta yhdellä rivillä).
+**Korjaus:** lisää kommentti omalle rivilleen tai käytä `/* … */`, kun rivillä voi olla jatkoa. Tarkista muutoksen jälkeen syntaksi
+(`node -e "new Function(fs.readFileSync(f,'utf8'))"`) JA aja testi, joka kutsuu muutettua funktiota.
+
+### 19. Peli ei käynnisty: `Identifier '_gp' has already been declared` – v1.00
+**Syy:** uusi ylimmän tason `const _gp` oli jo olemassa toisessa tiedostossa (kaikki skriptit jakavat saman globaalin näkyvyyden).
+**Korjaus:** nimeä apumuuttujat yksilöllisesti (ruoho: `_grM, _grQ, _grS, _grP, _grC`). Tarkista ennen uutta nimeä:
+`grep -n "const _xx\b\|,_xx=" js/*.js`. Pelkkä `new Function`-syntaksitarkistus ei huomaa tätä – aja aina latausesti (`window.__game`).
+
+### 20. Jousi ei laukaissut: `onPrimaryUp is not defined` – v1.05
+**Oire:** hiiren vasemman vapautus heitti virheen (input.js `mouseup`), joten jousi laukesi vain kestävyyden loputtua.
+**Syy:** v0.96:ssa `onSecondary`-rivin korvaus vei mukanaan edellisen rivin `onPrimaryUp`-funktion.
+**Korjaus:** palautettu actions.js:ään. Kun korvaat rivin, tarkista ettei vieressä oleva funktio katoa (`git diff` → poistetut `function`-rivit).
+Tarkistuksessa rivi "Jousi laukeaa hiiren vapautuksesta".
+```js
+function onPrimaryUp(){if(P.drawing){P.drawing=false;if(P.bowDraw>.15&&ammoId())fireBow();P.bowDraw=0;}}
+```
+
+### 21. Nuija oli väärin päin kädessä – v1.06
+**Oire:** paksu pää oli kädessä ja ohut pää kärjessä (vanteet törröttivät ohuen varren ympärillä).
+**Syy:** `CylinderGeometry(radiusTop, radiusBottom)` + `rotation.x=+π/2` vie **yläsäteen +z:aan** (kärkeen). Säteet olivat väärässä järjestyksessä.
+**Korjaus:** `CylinderGeometry(.095,.034,…)` (paksu = top = kärki). Kartioiville osille: top-säde menee +z:aan, kun rotation.x = +π/2.
+Tarkistuksessa rivi "v1.06 nuija".
 
 ## Herkät kohdat (lue ennen muokkausta)
 

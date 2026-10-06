@@ -46,10 +46,13 @@ for(const k of ['ruinF','ruinM','ruinC']){const L=LOC[k],{chest,y}=buildRuin(L,k
   stoneBox(1.6,1.1,1.6,L.x,terrainH(L.x,L.z)+.4,L.z,.5,dk);statics.add(bx(.35,.55,.35,MAT.glow,L.x,terrainH(L.x,L.z)+1.2,L.z,false));
 })();
 // Stone circle + altar
-const circleStones=[];
+const circleStones=[],altarGems=[];
 (function(){const L=LOC.circle,y=6;for(let i=0;i<8;i++){const a=i/8*TAU;const s=stoneBox(1.2,4.5+(i%3)*.7,.8,L.x+Math.cos(a)*10,y+2,L.z+Math.sin(a)*10,-a+Math.PI/2,mat(0x5b5853));const rune=bx(.4,1.6,.04,new THREE.MeshBasicMaterial({color:0x2a3a39}),0,.4,.42,false);s.add(rune);circleStones.push(rune);}
   stoneBox(2.6,1,1.6,L.x,y+.4,L.z,0,mat(0x4d4a45));
-  interactables.push({x:L.x,y:y+1,z:L.z,r:3,label:()=>flags.boss?'Kehä on hiljainen':boss?'…':`Aseta hiidenkivet alttarille (${invCount('hiidenkivi')}/3)`,use:()=>useAltar()});})();
+  // v0.89: vajonneen vartijan kivet näkyvät alttarilla hehkuvina (altarGems) ja alttari on valmis herättämään ilman uusia kiviä
+  for(let i=0;i<3;i++){const gm=new THREE.Mesh(new THREE.OctahedronGeometry(.22,0),MAT.glow);gm.position.set(L.x+(i-1)*.7,y+1.15,L.z);gm.scale.y=1.5;gm.visible=false;scene.add(gm);altarGems.push(gm);}
+  interactables.push({x:L.x,y:y+1,z:L.z,r:3,label:()=>{syncAltar();return flags.boss?'Kehä on hiljainen':boss?'…':flags.altarSt?'Hiidenkivet valmiina (3/3) – herätä vartija':`Aseta hiidenkivet alttarille (${invCount('hiidenkivi')}/3)`;},use:()=>useAltar()});})();
+function syncAltar(){const v=!!flags.altarSt&&!boss&&!flags.boss;for(const g of altarGems)if(g.visible!==v)g.visible=v;}
 // Dungeon interior
 const DMAP=[
 "#####################",
