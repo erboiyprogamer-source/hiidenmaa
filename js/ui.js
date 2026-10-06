@@ -72,6 +72,8 @@ function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=d
   <div class="devRow"><b>Kylläisyys <span id="devHuV">${Math.round(P.hunger)}</span></b><input id="devHu" type="range" min="0" max="100" step="1" value="${P.hunger}"></div>
   <div class="devRow"><b>Jumalvoimat</b><div class="devChk">${[['god','Ei voi kuolla'],['food','Ei nälkää'],['stam','Rajaton kestävyys'],['lvl','Korkein taso'],['weight','Ei painorajaa']].map(([k,n])=>`<label><input type="checkbox" data-dv="${k}"${DEVF[k]?' checked':''}> ${n}</label>`).join('')}</div>
     <div class="devBtns"><button class="btn" data-dvall="1">Kaikki päälle</button><button class="btn" data-dvall="0">Kaikki pois</button></div></div>
+  <div class="devRow"><b>Hae esine (DEV)</b><div class="devGive"><input id="devQ" class="search" type="search" placeholder="Hae esinettä nimellä…" autocomplete="off" spellcheck="false" value="${esc(devQ)}">
+    <input id="devN" type="number" min="1" max="999" value="${devN}" title="Määrä"><button class="btn" id="devGo">Hae</button></div><div id="devList" class="devList"></div></div>
   <div class="devRow"><b>Kartta</b><div class="devBtns"><button class="btn" id="devMap">Paljasta kartta ja kohteet</button></div></div>`;
   B.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{weather.cur=b.dataset.w;weather.until=playTime+600;renderDev();});
   B.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{dayT=+b.dataset.t;renderDev();});
@@ -80,7 +82,17 @@ function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=d
   $('#devHu').oninput=e=>{P.hunger=+e.target.value;$('#devHuV').textContent=P.hunger;};
   B.querySelectorAll('[data-dv]').forEach(c=>c.onchange=()=>{DEVF[c.dataset.dv]=c.checked?1:0;saveDevF();invDirty=true;});
   B.querySelectorAll('[data-dvall]').forEach(b=>b.onclick=()=>{for(const k in DEVF)DEVF[k]=+b.dataset.dvall;saveDevF();invDirty=true;renderDev();});
+  // v1.05 DEV-esinehaku: hakusana + määrä hakunapin vieressä, osumalista "Anna"-napeilla (lähtee pois DEV-tilan mukana)
+  const listGive=()=>{const q=fold($('#devQ').value.trim()),L=$('#devList');devQ=$('#devQ').value;devN=Math.max(1,Math.min(999,Math.round(+$('#devN').value||1)));
+    const rank=id=>{const n=fold(ITEMS[id].n);return n===q||id===q?0:n.startsWith(q)||id.startsWith(q)?1:2;};
+  const ids=Object.keys(ITEMS).filter(id=>!q||searchHit(ITEMS[id].n,q)||id.includes(q)).sort((a,b)=>(q?rank(a)-rank(b):0)||ITEMS[a].n.localeCompare(ITEMS[b].n,'fi')).slice(0,q?40:200);
+    L.innerHTML=ids.map(id=>`<div class="devIt"><span class="ic" style="background-image:url(${icon(id)})"></span><span class="nm">${esc(ITEMS[id].n)}</span><button class="btn" data-give="${id}">Anna ${devN}</button></div>`).join('')||'<div class="note">Ei osumia.</div>';
+    L.querySelectorAll('[data-give]').forEach(b=>b.onclick=()=>devGive(b.dataset.give));};
+  $('#devGo').onclick=listGive;$('#devQ').oninput=listGive;$('#devN').oninput=listGive;$('#devQ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();const f=$('#devList [data-give]');if(f)devGive(f.dataset.give);}};listGive();
   $('#devMap').onclick=()=>{devRevealMap();msg('Kartta ja kaikki kohteet paljastettu.','loot');};}
+let devQ='',devN=1;
+// DEV: antaa esinettä määrän verran (ei mahtuvat putoavat maahan); ilmoitus kertoo paljonko saatiin
+function devGive(id){const n=devN||1,left=invAdd(id,n);if(left>0)spawnDrop(id,left,P.pos.x,P.pos.y+1,P.pos.z);invDirty=true;updateGear();sfx('pickup');msg(`DEV: +${n} ${ITEMS[id].n}${left>0?` (${left} maahan, reppu täynnä)`:''}`,'loot');}
 // DEV: poistaa karttapilvet kokonaan ja merkitsee kaikki nimetyt paikat (rauniot, portaalit, riimukivet…) löydetyiksi.
 function devRevealMap(){explored.fill(1);resetFog();for(const k in LOC){const L=LOC[k];if(k!=='spawn'&&L&&L.name)flags.disc[k]=1;}}
 // v0.82: alueet (biomit). Nykyinen alue P.zone tarkistetaan 0,4 s välein; ensimmäisellä kerralla "Uusi alue löydetty" (flags.bio).

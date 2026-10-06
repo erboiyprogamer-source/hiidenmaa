@@ -33,6 +33,7 @@ function terraTool(mode){
   terraFlush();mudFlush();for(const n of nodesNear(c.x,c.z,R+3,_sh))syncNodeY(n);
   sfx('build');burst(c.x,terrainH(c.x,c.z)+.2,c.z,mode==='path'?0x7a5a38:0x6b5a3a,8,3);}
 function useTool(alt){const w=curWeapon();if(w.cat!=='shovel')return;terraTool(w.id==='kuokka'?(alt?'restore':'raise'):(alt?'path':'dig'));}
+function onPrimaryUp(){if(P.drawing){P.drawing=false;if(P.bowDraw>.15&&ammoId())fireBow();P.bowDraw=0;}}
 function onSecondary(){const w=curWeapon();if(w.cat==='hammer'){togglePanel('build');}else if(w.cat==='shovel')useTool(true);}
 function startAttack(){
   if(P.atk||P.inWater&&P.swim)return;

@@ -72,6 +72,8 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('rakennusnäppäimet vain rakennustilassa (isBuilding)',()=>typeof isBuilding==='function'&&(()=>{const b=buildSel;buildSel=null;const r=!isBuilding();buildSel=b;return r;})());
   t('DEV: kartan paljastus (pilvet + kohteet)',()=>!DEV||typeof devRevealMap==='function');
   t('DEV-valikko (Ä) ja V-nopeus',()=>!DEV||(!!$('#devP')&&typeof renderDev==='function'));
+  t('DEV: esinehaku + määrä (antaa esineen, ylimenevä maahan)',()=>{if(!DEV)return true;const s=inv.slice();inv=new Array(invN()).fill(null);devN=7;devGive('kivi');const ok=inv.filter(x=>x&&x.id==='kivi').reduce((a,x)=>a+x.n,0)===7;inv=s;devN=1;invDirty=true;return ok||'ei annettu';});
+  t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 for(const [k,v] of Object.entries(r))console.log(v===true?'OK ':'XX ',k,v===true?'':v);
 console.log('errors',errs);const bad=Object.values(r).filter(v=>v!==true).length+errs.length;console.log(bad?`VIRHEITÄ: ${bad}`:'KAIKKI OK');await b.close();process.exit(bad?1:0);

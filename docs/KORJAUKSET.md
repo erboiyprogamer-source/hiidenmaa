@@ -105,7 +105,7 @@ Käyttäjän toive: vasara roikkuu **vyöllä takana**, pää selän suuntaisest
 (player.js). Älä palauta vasaraa selän työkalupaikalle.
 
 ### 15. Väliaikainen kehitystila DEV – v0.74
-`const DEV=true` (core.js) on käyttäjän pyytämä testitila (ääretön kestävyys, max taso, ei painorajaa, V = 10× nopeus (v0.77; ennen Alt/Ö), Ä = DEV-valikko: sää, aika, terveys, kylläisyys, kartan + kohteiden paljastus v0.78, jumalvoimatäpät `DEVF` v0.93). Älä poista
+`const DEV=true` (core.js) on käyttäjän pyytämä testitila (ääretön kestävyys, max taso, ei painorajaa, V = 10× nopeus (v0.77; ennen Alt/Ö), Ä = DEV-valikko: sää, aika, terveys, kylläisyys, kartan + kohteiden paljastus v0.78, jumalvoimatäpät `DEVF` v0.93, esinehaku + määrä `devGive` v1.05). Älä poista
 koukkuja; kun käyttäjä pyytää pois, aseta `DEV=false`. Tarkistus- ja tasapainotestit kannattaa ajaa myös DEV=false-tilassa.
 
 ### 16. Rakennusnäppäimet ilmoittivat rakentamatta – v0.79
@@ -133,6 +133,15 @@ samalla rivillä jatkuneen koodin (minimoidussa tyylissä monta lausetta yhdell�
 **Syy:** uusi ylimmän tason `const _gp` oli jo olemassa toisessa tiedostossa (kaikki skriptit jakavat saman globaalin näkyvyyden).
 **Korjaus:** nimeä apumuuttujat yksilöllisesti (ruoho: `_grM, _grQ, _grS, _grP, _grC`). Tarkista ennen uutta nimeä:
 `grep -n "const _xx\b\|,_xx=" js/*.js`. Pelkkä `new Function`-syntaksitarkistus ei huomaa tätä – aja aina latausesti (`window.__game`).
+
+### 20. Jousi ei laukaissut: `onPrimaryUp is not defined` – v1.05
+**Oire:** hiiren vasemman vapautus heitti virheen (input.js `mouseup`), joten jousi laukesi vain kestävyyden loputtua.
+**Syy:** v0.96:ssa `onSecondary`-rivin korvaus vei mukanaan edellisen rivin `onPrimaryUp`-funktion.
+**Korjaus:** palautettu actions.js:ään. Kun korvaat rivin, tarkista ettei vieressä oleva funktio katoa (`git diff` → poistetut `function`-rivit).
+Tarkistuksessa rivi "Jousi laukeaa hiiren vapautuksesta".
+```js
+function onPrimaryUp(){if(P.drawing){P.drawing=false;if(P.bowDraw>.15&&ammoId())fireBow();P.bowDraw=0;}}
+```
 
 ## Herkät kohdat (lue ennen muokkausta)
 

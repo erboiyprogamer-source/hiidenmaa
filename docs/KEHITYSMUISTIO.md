@@ -71,6 +71,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.05 (DEV-esinehaku + jousen laukaisun korjaus)
+- **DEV-esinehaku** (DEV-valikko Ä, `renderDev`/`devGive`, ui.js): hakukenttä (nimi tai id, ääkköset ohitetaan kuten reseptihaussa),
+  määräkenttä 1–999 hakunapin vieressä ja tulosten lista kuvakkeineen ("Anna N"). Täsmäosuma ja alkuosuma ensin, Enter antaa ensimmäisen.
+  Jos reppu täyttyy, loput putoavat maahan pelaajan jalkoihin. Haku ja määrä muistetaan valikon sulkemisen yli. Poistuu `DEV=false`:lla.
+- **Korjaus:** `onPrimaryUp` (actions.js) oli hävinnyt v0.96:n muutoksessa → hiiren vapautus heitti virheen eikä jousi laukaissut
+  (laukesi vain, kun kestävyys loppui). Palautettu (KORJAUKSET 20).
+
 ### v1.04 (käyttäjän palaute: ruoho, kasvillisuuden esto, tuulinäyttö, leirit)
 - **Ruoho kasoina** (`rebuildGrass`): harvaan sirottuneita pieniä kasoja (solu 2,6 m / täysi 1,8 m, todennäköisyys tiheys × laikku × 0,6),
   kasassa 3–6 tupsua 0,5 m säteellä; 4 ohutta kortta (0,012–0,022 m), opacity 0,5, vaaleampi. Normaalilla ~500 tupsua. Ei kohteiden päälle
@@ -1157,7 +1164,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ (päivitetty v1.03, käyttäjä pyysi tauon):** päivityslistan KAIKKI kohdat 1–15 tehty (v0.81–v1.00) + välilisäykset:
+**JATKA TÄSTÄ (päivitetty v1.05):** v1.05 lisäsi DEV-esinehaun (Ä-valikko, määrä hakunapin vieressä) ja korjasi jousen laukaisun. Aiempi tila: päivityslistan KAIKKI kohdat 1–15 tehty (v0.81–v1.00) + välilisäykset:
 v0.93 (hautakasa arkkuna, Kalmanpesä millä vain, DEV-jumalvoimatäpät, harppova juoksu), v0.94 (Shift-tietoikkuna), v1.01–v1.03 (arkkukivi
 suljetuksi linnakkeeksi: korkea muuri, vaikeat siksak-hyppypilarit, kierreportaat; ruoho kevyemmäksi ja laikuittaiseksi; kiviröykkiöt 2/kartta).
 Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23 auki (tarkista ennen jatkoa onko yhdistetty; jos on, aloita origin/mainista
