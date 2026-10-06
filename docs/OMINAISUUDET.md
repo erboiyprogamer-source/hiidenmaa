@@ -169,6 +169,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Terveyspalkit:** mobin yläpuolella (mallin korkeus + 0,45 m), nimi ja pääkallot palkin yllä; näkyy kun katse osuu mobiin (~11°, vahvat ~9°)
   alle 12 m (vahvat 70 m) tai 10 s osuman jälkeen. Pomoilla oma palkki ruudun yläreunassa.
 - **Juoksu (v0.93):** harppova juoksuanimaatio (takajalka taakse, polvi ylös, kädet koukussa); kävelyaskel hieman pidempi.
+  **v1.13:** runko keinuu sivuttain edessä olevan jalan puolelle (kävely ±2°, juoksu ±5°); juoksusta kävelyyn etukeno ja askel palautuvat pehmeästi (~1,2 s).
 - **Kalmanpesä (v0.93):** murskautuu millä tahansa, muulla kuin hakulla kaksi kertaa hitaammin; murskatun pesän ympärille ei synny mobeja.
 - **Harppovat hirviöt (v0.92):** kaksijalkaiset hirviöt liikkuvat 10 % nopeammin pitkin, keinuvin askelin ja lyövät 10 % kauemmas.
 - **Tönäisy (v0.92):** jokaisella aseella tönäisyarvo (tiedoissa metreinä); nuija tönäisee eniten (~1,9 m), isot olennot vähemmän.

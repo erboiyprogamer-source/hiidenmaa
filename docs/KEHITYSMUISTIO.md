@@ -72,6 +72,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.13 (välilisäys 3: sivukeinunta ja pehmeä juoksu → kävely)
+- `player.js`: `P.runKs` = pehmennetty juoksukerroin (nousu 6/s, lasku 2,2/s); käytetään askeleen, käsien ja etukenon laskennassa.
+  Mitattu juoksusta kävelyyn: etukeno .13 → .01 rad n. 1,2 s:ssa tasaisesti (ennen hyppäsi heti).
+- Sivukeinunta `fig.rig.rotation.z = sin(walkPh) · min(1, v/4) · (.035 + .05·runK)` (ei kyykyssä, ilmassa tai uidessa): runko kallistuu
+  edessä olevan jalan puolelle (oikea jalka edessä → oikealle). Mitattu: juoksu ±4,9°, kävely ±2,1°, suunta oikein 100 %.
+
 ### v1.12 (välilisäykset 1–2: grafiikka-asetusten väliotsikot, automaattisäätö, FPS; rautakypärä, huppu)
 - **Asetukset:** Grafiikka-sivulla väliotsikot Yleiset / Luonto / Valo / Partikkelit / Rakennukset (`.setSub`), Varjot-sivulla
   Auringon varjot / Tulien ja soihtujen varjot. "Automaattinen laatu" (varjot, `autoQ`) siirretty Varjot-sivulle.
@@ -1212,7 +1218,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset: 1–2 TEHTY v1.12; 3 (kävelyn/juoksun sivukeinunta, pehmeä juoksu→kävely) seuraavaksi, sitten kohta 5. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13. Seuraavaksi kohta 5. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.

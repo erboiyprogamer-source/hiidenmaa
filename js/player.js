@@ -61,7 +61,9 @@ function updatePlayer(dt){
   if(P.drawing){P.bowDraw=Math.min(1,P.bowDraw+dt/bowDrawTime());P.stam-=6*dt;P.stamDelay=.5;if(P.stam<=0){P.drawing=false;fireBow();}}
   // animate figure
   // v0.93 harppova juoksu: juoksukerroin runK 0 (kävely 4,6) → 1 (juoksu 8); askel pitenee ja tahti harvenee juostessa, kävelyssäkin hieman
-  const hv=Math.hypot(P.vel.x,P.vel.z),runK=clamp((hv-4.8)/2.8,0,1)*(P.crouch||P.swim?0:1);P.walkPh+=hv*dt*1.8*(1-.28*runK);
+  // v1.12 (välilisäys 3): runK pehmennetään (nousu 6/s, lasku 2,2/s), jotta juoksusta kävelyyn etukeno, askel ja kädet palautuvat rauhallisesti
+  const hv=Math.hypot(P.vel.x,P.vel.z),runK0=clamp((hv-4.8)/2.8,0,1)*(P.crouch||P.swim?0:1);P.runKs=lerp(P.runKs||0,runK0,Math.min(1,dt*(runK0>(P.runKs||0)?6:2.2)));
+  const runK=P.runKs<.002?0:P.runKs;P.walkPh+=hv*dt*1.8*(1-.28*runK);
   const sw=Math.sin(P.walkPh)*Math.min(1,hv/4)*(.82+.2*runK);
   fig.g.position.copy(P.pos);if(P.swim)fig.g.position.y=P.pos.y-.2;fig.g.rotation.y=P.yaw;
   P.crouchK=lerp(P.crouchK,P.crouch?1:0,Math.min(1,dt*9));
@@ -78,7 +80,10 @@ function updatePlayer(dt){
    if(K>0){const mv=Math.min(1,hv/1.4),ph=P.walkPh*.75,cw=Math.sin(ph)*mv*.6,liftL=Math.max(0,-Math.cos(ph))*.55*mv,liftR=Math.max(0,Math.cos(ph))*.55*mv;
      thL=lerp(thL,-1.0+cw,K);thR=lerp(thR,-1.0-cw,K);knL=lerp(knL,1.8-cw*.8+liftL,K);knR=lerp(knR,1.8+cw*.8+liftR,K);bobC=Math.abs(Math.sin(ph))*.035*mv*K;}
    fig.legL.rotation.x=thL;fig.legR.rotation.x=thR;fig.kneeL.rotation.x=knL;fig.kneeR.rotation.x=knR;
-   const drop=.3*K+.09*land+.05*lunge-bobC-Math.abs(Math.cos(P.walkPh))*.05*runK;fig.rig.position.y=-drop;fig.rig.rotation.x=.1*K+.07*lunge+.05*land+.13*runK;fig.head.rotation.x=-.12*K-.04*lunge;}
+   const drop=.3*K+.09*land+.05*lunge-bobC-Math.abs(Math.cos(P.walkPh))*.05*runK;fig.rig.position.y=-drop;fig.rig.rotation.x=.1*K+.07*lunge+.05*land+.13*runK;fig.head.rotation.x=-.12*K-.04*lunge;
+   // v1.12 (välilisäys 3): sivukeinunta – runko kallistuu sen jalan puolelle, joka on edessä (oikea edessä kun sin(walkPh) > 0, +z = oikealle);
+   // kävely ±2°, juoksu ±5°; voimakkuus seuraa nopeutta ja pehmennettyä runK:ta, joten paluu suoraan on pehmeä
+   {const tz=(P.onGround&&!P.swim?Math.sin(P.walkPh)*Math.min(1,hv/4)*(.035+.05*runK)*(1-K):0);fig.rig.rotation.z=tz;}}
   // Kädet: lasketaan tavoitekulmat ja siirrytään niihin pehmeästi (ei äkillisiä hyppyjä).
   let tRx=sw*(.7+.35*runK),tRz=0,tLx=-sw*(.7+.35*runK),tLz=0,tSh=.35,rate=14,grip=false,eRo=null,eLo=null;
   if(runK>.3&&!P.atk&&!P.blocking&&!P.drawing){eRo=-1.15*runK;eLo=-1.15*runK;}   // juostessa kyynärpäät koukussa
