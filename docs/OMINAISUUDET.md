@@ -158,6 +158,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Joskus vihaiset (v0.86, `temper`):** hirvi (35 % suuttuu alle 6 m:ssä, ryntää ja tönäisee ~2 m), ilves (yöllä hyökkää haavoittuneen
   < 50 % kimppuun, muuten väistää), ahma (suuttuu raa'asta lihasta repussa), emakko (puolustaa 2–4 porsastaan alle 7 m:ssä). Rauhoittuvat
   12 s:n kuluttua, kun pelaaja on kaukana.
+- **Karhu (v0.87):** 120 hp, murisee 14 m:ssä ja hyökkää alle 8 m:ssä tai lyötynä; lyö liikkeestä pysähtymättä, tönäisee ~3,5 m, kaataa
+  jahdatessaan edessään olevat puut tukeiksi, palautuu (5 %/s), jos sitä ei lyödä minuuttiin. Pelaaja pääsee juosten karkuun. Saalis
+  karhuntalja → Karhuntaljamatto.
 - **Eläinmallit:** `makeAnimal` (nivelletyt jalat – nivel rungon sisällä, lapa/reisi kylkeen; kaula rinnasta pään tyveen, kuono, korvat, häntä; peuran sarvet, karjun harjas ja torahampaat, suden kaulus, routasuden jääpiikit).
 - **Eläimet** (peura, villikarju): säikähtävät kävellen 7 m, juosten 16 m, ase kädessä × 1,4, kyykyssä paikallaan ei lainkaan, hiipiessä 1,5 m (kohti) / 0,9 m (selin); lyöty pelkää 10 s.
 - **Viholliset** (sammalhiisi, harmaasusi, kalmo, ylimys, kivivartija, routasusi): tarvitsevat näköyhteyden; huomaavat pelaajan aina 10 s

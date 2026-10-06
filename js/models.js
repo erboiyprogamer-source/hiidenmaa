@@ -81,20 +81,20 @@ function makeAnimal(o){
   const by=(lh+.3)*s,bz=.62*s*L;
   // runko: rinta, keskivartalo, lantio, vatsa
   const body=new THREE.Group();g.add(body);
-  const chestR=(k==='boar'?.36:.3)*s,hipR=(k==='boar'?.3:k==='deer'?.27:.26)*s;
+  const chestR=(k==='boar'?.36:k==='bear'?.4:.3)*s,hipR=(k==='boar'?.3:k==='deer'?.27:k==='bear'?.36:.26)*s;
   rnd(body,0,by+(k==='boar'?.06*s:.02*s),.34*s*L,chestR,mB,1,1.05,1.15,10);
-  rnd(body,0,by,0,.27*s,mB,1,.95,1.9*L,10);
+  rnd(body,0,by,0,(k==='bear'?.36:.27)*s,mB,1,.95,1.9*L,10);
   rnd(body,0,by+.02*s,-.36*s*L,hipR,o.rump?F(o.rump):mB,1,1,1.1,10);
   rnd(body,0,by-.12*s,.02*s*L,.22*s,mBel,1.05,.6,2*L,8);
   // kaula ja pää (pää-ryhmä samassa kohdassa kuin makeQuad:ssa, jotta animaation pään kallistus toimii)
   const head=new THREE.Group();head.position.set(0,(lh+.5)*s,bz);g.add(head);
-  const neckUp=k==='deer'?(o.rein?.24:.32):k==='boar'?.02:k==='hare'?.04:.12;
+  const neckUp=k==='deer'?(o.rein?.24:.32):k==='boar'?.02:k==='hare'?.04:k==='bear'?-.05:.12;
   head.position.y+=neckUp*s;
   // v0.81: kaula lasketaan rinnasta (A) pään tyveen (B) → pää ei leiju irti (ennen kiinteä 0,42 m putki jäi peuralla 0,2 m vajaaksi).
   {const ay=by+.1*s,az=bz-.16*s,byH=head.position.y+.02*s,bzH=head.position.z,dy=byH-ay,dz=bzH-az,len=Math.hypot(dy,dz)+.12*s,nr=k==='boar'?1.4:1;
-   tube(g,.12*s*nr,.17*s*nr,len,mB,0,(ay+byH)/2,(az+bzH)/2,1,1,8).rotation.x=Math.atan2(dz,dy);}
-  rnd(head,0,.08*s,.06*s,.17*s,mH,1,1,1.15,10);                        // kallo
-  const sn=k==='wolf'?(o.fox?[.06,.05,.26]:o.lynx?[.08,.08,.12]:o.ahma?[.08,.075,.17]:[.09,.08,.28]):k==='boar'?[.11,.1,.3]:k==='hare'?[.075,.07,.1]:o.elk?[.1,.11,.36]:[.08,.08,.24];
+   tube(g,.12*s*nr*(k==='bear'?1.7:1),.17*s*nr*(k==='bear'?1.6:1),len,mB,0,(ay+byH)/2,(az+bzH)/2,1,1,8).rotation.x=Math.atan2(dz,dy);}
+  rnd(head,0,.08*s,.06*s,(k==='bear'?.22:.17)*s,mH,1,1,1.15,10);                        // kallo
+  const sn=k==='wolf'?(o.fox?[.06,.05,.26]:o.lynx?[.08,.08,.12]:o.ahma?[.08,.075,.17]:[.09,.08,.28]):k==='boar'?[.11,.1,.3]:k==='hare'?[.075,.07,.1]:k==='bear'?[.1,.12,.2]:o.elk?[.1,.11,.36]:[.08,.08,.24];
   tube(head,sn[0]*s,sn[1]*s*1.5,sn[2]*s,mH,0,.01*s,.22*s+sn[2]*s/2,1,1,8).rotation.x=Math.PI/2; // kuono
   const tip=.22*s+sn[2]*s,nm=new THREE.MeshBasicMaterial({color:0x151110});
   if(k==='boar'){const disc=tube(head,.085*s,.085*s,.04*s,F(0x8a6a5a),0,.01*s,tip+.02*s,1,1,10);disc.rotation.x=Math.PI/2;for(const x of [-.03,.03])rnd(disc,x*s,.022*s,0,.015*s,nm,1,1,1,5);
@@ -103,7 +103,8 @@ function makeAnimal(o){
   prt(head,.1*s,.012*s,.02*s,nm,0,-.04*s,tip-.04*s);                    // suu
   const em=new THREE.MeshBasicMaterial({color:o.eyes||0x120c08});for(const sd of [-1,1])rnd(head,sd*.11*s,.13*s,.17*s,.026*s,em,1,1,.7,6);
   // korvat
-  if(k==='hare')for(const sd of [-1,1]){const e=new THREE.Group();e.position.set(sd*.06*s,.2*s,-.03*s);e.rotation.set(-.35,0,-sd*.16);head.add(e);   // jäniksen pitkät litteät korvat
+  if(k==='bear')for(const sd of [-1,1]){rnd(head,sd*.15*s,.28*s,-.02*s,.07*s,mH,1,1,.55,7);rnd(head,sd*.15*s,.28*s,.01*s,.04*s,mD,1,1,.4,6);}   // pyöreät korvat
+  else if(k==='hare')for(const sd of [-1,1]){const e=new THREE.Group();e.position.set(sd*.06*s,.2*s,-.03*s);e.rotation.set(-.35,0,-sd*.16);head.add(e);   // jäniksen pitkät litteät korvat
     rnd(e,0,.24*s,0,.075*s,mH,.75,3.3,.38,7);rnd(e,0,.24*s,.016*s,.055*s,F(0xd8b8a8),.6,2.9,.2,6);rnd(e,0,.46*s,0,.045*s,F(o.earTip||0x1c1814),.85,1.3,.42,6);}
   else for(const sd of [-1,1]){const er=k==='deer'?(o.elk?[.07,.22]:[.06,.2]):k==='wolf'?(o.fox?[.07,.22]:o.lynx?[.06,.2]:o.ahma?[.05,.07]:[.055,.17]):[.05,.11];const e=new THREE.Mesh(new THREE.ConeGeometry(er[0]*s,er[1]*s,5),mH);
     e.position.set(sd*.1*s,.26*s,0);e.rotation.set(-.2,0,-sd*(k==='deer'?.9:.25));e.scale.set(1,1,.45);e.castShadow=true;head.add(e);
@@ -135,12 +136,12 @@ function makeAnimal(o){
   // v0.81: nivel on rungon sisällä (by − 0,1) ja yläpäässä lihaksikas lapa/reisi, joka sulautuu kylkeen → jalka ei irtoa rungosta
   // (ennen nivel oli rungon alapuolella y = lh, jolloin peuralla jäi näkyvä rako). Polven korkeus maasta on ennallaan (lh/2).
   const legs=[],pivY=by-.1*s,up=pivY-lh*.5*s;for(const [x,z,fr] of [[-.17,.44,1],[.17,.44,1],[-.17,-.44,0],[.17,-.44,0]]){
-    const p=new THREE.Group();p.position.set(x*s,pivY,z*s*L);g.add(p);const th=(k==='deer'?.06:k==='boar'?.09:k==='hare'?.06:.07)*(o.rein?1.25:o.fox?.8:1);
+    const p=new THREE.Group();p.position.set(x*s,pivY,z*s*L);g.add(p);const th=(k==='deer'?.06:k==='boar'?.09:k==='hare'?.06:k==='bear'?.13:.07)*(o.rein?1.25:o.fox?.8:1);
     rnd(p,0,-.05*s,0,(th+.075)*s,fr?mB:(o.rump?F(o.rump):mB),.8,1.75,1.3,8);   // lapa (edessä) / reisi (takana)
     tube(p,(th+.045)*s,th*s,up+.04*s,fr?mL:mB,0,-up/2,0,1,1,7);
     const kn=new THREE.Group();kn.position.set(0,-up,0);p.add(kn);rnd(kn,0,0,0,th*.9*s,mL,1,1,1,6);
     tube(kn,th*.8*s,th*.65*s,lh*.48*s,mL,0,-lh*.24*s,0,1,1,6);
-    if(k==='wolf'||k==='hare')rnd(kn,0,-lh*.49*s,.03*s,th*1.15*s,mD,1,.6,k==='hare'&&!fr?2.6:1.4,6);else tube(kn,th*.75*s,th*.9*s,.06*s,mHoof,0,-lh*.48*s,.01*s,1,1,6);
+    if(k==='wolf'||k==='hare'||k==='bear')rnd(kn,0,-lh*.49*s,.03*s,th*1.15*s,mD,1,.6,k==='hare'&&!fr?2.6:1.4,6);else tube(kn,th*.75*s,th*.9*s,.06*s,mHoof,0,-lh*.48*s,.01*s,1,1,6);
     p.userData.knee=kn;p.userData.front=fr;legs.push(p);}
   // häntä
   const tl=new THREE.Group();tl.position.set(0,by+.12*s,-.62*s*L);g.add(tl);
@@ -149,6 +150,7 @@ function makeAnimal(o){
   else if(k==='wolf'&&o.fox){for(let i=0;i<4;i++)rnd(tl,0,-i*.05*s,-.12*s-i*.13*s,(.1+(i===1?.03:i===2?.025:0))*s,i===3?F(o.tailTip||0xf4efe6):mB,1,1,1.7,7);tl.rotation.x=.75;}  // tuuhea ketunhäntä
   else if(k==='wolf'){for(let i=0;i<3;i++)rnd(tl,0,-i*.09*s,-.1*s-i*.1*s,(.09-i*.012)*s,i===2?F(o.tailTip||0x2a2a2c):mB,1,1,1.6,7);tl.rotation.x=.5;}
   else if(k==='hare'){rnd(tl,0,-.02*s,-.02*s,.09*s,F(0xf7f4ee),1,1,.9,7);}
+  else if(k==='bear'){rnd(tl,0,-.04*s,0,.07*s,mB,1,1,1,6);rnd(g,0,by+.3*s,.3*s*L,.26*s,mB,1,.8,1.4,9);}   // töpöhäntä + lapojen kyttyrä
   else if(k==='boar'){tube(tl,.015*s,.02*s,.25*s,mD,0,-.12*s,-.03*s,1,1,5).rotation.x=.3;rnd(tl,0,-.25*s,-.07*s,.035*s,mD,1,1.4,1,5);}
   else{rnd(tl,0,0,-.04*s,.06*s,o.elk||o.rein?mD:F(0xf4efe6),1,1.3,.7,6);}
   if(o.chest)rnd(g,0,by+.04*s,bz+.02*s,.12*s,F(o.chest),.9,1.25,.7,8);

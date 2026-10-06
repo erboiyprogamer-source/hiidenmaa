@@ -60,6 +60,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Ilves | 30 | 8,5 | 10 | yöllä haavoittuneen kimppuun |
 | Ahma | 28 | 6 | 9 | suuttuu raa'asta lihasta |
 | Emakko / porsas | 45 / 8 | 6 / 6,5 | 10 / – | puolustaa porsaita |
+| Karhu | 120 | 7,2 | 18 (+tönäisy 16) | lyö liikkeestä, kaataa puita, palautuu 60 s jälkeen |
 | Villikarju | 40 | 5,8 | 8 | hyökkää vain jos lyöty |
 | Sammalhiisi | 34 | 5,2 | 9 | |
 | Harmaasusi | 44 | 4,6 | 11 | öisin pareittain, sama kuin pelaajan kävely |
@@ -68,6 +69,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
 
 ## Versioloki
+
+### v0.87 (karhu – kohta 5c)
+- **Karhu** (`MOBDEF.karhu`, temper `bear`): 120 hp (= 2 × pelaajan 60), juoksu 7,2 (× MOB_SPD ≈ 6,1 < pelaajan juoksu 8), isku 18, ulottuma 2,6,
+  cd 0,65, wind 0,18, tönäisy kb 16 (≈ 3,5 m). Neutraali: murisee varoittavasti 14 m:ssä (12 s välein), hyökkää alle 8 m:ssä tai lyötynä.
+  **Lyö liikkeestä** (`mobile`: iskun aikana nopeus 75 % juoksusta, ei pysähdystä, käpälänisku-animaatio). **Kaataa puita** (`fells`,
+  `fellAhead`): jahdatessa 1,6 m edessä olevat puut (ei aarnipuita) kaatuvat sivulle ja jäävät tukeiksi. **Palautuu** 5 %/s, jos ei lyöty
+  60 s (`def.regen`; ohittaa yleisen 30 s säännön). Enintään yksi kerrallaan, ei aloitusalueelle päivällä. Korpimetsä, aarnimetsä, tunturi.
+  Malli `bear` (makeAnimal): iso pää, pyöreät korvat, paksut jalat ja käpälät, lapojen kyttyrä.
+- Saalis **Karhuntalja** + liha 4–6. Uusi rakennusosa **Karhuntaljamatto** (Kalusto, 1 talja). Haarniska taljasta → kohta 7.
 
 ### v0.86 (joskus vihaiset eläimet – kohta 5b)
 - `temperAI` (ai.js, `MOBDEF.temper`), ai `neutral`. Vihaisena tavallinen jahti; rauhoittuu, kun pelaaja > aggro × 1,3 eikä lyöty 12 s:iin.
@@ -996,7 +1006,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (tauko v0.84:n jälkeen):** kohdat 1, 2, 3 ja 4 tehty (v0.81–v0.84). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki, ei vielä yhdistetty – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-Kohdat 5a (v0.85) ja 5b (v0.86) tehty; seuraavaksi 5c karhu, 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
+Kohdat 5a (v0.85), 5b (v0.86) ja 5c karhu (v0.87) tehty; seuraavaksi 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
 jänis, kettu, hirvi, metso/teeri), mitkä 2 "joskus vihamielistä" (ehdotus: ilves, villisika-emakko/hirvi kiima-aikaan), harvinaiset pelottavat
 (ehdotus: "Korpinpeikko"/hiidenhirvi yöllä aarnimetsässä), karhun saalis ja biomit. Karhu-vaatimukset kirjattu alla (kohta 5).
 Käytä `makeAnimal`-tyyliä (v0.81 liitokset). Sen jälkeen 6 → 15 järjestyksessä, kukin: kysymykset → toteutus → kuvat/testi → tarkistusrivi
