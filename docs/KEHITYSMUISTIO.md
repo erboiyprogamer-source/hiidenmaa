@@ -71,6 +71,17 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.04 (käyttäjän palaute: ruoho, kasvillisuuden esto, tuulinäyttö, leirit)
+- **Ruoho kasoina** (`rebuildGrass`): harvaan sirottuneita pieniä kasoja (solu 2,6 m / täysi 1,8 m, todennäköisyys tiheys × laikku × 0,6),
+  kasassa 3–6 tupsua 0,5 m säteellä; 4 ohutta kortta (0,012–0,022 m), opacity 0,5, vaaleampi. Normaalilla ~500 tupsua. Ei kohteiden päälle
+  (`siteBlockedG` = 60 % suoja-alueesta).
+- **Kasvillisuus ei uusiudu kohteiden päälle** (`SITE_CLEAR`/`siteBlocked`, resources.js; `respawnNode` sekä ehdokas- että lopputarkistus):
+  leiri 8, kiviröykkiö 6,5, linnake (arkkukivi) 12, rauniot 10, portaali 9, riimukivi 3,5, Hautakumpu 13, Kalmankehä 15 m. Testattu 51 000
+  uudelleenkasvatuksella: 0 kohteen päällä. **Leirin rakennelmat** suojaavat vain 7 m (`nearBase`; pelaajan rakennukset 15 m), joten metsä on lähempänä.
+- **Tuulinäyttö isolla kartalla:** kompassi r 46 + asteikko, paksu nuoli, laatikko "Tuuli idästä / 18,7 m/s" ja voimakkuuspalkki (0–22 m/s,
+  väri vihreä → oranssi → punainen), kartan yli liukuvat tuuliviirut (`drawWindStreaks`, nopeus ja pituus tuulen mukaan). Minikartassa "m/s".
+- **Leirit:** puupino (sahatut päät), nahankuivausteline taljoineen, kaatunut ämpäri ja luita/oksia maassa.
+
 ### v1.03 (linnake vaikeammaksi + kierreportaat, kiviröykkiöt)
 - **Arkkukivilinnake:** hyppypilarit kapeammat (0,75–0,85 m) ja siksakissa (säde vuorotellen 8,2 / 10,2 m), nousu 0,8 m (huippu 4,0 m),
   välit reunasta reunaan 2,0–2,4 m → vaatii juoksuhypyn; viimeiseltä pudotaan 0,5 m muurin harjalle. Sisäpuolella **kierreportaat** muurin
@@ -1150,8 +1161,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 v0.93 (hautakasa arkkuna, Kalmanpesä millä vain, DEV-jumalvoimatäpät, harppova juoksu), v0.94 (Shift-tietoikkuna), v1.01–v1.03 (arkkukivi
 suljetuksi linnakkeeksi: korkea muuri, vaikeat siksak-hyppypilarit, kierreportaat; ruoho kevyemmäksi ja laikuittaiseksi; kiviröykkiöt 2/kartta).
 Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23 auki (tarkista ennen jatkoa onko yhdistetty; jos on, aloita origin/mainista
-tarkistettuasi ettei commiteja katoa). Avoimet: käyttäjä testaa ruohon (v1.02) ja linnakkeen; kysy palaute (ruohon tiheys/pituus,
-hyppyjen vaikeus). Mahdolliset jatkot: realm-pomojen laatikkomaiset lisäosat (Erä 44b), pelaajan soihdun varjoasetus ja kartan piirto
+tarkistettuasi ettei commiteja katoa). Linnake hyväksytty. v1.04: ruoho kasoina, kasvillisuuden esto kohteissa, tuulinäyttö, leirien yksityiskohdat. Avoin: käyttäjä testaa ruohon (v1.04). Mahdolliset jatkot: realm-pomojen laatikkomaiset lisäosat (Erä 44b), pelaajan soihdun varjoasetus ja kartan piirto
 vain tapahtumista (Erä 40), DEV=false kun käyttäjä pyytää. Työtapa: välikommentit heti, sitten jatketaan; 1–5 tarkentavaa kysymystä per kohta;
 kun käyttäjä ei voi vastata, tee kohdat joihin vastauksia ei tarvita ja kirjaa oletukset.
 1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.

@@ -58,7 +58,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Kylmä tulee:** märkänä, lumisateessa vuorilla tai yöllä ulkona ilman lämpimiä vaatteita, ellei tulen lähellä.
 - **Lepo ja uni:** sänky asettaa herätyspaikan; nukkuminen vaatii yön, katon eikä vihollisia 20 m sisällä → seuraava aamu, levännyt.
 - **Kuoleman ruutu (Kaaduit):** kaikki valikot ja päävalikko sulkeutuvat, kursori näkyy, herätys napista tai Enterillä.
-- **Ruoho (v1.00, v1.02 kevyempi):** ohutta läpikuultavaa heinää laikkuina biomin mukaan, heiluu ja kallistuu tuulessa; asetus Grafiikka → Ruoho (Pois / Normaali / Täysi).
+- **Ruoho (v1.00, v1.04 kasoina):** ohuita läpikuultavia heinäkasoja harvakseltaan biomin mukaan (ei kohteiden päällä), heiluu ja kallistuu tuulessa; asetus Grafiikka → Ruoho (Pois / Normaali / Täysi).
+- **Kasvillisuuden esto (v1.04):** puut, kivet ja poimittavat eivät kasva uudelleen leirien, kiviröykkiöiden, linnakkeiden, raunioiden, portaalien ym. päälle (suoja 3,5–15 m).
 - **Hylätyt leirit (v0.99):** 1–2 per kartta: sammunut nuotio (sytytä puulla), teltta jossa sänky (herätyspaikka, nukkuminen), tukki ja säkki tarvikkeineen. Teltan voi myös rakentaa itse (Kalusto).
 - **Arkkukivet (v1.01, v1.03):** suljettu 3,5 m kivilinnake: arkulle pääsee juoksuhypyin viittä kapeaa siksak-pilaria pitkin muurin harjalle ja kierreportaita alas.
 - **Kiviröykkiöt (v1.03):** 2 per kartta, avoin kivikasa, arkku näkyvissä keskellä (pieni saalis).
@@ -230,7 +231,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Sää:** selkeä, pilvinen, tuulinen, tihku, sade, myrsky (salamat, puiden kaatuminen), lumisade (vuorilla), sumu.
 - **Tuuli (v0.84):** suunta pysyy 2–6 min ja kääntyy hitaasti (40–90 s, enint. 120°); nopeus säästä (selkeä 1–4 … myrsky 15–22 m/s) + puuskat.
   Pilvet (myös kartalla) liikkuvat tuulen suuntaan, puut kallistuvat ja heiluvat, sade viistää, savu ja kipinät ajautuvat, nuolet kallistuvat
-  (13 m/s ≈ 0,5 m / 30 m). Kartalla kompassi + "Tuuli: suunnasta X m/s", minikartan reunalla tuulinuoli.
+  (13 m/s ≈ 0,5 m / 30 m). Kartalla iso kompassi, "Tuuli suunnasta / X m/s", voimakkuuspalkki ja liukuvat tuuliviirut (v1.04); minikartan reunalla tuulinuoli + m/s.
 - **Pilvet** isoina kerroksina sään mukaan, kaukana häipyvät; pilvikansi rankassa säässä; salaman välähdys kevyt.
 - **Aurinko:** pyöreä hehku (`sunGlow`), säteet selkeällä säällä (häipyvät aurinkoon katsottaessa).
 - **Aarnimetsässä** tiheä sumu ja pimeämpi valo.

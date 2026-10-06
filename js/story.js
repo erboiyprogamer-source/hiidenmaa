@@ -136,6 +136,14 @@ const CAMPS=(function(){const r=mulberry32(97531+MAP_ID*7919),out=[],n=1+(r()<.5
     const k='camp'+(out.length+1);LOC[k]={x,z,name:'Hylätty leiri',kind:'camp'};out.push({k,x,z,y:h,rot:(r()*8)|0});}
   for(const c of out){const sx=c.x+2.2,sz=c.z-1.6,sy=terrainH(sx,sz),key='camp:'+c.k,sk=new THREE.Group();sk.position.set(sx,sy,sz);
     sk.add(bx(.55,.5,.42,mat(0x8a7454),0,.25,0),bx(.2,.12,.2,mat(0x6a5434),0,.55,0));statics.add(sk);   // säkki
+    // v1.04 leirin yksityiskohdat: puupino, nahankuivausteline (taljoja), kaatunut ämpäri ja luita/oksia maassa
+    {const wp=new THREE.Group(),wx=c.x-2.4,wz=c.z+1.8,wy=terrainH(wx,wz);wp.position.set(wx,wy,wz);const lw=mat(0x6b4a2e),cut=mat(0xc08a52);
+      for(let row=0;row<3;row++)for(let q=0;q<4-row;q++){const lg=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,1.1,7),lw);lg.rotation.x=Math.PI/2;lg.position.set((q-(3-row)/2)*.23,.11+row*.2,0);lg.castShadow=true;wp.add(lg);
+        for(const e of [-.555,.555]){const cap=new THREE.Mesh(new THREE.CircleGeometry(.105,7),cut);cap.position.set(lg.position.x,lg.position.y,e);cap.rotation.y=e>0?0:Math.PI;wp.add(cap);}}statics.add(wp);}
+    {const rk=new THREE.Group(),rx=c.x+1.6,rz=c.z+2.4,ry=terrainH(rx,rz);rk.position.set(rx,ry,rz);rk.rotation.y=r()*3;const st=mat(0x5a3d22),hide=mat(0x9a6a44);
+      for(const sx2 of [-.8,.8])rk.add(bx(.07,1.5,.07,st,sx2,.75,0));rk.add(bx(1.7,.06,.06,st,0,1.45,0));const h1=bx(.7,.8,.03,hide,-.35,1.05,.02);h1.rotation.z=.08;rk.add(h1);const h2=bx(.55,.65,.03,mat(0x7a5232),.42,1.12,.02);h2.rotation.z=-.1;rk.add(h2);statics.add(rk);}
+    {const bu=new THREE.Mesh(new THREE.CylinderGeometry(.16,.13,.3,9,1,true),Object.assign(mat(0x7b5434),{side:THREE.DoubleSide}));const bx2=c.x+.9,bz=c.z-1.1;bu.position.set(bx2,terrainH(bx2,bz)+.14,bz);bu.rotation.z=Math.PI/2.2;bu.castShadow=true;statics.add(bu);
+      for(let q=0;q<4;q++){const qx=c.x+(r()-.5)*3,qz=c.z+(r()-.5)*3;const o=bx(.05,.05,.5,mat(q%2?0xe2dccb:0x6b4527),qx,terrainH(qx,qz)+.03,qz,false);o.rotation.y=r()*3;statics.add(o);}}
     interactables.push({x:sx,y:sy+.5,z:sz,r:2.4,label:()=>foundEmpty(key)?'Säkki (tyhjä)':'Tutki hylätty säkki',use:()=>{const first=!fo('fc')[key];openFound(key,'Hylätty säkki',[['liha',2],['nahka',2],['soihtu',1],['puu',6],['nuolet',8]]);if(first)addXp(15,'Hylätty leiri tutkittu');}});}
   return out;})();
 function ensureCamps(){if(flags.camps)return;flags.camps=1;
