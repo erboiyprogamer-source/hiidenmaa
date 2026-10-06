@@ -44,6 +44,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('tuli: soihtu/tulinuoli sytyttää',()=>typeof igniteMob==='function'&&!!ITEMS.tulinuolet&&!!RECIPES.find(r=>r.id==='tulinuolet'));
   t('reppu: vaihto, puolitus, Q-pudotus, arkun käsisiirto',()=>typeof moveSlot==='function'&&typeof splitSlot==='function'&&typeof dropSel==='function'&&typeof chestClick==='function');
   t('ammukset heikoimmasta parhaaseen',()=>{const a=flags.ammo;flags.ammo=null;window.__game.invAdd('nuolet',2);window.__game.invAdd('tulinuolet',2);const ok=ammoId()==='nuolet'&&AMMO.indexOf('nuolet')<AMMO.indexOf('tulinuolet');flags.ammo=a;return ok;});
+  t('aluevartijat: alue ×2, rajalla seisoo 1–10 s, sitten palaa',()=>/atBorder/.test(updateMobs.toString())&&/1\+Math\.random\(\)\*9/.test(updateMobs.toString())&&/\*2\}/.test(updateSites.toString()));
   t('kuokka: vasen nostaa 0,3 m + perusväri, oikea palauttaa värin; lapio: vasen kuoppa 0,3 m, oikea polku',()=>typeof terraTool==='function'&&/'restore'/.test(useTool.toString())&&/'dig'/.test(useTool.toString())&&/\.3\*w/.test(terraTool.toString())&&/useTool\(true\)/.test(onSecondary.toString()));
   t('vartija vajoaa (3 s) ja nousee (2,5 s) maasta, haavoittumaton',()=>/state==='sink'/.test(bossAI.toString())&&/state==='rise'/.test(bossAI.toString())&&/sinking/.test(damageMob.toString())&&/state='rise'/.test(useAltar.toString()));
   t('Shift + hiiri esineen päällä näyttää tiedot (itemTip)',()=>!!$('#itemTip')&&typeof updateItemTip==='function'&&/data-it/.test(slotHTML({id:'kivi',n:1})));

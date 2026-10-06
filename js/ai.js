@@ -39,7 +39,13 @@ function updateMobs(dt){
     if(m.fearT>0){m.fearT-=dt;m.wind=0;m.state='flee';let fx=m.pos.x,fz=m.pos.z,fd=1e9;for(const s of fireSrc){const dd=dist2(s.x,s.z,m.pos.x,m.pos.z);if(dd<fd){fd=dd;fx=s.x;fz=s.z;}}
       moveMob(m,m.pos.x-fx,m.pos.z-fz,d.run,dt);animMob(m,dt);if(m.fearT<=0)m.state='idle';continue;}
     // Vartijat pysyvät paikallaan: jos ne ajautuvat liian kauas (säde guard.r), ne palaavat takaisin ja paranevat.
-    if(m.guard){const gx=m.guard.x-m.pos.x,gz=m.guard.z-m.pos.z,gd=Math.hypot(gx,gz);if(gd>m.guard.r)m.ret=true;
+    // v0.97 (kohta 12): alue ×2. Alueen rajalla vartija ei seuraa pidemmälle vaan jää rajalle seisomaan ja taistelemaan; 1–10 s (arvottu)
+    // kuluttua se alkaa palata alueelleen (ja paranee kuten ennen), kunnes huomaa pelaajan taas alueen sisällä.
+    let atBorder=false;
+    if(m.guard){const gx=m.guard.x-m.pos.x,gz=m.guard.z-m.pos.z,gd=Math.hypot(gx,gz),pIn=dist2(P.pos.x,P.pos.z,m.guard.x,m.guard.z)<m.guard.r*m.guard.r;
+      if(m.ret&&pIn&&m.los&&dist<(d.aggro||12)*1.35&&!P.dead){m.ret=false;m.retT=0;m.state='chase';}
+      if(!m.ret&&gd>m.guard.r){atBorder=true;if(!(m.retT>0))m.retT=1+Math.random()*9;m.retT-=dt;if(m.retT<=0||P.dead){m.ret=true;m.retT=0;}}
+      else if(!m.ret&&gd<m.guard.r*.9)m.retT=0;
       if(m.ret){m.state='idle';m.wind=0;if(gd<3)m.ret=false;else{moveMob(m,gx,gz,d.run,dt);animMob(m,dt);m.hp=Math.min(m.maxHp,m.hp+m.maxHp*.05*dt);continue;}}}
     const hurt=playTime-m.lastHit<10;
     // Paikallaan oleville vaikeille vihollisille: iskuttomana 30 s → parantuvat hitaasti (1 %/s).
@@ -84,6 +90,7 @@ function updateMobs(dt){
       m.siege=null;m.t-=dt;if(m.t<=0||!m.wander){m.t=3+Math.random()*5;if(Math.random()<.45){const a=Math.random()*TAU;m.wander={x:m.pos.x+Math.cos(a)*10,z:m.pos.z+Math.sin(a)*10};}else m.wander=null;}
       if(m.wander){tx=m.wander.x-m.pos.x;tz=m.wander.z-m.pos.z;if(Math.hypot(tx,tz)<1)m.wander=null;spd=d.walk;}
     }
+    if(atBorder&&spd>0){const ox=m.pos.x-m.guard.x,oz=m.pos.z-m.guard.z;if(tx*ox+tz*oz>0){spd=0;m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*6));}}   // rajalla: ei ulospäin
     moveMob(m,tx,tz,spd,dt);
     animMob(m,dt);
   }

@@ -50,7 +50,7 @@ function updateSites(dt){
     if(d2>75*75)continue;
     (GUARDS[k]||[]).forEach((type,i)=>{if(fo('gk')[k+':'+i]||mobs.some(m=>m.siteK===k&&m.gi===i))return;
       const a=i/(GUARDS[k].length)*TAU+k.charCodeAt(k.length-1),R=L.kind==='portal'?8:7,x=L.x+Math.cos(a)*R,z=L.z+Math.sin(a)*R;
-      const m=spawnMob(type,x,z);m.siteK=k;m.gi=i;m.guard={x,z,r:L.kind==='portal'?16:15};});}
+      const m=spawnMob(type,x,z);m.siteK=k;m.gi=i;m.guard={x,z,r:(L.kind==='portal'?16:15)*2};/* v0.97: alue ×2 */});}
 }
 
 /* ---------------- LISÄRIIMUKIVET ---------------- */
