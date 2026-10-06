@@ -180,22 +180,25 @@ function animMob(m,dt){
     if(f.animal){for(const l of f.legs){const a=l.rotation.x,kn=l.userData.knee;kn.rotation.x=l.userData.front?.05+Math.max(0,a)*1.1:-.05-Math.max(0,-a)*1.1;}if(f.tail)f.tail.rotation.y=Math.sin(playTime*(m.state==='chase'?9:3)+m.walkPh)*.25;}f.head.rotation.x=m.wind>0?-.5:(m.atkCd>m.def.cd-.2?.4:0);}
   if(m.anim>0)m.anim-=dt;
 }
+const BOSS_SLOW=1.1;   // v0.89: kiviä heittävien pomojen hyökkäysviive +10 % (Kalmanvartija, Jäätär)
 function bossAI(m,dt,dx,dz,dist){
   const L=LOC.circle;
   if(m.state==='intro'){m.t+=dt;m.yaw=Math.atan2(dx,dz);m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;m.f.armL.rotation.x=m.f.armR.rotation.x=-2.8*Math.min(1,m.t);if(m.t>2.2){m.state='chase';sfx('roar');shake(.5);}return;}
   if(!m.phase2&&m.hp<m.maxHp*.5){m.phase2=true;sfx('roar');msg('Vartija kutsuu kalmoja maasta!','warn');for(let i=0;i<3;i++){const a=i/3*TAU;spawnMob('kalmo',m.pos.x+Math.cos(a)*5,m.pos.z+Math.sin(a)*5);}shockwave(m.pos.x,m.pos.y,m.pos.z,8);}
   const spd=(m.phase2?1.2:1);
-  if(m.act){m.act.t+=dt;const a=m.act;const f=m.f;
-    if(a.k==='swipe'){f.armR.rotation.x=a.t<.8?-2.6*a.t/.8:lerp(-2.6,-.2,Math.min(1,(a.t-.8)/.2));if(a.t>=.8&&!a.hit){a.hit=1;sfx('swing');if(dist<4.8+.4){const fc=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(fc>.1)hurtPlayer(22,m.pos.x,m.pos.z);}}if(a.t>1.4)m.act=null;}
-    else if(a.k==='slam'){const up=a.t<1.1;f.armR.rotation.x=f.armL.rotation.x=up?-3*a.t/1.1:lerp(-3,-.6,Math.min(1,(a.t-1.1)/.15));if(a.t>=1.1&&!a.hit){a.hit=1;sfx('slam');shake(.6);const fx=m.pos.x+Math.sin(m.yaw)*2.5,fz=m.pos.z+Math.cos(m.yaw)*2.5;shockwave(fx,m.pos.y,fz,7);burst(fx,m.pos.y+.3,fz,0x5d5a54,16,7);if(dist2(fx,fz,P.pos.x,P.pos.z)<7*7&&P.pos.y-m.pos.y<1.5)hurtPlayer(28,fx,fz);}if(a.t>1.9)m.act=null;}
+  // v0.89 (kohta 6): kaikkien hyökkäysten ajoitus +10 % (kiviä heittävä pomo: a.t etenee dt/1,1), huitaisun ja maahaniskun ennakko +40 %
+  // (0,8 → 1,12 s ja 1,1 → 1,54 s), iskujen väli +20 %, ryntäys puolet harvemmin (25 %, vähintään 8 s välein).
+  if(m.act){m.act.t+=dt/BOSS_SLOW;const a=m.act;const f=m.f;
+    if(a.k==='swipe'){f.armR.rotation.x=a.t<1.12?-2.6*a.t/1.12:lerp(-2.6,-.2,Math.min(1,(a.t-1.12)/.2));if(a.t>=1.12&&!a.hit){a.hit=1;sfx('swing');if(dist<4.8+.4){const fc=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(fc>.1)hurtPlayer(22,m.pos.x,m.pos.z);}}if(a.t>1.75)m.act=null;}
+    else if(a.k==='slam'){const up=a.t<1.54;f.armR.rotation.x=f.armL.rotation.x=up?-3*a.t/1.54:lerp(-3,-.6,Math.min(1,(a.t-1.54)/.15));if(a.t>=1.54&&!a.hit){a.hit=1;sfx('slam');shake(.6);const fx=m.pos.x+Math.sin(m.yaw)*2.5,fz=m.pos.z+Math.cos(m.yaw)*2.5;shockwave(fx,m.pos.y,fz,7);burst(fx,m.pos.y+.3,fz,0x5d5a54,16,7);if(dist2(fx,fz,P.pos.x,P.pos.z)<7*7&&P.pos.y-m.pos.y<1.5)hurtPlayer(28,fx,fz);}if(a.t>2.35)m.act=null;}
     else if(a.k==='charge'){if(a.t<.6){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*6);f.g.rotation.x=-.2;}else{moveMob(m,Math.sin(m.yaw),Math.cos(m.yaw),15*spd,dt);if(!a.hit&&dist<2.8){a.hit=1;hurtPlayer(26,m.pos.x,m.pos.z);P.vel.x+=Math.sin(m.yaw)*10;P.vel.z+=Math.cos(m.yaw)*10;}}if(a.t>1.6){m.act=null;f.g.rotation.x=0;}}
     else if(a.k==='throw'){f.armR.rotation.x=-2.8*Math.min(1,a.t/.8);if(a.t>=.8&&!a.hit){a.hit=1;const hp=new V3();f.hand.getWorldPosition(hp);throwRock(hp,new V3(P.pos.x+P.vel.x*.6,P.pos.y,P.pos.z+P.vel.z*.6),20);}if(a.t>1.3)m.act=null;}
     m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;return;}
-  if(dist2(P.pos.x,P.pos.z,L.x,L.z)>90*90||P.inDun){mobRemove(m);flags.altarSt=1;flags.bossHp=m.hp;/* v0.75: kivet jäävät alttarille pysyvästi (ei maahan katoavina esineinä), hp säilyy */circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));$('#bossbar').hidden=true;msg('Vartija vajosi takaisin maahan. Hiidenkivet jäivät alttarille – herätä se uudelleen alttarilta (terveys säilyy).','warn');return;}
+  if(dist2(P.pos.x,P.pos.z,L.x,L.z)>90*90||P.inDun){mobRemove(m);flags.altarSt=1;flags.bossHp=m.hp;syncAltar();/* v0.75: kivet jäävät alttarille pysyvästi (ei maahan katoavina esineinä), hp säilyy */circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));$('#bossbar').hidden=true;msg('Vartija vajosi takaisin maahan. Hiidenkivet jäivät alttarille – herätä se uudelleen alttarilta (terveys säilyy).','warn');return;}
   if(P.dead){moveMob(m,L.x-m.pos.x,L.z-m.pos.z,m.def.walk,dt);animMob(m,dt);return;}// v0.75: iso pomo ei parane
   if(m.atkCd<=0){
-    if(dist<5){m.act={k:Math.random()<.55?'swipe':'slam',t:0};m.atkCd=(m.phase2?1.1:1.6);}
-    else if(dist>9&&dist<30){m.act={k:Math.random()<.5?'charge':'throw',t:0};m.atkCd=m.phase2?1.6:2.4;}
+    if(dist<5){m.act={k:Math.random()<.55?'swipe':'slam',t:0};m.atkCd=(m.phase2?1.1:1.6)*1.2*BOSS_SLOW;}
+    else if(dist>9&&dist<30){const ch=Math.random()<.25&&playTime-(m.chargeT||-99)>8;if(ch)m.chargeT=playTime;m.act={k:ch?'charge':'throw',t:0};m.atkCd=(m.phase2?1.6:2.4)*1.2*BOSS_SLOW;}
   }
   if(!m.act){moveMob(m,dx,dz,dist>4?m.def.run*spd:0,dt);if(dist<=4)m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*4);animMob(m,dt);}
   else{m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;}

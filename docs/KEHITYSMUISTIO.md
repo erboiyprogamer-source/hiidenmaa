@@ -67,9 +67,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Harmaasusi | 44 | 4,6 | 11 | öisin pareittain, sama kuin pelaajan kävely |
 | Kalmo | 50 | 4,6 | 13 | heikko murskaavalle |
 | Kalmon ylimys | 150 | 4,2 | 20 | luolaston miniboss |
-| Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa |
+| Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v0.89 (pomojen nerffaus – kohta 6)
+- **Kalmanvartija** (`bossAI`): ryntäys 9–30 m:ssä 25 % (ennen 50 %) ja vähintään 8 s välein (`m.chargeT`), muuten kiven heitto
+  (mitattu osuus ~13 %). Huitaisun ennakko 0,8 → 1,12 s, maahaniskun 1,1 → 1,54 s (+40 %), iskujen väli × 1,2.
+- **Kiviä heittävät pomot** (Kalmanvartija + `kit` sisältää 'throw' eli Jäätär): kaikki hyökkäykset +10 % hitaammin (`BOSS_SLOW` 1,1:
+  `a.t += dt/1,1`, `atkCd × 1,1`). Kivi (`throwRock`) lentää 30 % hitaammin: lentoaika 1,1 → 1,57 s (kohdetta kohti).
+  Kokonaisuus: vartijan huitaisu osuu ~1,23 s:n kohdalla.
+- **Alttari:** kun vartija vajoaa maahan, käytetyt hiidenkivet eivät palaa reppuun; alttari pysyy aktiivisena (`flags.altarSt`), siinä näkyy
+  kolme hehkuvaa kiveä (`altarGems`, `syncAltar`) ja teksti "Hiidenkivet valmiina (3/3) – herätä vartija". Herätys ei vaadi uusia kiviä.
 
 ### v0.88 (harvinaiset pelottavat – kohta 5d, kohta 5 valmis)
 - `def.stalk` + `stalkAI` (ai.js): huomatessaan pelaajan (aggro × 1,35 yöllä) jahtaa 30–60 s **eikä luovu** etäisyyden tai näköyhteyden
@@ -1019,7 +1028,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (tauko v0.84:n jälkeen):** kohdat 1, 2, 3 ja 4 tehty (v0.81–v0.84). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki, ei vielä yhdistetty – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-KOHTA 5 VALMIS (v0.85–v0.88). Seuraavaksi kohta 6 (Kalmanvartijan nerffaus + kiviä heittävät pomot) – kysy 1–5 tarkentavaa. Vanha muistiinpano: 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
+KOHDAT 5 (v0.85–v0.88) ja 6 (v0.89) VALMIIT. Seuraavaksi kohta 7 (painavat haarniskamallit) – kysy 1–5 tarkentavaa. Vanha muistiinpano: 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
 jänis, kettu, hirvi, metso/teeri), mitkä 2 "joskus vihamielistä" (ehdotus: ilves, villisika-emakko/hirvi kiima-aikaan), harvinaiset pelottavat
 (ehdotus: "Korpinpeikko"/hiidenhirvi yöllä aarnimetsässä), karhun saalis ja biomit. Karhu-vaatimukset kirjattu alla (kohta 5).
 Käytä `makeAnimal`-tyyliä (v0.81 liitokset). Sen jälkeen 6 → 15 järjestyksessä, kukin: kysymykset → toteutus → kuvat/testi → tarkistusrivi
@@ -1035,7 +1044,7 @@ heilunta, kuten puut v0.84); grafiikka-asetus pois/oletus (ei niin tuuhea)/täys
 4. TEHTY v0.84. Tuulensuunta: vaihtuu hitaasti satunnaisesti (minuutteja, kääntyy hitaasti); kartalla suunta ja nopeus; pilvet liikkuvat tuulen suuntaan.
 5. TEHTY v0.85–v0.88. 4 uutta eläintä (samaa tyyliä) + 2 joskus vihamielistä + harvinaisia pelottavia (seuraa 30–60 s, poistuu 5 s ja unohtaa); luonteen mukaiset
    säikähdys/reaktiot. Karhu: iso, lyö kauas ja nopeasti, kaataa eteen jäävät puut tukeiksi, HP 200 % pelaajasta, palautuu jos ei lyöty 1 min.
-6. Kalmanvartija: harvemmin liuku/ryntäys, iskulla pidempi viive. Kaikki kiviä heittävät pomot: kivi 30 % hitaampi, hyökkäysviive +10 %.
+6. TEHTY v0.89. Kalmanvartija: harvemmin liuku/ryntäys, iskulla pidempi viive. Kaikki kiviä heittävät pomot: kivi 30 % hitaampi, hyökkäysviive +10 %.
 7. Haarniskoille kunnon painavat erottuvat mallit.
 8. Ulottuvuuksien mobeille enemmän yksityiskohtia (vaatetus, koristeet, silmäanimaatiot, liekit silmissä).
 9. Hirviöille (sammalhiisi, kalmo) harppaavammat askeleet, lyöntiulottuma +10 %.

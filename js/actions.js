@@ -225,7 +225,7 @@ function useAltar(){
   if(boss)return;
   // v0.75: jos vartija on vajonnut takaisin maahan, kivet ovat yhä alttarilla (flags.altarSt) – herätys ei vaadi uusia kiviä
   if(!flags.altarSt){if(invCount('hiidenkivi')<3){msg('Alttarin kolme koloa ovat tyhjiä. Tarvitset kolme hiidenkiveä.','warn');return;}invRemove('hiidenkivi',3);}
-  flags.altarSt=0;msg('Kivet hehkuvat… maa vapisee!','warn');sfx('roar');shake(.6);
+  flags.altarSt=0;syncAltar();msg('Kivet hehkuvat… maa vapisee!','warn');sfx('roar');shake(.6);
   circleStones.forEach(r=>r.material=MAT.glow);
   const L=LOC.circle;setTimeout(()=>{boss=spawnMob('vartija',L.x,L.z-4);if(flags.bossHp){boss.hp=Math.min(boss.maxHp,flags.bossHp);delete flags.bossHp;}boss.state='intro';boss.t=0;$('#bossbar').hidden=false;shockwave(L.x,6,L.z-4,10);},1600);
 }

@@ -41,7 +41,7 @@ function loadData(s){
   if(s.explored&&!oldWorld){const b=atob(s.explored);for(let i=0;i<explored.length;i++)explored[i]=(b.charCodeAt(i>>3)>>(i&7))&1;}
   for(let i=0;i<3;i++)if(flags.sarc[i]){sarcs[i].lid.position.x=.7;sarcs[i].lid.rotation.z=.3;}
   if(s.bossPending)invAdd('hiidenkivi',3);
-  resetFog();invDirty=true;updateGear();goalShown=-1;
+  resetFog();invDirty=true;updateGear();goalShown=-1;syncAltar();
 }
 function resetWorld(){
   for(const p of [...pieces])removePiece(p);for(const m of [...mobs])mobRemove(m);for(const d of drops)scene.remove(d.mesh);drops=[];for(const g of [...graves])removeGrave(g);graves=[];

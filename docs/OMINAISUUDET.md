@@ -153,6 +153,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Nopeudet −15 %** (`MOB_SPD` 0,85 kaikessa liikkeessä).
 - **Terveyspalkit:** mobin yläpuolella (mallin korkeus + 0,45 m), nimi ja pääkallot palkin yllä; näkyy kun katse osuu mobiin (~11°, vahvat ~9°)
   alle 12 m (vahvat 70 m) tai 10 s osuman jälkeen. Pomoilla oma palkki ruudun yläreunassa.
+- **Pomot (v0.89):** Kalmanvartija ryntää harvemmin (25 %, väh. 8 s välein) ja sen huitaisun/maahaniskun ennakko on 40 % pidempi;
+  kiviä heittävien pomojen (vartija, Jäätär) hyökkäykset ovat 10 % hitaampia ja kivi lentää 30 % hitaammin. Vajonneen vartijan alttari jää
+  valmiiksi (3/3 kiveä näkyvissä) – herätys ei vaadi uusia kiviä.
 - **Eläinten luonteet (v0.85, `per`):** jänis jähmettyy ja pakenee siksakkia, kettu jää katsomaan matkan päästä, metso antaa tulla lähelle
   ja lehahtaa 14–24 m, porolauma pakenee yhdessä. Uudet eläimet: metsäjänis, kettu, metso (sulat → sulitetut nuolet), poro.
 - **Joskus vihaiset (v0.86, `temper`):** hirvi (35 % suuttuu alle 6 m:ssä, ryntää ja tönäisee ~2 m), ilves (yöllä hyökkää haavoittuneen
