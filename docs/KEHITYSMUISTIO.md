@@ -71,6 +71,19 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.93 (käyttäjän välilisäys)
+- **Hautakasa** ei katoa koskaan itsestään (kuten ennenkin); pääkallo kartalla kunnes kasa on tyhjä. Jos kaikki mahtuu reppuun, tavarat
+  otetaan kerralla; muuten kasa avautuu arkkuikkunaan (`curChest.grave`, ota mitä mahtuu, loput jäävät ja tallentuvat). Tyhjä kasa vajoaa
+  1,6 s:ssa maahan multaa pöllyten (`graveVanish`).
+- **Kalmanpesä** murskautuu millä tahansa (myös nyrkillä): muulla kuin hakulla 6 vahinkoa/isku = puolet kivihakun 12:sta (2× aika).
+  Murskattaessa pesän 12 m:n sisällä olevat huoneen mobit merkitään kaatuneiksi (`fo('rm')`), joten pesän ympärille ei enää synny mobeja.
+- **DEV-täpät** (`DEVF` core.js, `devOn(k)`, muistetaan `localStorage['hiidenmaa_dev']`): Ei voi kuolla (ei vahinkoa, `playerDie` estetty),
+  Ei nälkää, Rajaton kestävyys, Korkein taso, Ei painorajaa + Kaikki päälle / pois. Oletus: aiemmat DEV-edut päällä, uudet pois.
+- **Pelaajan juoksu** (player.js `runK` 0 → 1 välillä 4,8–7,6 m/s): perinteinen harppova juoksu – takajalka ojentuu taakse kantapää ylhäällä,
+  etureisi nousee korkealle (−1,14 rad), polvi koukistuu heilahduksessa, vartalo kallistuu eteen (+0,13), pomppu, kädet koukussa
+  (kyynärpää −1,15) ja heiluvat laajemmin. Tahti 1,8 (ennen 1,9) × (1 − 0,28·runK); kävelyn heilahdus 0,82 (ennen 0,75). Nopeudet ennallaan.
+- **Nuija** tarkistettu kuvilla: kahva kädessä, paksu pää eteen (sama suunta kuin kirveellä).
+
 ### v0.92 (harppovat hirviöt ja aseiden tönäisy – kohta 9)
 - Kaksijalkaiset hirviöt (sammalhiisi, kalmo, kalmon ylimys, kivivartija, Suonäkki; myös ulottuvuusversiot, `MOBDEF.stride`): liike +10 %
   (`moveMob`), lyöntiulottuma +10 % (`range × 1,1`), askel ~40 % pidempi ja tahti hitaampi (`walkPh × 1,55` vs 2,2, heilahdus 0,98 vs 0,7,

@@ -329,12 +329,13 @@ let spwWarnT=0;
 function hitSpawner(w){if(!P.inDun||!P.realm)return false;const R=BUILT[P.realm],S=R&&R.spw;if(!S)return false;
   const dx=S.x-P.pos.x,dz=S.z-P.pos.z,d=Math.hypot(dx,dz),fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);
   if(d>w.range+1.1||(d>1.2&&(dx*fx+dz*fz)/d<.4))return false;
-  if(!w.pick){if(playTime>spwWarnT){spwWarnT=playTime+3;msg('Kalmanpesän voi murskata vain hakulla.','warn');}sfx('hit');return true;}
-  S.hp-=(9+w.pick*3)*(1+.25*((w.q||1)-1));const D=REALMS[P.realm];shake(.1);burst(S.x,S.y0+1.4,S.z,0x6e665c,8,4);burst(S.x,S.y,S.z,D.glow,5,3);
+  // v0.93: pesän voi murskata millä tahansa (myös nyrkillä); muulla kuin hakulla isku tekee puolet kivihakun vahingosta (2× aika)
+  S.hp-=w.pick?(9+w.pick*3)*(1+.25*((w.q||1)-1)):6;if(!w.pick&&playTime>spwWarnT){spwWarnT=playTime+8;msg('Hakulla Kalmanpesä murskautuu kaksi kertaa nopeammin.');}const D=REALMS[P.realm];shake(.1);burst(S.x,S.y0+1.4,S.z,0x6e665c,8,4);burst(S.x,S.y,S.z,D.glow,5,3);
   if(S.hp>0){sfx('pick');floatText(Math.ceil(S.hp/SPW_HP*100)+' %',S.x,S.y0+3.3,S.z,'#d9d2c3');return true;}
   // tuhoutui
   R.g.remove(S.g);for(const c of S.cols){gridRemove(c);const i=R.cols.indexOf(c);if(i>=0)R.cols.splice(i,1);}if(S.light)S.light.on=()=>false;
-  spwRubble(R,S.x,S.y0,S.z);fo('sd')[P.realm]=1;R.spw=null;sfx('crumble');shake(.5);shockwave(S.x,S.y0+.2,S.z,4,D.glow);burst(S.x,S.y0+1,S.z,0x6e665c,24,7);
+  spwRubble(R,S.x,S.y0,S.z);fo('sd')[P.realm]=1;R.spw=null;
+  {const dk=fo('rm')[P.realm]||(fo('rm')[P.realm]={});R.mobs.forEach((q,i)=>{if(dist2(q.x,q.z,S.x,S.z)<12*12)dk[i]=1;});}   // v0.93: pesän ympärille ei enää synny huoneen mobejasfx('crumble');shake(.5);shockwave(S.x,S.y0+.2,S.z,4,D.glow);burst(S.x,S.y0+1,S.z,0x6e665c,24,7);
   for(const [id,n] of [['luu',4],['kivi',4],...(P.realm==='portal2'?[['kupari',3]]:P.realm==='portal3'?[['hiidenkivi',1]]:[])])if(ITEMS[id])for(let j=0;j<n;j++)spawnDrop(id,1,S.x+(Math.random()-.5)*1.6,S.y0+1,S.z+(Math.random()-.5)*1.6);
   addXp(40,'Kalmanpesä murskattu');msg('Murskasit Kalmanpesän – se ei enää nostata vihollisia.','loot');return true;}
 // Murskatun pesän rauniot: matalia kiviä ja luita (ei törmäystä)

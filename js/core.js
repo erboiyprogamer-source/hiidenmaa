@@ -4,6 +4,11 @@
 // ⚠ VÄLIAIKAINEN KEHITYSTILA (käyttäjän pyyntö v0.74): DEV=true → kestävyys ei kulu, korkein taso (kaikki ohjeet auki), ei painorajaa,
 // V pohjassa liikkuu 10× nopeammin (v0.77; ennen Alt/Ö), Ä avaa DEV-valikon (sää, aika, terveys, kylläisyys), vasemmassa alakulmassa merkki "DEV-tila". Poista käytöstä: DEV=false.
 const DEV=true;
+// v0.93 DEV-täpät (DEV-valikko Ä, muistetaan selaimessa): god = ei voi kuolla eikä ota vahinkoa, food = ei nälkää, stam = rajaton kestävyys,
+// lvl = korkein taso, weight = ei painorajaa. Oletus: aiemmat DEV-edut päällä, uudet pois.
+const DEVF=(()=>{const d={god:0,food:0,stam:1,lvl:1,weight:1};if(!DEV)return d;try{Object.assign(d,JSON.parse(localStorage.getItem('hiidenmaa_dev')||'{}'));}catch(e){}return d;})();
+function devOn(k){return DEV&&!!DEVF[k];}
+function saveDevF(){try{localStorage.setItem('hiidenmaa_dev',JSON.stringify(DEVF));}catch(e){}}
 
 /* =========================================================
    HIIDENMAA – pieni viikinkihenkinen selviytymispeli

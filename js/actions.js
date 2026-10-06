@@ -135,7 +135,7 @@ function fireBow(){
   const q=w.q||1;const fe=am==='sulkanuolet';shootArrow(from,dir,(14+36*k)*(1+.1*(q-1))*(fe?1.12:1),weaponDmg(w)*(.2+.8*k)*(fe?1.15:1),'player',7/(1+.3*(q-1)),am==='tulinuolet');if(fe)projs[projs.length-1].steady=1;sfx('bow');P.yaw=camYaw+Math.PI;
 }
 function hurtPlayer(dmg,fx,fz){
-  if(P.dead||P.invul>0||P.spawnProt>0)return;
+  if(P.dead||P.invul>0||P.spawnProt>0||devOn('god'))return;
   let d=dmg;const dx=fx-P.pos.x,dz=fz-P.pos.z,l=Math.hypot(dx,dz)||1;
   if(P.blocking){const facing=(Math.sin(P.yaw)*dx+Math.cos(P.yaw)*dz)/l;const sh=equipped('shield');const blk=sh?ITEMS[sh.id].block*(1+.1*((sh.q||1)-1)):.3;
     if(facing>.2){const cost=d*.9;if(P.stam>=cost){P.stam-=cost;P.stamDelay=1;d*=1-Math.min(.95,blk);sfx('block');burst(P.pos.x+dx/l*.7,P.pos.y+1.2,P.pos.z+dz/l*.7,0xffe08a,6,3);}else{P.stam=0;P.stagger=1.2;msg('Torjunta murtui!','warn');}}}
@@ -184,8 +184,11 @@ function interact(){
   if(P.dead)return;const t=lookTarget;if(!t)return;
   if(t.kind==='node'){const n=t.n,d=n.def;const c=rint(rng,d.n[0],d.n[1]);const left=invAdd(d.item,c);if(left>=c){msg('Reppu on täynnä.','warn');return;}bump('picked');msg(`+${c-left} ${ITEMS[d.item].n}`,'loot');sfx('pickup');killNode(n);return;}
   if(t.kind==='it'){t.it.use();return;}
-  if(t.kind==='grave'){const g=t.g;if(!fitsAll(g.items)){msg('Reppuun ei mahdu kaikkea – tee tilaa ja yritä uudelleen.','warn');return;}
-    for(const s of g.items)if(s)invAdd(s.id,s.n,s.q||1);removeGrave(g);msg('Sait tavarasi takaisin.','loot');sfx('pickup');return;}
+  // v0.93: hautakasa ei katoa koskaan itsestään. Jos kaikki mahtuu reppuun, tavarat otetaan kerralla; muuten kasa avautuu arkkuikkunaan
+  // (ota mitä mahtuu, loput jäävät). Kun kasa on tyhjä, se vajoaa maahan (graveVanish) ja pääkallo poistuu kartalta.
+  if(t.kind==='grave'){const g=t.g;if(fitsAll(g.items.filter(Boolean))){for(const s of g.items)if(s)invAdd(s.id,s.n,s.q||1);g.items.length=0;graveVanish(g);msg('Sait tavarasi takaisin.','loot');sfx('pickup');return;}
+    while(g.items.length<Math.max(16,g.items.length))g.items.push(null);if(openPanel)closePanels(true);togglePanel('chest');curChest={found:true,grave:g,title:'Hautakasa',data:{items:g.items}};sfx('pickup');renderChest();
+    msg('Kaikki ei mahdu reppuun – ota mitä tarvitset, loput jäävät kasaan.','warn');return;}
   if(t.kind==='piece'){const p=t.p;if(bt(p.t)==='ovi'){const a=p.rot*Math.PI/4,lz=(P.pos.x-p.x)*Math.sin(a)+(P.pos.z-p.z)*Math.cos(a);setDoor(p,!p.data.open,p.data.open?p.data.dir:(lz>0?1:-1));sfx('build');return;}if(PIECES[p.t].store){openChest(p);return;}switch(p.t){
     case 'nuotio':case 'grilli':fireInteract(p);break;
     case 'soihtuteline':{const b=p.data.burn;if(torchPct(p)>50){msg(`Soihdussa on jo tarpeeksi polttoainetta (${torchPct(p)} %).`);break;}if(invCount('puu')>0&&b<600){invRemove('puu',1);p.data.burn=600;markFull(p);msg('Soihtu palaa 10 min.');sfx('build');}else if(invCount('hiili')>0&&b<1800){invRemove('hiili',1);p.data.burn=1800;markFull(p);msg('Hiili: soihtu palaa 30 min.');sfx('build');}else msg(invCount('puu')>0||invCount('hiili')>0?'Soihdussa on jo tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');break;}

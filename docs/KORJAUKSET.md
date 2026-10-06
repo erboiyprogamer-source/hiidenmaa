@@ -105,7 +105,7 @@ Käyttäjän toive: vasara roikkuu **vyöllä takana**, pää selän suuntaisest
 (player.js). Älä palauta vasaraa selän työkalupaikalle.
 
 ### 15. Väliaikainen kehitystila DEV – v0.74
-`const DEV=true` (core.js) on käyttäjän pyytämä testitila (ääretön kestävyys, max taso, ei painorajaa, V = 10× nopeus (v0.77; ennen Alt/Ö), Ä = DEV-valikko: sää, aika, terveys, kylläisyys, kartan + kohteiden paljastus v0.78). Älä poista
+`const DEV=true` (core.js) on käyttäjän pyytämä testitila (ääretön kestävyys, max taso, ei painorajaa, V = 10× nopeus (v0.77; ennen Alt/Ö), Ä = DEV-valikko: sää, aika, terveys, kylläisyys, kartan + kohteiden paljastus v0.78, jumalvoimatäpät `DEVF` v0.93). Älä poista
 koukkuja; kun käyttäjä pyytää pois, aseta `DEV=false`. Tarkistus- ja tasapainotestit kannattaa ajaa myös DEV=false-tilassa.
 
 ### 16. Rakennusnäppäimet ilmoittivat rakentamatta – v0.79
