@@ -98,13 +98,14 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     P.drawing=true;P.drawK=1;P.bowDraw=1;bowAim(heldMesh,1);const b=heldMesh.userData.bow,o=fig.g.position,fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),w=z=>{const q=heldMesh.localToWorld(new THREE.Vector3(0,0,z));const dx=q.x-o.x,dz=q.z-o.z;return[dx*fx+dz*fz,dx*fz-dz*fx];};
     const g=w(.12),nk=w(b.ar.position.z);P.drawing=false;P.drawK=0;inv=s0;invDirty=true;updateGear();return g[0]>.5&&Math.abs(g[1])<.15&&nk[0]<.2&&nk[1]<0||'veto väärin: '+JSON.stringify([g,nk]);});
   t('v1.23 nuolet, jouset, kestävyys, kilvet, tähtäys, tulinuolen valo',()=>AMMO_STATS.sulkanuolet.spd===1.25&&AMMO_STATS.sulkanuolet.grav===.6&&AMMO_STATS.tulinuolet.fire&&BOW_STATS.hiidenjousi.draw===1.15&&matStamK('rautakirves')===.8&&SHIELD_COST.rautakilpi===.6&&typeof bowSpread==='function'&&'arrowLight' in SET_DEF&&/bowSpread/.test(fireBow.toString())&&/fireLight/.test(igniteMob.toString())||'puuttuu');
+  t('v1.25 valikon animoidut kuvat: 10 kuvaa, oletus kuvat, 3D-kamera asetuksena',()=>MBG_SCENES.length===10&&MBG_SCENES[0].n==='Öinen leiri'&&SET_DEF.menuBg==='img'&&typeof mbgFrame==='function'&&/skip3d/.test(frame.toString())||'puuttuu');
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua
 {const p2=await b.newPage({viewport:{width:800,height:500}});const e2=[];p2.on('pageerror',e=>e2.push(e.message));
   await p2.addInitScript(()=>{Element.prototype.requestPointerLock=function(){};localStorage.setItem('hiidenmaa_map','1');if(!sessionStorage.getItem('_t')){sessionStorage.setItem('_t','1');sessionStorage.setItem('hiidenmaa_pending','new');}});
   await p2.route('**/three.min.js',r2=>THREE_JS?r2.fulfill({path:THREE_JS,contentType:'application/javascript'}):r2.continue());await p2.route('**/fonts.googleapis.com/**',r2=>r2.abort());
-  await p2.goto('http://localhost:8977/index.html');let ok2=false;try{await p2.waitForFunction('window.__game',null,{timeout:120000});ok2=await p2.evaluate(()=>state==='play'&&$('#menu').hidden);}catch(e){}
+  await p2.goto('http://localhost:8977/index.html',{waitUntil:'domcontentloaded',timeout:120000});let ok2=false;try{await p2.waitForFunction('window.__game',null,{timeout:120000});ok2=await p2.evaluate(()=>state==='play'&&$('#menu').hidden);}catch(e){}
   r['Karttavaihto + automaattinen aloitus ei kaadu (KORJAUKSET 22)']=ok2&&!e2.length||('ei käynnisty: '+e2.join('; '));await p2.close();}
 for(const [k,v] of Object.entries(r))console.log(v===true?'OK ':'XX ',k,v===true?'':v);
 console.log('errors',errs);const bad=Object.values(r).filter(v=>v!==true).length+errs.length;console.log(bad?`VIRHEITÄ: ${bad}`:'KAIKKI OK');await b.close();process.exit(bad?1:0);

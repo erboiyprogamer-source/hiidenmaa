@@ -72,6 +72,17 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.25 (valikon tausta animoiduiksi kuviksi)
+- Uusi tiedosto `js/menubg.js` (ennen main.js): 10 proseduraalista animoitua 2D-kuvaa (`MBG_SCENES`): Öinen leiri (nuotio + valon
+  lepatus + kipinät + vilkkuvat silmät puskassa), Iltarusko järvellä, Revontulet tunturilla, Sumuinen aarnimetsä (sumu + tulikärpäset),
+  Kalmankehä kuutamossa (sykkivät riimut), Kivilinnake aamulla (valonsäteet), Riimukivi rannalla (aallot), Myrsky (sade, salama,
+  taipuvat kuuset), Lumisade (lumihiutaleet, ikkunan valo), Portaalin hehku. Tyyli: low poly -muodot + maalaukselliset taivaat/sumut.
+- Kevyt: kiinteä osa piirretään kerran välikankaalle, animaatio 30 kuvaa/s 60 % tarkkuudella; mitattu 0,1–2,4 ms/kehys (ohjelmistorenderöinti).
+  Valikossa **ei piirretä 3D-maailmaa** (`skip3d`), mitattu 0 3D-kuvaa valikossa.
+- Sivun avauksessa aina Öinen leiri, sen jälkeen arvottu (ei sama peräkkäin) 20 s välein mustan kautta. Vasen reuna tummennettu (tekstit).
+- Asetus Grafiikka → Yleiset → **Valikon tausta**: Animoidut kuvat (oletus) / 3D-kamera. 3D-kamera käyttää nyt oikeaa aikaa (ei hidastu
+  alle 20 FPS:llä).
+
 ### v1.24 (KORJAUS: peli ei käynnistynyt karttavaihdon jälkeen)
 - "Uusi peli" → toinen kartta → uudelleenlataus → `startPlay` → `menuClear` käytti alustamatonta `let menuDeco` → musta ruutu.
   Valikkokameran tila esitelty `main.js`:n alussa. KORJAUKSET 22, tarkistusrivi avaa sivun automaattisen aloituksen tilassa.
@@ -1305,7 +1316,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19, kohdat 10–12 v1.20, kohta 13 v1.21, kohta 14 v1.22, kohdat 15–17 v1.23. LISTA 2 KAIKKI TEHTY – odotetaan käyttäjän palautetta ja Mergeä (PR #24). PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18, kohta 9 v1.19, kohdat 10–12 v1.20, kohta 13 v1.21, kohta 14 v1.22, kohdat 15–17 v1.23. LISTA 2 KAIKKI TEHTY – odotetaan käyttäjän palautetta ja Mergeä (PR #24).
+**TEHTY v1.25:** valikon tausta animoiduiksi 2D-kuviksi (10 kuvaa, molemmat tyylit: low poly + maalauksellinen), sivun avauksessa aina öinen leiri
+(nuotion valo ja kipinät, vilkkuvat silmät puskassa), sitten arvottu 20 s välein häivytyksellä; valikossa ei piirretä 3D:tä. Asetus "Valikon tausta":
+kuvat (oletus) / 3D-kamera (käyttää oikeaa aikaa, ei hidastu matalalla FPS:llä). PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.

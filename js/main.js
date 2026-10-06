@@ -27,7 +27,7 @@ let started=false,confirmNew=false;
 // v1.14 (lista 2, kohta 5): "Toimii parhaiten tietokoneella…" näkyy ruudun yläkeskellä kerran per käynnistys 6 s ja häipyy 1,5 s:ssa
 (function(){const h=$('#pcHint');if(!h)return;/* ajastin alkaa vasta kun valikko on piirretty (2. kehys), jotta latausaika ei syö näkymisaikaa */
   requestAnimationFrame(()=>requestAnimationFrame(()=>{if(started)return;h.hidden=false;setTimeout(()=>h.classList.add('fade'),6000);setTimeout(()=>{h.hidden=true;},7600);}));})();
-function startPlay(){if(typeof menuClear==='function')menuClear();setTimeout(()=>{if(typeof applyHudMode==='function')applyHudMode();},50);{const f=$('#menuFade');if(f)f.style.opacity=0;}fig.g.visible=true;started=true;{const h=$('#pcHint');if(h&&!h.hidden){h.classList.add('fade');setTimeout(()=>h.hidden=true,1600);}}state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();invDirty=true;}
+function startPlay(){if(typeof menuClear==='function')menuClear();if(typeof mbgShow==='function')mbgShow(false);setTimeout(()=>{if(typeof applyHudMode==='function')applyHudMode();},50);{const f=$('#menuFade');if(f)f.style.opacity=0;}fig.g.visible=true;started=true;{const h=$('#pcHint');if(h&&!h.hidden){h.classList.add('fade');setTimeout(()=>h.hidden=true,1600);}}state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();invDirty=true;}
 function pauseGame(){if(state!=='play'||openPanel||P.dead)return;state='paused';pausedAt=performance.now();$('#menu').hidden=false;$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
 addEventListener('beforeunload',e=>{if(started&&!flags.won&&!reloading){e.preventDefault();e.returnValue='';}});
 // Maailma rakennetaan skriptien latautuessa, joten kartan vaihto = sivun uudelleenlataus.
@@ -124,15 +124,15 @@ function updateFps(raw){if(SET.fps==='off')return;fpsN++;fpsT+=raw;if(fpsT<.5)re
   if(el){el.textContent=f+' FPS';el.style.color=f>=50?'#8fd8a0':f>=30?'#e8c45a':'#e0614f';}}
 function frame(now){
   requestAnimationFrame(frame);
-  const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;
+  const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;let skip3d=false;
   if(state==='play'&&SET.autoAll)autoQuality(raw);updateFps(raw);
   try{
     if(state==='play'||state==='ui')update(dt);
-    else if(state==='menu')menuCam(dt);
+    else if(state==='menu'){if(SET.menuBg==='3d'){mbgShow(false);menuCam(Math.min(.25,raw));}else{mbgFrame(now);skip3d=true;}}   // v1.25: kuvat = ei 3D-piirtoa valikossa
     else if(state==='paused'){updateEnvironment(0);}
     else if(state==='dead'||state==='win'){updateMobs(dt*.5);updateEnvironment(dt);}
   }catch(err){console.error(err);}
-  renderer.render(scene,camera);
+  if(!skip3d)renderer.render(scene,camera);
 }
 updateLights();applyGfx();
 requestAnimationFrame(frame);

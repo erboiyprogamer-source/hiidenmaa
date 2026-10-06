@@ -59,6 +59,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Kylmä tulee:** märkänä, lumisateessa vuorilla tai yöllä ulkona ilman lämpimiä vaatteita, ellei tulen lähellä.
 - **Lepo ja uni:** sänky asettaa herätyspaikan; nukkuminen vaatii yön, katon eikä vihollisia 20 m sisällä → seuraava aamu, levännyt.
 - **Kuoleman ruutu (Kaaduit):** kaikki valikot ja päävalikko sulkeutuvat, kursori näkyy, herätys napista tai Enterillä.
+- **Päävalikon tausta (v1.25):** oletuksena 10 animoitua kuvaa (ei 3D-piirtoa valikossa); sivun avauksessa aina Öinen leiri (nuotio, kipinät, vilkkuvat silmät),
+  sitten arvottu 20 s välein. Asetus "Valikon tausta": kuvat / 3D-kamera (alla, v1.15).
 - **Päävalikon tausta (v1.15):** kamera näyttää satunnaisia kohteita lähikuvina (biomit, järvi, hylätty leiri päivällä ja yöllä, eläimet),
   20 s / kohde, hidas kierto, vaihto mustan kautta; ensimmäinen kohde arvotaan joka latauksella.
 - **Päävalikko (v1.14):** "Toimii parhaiten tietokoneella hiirellä ja näppäimistöllä" näkyy ruudun yläkeskellä kerran per käynnistys 6 s ja häipyy.
