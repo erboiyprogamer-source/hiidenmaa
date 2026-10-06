@@ -89,6 +89,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.16 ehdotukset: valmistettavat + hyödylliset, ei hiidenvarusteita alussa',()=>{const s0=inv.slice(),f0=flags.first;inv=new Array(invN()).fill(null);invAdd('puu',12);invAdd('kivi',8);flags.first={};
     const s=suggestCrafts({});inv=s0;flags.first=f0;invDirty=true;return Array.isArray(s.now)&&Array.isArray(s.next)&&s.now.some(x=>x.r.id==='kirves')&&![...s.now,...s.next].some(x=>/^hiiden|^rauta/.test(x.r.id))||'ehdotukset väärin';});
   t('v1.17 täysi reppu, ulottuvuuskohtainen katoaminen, ryntäys 10 s, maahaniskun lataus',()=>typeof curDim==='function'&&BOSS_CHARGE_GAP===10&&typeof slamArms==='function'&&/BOSS_CHARGE_GAP/.test(realmBossAI.toString())&&/invRemove\(d\.item,c-left\)/.test(interact.toString())&&/d\.dim/.test(updateDrops.toString())||'puuttuu');
+  t('v1.18 T piilottaa tehtävän/tavoitteen (4 tilaa), loki L',()=>BIND_DEF.hud==='KeyT'&&BIND_DEF.log==='KeyL'&&typeof applyHudMode==='function'&&'hudMode' in SET_DEF||'näppäimet/tila puuttuu');
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 for(const [k,v] of Object.entries(r))console.log(v===true?'OK ':'XX ',k,v===true?'':v);

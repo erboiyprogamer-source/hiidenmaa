@@ -10,12 +10,13 @@ const ACTIONS=[
   ['interact','Poimi, avaa, käytä','Toiminnot','KeyE'],
   ['build','Rakennusvalikko (vasara)','Rakentaminen','KeyB'],['rot','Käännä rakennetta (Shift = asento)','Rakentaminen','KeyR'],['snap','Sivuttaiskohdistus','Rakentaminen','KeyG'],['vsnap','Pystykohdistus','Rakentaminen','KeyH'],
   ['up','Nosta haamua','Rakentaminen','KeyQ'],['down','Laske haamua','Rakentaminen','KeyZ'],['remove','Pura','Rakentaminen','KeyX'],['repair','Korjaa','Rakentaminen','KeyF'],
-  ['inv','Reppu ja valmistus','Valikot ja paneelit','Tab'],['map','Kartta','Valikot ja paneelit','KeyM'],['prog','Taso, saavutukset, tavoitteet','Valikot ja paneelit','KeyJ'],['log','Viimeiset ilmoitukset','Valikot ja paneelit','KeyT'],
+  ['inv','Reppu ja valmistus','Valikot ja paneelit','Tab'],['map','Kartta','Valikot ja paneelit','KeyM'],['prog','Taso, saavutukset, tavoitteet','Valikot ja paneelit','KeyJ'],['log','Viimeiset ilmoitukset','Valikot ja paneelit','KeyL'],['hud','Tehtävä ja tavoite näkyviin / piiloon','Valikot ja paneelit','KeyT'],
   ['full','Koko näyttö','Näkymä','KeyK'],['minizoom','Minikartan zoom','Näkymä','KeyN'],
 ];
 const BIND_DEF={};for(const a of ACTIONS)BIND_DEF[a[0]]=a[3];
 const BIND=Object.assign({},BIND_DEF);
-try{const k=JSON.parse(localStorage.getItem('hiidenmaa_keys')||'{}');for(const a in k)if(a in BIND_DEF&&typeof k[a]==='string')BIND[a]=k[a];}catch(e){}
+try{const k=JSON.parse(localStorage.getItem('hiidenmaa_keys')||'{}');for(const a in k)if(a in BIND_DEF&&typeof k[a]==='string')BIND[a]=k[a];
+  if(BIND.log===BIND.hud&&!k.hud)BIND.log='KeyL';   /* v1.18: loki siirtyi T → L, T = tehtävä/tavoite (vanha tallennettu T ei törmää) */}catch(e){}
 function saveBinds(){try{localStorage.setItem('hiidenmaa_keys',JSON.stringify(BIND));}catch(e){}}
 // Onko toiminnon näppäin pohjassa (juoksu toimii kummallakin Shiftillä kun oletus)
 const kd=a=>!!keys[BIND[a]]||(a==='run'&&BIND.run==='ShiftLeft'&&!!keys.ShiftRight);
@@ -37,7 +38,7 @@ function validateKey(action,code){
 // shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
 const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,grass:1,particles:1,detail:'high',bldDetail:true,
   renderDist:165,lights:6,mist:1,clouds:1,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
-  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off'};   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
+  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',hudMode:0};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
 // Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
 const SET_PAGES={gfx:['res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','shafts','particles','mist','autoFx','bldDetail'],shadow:['shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes'],ctl:['wheelHotbar','zoom','sound','invY']};
 const SET=Object.assign({},SET_DEF);

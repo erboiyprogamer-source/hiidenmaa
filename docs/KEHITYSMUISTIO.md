@@ -72,6 +72,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.18 (lista 2, kohta 8: tehtävä ja tavoite piiloon)
+- Uusi toiminto `hud` (oletus **T**, vaihdettavissa): kierto molemmat → vain tehtävä → vain tavoite → ei kumpaakaan (`SET.hudMode` 0–3,
+  muistetaan). Piilotettuna tavoitteen paikalla (tai tavoitteen alla, jos vain tehtävä piilossa) pieni `#hudHint`:
+  "Tavoite / Tehtävä / Tehtävä ja tavoite piilotettu – Näytä painamalla (T)". `applyHudMode` (ui.js).
+- **Ilmoitusloki siirtyi T → L** (käyttäjän valinta). Vanha tallennettu sidonta: jos log = hud ja hud ei tallennettu → log = L.
+
 ### v1.17 (välilisäykset 4–7: täysi reppu, katoamisajastin, pomojen ryntäys ja maahanisku)
 - **Täysi reppu:** solmun (kivi, oksa, marjat…) poiminta ei onnistu, jos kaikki ei mahdu; osittain lisätty perutaan ja solmu jää
   (ennen loput hävisivät). Maassa oleva esine: jos mitään ei mahdu, viesti "Reppu on täynnä – et voi poimia" enint. 4 s välein.
@@ -1252,7 +1258,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17. Seuraavaksi kohta 8. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
+**JATKA TÄSTÄ:** PR #24 auki (lista 2). Välilisäykset 1–2 TEHTY v1.12, 3 TEHTY v1.13, kohta 5 + kypäräpalautus v1.14, kohta 6 v1.15, kohta 7 v1.16. Välilisäykset 4–7 TEHTY v1.17, kohta 8 v1.18. Seuraavaksi kohta 9. PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.
@@ -1260,7 +1266,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 5. TEHTY v1.14. "Toimii parhaiten…" ruudun yläkeskelle, kerran per käynnistys 6 s, häipyy.
 6. TEHTY v1.15. Valikon tausta: luonto, järvi, leiri päivällä/yöllä, eläimet lähikuvina; 20 s, vaihto mustan kautta.
 7. TEHTY v1.16. Ehdotukset: "Voit valmistaa nyt" + "Hyödyllistä seuraavaksi", järjestys uudet → toistuvat → ei mukana → välituotteet.
-8. Tehtävät ja tavoitteet piiloon/näkyviin napista; piilotettuna pieni teksti "piilotettu – näytä painamalla (näppäin)".
+8. TEHTY v1.18. T kiertää tehtävän/tavoitteen näkyvyyttä (4 tilaa), piilotettuna pieni vihje; loki T → L.
 9. Puut kallistuvat tuulen suuntaan (runko taipuu, myrskyllä paljon); myrskyssä kaatuminen 70 % tuulen suuntaan;
    puu pelaajan päälle = 80 % suurimmasta kestosta (terveys + suojat).
 10. Iso kartta: liikkuvat pilvet näkyvät ohuina myös avatulla alueella.

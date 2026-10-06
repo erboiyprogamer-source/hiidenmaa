@@ -26,6 +26,7 @@ addEventListener('keydown',e=>{
   else if(c===BIND.minizoom)cycleMiniZoom();
   else if(c===BIND.prog)togglePanel('prog');
   else if(c===BIND.log)togglePanel('log');
+  else if(c===BIND.hud){SET.hudMode=((SET.hudMode|0)+1)%4;saveSet();applyHudMode();}   // v1.18 (lista 2, kohta 8)
   else if(c===BIND.build){const w=equipped('weapon');if(w&&w.id==='vasara')togglePanel('build');else msg('Ota vasara käteen rakentaaksesi.','warn');}
   else if(c==='Escape'){if(openPanel){e.preventDefault();closePanels(false,true);}else if(state==='play'&&locked){pauseGame();releaseLock();}}
   else if(state==='play'){

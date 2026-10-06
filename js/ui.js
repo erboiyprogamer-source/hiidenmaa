@@ -63,7 +63,7 @@ function updateHUD(dt){
 }
 let openPanel=null,selSlot=-1,curChest=null;
 let panelOpenedAt=0;
-// Viimeiset 10 ilmoitusta (T): uusin ylimpänä, kellonaika pelin ajassa.
+// Viimeiset 10 ilmoitusta (L, v1.18; ennen T): uusin ylimpänä, kellonaika pelin ajassa.
 // DEV-valikko (Ä): sää, kellonaika, terveys ja kylläisyys – muutokset heti. Sää pysyy valittuna 10 min.
 function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=dayT*24;return `${Math.floor(h)}:${String(Math.floor(h%1*60)).padStart(2,'0')}`;};
   B.innerHTML=`<div class="devRow"><b>Sää</b><div class="devBtns">${Object.entries(WEATHERS).map(([k,w])=>`<button class="btn${weather.cur===k?' on':''}" data-w="${k}">${w.n}</button>`).join('')}</div></div>
@@ -481,3 +481,12 @@ function drawMinimap(){const c=$('#mini'),g=c.getContext('2d'),W=c.width,R=MINI_
   if(!P.inDun){const ra=W/2-13,ax=W/2-WIND.x*ra,ay=W/2-WIND.z*ra;g.fillStyle='rgba(19,17,14,.7)';g.beginPath();g.arc(ax,ay,10,0,TAU);g.fill();windArrow(g,ax,ay,15,'#8fd8cf');
     g.font='700 9px Alegreya Sans, sans-serif';g.fillStyle='#d8cdb6';g.fillText(`${Math.round(WIND.spd)} m/s`,ax,ay+(ay>W/2?-12:19));}
   g.font='700 10px Alegreya Sans, sans-serif';g.fillStyle='rgba(19,17,14,.65)';g.fillRect(W/2-22,W-17,44,13);g.fillStyle='#d8cdb6';g.fillText(`${R} m · ${keyLabel(BIND.minizoom)}`,W/2,W-7);}
+
+/* v1.18 (lista 2, kohta 8): tehtävän (oikealla) ja tavoitteen (vasemmalla) näkyvyys kiertää T:llä: molemmat → vain tehtävä →
+   vain tavoite → ei kumpaakaan. Piilotettuna tavoitteen paikalla pieni teksti "… piilotettu / Näytä painamalla (T)". Muistetaan (SET). */
+function applyHudMode(){const md=SET.hudMode|0,g=$('#goal'),q=$('#quest');if(!g||!q)return;g.style.display=md===1||md===3?'none':'';q.style.display=md===2||md===3?'none':'';
+  let h=$('#hudHint');if(!h){h=document.createElement('div');h.id='hudHint';$('#hud').appendChild(h);}
+  const what=md===3?'Tehtävä ja tavoite piilotettu':md===1?'Tavoite piilotettu':md===2?'Tehtävä piilotettu':'';
+  h.style.display=what?'':'none';h.classList.toggle('below',md===2);if(what)h.innerHTML=`<b>${what}</b><span>Näytä painamalla (${keyLabel(BIND.hud)})</span>`;
+  if(md===2)h.style.top=(g.offsetTop+g.offsetHeight+6)+'px';else h.style.top='';}
+applyHudMode();

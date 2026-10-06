@@ -256,12 +256,13 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Iso kartta (M):** paljastettu alue 12 m säteellä (pehmeä), tutkimaton pilviverhon takana (liikkuvat kumpupilvet vain kartta auki),
   zoom rullalla, raahaus, rakennukset ylhäältä pikseleinä. **Merkit näkyvät vain paljastetulla alueella.**
 - **Minikartta:** 3 zoomia (60 / 35 / 110 m, N tai napsautus), taso näkyy alareunassa.
-- **Ilmoitukset:** näkyvät pituuden mukaan pidempään, piiloon valikoissa; T näyttää 10 viimeisintä.
+- **Ilmoitukset:** näkyvät pituuden mukaan pidempään, piiloon valikoissa; L näyttää 10 viimeisintä (v1.18; ennen T).
+- **Tehtävä ja tavoite piiloon (v1.18):** T kiertää: molemmat → vain tehtävä → vain tavoite → ei kumpaakaan; piilotettuna pieni vihje, valinta muistetaan.
 
 ## 15. Asetukset ja näppäimet (settings.js)
 
 - **Näppäimet** vaihdettavissa vahvistuksella (ei varattuja eikä päällekkäisiä); oletus mm. WASD, Shift juoksu, Välilyönti hyppy, C kyykky,
-  E käytä, B rakennus, R/G/H/Q/Z/X/F rakentaminen, Tab reppu, M kartta, J taso, T ilmoitukset, K koko näyttö, N minikartan zoom.
+  E käytä, B rakennus, R/G/H/Q/Z/X/F rakentaminen, Tab reppu, M kartta, J taso, L ilmoitukset, T tehtävä/tavoite piiloon, K koko näyttö, N minikartan zoom.
 - **Grafiikka:** 3D-resoluutio, automaattinen laatu, piirtoetäisyys 60–400 m, yksityiskohdat, rakennusten yksityiskohdat, hiukkaset,
   valonlähteiden määrä, usva ja höyry, pilvet, valonsäteet, puiden heiluminen.
   **Väliotsikot (v1.12):** Yleiset, Luonto, Valo, Partikkelit, Rakennukset; Varjot-sivulla Auringon varjot ja Tulien varjot.
