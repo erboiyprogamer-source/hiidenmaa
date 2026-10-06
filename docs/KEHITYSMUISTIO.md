@@ -71,6 +71,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.06 (nuija, takaraivon hiukset, tuulikompassi kartan viereen)
+- **Nuija toisin päin:** varren kartio oli väärin päin (paksu pää kädessä, ohut kärjessä). Nyt `CylinderGeometry(.095,.034)`: paksu pää
+  kärjessä vanteineen, ohut kahva nupin kanssa kädessä (myös selässä, sama malli).
+- **Pelaajan takaraivo:** 11 hiustupsua (r 0,075) takaraivoon ja niskaan (y 0,13–0,38, z −0,12…−0,2); kuuluvat `hairTop`-listaan, joten kypärä piilottaa ne.
+- **Tuulikompassi isolla kartalla** siirretty kartan päältä oikeasta yläkulmasta kartan vasemmalle puolelle omaan kankaaseen `#mapWind`
+  (170×172, `.mapRow` flex). Kartan leveys `min(78vh, 100vw − 250px)`. Tuuliviirut jäävät kartan päälle.
+
 ### v1.05 (DEV-esinehaku + jousen laukaisun korjaus)
 - **DEV-esinehaku** (DEV-valikko Ä, `renderDev`/`devGive`, ui.js): hakukenttä (nimi tai id, ääkköset ohitetaan kuten reseptihaussa),
   määräkenttä 1–999 hakunapin vieressä ja tulosten lista kuvakkeineen ("Anna N"). Täsmäosuma ja alkuosuma ensin, Enter antaa ensimmäisen.
@@ -181,7 +188,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - **Aseiden tönäisy** `ITEMS.kb` (m/s; mobin vaimennus 6/s → matka ≈ kb/7,5 m mitattuna): nuija 14 (≈1,9 m, vahvin), rautakirves 6,5,
   hiidenmiekka 7, keihäs 6, muut 4–5,5. `damageMob(...,kb)`; isot olennot vastustavat (säde > 0,8 × 0,4, > 0,6 × 0,7), pomot eivät liiku.
   Tavaran tiedoissa rivi "Tönäisy X m" (≥ 10: "vahva").
-- **Nuija** uudelleen mallinnettu mailamaiseksi: nuppi, käämitty kahva, tasaisesti paksuneva varsi, pyöreä pää, kaksi rautavannetta.
+- **Nuija** uudelleen mallinnettu mailamaiseksi: nuppi, käämitty kahva, tasaisesti paksuneva varsi, pyöreä pää, kaksi rautavannetta. (Varren kartio oli väärin päin – korjattu v1.06.)
 
 ### v0.91 (ulottuvuuksien mobien yksityiskohdat – kohta 8)
 - `realmize(m,id)` (dungeons.js) kaikkiin ulottuvuuksissa syntyviin tavallisiin mobeihin (huoneet, pomon kutsumat, Kalmanpesä); ulkomaailman
@@ -1164,7 +1171,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ (päivitetty v1.05):** v1.05 lisäsi DEV-esinehaun (Ä-valikko, määrä hakunapin vieressä) ja korjasi jousen laukaisun. Aiempi tila: päivityslistan KAIKKI kohdat 1–15 tehty (v0.81–v1.00) + välilisäykset:
+**JATKA TÄSTÄ (päivitetty v1.06):** v1.06 nuija oikein päin (paksu pää kärkeen), takaraivon hiukset, tuulikompassi kartan vasemmalle puolelle. v1.05 lisäsi DEV-esinehaun (Ä-valikko, määrä hakunapin vieressä) ja korjasi jousen laukaisun. Aiempi tila: päivityslistan KAIKKI kohdat 1–15 tehty (v0.81–v1.00) + välilisäykset:
 v0.93 (hautakasa arkkuna, Kalmanpesä millä vain, DEV-jumalvoimatäpät, harppova juoksu), v0.94 (Shift-tietoikkuna), v1.01–v1.03 (arkkukivi
 suljetuksi linnakkeeksi: korkea muuri, vaikeat siksak-hyppypilarit, kierreportaat; ruoho kevyemmäksi ja laikuittaiseksi; kiviröykkiöt 2/kartta).
 Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23 auki (tarkista ennen jatkoa onko yhdistetty; jos on, aloita origin/mainista

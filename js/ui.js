@@ -390,7 +390,9 @@ function drawBigMap(){const c=$('#bigmap'),g=c.getContext('2d'),W=c.width,v=mapV
     lay(CLOUDSH,6,1,.45,2.2,.22);lay(CLOUDC2,4,.8,.6,2.6,.55);lay(CLOUDC,7,1,.4,2,.85);}
   t.globalCompositeOperation='source-over';g.drawImage(FOGTMP,0,0);
   mapMarkers(g,S,HALF-v.x0,HALF-v.y0);if(!P.inDun)drawPlayerArrow(g,(P.pos.x+HALF-v.x0)*S,(P.pos.z+HALF-v.y0)*S,9);
-  drawWindStreaks(g,W);drawWindCompass(g,W-90,62,46);
+  drawWindStreaks(g,W);
+  /* v1.06 tuulikompassi kartan vasemmalle puolelle omaan kankaaseensa (ei kartan päälle) */
+  {const wc=$('#mapWind');if(wc){const wg=wc.getContext('2d');wg.clearRect(0,0,wc.width,wc.height);drawWindCompass(wg,85,50,46);}}
   g.fillStyle='rgba(238,229,211,.8)';g.font='700 12px Alegreya Sans, sans-serif';g.textAlign='left';g.fillText(mapZ>1?`Zoom ×${mapZ.toFixed(1)} · vedä siirtääksesi · kaksoisnapsautus keskittää`:'Rulla = zoom',10,630);}
 // Kartan zoom (rulla) ja siirto (vetäminen)
 (function(){const c=$('#bigmap');

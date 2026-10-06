@@ -210,6 +210,8 @@ function makePlayer(){
   for(let i=0;i<22;i++){const th=i/22*TAU,ring=i%2,y=.38+ring*.07,r=.18-ring*.03,sx=Math.sin(th),cz=Math.cos(th);if(cz>.55&&!ring)continue;rnd(head,sx*r*.92,y+(i%3)*.012,cz*r*.95-.02,.07,hairM,1,1,1,8);}
   for(const [x,z] of [[0,.0],[.09,.06],[-.09,.06],[.1,-.07],[-.1,-.07],[0,-.14],[0,.1]])rnd(head,x,.49,z,.07,hairM,1,.9,1,8);
   for(const [x,y] of [[-.15,.2],[.15,.2],[-.19,.28],[.19,.28],[-.13,.34],[.13,.34]])rnd(head,x,y,-.06,.065,hairM,1,1,1,8);
+  // v1.06 takaraivon hiukset (aiemmin paljas laikku niskan yläpuolella)
+  for(const [x,y,z] of [[0,.2,-.19],[-.09,.21,-.17],[.09,.21,-.17],[0,.3,-.2],[-.1,.31,-.17],[.1,.31,-.17],[-.05,.13,-.17],[.05,.13,-.17],[0,.38,-.18],[-.14,.26,-.12],[.14,.26,-.12]])rnd(head,x,y,z,.075,hairM,1,1,.8,8);
   const hairTop=head.children.slice(hair0);   // v0.90: hiukset piiloon kypärän alla (parta jää näkyviin)
   for(const [x,y,z,r] of [[-.12,.2,.12,.055],[-.075,.14,.16,.06],[0,.12,.18,.065],[.075,.14,.16,.06],[.12,.2,.12,.055],[-.05,.2,.19,.038],[.05,.2,.19,.038],[0,.07,.14,.055]])rnd(head,x,y,z,r,hairM,1,1,1,8);
   g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
@@ -276,7 +278,7 @@ function makeHeld(id){
       const bind=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.06,8),mat(0x4a2f18));bind.rotation.x=Math.PI/2;bind.position.z=.58;g.add(bind);break;}
     case 'nuija':{// v0.92 mailamainen nuija: kapea kahva nupilla ja käärityllä otteella, paksunee tasaisesti pyöreään päähän, kaksi rautavannetta
       const wd=smat(0x7b5434,{flatShading:true}),dk=smat(0x5a3a22),band=mat(0x4d535c,{metalness:.5,roughness:.5});
-      const bat=new THREE.Mesh(new THREE.CylinderGeometry(.034,.095,.8,10),wd);bat.rotation.x=Math.PI/2;bat.position.z=.34;bat.castShadow=true;g.add(bat);
+      const bat=new THREE.Mesh(new THREE.CylinderGeometry(.095,.034,.8,10),wd);   /* v1.06: paksu pää kärkeen (+z), ohut kahvaan; ennen toisin päin */bat.rotation.x=Math.PI/2;bat.position.z=.34;bat.castShadow=true;g.add(bat);
       const tip=new THREE.Mesh(new THREE.SphereGeometry(.095,10,7),wd);tip.scale.z=.6;tip.position.z=.74;tip.castShadow=true;g.add(tip);
       const knob=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.04,10),dk);knob.rotation.x=Math.PI/2;knob.position.z=-.07;g.add(knob);
       const grip=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.24,8),dk);grip.rotation.x=Math.PI/2;grip.position.z=.06;g.add(grip);

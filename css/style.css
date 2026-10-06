@@ -104,7 +104,8 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 .card .tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--frost)}
 #chest{display:grid;grid-template-columns:auto auto;gap:22px}
 #mapP{padding:12px}
-#bigmap{width:min(78vh,calc(100vw - 60px));height:min(78vh,calc(100vw - 60px));display:block;image-rendering:auto}
+.mapRow{display:flex;gap:12px;align-items:flex-start}#mapWind{flex:none;width:170px;height:172px}
+#bigmap{width:min(78vh,calc(100vw - 250px));height:min(78vh,calc(100vw - 250px));display:block;image-rendering:auto}
 .legend{display:flex;gap:14px;font-size:12px;color:var(--dim);margin-top:8px;flex-wrap:wrap}
 
 /* Menu */

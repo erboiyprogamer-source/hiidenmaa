@@ -89,6 +89,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## 5. Valmistus ja esineet (items.js)
 
 - **48 esinettä, 27 valmistusohjetta.** Työpisteet: työpenkki, ahjo, nuotio/grilli, sulatusuuni. Ohjeilla tasovaatimus (`lvl`).
+- **Nuija:** mailamainen, ohut kahva kädessä ja paksu pää kärjessä (v1.06). Pelaajalla hiukset myös takaraivossa (piiloon kypärän alle).
 - **Aseet:** puunuija, kivikirves, piikivikeihäs, kupari-/rautamiekka, kupari-/rautakirves, kupari-/rautahakku, hiidenmiekka (harvinainen).
   Jouset: metsästysjousi, hiidenjousi. Kilvet: puu, kupari, rauta. Panssarit: nahka, kupari, rauta, hiiden.
 - **Laatu (★1–3):** kehittäminen parantaa vahinkoa, nopeutta ja jousen vetoa; käsisoihdun palamisaika +50 % per taso.
@@ -231,7 +232,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Sää:** selkeä, pilvinen, tuulinen, tihku, sade, myrsky (salamat, puiden kaatuminen), lumisade (vuorilla), sumu.
 - **Tuuli (v0.84):** suunta pysyy 2–6 min ja kääntyy hitaasti (40–90 s, enint. 120°); nopeus säästä (selkeä 1–4 … myrsky 15–22 m/s) + puuskat.
   Pilvet (myös kartalla) liikkuvat tuulen suuntaan, puut kallistuvat ja heiluvat, sade viistää, savu ja kipinät ajautuvat, nuolet kallistuvat
-  (13 m/s ≈ 0,5 m / 30 m). Kartalla iso kompassi, "Tuuli suunnasta / X m/s", voimakkuuspalkki ja liukuvat tuuliviirut (v1.04); minikartan reunalla tuulinuoli + m/s.
+  (13 m/s ≈ 0,5 m / 30 m). Ison kartan vasemmalla puolella (v1.06, ei kartan päällä) iso kompassi, "Tuuli suunnasta / X m/s" ja voimakkuuspalkki; kartan päällä liukuvat tuuliviirut (v1.04); minikartan reunalla tuulinuoli + m/s.
 - **Pilvet** isoina kerroksina sään mukaan, kaukana häipyvät; pilvikansi rankassa säässä; salaman välähdys kevyt.
 - **Aurinko:** pyöreä hehku (`sunGlow`), säteet selkeällä säällä (häipyvät aurinkoon katsottaessa).
 - **Aarnimetsässä** tiheä sumu ja pimeämpi valo.

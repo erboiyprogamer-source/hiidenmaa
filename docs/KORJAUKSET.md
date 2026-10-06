@@ -143,6 +143,12 @@ Tarkistuksessa rivi "Jousi laukeaa hiiren vapautuksesta".
 function onPrimaryUp(){if(P.drawing){P.drawing=false;if(P.bowDraw>.15&&ammoId())fireBow();P.bowDraw=0;}}
 ```
 
+### 21. Nuija oli väärin päin kädessä – v1.06
+**Oire:** paksu pää oli kädessä ja ohut pää kärjessä (vanteet törröttivät ohuen varren ympärillä).
+**Syy:** `CylinderGeometry(radiusTop, radiusBottom)` + `rotation.x=+π/2` vie **yläsäteen +z:aan** (kärkeen). Säteet olivat väärässä järjestyksessä.
+**Korjaus:** `CylinderGeometry(.095,.034,…)` (paksu = top = kärki). Kartioiville osille: top-säde menee +z:aan, kun rotation.x = +π/2.
+Tarkistuksessa rivi "v1.06 nuija".
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

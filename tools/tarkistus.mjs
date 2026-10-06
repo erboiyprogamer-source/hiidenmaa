@@ -73,6 +73,9 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('DEV: kartan paljastus (pilvet + kohteet)',()=>!DEV||typeof devRevealMap==='function');
   t('DEV-valikko (Ä) ja V-nopeus',()=>!DEV||(!!$('#devP')&&typeof renderDev==='function'));
   t('DEV: esinehaku + määrä (antaa esineen, ylimenevä maahan)',()=>{if(!DEV)return true;const s=inv.slice();inv=new Array(invN()).fill(null);devN=7;devGive('kivi');const ok=inv.filter(x=>x&&x.id==='kivi').reduce((a,x)=>a+x.n,0)===7;inv=s;devN=1;invDirty=true;return ok||'ei annettu';});
+  t('v1.06 nuija: paksu pää kärjessä (+z), ohut kahva',()=>{const g=makeHeld('nuija'),c=g.children[0].geometry.parameters;return c.radiusTop>c.radiusBottom||'nuija väärin päin';});
+  t('v1.06 pelaajan takaraivossa hiukset',()=>{const f=makePlayer();return f.hairTop.filter(h=>h.position.z<-.15&&h.position.y<.36).length>=8||'takaraivo paljas';});
+  t('v1.06 tuulikompassi kartan vasemmalla (oma kangas, ei kartan päällä)',()=>!!$('#mapP #mapWind')&&$('#mapWind').nextElementSibling===$('#bigmap')&&!/drawWindCompass\(g,/.test(drawBigMap.toString())||'kompassi väärässä paikassa');
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 for(const [k,v] of Object.entries(r))console.log(v===true?'OK ':'XX ',k,v===true?'':v);
