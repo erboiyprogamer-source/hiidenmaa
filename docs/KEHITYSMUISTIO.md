@@ -71,6 +71,16 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.91 (ulottuvuuksien mobien yksityiskohdat – kohta 8)
+- `realmize(m,id)` (dungeons.js) kaikkiin ulottuvuuksissa syntyviin tavallisiin mobeihin (huoneet, pomon kutsumat, Kalmanpesä); ulkomaailman
+  saman lajin mobit ennallaan, pomot ennallaan. **+10 % terveys** ja **lisäsaalis** `REALM_LOOT` (Routaluola luu 1–2 + rauta 0–1,
+  Kalmankammio kupari 1–2 + luu 1–2, Aarnihauta pihka 1–2 + kupari 0–1).
+- Koristeet: **Routaluola** huurrekuori, jääpuikot, jääpiikit päässä; **Kalmankammio** hautakaapu, pronssinen kaulakoru ja käsirenkaat,
+  heiluva selkäriepu, ylimyksellä pronssikruunu ja viitta; **Aarnihauta** sammaltyynyt, hohtavat sienet, heiluvat köynnökset.
+- **Silmät** (`animEyes`, ai.js animMob): pään kirkkaiden MeshBasic-silmien päälle additiivinen halo + ylöspäin lepattava liekinkieli
+  ulottuvuuden värillä (sininen / oranssi / vihreä); epäsäännöllinen sykintä, jahdatessa 35 % kirkkaampi ja liekki korkeampi;
+  räpäytys 3–8 s välein (0,13 s).
+
 ### v0.90 (painavat haarniskamallit – kohta 7)
 - `buildArmor(f,id)` (models.js): haarniskan osat kiinnitetään hahmon nivelryhmiin (rig, olkavarret, kyynärvarret, reidet, sääret, pää), joten
   ne liikkuvat animaation mukana; vanhat osat poistetaan aina ensin (`f.armorParts`). Kypärä piilottaa hiukset (`f.hairTop`), parta jää.
@@ -1044,7 +1054,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (tauko v0.84:n jälkeen):** kohdat 1, 2, 3 ja 4 tehty (v0.81–v0.84). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki, ei vielä yhdistetty – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-KOHDAT 5 (v0.85–v0.88), 6 (v0.89) ja 7 (v0.90) VALMIIT. Seuraavaksi kohta 8 (ulottuvuuksien mobien yksityiskohdat) – kysy 1–5 tarkentavaa. Vanha muistiinpano: 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
+KOHDAT 5–8 (v0.85–v0.91) VALMIIT. Seuraavaksi kohta 9 (hirviöiden harppaavat askeleet + lyöntiulottuma +10 %) – kysy 1–5 tarkentavaa. Vanha muistiinpano: 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
 jänis, kettu, hirvi, metso/teeri), mitkä 2 "joskus vihamielistä" (ehdotus: ilves, villisika-emakko/hirvi kiima-aikaan), harvinaiset pelottavat
 (ehdotus: "Korpinpeikko"/hiidenhirvi yöllä aarnimetsässä), karhun saalis ja biomit. Karhu-vaatimukset kirjattu alla (kohta 5).
 Käytä `makeAnimal`-tyyliä (v0.81 liitokset). Sen jälkeen 6 → 15 järjestyksessä, kukin: kysymykset → toteutus → kuvat/testi → tarkistusrivi
@@ -1062,7 +1072,7 @@ heilunta, kuten puut v0.84); grafiikka-asetus pois/oletus (ei niin tuuhea)/täys
    säikähdys/reaktiot. Karhu: iso, lyö kauas ja nopeasti, kaataa eteen jäävät puut tukeiksi, HP 200 % pelaajasta, palautuu jos ei lyöty 1 min.
 6. TEHTY v0.89. Kalmanvartija: harvemmin liuku/ryntäys, iskulla pidempi viive. Kaikki kiviä heittävät pomot: kivi 30 % hitaampi, hyökkäysviive +10 %.
 7. TEHTY v0.90. Haarniskoille kunnon painavat erottuvat mallit.
-8. Ulottuvuuksien mobeille enemmän yksityiskohtia (vaatetus, koristeet, silmäanimaatiot, liekit silmissä).
+8. TEHTY v0.91. Ulottuvuuksien mobeille enemmän yksityiskohtia (vaatetus, koristeet, silmäanimaatiot, liekit silmissä).
 9. Hirviöille (sammalhiisi, kalmo) harppaavammat askeleet, lyöntiulottuma +10 %.
 10. Kalmanvartija vajoaa maahan (ei katoa) ilmoituksen aikana, maapartikkeleita.
 11. Kuokka nostaa maata enemmän, oikea klikkaus palauttaa alkuperäisen värin; lapio syvempi kuoppa, oikea klikkaus = ruskea polku.

@@ -241,7 +241,7 @@ function exitRealm(){fadeTo(()=>{
   const id=P.realm,F=portalFront(id);P.inDun=false;P.realm=null;P.pos.set(F.x,terrainH(F.x,F.z),F.z);P.vy=0;P.vel.set(0,0,0);camYaw=Math.atan2(-F.fx,-F.fz);P.spawnProt=3.2;
   for(const m of [...mobs])if(m.dun){if(m.def.ai==='rboss'&&!m.dead)fo('rbHp')[m.realm]=m.hp;mobRemove(m);}});}// v0.75: pomon hp säilyy
 function spawnRealmMobs(id){const R=BUILT[id],dk=fo('rm')[id]||(fo('rm')[id]={});
-  R.mobs.forEach((s,i)=>{if(dk[i])return;const m=spawnMob(s.type,s.x,s.z,{y:DUN.y,dun:true});m.realm=id;m.rmIdx=i;});
+  R.mobs.forEach((s,i)=>{if(dk[i])return;const m=realmize(spawnMob(s.type,s.x,s.z,{y:DUN.y,dun:true}),id);m.rmIdx=i;});
   if(!fo('rb')[id]){const b=spawnMob(REALMS[id].boss,R.boss.x,R.boss.z,{y:DUN.y,dun:true});b.realm=id;b.rmIdx='B';b.state='sleep';const hp=fo('rbHp')[id];if(hp)b.hp=Math.min(b.maxHp,hp);}}
 // Kutsutaan, kun mobi kuolee: tallentaa vartijoiden, sisätilojen vihollisten ja pomojen kaatumisen.
 function onMobKilled(m){
@@ -249,9 +249,49 @@ function onMobKilled(m){
   if(m.realm&&m.rmIdx!==undefined){if(m.rmIdx==='B'){fo('rb')[m.realm]=1;msg(`${m.def.n} on kaatunut!`,'loot');sfx('roar');shake(.4);const k=REALMS[m.realm].key;if(k){giveOrDrop(k,1,m.pos.x,m.pos.y+1.2,m.pos.z);msg(`${ITEMS[k].n} – se avaa seuraavan portin.`,'loot');}}else(fo('rm')[m.realm]||(fo('rm')[m.realm]={}))[m.rmIdx]=1;}
 }
 
+/* ---------------- ULOTTUVUUSVERSIOT (v0.91, kohta 8) ---------------- */
+// Ulottuvuudessa syntyvä tavallinen mobi saa teeman mukaiset lisäosat, liekkimäisesti sykkivät silmät (ulottuvuuden väri, kirkastuvat
+// jahdatessa) ja satunnaiset räpäytykset, +10 % terveyttä ja lisäsaaliin (REALM_LOOT). Ulkomaailman saman lajin mobit ennallaan.
+const REALM_LOOT={portal1:[['luu',1,2],['rauta',0,1]],portal2:[['kupari',1,2],['luu',1,2]],portal3:[['pihka',1,2],['kupari',0,1]]};
+const REALM_EYE={portal1:0x8fe6ff,portal2:0xff8a36,portal3:0x9aff7a};
+function realmize(m,id){m.realm=id;if(m.def.ai==='rboss'||m.rv)return m;m.rv=1;m.maxHp=Math.round(m.maxHp*1.1);m.hp=m.maxHp;
+  const f=m.f,base=f.biped?f.torso:f.body,H=f.head,s=f.s||1,col=REALM_EYE[id];
+  const add=(par,me)=>{me.castShadow=true;par.add(me);return me;};
+  const sph=(par,r,mt,x,y,z,sx=1,sy=1,sz=1)=>{const me=new THREE.Mesh(new THREE.SphereGeometry(r,7,5),mt);me.position.set(x,y,z);me.scale.set(sx,sy,sz);return add(par,me);};
+  const cn=(par,r,h,mt,x,y,z,rx=0,rz=0)=>{const me=new THREE.Mesh(new THREE.ConeGeometry(r,h,5),mt);me.position.set(x,y,z);me.rotation.set(rx,0,rz);return add(par,me);};
+  // vartalon pinnan apupisteet: kaksijalkaisilla torso-mesh (paikallinen), nelijalkaisilla body-ryhmä (rungon korkeus by)
+  const by=f.biped?0:(f.body.children[0]?f.body.children[0].position.y:.7*s),R=f.biped?.2*s:.3*s;
+  if(id==='portal1'){const ice=smat(0xdff6ff,{flatShading:true,emissive:0x2a6080,emissiveIntensity:.5}),fr=smat(0xeef8ff,{flatShading:true});
+    for(let i=0;i<7;i++){const a=i/7*TAU;sph(base,.06*s,fr,Math.sin(a)*R*.9,by+(f.biped?.15:.1*s)+(i%3)*.06*s,Math.cos(a)*R*.7,1.4,.5,1.2);}   // huurrekuori
+    for(let i=0;i<6;i++){const a=i/6*TAU;cn(base,.025*s,(.14+(i%2)*.08)*s,ice,Math.sin(a)*R*.85,by+(f.biped?-.3*s:-.2*s),Math.cos(a)*R*.6,Math.PI);}   // jääpuikot
+    for(let i=0;i<3;i++)cn(H,.02*s,.1*s,ice,(i-1)*.08*s,.42*s,-.02*s,0,(i-1)*.3);}
+  else if(id==='portal2'){const robe=smat(0x3a1e1a,{flatShading:true,side:THREE.DoubleSide}),robe2=smat(0x2a1612,{flatShading:true}),br=smat(0xb07a3a,{flatShading:true,metalness:.6,roughness:.35});
+    if(f.biped){const sk=new THREE.Mesh(new THREE.CylinderGeometry(.2*s,.3*s,.55*s,9,1,true),robe);sk.position.set(0,-.42*s,0);add(base,sk);
+      const tc=new THREE.Mesh(new THREE.TorusGeometry(.1*s,.018*s,5,10),br);tc.rotation.x=Math.PI/2;tc.position.set(0,.06*s,0);add(H,tc);   // kaulakoru
+      for(const a of [f.armL,f.armR]){const ring=new THREE.Mesh(new THREE.TorusGeometry(.06*s,.014*s,5,8),br);ring.rotation.x=Math.PI/2;ring.position.y=-.12*s;add(a,ring);}
+      for(let i=0;i<3;i++)swayAdd(f,prt(base,.12*s,.5*s,.02*s,robe2,(i-1)*.13*s,-.15*s,-.17*s),.1,1.2+i*.3);   // selkäriepu
+      if(m.type==='ylimys'){for(let i=0;i<6;i++){const a=i/6*TAU;cn(H,.03*s,.12*s,br,Math.sin(a)*.17*s,.5*s,Math.cos(a)*.17*s);}const cr=new THREE.Mesh(new THREE.TorusGeometry(.18*s,.025*s,5,12),br);cr.rotation.x=Math.PI/2;cr.position.y=.45*s;add(H,cr);
+        swayAdd(f,prt(base,.5*s,.9*s,.03*s,robe,0,-.15*s,-.2*s),.06,.9);}}
+    else for(let i=0;i<4;i++)sph(base,.05*s,br,(i-1.5)*.1*s,by+.25*s,.3*s,1,1,1);}
+  else if(id==='portal3'){const moss=smat(0x3e6a2a,{flatShading:true}),vine=smat(0x2e5a22,{flatShading:true}),mush=smat(0x9aff7a,{flatShading:true,emissive:0x3a9a3a,emissiveIntensity:.8}),stem=smat(0xe8e0c8,{flatShading:true});
+    for(let i=0;i<6;i++){const a=i/6*TAU;sph(base,.07*s,moss,Math.sin(a)*R*.85,by+(f.biped?.2*s:.18*s)+(i%2)*.05*s,Math.cos(a)*R*.6,1.3,.5,1.1);}
+    for(let i=0;i<4;i++){const a=i/4*TAU+.4,x=Math.sin(a)*R*.7,z=Math.cos(a)*R*.5,y=by+(f.biped?.32*s:.28*s);cn(base,.012*s,.06*s,stem,x,y,z);const cp=sph(base,.04*s,mush,x,y+.04*s,z,1.2,.6,1.2);cp.castShadow=false;}   // hohtavat sienet
+    for(let i=0;i<4;i++)swayAdd(f,prt(base,.025*s,.4*s,.025*s,vine,(i-1.5)*.1*s,by+(f.biped?-.25*s:-.1*s),(f.biped?.15:.25)*s),.15,1+i*.25);}
+  // silmät: etsitään pään kirkkaat MeshBasic-pallot ja lisätään liekkimäinen hehku (halo + ylös venyvä kieli)
+  const eyes=[];for(const c of H.children){if(c.isMesh&&c.material&&c.material.isMeshBasicMaterial){const cc=c.material.color;if(cc.r+cc.g+cc.b>.9&&c.position.z>0)eyes.push(c);}}
+  m.eyeFx=[];const gm=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.75,blending:THREE.AdditiveBlending,depthWrite:false,fog:false});
+  for(const e of eyes){const g=new THREE.Group();g.position.copy(e.position);g.position.z+=.01*s;H.add(g);const r=Math.max(.03,(e.geometry.parameters.radius||.03)*Math.max(e.scale.x,1));
+    const halo=new THREE.Mesh(new THREE.SphereGeometry(r*1.6,8,6),gm);g.add(halo);const tongue=new THREE.Mesh(new THREE.ConeGeometry(r*1.1,r*4,6),gm);tongue.position.y=r*2;g.add(tongue);
+    m.eyeFx.push({g,base:g.scale.clone(),tongue,ph:Math.random()*6});}
+  m.blinkT=2+Math.random()*5;m.living=!f.biped||m.type==='hiisi';
+  return m;}
+// Silmien liekkimäinen sykintä (nopea epäsäännöllinen välke + hidas sykkimiskaari, kirkkaampi jahdatessa) ja räpäytykset 3–8 s välein.
+function animEyes(m,dt){const chase=m.state==='chase',t=playTime;m.blinkT-=dt;const blink=m.blinkT<0&&m.blinkT>-.13;if(m.blinkT<-.13)m.blinkT=3+Math.random()*5;
+  for(const e of m.eyeFx){const fl=.75+.25*Math.sin(t*17+e.ph)*Math.sin(t*6.3+e.ph*2)+.15*Math.sin(t*2.1+e.ph),k=(chase?1.35:1)*fl;
+    e.g.scale.set(k,blink?.08:k*(1+.25*Math.sin(t*11+e.ph)),k);e.tongue.scale.y=.6+.6*Math.abs(Math.sin(t*9+e.ph))*(chase?1.4:1);e.tongue.visible=!blink;}}
 /* ---------------- VAIHEITTAINEN POMO ---------------- */
 function summonMinions(m,n){const R=REALMS[m.realm],cnt=mobs.filter(o=>o.boss===m&&!o.dead).length;
-  for(let i=0;i<n&&cnt+i<4;i++){const a=i/n*TAU+Math.random(),k=spawnMob(R.mobs[0],m.pos.x+Math.cos(a)*4.5,m.pos.z+Math.sin(a)*4.5,{y:DUN.y,dun:true});k.realm=m.realm;k.boss=m;k.state='chase';}
+  for(let i=0;i<n&&cnt+i<4;i++){const a=i/n*TAU+Math.random(),k=realmize(spawnMob(R.mobs[0],m.pos.x+Math.cos(a)*4.5,m.pos.z+Math.sin(a)*4.5,{y:DUN.y,dun:true}),m.realm);k.boss=m;k.state='chase';}
   shockwave(m.pos.x,m.pos.y,m.pos.z,6,REALMS[m.realm].glow);}
 function realmBossAI(m,dt,dx,dz,dist){
   const d=m.def,f=m.f;
@@ -308,7 +348,7 @@ function updateDungeons(dt){
   const RR=P.inDun&&P.realm?BUILT[P.realm]:null,S=RR&&RR.spw;
   if(S){S.cr.rotation.y+=dt*1.5;S.cr.position.y=S.y+Math.sin(playTime*2)*.15;S.list=S.list.filter(m=>!m.dead&&mobs.includes(m));S.cr.scale.setScalar(S.list.length?.8:1+S.t/SPW_T*.6);
     if(!S.list.length&&!P.dead&&!(P.spawnProt>0)&&dist2(S.x,S.z,P.pos.x,P.pos.z)<26*26){S.t+=dt;if(S.t>=SPW_T){S.t=0;const D=REALMS[P.realm];
-      for(let i=0;i<3;i++){const a=i/3*TAU+Math.random(),m=spawnMob(D.spw,S.x+Math.cos(a)*3.2,S.z+Math.sin(a)*3.2,{y:DUN.y,dun:true});m.realm=P.realm;m.state='chase';S.list.push(m);}
+      for(let i=0;i<3;i++){const a=i/3*TAU+Math.random(),m=realmize(spawnMob(D.spw,S.x+Math.cos(a)*3.2,S.z+Math.sin(a)*3.2,{y:DUN.y,dun:true}),P.realm);m.state='chase';S.list.push(m);}
       shockwave(S.x,DUN.y+.2,S.z,5,D.glow);burst(S.x,S.y,S.z,D.glow,16,5);sfx('roar');if(!S.seen){S.seen=1;msg('Kalmanpesä herää – se nostattaa vihollisia aina kun edelliset kaatuvat.','warn');}}}}
   for(const p of PORTALS){const lk=portalLocked(p.id);if(p.lk!==lk){p.lk=lk;setPortalLook(p.id);}p.plane.material.opacity=lk?.28:.5+.2*Math.sin(playTime*2.2+p.ph);}
   const rb=P.inDun?mobs.find(m=>m.def.ai==='rboss'&&m.dun&&!m.dead&&m.state!=='sleep'):null,bar=$('#bossbar');
