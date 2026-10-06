@@ -276,3 +276,5 @@ input.isdef{filter:brightness(1.25)}
 #hudHint b{color:var(--bone);font-weight:700;font-size:12px}
 #cross.aim{transition:border-color .1s}#cross.aim.full::after{content:'';position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:#e0483c}
 #menuBg{position:fixed;inset:0;width:100%;height:100%;display:none}   /* v1.25 valikon animoitu tausta */
+#ghostIt{display:none;font:800 12px 'Alegreya Sans',sans-serif;color:#fff;text-align:right;line-height:1;padding:0 2px 2px 0;box-sizing:border-box;display:none;align-items:flex-end;justify-content:flex-end;text-shadow:0 1px 2px #000}
+#ghostIt.half{outline:2px dashed rgba(143,216,207,.85);outline-offset:-2px;border-radius:4px}

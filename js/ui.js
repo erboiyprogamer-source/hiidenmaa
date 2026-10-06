@@ -131,7 +131,7 @@ function renderLog(){const fm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60))
   $('#logBody').innerHTML=msgLog.length?[...msgLog].reverse().map(m=>`<div class="lg ${m.cls}"><span class="num">${fm(m.at)}</span>${m.t.replace(/</g,'&lt;')}</div>`).join(''):'<div class="note">Ei ilmoituksia vielä.</div>';}
 function togglePanel(name){if(openPanel===name){closePanels();return;}if(P.dead)return;panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';releaseLock();mouseL=false;mouseR=false;P.drawing=false;
   if(name==='inv'){$('#inv').hidden=false;renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){$('#devP').hidden=false;renderDev();}}
-function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;slotDrag=null;if(typeof updGhost==='function')updGhost();if(!keep){state='play';if(!skipLock)requestLock();}}
+function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;selHalf=false;slotDrag=null;if(typeof updGhost==='function')updGhost();if(!keep){state='play';if(!skipLock)requestLock();}}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
 function nearStations(){const s={};for(const p of pieces){const k=isFirePiece(p.t)?'nuotio':p.t;if(['tyopenkki','nuotio','ahjo'].includes(k)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(k==='nuotio'?4:8)**2&&!P.inDun){if(k==='nuotio'&&p.data.fuel<=0)continue;s[k]=1;}}return s;}
 let fxAt=0;
@@ -143,19 +143,20 @@ function renderInv(){initSearch();renderEffects();
   // v0.75: napsautus valitsee; toinen napsautus toiseen paikkaan siirtää/vaihtaa paikat (sama esine pinotaan); sama paikka poistaa valinnan.
   // Hiiren oikea puolittaa pinon tyhjään paikkaan. Kaksoisnapsautus käyttää.
   [...g.children].forEach((el,i)=>{el.classList.toggle('sel',i===selSlot);el.onclick=()=>{
-      if(selSlot>=0&&selSlot!==i&&inv[selSlot]){moveSlot(inv,selSlot,inv,i);selSlot=-1;upPrev=null;invDirty=true;updateGear();renderInv();return;}
-      upPrev=null;selSlot=selSlot===i?-1:(inv[i]?i:-1);renderInv();};
+      if(selSlot>=0&&selSlot!==i&&inv[selSlot]){(selHalf?moveHalf:moveSlot)(inv,selSlot,inv,i);selSlot=-1;selHalf=false;upPrev=null;invDirty=true;updateGear();renderInv();return;}
+      upPrev=null;selHalf=false;selSlot=selSlot===i?-1:(inv[i]?i:-1);renderInv();};
     // v1.08 (lista 2, kohta 1): valittuna oikea klikkaus toiseen ruutuun siirtää puolet; ilman valintaa puolittaa pinon kuten ennen
-    el.ondblclick=()=>{useSlot(i);selSlot=-1;renderInv();};el.oncontextmenu=e=>{e.preventDefault();if(selSlot>=0&&selSlot!==i&&inv[selSlot]){moveHalf(inv,selSlot,inv,i);invDirty=true;updateGear();renderInv();}else splitSlot(i);};
+    el.ondblclick=()=>{useSlot(i);selSlot=-1;renderInv();};el.oncontextmenu=e=>{e.preventDefault();if(dragEat)return;if(selSlot>=0&&selSlot!==i&&inv[selSlot]){moveHalf(inv,selSlot,inv,i);invDirty=true;updateGear();renderInv();}
+      else{const h=pickHalf(inv[i]);upPrev=null;if(selSlot===i&&selHalf===h){selSlot=-1;selHalf=false;}else{selSlot=inv[i]?i:-1;selHalf=h;}renderInv();}};   // v1.30: oikea = ota puolet valituksi
     slotUX(el,'i',i);});
   $('#invW').textContent=`Paino ${invWeight().toFixed(0)} / ${MAXW}`;updGhost();
   upBtn($('#invUp'),PACK_UP[P.packLv+1],`Isompi reppu (taso ${P.packLv+2})`,()=>{setPack(P.packLv+1);msg('Reppu kasvoi!','loot');},'pack',
     [['Paikkoja',invN(),invN()+8],['Kantokyky',MAXW,MAXW+40]],renderInv,'Reppu');
-  const det=$('#detail'),s=inv[selSlot];
+  if(selSlot<0)selHalf=false;const det=$('#detail'),s=inv[selSlot];
   if(!s){det.innerHTML='<div class="s">Valitse esine napsauttamalla tai raahaa se hiirellä toiseen ruutuun. Kaksoisnapsautus käyttää, hiiren oikea puolittaa pinon.</div>';}
   else{const d=ITEMS[s.id];const q=s.q||1;
     const up=upgradeInfo(s),props=itemProps(s,q),open=up&&upPrev==='item'+selSlot;
-    det.innerHTML=`<div class="selHint">Valittu – napsauta toista ruutua siirtääksesi, oikea napsautus siirtää puolet. Voit myös raahata.</div><div class="t">${d.n}${q>1?` <span class="qs">★${q}</span>`:''}</div><div class="s">${d.d||''}</div>`+
+    det.innerHTML=`<div class="selHint">${selHalf?`Puolet valittu (${Math.floor(s.n/2)} kpl) – napsauta ruutua siirtääksesi ne.`:'Valittu – napsauta toista ruutua siirtääksesi, oikea napsautus siirtää puolet. Voit myös raahata.'}</div><div class="t">${d.n}${q>1?` <span class="qs">★${q}</span>`:''}</div><div class="s">${d.d||''}</div>`+
       `<table class="props">${props.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`+
       (open?upPreviewHTML(props,itemProps(s,q+1),up.req,`★${q} → ★${q+1}`):'')+`<div class="btns"></div>`;
     const b=det.querySelector('.btns');
@@ -317,9 +318,10 @@ function renderChest(){if(!curChest)return;const items=curChest.data.items;$('#c
   const C=$('#chestGrid'),I=$('#chestInv');
   for(const [G,el0] of [['c',C],['i',I]])[...el0.children].forEach((el,i)=>{el.classList.toggle('sel',!!chestSel&&chestSel.g===G&&chestSel.i===i);el.onclick=e=>chestClick(G,i,e.shiftKey);
     el.oncontextmenu=ev=>{ev.preventDefault();const arr=G==='c'?items:inv;   // v1.08: valittuna oikea klikkaus siirtää puolet, muuten puolittaa pinon samalla puolella
-      if(chestSel&&!(chestSel.g===G&&chestSel.i===i)){moveHalf(chestSel.g==='c'?items:inv,chestSel.i,arr,i);invDirty=true;updateGear();}else splitIn(arr,i);renderChest();};
+      if(dragEat)return;if(chestSel&&!(chestSel.g===G&&chestSel.i===i)){moveHalf(chestSel.g==='c'?items:inv,chestSel.i,arr,i);invDirty=true;updateGear();}
+      else{const h=pickHalf(arr[i]);if(chestSel&&chestSel.g===G&&chestSel.i===i&&!!chestSel.half===h)chestSel=null;else chestSel=arr[i]?{g:G,i,half:h}:null;}renderChest();};
     slotUX(el,G,i);});
-  const h=$('#chestHint');if(h)h.textContent=chestSel?'Valittu – napsauta ruutua siirtääksesi (oikea napsautus: puolet). Shift+napsautus siirtää heti toiselle puolelle.':'Napsauta tai raahaa esinettä siirtääksesi sen. Shift+napsautus siirtää heti toiselle puolelle.';updGhost();}
+  const h=$('#chestHint');if(h)h.textContent=chestSel&&chestSel.half?'Puolet valittu – napsauta ruutua siirtääksesi ne.':chestSel?'Valittu – napsauta ruutua siirtääksesi (oikea napsautus: puolet). Shift+napsautus siirtää heti toiselle puolelle.':'Napsauta tai raahaa esinettä siirtääksesi sen. Shift+napsautus siirtää heti toiselle puolelle.';updGhost();}
 let chestSel=null;
 function chestClick(g,i,shift){const items=curChest.data.items,arr=g==='c'?items:inv,s=arr[i];
   if(shift){chestSel=null;if(!s)return;if(g==='c'){const left=invAdd(s.id,s.n,s.q||1);if(left===0){items[i]=null;if(s.fuel!==undefined){const t=[...inv].reverse().find(x=>x&&x.id===s.id&&x.fuel===undefined);if(t){t.fuel=s.fuel;t.lit=s.lit;}}}else s.n=left;}
@@ -327,7 +329,7 @@ function chestClick(g,i,shift){const items=curChest.data.items,arr=g==='c'?items
     invDirty=true;renderChest();return;}
   if(!chestSel){if(s){chestSel={g,i};renderChest();}return;}
   if(chestSel.g===g&&chestSel.i===i){chestSel=null;renderChest();return;}
-  const src=chestSel.g==='c'?items:inv;moveSlot(src,chestSel.i,arr,i);chestSel=null;invDirty=true;updateGear();renderChest();}
+  const src=chestSel.g==='c'?items:inv;(chestSel.half?moveHalf:moveSlot)(src,chestSel.i,arr,i);chestSel=null;invDirty=true;updateGear();renderChest();}
 // Siirto paikasta toiseen: tyhjään siirtyy, samaan pinottavaan esineeseen yhdistyy, muuten paikat vaihtuvat.
 // Arkkuun siirtyvä varuste riisutaan.
 function moveSlot(sa,si,da,di){const a=sa[si],b=da[di];if(!a||(sa===da&&si===di))return;
@@ -346,33 +348,38 @@ function moveHalf(sa,si,da,di){const a=sa[si],b=da[di];if(!a||(sa===da&&si===di)
    valittu ruutu sykkii, sen kuvake seuraa hiirtä haamuna (#ghostIt), kohderuudussa vihje Siirrä / Pinoa / Vaihda,
    raahaus (hiiri pohjassa > 6 px) siirtää ruutuun jonka päällä päästetään irti; paneelin ulkopuolelle = pudota maahan. */
 const GHOST=document.createElement('div');GHOST.id='ghostIt';document.body.appendChild(GHOST);
-let mouseXY=[0,0],slotDrag=null,dragEat=false;
+let mouseXY=[0,0],slotDrag=null,dragEat=false,selHalf=false;
+// v1.30: oikea napsautus / oikealla raahaus ottaa pinosta puolet (sama valintakorostus ja haamukuvake; haamussa siirrettävä määrä)
+function pickHalf(s){return !!(s&&s.n>1);}
 function uxArr(g){return g==='c'&&curChest?curChest.data.items:inv;}
-function curSel(){if(openPanel==='inv'&&selSlot>=0&&inv[selSlot])return{g:'i',i:selSlot};if(openPanel==='chest'&&chestSel&&uxArr(chestSel.g)[chestSel.i])return chestSel;return null;}
+function curSel(){if(openPanel==='inv'&&selSlot>=0&&inv[selSlot])return{g:'i',i:selSlot,half:selHalf};if(openPanel==='chest'&&chestSel&&uxArr(chestSel.g)[chestSel.i])return chestSel;return null;}
 function updGhost(){const s=curSel(),it=s&&uxArr(s.g)[s.i];if(!it){GHOST.style.display='none';return;}
   const u=icon(it.id);if(GHOST.dataset.u!==u){GHOST.style.backgroundImage=`url(${u})`;GHOST.dataset.u=u;}
-  GHOST.classList.toggle('drag',!!(slotDrag&&slotDrag.on));GHOST.style.display='block';GHOST.style.left=mouseXY[0]+'px';GHOST.style.top=mouseXY[1]+'px';}
-function slotHint(sg,si,dg,di){const a=uxArr(sg)[si],b=uxArr(dg)[di];if(!a||(sg===dg&&si===di))return '';if(!b)return 'Siirrä';
-  return b.id===a.id&&ITEMS[a.id].s>1&&(b.q||1)===(a.q||1)?'Pinoa':'Vaihda';}
+  {const n=s.half?Math.floor(it.n/2):it.n,t=n>1?String(n):'';if(GHOST.textContent!==t)GHOST.textContent=t;GHOST.classList.toggle('half',!!s.half);}
+  GHOST.classList.toggle('drag',!!(slotDrag&&slotDrag.on));GHOST.style.display='flex';GHOST.style.left=mouseXY[0]+'px';GHOST.style.top=mouseXY[1]+'px';}
+function slotHint(sg,si,dg,di,half){const a=uxArr(sg)[si],b=uxArr(dg)[di];if(!a||(sg===dg&&si===di))return '';const st=b&&b.id===a.id&&ITEMS[a.id].s>1&&(b.q||1)===(a.q||1);
+  if(half)return !b?'Siirrä ½':st?'Pinoa ½':'Ei käy';if(!b)return 'Siirrä';return st?'Pinoa':'Vaihda';}
 function slotUX(el,g,i){el.dataset.g=g;el.dataset.i=i;
-  el.onmouseenter=()=>{const s=curSel();const h=s?slotHint(s.g,s.i,g,i):'';el.classList.toggle('tgt',!!h);if(h)el.dataset.hint=h;};
+  el.onmouseenter=()=>{const s=curSel();const h=s?slotHint(s.g,s.i,g,i,s.half):'';el.classList.toggle('tgt',!!h);if(h)el.dataset.hint=h;};
   el.onmouseleave=()=>el.classList.remove('tgt');
-  el.onmousedown=e=>{if(e.button!==0||e.shiftKey||!uxArr(g)[i])return;slotDrag={g,i,x:e.clientX,y:e.clientY,on:false};};}
-function selectFor(g,i){if(openPanel==='inv'){selSlot=i;upPrev=null;}else chestSel={g,i};}
+  el.onmousedown=e=>{if((e.button!==0&&e.button!==2)||e.shiftKey||!uxArr(g)[i])return;slotDrag={g,i,x:e.clientX,y:e.clientY,on:false,half:e.button===2&&pickHalf(uxArr(g)[i])};};}
+function selectFor(g,i,half){if(openPanel==='inv'){selSlot=i;selHalf=!!half;upPrev=null;}else chestSel={g,i,half:!!half};}
 function uxRerender(){if(openPanel==='inv')renderInv();else if(openPanel==='chest')renderChest();}
 addEventListener('mousemove',e=>{mouseXY=[e.clientX,e.clientY];
-  if(slotDrag&&!slotDrag.on&&Math.hypot(e.clientX-slotDrag.x,e.clientY-slotDrag.y)>6){slotDrag.on=true;selectFor(slotDrag.g,slotDrag.i);uxRerender();}
-  if(GHOST.style.display==='block')updGhost();});
+  if(slotDrag&&!slotDrag.on&&Math.hypot(e.clientX-slotDrag.x,e.clientY-slotDrag.y)>6){slotDrag.on=true;selectFor(slotDrag.g,slotDrag.i,slotDrag.half);uxRerender();}
+  if(GHOST.style.display==='flex')updGhost();});
 addEventListener('mouseup',e=>{const d=slotDrag;slotDrag=null;if(!d||!d.on)return;dragEat=true;setTimeout(()=>dragEat=false,0);
   const src=uxArr(d.g),a=src[d.i];if(!a){uxRerender();return;}
   const t=document.elementFromPoint(e.clientX,e.clientY),sl=t&&t.closest('.slot[data-g]'),pan=openPanel==='chest'?$('#chest'):$('#inv');
   const hb=t&&t.closest('#hotbar .slot');   /* pikapalkki = repun 8 ensimmäistä ruutua */
-  if(sl){moveSlot(src,d.i,uxArr(sl.dataset.g),+sl.dataset.i);}
-  else if(hb){moveSlot(src,d.i,inv,[...hb.parentNode.children].indexOf(hb));}
-  else if(pan&&!pan.contains(t)){if(a.eq){a.eq=false;}spawnDrop(a.id,a.n,P.pos.x+Math.sin(P.yaw),P.pos.y+1,P.pos.z+Math.cos(P.yaw),a.q);src[d.i]=null;sfx('pickup',.8,.5);msg(`Pudotit: ${ITEMS[a.id].n}${a.n>1?' ×'+a.n:''}`);}
+  const mv=d.half?moveHalf:moveSlot;
+  if(sl){mv(src,d.i,uxArr(sl.dataset.g),+sl.dataset.i);}
+  else if(hb){mv(src,d.i,inv,[...hb.parentNode.children].indexOf(hb));}
+  else if(pan&&!pan.contains(t)){const k=d.half?Math.floor(a.n/2):a.n;if(a.eq&&k>=a.n){a.eq=false;}spawnDrop(a.id,k,P.pos.x+Math.sin(P.yaw),P.pos.y+1,P.pos.z+Math.cos(P.yaw),a.q);a.n-=k;if(a.n<=0)src[d.i]=null;sfx('pickup',.8,.5);msg(`Pudotit: ${ITEMS[a.id].n}${k>1?' ×'+k:''}`);}
   else{uxRerender();updGhost();return;}
-  selSlot=-1;chestSel=null;invDirty=true;updateGear();uxRerender();updGhost();});
+  selSlot=-1;selHalf=false;chestSel=null;invDirty=true;updateGear();uxRerender();updGhost();});
 addEventListener('click',e=>{if(dragEat){dragEat=false;e.stopPropagation();e.preventDefault();}},true);
+addEventListener('contextmenu',e=>{if(dragEat){e.stopPropagation();e.preventDefault();}},true);   // v1.30: oikealla raahauksen jälkeinen contextmenu
 // Valitun esineen pudotus (Q yksi, Shift+Q kaikki).
 function dropSel(all){const s=inv[selSlot];if(!s)return;const n=all?s.n:1;if(s.eq&&(all||s.n<=1)){s.eq=false;updateGear();}
   spawnDrop(s.id,n,P.pos.x+Math.sin(P.yaw),P.pos.y+1,P.pos.z+Math.cos(P.yaw),s.q);s.n-=n;if(s.n<=0){inv[selSlot]=null;selSlot=-1;}sfx('pickup',.8,.5);invDirty=true;renderInv();}

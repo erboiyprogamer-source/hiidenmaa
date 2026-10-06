@@ -72,6 +72,14 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.30 (oikea napsautus ottaa puolet, vihje 3 s)
+- **Oikea napsautus** pinoon (ilman valintaa): ottaa puolet valituksi samalla sykkivällä korostuksella ja haamukuvakkeella (haamussa
+  siirrettävä määrä + katkoviivareunus); seuraava vasen napsautus laskee puolikkaan ruutuun (`moveHalf`). Vihjeet "Siirrä ½" /
+  "Pinoa ½" / "Ei käy". Oikea uudestaan samaan ruutuun poistaa valinnan. **Oikealla raahaus** siirtää puolet (paneelin ulos = puolet
+  maahan). Sama arkuissa (`chestSel.half`). Ennen oikea napsautus jakoi pinon automaattisesti ensimmäiseen tyhjään ruutuun.
+  `selHalf`, `pickHalf`, `slotHint(...,half)`; raahauksen jälkeinen contextmenu syödään.
+- "Toimii parhaiten…" -vihje näkyy 3 s (ennen 6 s).
+
 ### v1.29 (v1.25:n valikko palautettu)
 - Käyttäjän WebGL toimii taas (selaimen uudelleenkäynnistys). `MENU_V2_OFF=false` → valikossa taas animoidut kuvat (oletus) ja
   asetus "Valikon tausta" (kuvat / 3D-kamera). Testattu: vanhan version tallennus → kuvat näkyvät (Öinen leiri), "Jatka matkaa" ja

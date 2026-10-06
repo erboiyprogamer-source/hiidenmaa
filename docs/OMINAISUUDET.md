@@ -63,7 +63,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   sitten arvottu 20 s välein. Asetus "Valikon tausta": kuvat / 3D-kamera (alla, v1.15).
 - **Päävalikon tausta (v1.15):** kamera näyttää satunnaisia kohteita lähikuvina (biomit, järvi, hylätty leiri päivällä ja yöllä, eläimet),
   20 s / kohde, hidas kierto, vaihto mustan kautta; ensimmäinen kohde arvotaan joka latauksella.
-- **Päävalikko (v1.14):** "Toimii parhaiten tietokoneella hiirellä ja näppäimistöllä" näkyy ruudun yläkeskellä kerran per käynnistys 6 s ja häipyy.
+- **Päävalikko (v1.14):** "Toimii parhaiten tietokoneella hiirellä ja näppäimistöllä" näkyy ruudun yläkeskellä kerran per käynnistys 3 s (v1.30) ja häipyy.
 - **Ruoho (v1.00, v1.04 kasoina):** ohuita läpikuultavia heinäkasoja harvakseltaan biomin mukaan (ei kohteiden päällä), heiluu ja kallistuu tuulessa; asetus Grafiikka → Ruoho (Pois / Normaali / Täysi).
 - **Kasvillisuuden esto (v1.04):** puut, kivet ja poimittavat eivät kasva uudelleen leirien, kiviröykkiöiden, linnakkeiden, raunioiden, portaalien ym. päälle (suoja 3,5–15 m).
 - **Hylätyt leirit (v0.99):** 1–2 per kartta: sammunut nuotio (sytytä puulla), teltta jossa sänky (herätyspaikka, nukkuminen), tukki ja säkki tarvikkeineen. Teltan voi myös rakentaa itse (Kalusto).
@@ -110,6 +110,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   **v1.08 (reppu ja arkku):** valittu ruutu sykkii oranssina ja nousee, sen kuvake seuraa hiirtä haamuna, kohderuudussa vihje
   Siirrä / Pinoa / Vaihda ja tietolaatikossa ohjeteksti. Valittuna oikea napsautus toiseen ruutuun siirtää puolet (tyhjään tai samaan
   esineeseen). Raahaus (hiiri pohjassa) siirtää ruutuun / pikapalkkiin; paneelin ulkopuolelle raahattu esine putoaa maahan.
+  **v1.30:** oikea napsautus pinoon ottaa puolet valituksi (haamussa määrä), vasen laskee ne; oikealla raahaus siirtää puolet.
 - **Valmistusehdotukset (v1.16):** kaksi osiota: "Voit valmistaa nyt" (aineet repussa, enint. 6; puuttuva työpiste merkitään, rakentamaton työpiste
   → myös toiseen osioon) ja "Hyödyllistä seuraavaksi" (enint. 4, pelin vaiheeseen sopivat). Järjestys: ei koskaan valmistettu → usein
   tarvittavat (nuolet, soihdut, ruoka) → valmistettu mutta ei mukana → välituotteet. Tarpeettomia varusteita ei ehdoteta.
