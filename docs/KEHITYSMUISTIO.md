@@ -71,6 +71,22 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.90 (painavat haarniskamallit – kohta 7)
+- `buildArmor(f,id)` (models.js): haarniskan osat kiinnitetään hahmon nivelryhmiin (rig, olkavarret, kyynärvarret, reidet, sääret, pää), joten
+  ne liikkuvat animaation mukana; vanhat osat poistetaan aina ensin (`f.armorParts`). Kypärä piilottaa hiukset (`f.hairTop`), parta jää.
+  Kypärät ja huput ovat edestä avoimia (`cap` kupoli otsaan, `openShell`/`openRing` aukko eteen: huom. sylinterin kulma 0 = +z, pallon π/2 = +z).
+  - **Nahkavaatteet:** nahkatakki nyöreineen, turkiskaulus, vyö, rannesuojat, säärisuojat, helmalevyt, edestä avoin huppu.
+  - **Karhuntaljahaarniska** (uusi, työpenkki: 2 karhuntaljaa + 4 nahkaa, taso 4; arm 10, lämmin, ei hidasta): nahkasuojat + taljaviitta
+    selässä, turkis olkapäillä ja karhun pää huppuna (kuono, korvat, hampaat).
+  - **Kuparipanssari:** 6 suomuriviä, vyö + kultasolki, kerroksiset olkasuojat, helmalevyt, säärisuojat polvisuojineen, kartiokypärä,
+    nenäsuoja ja poskisuojat.
+  - **Rautapanssari:** rengaspaita, rintalevy, kaulasuoja, isot olkalevyt, helmalevyt, sääri-/polvisuojat, rannesuojat ja rautahanskat,
+    kupolikypärä silmäsuojarenkain ja edestä avoin rengasverho.
+  - **Hiidenpanssari:** tummat kivilevyt, turkoosina hehkuvat riimusaumat, piikkiolkasuojat, suljettu kivikypärä hehkuvalla visiirillä ja kruunupiikeillä.
+- Alusvaatteen väri haarniskan mukaan (tumma alusasu).
+- **Selkätavarat haarniskan päällä** (käyttäjän välikommentti): `ARMOR_BACK` (state.js) = mitattu selän ulkonema + 2 cm; kilpi, jousi ja
+  työkalut siirtyvät `ch` ja vyön vasara `bt` verran taaksepäin (karhuntalja 15/10 cm, metallit 5–6,5/2,5 cm), ilman haarniskaa ennallaan.
+
 ### v0.89 (pomojen nerffaus – kohta 6)
 - **Kalmanvartija** (`bossAI`): ryntäys 9–30 m:ssä 25 % (ennen 50 %) ja vähintään 8 s välein (`m.chargeT`), muuten kiven heitto
   (mitattu osuus ~13 %). Huitaisun ennakko 0,8 → 1,12 s, maahaniskun 1,1 → 1,54 s (+40 %), iskujen väli × 1,2.
@@ -1028,7 +1044,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (tauko v0.84:n jälkeen):** kohdat 1, 2, 3 ja 4 tehty (v0.81–v0.84). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki, ei vielä yhdistetty – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-KOHDAT 5 (v0.85–v0.88) ja 6 (v0.89) VALMIIT. Seuraavaksi kohta 7 (painavat haarniskamallit) – kysy 1–5 tarkentavaa. Vanha muistiinpano: 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
+KOHDAT 5 (v0.85–v0.88), 6 (v0.89) ja 7 (v0.90) VALMIIT. Seuraavaksi kohta 8 (ulottuvuuksien mobien yksityiskohdat) – kysy 1–5 tarkentavaa. Vanha muistiinpano: 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
 jänis, kettu, hirvi, metso/teeri), mitkä 2 "joskus vihamielistä" (ehdotus: ilves, villisika-emakko/hirvi kiima-aikaan), harvinaiset pelottavat
 (ehdotus: "Korpinpeikko"/hiidenhirvi yöllä aarnimetsässä), karhun saalis ja biomit. Karhu-vaatimukset kirjattu alla (kohta 5).
 Käytä `makeAnimal`-tyyliä (v0.81 liitokset). Sen jälkeen 6 → 15 järjestyksessä, kukin: kysymykset → toteutus → kuvat/testi → tarkistusrivi
@@ -1045,7 +1061,7 @@ heilunta, kuten puut v0.84); grafiikka-asetus pois/oletus (ei niin tuuhea)/täys
 5. TEHTY v0.85–v0.88. 4 uutta eläintä (samaa tyyliä) + 2 joskus vihamielistä + harvinaisia pelottavia (seuraa 30–60 s, poistuu 5 s ja unohtaa); luonteen mukaiset
    säikähdys/reaktiot. Karhu: iso, lyö kauas ja nopeasti, kaataa eteen jäävät puut tukeiksi, HP 200 % pelaajasta, palautuu jos ei lyöty 1 min.
 6. TEHTY v0.89. Kalmanvartija: harvemmin liuku/ryntäys, iskulla pidempi viive. Kaikki kiviä heittävät pomot: kivi 30 % hitaampi, hyökkäysviive +10 %.
-7. Haarniskoille kunnon painavat erottuvat mallit.
+7. TEHTY v0.90. Haarniskoille kunnon painavat erottuvat mallit.
 8. Ulottuvuuksien mobeille enemmän yksityiskohtia (vaatetus, koristeet, silmäanimaatiot, liekit silmissä).
 9. Hirviöille (sammalhiisi, kalmo) harppaavammat askeleet, lyöntiulottuma +10 %.
 10. Kalmanvartija vajoaa maahan (ei katoa) ilmoituksen aikana, maapartikkeleita.

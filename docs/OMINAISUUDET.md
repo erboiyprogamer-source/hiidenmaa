@@ -153,6 +153,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Nopeudet −15 %** (`MOB_SPD` 0,85 kaikessa liikkeessä).
 - **Terveyspalkit:** mobin yläpuolella (mallin korkeus + 0,45 m), nimi ja pääkallot palkin yllä; näkyy kun katse osuu mobiin (~11°, vahvat ~9°)
   alle 12 m (vahvat 70 m) tai 10 s osuman jälkeen. Pomoilla oma palkki ruudun yläreunassa.
+- **Haarniskat (v0.90):** jokaisella oma painava malli ja kypärä/huppu (kasvot näkyvät; Hiidenpanssarissa suljettu visiiri): nahkavaatteet,
+  karhuntaljahaarniska (uusi: 2 taljaa + 4 nahkaa, arm 10, ei hidasta), kupari-, rauta- ja Hiidenpanssari. Kilpi ja selkätavarat siirtyvät
+  haarniskan pinnalle, kun haarniska on päällä.
 - **Pomot (v0.89):** Kalmanvartija ryntää harvemmin (25 %, väh. 8 s välein) ja sen huitaisun/maahaniskun ennakko on 40 % pidempi;
   kiviä heittävien pomojen (vartija, Jäätär) hyökkäykset ovat 10 % hitaampia ja kivi lentää 30 % hitaammin. Vajonneen vartijan alttari jää
   valmiiksi (3/3 kiveä näkyvissä) – herätys ei vaadi uusia kiviä.

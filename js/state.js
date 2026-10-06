@@ -22,15 +22,19 @@ const fig=makePlayer();
 scene.add(fig.g);let heldMesh=null,heldId=null,offMesh=null,offId=null,armorId=null;
 // Repussa olevat mutta käyttämättömät aseet, kilvet ja työkalut näkyvät pelaajan selässä (kilpi keskellä, jousi vinossa, työkalut varret ylöspäin).
 const backG=new THREE.Group();fig.rig.add(backG);let backKey='',backHang=null;
+const ARMOR_BACK={nahkavaatteet:{ch:.045,bt:.02},karhuhaarniska:{ch:.15,bt:.1},kuparipanssari:{ch:.055,bt:.025},rautapanssari:{ch:.05,bt:.025},hiidenpanssari:{ch:.065,bt:.025}};
 function updateBack(){const items=inv.filter(s=>s&&!s.eq&&['weapon','bow','shield','shovel','hammer'].includes(ITEMS[s.id].cat));
   const sh=items.find(s=>ITEMS[s.id].cat==='shield'),hm=items.find(s=>s.id==='vasara'),one=items.find(s=>ITEMS[s.id].cat!=='shield'&&s.id!=='vasara'),bo=one&&ITEMS[one.id].cat==='bow'?one:null,tl=one&&!bo?[one]:[];
-  const key=[sh,bo,hm,...tl].map(s=>s?s.id:'-').join();if(key===backKey)return;backKey=key;while(backG.children.length)backG.remove(backG.children[0]);backHang=null;
+  // v0.90: haarniska paksuntaa selkää → selkätavarat ja kilpi siirretään haarniskan pinnalle (mitattu selän ulkonema + 2 cm),
+  // ilman haarniskaa ne palaavat entiselle paikalleen. ch = rinnan korkeus (kilpi, jousi, työkalut), bt = vyö (vasara).
+  const ar=equipped('armor'),AB=ARMOR_BACK[ar?ar.id:'']||{ch:0,bt:0};
+  const key=[sh,bo,hm,...tl].map(s=>s?s.id:'-').join()+'|'+(ar?ar.id:'');if(key===backKey)return;backKey=key;while(backG.children.length)backG.remove(backG.children[0]);backHang=null;
   // Vasara roikkuu vyöllä takana (v0.72): pää vyön päällä selän suuntaisesti (pää 90° pystyakselin ympäri aiemmasta), varsi alas.
   // Ripustuspiste = vyön yläreuna selän puolella (y 0,94, z −0,24); heiluu kävellessä (player.js, backHang).
-  if(hm){const m=makeHeld(hm.id),o=new THREE.Group();m.rotation.x=-Math.PI/2;m.position.set(0,-.47,0);o.add(m);o.position.set(.13,.94,-.24);o.rotation.y=.18;backG.add(o);backHang=o;}
-  if(sh){const m=makeShield(sh.id);const o=new THREE.Group();m.rotation.y=Math.PI/2;m.position.set(0,0,0);o.add(m);o.position.set(0,1.2,-.1);o.scale.setScalar(.85);backG.add(o);}
-  if(bo){const m=makeHeld(bo.id),o=new THREE.Group();o.add(m);o.position.set(.08,1.2,-.19);o.rotation.set(0,0,.5);o.scale.setScalar(.95);backG.add(o);}
-  tl.forEach((s,i)=>{const m=makeHeld(s.id),i2=new THREE.Group(),o=new THREE.Group();m.rotation.z=Math.PI/2;/* terät/piikit sivusuuntaan = selänmyötäisesti, ei selkää vasten */i2.rotation.x=-Math.PI/2;i2.add(m);o.add(i2);o.position.set(.12,.78,sh?-.29:-.17);o.rotation.z=-.12;o.scale.setScalar(.85);backG.add(o);});}
+  if(hm){const m=makeHeld(hm.id),o=new THREE.Group();m.rotation.x=-Math.PI/2;m.position.set(0,-.47,0);o.add(m);o.position.set(.13,.94,-.24-AB.bt);o.rotation.y=.18;backG.add(o);backHang=o;}
+  if(sh){const m=makeShield(sh.id);const o=new THREE.Group();m.rotation.y=Math.PI/2;m.position.set(0,0,0);o.add(m);o.position.set(0,1.2,-.1-AB.ch);o.scale.setScalar(.85);backG.add(o);}
+  if(bo){const m=makeHeld(bo.id),o=new THREE.Group();o.add(m);o.position.set(.08,1.2,-.19-AB.ch);o.rotation.set(0,0,.5);o.scale.setScalar(.95);backG.add(o);}
+  tl.forEach((s,i)=>{const m=makeHeld(s.id),i2=new THREE.Group(),o=new THREE.Group();m.rotation.z=Math.PI/2;/* terät/piikit sivusuuntaan = selänmyötäisesti, ei selkää vasten */i2.rotation.x=-Math.PI/2;i2.add(m);o.add(i2);o.position.set(.12,.78,(sh?-.29:-.17)-AB.ch);o.rotation.z=-.12;o.scale.setScalar(.85);backG.add(o);});}
 function updateGear(){updateBack();
   {const w0=equipped('weapon');if(!w0||w0.id!=='vasara')setBuildSel(null);}
   const w=equipped('weapon'),wid=w?w.id:null;
@@ -38,7 +42,7 @@ function updateGear(){updateBack();
   const o=equipped('offhand'),oid=o?o.id:null;
   if(oid!==offId){if(offMesh)fig.handL.remove(offMesh);offMesh=null;offId=oid;if(oid){offMesh=ITEMS[oid].cat==='shield'?makeShield(oid):makeHeld(oid);fig.handL.add(offMesh);}}
   const a=equipped('armor'),aid=a?a.id:null;
-  if(aid!==armorId){armorId=aid;const c=aid==='rautapanssari'?0x7d8894:aid==='kuparipanssari'?0xc07a40:aid==='nahkavaatteet'?0x8a6040:aid==='hiidenpanssari'?0x5fe6d9:0x8a6a46;const cm=smat(c);for(const m of fig.cloth)m.material=cm;}
+  if(aid!==armorId){armorId=aid;const c=aid==='rautapanssari'?0x6c747c:aid==='kuparipanssari'?0x8a5228:aid==='nahkavaatteet'||aid==='karhuhaarniska'?0x6a4a30:aid==='hiidenpanssari'?0x2a3036:0x8a6a46;const cm=smat(c);for(const m of fig.cloth)m.material=cm;buildArmor(fig,aid);}
 }
 
 /* ---------------- INVENTORY ---------------- */

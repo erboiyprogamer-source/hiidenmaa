@@ -54,6 +54,7 @@ const ITEMS={
   rautakilpi:{n:'Rautakilpi',w:6,s:1,c:'#8a96a3',cat:'shield',block:.9,d:'Raskas ja luja.'},
   hiidenpanssari:{n:'Hiidenpanssari',w:9,s:1,c:'#5fe6d9',cat:'armor',arm:32,warm:1,slow:.05,rare:1,d:'Kylmästi hehkuva panssari. Paras suoja. (Harvinainen)'},
   nahkavaatteet:{n:'Nahkavaatteet',w:4,s:1,c:'#9a6a44',cat:'armor',arm:5,warm:1,d:'Suojaa yön kylmältä.'},
+  karhuhaarniska:{n:'Karhuntaljahaarniska',w:6,s:1,c:'#5a4030',cat:'armor',arm:10,warm:1,d:'Karhuntaljaviitta karhun pää huppuna ja nahkasuojat. Lämmin ja kevyt: ei hidasta.'},
   kuparipanssari:{n:'Kuparipanssari',w:8,s:1,c:'#d98a4e',cat:'armor',arm:14,warm:1,slow:.06,d:'Vahva suoja, hieman raskas.'},
   rautapanssari:{n:'Rautapanssari',w:11,s:1,c:'#8a96a3',cat:'armor',arm:22,warm:1,slow:.08,d:'Paras suoja. Raskas.'},
 };
@@ -78,6 +79,7 @@ const RECIPES=[
   {id:'miekka',st:'ahjo',req:{kupari:6,puu:2,nahka:2},lvl:4},
   {id:'kuparikirves',st:'ahjo',req:{kupari:4,puu:3},lvl:4},
   {id:'kuparikilpi',st:'ahjo',req:{kupari:6,puu:6},lvl:4},
+  {id:'karhuhaarniska',st:'tyopenkki',req:{karhuntalja:2,nahka:4},lvl:4},
   {id:'kuparipanssari',st:'ahjo',req:{kupari:12,nahka:6},lvl:5},
   {id:'kuparihakku',st:'ahjo',req:{kupari:6,puu:3},lvl:4},
   {id:'rautakirves',st:'ahjo',req:{rauta:4,puu:3},lvl:6},
@@ -139,7 +141,7 @@ function icon(id){
         line(24,5,24,43,5,T[2]);line(5,24,43,24,5,T[2]);for(let a=0;a<8;a++){const x=24+Math.cos(a*.785+.39)*12,y=24+Math.sin(a*.785+.39)*12;circ(x,y,1.5,T[3]);}}
       g.restore();g.strokeStyle=T[2];g.lineWidth=3;g.beginPath();g.arc(24,24,17.5,0,TAU);g.stroke();
       circ(24,24,7,T[3]);circ(24,24,5.5,T[2]);circ(22.5,22.5,2,'#fff8');for(let a=0;a<12;a++)circ(24+Math.cos(a*.5236)*17.5,24+Math.sin(a*.5236)*17.5,1.1,T[3]);break;}
-    case 'nahkavaatteet':case 'kuparipanssari':case 'rautapanssari':case 'hiidenpanssari':poly([[14,10],[20,8],[24,12],[28,8],[34,10],[42,18],[36,22],[34,40],[14,40],[12,22],[6,18]],d.c,'#3b2a1a');if(id==='kuparipanssari'||id==='rautapanssari'||id==='hiidenpanssari')for(let y=16;y<38;y+=6)line(16,y,32,y,1.5,id==='rautapanssari'?'#4a525c':'#8f5326');break;
+    case 'nahkavaatteet':case 'karhuhaarniska':case 'kuparipanssari':case 'rautapanssari':case 'hiidenpanssari':poly([[14,10],[20,8],[24,12],[28,8],[34,10],[42,18],[36,22],[34,40],[14,40],[12,22],[6,18]],d.c,'#3b2a1a');if(id==='kuparipanssari'||id==='rautapanssari'||id==='hiidenpanssari')for(let y=16;y<38;y+=6)line(16,y,32,y,1.5,id==='rautapanssari'?'#4a525c':'#8f5326');break;
     case 'jousi':case 'hiidenjousi':{const col=id==='jousi'?'#8a5a32':'#5fe6d9';g.strokeStyle='#3b2a1a';g.lineWidth=6;g.beginPath();g.arc(38,24,22,Math.PI*.62,Math.PI*1.38);g.stroke();g.strokeStyle=col;g.lineWidth=4;g.beginPath();g.arc(38,24,22,Math.PI*.62,Math.PI*1.38);g.stroke();
       line(25,6,25,42,1.2,'#f1ecdc');line(15,24,38,24,1.6,'#c9b48a');poly([[38,24],[33,21],[33,27]],'#8f8d86');for(const y of[17,31])line(17,y,19,y,2,'#3b2a1a');if(id!=='jousi'){circ(16,24,3,'#c9fff8');}break;}
     default:{
