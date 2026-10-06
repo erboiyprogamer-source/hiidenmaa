@@ -15,6 +15,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Pysyvät päätökset
 
+- **Pelin teksteissä ei mainita muita pelejä** (esim. Minecraft, Valheim) – v1.11, käyttäjän toive.
 - Oma alkuperäinen teos, ei Valheimin nimiä, hahmoja tai grafiikkaa. Nimistö on suomalaisesta
   kansanperinteestä (hiisi, kalmo, hiidenkivi).
 - Yksi HTML-sivu + tavalliset skriptit, ei build-vaihetta. three.js r128 cdnjs:stä.
@@ -70,6 +71,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.11 (lista 2, kohta 4: ei muiden pelien mainintoja)
+- Asetus "Hiiren rulla vaihtaa pikapaikkaa": selite "kuten Minecraftissa; …" → "rulla vaihtaa pikapaikkaa zoomin sijaan; zoom säädetään alta".
+  Koko koodi tarkistettu (js, index.html, css): ei muita mainintoja. Tarkistusrivi estää paluun.
 
 ### v1.10 (lista 2, kohta 3: höyryn ja usvakiehkuroiden optimointi)
 - `SET.mist`: 2 = Korkea (entinen ulkonäkö), 1 = Normaali (oletus), .5 = Matala, 0 = Pois (vanha tallennettu 1 = Normaali, .5 = Matala).
@@ -1199,7 +1204,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
 3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.
-4. Ohjetekstit pois (kuten Minecraft): "Rulla = zoom" yms.
+4. TEHTY v1.11 (tarkennettu): asetuksissa luki "kuten Minecraftissa" → poistettu. Pelin teksteissä ei mainita muita pelejä.
 5. "Toimii parhaiten tietokoneella…" -teksti valikossa eri paikkaan; näkyy vain ensimmäisellä kerralla ja häipyy.
 6. Valikon taustakuva kuvaa eri kohteita pelissä, vaihtaa kohdetta satunnaisesti.
 7. Ehdotukset-kategoria: ensin mihin on varaa (repun materiaalit), toissijaisesti mitä pelaajalta puuttuu ja olisi hyödyllistä (pelin vaihe).

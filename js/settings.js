@@ -113,7 +113,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
     bindSet(SET_PAGES.shadow);$('#bPageReset').onclick=()=>resetPage('shadow');
   }else if(setTab==='ctl'){
     body.innerHTML=`<div class="setGrid">${
-      setRow('Hiiren rulla vaihtaa pikapaikkaa','wheelHotbar',null,'kuten Minecraftissa; zoom säädetään alta')+
+      setRow('Hiiren rulla vaihtaa pikapaikkaa','wheelHotbar',null,'rulla vaihtaa pikapaikkaa zoomin sijaan; zoom säädetään alta')+
       row('Kameran etäisyys'+(isDef('zoom')?' <span class="defTag">oletus</span>':''),`<input type="range" id="sZoom" min="2.2" max="10" step=".1" value="${SET.zoom}">`,`<span id="sZoomV">${(+SET.zoom).toFixed(1)} m</span>`)+
       setRow('Äänet','sound')+
       setRow('Käännä pystyhiiri','invY')

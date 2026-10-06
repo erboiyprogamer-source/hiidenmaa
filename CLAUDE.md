@@ -2,7 +2,7 @@
 
 Hiidenmaa on selaimessa toimiva 3D-selviytymispeli: viikinkihenkinen saari, keräily, valmistus,
 rakentaminen, taistelu, luolasto ja yksi pomo. Valheim on inspiraatio, mutta peli on oma teos:
-**älä käytä Valheimin nimiä, hahmoja, grafiikkaa tai muuta suojattua sisältöä.**
+**älä käytä Valheimin nimiä, hahmoja, grafiikkaa tai muuta suojattua sisältöä. Pelin teksteissä ei mainita muita pelejä (esim. Minecraft).**
 
 Lue tämän lisäksi aina `docs/KEHITYSMUISTIO.md`. Siinä ovat tehdyt päätökset, tasapainoarvot,
 versiohistoria ja ideajono, jotta niitä ei tarvitse selvittää uudelleen. Pelin kaikki ominaisuudet, säännöt ja
