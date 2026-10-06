@@ -71,6 +71,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.10 (lista 2, kohta 3: höyryn ja usvakiehkuroiden optimointi)
+- `SET.mist`: 2 = Korkea (entinen ulkonäkö), 1 = Normaali (oletus), .5 = Matala, 0 = Pois (vanha tallennettu 1 = Normaali, .5 = Matala).
+- `updateMist`: `fxN` (höyryn syntytahti ja WISP-määrä) Normaali .5, Matala .25; haituvan koko `szK` 1,2 ja peitto `opK` 1,39
+  (määrä × koko² × peitto ≈ vakio). Maanpinnan usva (`MIST`) ennallaan. Mitattu portaalilla höyryä 8 → 4, Hautakummussa kiehkuroita 48 → 24.
+
 ### v1.09 (lista 2, kohta 2: vartijoiden paluu ajan kanssa)
 - `ai.js` vartijat (`m.guard`): paluu `d.walk`-nopeudella (ennen `d.run`), parantuminen paluun aikana 1 %/s (ennen 5 %/s).
   Keskeytys: pelaaja alle 8 m TAI näkyvissä alueen sisällä. `m.intr` = keskeytetty alueen ulkopuolella → ei rajarajoitusta niin kauan
@@ -1193,7 +1198,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 **JATKA TÄSTÄ:** PR #23 yhdistetty (v1.07). Haara `claude/hiidenmaa-survival-game-fmxt0m` aloitettu uudelleen mainista. Uusi PR tälle listalle.
 1. TEHTY v1.08 (muutettu: ei hiireen tarttumista) – valinta selkeämmäksi (sykkivä reunus, haamukuvake, kohdevihje, ohje), oikea = puolet, raahaus, myös arkut.
 2. TEHTY v1.09. Vartijat palaavat alueelleen kävellen (1 %/s parannus); pelaaja alle 8 m keskeyttää; uusi ajastin kun pelaaja kauempana.
-3. Savut/usvat kohteiden yllä: sama ulkonäkö ja paksuus vähemmillä entiteeteillä (kääntyvät siivut); nykyinen = korkein grafiikka-asetus.
+3. TEHTY v1.10. Höyrypuhurit + sisäkiehkurat: Normaali = puolet haituvista isompina/tiheämpinä; Korkea = entinen; Matala; Pois.
 4. Ohjetekstit pois (kuten Minecraft): "Rulla = zoom" yms.
 5. "Toimii parhaiten tietokoneella…" -teksti valikossa eri paikkaan; näkyy vain ensimmäisellä kerralla ja häipyy.
 6. Valikon taustakuva kuvaa eri kohteita pelissä, vaihtaa kohdetta satunnaisesti.

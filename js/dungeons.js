@@ -368,7 +368,10 @@ for(const k in LOC){const L=LOC[k];if(L.kind==='rock')VENTS.push({x:L.x+1.5,y:te
 VENTS.push({x:LOC.barrow.x+9.6,y:terrainH(LOC.barrow.x+10.5,LOC.barrow.z)+.1,z:LOC.barrow.z-1,col:0xcfd4d0,rate:2.5,acc:0},{x:LOC.barrow.x+9.6,y:terrainH(LOC.barrow.x+10.5,LOC.barrow.z)+.1,z:LOC.barrow.z+1,col:0xcfd4d0,rate:2.5,acc:0});
 [[5,6],[12,10],[16,2],[8,10],[17,5]].forEach(([ix,iz])=>{const p=dunCell(ix,iz);VENTS.push({x:p.x,y:DUN.y+.1,z:p.z,col:0xb8b2a6,rate:3,dun:true,acc:0});});
 function updateMist(dt){
-  const dun=P.inDun,D=dun&&P.realm?REALMS[P.realm]:null,q=(QUAL.lvl>=2?.4:1)*(SET.mist??1);
+  /* v1.10 (lista 2, kohta 3): SET.mist 2 = Korkea (entinen ulkonäkö), 1 = Normaali (oletus), .5 = Matala, 0 = Pois.
+     Normaalilla höyryä ja sisäkiehkuroita on puolet vähemmän, mutta haituvat ovat 1,2× isompia ja 1,39× tiheämpiä
+     (määrä × koko² × peitto ≈ sama), joten ne näyttävät yhtä paksuilta. Maanpinnan usva pysyy täysimääräisenä Normaalilla. */
+  const dun=P.inDun,D=dun&&P.realm?REALMS[P.realm]:null,ML=SET.mist??1,hi=ML>=2,q0=QUAL.lvl>=2?.4:1,q=q0*Math.min(1,ML),fxN=q0*(hi?1:ML>=1?.5:ML*.5),szK=hi?1:1.2,opK=hi?1:1.39;
   let ax=P.pos.x,az=P.pos.z,on=dun,col=D?D.mist:0xa8a49a;
   if(!dun){let bd=60*60;for(const k in LOC){const L=LOC[k];if(L.kind!=='portal'&&L.kind!=='rock'&&L.kind!=='ruin'&&k!=='barrow')continue;const d2=dist2(L.x,L.z,P.pos.x,P.pos.z);if(d2<bd){bd=d2;ax=L.x;az=L.z;on=true;}}col=0xc9d6da;}
   const n=MIST.length*q;
@@ -377,16 +380,16 @@ function updateMist(dt){
     if(s.life<=0){if(!on)return;const a=Math.random()*TAU,rr=Math.random()*(dun?15:10);s.x=ax+Math.cos(a)*rr;s.z=az+Math.sin(a)*rr;s.y=(dun?DUN.y:terrainH(s.x,s.z))+.3+Math.random()*1.1;const sp=dun?.9:.5;s.vx=(Math.random()-.5)*sp;s.vz=(Math.random()-.5)*sp;s.max=s.life=6+Math.random()*6;s.size=dun?4+Math.random()*3.5:5+Math.random()*4;s.op=dun?.17:.11;s.ph=Math.random()*6;}
     s.life-=dt;const k=s.life/s.max,f=Math.sin(Math.PI*(1-k));s.x+=(s.vx+Math.sin(playTime*.7+s.ph)*.25)*dt;s.z+=(s.vz+Math.cos(playTime*.6+s.ph)*.25)*dt;s.y+=Math.sin(playTime*.9+s.ph)*.05*dt;
     s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar(s.size*(1+.25*(1-k)));s.m.material.opacity=s.op*f;s.m.material.color.setHex(col);s.m.visible=true;});
-  for(const v of VENTS){if(!!v.dun!==dun||dist2(v.x,v.z,P.pos.x,P.pos.z)>30*30)continue;v.acc+=dt*v.rate*q;
-    while(v.acc>=1){v.acc--;const s=STEAM.find(o=>o.life<=0);if(!s)break;s.x=v.x+(Math.random()-.5)*.5;s.y=v.y;s.z=v.z+(Math.random()-.5)*.5;s.vx=(Math.random()-.5)*.3;s.vz=(Math.random()-.5)*.3;s.vy=.9+Math.random()*.7;s.max=s.life=2.4+Math.random()*1.2;s.col=v.col;}}
+  for(const v of VENTS){if(!!v.dun!==dun||dist2(v.x,v.z,P.pos.x,P.pos.z)>30*30)continue;v.acc+=dt*v.rate*fxN;
+    while(v.acc>=1){v.acc--;const s=STEAM.find(o=>o.life<=0);if(!s)break;s.x=v.x+(Math.random()-.5)*.5;s.y=v.y;s.z=v.z+(Math.random()-.5)*.5;s.vx=(Math.random()-.5)*.3;s.vz=(Math.random()-.5)*.3;s.vy=.9+Math.random()*.7;s.max=s.life=2.4+Math.random()*1.2;s.col=v.col;s.szK=szK;s.opK=opK;}}
   // Usvakiehkurat: pienet, nopeammin kiertelevät hattarat sisätiloissa (lattiasta noin 3,5 m korkeuteen)
-  WISP.forEach((s,i)=>{if(!dun||i>=WISP.length*q){if(s.life>0)s.life-=dt*3;s.m.visible=s.life>0&&dun;return;}
+  WISP.forEach((s,i)=>{if(!dun||i>=WISP.length*fxN){if(s.life>0)s.life-=dt*3;s.m.visible=s.life>0&&dun;return;}
     if(s.life<=0){const a=Math.random()*TAU,rr=2+Math.random()*12;s.x=P.pos.x+Math.cos(a)*rr;s.z=P.pos.z+Math.sin(a)*rr;s.y=DUN.y+.2+Math.random()*3.3;s.ang=Math.random()*TAU;s.spd=.5+Math.random()*.9;s.turn=(Math.random()-.5)*1.6;s.max=s.life=4+Math.random()*4;s.size=1+Math.random()*1.4;}
     s.life-=dt;s.ang+=s.turn*dt;const k=s.life/s.max;s.x+=Math.cos(s.ang)*s.spd*dt;s.z+=Math.sin(s.ang)*s.spd*dt;s.y+=Math.sin(playTime*1.3+s.ang)*.12*dt;
-    s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar(s.size*(1+.4*(1-k)));s.m.material.opacity=.2*Math.sin(Math.PI*(1-k));s.m.material.color.setHex(col);s.m.visible=true;});
+    s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar(s.size*szK*(1+.4*(1-k)));s.m.material.opacity=Math.min(.6,.2*opK)*Math.sin(Math.PI*(1-k));s.m.material.color.setHex(col);s.m.visible=true;});
   for(const s of STEAM){if(s.life<=0){s.m.visible=false;continue;}
     s.life-=dt;const k=s.life/s.max;s.x+=s.vx*dt;s.y+=s.vy*dt;s.z+=s.vz*dt;
-    s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar(.7+(1-k)*2.8);s.m.material.opacity=.3*Math.sin(Math.PI*(1-k));s.m.material.color.setHex(s.col);s.m.visible=true;}
+    s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar((.7+(1-k)*2.8)*(s.szK||1));s.m.material.opacity=.3*(s.opK||1)*Math.sin(Math.PI*(1-k));s.m.material.color.setHex(s.col);s.m.visible=true;}
 }
 
 /* ---------------- TIPPUVAT PISARAT ---------------- */

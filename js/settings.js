@@ -94,7 +94,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       setRow('Rakennusten yksityiskohdat','bldDetail')+
       setRow('Hiukkaset (kipinät, sade, lumi)','particles',[[1,'Kaikki'],[.5,'Puolet'],[.25,'Vähän'],[0,'Pois']])+
       setRow('Valonlähteitä yhtä aikaa','lights',[[6,'Paljon (6)'],[4,'Normaali (4)'],[2,'Vähän (2)']],'tulet, soihdut, portaalit')+
-      setRow('Usva ja höyry','mist',[[1,'Kaikki'],[.5,'Puolet'],[0,'Pois']])+
+      setRow('Usva ja höyry','mist',[[2,'Korkea'],[1,'Normaali'],[.5,'Matala'],[0,'Pois']])+
       setRow('Pilvet','clouds',[[1,'Kaikki'],[.6,'Vähemmän'],[.3,'Vähän'],[0,'Pois']])+
       setRow('Auringon valonsäteet','shafts')+
       setRow('Puiden heiluminen','sway')+

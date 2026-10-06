@@ -255,6 +255,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   E käytä, B rakennus, R/G/H/Q/Z/X/F rakentaminen, Tab reppu, M kartta, J taso, T ilmoitukset, K koko näyttö, N minikartan zoom.
 - **Grafiikka:** 3D-resoluutio, automaattinen laatu, piirtoetäisyys 60–400 m, yksityiskohdat, rakennusten yksityiskohdat, hiukkaset,
   valonlähteiden määrä, usva ja höyry, pilvet, valonsäteet, puiden heiluminen.
+  **Usva ja höyry (v1.10):** Korkea (entinen), Normaali (oletus: höyry ja sisäkiehkurat puolet haituvista, 1,2× isommat ja 1,39× tiheämmät
+  → sama paksuus), Matala, Pois. Maanpinnan usva täysimääräinen Korkealla ja Normaalilla.
 - **Varjot:** laatu, auringon varjojen tarkkuus ja etäisyys, päivitystiheys, tulien varjot ja niiden tarkkuus.
 - **Äänet:** proseduraaliset (`sfx`), sävelkorkeus vaihtelee ±3,5 % joka soitolla. Puun ja tukin iskut ovat sama kirveenisku; viimeinen isku
   lähes sama (pystypuu: hiljainen ritinä, tukki: pehmeä tumma tömähdys), kaatunut puu tömähtää tummasti. Tömähdyksen sävel puun koon ja
