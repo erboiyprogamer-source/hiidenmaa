@@ -260,7 +260,7 @@ function nightRegrow(){const id=nightId();if(flags.rgN===id)return 0;flags.rgN=i
 const GRASS_DEF=[[1,1,0x3d6a22,0x9ccf52],[.9,.95,0x3a6624,0x8cc04a],[.5,.8,0x2c4e1e,0x6e9a3a],[.75,1.35,0x40502a,0x9aa060],[.35,.55,0x5a6a3a,0xb8c08a],
   [.2,.9,0x1f3a1c,0x4f7a34],[.3,.75,0x4a4436,0x8a7f60],[.55,.55,0x5a5a30,0xa09a58],[.08,.5,0x5a5a3a,0x9a9a70],[.15,.6,0x50583a,0x8a9060],[.1,.8,0x8a8a5a,0xd0c890]];
 let grassC={x:1e9,z:1e9},grassIM=null;
-const GRASS_MAT=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
+const GRASS_MAT=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,transparent:true,opacity:.62,depthWrite:false});   // v1.02 läpikuultava, kevyt
 GRASS_MAT.onBeforeCompile=sh=>{sh.uniforms.uTime=SWAY.uTime;sh.uniforms.uWind=SWAY.uWind;sh.uniforms.uWDir=SWAY.uWDir;sh.uniforms.uLean=SWAY.uLean;
   sh.vertexShader='uniform float uTime;uniform float uWind;uniform vec3 uWDir;uniform float uLean;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
   float gPh=instanceMatrix[3].x*.31+instanceMatrix[3].z*.27;float gh=max(0.,position.y);float gk=gh*gh;
@@ -270,8 +270,8 @@ GRASS_MAT.onBeforeCompile=sh=>{sh.uniforms.uTime=SWAY.uTime;sh.uniforms.uWind=SW
   transformed.x+=sin(uTime*3.1+gPh*2.)*.025*gh*(.3+uWind);`);};
 // Tupsu: 7 kortta eri suuntiin ja pituuksiin (kolmio, tyvi tumma → kärki vaalea), kaarevuus pieni kallistus ulospäin.
 const GRASS_GEO=(function(){const pos=[],col=[],r=mulberry32(4711);
-  for(let i=0;i<7;i++){const a=r()*TAU,h=.28+r()*.42,w=.045+r()*.03,ox=(r()-.5)*.25,oz=(r()-.5)*.25,tx=Math.cos(a)*.12,tz=Math.sin(a)*.12,cx=Math.sin(a)*w,cz=-Math.cos(a)*w;
-    pos.push(ox-cx,0,oz-cz, ox+cx,0,oz+cz, ox+tx,h,oz+tz);col.push(.42,.45,.38, .42,.45,.38, 1,1,1);}
+  for(let i=0;i<5;i++){const a=r()*TAU,h=.22+r()*.36,w=.018+r()*.014,ox=(r()-.5)*.25,oz=(r()-.5)*.25,tx=Math.cos(a)*.12,tz=Math.sin(a)*.12,cx=Math.sin(a)*w,cz=-Math.cos(a)*w;
+    pos.push(ox-cx,0,oz-cz, ox+cx,0,oz+cz, ox+tx,h,oz+tz);col.push(.7,.75,.62, .7,.75,.62, 1.15,1.15,1.1);}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(pos.map((v,i)=>i%3===1?1:0),3));   // normaalit ylös → valaistus kuin maastolla, ei mustaa kääntöpuolta
   g.boundingSphere=new THREE.Sphere(new V3(0,0,0),80);return g;})();
 // Värit: kärjen väri = vertex 1, tyvi = 0 → sekoitetaan instanssiväreillä (instanceColor = tyvi, kärki shaderissa ei erikseen: käytetään kahta
@@ -280,12 +280,13 @@ const _grM=new THREE.Matrix4(),_grQ=new THREE.Quaternion(),_grS=new V3(),_grP=ne
 function grassHash(i,j){let h=Math.imul(i,374761393)+Math.imul(j,668265263)|0;h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296;}
 function rebuildGrass(){const lv=+(SET.grass??1);grassDirty=false;
   if(grassIM){scene.remove(grassIM);grassIM.dispose();grassIM=null;}if(!lv||P.inDun)return;
-  const R=lv>=2?44:32,sp=lv>=2?.72:1.15,cx=P.pos.x,cz=P.pos.z,N=Math.ceil(Math.PI*R*R/(sp*sp))+10;
+  const R=lv>=2?40:30,sp=lv>=2?.6:.85,cx=P.pos.x,cz=P.pos.z,N=Math.ceil(Math.PI*R*R/(sp*sp))+10;
   const im=new THREE.InstancedMesh(GRASS_GEO,GRASS_MAT,N);im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);im.castShadow=false;im.receiveShadow=true;im.frustumCulled=false;
   let n=0;const i0=Math.floor((cx-R)/sp),i1=Math.ceil((cx+R)/sp),j0=Math.floor((cz-R)/sp),j1=Math.ceil((cz+R)/sp);
   for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const h1=grassHash(i,j),h2=grassHash(j+7919,i-104729);const x=(i+h1)*sp,z=(j+h2)*sp;if((x-cx)**2+(z-cz)**2>R*R)continue;
     const gi=Math.round((x+HALF)/GS),gj=Math.round((z+HALF)/GS);if(gi<0||gj<0||gi>=HN||gj>=HN)continue;const k=gj*HN+gi,bi=TBIOME[k];if(bi===255)continue;const D=GRASS_DEF[bi];
-    if(grassHash(i*3+1,j*5+2)>D[0]||MUD[k]>.22)continue;const y=terrainH(x,z);if(y<.35)continue;
+    // v1.02 laikuittain: kasvaa vain kohinan muodostamissa tupsuryhmissä (~30 % maasta), reunat harvenevat
+    const pv=vnoise(x*.09+13,z*.09-7)*.7+vnoise(x*.31,z*.31)*.3,patch=sstep(.52,.68,pv);if(patch<=0||grassHash(i*3+1,j*5+2)>D[0]*patch||MUD[k]>.22)continue;const y=terrainH(x,z);if(y<.35)continue;
     if(Math.abs(terrainH(x+.8,z)-y)>.9||Math.abs(terrainH(x,z+.8)-y)>.9)continue;if(pointBlocked(x,y+.3,z))continue;
     const s=(.55+grassHash(i+31,j+17)*.9)*D[1];_grQ.setFromAxisAngle(_up,grassHash(i-5,j+9)*TAU);_grS.set(s*(.8+h1*.4),s,s*(.8+h2*.4));_grP.set(x,y-.03,z);_grM.compose(_grP,_grQ,_grS);im.setMatrixAt(n,_grM);
     _grC.setHex(D[3]).lerp(_grC2.setHex(D[2]),grassHash(i+77,j-3)*.5);im.setColorAt(n,_grC);n++;if(n>=N)break;}

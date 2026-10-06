@@ -71,6 +71,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.02 (ruoho kevyemmäksi, käyttäjän palaute)
+- Ruoho oli "kauhea" (liian tiheä, tumma, paksu). Nyt: läpikuultava (opacity 0,62, depthWrite pois), 5 ohutta kortta (leveys 0,018–0,032,
+  pituus 0,22–0,58), vaaleampi (tyvi 0,7 × väri, kärki 1,15 ×), **laikuittain**: kasvaa vain kohinan muodostamissa ryhmissä
+  (`vnoise(0,09)·0,7 + vnoise(0,31)·0,3`, sstep 0,52–0,68 → ~30 % maasta, reunat harvenevat). Säde 30 m / 40 m (täysi), väli 0,85 / 0,6 m.
+  Normaalilla ~1 000 tupsua.
+
 ### v1.01 (arkkukivi = suljettu kivilinnake, käyttäjän pyyntö)
 - `buildPoiRock` (story.js) korvaa v0.98:n avoimen kivikasan: **umpinainen 3,5 m kivimuuri** (18 lohkoa, säde 5,5 m, paksuus 0,8 m, sammal
   harjalla), ulkopuolella **5 hyppypilaria** (nousu 0,7 m > askelnousu → hypättävä, välit reunasta reunaan 1,6–1,9 m = "vaikea"),
