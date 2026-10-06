@@ -1079,16 +1079,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 15 kohtaa (v0.81–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
-**JATKA TÄSTÄ (tauko v0.84:n jälkeen):** kohdat 1, 2, 3 ja 4 tehty (v0.81–v0.84). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
-(auki, ei vielä yhdistetty – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-KOHDAT 5–9 (v0.85–v0.92) VALMIIT. Seuraavaksi kohta 10 (Kalmanvartija vajoaa maahan + maapartikkelit) – kysy 1–5 tarkentavaa. Vanha muistiinpano: 5d Hiidenkarhu/Hiidenhirvi/Kalmasusi/Suonäkki – vastaukset jo saatu (ks. v0.85). ALKUPERÄINEN ohje: kysy ensin 1–5 tarkentavaa kysymystä (AskUserQuestion), esim. mitkä 4 eläintä (ehdotus:
-jänis, kettu, hirvi, metso/teeri), mitkä 2 "joskus vihamielistä" (ehdotus: ilves, villisika-emakko/hirvi kiima-aikaan), harvinaiset pelottavat
-(ehdotus: "Korpinpeikko"/hiidenhirvi yöllä aarnimetsässä), karhun saalis ja biomit. Karhu-vaatimukset kirjattu alla (kohta 5).
-Käytä `makeAnimal`-tyyliä (v0.81 liitokset). Sen jälkeen 6 → 15 järjestyksessä, kukin: kysymykset → toteutus → kuvat/testi → tarkistusrivi
-`tools/tarkistus.mjs` → muistio + OMINAISUUDET → versio + `?v=` → commit, push, PR-kuvauksen päivitys → testilinkki
-`https://raw.githack.com/erboiyprogamer-source/hiidenmaa/claude/hiidenmaa-survival-game-fmxt0m/index.html`.
-Käyttäjän jo antamat linjaukset: kohta 15 (ruoho) heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kallistus tuulen suuntaan + edestakainen
-heilunta, kuten puut v0.84); grafiikka-asetus pois/oletus (ei niin tuuhea)/täysi, eri pituisia korsia.
+**JATKA TÄSTÄ (päivitetty v0.94):** kohdat 1–9 tehty (v0.81–v0.92) + käyttäjän välilisäykset v0.93 (hautakasa arkkuna, Kalmanpesä
+millä vain, DEV-jumalvoimatäpät, harppova juoksu) ja v0.94 (Shift-tietoikkuna). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
+(auki – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
+Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Seuraavaksi kohta 10** (Kalmanvartija
+vajoaa maahan) → 11 → 15, kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
+`?v=` → commit, push, PR #23 kuvaus → testilinkki `https://raw.githack.com/erboiyprogamer-source/hiidenmaa/claude/hiidenmaa-survival-game-fmxt0m/index.html`.
+Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kallistus + edestakainen heilunta kuten puut), asetus pois/oletus/täysi.
 1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
 2. TEHTY v0.83. Mobien spawnaus: yöllä suurin osa, vähän kauempana (jahtaavat); osa lähelle mieluiten esteen taakse. Päivällä max 2, vain tiheä metsä /
    suo / kuiva biomi; tumma aarnimetsä hyvin todennäköinen, hirviöt siellä 20 % nopeampia + ilmoitus biomille astuessa.
