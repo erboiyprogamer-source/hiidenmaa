@@ -41,7 +41,7 @@ function loadData(s){
   if(s.explored&&!oldWorld){const b=atob(s.explored);for(let i=0;i<explored.length;i++)explored[i]=(b.charCodeAt(i>>3)>>(i&7))&1;}
   for(let i=0;i<3;i++)if(flags.sarc[i]){sarcs[i].lid.position.x=.7;sarcs[i].lid.rotation.z=.3;}
   if(s.bossPending)invAdd('hiidenkivi',3);
-  resetFog();invDirty=true;updateGear();goalShown=-1;syncAltar();
+  resetFog();invDirty=true;updateGear();goalShown=-1;syncAltar();ensureCamps();
 }
 function resetWorld(){
   for(const p of [...pieces])removePiece(p);for(const m of [...mobs])mobRemove(m);for(const d of drops)scene.remove(d.mesh);drops=[];for(const g of [...graves])removeGrave(g);graves=[];
@@ -55,6 +55,7 @@ function newGame(){
   P.packLv=0;recalcBon();inv=new Array(32).fill(null);P.pos.set(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z);P.hp=60;P.stam=100;P.hunger=80;P.buffs={};P.spawn=null;P.deaths=0;P.kills=0;P.inDun=false;P.realm=null;P.spawnProt=0;P.dead=false;P.heal=0;P.wetT=0;
   camYaw=Math.PI*1.1;camPitch=.3;P.yaw=camYaw+Math.PI;fig.g.rotation.x=0;resetFog();invDirty=true;updateGear();goalShown=-1;
   // start with a few mobs around
+  ensureCamps();   // v0.99 hylätyt leirit
   for(let i=0;i<3;i++){const a=i*2.1,d=30+i*6;spawnMob('peura',LOC.spawn.x+Math.cos(a)*d,LOC.spawn.z+Math.sin(a)*d);}
   setTimeout(()=>{msg('Rannalla seisoo riimukivi. Lue se (E).');},800);
 }

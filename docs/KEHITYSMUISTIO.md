@@ -71,6 +71,16 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v0.99 (hylätyt leirit – kohta 14)
+- `CAMPS` + `ensureCamps` (story.js): 1–2 leiriä per kartta (siemen `MAP_ID`), paikka valitaan kasvillisuuden sijoittelun jälkeen tasaiselta
+  maalta ilman puita/kiviä 7 m:n säteellä, ≥ 60 m muista paikoista (väljempi toinen haku vuorisille kartoille: 35 m, myös tunturi/suo/aarni/vuori)
+  → maiseman numerointi ja vanhat tallennukset ennallaan. `LOC.campN` = "Hylätty leiri" (löytyy 30 m:stä, merkki kartalle).
+- Rakennelmat tavallisina rakennusosina (tallentuvat; `flags.camps`, vanhaan tallennukseen luodaan latauksessa): **sammunut nuotio**
+  (fuel 0 → sytytetään puulla kuten oma nuotio), uusi rakennusosa **Teltta** (Kalusto, nahka 6 + puu 4; A-runko, kangaslappeet, umpinainen
+  takapääty, edestä avoin, salot ja kiilat; suojaa → nukkuminen onnistuu), **sänky** teltan sisällä, istuintukki (palkki) ja **hylätty säkki**
+  (löydetty säiliö: liha 2, nahka 2, soihtu, puu 6, nuolet 8; +15 XP).
+- Leirin rakennusosat tekevät siitä "tukikohdan" (`nearBase`): 15 m:n säteelle ei synny vihollisia.
+
 ### v0.98 (arkkukivien kivikasat – kohta 13)
 - `buildPoiRock` (story.js): kivet kauempana (sisäreuna ≥ 2,4 m keskeltä, leveys 1,6–2,8 m, tangentiaalisesti), kaksi vastakkaista ~90°
   kulkuaukkoa (arvottu suunta), keskilaatta matala (yläpinta 0,25 m < askelnousu, ei törmäystä), arkku laatan päällä. Ennen kivet olivat
@@ -1106,7 +1116,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 **JATKA TÄSTÄ (päivitetty v0.94):** kohdat 1–9 tehty (v0.81–v0.92) + käyttäjän välilisäykset v0.93 (hautakasa arkkuna, Kalmanpesä
 millä vain, DEV-jumalvoimatäpät, harppova juoksu) ja v0.94 (Shift-tietoikkuna). Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #23
 (auki – tarkista ennen jatkoa onko yhdistetty; jos on, aloita haara origin/mainista tarkistettuasi ettei commiteja katoa).
-Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Kohdat 10 (v0.95) ja 11 (v0.96) tehty. Seuraavaksi kohta 14** (leiripaikat) → 15 (12 tehty v0.97, 13 v0.98), kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
+Käyttäjän linjaus: välikommentit tehdään heti, sitten jatketaan alkuperäisiä kohtia järjestyksessä. **Kohdat 10 (v0.95) ja 11 (v0.96) tehty. Seuraavaksi kohta 15** (ruoho) (12 tehty v0.97, 13 v0.98, 14 v0.99), kukin: 1–5 tarkentavaa kysymystä → toteutus → kuvat/testi → tarkistusrivi → muistio + OMINAISUUDET → versio +
 `?v=` → commit, push, PR #23 kuvaus → testilinkki `https://raw.githack.com/erboiyprogamer-source/hiidenmaa/claude/hiidenmaa-survival-game-fmxt0m/index.html`.
 Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kallistus + edestakainen heilunta kuten puut), asetus pois/oletus/täysi.
 1. Eläinmallit kuntoon (peuran jalat irti rungosta) – TEHTY v0.81.
@@ -1125,7 +1135,7 @@ Jo sovittua: kohta 15 ruoho heiluu yhteisellä tuulella `SWAY.uWDir/uLean` (kall
 11. TEHTY v0.96. Kuokka nostaa maata enemmän, oikea klikkaus palauttaa alkuperäisen värin; lapio syvempi kuoppa, oikea klikkaus = ruskea polku.
 12. TEHTY v0.97. Aluevartijat: alue ×2, jäävät rajalle taistelemaan, 1–10 s päästä palaavat, kunnes huomaavat pelaajan taas.
 13. TEHTY v0.98. Kivikasat arkun ympärillä liian tiiviit – arkulle pääsy.
-14. Hylätyt leiripaikat (1–2 / kartta): sammunut nuotio (sytytys puulla), teltta jossa sänky.
+14. TEHTY v0.99. Hylätyt leiripaikat (1–2 / kartta): sammunut nuotio (sytytys puulla), teltta jossa sänky.
 15. Ruoho: pystyheinää laajalti, eri pituuksia, heiluu tuulessa (kallistuu tuulen suuntaan); grafiikka-asetus pois/oletus/täysi.
 
 ### Käyttäjän ideat 0–11 (erät 23–31) – ryhmittely teemoittain
