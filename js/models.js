@@ -190,11 +190,14 @@ function makePlayer(){
   const mkLeg=x=>{const p=new THREE.Group();p.position.set(x,hip,0);tube(p,.092,.078,.4,pant,0,-.2,0,1,1,8);rnd(p,0,-.4,0,.072,pant,1,1,1,8);
     const k=new THREE.Group();k.position.set(0,-.4,0);p.add(k);tube(k,.072,.06,.4,pant,0,-.2,0,1,1,8);tube(k,.07,.07,.2,boot,0,-.3,0,1,1,8);tube(k,.083,.083,.06,fur,0,-.2,0,1,1,8);rnd(k,0,-.37,.07,.075,boot,1,.7,1.8,8);rig.add(p);return[p,k];};
   const [legL,kneeL]=mkLeg(-.12),[legR,kneeR]=mkLeg(.12);
-  const torso=tube(rig,.2,.22,.76,cloth,0,hip+.38,0,1.18,.62,8);
+  /* v1.74 (käyttäjä): hieman V-muotoinen vartalo (ylä .218 / ala .205, ennen .2/.22). Yläpinta laskettu kauluksen sisään (korkeus .74,
+     ennen .76 → yläkansi samassa tasossa kuin kauluksen kansi → välkkyvä tumma laikku). Tumma osa näkyy nyt pyöreäreunaisena kumpuna
+     hieman kauluksen yläpuolella. Alkuperäinen koodi: docs/KEHITYSMUISTIO.md v1.74 (peruutusta varten). */
+  const torso=tube(rig,.218,.205,.74,cloth,0,hip+.37,0,1.18,.62,8);rnd(rig,0,hip+.758,0,.2,cloth,1.12,.13,.58,10);
   tube(rig,.235,.235,.07,leather,0,hip+.1,0,1.18,.65,8);rnd(rig,.22,hip+.08,.1,.06,leather,1,1.2,.8,6);{const pc=new THREE.Group(),dk=F(0x4a3220);   // v1.37 (lista 3, kohta 37): vyön takana nahkapussi (ennen irrallinen karvapallo), kiinni vyössä
     pc.add(bx(.13,.13,.055,leather,0,-.01,0),bx(.136,.05,.062,dk,0,.05,-.002),bx(.03,.03,.02,F(0xb08d57),0,.03,-.034),bx(.02,.05,.012,dk,-.045,.075,.026),bx(.02,.05,.012,dk,.045,.075,.026));
     pc.position.set(-.165,hip+.03,-.15);pc.rotation.y=.42;rig.add(pc);}
-  tube(rig,.27,.23,.12,fur,0,hip+.7,0,1.2,.7,8);
+  tube(rig,.285,.235,.12,fur,0,hip+.7,0,1.22,.7,8);   // v1.74: kaulus hieman leveämpi (ennen .27/.23, sx 1.2) → olkapäät kiinni
   const cloths=[torso];
   const mkArm=x=>{const p=new THREE.Group();p.position.set(x,hip+.68,0);rnd(p,0,0,0,.085,fur,1,1,1,8);
     const up=tube(p,.063,.056,.33,cloth,0,-.18,0,1,1,8);cloths.push(up);

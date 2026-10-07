@@ -450,3 +450,4 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Kaatuva puu: osumasta lyhyt sivuilmoitus (väistä sivuun); jos puu tappaa, kuolinruudussa vihje.
 - Ensikäynnin aloitusjaksoa ja suorituskykytestiä ei voi ohittaa; merkintä tallentuu vasta jakson lopussa. Palaava kävijä voi ohittaa otsikon.
 - Suorituskykytestin aikana (ei tulosruudussa) yläreunassa kerrotaan, että testi on heikompia koneita varten ja grafiikan voi nostaa itse (Asetukset › Grafiikka).
+- Näppäinlistassa myös kaikki kiinteät näppäimet (I, Q repussa, Enter, ohitus, DEV-näppäimet).
