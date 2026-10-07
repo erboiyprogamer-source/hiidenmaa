@@ -205,7 +205,7 @@ function treeHit(n,a,x,z,y){const H=(TREE_H[n.type]||5)*n.s,dx=x-n.x,dz=z-n.z,al
 function crushPlayer(n,a,src){
   for(const m of mobs)if(m!==src&&!m.dead&&!m.dun&&treeHit(n,a,m.pos.x,m.pos.z,m.pos.y)){damageMob(m,m.maxHp*.8,null,Math.sin(a),Math.cos(a),3);}
   if(P.dead||P.inDun||devOn('god'))return;
-  if(treeHit(n,a,P.pos.x,P.pos.z,P.pos.y)){const d=maxHp()*.8;P.hp-=d;P.hurtFlash=.8;shake(.6);sfx('hurt');floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,P.pos.z,'#e0614f');msg('Kaatuva puu osui sinuun!','warn');if(P.hp<=0)playerDie();}}
+  if(treeHit(n,a,P.pos.x,P.pos.z,P.pos.y)){const d=maxHp()*.8;P.hp-=d;P.hurtFlash=.8;shake(.6);sfx('hurt');floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,P.pos.z,'#e0614f');if(P.hp<=0){P.deathCause='tree';playerDie();}else msg('Kaatuva puu osui! Väistä sivuun, kun puu kallistuu.','warn');}}   // v1.70: lyhyt vihje sivuilmoituksena, kuolema → kuolinruudun vihje   // v1.70: kuolinsyy → vihje kuolinruudussa
 function shockwave(x,y,z,r,color=0x8ffff0){const m=new THREE.Mesh(new THREE.RingGeometry(.8,1,32),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.8,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.set(x,y+.15,z);scene.add(m);fx.push({obj:m,t:0,update:(f)=>{const k=f.t/.5;m.scale.setScalar(.5+k*r);m.material.opacity=.8*(1-k);return k>=1;}});}
 
 /* ---------------- PROJECTILES ---------------- */

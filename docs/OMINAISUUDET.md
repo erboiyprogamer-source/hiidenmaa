@@ -447,3 +447,4 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Siirtymä latausnäyttöön: riimukehä piirtyy, keskellä riimut tavaavat HIIDENMAA, sulautuvat sinetiksi joka leimahtaa (paineaalto, kipinät).
 - Suorituskykytesti valitsee kaikista 8 tasosta (Ultra, kun indeksi ≥ 140) ja huomioi tasaantumisnopeuden ja tasaisuuden.
 - AFK-eleet: heilunta, pään rapsutus, kädet levälleen; siirtymän lopussa sininen ᚺ ja kaartuva riimurivi.
+- Kaatuva puu: osumasta lyhyt sivuilmoitus (väistä sivuun); jos puu tappaa, kuolinruudussa vihje.

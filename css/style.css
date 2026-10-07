@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.69';
+:root{--css-v:'1.70';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -708,3 +708,5 @@ button:focus,select:focus{outline:none}
 #splash .spTrans.on .stFin span:not(.h){animation:stSide 1.25s cubic-bezier(.2,.75,.25,1) calc(2.08s + var(--d)) both}
 @keyframes stH{0%{opacity:0;transform:translate(-50%,-50%) scale(1.5)}22%{opacity:1;transform:translate(-50%,-50%) scale(1)}55%{opacity:1;transform:translate(-50%,-50%) scale(1.03)}62%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}100%{opacity:0;transform:translate(-50%,-50%) scale(.7)}}
 @keyframes stSide{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}35%{opacity:1;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) rotate(var(--rot)) scale(1)}70%{opacity:1;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) rotate(var(--rot)) scale(1)}100%{opacity:0;transform:translate(calc(-50% + var(--tx)*1.25),calc(-50% + var(--ty)*1.25)) rotate(var(--rot)) scale(.85)}}
+#deadS .deadTip{max-width:560px;margin:4px auto 18px;padding:10px 14px;border:1px solid rgba(232,164,74,.45);border-left:3px solid #e8a44a;border-radius:4px;background:rgba(40,24,10,.55);font:500 16px/1.5 var(--font-b);color:#e8dcc0;text-align:left}
+#deadS .deadTip b{color:#ffb35a}

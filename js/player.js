@@ -288,7 +288,9 @@ function playerDie(){if(state==='paused'||state==='intro'){P.hp=Math.max(P.hp,1)
   const items=inv.filter(Boolean).map(s=>({id:s.id,n:s.n,q:s.q}));inv=new Array(invN()).fill(null);invDirty=true;updateGear();setBuildSel(null);
   if(items.length){const y=P.inDun?DUN.y:terrainH(P.pos.x,P.pos.z);makeGrave({x:P.pos.x,y,z:P.pos.z,items});}
   startPlayerDeath();   // v1.37: kaatumis-/tuhka-animaatio (effects.js)
-  closeAllForDeath();setTimeout(()=>{closeAllForDeath();state='dead';releaseLock();$('#deadS').hidden=false;$('#hud').hidden=true;},1400);
+  /* v1.70: kuolinsyyn vihje kuolinruudussa (nyt: kaatuva puu) */
+  const tip={tree:'<b>Puu kaatui päällesi.</b> Ole ensi kerralla varovainen: kun puu alkaa narista ja kallistua, astu nopeasti sivuun – älä jää sen kaatumissuuntaan. Myös myrskytuuli ja pedot voivat kaataa puita.'}[P.deathCause];P.deathCause=null;
+  closeAllForDeath();setTimeout(()=>{closeAllForDeath();state='dead';releaseLock();const dt=$('#deadTip');if(dt){dt.hidden=!tip;dt.innerHTML=tip||'';}$('#deadS').hidden=false;$('#hud').hidden=true;},1400);
 }
 // Hautakasa: kivet + pieni valomajakka (läpikuultava pylväs + himmeä pistevalo), joka näkyy lähellä (updateStations).
 function makeGrave(g){const m=new THREE.Group();m.add(bx(1,.5,1,mat(0x6a6862),0,.25,0),bx(.5,1.2,.2,mat(0x8f8d86),0,.9,-.3));
