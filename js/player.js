@@ -77,6 +77,14 @@ function updatePlayer(dt){
   fig.g.position.copy(P.pos);if(P.swim)fig.g.position.y=P.pos.y-.2;fig.g.rotation.y=P.yaw;
   P.crouchK=lerp(P.crouchK,P.crouch?1:0,Math.min(1,dt*9));
   // Jalat: lonkka + polvi. Kävely, ilma (hyppy), laskeutumisen joustaminen, iskun askel ja kyykky (polvet syvälle koukkuun, vartalo etukenoon).
+  /* v1.68: elävä seisonta. Hengitys (4,2 s rytmi) aina paikallaan; AFK (ei näppäintä, hiirtä eikä kameran kääntöä 3 s) → pää katselee
+     ympärilleen, kädet liikkuvat hieman, polvet joustavat ja paino siirtyy jalalta toiselle. idleK/afkK pehmennetään (ei hyppyjä). */
+  {const act=mouseL||mouseR||Object.keys(keys).some(k=>keys[k])||Math.abs(camYaw-(P._cy||0))>.002||Math.abs(camPitch-(P._cp||0))>.002||hv>.3||state!=='play';
+   P._cy=camYaw;P._cp=camPitch;P.afkT=act?0:(P.afkT||0)+dt;
+   const still=P.onGround&&!P.swim&&hv<.3&&!P.atk&&!P.drawing&&!P.blocking&&P.crouchK<.1&&!P.dead;
+   P.idleK=lerp(P.idleK||0,still?1:0,Math.min(1,dt*3));P.afkK=lerp(P.afkK||0,still&&P.afkT>3?1:0,Math.min(1,dt*(P.afkT>3?.9:4)));
+   P.brPh=(P.brPh||0)+dt*TAU/4.2;P.afkPh=P.afkK>.01?(P.afkPh||0)+dt:0;}
+  const brth=Math.sin(P.brPh)*P.idleK,aK=P.afkK,aP=P.afkPh,sway2=Math.sin(aP*.45);
   {let bobC=0;const K=P.crouchK;P.landT=Math.max(0,(P.landT||0)-dt);const land=Math.min(1,P.landT/.25);
    let thL=sw,thR=-sw,knL=.08+Math.max(0,-sw)*.9,knR=.08+Math.max(0,sw)*.9,lunge=0;
    // perinteinen juoksu: takajalka ojentuu taakse (kantapää ylhäällä), etureisi nousee korkealle, polvi koukistuu jalan heilahtaessa eteen
@@ -88,15 +96,18 @@ function updatePlayer(dt){
    // Kyykkykävely: isot, hitaat askeleet (reiden heilahdus ±.6, takajalka koukussa kun jalka nousee eteen), runko hieman keinuu
    if(K>0){const mv=Math.min(1,hv/1.4),ph=P.walkPh*.75,cw=Math.sin(ph)*mv*.6,liftL=Math.max(0,-Math.cos(ph))*.55*mv,liftR=Math.max(0,Math.cos(ph))*.55*mv;
      thL=lerp(thL,-1.0+cw,K);thR=lerp(thR,-1.0-cw,K);knL=lerp(knL,1.8-cw*.8+liftL,K);knR=lerp(knR,1.8+cw*.8+liftR,K);bobC=Math.abs(Math.sin(ph))*.035*mv*K;}
+   if(aK>0){const bL=aK*(.07+.07*sway2),bR=aK*(.07-.07*sway2);knL+=bL;knR+=bR;thL-=bL*.5;thR-=bR*.5;}   // AFK: polvet joustavat, paino jalalta toiselle
    fig.legL.rotation.x=thL;fig.legR.rotation.x=thR;fig.kneeL.rotation.x=knL;fig.kneeR.rotation.x=knR;
-   const drop=.3*K+.09*land+.05*lunge-bobC-Math.abs(Math.cos(P.walkPh))*.05*runK;fig.rig.position.y=-drop;fig.rig.rotation.x=.1*K+.07*lunge+.05*land+.13*runK;fig.head.rotation.x=-.12*K-.04*lunge;
+   const drop=.3*K+.09*land+.05*lunge-bobC-Math.abs(Math.cos(P.walkPh))*.05*runK;fig.rig.position.y=-drop+brth*.006-aK*.022;fig.rig.rotation.x=.1*K+.07*lunge+.05*land+.13*runK+brth*.012;fig.head.rotation.x=-.12*K-.04*lunge-brth*.015+aK*Math.sin(aP*.37)*.09;
    // v1.12 (välilisäys 3): sivukeinunta – runko kallistuu sen jalan puolelle, joka on edessä (oikea edessä kun sin(walkPh) > 0, +z = oikealle);
    // kävely ±2°, juoksu ±5°; voimakkuus seuraa nopeutta ja pehmennettyä runK:ta, joten paluu suoraan on pehmeä
    // v1.53: kävelyssä ei sivukeinuntaa, juoksussa ±2,6° (ennen ±4,4°); osa juoksun kallistuksesta eteenpäin askeltahdissa (|sin| · 2°)
-   {const on=P.onGround&&!P.swim?Math.min(1,hv/4)*(1-K):0,tz=Math.sin(P.walkPh)*on*.045*runK;fig.rig.rotation.z=tz;fig.rig.rotation.x+=Math.abs(Math.sin(P.walkPh))*on*.035*runK;}}
+   {const on=P.onGround&&!P.swim?Math.min(1,hv/4)*(1-K):0,tz=Math.sin(P.walkPh)*on*(.012*(1-runK)+.045*runK)+aK*sway2*.03;fig.rig.rotation.z=tz;   /* v1.68: kävelyssä pieni ±0,7° keinunta, AFK painonsiirto */fig.rig.rotation.x+=Math.abs(Math.sin(P.walkPh))*on*.035*runK;}}
   // Kädet: lasketaan tavoitekulmat ja siirrytään niihin pehmeästi (ei äkillisiä hyppyjä).
   let tRx=sw*(.63+.315*runK),tRz=0,tLx=-sw*(.63+.315*runK),tLz=0,tSh=.35,rate=14,grip=false,eRo=null,eLo=null;
   if(runK>.3&&!P.atk&&!P.blocking&&!P.drawing){eRo=-1.15*runK;eLo=-1.15*runK;}   // juostessa kyynärpäät koukussa
+  if(P.idleK>.01){const ik=P.idleK;tLz-=brth*.035;tRz+=brth*.035;   // v1.68 hengitys: kädet avautuvat hieman sisäänhengityksessä
+    if(aK>0){tLx+=aK*Math.sin(aP*.8)*.13;tRx+=aK*Math.sin(aP*.8+1.7)*.13;tLz-=aK*(.04+.04*Math.sin(aP*.6));tRz+=aK*(.04+.04*Math.sin(aP*.6+2));}}
   const hold=mouseL&&state==='play';
   if(P.atk){const k=P.atk.t/P.atk.dur,hk=P.atk.hitAt/P.atk.dur,two=(P.atk.w.chop||P.atk.w.pick)&&!P.atk.offBusy,sd=P.atk.side||1;
     if(P.atk.w.id==='keihas'){// työntö: nostokulma = kohteen suunta; käsi vedetään taakse ja ojennetaan
@@ -145,7 +156,7 @@ function updatePlayer(dt){
   armClear(fig.armL,fig.elbowL,fig.handL);
   // Jousen veto: oikea käsi jänteellä nuolen kannan kohdalla.
   P.drawK=lerp(P.drawK||0,P.drawing&&heldMesh&&ITEMS[heldId].cat==='bow'?1:0,Math.min(1,dt*14));
-  {const bk=P.drawK>.01&&heldMesh&&heldMesh.userData.bow?P.drawK:0;fig.rig.rotation.y=-.55*bk;fig.head.rotation.y=.55*bk;if(bk)bowAim(heldMesh,bk);}   // v1.22 ampuja-asento: vartalo sivuttain, pää eteen
+  {const bk=P.drawK>.01&&heldMesh&&heldMesh.userData.bow?P.drawK:0;fig.rig.rotation.y=-.55*bk;fig.head.rotation.y=.55*bk+aK*(Math.sin(aP*.55)*.6+Math.sin(aP*1.3)*.12);if(bk)bowAim(heldMesh,bk);}   // v1.22 ampuja-asento: vartalo sivuttain, pää eteen
   // Kilpi torjunnassa: käännetään (pehmeästi, blockK) osoittamaan eteenpäin – kämmenen kierto kumotaan niin että kilven normaali (x) on hahmon +z
   if(offMesh&&offId&&ITEMS[offId].cat==='shield'){P.blockK=lerp(P.blockK||0,P.blocking?1:0,Math.min(1,dt*10));
     if(P.blockK>.01){fig.g.updateMatrixWorld(true);fig.handL.getWorldQuaternion(_qh);fig.g.getWorldQuaternion(_qf);_qd.copy(_qf).multiply(_qt.setFromEuler(_eb.set(0,-Math.PI/2,0)));

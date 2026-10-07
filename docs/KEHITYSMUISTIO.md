@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.67)
+## Nykytila (päivitetty v1.68)
 
-- **Versio 1.67**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
+- **Versio 1.68**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -91,6 +91,14 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.68 (elävä hahmo: hengitys, AFK, kävelykeinunta)
+- **Kävely:** pieni sivukeinunta ±0,012 rad (~0,7°) kävelyssä, juoksussa ennallaan ±0,045 (v1.53 kävelyssä 0).
+- **Hengitys** paikallaan (`P.idleK`, maassa, nopeus < 0,3, ei isku/veto/torjunta/kyykky): 4,2 s rytmi, rungon nousu ±6 mm, rinta ±0,012 rad,
+  pää vastaliike, kädet avautuvat ±0,035 rad.
+- **AFK** (`P.afkT` > 3 s ilman näppäintä, hiiren nappia tai kameran kääntöä; `P.afkK` nousee ~1 s): pää katselee ympärilleen (±0,6 rad +
+  pieni nopeampi liike, nyökkäys ±0,09), kädet heiluvat hieman (±0,13), polvet joustavat ja paino siirtyy jalalta toiselle (polvet
+  0–0,14, rungon kallistus ±0,03, lasku 2,2 cm). Mikä tahansa syöte palauttaa nopeasti (4/s).
 
 ### v1.67 (uusi riimusiirtymä latausnäyttöön)
 - Vanha siirtymä (yksi ᚺ + rengas skaalattuna ×160 → suttuinen litteä kehä, ja edellisen ruudun teksti näkyi läpi) korvattu, 2,9 s:
@@ -1805,7 +1813,7 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 6 (v1.53–) – julkaisupäivitys
-**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.67 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
+**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.68 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
 - A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
   eteenpäin, piikivikirves.
 - B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.

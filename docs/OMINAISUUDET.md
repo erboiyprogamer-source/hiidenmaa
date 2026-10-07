@@ -414,7 +414,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## Lista 6 (v1.53–)
 - Piikivikirves (työpenkki: 3 puuta, 3 piikiveä, 1 nahka; taso 2): kaataa puut kivikirvestä nopeammin, ei kovia puita.
-- Kävellessä hahmo ei keinu sivulle; juostessa vähän ja osin eteenpäin.
+- Kävellessä hahmo keinuu hyvin vähän sivuille (~0,7°); juostessa enemmän ja osin eteenpäin.
+- Paikallaan hahmo hengittää (4,2 s rytmi). Jos peliin ei kosketa 3 s, AFK-animaatio: pää katselee ympärilleen, kädet liikkuvat ja paino siirtyy jalalta toiselle.
 - Asetukset › Ohjaus: kääntymisen herkkyys ja pelin paneelien osoittimen herkkyys. Osoitin liikkuu viiveettä.
 - Ensimmäisellä käynnillä aloitusjakso: "EricStudios & KSPK-tech" allekkain ja tekijänoikeudet → HIIDENMAA kivikaiverruksena → varoitus
   (tietokone, hiiri ja näppäimistö; vältä turhaa Esc-painamista, valikko = P) → suorituskykytesti → riimusiirtymä latausnäyttöön (studio 3,5 s, logo 5,2 s, varoitus 9 s; varoituksessa myös "Paras yhteensopivuus Windows-käyttöjärjestelmällä"). Mikä tahansa näppäin tai napsautus ohittaa
