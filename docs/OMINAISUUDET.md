@@ -371,3 +371,10 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Alle 30 %: hehkuu punaisena, vain ryntäyksiä 1,5 s välein, 5 kalmoa 20 s välein.
 - Kalmankammion kalmoista 10 % on jousikalmoja: ampuvat 3–20 m päästä 2,5 s välein, pitävät etäisyyttä, pudottavat joskus nuolia.
 - Ensimmäinen käynti ulottuvuudessa: iso animoitu otsikko ja tavoite; myöhemmin sivuviesti.
+
+## Lista 4, erä E (v1.43)
+- Latausnäyttö: riimukiven riimut syttyvät latauksen edetessä, sumu, kipinät ja säe.
+- Ensimmäisellä käynnillä 3 s suorituskykytesti valitsee grafiikan esiasetuksen (Low–Medium).
+- Uusi maailma alkaa 6 s introlla pilvien yläpuolelta (ohitettavissa millä tahansa näppäimellä).
+- Taukovalikossa "Tila: Tauko / Käynnissä": Käynnissä-tilassa maailma jatkuu valikon takana (et ota vahinkoa).
+- Uusi alue löytyy vasta hieman syvemmällä (~6 m); löytöotsikot häivyttyvät hitaasti eivätkä tule päällekkäin (jono).

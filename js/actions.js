@@ -160,7 +160,8 @@ function fireBow(){
 }
 // v1.39 (lista 4, kohdat 8–9): vahinkokerroin sille, joka parhaillaan päivittyy (ai.js asettaa): pomot ×1,2, vartijat ×1,8.
 let HURT_K=1;
-function hurtPlayer(dmg,fx,fz){dmg*=HURT_K;
+function hurtPlayer(dmg,fx,fz){if(state==='paused'||state==='intro')return;   // v1.43: valikon takana käynnissä oleva maailma ei vahingoita
+  dmg*=HURT_K;
   if(P.dead||P.invul>0||P.spawnProt>0||devOn('god'))return;
   let d=dmg;const dx=fx-P.pos.x,dz=fz-P.pos.z,l=Math.hypot(dx,dz)||1;
   if(P.blocking){const facing=(Math.sin(P.yaw)*dx+Math.cos(P.yaw)*dz)/l;let sh=equipped('shield');if(sh&&!shieldOk(sh))sh=null;const blk=sh?ITEMS[sh.id].block*(1+.1*((sh.q||1)-1)):.3;

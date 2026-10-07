@@ -108,12 +108,18 @@ function devRevealMap(){explored.fill(1);resetFog();for(const k in LOC){const L=
 // v0.82: alueet (biomit). Nykyinen alue P.zone tarkistetaan 0,4 s välein; ensimmäisellä kerralla "Uusi alue löydetty" (flags.bio).
 let zoneT=0,zoneBanT=0;
 function updateZone(dt){zoneT-=dt;if(zoneT>0)return;zoneT=.4;if(P.inDun||P.dead)return;
-  const z=zoneAt(P.pos.x,P.pos.z);if(z===P.zone&&!zoneQuiet)return;const ch=z!==P.zone;P.zone=z;if(!flags.bio)flags.bio={meadow:1};
-  if(!flags.bio[z]){flags.bio[z]=1;if(!zoneQuiet)showZoneBanner(BIOMES[z].n);}
+  const z=zoneAt(P.pos.x,P.pos.z);if(z===P.zone&&!zoneQuiet&&(flags.bio&&flags.bio[z]))return;const ch=z!==P.zone;P.zone=z;if(!flags.bio)flags.bio={meadow:1};
+  if(!flags.bio[z]&&(zoneQuiet||zoneDeep(z))){flags.bio[z]=1;if(!zoneQuiet)showZoneBanner(BIOMES[z].n);}   // v1.43: löytyy vasta hieman syvemmältä
   if(ch&&z==='aarni'&&!zoneQuiet&&playTime-(flags.aarniMsg||-99)>60){flags.aarniMsg=playTime;setTimeout(()=>msg('Hirviöt ovat vihaisia Aarnimetsässä – ne liikkuvat täällä nopeammin.','warn'),flags.bio.aarni===1&&$('#zoneBan').classList.contains('on')?1500:0);}
   zoneQuiet=false;if(ch&&openPanel==='inv')renderBiome();}
-function showZoneBanner(name){const el=$('#zoneBan');$('#zoneBanN').textContent=name;el.classList.add('on');sfx('discover');msg(`Uusi alue löydetty: ${name}`,'loot');
-  clearTimeout(zoneBanT);zoneBanT=setTimeout(()=>el.classList.remove('on'),4000);}
+// v1.43: alue löytyy vasta, kun vähintään 5/6 pistettä 6 m säteellä pelaajasta on samaa aluetta (ei heti rajalla).
+function zoneDeep(z){let n=0;for(let i=0;i<6;i++){const a=i/6*TAU;if(zoneAt(P.pos.x+Math.cos(a)*6,P.pos.z+Math.sin(a)*6)===z)n++;}return n>=5;}
+// v1.43: aluebannerit jonossa – pitkä häivytys sisään (2,2 s), näkyy 3 s, häivytys ulos (3 s), 1 s tauko ennen seuraavaa; ei päällekkäin.
+const ZONE_IN=2200,ZONE_HOLD=3000,ZONE_OUT=3000,ZONE_GAP=1000,zoneQ=[];let zoneBusy=false;
+function showZoneBanner(name){zoneQ.push(name);if(!zoneBusy)nextZoneBanner();}
+function nextZoneBanner(){const name=zoneQ.shift();if(!name){zoneBusy=false;return;}zoneBusy=true;const el=$('#zoneBan');$('#zoneBanN').textContent=name;
+  el.classList.add('on');sfx('discover');msg(`Uusi alue löydetty: ${name}`,'loot');
+  clearTimeout(zoneBanT);zoneBanT=setTimeout(()=>{el.classList.remove('on');zoneBanT=setTimeout(nextZoneBanner,ZONE_OUT+ZONE_GAP);},ZONE_IN+ZONE_HOLD);}
 function renderBiome(){const B=$('#biomeBox');if(!B)return;if(P.inDun||!P.zone||!BIOMES[P.zone]){B.innerHTML='';return;}const b=BIOMES[P.zone],dg=['','Rauhallinen','Kohtalainen','Vaarallinen'][b.danger]||'';
   B.innerHTML=`<h3>Alue: ${b.n}</h3><div class="bRow"><span>Sää ja lämpö</span><span>${b.temp}</span></div><div class="bRow"><span>Vaarallisuus</span><span>${dg}</span></div>
   <div class="bRow"><span>Eläimet</span><span>${b.life}</span></div><div class="bRow"><span>Viholliset</span><span>${b.foe}</span></div><div class="bRow"><span>Resurssit</span><span>${b.res}</span></div>${b.note?`<div class="bNote">${b.note}</div>`:''}

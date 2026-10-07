@@ -248,7 +248,7 @@ function bowAim(hm,k){const b=hm.userData.bow;fig.g.updateMatrixWorld(true);fig.
   _bwO.set(0,0,.12).applyQuaternion(hm.quaternion).negate();hm.position.lerp(_bwO,k);hm.updateMatrixWorld(true);
   _gp.set(0,0,b.ar.position.z+.02);hm.localToWorld(_gp);armIK(fig.armR,fig.elbowR,_gp,k,_poleBow);}
 function lerpAngle(a,b,t){let d=((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;return a+d*t;}
-function playerDie(){
+function playerDie(){if(state==='paused'||state==='intro'){P.hp=Math.max(P.hp,1);return;}
   if(devOn('god')){P.hp=Math.max(1,P.hp);return;}   // DEV: kuolemattomuus
   if(P.dead)return;P.dead=true;P.deaths++;P.hp=0;sfx('die');
   const items=inv.filter(Boolean).map(s=>({id:s.id,n:s.n,q:s.q}));inv=new Array(invN()).fill(null);invDirty=true;updateGear();setBuildSel(null);

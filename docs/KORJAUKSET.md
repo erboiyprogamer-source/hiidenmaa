@@ -215,6 +215,13 @@ oletus); `renderer.render` on try/catchissa (virhe näkyy tarkkana); three.js-ta
 materiaalin InstancedMeshit tarvitsevat ne (tai oman materiaalin).** Testi: `gate.mjs` (scratchpad) kävelee kaikkien karttojen porteille.
 Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: *` (crossorigin).
 
+## 29. Ylimmän tason muuttujat käytössä ennen esittelyä (v1.41, v1.43)
+- **Oire:** peli ei käynnisty (`flags is not defined`, `Cannot access 'intro' before initialization`), tai syntaksivirhe kesken tiedoston.
+- **Syy:** v1.41 landmarks.js luki `flags`-olion ylimmällä tasolla (state.js latautuu myöhemmin); v1.43 main.js:n karttavaihdon jatko
+  (IIFE) kutsui `startIntro()`a ennen `let intro` -riviä (TDZ). Lisäksi rivikommentti `// …` ennen samalla rivillä olevaa koodia nieli koodin.
+- **Korjaus:** tila palautetaan latauksessa funktiolla (`syncChests()` loadData/newGame), `let`-muuttujat tiedoston alkuun ennen IIFE:itä,
+  rivikommentin jälkeen aina rivinvaihto. Testaa aina myös karttavaihdon jatko (tarkistus: "Karttavaihto + automaattinen aloitus").
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

@@ -14,7 +14,10 @@ const MENU_SHOT_T=20;let menuShot=null,menuSpots=null,menuDeco=[],menuMob=null,m
 function hasSave(){return slotMeta().some(Boolean);}
 // v1.36 (lista 3, kohta 20): päävalikon maailmalista (enint. 5): nimi, viimeksi pelattu, päivä, taso ja kartta; Pelaa, Nimeä, Poista (vahvistus)
 // ja Uusi maailma omalla nimellä. Pelin aikana toiseen maailmaan siirtyminen tallentaa nykyisen ensin.
-function refreshMenu(){const inGame=started;$('#bResume').hidden=!inGame;$('#bSave').hidden=!inGame;
+// v1.43 (lista 4, kohta 32): taukovalikon tila – Tauko (maailma pysähtyy) tai Käynnissä (maailma päivittyy valikon takana)
+let pauseRun=false,intro=null,perf=null;   // intro ja perf ennen karttavaihdon jatkoa (KORJAUKSET 22)
+try{pauseRun=localStorage.getItem('hiidenmaa_prun')==='1';}catch(e){}
+function refreshMenu(){const inGame=started;$('#bResume').hidden=!inGame;$('#bSave').hidden=!inGame;{const b=$('#bRun');if(b){b.hidden=!inGame;$('#bRunT').textContent='Tila: '+(pauseRun?'Käynnissä':'Tauko');b.classList.toggle('on',pauseRun);}}
   const m=slotMeta();$('#mapName').textContent=inGame?`Kartta: ${MAP.name}`:'';$('#curWorld').textContent=inGame&&curSlot>=0&&m[curSlot]?`Maailma: ${m[curSlot].name}`:'';renderWorlds();}
 const fmtAt=t=>{try{return new Date(t).toLocaleString('fi-FI',{dateStyle:'short',timeStyle:'short'});}catch(e){return '';}};
 function renderWorlds(){const el=$('#worlds');if(!el)return;const m=slotMeta(),used=m.filter(Boolean).length,free=m.findIndex(x=>!x);
@@ -57,8 +60,9 @@ addEventListener('beforeunload',e=>{if(started&&!flags.won&&!reloading){e.preven
 let reloading=false;
 function switchMap(id,pending,data){try{localStorage.setItem('hiidenmaa_map',String(id));sessionStorage.setItem('hiidenmaa_pending',pending);if(data)sessionStorage.setItem('hiidenmaa_data',data);}catch(e){return false;}
   reloading=true;$('#fade').style.opacity=1;location.reload();return true;}
-function startNewGame(){const id=Math.floor(Math.random()*MAPS.length);if(id!==MAP_ID&&switchMap(id,'new'))return;newGame();startPlay();saveGame(true);msg(`Kartta: ${MAP.name}`);}
+function startNewGame(){const id=Math.floor(Math.random()*MAPS.length);if(id!==MAP_ID&&switchMap(id,'new'))return;newGame();startPlay();saveGame(true);msg(`Kartta: ${MAP.name}`);startIntro();}
 function playSave(s,welcome){if(curSlot<0){const f=freeSlot();setCurSlot(f<0?0:f);}const mid=s.mapId||0;if(mid!==MAP_ID&&switchMap(mid,'load',JSON.stringify(s)))return;loadData(s);startPlay();msg(welcome,'loot');}
+$('#bRun').onclick=()=>{pauseRun=!pauseRun;try{localStorage.setItem('hiidenmaa_prun',pauseRun?'1':'0');}catch(e){}refreshMenu();};
 $('#bResume').onclick=()=>{state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();};
 // Tallenna: ei avaa asetuksia; ilmoitus näkyy painikkeessa ja valikon tilariviltä
 $('#bSave').onclick=()=>{const ok=saveGame(true);refreshMenu();const lbl=$('#bSave').firstChild,prevT=lbl.textContent;
@@ -72,9 +76,36 @@ $('#bWinCont').onclick=()=>{$('#winS').hidden=true;$('#hud').hidden=false;state=
 refreshMenu();scrollHints($("#menu"));
 // Kartanvaihdon jälkeinen jatko: aloita uusi peli tai lataa tallennus automaattisesti.
 (function(){let p=null,d=null;try{p=sessionStorage.getItem('hiidenmaa_pending');d=sessionStorage.getItem('hiidenmaa_data');sessionStorage.removeItem('hiidenmaa_pending');sessionStorage.removeItem('hiidenmaa_data');}catch(e){}
-  if(p==='new'){newGame();startPlay();saveGame(true);setTimeout(()=>msg(`Kartta: ${MAP.name}`),300);}
+  if(p==='new'){newGame();startPlay();saveGame(true);setTimeout(()=>msg(`Kartta: ${MAP.name}`),300);startIntro();}
   else if(p==='load'&&d){try{loadData(JSON.parse(d));startPlay();setTimeout(()=>msg('Tervetuloa takaisin.','loot'),300);}catch(e){}}})();
 
+/* v1.43 (lista 4, kohta 11): uuden maailman intro ~6 s. 4 s korkealla pilvien yläpuolella (175 m, hidas kierto pelaajan ympäri),
+   "Hiidenmaa" ja kartan nimi animoituna; sitten 2 s nopea syöksy (easeInOut) tavalliseen kameraan. Ohitus millä tahansa näppäimellä tai napsautuksella. */
+const _iP=new THREE.Vector3(),_iQ=new THREE.Quaternion(),_iH=new THREE.Vector3(),_iHQ=new THREE.Quaternion();
+function startIntro(){if(P.inDun)return;intro={t:0,a0:Math.random()*TAU};state='intro';$('#hud').hidden=true;const el=$('#introT');if(!el)return;$('#introMap').textContent='Kartta · '+MAP.name;
+  el.hidden=false;el.classList.remove('on','out');void el.offsetWidth;el.classList.add('on');}
+function endIntro(){if(!intro)return;intro=null;const el=$('#introT');if(el){el.classList.add('out');el.classList.remove('on');setTimeout(()=>{if(!intro)el.hidden=true;},900);}
+  if(state==='intro'){state='play';$('#hud').hidden=false;}}
+function introCam(dt){if(!intro)return;intro.t+=Math.min(dt,.05);const t=intro.t,px=P.pos.x,py=P.pos.y,pz=P.pos.z;
+  _iP.copy(camera.position);_iQ.copy(camera.quaternion);   // tavallinen kolmannen persoonan kamera (updateCamera juuri laski)
+  const a=intro.a0+t*.11;_iH.set(px+Math.cos(a)*80,175,pz+Math.sin(a)*80);camera.position.copy(_iH);camera.lookAt(px,py,pz);_iHQ.copy(camera.quaternion);
+  let k=0;if(t>4){const u=Math.min(1,(t-4)/2);k=u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;}
+  camera.position.lerpVectors(_iH,_iP,k);camera.quaternion.copy(_iHQ).slerp(_iQ,k);
+  if(k<1){const nf=scene.fog.near,ff=scene.fog.far;scene.fog.near=lerp(260,nf,k);scene.fog.far=lerp(700,ff,k);updateChunkVis();}
+  if(t>=4.3&&$('#introT').classList.contains('on')){$('#introT').classList.remove('on');$('#introT').classList.add('out');}
+  if(t>=6)endIntro();}
+addEventListener('keydown',e=>{if(state==='intro'){e.stopPropagation();e.preventDefault();endIntro();}},true);
+addEventListener('mousedown',e=>{if(state==='intro'){e.stopPropagation();endIntro();}},true);
+addEventListener('touchstart',()=>{if(state==='intro')endIntro();},{capture:true,passive:true});
+/* v1.43 (lista 4, kohta 31): ensimmäisellä käynnillä 3 s suorituskykytesti latausnäytön aikana (3D-valikkokamera oletusasetuksilla;
+   0,6 s lämmittely, sitten FPS). ≥ 50 → oletus (Medium), 35–50 → Medium-, 22–35 → Low+, < 22 → Low. Tulos: localStorage hiidenmaa_perf.
+   Ohitetaan, jos asetuksia on jo tallennettu tai selain on automaation ohjaama (testit); ?perf=1 pakottaa testin. */
+function perfNeeded(){try{if(/[?&]perf=1/.test(location.search))return true;if(navigator.webdriver)return false;return !localStorage.getItem('hiidenmaa_perf')&&!localStorage.getItem('hiidenmaa_set');}catch(e){return false;}}
+function perfStart(){perf={t:0,n:0,ft:0};if(window.__ldNote)window.__ldNote('Mitataan koneen tehoa…');}
+function perfStep(raw){perf.t+=raw;if(perf.t>.6){perf.n++;perf.ft+=Math.min(raw,.5);}menuCam(Math.min(.25,raw));if(window.__ldSet)window.__ldSet(.94+.06*Math.min(1,perf.t/3));if(perf.t>=3)perfEnd();}
+function perfEnd(){if(!perf)return;const fps=perf.ft>0?perf.n/perf.ft:0,i=fps>=50?3:fps>=35?2:fps>=22?1:0;perf=null;
+  try{menuClear();menuShot=null;}catch(e){}applyPreset(i);try{localStorage.setItem('hiidenmaa_perf',JSON.stringify({fps:Math.round(fps),preset:PRESET_N[i],at:Date.now()}));}catch(e){}
+  if(window.__ldNote)window.__ldNote(`Grafiikka: ${PRESET_N[i]} (${Math.round(fps)} FPS) – voit muuttaa asetuksista`);setTimeout(()=>{if(window.__ldDone)window.__ldDone();},900);}
 /* ---------------- MAIN LOOP ---------------- */
 let last=performance.now(),slowT=0,saveT=0,lightT=0,menuA=0;
 function update(dt){
@@ -147,10 +178,13 @@ function frame(now){
   requestAnimationFrame(frame);
   const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;let skip3d=false;
   if(state==='play'&&SET.autoAll)autoQuality(raw);updateFps(raw);
+  if(perf){try{perfStep(raw);renderer.render(scene,camera);}catch(err){console.error(err);perfEnd();}return;}
   try{
     if(state==='play'||state==='ui')update(dt);
     else if(state==='menu'&&MENU_V2_OFF)menuCamOld(dt);
     else if(state==='menu'){if(SET.menuBg==='3d'){mbgShow(false);menuCam(Math.min(.25,raw));}else{mbgFrame(now);skip3d=true;}}   // v1.25: kuvat = ei 3D-piirtoa valikossa
+    else if(state==='intro'){update(dt);introCam(dt);}
+    else if(state==='paused'&&pauseRun)update(dt);   // v1.43: Käynnissä-tila
     else if(state==='paused'){updateEnvironment(0);updateGrass();updateLights();if(typeof updateMist==='function')updateMist(0);}   // v1.35 (kohta 18): asetusmuutokset näkyvät heti myös tauolla
     else if(state==='dead'||state==='win'){updateMobs(dt*.5);updateEnvironment(dt);updateEffects(dt);}
   }catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe pelisilmukassa: '+(err&&err.message||err));}}   // v1.26 näkyviin
@@ -158,5 +192,6 @@ function frame(now){
   if(!skip3d){try{renderer.render(scene,camera);}catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe piirrossa: '+(err&&err.message||err));}}}
 }
 updateLights();applyGfx();refreshKeyHints();
+if(perfNeeded()&&!started)perfStart();else if(window.__ldDone)window.__ldDone();
 requestAnimationFrame(frame);
 window.__game={renderer,keys,G,WH,get ghost(){return{sel:buildSel,ok:ghostOk,pos:ghostPos,why:lastInvalid}},placeBuild,openChest,scene,camera,P,get mobs(){return mobs},inv:()=>inv,pieces:()=>pieces,invAdd,addPiece,spawnMob,newGame,startPlay,flags:()=>flags,saveGame,serialize,loadData,setState:s=>state=s,get state(){return state},update,interact,togglePanel,useSlot,craft,RECIPE_BY,setBuildSel,enterDungeon,exitDungeon,camYaw:v=>camYaw=v,doMeleeHit,startAttack,nodes,setDay:v=>dayT=v};

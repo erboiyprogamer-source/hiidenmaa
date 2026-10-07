@@ -73,6 +73,22 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.43 (lista 4, erä E: latausnäyttö, suorituskykytesti, maailman intro, tauko/käynnissä + aluebannerit)
+- **Latausnäyttö (10):** `#loadScr` heti `<body>`:n alussa: riimukivi (SVG, 24 riimua kahdessa nauhassa) jonka riimut syttyvät sitä
+  mukaa kuin 29 skriptiä latautuu (dokumentin `load`-tapahtuma kaapataan, `__ldSet`), sumukerrokset, nousevat kipinät (CSS, toimivat
+  vaikka pääsäie on kiireinen), satunnainen säe (5 omaa säettä), edistymispalkki. `__ldDone()` häivyttää 1,3 s:ssa ja poistaa.
+- **Suorituskykytesti (31):** ensimmäisellä käynnillä (ei `hiidenmaa_perf`- eikä `hiidenmaa_set`-tallennetta) latausnäytön aikana 3 s:
+  3D-valikkokamera oletusasetuksilla, 0,6 s lämmittely, sitten FPS. ≥ 50 → Medium (oletus), 35–50 → Medium-, 22–35 → Low+, < 22 → Low.
+  Tulos `hiidenmaa_perf` ja näkyy latausnäytöllä ("Grafiikka: X (N FPS)"). Automaatioselaimessa (`navigator.webdriver`) ohitetaan,
+  `?perf=1` pakottaa. Testattu: swiftshader 2 FPS → Low.
+- **Intro (11):** `startIntro()` uudessa maailmassa (myös karttavaihdon jälkeen): `state='intro'`, 4 s 175 m korkeudella 80 m säteellä
+  hitaasti kiertäen, otsikko "Hiidenmaa" + "Kartta · nimi" (`#introT`), sumu kauas (260–700 m) ja ruudut näkyviin; 2 s syöksy
+  easeInOut tavalliseen kameraan (sijainti lerp + kierto slerp). Mikä tahansa näppäin/napsautus/kosketus ohittaa (`endIntro`).
+- **Tauko/Käynnissä (32):** taukovalikon painike `#bRun` "Tila: Tauko / Käynnissä" (muistetaan, `hiidenmaa_prun`). Käynnissä-tilassa
+  `update(dt)` ajetaan valikon takana (syötteet eivät liikuta pelaajaa); pelaaja ei ota vahinkoa eikä kuole tauolla/introssa.
+- **Aluebannerit (käyttäjän lisäpyyntö):** alue löytyy vasta, kun 5/6 pistettä 6 m säteellä on samaa aluetta (`zoneDeep`). Bannerit
+  jonossa (`zoneQ`): häivytys sisään 2,2 s, näkyy 3 s, ulos 3 s, 1 s tauko → seuraava; ei koskaan päällekkäin.
+
 ### v1.42 (lista 4, erä D: ulottuvuuksien saalis, Kalmaherra, jousikalmot, ensikäynnin otsikko)
 - **Saalis (12–13):** `realmLoot(id,base)`: Kalmankammion arkuissa ja kirstuissa määrät 2×; Kalmankammiossa ja Aarnihaudassa 30 %
   mahdollisuus harvinaiseen (`RARE_LOOT`): 3–5 metson sulkaa, karhuntalja, 1–2 hiidenkiveä tai ★2 rautamiekka/-kirves, kuparimiekka,
@@ -1517,7 +1533,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 4: 32 kohtaa (v1.39–) – tarkentavat kysymykset kysytään ensin, vastaukset kirjataan tähän
-**JATKA TÄSTÄ (lista 4):** PR #25 auki. Erät A–D tehty (v1.39–v1.42); seuraavaksi E (v1.43), sitten F.
+**JATKA TÄSTÄ (lista 4):** PR #25 auki. Erät A–E tehty (v1.39–v1.43) + aluebannerien jono/syvyys; seuraavaksi F (v1.44).
 **Erät (lista 4):**
 - A (v1.39): 1 kyykky, 3 ylämäki, 5 selkäterät, 6 esineet maassa, 8–9 pomot/vartijat, 18 rikki kilpi, 19 Aarnihirviö, 25 hp-vaihtelu,
   extra 1 veren fysiikka, extra 2 linnakkeen portaat.
