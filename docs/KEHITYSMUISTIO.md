@@ -15,7 +15,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Nykytila (päivitetty v1.44)
 
-- **Päivityslista 4 (32 kohtaa + extrat 1–2 + aluebannerit) on KOKONAAN TEHTY** v1.39–v1.44, haara
+- **Päivityslista 4 (32 kohtaa + extrat 1–2 + aluebannerit) on KOKONAAN TEHTY** v1.39–v1.44 (+ v1.45 latausnäytön leimahdus ja sivupartikkelit), haara
   `claude/hiidenmaa-survival-game-fmxt0m`, PR #25 odottaa yhdistämistä (main = v1.37). Seuraava työ: uusi lista käyttäjältä.
 - Erät: A v1.39, B v1.40, C v1.41, D v1.42, E v1.43 (+ aluebannerit), F v1.44 – yksityiskohdat versiolokissa ja kohdassa "Päivityslista 4".
 - Testauksen huomiot: headless-testissä CSS-animaatiot eivät etene raskaan 3D:n aikana (tarkista ulkoasu animaatiot pois), ulottuvuuden
@@ -82,6 +82,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.45 (latausnäytön viimeistely, käyttäjän pyyntö)
+- **Loppuleimahdus:** kun lataus (ja mahdollinen suorituskykytesti) valmistuu, `__ldDone` lisää `#loadScr.done`: 0,8 s kaikki riimut
+  syttyvät lähes valkoisiksi (#fff → #fff4e0) voimakkaalla hehkulla (`lsFlare`, porrastettu 12 ms/riimu), kivi ja otsikko kirkastuvat,
+  palkki valkoinen; sen jälkeen häivytys 1,3 s (ennen 0,4 s viive).
+- **Sivupartikkelit:** vasemmalle ja oikealle reunalle (`.lsSide`, 24 % leveys, reunat häivytetty) 34 nousevaa hiilloshiukkasta ja
+  leijuvaa tuhkaa kummallekin puolelle (satunnainen koko, ajo, sivuttaisajelehdinta); leimahduksessa hiukkaset vaalenevat.
 
 ### v1.44 (lista 4, erä F: optimoinnit asetuksiin)
 - **Kaukainen maasto (terrLod):** sama kärkipuskuri, uusi indeksipuskuri: kameran 100 m säteellä täysi 2 m ruudukko, kauempana

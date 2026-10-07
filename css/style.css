@@ -379,3 +379,20 @@ button:focus,select:focus{outline:none}
 @keyframes inSub{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes inLine{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media (max-width:700px){#introT b{font-size:56px}}
+/* v1.45: latauksen loppuleimahdus (0,8 s) ja sivujen partikkelit */
+#loadScr.done .lsR{fill:#fff4e0;animation:lsFlare .8s ease-out forwards;animation-delay:calc(var(--d)*.012s)}
+#loadScr.done .lsStone{animation:lsStoneFlare .8s ease-out forwards}
+#loadScr.done .lsBar i{background:linear-gradient(90deg,#ffd9a0,#fff6e6);box-shadow:0 0 14px #ffd28a,0 0 30px #ffb35a}
+#loadScr.done .lsTitle{text-shadow:0 0 28px rgba(255,220,170,.85),0 0 60px rgba(255,170,80,.6),0 4px 14px #000;transition:text-shadow .8s ease}
+@keyframes lsFlare{0%{fill:#ffb35a;filter:drop-shadow(0 0 3px #ff8a2a) drop-shadow(0 0 7px #ff6a1a)}
+  45%{fill:#ffffff;filter:drop-shadow(0 0 8px #fff6e6) drop-shadow(0 0 22px #ffd08a) drop-shadow(0 0 44px #ffa040) brightness(2)}
+  100%{fill:#fff4e0;filter:drop-shadow(0 0 5px #ffe8c2) drop-shadow(0 0 14px #ffb35a) drop-shadow(0 0 26px #ff8a2a) brightness(1.5)}}
+@keyframes lsStoneFlare{0%{filter:drop-shadow(0 18px 24px rgba(0,0,0,.8))}50%{filter:drop-shadow(0 0 60px rgba(255,200,130,.9)) brightness(1.5)}100%{filter:drop-shadow(0 0 26px rgba(255,170,80,.5)) brightness(1.15)}}
+#loadScr .lsSide{position:absolute;top:0;bottom:0;width:24%;pointer-events:none;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 25%,#000 85%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 25%,#000 85%,transparent)}
+#loadScr .lsSide.l{left:0}#loadScr .lsSide.r{right:0}
+#loadScr .lsSide i{position:absolute;left:var(--x);bottom:-10px;width:var(--s);height:var(--s);border-radius:50%;background:#ffb860;box-shadow:0 0 6px #ff8a2a,0 0 14px #ff6a1a;opacity:0;animation:lsSide var(--t) linear var(--dl) infinite}
+#loadScr .lsSide i.ash{background:#b8aea0;box-shadow:none;animation-name:lsAsh}
+#loadScr.done .lsSide i:not(.ash){background:#fff0d8;box-shadow:0 0 8px #ffd9a0,0 0 18px #ffa040}
+@keyframes lsSide{0%{opacity:0;transform:translate(0,0) scale(1)}12%{opacity:.95}70%{opacity:.6}100%{opacity:0;transform:translate(var(--dx),-92vh) scale(.35)}}
+@keyframes lsAsh{0%{opacity:0;transform:translate(0,0) rotate(0)}20%{opacity:.45}100%{opacity:0;transform:translate(calc(var(--dx)*1.6),-70vh) rotate(260deg)}}
+@media (max-width:700px){#loadScr .lsSide{width:18%}}

@@ -382,3 +382,6 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## Lista 4, erä F (v1.44)
 - Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
   Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+
+## Latausnäyttö (v1.45)
+- Latauksen valmistuttua riimut leimahtavat 0,8 s lähes valkoisiksi ja kirkkaiksi, sitten näyttö häipyy. Reunoilla nousee hiilloshiukkasia ja tuhkaa.
