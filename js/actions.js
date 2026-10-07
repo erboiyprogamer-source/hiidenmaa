@@ -10,7 +10,7 @@ function onPrimary(){
   const w=curWeapon();
   if(w.cat==='hammer'){placeBuild();return;}
   if(w.cat==='shovel'){useTool(false);return;}
-  if(w.cat==='bow'){if(!ammoId()){msg('Ei nuolia.','warn');return;}P.drawing=true;P.bowDraw=0;return;}
+  if(w.cat==='bow'){if(!ammoId()){msg('Ei nuolia.','warn');showAmmo(2,true);return;}P.drawing=true;P.bowDraw=0;showAmmo(2,true);return;}
   startAttack();
 }
 // v0.96 (kohta 11) maanmuokkaustyökalut, vasen = ensisijainen, oikea = toissijainen (pohjassa pitäen toistuu 0,45 s välein, kestävyys −6):

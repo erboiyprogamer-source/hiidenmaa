@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.75';
+:root{--css-v:'1.77';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -726,3 +726,31 @@ button:focus,select:focus{outline:none}
 #allKeys .akRow{display:flex;gap:10px;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.25);font-size:14px;line-height:1.35}
 #allKeys .akRow .kb{flex:none;min-width:92px;text-align:center}
 #allKeys .akRow .now{margin-left:6px;color:#ffb35a;font-weight:700}
+/* v1.76: erittäin tarkat varjot – poikkeava valintarivi, huutomerkki kun päällä, raskain punainen */
+.setRow.ultraRow{background:linear-gradient(90deg,rgba(120,60,180,.16),rgba(120,60,180,.04));border:1px dashed rgba(190,140,255,.45);border-radius:6px;padding:6px 8px;margin:6px 0}
+.setRow.ultraRow.on{border-style:solid;border-color:rgba(255,120,90,.7);background:linear-gradient(90deg,rgba(200,60,40,.2),rgba(200,60,40,.05))}
+.ultraOpts{display:flex;flex-wrap:wrap;gap:5px}
+.ultraOpts .uo{font:600 12.5px var(--font-b);padding:5px 10px;border-radius:14px;border:1px solid rgba(190,140,255,.5);background:rgba(40,20,60,.55);color:#e2d4ff;cursor:pointer}
+.ultraOpts .uo:hover{background:rgba(80,40,120,.7)}
+.ultraOpts .uo.sel{background:#7a4ac0;color:#fff;border-color:#c8a8ff;box-shadow:0 0 10px rgba(170,120,255,.55)}
+.ultraOpts .uo.red{border-color:rgba(255,90,70,.75);color:#ffb0a0;background:rgba(90,20,14,.6)}
+.ultraOpts .uo.red.sel{background:#c0352a;color:#fff;border-color:#ff8a70;box-shadow:0 0 12px rgba(255,80,60,.6)}
+.ultraBang{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-left:6px;border-radius:50%;background:#e0412f;color:#fff;font:800 13px/1 var(--font-b);box-shadow:0 0 8px rgba(255,70,50,.7);vertical-align:1px}
+/* v1.76: valikon partikkelit ja tausta häivyttyvät esiin, kun valikko avataan pelistä */
+#menuFx{transition:opacity .9s ease}
+#menu.mfFade #menuFx,#menu.mfFade ~ #menuFx{opacity:0;transition:none}
+#menu.mfFade .mHero,#menu.mfFade .menuBtns{animation:none}
+/* v1.77: nuoliteksti hotbarin yläpuolella */
+#ammoT{position:absolute;z-index:6;left:50%;bottom:calc(108px + env(safe-area-inset-bottom,0px));transform:translate(-50%,6px);display:flex;align-items:center;gap:7px;padding:4px 12px;border-radius:14px;
+  background:rgba(12,9,6,.62);border:1px solid rgba(232,164,74,.35);font:600 14px var(--font-b);color:#f2e6cc;opacity:0;transition:opacity .4s ease,transform .4s ease;pointer-events:none;white-space:nowrap;text-shadow:0 1px 3px #000}
+#ammoT.on{opacity:1;transform:translate(-50%,0)}
+#ammoT b{color:#ffb35a}#ammoT .ic{width:20px;height:20px;background-size:contain;background-repeat:no-repeat}
+#ammoT.sm{font-size:12px;padding:2px 9px}#ammoT.sm .ic{width:15px;height:15px}
+#ammoT.none{color:#ffb0a0;border-color:rgba(224,97,79,.6)}
+/* v1.77: pikapaikan nimi (ohut, harvinaisuusväri, 1 s + häivytys) */
+#hotName{position:absolute;z-index:6;bottom:calc(80px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font:300 15px var(--font-b);letter-spacing:.06em;white-space:nowrap;pointer-events:none;opacity:0;
+  text-shadow:0 1px 2px #000,0 0 8px rgba(0,0,0,.7)}
+#hotName.on{animation:hnShow 1.45s ease forwards}
+@keyframes hnShow{0%{opacity:0;transform:translate(-50%,4px)}10%{opacity:1;transform:translate(-50%,0)}70%{opacity:1}100%{opacity:0}}
+#hotName.r_com{color:#ece4d2}#hotName.r_unc{color:#9fdc7a}#hotName.r_rare{color:#7fbcff}
+#hotName.r_leg{color:#f6cf5a;text-shadow:0 1px 2px #000,0 0 10px rgba(246,190,60,.55)}

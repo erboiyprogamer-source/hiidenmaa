@@ -452,3 +452,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Suorituskykytestin aikana (ei tulosruudussa) yläreunassa kerrotaan, että testi on heikompia koneita varten ja grafiikan voi nostaa itse (Asetukset › Grafiikka).
 - Näppäinlistassa myös kaikki kiinteät näppäimet (I, Q repussa, Enter, ohitus, DEV-näppäimet).
 - Asetukset › Näppäimet: "Näytä kaikki toiminnot" avaa listan kaikista näppäin- ja hiiritoiminnoista tilanteittain (oletusnäppäimet, vaihdettu näkyy "nyt: X").
+- Tulinuolten valo kuuluu High+- ja Ultra-esiasetuksiin. Erittäin tarkat varjot (3 tasoa) valitaan erikseen Grafiikka › Varjot (punainen = raskain, päällä "!").
+- Valikon partikkelit ja animaatiot pysähtyvät pelin ajaksi ja häivyttyvät esiin valikossa (asetus: älä pysäytä).
+- Shift pohjassa: esinetiedot näkyvät heti osoittimen alla olevasta esineestä.
+- Jousi käteen / lataus: hotbarin yläpuolella käytössä oleva nuoli ja määrä (tai "Ei nuolia").
+- Pääosuma jousella: +10 % vahinko, punainen osumamerkki ja "Pääosuma!".
+- Pikapaikan valinnassa esineen nimi ruudun yläpuolella ~1 s, väri harvinaisuuden mukaan (kulta, sininen, vihreä, vaalea).

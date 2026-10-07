@@ -50,7 +50,7 @@ const QUAL={lvl:0,pointShadow:true,sunSize:2048,max:3};
 // käyttöön eikä enää päivity (varjot "jähmettyivät"). Takaisin kytkettäessä kartta päivitetään heti. Ks. docs/KORJAUKSET.md.
 function setQuality(l){QUAL.lvl=l;const ps=l<3&&SET.shadow==='high'&&SET.ptShadow!==false;
   if(ps!==QUAL.pointShadow||LIGHTS[0].castShadow!==ps){for(const L of [LIGHTS[0],torchLight]){L.castShadow=ps;if(ps)L.shadow.needsUpdate=true;}}
-  QUAL.pointShadow=ps;const base=+SET.sunRes||2048,ss=(l>=2||SET.shadow==='low')?Math.max(512,base/2):base;if(ss!==QUAL.sunSize){QUAL.sunSize=ss;sun.shadow.mapSize.set(ss,ss);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}}
+  QUAL.pointShadow=ps;const uh=SET.shUltra&&SET.shUltra!=='off',base=uh?Math.min(8192,renderer.capabilities.maxTextureSize||4096):(+SET.sunRes||2048),ss=!uh&&(l>=2||SET.shadow==='low')?Math.max(512,base/2):base;/* v1.76 shUltra: aina 8192 (tai suurin tuettu) */if(ss!==QUAL.sunSize){QUAL.sunSize=ss;sun.shadow.mapSize.set(ss,ss);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}}
 
 function canvasTex(fn,size=64){const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');fn(g,size);const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;}
 const texR=mulberry32(77);

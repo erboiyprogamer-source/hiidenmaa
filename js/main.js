@@ -1,7 +1,7 @@
 /* Hiidenmaa – main.js
    Valikko, pääsilmukka ja testirajapinta window.__game */
 'use strict';
-window.__JSV2='1.75';   // v1.58: versiotarkistus (viimeinen skripti)
+window.__JSV2='1.77';   // v1.58: versiotarkistus (viimeinen skripti)
 // v1.24 KORJAUS (KORJAUKSET 22): valikkokameran tila esitellään ennen kuin startPlay voidaan kutsua (karttavaihdon jälkeinen automaattinen
 // aloitus tapahtuu jo tiedoston alussa; ennen let-muuttujat olivat vielä alustamatta → ReferenceError → peli jäi mustaksi).
 let frameErrShown=false;
@@ -16,7 +16,7 @@ function hasSave(){return slotMeta().some(Boolean);}
 // v1.36 (lista 3, kohta 20): päävalikon maailmalista (enint. 5): nimi, viimeksi pelattu, päivä, taso ja kartta; Pelaa, Nimeä, Poista (vahvistus)
 // ja Uusi maailma omalla nimellä. Pelin aikana toiseen maailmaan siirtyminen tallentaa nykyisen ensin.
 // v1.43 (lista 4, kohta 32): taukovalikon tila – Tauko (maailma pysähtyy) tai Käynnissä (maailma päivittyy valikon takana)
-let pauseRun=false,intro=null;   // intro ennen karttavaihdon jatkoa (KORJAUKSET 22)
+let pauseRun=false,intro=null,menuVis=true,uiAlt=false;   // intro ennen karttavaihdon jatkoa (KORJAUKSET 22)
 try{pauseRun=localStorage.getItem('hiidenmaa_prun')==='1';}catch(e){}
 function refreshMenu(){const inGame=started;$('#bResume').hidden=!inGame;$('#bSave').hidden=!inGame;{const b=$('#bRun');if(b){b.hidden=!inGame;$('#bRunT').textContent='Tila: '+(pauseRun?'Käynnissä':'Tauko');b.classList.toggle('on',pauseRun);}}
   const m=slotMeta();$('#mapName').textContent=inGame?`Kartta: ${MAP.name}`:'';$('#curWorld').textContent=inGame&&curSlot>=0&&m[curSlot]?`Maailma: ${m[curSlot].name}`:'';renderWorlds();
@@ -254,7 +254,11 @@ function frame(now){
     else if(state==='dead'||state==='win'){updateMobs(dt*.5);updateEnvironment(dt);updateEffects(dt);}
   }catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe pelisilmukassa: '+(err&&err.message||err));}}   // v1.26 näkyviin
   // v1.38: piirtovirhe näkyy tarkkana (ennen try-lohkon ulkopuolella → selain näytti vain "Script error.", KORJAUKSET 28)
-  if(MENU_EL&&!MENU_EL.hidden){try{mfxFrame(now);}catch(err){console.error(err);}}   // v1.46 valikon partikkelit
+  /* v1.76: valikon partikkelit/animaatiot vain kun valikko näkyy (pelissä ei kuormaa). Valikon avautuessa partikkelikerros häivytetään
+     esiin (.mfFade). Asetus "Älä pysäytä valikon animaatioita" (menuAnimKeep) pitää partikkelit käynnissä myös pelin aikana. */
+  {const mv=!!(MENU_EL&&!MENU_EL.hidden);if(mv&&!menuVis&&!SET.menuAnimKeep){MENU_EL.classList.add('mfFade');MFX.last=now;requestAnimationFrame(()=>requestAnimationFrame(()=>MENU_EL.classList.remove('mfFade')));}
+   menuVis=mv;if(mv||(SET.menuAnimKeep&&started)){try{mfxFrame(now);}catch(err){console.error(err);}}}
+  if(state==='ui'&&typeof VC!=='undefined'&&VC.on){uiAlt=!uiAlt;if(uiAlt)skip3d=true;}   // v1.76: paneelin ollessa auki 3D joka toinen ruutu → osoitin päivittyy useammin
   if(!skip3d){try{renderer.render(scene,camera);}catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe piirrossa: '+(err&&err.message||err));}}}
 }
 updateLights();applyGfx();refreshKeyHints();

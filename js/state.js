@@ -227,7 +227,8 @@ function updateProjs(dt){updateHitMarks(dt);
     p.v.y-=p.g*dt;if(p.kind==='arrow'&&!P.inDun){const wa=WIND.spd*.08*dt*(p.steady?.5:1);p.v.x+=WIND.x*wa;p.v.z+=WIND.z*wa;} // v0.84: tuuli kallistaa nuolen rataa (13 m/s ≈ 0,5 m / 30 m)
     p.m.position.addScaledVector(p.v,dt);if(p.kind==='arrow')p.m.lookAt(_tmpV.copy(p.m.position).add(p.v));else{p.m.rotation.x+=dt*5;}
     const pos=p.m.position;let hit=false;
-    if(p.owner==='player'){for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){m.fireHit=!!p.fire;damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);hitMarker(pos.x,pos.y,pos.z);m.fireHit=false;if(p.fire)igniteMob(m);hit=true;break;}}}
+    if(p.owner==='player'){const hm=headShot(p,pos,dt);if(hm){const m=hm;m.fireHit=!!p.fire;damageMob(m,p.dmg*1.1,'pierce',p.v.x,p.v.z);hitMarker(pos.x,pos.y,pos.z,true);m.fireHit=false;if(p.fire)igniteMob(m);floatText('Pääosuma!',pos.x,pos.y+.4,pos.z,'#ff5a4a');hit=true;}
+     if(!hit)for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){m.fireHit=!!p.fire;damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);hitMarker(pos.x,pos.y,pos.z);m.fireHit=false;if(p.fire)igniteMob(m);hit=true;break;}}}
     else{if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<(p.kind==='rock'?2.2*2.2:.6)&&pos.y<P.pos.y+2.2&&pos.y>P.pos.y-.5){hurtPlayer(p.dmg,pos.x-p.v.x,pos.z-p.v.z);hit=true;}}
     const g=P.inDun?DUN.y:terrainH(pos.x,pos.z);
     if(!hit&&(pos.y<g||pointBlocked(pos.x,pos.y,pos.z,false,true))){if(p.kind==='rock'){shockwave(pos.x,g,pos.z,3);burst(pos.x,g+.3,pos.z,0x5d5a54,10,5);sfx('slam');if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<9)hurtPlayer(p.dmg,pos.x,pos.z);scene.remove(p.m);projs.splice(i,1);continue;}p.stuck=true;p.t=0;continue;}
@@ -235,11 +236,21 @@ function updateProjs(dt){updateHitMarks(dt);
   }
 }
 
+/* v1.77: pääosuma – nuolen kulkema jana (edellinen → nykyinen kohta, ettei nopea nuoli hyppää pään yli) vs. pään todellinen rajauslaatikko
+   (f.head, animaatio mukana) pallona; säde = 45 % laatikon suurimmasta sivusta + 3 cm. +10 % vahinko, punainen merkki, "Pääosuma!". */
+const _hb=new THREE.Box3(),_hc=new THREE.Vector3(),_hs=new THREE.Vector3();
+function headShot(p,pos,dt){let best=null,bd=1e9;const ax=pos.x-p.v.x*dt,ay=pos.y-p.v.y*dt,az=pos.z-p.v.z*dt,dx=pos.x-ax,dy=pos.y-ay,dz=pos.z-az,L2=dx*dx+dy*dy+dz*dz;
+  for(const m of mobs){if(m.dead||!m.f||!m.f.head)continue;if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)>(m.def.r+4)*(m.def.r+4))continue;
+    _hb.setFromObject(m.f.head);if(_hb.isEmpty())continue;_hb.getCenter(_hc);_hb.getSize(_hs);const r=Math.max(_hs.x,_hs.y,_hs.z)*.45+.03;
+    let t=L2>0?((_hc.x-ax)*dx+(_hc.y-ay)*dy+(_hc.z-az)*dz)/L2:0;t=Math.max(0,Math.min(1,t));const qx=ax+dx*t-_hc.x,qy=ay+dy*t-_hc.y,qz=az+dz*t-_hc.z,d=qx*qx+qy*qy+qz*qz;
+    if(d<r*r&&d<bd){bd=d;best=m;}}
+  return best;}
 /* v1.57: jousen osumamerkki – valkoinen X osumakohdassa, näkyy kaikkien esineiden läpi (depthTest pois), 0,28 s, ei animaatiota */
-let _hmTex=null;const hitMarks=[];
-function hitMarker(x,y,z){if(!_hmTex){const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.lineCap='round';
-    for(const [w,col] of [[11,'rgba(0,0,0,.55)'],[6,'#ffffff']]){g.strokeStyle=col;g.lineWidth=w;g.beginPath();for(const [a,b,c2,d] of [[12,12,26,26],[52,12,38,26],[12,52,26,38],[52,52,38,38]]){g.moveTo(a,b);g.lineTo(c2,d);}g.stroke();}
-    _hmTex=new THREE.CanvasTexture(c);}
-  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:_hmTex,depthTest:false,depthWrite:false,transparent:true,fog:false}));s.renderOrder=1000;s.position.set(x,y,z);
+let _hmTex=null,_hmTexR=null;const hitMarks=[];
+function hitMarker(x,y,z,head){const mk=col=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.lineCap='round';
+    for(const [w,cc] of [[11,'rgba(0,0,0,.55)'],[6,col]]){g.strokeStyle=cc;g.lineWidth=w;g.beginPath();for(const [a,b,c2,d] of [[12,12,26,26],[52,12,38,26],[12,52,26,38],[52,52,38,38]]){g.moveTo(a,b);g.lineTo(c2,d);}g.stroke();}
+    return new THREE.CanvasTexture(c);};
+  if(!_hmTex)_hmTex=mk('#ffffff');if(!_hmTexR)_hmTexR=mk('#ff3a2a');   // v1.77: pääosuma punaisella
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:head?_hmTexR:_hmTex,depthTest:false,depthWrite:false,transparent:true,fog:false}));s.renderOrder=1000;s.position.set(x,y,z);
   const d=camera.position.distanceTo(s.position);s.scale.setScalar(.045*d);scene.add(s);hitMarks.push({s,t:.28});}
 function updateHitMarks(dt){for(let i=hitMarks.length-1;i>=0;i--){const h=hitMarks[i];h.t-=dt;if(h.t<=0){scene.remove(h.s);h.s.material.dispose();hitMarks.splice(i,1);}}}

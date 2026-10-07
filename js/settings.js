@@ -38,23 +38,24 @@ function validateKey(action,code){
 // shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
 const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,grass:1,particles:1,detail:'high',bldDetail:true,
   renderDist:165,lights:6,mist:.6,clouds:1,drop3d:true,blood:1,bloodFx:false,keyHints:true,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
-  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,sens:1,curSens:1,hudMode:0,arrowLight:false,menuBg:'img'};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
+  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,sens:1,curSens:1,hudMode:0,arrowLight:false,menuBg:'img',shUltra:'off',menuAnimKeep:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
 // Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
 // v1.35 (lista 3, kohta 16): varjot ovat Grafiikka-sivun väliotsikko (ei omaa sivua).
-const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints']};
+const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar','shUltra'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep']};
 /* v1.35 (lista 3, kohta 17): esiasetukset Low … Ultra (8 tasoa, oletus Medium = SET_DEF:n grafiikka). Esiasetus muuttaa kaikki alla
    luetellut asetukset; Low–Medium kytkee automaattisäädön päälle, High–Ultra pois. Ultra ylittää aiemmat maksimit (piirtoetäisyys 520 m,
-   ruoho Ultra, varjoalue 140 m, tulien varjot 1024). Jos jotain säädetään käsin, nimi on "Custom". */
+   ruoho Ultra, varjoalue 140 m, tulien varjot 1024). Jos jotain säädetään käsin, nimi on "Custom".
+   v1.76: tulinuolten valo päällä High+ ja Ultra; automaattisäädöt pois High-tasosta ylöspäin. Erittäin tarkat varjot (shUltra) eivät kuulu esiasetuksiin. */
 const PRESET_N=['Low','Low+','Medium-','Medium','Medium+','High','High+','Ultra'];
 const PRESETS=[
-  {res:.55,renderDist:60,detail:'low',grass:0,sway:false,clouds:.3,lights:2,shafts:false,particles:.25,mist:0,bldDetail:false,drop3d:false,shadow:'off',sunRes:1024,shDist:35,shRate:'slow',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true},
-  {res:.7,renderDist:90,detail:'low',grass:0,sway:true,clouds:.3,lights:2,shafts:false,particles:.5,mist:.3,bldDetail:false,drop3d:false,shadow:'low',sunRes:1024,shDist:35,shRate:'slow',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true},
-  {res:.85,renderDist:120,detail:'high',grass:1,sway:true,clouds:.6,lights:4,shafts:false,particles:.5,mist:.3,bldDetail:true,drop3d:false,shadow:'low',sunRes:1024,shDist:55,shRate:'normal',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true},
-  {res:1,renderDist:165,detail:'high',grass:1,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:.6,bldDetail:true,drop3d:true,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,bloodFx:false,terrLod:false,mergeSt:true,shFar:false,autoAll:true},
-  {res:1,renderDist:210,detail:'high',grass:1,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:1,bldDetail:true,drop3d:true,shadow:'high',sunRes:2048,shDist:80,shRate:'normal',ptShadow:true,ptRes:384,bloodFx:false,terrLod:false,mergeSt:true,shFar:false,autoAll:true},
-  {res:'native',renderDist:260,detail:'high',grass:2,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:1,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:80,shRate:'normal',ptShadow:true,ptRes:768,bloodFx:false,terrLod:false,mergeSt:true,shFar:false,autoAll:false},
-  {res:'native',renderDist:400,detail:'high',grass:2,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:2,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:110,shRate:'fast',ptShadow:true,ptRes:768,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false},
-  {res:'native',renderDist:520,detail:'high',grass:3,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:2,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:140,shRate:'fast',ptShadow:true,ptRes:1024,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false}];
+  {res:.55,renderDist:60,detail:'low',grass:0,sway:false,clouds:.3,lights:2,shafts:false,particles:.25,mist:0,bldDetail:false,drop3d:false,shadow:'off',sunRes:1024,shDist:35,shRate:'slow',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,arrowLight:false},
+  {res:.7,renderDist:90,detail:'low',grass:0,sway:true,clouds:.3,lights:2,shafts:false,particles:.5,mist:.3,bldDetail:false,drop3d:false,shadow:'low',sunRes:1024,shDist:35,shRate:'slow',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,arrowLight:false},
+  {res:.85,renderDist:120,detail:'high',grass:1,sway:true,clouds:.6,lights:4,shafts:false,particles:.5,mist:.3,bldDetail:true,drop3d:false,shadow:'low',sunRes:1024,shDist:55,shRate:'normal',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,arrowLight:false},
+  {res:1,renderDist:165,detail:'high',grass:1,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:.6,bldDetail:true,drop3d:true,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,bloodFx:false,terrLod:false,mergeSt:true,shFar:false,autoAll:true,arrowLight:false},
+  {res:1,renderDist:210,detail:'high',grass:1,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:1,bldDetail:true,drop3d:true,shadow:'high',sunRes:2048,shDist:80,shRate:'normal',ptShadow:true,ptRes:384,bloodFx:false,terrLod:false,mergeSt:true,shFar:false,autoAll:true,arrowLight:false},
+  {res:'native',renderDist:260,detail:'high',grass:2,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:1,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:80,shRate:'normal',ptShadow:true,ptRes:768,bloodFx:false,terrLod:false,mergeSt:true,shFar:false,autoAll:false,arrowLight:false},
+  {res:'native',renderDist:400,detail:'high',grass:2,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:2,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:110,shRate:'fast',ptShadow:true,ptRes:768,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,arrowLight:true},
+  {res:'native',renderDist:520,detail:'high',grass:3,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:2,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:140,shRate:'fast',ptShadow:true,ptRes:1024,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,arrowLight:true}];
 function presetIdx(){return PRESETS.findIndex(p=>Object.keys(p).every(k=>String(SET[k])===String(p[k])));}
 function applyPreset(i){Object.assign(SET,PRESETS[i]);saveSet();applyGfx();}
 const SET=Object.assign({},SET_DEF);
@@ -75,9 +76,13 @@ function applyGfx(){
   for(const k of ['res','fx','dist'])if(!autoOn(k))AUTO[k]=0;if(!autoOn('q')&&typeof QUAL!=='undefined')QUAL.lvl=0;
   const dpr=devicePixelRatio||1,pr=(SET.res==='native'?Math.min(dpr,2):Math.min(dpr,1.5)*(+SET.res||1))*AUTO_K.res[AUTO.res];
   if(Math.abs(renderer.getPixelRatio()-pr)>.001){renderer.setPixelRatio(pr);renderer.setSize(innerWidth,innerHeight);}
-  {const d=+SET.shDist||55,sc=sun.shadow.camera;if(sc.right!==d){sc.left=-d;sc.right=d;sc.top=d;sc.bottom=-d;sc.updateProjectionMatrix();}}
   {const ps=+SET.ptRes||384,l=LIGHTS[0];if(l.shadow.mapSize.x!==ps){l.shadow.mapSize.set(ps,ps);if(l.shadow.map){l.shadow.map.dispose();l.shadow.map=null;}l.shadow.needsUpdate=true;}}
   sun.shadow.autoUpdate=SET.shRate!=='slow'&&!SET.shFar;   // v1.44 shFar: ai.js päivittää itse
+  /* v1.76: erittäin tarkat varjot (shUltra, ei esiasetuksissa): sharp = 8192 kartta, soft = 8192 + pehmeät reunat (PCF, säde 3,5),
+     wide = 8192 + 1,6× alue näkymän suuntaan sovitettuna + päivitys joka ruutu (raskain, punainen). Kartan koko render.js setQuality. */
+  {const u=SET.shUltra||'off',want=u==='soft'?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;if(renderer.shadowMap.type!==want){renderer.shadowMap.type=want;lastShadowOn=null;}
+   sun.shadow.radius=u==='soft'?3.5:1;const d=(+SET.shDist||55)*(u==='wide'?1.6:1),sc=sun.shadow.camera;if(sc.right!==d){sc.left=-d;sc.right=d;sc.top=d;sc.bottom=-d;sc.updateProjectionMatrix();}
+   if(u==='wide')sun.shadow.autoUpdate=true;}
   const on=SET.shadow!=='off';renderer.shadowMap.enabled=on;
   if(lastShadowOn!==on){lastShadowOn=on;scene.traverse(o=>{if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true);});}
   if(typeof setQuality==='function')setQuality(QUAL.lvl);
@@ -169,7 +174,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       setRow('Maassa olevat esineet','drop3d',[['true','3D-kuvake (syvyys)'],['false','Kevyt (kuutio)']],'koskee uusia pudotuksia')+
       setRow('Rakennusten yksityiskohdat','bldDetail')+
       sub('Varjot')+
-      setRow('Varjot','shadow',[['high','Hyvät'],['low','Kevyet'],['off','Pois']])+
+      setRow('Varjot','shadow',[['high','Hyvät'],['low','Kevyet'],['off','Pois']])+ultraShRow()+
       setRow('Auringon varjojen tarkkuus','sunRes',[[1024,'Matala (1024)'],[2048,'Normaali (2048)'],[4096,'Korkea (4096)']])+
       setRow('Auringon varjojen etäisyys','shDist',[[35,'Lähellä (35 m)'],[55,'Normaali (55 m)'],[80,'Kaukana (80 m)'],[110,'Hyvin kaukana (110 m)'],[140,'Ultra (140 m)']],'kauempana varjot ovat epätarkempia')+
       setRow('Varjojen päivitystiheys','shRate',[['fast','Nopea'],['normal','Normaali'],['slow','Hidas']],'hidas = kevyempi, varjot liikkuvat nykien')+
@@ -182,6 +187,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       setRow('Auringon varjot harvemmin paikallaan','shFar',null,'kun et liiku, auringon varjot päivittyvät joka 4. kuva (liikkeessä joka kuva)')
     }</div><p class="note">Vaaleana näkyvä valinta on oletus. Asetukset tulevat voimaan heti ja tallentuvat selaimeen.</p>`+resetBtn;
     bindSet(SET_PAGES.gfx);$('#bPageReset').onclick=()=>resetPage('gfx');
+    body.querySelectorAll('[data-ush]').forEach(b=>b.onclick=()=>{SET.shUltra=b.dataset.ush;saveSet();applyGfx();renderSettings();});
     bindSld('sPreset',i=>{$('#presetName').textContent=PRESET_N[i];$('#presetName').className='';pvTheme(i);},i=>{applyPreset(i);renderSettings();});pvFxStart();
   }else if(setTab==='prof'){
     const P0=loadProfiles(),names=Object.keys(P0);
@@ -201,7 +207,8 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       `<div class="note" style="grid-column:1/-1;margin:-4px 0 4px">Osoittimen herkkyys koskee pelin sisäisiä paneeleja (reppu, rakentaminen, kartta…). Päävalikossa käytetään tietokoneen omaa osoitinta, jonka nopeuden selain ei anna muuttaa.</div>`+
       setRow('Äänet','sound')+
       setRow('Käännä pystyhiiri','invY')+
-      setRow('Näppäinopasteet','keyHints',null,'pienet vihjeet paneeleissa ja ruudun nurkassa (esim. Päävalikko: P)')
+      setRow('Näppäinopasteet','keyHints',null,'pienet vihjeet paneeleissa ja ruudun nurkassa (esim. Päävalikko: P)')+
+      setRow('Älä pysäytä valikon animaatioita pelin aikana','menuAnimKeep',null,'oletus: valikon partikkelit ja animaatiot pysähtyvät pelissä ja häivyttyvät esiin valikkoon palatessa (kevyempi)')
     }</div>`+resetBtn;
     bindSet(SET_PAGES.ctl);$('#bPageReset').onclick=()=>resetPage('ctl');
     bindSld('sZoom',v=>{SET.zoom=+v;$('#sZoomV').textContent=SET.zoom.toFixed(1)+' m';camDist=SET.zoom;},()=>saveSet());
@@ -239,6 +246,8 @@ function showAllKeys(){let d=$('#allKeys');if(!d){d=document.createElement('div'
   d.innerHTML=`<div class="dlgBox akBox"><div class="akHead"><b>Kaikki toiminnot</b><button class="btn" id="akClose">Sulje</button></div><p class="note">Oletusnäppäimet. Jos olet vaihtanut näppäimen, nykyinen näkyy perässä.</p>
     <div class="akGrid">${ALL_KEYS.map(([h,R])=>`<div class="akCat"><h3>${h}</h3>${R.map(row).join('')}</div>`).join('')}${DEV?`<div class="akCat"><h3>DEV-tila</h3>${[[null,'V (pohjassa)','10× nopeus'],[null,'Ä','DEV-valikko'],[null,'Välilyönti ×2','lento (jos päällä DEV-valikossa): välilyönti ylös, Shift alas, Ctrl nopeammin']].map(row).join('')}</div>`:''}</div></div>`;
   d.hidden=false;$('#akClose').onclick=()=>{d.hidden=true;};}
+function ultraShRow(){const v=SET.shUltra||'off',on=v!=='off',O=[['off','Pois'],['sharp','Terävä 8192'],['soft','Terävä + pehmeät reunat'],['wide','Terävä + laaja alue']];
+  return `<div class="setRow ultraRow${on?' on':''}"><label>Erittäin tarkat varjot${on?' <span class="ultraBang" title="Erittäin raskas asetus päällä">!</span>':' <span class="defTag">oletus</span>'}</label><div class="ultraOpts">${O.map(([k,t])=>`<button class="uo${k===v?' sel':''}${k==='wide'?' red':''}" data-ush="${k}">${t}</button>`).join('')}</div><span class="note">ei kuulu esiasetuksiin – vain hyvin tehokkaille koneille; punainen on raskain</span></div>`;}
 function keyDialog(text,btns,note){const d=$('#keyDlg');d.hidden=false;$('#keyDlgT').textContent=text;$('#keyDlgN').textContent=note||'';
   const b=$('#keyDlgB');b.innerHTML='';for(const [t,fn] of btns){const x=document.createElement('button');x.className='btn'+(t==='Vahvista'||t==='Palauta'?' pri':'');x.textContent=t;x.onclick=()=>{d.hidden=true;capture=null;if(fn)fn();};b.appendChild(x);}}
 function startCapture(a){const nm=ACTIONS.find(x=>x[0]===a)[1];capture={a,code:null};keyDialog(`Paina uutta näppäintä: ${nm}`,[['Peruuta',null]],'Esc peruu. Varatut ja jo käytössä olevat näppäimet hylätään.');}

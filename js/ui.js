@@ -38,7 +38,20 @@ function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
   for(;k<mobBars.length;k++)mobBars[k].hidden=true;}
 function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq||(AMMO.includes(s.id)&&ammoId()===s.id)?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}" data-it="${s.id}" data-q="${s.q||1}" data-n="${s.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${d.cat==='shield'&&(s.shHit||s.shBrk!=null)?`<span class="fu${s.shBrk!=null?' off':''}"><i style="width:${s.shBrk!=null?Math.min(100,(playTime-s.shBrk)/SHIELD_FIX*100):100-(s.shHit||0)/(SHIELD_HITS[s.id]||15)*100}%"></i></span>`:''}${s.id==='soihtu'?`<span class="fu${s.lit===false?' off':''}"><i style="width:${Math.max(0,(s.fuel??torchMax(s))/torchMax(s)*100)}%"></i></span>`:''}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
 let hudT=0,msgHidden=false;
+/* v1.77: jousen nuoliteksti hotbarin yläpuolella: jousi käteen → 2,5 s, latauksen alku → 2 s pienempänä (häivytys). */
+let ammoHeld=null,ammoTm=0;
+function showAmmo(dur,small){const e=$('#ammoT');if(!e)return;const am=typeof ammoId==='function'?ammoId():null;
+  e.innerHTML=am?`<span class="ic" style="background-image:url(${icon(am)})"></span>${ITEMS[am].n} <b>×${invCount(am)}</b>`:'Ei nuolia – valmista tai hae nuolia';
+  e.className=(am?'':'none')+(small?' sm':'');e.hidden=false;void e.offsetWidth;e.classList.add('on');clearTimeout(ammoTm);ammoTm=setTimeout(()=>{e.classList.remove('on');ammoTm=setTimeout(()=>{e.hidden=true;},450);},dur*1000);}
+/* v1.77: pikapaikan valinnassa esineen nimi valitun ruudun yläpuolelle ~1 s + häivytys. Väri harvinaisuuden mukaan: arvoesine / harvinainen
+   = kulta, valmistustaso ≥ 6 = sininen, taso ≥ 3 tai laatu ≥ 2 = vihreä, muut vaaleat. Yksi elementti → vaihdettaessa vanha nimi pois heti. */
+let hnSel=-1;
+function itemRarity(s){const id=s.id,r=RECIPE_BY[id],lv=r&&r.lvl||0;return isValuable(id)?'leg':lv>=6?'rare':(lv>=3||(s.q||1)>=2)?'unc':'com';}
+function showHotName(i){const e=$('#hotName'),s=inv[i],sl=document.querySelectorAll('#hotbar .slot')[i];if(!e)return;e.className='';if(!s||!sl)return;
+  const r=sl.getBoundingClientRect();e.textContent=ITEMS[s.id].n+((s.q||1)>1?' ★'.repeat(s.q-1):'');e.style.left=(r.left+r.width/2)+'px';void e.offsetWidth;e.className='on r_'+itemRarity(s);}
 function updateHUD(dt){
+  if(hotSel!==hnSel){if(hnSel>=0)showHotName(hotSel);hnSel=hotSel;}
+  if(heldId!==ammoHeld){ammoHeld=heldId;if(heldId&&ITEMS[heldId].cat==='bow')showAmmo(2.5);}
   hudT-=dt;updateMsgs(dt);updateFloaters(dt);updateMobBars();
   $('#hurt').style.opacity=Math.min(1,P.hurtFlash*1.5+(P.hp<maxHp()*.25&&!P.dead?.35:0));
   // prompt
