@@ -13,9 +13,19 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
+## Nykytila (päivitetty v1.44)
+
+- **Päivityslista 4 (32 kohtaa + extrat 1–2 + aluebannerit) on KOKONAAN TEHTY** v1.39–v1.44, haara
+  `claude/hiidenmaa-survival-game-fmxt0m`, PR #25 odottaa yhdistämistä (main = v1.37). Seuraava työ: uusi lista käyttäjältä.
+- Erät: A v1.39, B v1.40, C v1.41, D v1.42, E v1.43 (+ aluebannerit), F v1.44 – yksityiskohdat versiolokissa ja kohdassa "Päivityslista 4".
+- Testauksen huomiot: headless-testissä CSS-animaatiot eivät etene raskaan 3D:n aikana (tarkista ulkoasu animaatiot pois), ulottuvuuden
+  rakennus kestää testikoneella sekunteja (odota `waitForFunction`illa), suorituskykytesti ohitetaan automaatiossa (`navigator.webdriver`),
+  `?perf=1` pakottaa sen. Uusi maailma alkaa tilassa `intro` (ei `play`).
+
 ## Pysyvät päätökset
 
 - **Pelin teksteissä ei mainita muita pelejä** (esim. Minecraft, Valheim) – v1.11, käyttäjän toive.
+- Alueen löytöotsikot eivät koskaan tule päällekkäin (jono), ja alue paljastuu vasta hieman rajan sisäpuolella (v1.43, käyttäjän toive).
 - Oma alkuperäinen teos, ei Valheimin nimiä, hahmoja tai grafiikkaa. Nimistö on suomalaisesta
   kansanperinteestä (hiisi, kalmo, hiidenkivi).
 - Yksi HTML-sivu + tavalliset skriptit, ei build-vaihetta. three.js r128 cdnjs:stä.
@@ -1554,6 +1564,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 - D (v1.42): 12–13 saalis, 14–15 Kalmaherra, 16 jousikalmot, 17 ulottuvuuden intro.
 - E (v1.43): 10 latausnäyttö, 11 maailman intro, 31 suorituskykytesti, 32 tauko/käynnissä.
 - F (v1.44): 30 optimoinnit asetuksiin.
+- Lisäpyyntö (tehty v1.43): aluebannerit pitkä häivytys sisään/ulos, jonossa ei päällekkäin, alue löytyy vasta ~6 m syvemmällä.
 **Vastaukset (lista 4):**
 - 1: kyykyssä täysin huomaamaton (myös liikkuessa, ellei lyö); nousu kyykystä → 0,1 s → säikähtää.
 - 3: vain juoksu ja hyppy ylämäkeen +30 %.
