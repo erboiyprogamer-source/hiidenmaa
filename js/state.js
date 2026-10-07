@@ -23,12 +23,13 @@ scene.add(fig.g);let heldMesh=null,heldId=null,offMesh=null,offId=null,armorId=n
 // Repussa olevat mutta käyttämättömät aseet, kilvet ja työkalut näkyvät pelaajan selässä (kilpi keskellä, jousi vinossa, työkalut varret ylöspäin).
 const backG=new THREE.Group();fig.rig.add(backG);let backKey='',backHang=null;
 const ARMOR_BACK={nahkavaatteet:{ch:.045,bt:.02},karhuhaarniska:{ch:.15,bt:.1},kuparipanssari:{ch:.055,bt:.025},rautapanssari:{ch:.05,bt:.025},hiidenpanssari:{ch:.065,bt:.025}};
+function hasArrows(){return typeof AMMO!=='undefined'&&AMMO.some(id=>invCount(id)>0);}
 function updateBack(){const items=inv.filter(s=>s&&(!s.eq||(ITEMS[s.id].cat==='shield'&&s.shBrk!=null))&&['weapon','bow','shield','shovel','hammer'].includes(ITEMS[s.id].cat));   // v1.39: rikki oleva kilpi selässä
   const sh=items.find(s=>ITEMS[s.id].cat==='shield'),hm=items.find(s=>s.id==='vasara'),bo=items.find(s=>ITEMS[s.id].cat==='bow'),one=items.find(s=>ITEMS[s.id].cat!=='shield'&&s.id!=='vasara'&&ITEMS[s.id].cat!=='bow'),tl=one?[one]:[];
   // v0.90: haarniska paksuntaa selkää → selkätavarat ja kilpi siirretään haarniskan pinnalle (mitattu selän ulkonema + 2 cm),
   // ilman haarniskaa ne palaavat entiselle paikalleen. ch = rinnan korkeus (kilpi, jousi, työkalut), bt = vyö (vasara).
   const ar=equipped('armor'),AB=ARMOR_BACK[ar?ar.id:'']||{ch:0,bt:0};
-  const key=[sh,bo,hm,...tl].map(s=>s?s.id:'-').join()+'|'+(ar?ar.id:'');if(key===backKey)return;backKey=key;while(backG.children.length)backG.remove(backG.children[0]);backHang=null;
+  const key=[sh,bo,hm,...tl].map(s=>s?s.id:'-').join()+'|'+(ar?ar.id:'')+'|'+(bo&&hasArrows()?'a':'');if(key===backKey)return;backKey=key;while(backG.children.length)backG.remove(backG.children[0]);backHang=null;
   // Vasara roikkuu vyöllä takana (v0.72): pää vyön päällä selän suuntaisesti (pää 90° pystyakselin ympäri aiemmasta), varsi alas.
   // Ripustuspiste = vyön yläreuna selän puolella (y 0,94, z −0,24); heiluu kävellessä (player.js, backHang).
   if(hm){const m=makeHeld(hm.id),o=new THREE.Group();m.rotation.x=-Math.PI/2;m.position.set(0,-.47,0);o.add(m);o.position.set(.13,.94,-.24-AB.bt);o.rotation.y=.18;backG.add(o);backHang=o;}
@@ -38,7 +39,12 @@ function updateBack(){const items=inv.filter(s=>s&&(!s.eq||(ITEMS[s.id].cat==='s
   //  kirves/nuija/hakku: varsi vasemmalta lantiolta oikean olan taakse, pää/terä ylhäällä; miekka ja lapio/kuokka: kahva oikean olan
   //  takana, terä alaspäin vasemmalle lantiolle; jousi vasemmalta olalta oikealle lantiolle ja keihäs ristiin (kärki ylös).
   //  BACK_POSE: p = kahvan pään paikka, d = varren suunta (kahvasta päähän), y = esineen paikallinen +y (terä/piikit selän tasossa).
-  if(bo){const m=makeHeld(bo.id),o=new THREE.Group();o.add(m);o.position.set(.02,1.15,z0+.01);o.rotation.set(0,0,-.55);o.scale.setScalar(.95);backG.add(o);}
+  // v1.56: jousi litteänä selkää vasten (kaari sivulle, ei kehoon eikä ulos); jos repussa on nuolia, 3 nuolta jousen keskellä sen
+  //  suuntaisesti, kärjet alaviistoon (ryhmän kallistus −0,55 rad)
+  if(bo){const m=makeHeld(bo.id),o=new THREE.Group();m.rotation.y=Math.PI/2;o.add(m);
+    if(hasArrows()){for(let i=0;i<3;i++){const a=new THREE.Group(),sh=mat(0xc9b48a);a.add(bx(.02,.72,.02,sh,0,0,0,false));a.add(bx(.045,.09,.045,mat(0x4d535c),0,-.4,0,false));
+      for(const sx of[-1,1])a.add(bx(.004,.12,.05,mat(0xe8e2d2),sx*.012,.3,0,false));a.position.set((i-1)*.035,-.02+i*.02,.03);a.rotation.z=(i-1)*.04;o.add(a);}}
+    o.position.set(.02,1.15,z0+.01);o.rotation.set(0,0,-.55);o.scale.setScalar(.95);backG.add(o);}
   tl.forEach(s=>{const m=makeHeld(s.id),o=new THREE.Group(),P0=backPose(s.id);o.add(m);
     _bkD.fromArray(P0.d).normalize();_bkY.fromArray(P0.y);_bkY.addScaledVector(_bkD,-_bkY.dot(_bkD)).normalize();_bkX.crossVectors(_bkY,_bkD).normalize();_bkM.makeBasis(_bkX,_bkY,_bkD);
     o.quaternion.setFromRotationMatrix(_bkM);o.position.set(P0.p[0],P0.p[1],z0+(P0.dz||0));o.scale.setScalar(.85);backG.add(o);});}

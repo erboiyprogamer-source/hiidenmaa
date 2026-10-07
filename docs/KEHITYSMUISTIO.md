@@ -83,6 +83,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.56 (lista 6, erä D: veri, jousi selässä, jousen kuvake)
+- **Ultra-veri (`bloodUltra`):** veren fysiikalla ja Ultra-esiasetuksella (tai Custom + piirtoetäisyys ≥ 520) pisaroita ja
+  hiukkasia 2×, lentonopeus ×1,45, sivuhajonta 2×, pystyvauhti ×1,3, pisararaja 240.
+- **Läikät rinteen mukaan (`slopeN`):** maanpinnalla olevat läikät käännetään maastonormaalin suuntaisiksi (ei rakennuksilla/luolassa).
+- **Valuminen (`poolFlow`/`updateFlow`, Medium+ `fxHiQ`):** kuoleman lammikko (mobit ja pelaaja), jos rinne > 45° (gradientti > 1):
+  10 s ajan noro etenee alarinteeseen (0,35 → 0,06 m/s), 0,12 s välein pitkulainen pieni läikkä (elää 40 s). Läikkäraja 60 → 140.
+- **Jousi selässä:** litteänä selkää vasten (kaari sivulle, `m.rotation.y = π/2`), ja jos repussa on nuolia (`hasArrows`), 3 nuolta
+  jousen keskellä sen suuntaisesti, kärjet alaviistoon; päivittyy repun muuttuessa (`updateBack`-avaimessa nuolilippu).
+- **Jousen jänne:** 3D-mallissa jänne ja kaari tarkistettu (veto posken kohdalle, kaari tähtäyssuuntaan) – oikein. Väärin päin oli
+  **repun kuvake**: kaari pullistui taaksepäin ja jänne kulki kaaren sisällä. Korjattu: kaari tähtäyssuuntaan, jänne kärkien välissä,
+  nuoli sulkineen jänteeltä kaaren läpi.
+
 ### v1.55 (lista 6, erä C: ensikäynnin aloitusjakso)
 - `#splash` (index.html, oma skripti latausnäytön skriptin jälkeen), vain ensikäynnillä (`hiidenmaa_intro` puuttuu, ei karttavaihdon
   uudelleenlataus, ei automaatioselain; `?splash=1` pakottaa). Kesto ~18 s, napsautus/näppäin siirtää seuraavaan vaiheeseen:
@@ -1674,7 +1686,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 6 (v1.53–) – julkaisupäivitys
-**JATKA TÄSTÄ (lista 6):** erät A (v1.53), B (v1.54), C (v1.55) + koko pelin tarkistus; PR #25 auki.
+**JATKA TÄSTÄ (lista 6):** erät A–D (v1.53–v1.56) tehty + koko pelin tarkistus (v1.57); PR #25 auki.
 - A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
   eteenpäin, piikivikirves.
 - B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.

@@ -9,11 +9,23 @@ const BLEED={kivivartija:'stone',vartija:'stone',kalmo:'bone',ylimys:'bone',kalm
 const BLEED_C={blood:[0x5a0808,0x7e0e0e],stone:[0x6a6660,0x8d887f],bone:[0xd8d0bc,0xb8ae98],ice:[0xbfe6ff,0x8fd0ff],mist:[0x9aa8a0,0xc8d0c8],sap:[0x34501a,0x56722a]};
 const bleedKind=t=>BLEED[t]||'blood';
 const splats=[],_spGeo=new THREE.CircleGeometry(1,16);
+/* v1.56: läikkä mukailee maaston kaltevuutta (maastonormaali, kun läikkä on maanpinnalla eikä rakennuksella/luolastossa).
+   Lammikon valuminen (Medium ja yli): jos rinne > 45°, lammikosta valuu 10 s ajan noro alarinteeseen (pienet pitkulaiset läikät). */
+const _zAx=new THREE.Vector3(0,0,1);
+function slopeN(x,z,y){const h=terrainH(x,z);if(Math.abs(y-h)>.12)return null;const e=.35,hx=(terrainH(x+e,z)-terrainH(x-e,z))/(2*e),hz=(terrainH(x,z+e)-terrainH(x,z-e))/(2*e);
+  if(Math.abs(hx)+Math.abs(hz)<.02)return null;return new THREE.Vector3(-hx,1,-hz).normalize();}
+function fxHiQ(){const pi=presetIdx();return pi<0?SET.shadow==='high':pi>=3;}
+function bloodUltra(){const pi=presetIdx();return pi===7||(pi<0&&!!SET.bloodFx&&(+SET.renderDist||0)>=520);}
+function poolFlow(sp,x,z,c){if(!sp||!fxHiQ())return;const e=.35,hx=(terrainH(x+e,z)-terrainH(x-e,z))/(2*e),hz=(terrainH(x,z+e)-terrainH(x,z-e))/(2*e);if(Math.hypot(hx,hz)<1)return;   // tan 45° = 1
+  sp.flow={t:0,x,z,acc:0,c};}
+function updateFlow(s,dt){const f=s.flow;f.t+=dt;if(f.t>10){s.flow=null;return;}const e=.35,hx=(terrainH(f.x+e,f.z)-terrainH(f.x-e,f.z))/(2*e),hz=(terrainH(f.x,f.z+e)-terrainH(f.x,f.z-e))/(2*e),g=Math.hypot(hx,hz);
+  if(g<.15){s.flow=null;return;}const sp=.35*(1-f.t/12);f.x-=hx/g*sp*dt;f.z-=hz/g*sp*dt;f.acc+=dt;
+  if(f.acc>.12){f.acc=0;const r=splat(f.x,terrainH(f.x,f.z),f.z,.06+Math.random()*.03,f.c,40,.88);if(r){r.m.scale.y*=2.2;r.r1=r.m.scale.y;r.grow=.2;}}}
 function splat(x,y,z,r,color,life,op=.85,nx,nz){if(!(r>0))return null;
   const mt=new THREE.MeshBasicMaterial({color,transparent:true,opacity:0,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
-  const m=new THREE.Mesh(_spGeo,mt);if(nx||nz){m.rotation.set(0,Math.atan2(nx,nz),Math.random()*TAU);m.position.set(x+nx*.03,y,z+nz*.03);}else{m.rotation.x=-Math.PI/2;m.rotation.z=Math.random()*TAU;m.position.set(x,y+.025,z);}m.scale.set(r*(.8+Math.random()*.5),r*(.6+Math.random()*.5),1);m.renderOrder=1;scene.add(m);
-  const s={m,t:0,life,op,r0:m.scale.x,r1:m.scale.y,grow:.35};splats.push(s);while(splats.length>60){const o=splats.shift();scene.remove(o.m);o.m.material.dispose();}return s;}
-function updateSplats(dt){for(let i=splats.length-1;i>=0;i--){const s=splats[i];s.t+=dt;const g=Math.min(1,s.t/s.grow);s.m.scale.set(s.r0*(.4+.6*g),s.r1*(.4+.6*g),1);
+  const m=new THREE.Mesh(_spGeo,mt);if(nx||nz){m.rotation.set(0,Math.atan2(nx,nz),Math.random()*TAU);m.position.set(x+nx*.03,y,z+nz*.03);}else{const n=slopeN(x,z,y);if(n){m.quaternion.setFromUnitVectors(_zAx,n);m.rotateZ(Math.random()*TAU);m.position.set(x+n.x*.03,y+n.y*.03,z+n.z*.03);}else{m.rotation.x=-Math.PI/2;m.rotation.z=Math.random()*TAU;m.position.set(x,y+.025,z);}}m.scale.set(r*(.8+Math.random()*.5),r*(.6+Math.random()*.5),1);m.renderOrder=1;scene.add(m);
+  const s={m,t:0,life,op,r0:m.scale.x,r1:m.scale.y,grow:.35};splats.push(s);while(splats.length>140){const o=splats.shift();scene.remove(o.m);o.m.material.dispose();}return s;}
+function updateSplats(dt){for(let i=splats.length-1;i>=0;i--){const s=splats[i];s.t+=dt;if(s.flow)updateFlow(s,dt);const g=Math.min(1,s.t/s.grow);s.m.scale.set(s.r0*(.4+.6*g),s.r1*(.4+.6*g),1);
   s.m.material.opacity=s.op*Math.min(1,s.t*6)*Math.min(1,(s.life-s.t)/2.5);if(s.t>=s.life){scene.remove(s.m);s.m.material.dispose();splats.splice(i,1);}}}
 const groundY=(x,z,y,dun)=>dun?DUN.y:Math.max(-1,groundAt(x,z,.2,(y??terrainH(x,z))+.6));
 // size ≈ olennon koko (säde), dmg = vahinko
@@ -27,11 +39,12 @@ function updateDrips(dt){for(let i=drips.length-1;i>=0;i--){const d=drips[i];d.v
   else if(pointBlocked(q.x,q.y,q.z,false,true)){scene.remove(d.m);drips.splice(i,1);const l=Math.hypot(d.vx,d.vz)||1;splat(q.x-d.vx/l*.05,q.y,q.z-d.vz/l*.05,.04+Math.random()*.05,d.c,10,.9,-d.vx/l,-d.vz/l);}   // seinään tai esineen kylkeen
   else if((d.t=(d.t||0)+dt)>3){scene.remove(d.m);drips.splice(i,1);}}}
 function bleed(x,y,z,kind,size,dmg,dun,hx,hz,kb){const k=+(SET.blood??1);const C=BLEED_C[kind]||BLEED_C.blood;
-  if(k&&SET.bloodFx&&(kind==='blood'||kind==='sap')&&(hx||hz)){const l=Math.hypot(hx,hz)||1,ux=hx/l,uz=hz/l,n=Math.round(clamp((4+dmg*.25)*(.6+size)*k,3,22));
-    for(let i=0;i<n&&drips.length<120;i++){const m=new THREE.Mesh(_drGeo,dripMat(C[i%2]));m.position.set(x,y,z);scene.add(m);const sp=(1.7+clamp((kb||8)/25,0,1)*6.6)*(.55+Math.random()*.45);   /* lentomatka ~1–5 m tönäisyn mukaan */
-      drips.push({m,c:C[0],dun,vx:ux*sp+(Math.random()-.5)*1.4,vz:uz*sp+(Math.random()-.5)*1.4,vy:1+Math.random()*2.5});}}
+  const U=SET.bloodFx&&bloodUltra()?2:1;   // v1.56: Ultra – veri lentää tuplasti rajummin ja hiukkasia 2×
+  if(k&&SET.bloodFx&&(kind==='blood'||kind==='sap')&&(hx||hz)){const l=Math.hypot(hx,hz)||1,ux=hx/l,uz=hz/l,n=Math.round(clamp((4+dmg*.25)*(.6+size)*k*U,3,22*U));
+    for(let i=0;i<n&&drips.length<120*U;i++){const m=new THREE.Mesh(_drGeo,dripMat(C[i%2]));m.position.set(x,y,z);scene.add(m);const sp=(1.7+clamp((kb||8)/25,0,1)*6.6)*(.55+Math.random()*.45)*(U>1?1.45:1);   /* lentomatka ~1–5 m tönäisyn mukaan */
+      drips.push({m,c:C[0],dun,vx:ux*sp+(Math.random()-.5)*1.4*U,vz:uz*sp+(Math.random()-.5)*1.4*U,vy:(1+Math.random()*2.5)*(U>1?1.3:1)});}}
   if(kind!=='blood'&&kind!=='sap'){burst(x,y,z,C[0],Math.round(4+size*4),3);return;}   // ei verta: sirut/pöly
-  if(!k)return;const n=Math.round(clamp((3+dmg*.18)*(.6+size)*k,2,26));burst(x,y,z,C[Math.random()<.5?0:1],n,2.2+size*1.5);
+  if(!k)return;const n=Math.round(clamp((3+dmg*.18)*(.6+size)*k*U,2,26*U));burst(x,y,z,C[Math.random()<.5?0:1],n,2.2+size*1.5);
   const gy=groundY(x,z,y,dun);for(let i=0,m=1+(size>.9?2:size>.6?1:0);i<m;i++)splat(x+(Math.random()-.5)*size*1.4,gy,z+(Math.random()-.5)*size*1.4,(.18+Math.min(.5,dmg*.012))*(.7+size*.6)*Math.sqrt(k),C[0],10);}
 // Haava: tummanpunainen läikkä mobin pintaan (enint. 6), häviää ruumiin mukana.
 const _wGeo=new THREE.BoxGeometry(1,1,1),_wMat=new THREE.MeshStandardMaterial({color:0x5a0808,roughness:.5,metalness:.1}),_wSap=new THREE.MeshStandardMaterial({color:0x34501a,roughness:.5});
@@ -69,7 +82,7 @@ function mobDeathAnim(m,dt){const f=m.f,g=f.g,t=m.deadT;
   if(f.legs)f.legs.forEach((l,i)=>{l.rotation.x=lerp(l.rotation.x,D.legs[i],lk*.2);if(l.userData.knee)l.userData.knee.rotation.x=lerp(l.userData.knee.rotation.x,.2,lk*.2);});
   if(f.head)f.head.rotation.x=lerp(f.head.rotation.x,.45,lk*.15);if(f.tail)f.tail.rotation.x=lerp(f.tail.rotation.x,.6,lk*.1);
   if(!D.pool&&t>.45){D.pool=true;const kind=bleedKind(m.type),C=BLEED_C[kind],gy=groundY(m.pos.x,m.pos.z,m.pos.y,m.dun),bk=+(SET.blood??1);
-    if((kind==='blood'||kind==='sap')&&bk){D.sp=splat(m.pos.x+D.dir*m.def.r*.6,gy,m.pos.z,m.def.r*(1.3+Math.random()*.4)*Math.sqrt(bk)*(SET.bloodFx?1.25:1),C[0],DEATH_END-.4,.9);if(D.sp&&SET.bloodFx)D.sp.grow=4;}
+    if((kind==='blood'||kind==='sap')&&bk){D.sp=splat(m.pos.x+D.dir*m.def.r*.6,gy,m.pos.z,m.def.r*(1.3+Math.random()*.4)*Math.sqrt(bk)*(SET.bloodFx?1.25:1),C[0],DEATH_END-.4,.9);if(D.sp&&SET.bloodFx)D.sp.grow=4;poolFlow(D.sp,m.pos.x+D.dir*m.def.r*.6,m.pos.z,C[0]);}
     else burst(m.pos.x,m.pos.y+.4,m.pos.z,C[0],big?22:12,big?5:3);}
   if(t>7.4){const o=Math.max(0,1-(t-7.4)/2);for(const mt of m.mats){if(!mt.transparent){mt.transparent=true;mt.needsUpdate=true;}mt.opacity=o;}}
   return t>DEATH_END;}
@@ -117,7 +130,7 @@ function updatePlayerDeath(dt){const D=pDeath;if(!D)return;D.t+=dt;const t=D.t,f
     if(t<2.5&&Math.random()<dt*6)smokePuff(P.pos.x,P.pos.y+.6,P.pos.z,1.4,.15);
     if(t>1.5&&!D.pile){f.g.visible=false;const gy=groundY(P.pos.x,P.pos.z,P.pos.y,P.inDun);const am=new THREE.MeshStandardMaterial({color:0x3a3633,roughness:1});const p=new THREE.Mesh(new THREE.ConeGeometry(.55,.4,9),am);p.position.set(P.pos.x,gy+.15,P.pos.z);scene.add(p);D.pile=p;D.gy=gy;burst(P.pos.x,gy+.3,P.pos.z,0x3a3633,14,3);}
     if(D.pile){const s=Math.min(1,(t-1.5)/8);D.pile.position.y=D.gy+.15-s*.55;}}
-  else if(!D.pool&&t>.5){D.pool=true;const bk=+(SET.blood??1);if(bk){const sp=splat(P.pos.x,groundY(P.pos.x,P.pos.z,P.pos.y,P.inDun),P.pos.z,.95*Math.sqrt(bk)*(SET.bloodFx?1.3:1),BLEED_C.blood[0],60,.9);if(sp&&SET.bloodFx)sp.grow=5;}}}
+  else if(!D.pool&&t>.5){D.pool=true;const bk=+(SET.blood??1);if(bk){const sp=splat(P.pos.x,groundY(P.pos.x,P.pos.z,P.pos.y,P.inDun),P.pos.z,.95*Math.sqrt(bk)*(SET.bloodFx?1.3:1),BLEED_C.blood[0],60,.9);if(sp&&SET.bloodFx)sp.grow=5;poolFlow(sp,P.pos.x,P.pos.z,BLEED_C.blood[0]);}}}
 const _pAshMat=new THREE.MeshStandardMaterial({color:0x111010,roughness:1,emissive:0x000000});
 function endPlayerDeath(){const D=pDeath;pDeath=null;if(!D)return;if(D.saved)for(const [o,mt] of D.saved)o.material=mt;if(D.pile){scene.remove(D.pile);}fig.g.visible=true;fig.g.rotation.z=0;}
 // Viiltävä isku (SET.bloodFx): pitkä punainen viilto mobin pintaan, ja mobista tippuu pisaroita 5 s.

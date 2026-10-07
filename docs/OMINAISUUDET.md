@@ -414,3 +414,6 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Asetukset › Ohjaus: kääntymisen herkkyys ja pelin paneelien osoittimen herkkyys. Osoitin liikkuu viiveettä.
 - Ensimmäisellä käynnillä aloitusjakso: EricStudios / KSPK-tech ja tekijänoikeudet → HIIDENMAA kivikaiverruksena → varoitus
   (tietokone, hiiri ja näppäimistö) → riimusiirtymä latausnäyttöön. Ohitettavissa napsautuksella tai näppäimellä.
+- Ultra-asetuksella veri lentää tuplasti rajummin. Verilätäköt mukailevat rinnettä, ja Medium+ jyrkässä (> 45°) rinteessä lammikko
+  valuu 10 s alas.
+- Jousi on selässä litteänä; jos repussa on nuolia, selässä näkyy 3 nuolta.

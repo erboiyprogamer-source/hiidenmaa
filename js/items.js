@@ -146,8 +146,9 @@ function icon(id){
       g.restore();g.strokeStyle=T[2];g.lineWidth=3;g.beginPath();g.arc(24,24,17.5,0,TAU);g.stroke();
       circ(24,24,7,T[3]);circ(24,24,5.5,T[2]);circ(22.5,22.5,2,'#fff8');for(let a=0;a<12;a++)circ(24+Math.cos(a*.5236)*17.5,24+Math.sin(a*.5236)*17.5,1.1,T[3]);break;}
     case 'nahkavaatteet':case 'karhuhaarniska':case 'kuparipanssari':case 'rautapanssari':case 'hiidenpanssari':poly([[14,10],[20,8],[24,12],[28,8],[34,10],[42,18],[36,22],[34,40],[14,40],[12,22],[6,18]],d.c,'#3b2a1a');if(id==='kuparipanssari'||id==='rautapanssari'||id==='hiidenpanssari')for(let y=16;y<38;y+=6)line(16,y,32,y,1.5,id==='rautapanssari'?'#4a525c':'#8f5326');break;
-    case 'jousi':case 'hiidenjousi':{const col=id==='jousi'?'#8a5a32':'#5fe6d9';g.strokeStyle='#3b2a1a';g.lineWidth=6;g.beginPath();g.arc(38,24,22,Math.PI*.62,Math.PI*1.38);g.stroke();g.strokeStyle=col;g.lineWidth=4;g.beginPath();g.arc(38,24,22,Math.PI*.62,Math.PI*1.38);g.stroke();
-      line(25,6,25,42,1.2,'#f1ecdc');line(15,24,38,24,1.6,'#c9b48a');poly([[38,24],[33,21],[33,27]],'#8f8d86');for(const y of[17,31])line(17,y,19,y,2,'#3b2a1a');if(id!=='jousi'){circ(16,24,3,'#c9fff8');}break;}
+    // v1.56: kaari tähtäyssuuntaan (oikealle), jänne kärkien välissä vasemmalla, nuoli jänteeltä kaaren läpi (ennen kaari ja jänne väärin päin)
+    case 'jousi':case 'hiidenjousi':{const col=id==='jousi'?'#8a5a32':'#5fe6d9';g.strokeStyle='#3b2a1a';g.lineWidth=6;g.beginPath();g.arc(14,24,22,-Math.PI*.38,Math.PI*.38);g.stroke();g.strokeStyle=col;g.lineWidth=4;g.beginPath();g.arc(14,24,22,-Math.PI*.38,Math.PI*.38);g.stroke();
+      line(22.3,3.8,22.3,44.2,1.2,'#f1ecdc');line(10,24,42,24,1.6,'#c9b48a');poly([[44,24],[39,21],[39,27]],'#8f8d86');for(const y of[21,27])line(10,y,15,24,1.6,'#e8e2d2');if(id!=='jousi'){circ(36,24,3,'#c9fff8');}break;}
     default:{
       // Työkalut piirretään vinoon: origo kahvan alapäässä, +x kahvaa pitkin ylös oikealle, +y kohtisuoraan (alas oikealle).
       const tier=/rauta/.test(id)?['#aab6c4','#e4ecf5','#4a525c']:/kupari|^miekka$/.test(id)?['#e0904f','#ffc58f','#8f5326']:/hiiden/.test(id)?['#5fe6d9','#d2fffb','#1f7f78']:['#8f8d86','#c7c5bd','#4e4c48'];
