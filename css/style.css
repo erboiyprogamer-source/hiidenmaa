@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.66';
+:root{--css-v:'1.67';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -590,13 +590,7 @@ button:focus,select:focus{outline:none}
 #splash .spWarn b{font:700 clamp(24px,3.2vw,34px) 'Cinzel',serif;color:#f2e6cc;margin-top:18px;letter-spacing:.04em}
 #splash .spWarn p{font:500 17px/1.6 var(--font-b);color:#c8bba0;margin:12px 16px 0}#splash .spWarn em{color:#ffb35a;font-style:normal}
 #splash .spDev{width:150px;color:#e8a44a;filter:drop-shadow(0 0 10px rgba(232,164,74,.4))}
-#splash .spRune{font:400 120px serif;color:#fff2d8;text-shadow:0 0 20px #ffb35a,0 0 50px #ff7a1a;opacity:0}
-#splash .spTrans.on .spRune{animation:spRune 1.3s ease-in forwards}
-#splash .spRing{position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;border:3px solid #ffd08a;box-shadow:0 0 30px #ff8a2a,inset 0 0 30px #ff8a2a;opacity:0}
-#splash .spTrans.on .spRing{animation:spRing 1.1s ease-in .3s forwards}
-@keyframes spRune{0%{opacity:0;transform:scale(.4) rotate(-30deg)}40%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:0;transform:scale(2.6) rotate(12deg);filter:blur(4px)}}
-@keyframes spRing{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(160)}}
-#splash.trans{background:radial-gradient(circle at 50% 50%,#2a1a0c,#000 60%)}
+#splash.trans{background:#000}
 #splash .spSkip{position:absolute;right:22px;bottom:18px;font:600 12px var(--font-b);color:#5a5244;letter-spacing:.06em}
 #loadScr.enter .lsCenter,#loadScr.enter .lsTitle{animation:ldEnter 1.1s cubic-bezier(.2,.8,.2,1) both}
 @keyframes ldEnter{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
@@ -666,3 +660,46 @@ button:focus,select:focus{outline:none}
 /* v1.66: ohitusteksti vain palaavalle kävijälle, pienenä ja huomaamattomana; ensikäynnillä piilossa */
 #splash.first .spSkip{display:none}
 #splash .spSkip{font-size:10.5px;color:#3e382f;letter-spacing:.04em;right:16px;bottom:12px}
+/* v1.67: riimusiirtymä (2,9 s). Peittävä tausta (ei edellisen ruudun läpikuultoa). Kehä piirtyy (stroke-dashoffset, yksi ympyrä), 24 riimua
+   syttyy kierroksena, keskellä 9 riimua tavaa H-I-I-D-E-N-M-A-A (0,15 s välein), sitten ne sulautuvat päällekkäin sinetiksi, joka leimahtaa:
+   kipinät, kaksi paineaaltoa ja valkoinen välähdys → latausnäyttö. Muuten vain opacity/transform. */
+#splash .spTrans{background:radial-gradient(circle at 50% 50%,#24130a 0%,#0b0604 50%,#000 85%);transition:opacity .4s ease;overflow:hidden}
+#splash .stGlow{position:absolute;left:50%;top:50%;width:90vmin;height:90vmin;margin:-45vmin 0 0 -45vmin;border-radius:50%;opacity:0;will-change:opacity,transform;
+  background:radial-gradient(circle,rgba(255,170,80,.42) 0%,rgba(255,120,40,.16) 32%,rgba(255,90,20,0) 62%)}
+#splash .spTrans.on .stGlow{animation:stGlow 2.9s ease forwards}
+@keyframes stGlow{0%{opacity:0;transform:scale(.6)}25%{opacity:.7;transform:scale(1)}60%{opacity:.55;transform:scale(.95)}70%{opacity:1;transform:scale(1.25)}100%{opacity:0;transform:scale(1.6)}}
+#splash .stRing{position:absolute;left:50%;top:50%;width:min(76vmin,560px);height:min(76vmin,560px);transform:translate(-50%,-50%);overflow:visible;opacity:0;will-change:transform,opacity}
+#splash .spTrans.on .stRing{animation:stRing 2.9s cubic-bezier(.3,.6,.3,1) forwards}
+@keyframes stRing{0%{opacity:0;transform:translate(-50%,-50%) rotate(-40deg) scale(.9)}12%{opacity:1}68%{opacity:1;transform:translate(-50%,-50%) rotate(0) scale(1)}78%{opacity:.9;transform:translate(-50%,-50%) rotate(6deg) scale(1.08)}100%{opacity:0;transform:translate(-50%,-50%) rotate(14deg) scale(1.5)}}
+#splash .stRing circle{fill:none}
+#splash .stRing .g{stroke:#ff8a2a;stroke-width:9;opacity:.16}
+#splash .stRing .c1{stroke:#ffc47a;stroke-width:1.6;stroke-dasharray:943;stroke-dashoffset:943}
+#splash .spTrans.on .stRing .c1{animation:stDraw .9s cubic-bezier(.5,0,.2,1) .1s forwards}
+@keyframes stDraw{to{stroke-dashoffset:0}}
+#splash .stRing .c2{stroke:#c9864a;stroke-width:1;stroke-dasharray:1.5 7;opacity:0}
+#splash .spTrans.on .stRing .c2{animation:stFade .8s ease .5s forwards}
+#splash .stRing .tk line{stroke:#9a6a3a;stroke-width:1.2}
+#splash .stRing .tk{opacity:0}#splash .spTrans.on .stRing .tk{animation:stFade .7s ease .35s forwards}
+#splash .stRing .rn text{font:400 19px serif;fill:#ffd9a0;text-anchor:middle;opacity:0}
+#splash .spTrans.on .stRing .rn text{animation:stRuneOn .5s ease calc(.25s + var(--d)*.035s) forwards}
+@keyframes stRuneOn{0%{opacity:0;fill:#fff}40%{opacity:1;fill:#fff6e6}100%{opacity:.85;fill:#ffb35a}}
+@keyframes stFade{to{opacity:1}}
+#splash .stCyc,#splash .stFin{position:absolute;left:50%;top:50%;width:0;height:0}
+#splash .stCyc span,#splash .stFin span{position:absolute;left:0;top:0;transform:translate(-50%,-50%);font:400 min(19vmin,150px)/1 serif;color:#fff1d6;opacity:0;will-change:opacity,transform;
+  text-shadow:0 0 10px #ffd08a,0 0 26px #ffa040,0 0 60px #ff6a1a}
+#splash .spTrans.on .stCyc span{animation:stCyc .3s ease calc(.45s + var(--i)*.15s) both}
+@keyframes stCyc{0%{opacity:0;transform:translate(-50%,-50%) scale(1.35)}30%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.85)}}
+#splash .stFin span{opacity:0;text-shadow:0 0 8px #ffe2b0,0 0 22px #ffb35a}
+#splash .spTrans.on .stFin span{animation:stFin 1.05s cubic-bezier(.2,.7,.3,1) 1.8s both}
+@keyframes stFin{0%{opacity:0;transform:translate(-50%,-50%) scale(1.7) rotate(var(--r))}28%{opacity:.75;transform:translate(-50%,-50%) scale(1)}55%{opacity:.75;transform:translate(-50%,-50%) scale(1.04)}100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}}
+#splash .stSp{position:absolute;left:50%;top:50%}
+#splash .stSp i{position:absolute;left:-2px;top:-2px;width:4px;height:4px;border-radius:50%;background:#fff0d0;box-shadow:0 0 6px #ffb35a,0 0 12px #ff7a1a;opacity:0;will-change:transform,opacity}
+#splash .spTrans.on .stSp i{animation:stSpark var(--t) cubic-bezier(.1,.7,.3,1) 2.05s forwards}
+@keyframes stSpark{0%{opacity:1;transform:translate(0,0) scale(1.4)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
+#splash .stWave{position:absolute;left:50%;top:50%;width:30vmin;height:30vmin;margin:-15vmin 0 0 -15vmin;border-radius:50%;border:2px solid rgba(255,220,170,.9);box-shadow:0 0 18px rgba(255,160,70,.6),inset 0 0 18px rgba(255,160,70,.45);opacity:0;will-change:transform,opacity}
+#splash .spTrans.on .stWave{animation:stWave .85s cubic-bezier(.15,.6,.35,1) 2.05s forwards}
+#splash .spTrans.on .stWave.w2{animation-delay:2.2s;animation-duration:.75s}
+@keyframes stWave{0%{opacity:1;transform:scale(.25)}100%{opacity:0;transform:scale(4.2)}}
+#splash .stFlash{position:absolute;inset:0;background:radial-gradient(circle,#fff6e6 0%,rgba(255,220,170,.6) 35%,rgba(255,180,100,0) 70%);opacity:0;will-change:opacity}
+#splash .spTrans.on .stFlash{animation:stFlash .7s ease-out 2.05s forwards}
+@keyframes stFlash{0%{opacity:0}18%{opacity:.85}100%{opacity:0}}

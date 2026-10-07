@@ -443,3 +443,4 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Hakukentän napsautus valitsee vanhan tekstin, joten uusi haku kirjoitetaan suoraan päälle.
 - HIIDENMAA-otsikko nousee mustasta savusta ja vajoaa mustaan reunat edellä (ensikäynnillä studioiden jälkeen 0,5 s mustaa).
 - Valmistusvalikon haku toimii kuten DEV-haku (nimi tai tunniste, parhaat osumat ensin, Enter valmistaa ensimmäisen).
+- Siirtymä latausnäyttöön: riimukehä piirtyy, keskellä riimut tavaavat HIIDENMAA, sulautuvat sinetiksi joka leimahtaa (paineaalto, kipinät).
