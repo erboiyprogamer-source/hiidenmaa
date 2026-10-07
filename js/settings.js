@@ -132,8 +132,9 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       `<div class="keyCat"><h3>Kiinteät</h3>${[['Hiiren vasen','isku / jännitä ja ammu jousella / rakenna / lapio: kaiva, kuokka: nosta maata'],['Hiiren oikea','torju kilvellä / rakennusvalikko (vasara) / lapio: polku, kuokka: palauta maasto'],['1–8','valitse pikapaikka (ruoka syödään)'],['Hiiren rulla','zoom tai pikapaikat (Ohjaus)'],
         ['Shift + R','rakennuksen asento / kaltevuus'],['Q / Shift + Q (repussa)','pudota hiiren alla oleva tai valittu esine / koko pino'],['I','reppu (myös '+keyLabel(BIND.inv)+')'],
         ['Enter','herää uudelleen kaaduttua / lopeta kirjoitus hakukentässä'],['Mikä tahansa','ohita maailman alkulento ja avausotsikko'],['Esc','vapauttaa hiiren (selain); valikko: P'],...(DEV?[['V (DEV)','10× nopeus pohjassa'],['Ä (DEV)','DEV-valikko']]:[])].map(([k,d])=>`<div class="keyRow"><span class="kb fixed">${k}</span><span>${d}</span></div>`).join('')}</div></div>
-      <div class="row" style="margin-top:10px"><button class="btn" id="bKeysReset">Palauta oletusnäppäimet</button></div>`;
+      <div class="row" style="margin-top:10px"><button class="btn pri" id="bAllKeys">Näytä kaikki toiminnot</button><button class="btn" id="bKeysReset">Palauta oletusnäppäimet</button></div>`;
     body.querySelectorAll('.kbtn').forEach(b=>b.onclick=()=>startCapture(b.dataset.a));
+    $('#bAllKeys').onclick=showAllKeys;
     $('#bKeysReset').onclick=()=>keyDialog('Palautetaanko kaikki näppäimet oletuksiin?',[['Palauta',()=>{Object.assign(BIND,BIND_DEF);saveBinds();renderSettings();}],['Peruuta',null]]);
   }else if(setTab==='gfx'){
     const sub=t=>`<h4 class="setSub">${t}</h4>`,autoN=k=>SET.autoAll?'':' (vaatii yleisen automaattisäädön)',pi=presetIdx();   // v1.12 väliotsikot
@@ -215,6 +216,29 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
   }
 }
 // Näppäimen vaihto: 1) paina uusi näppäin, 2) vahvista pienessä ikkunassa
+/* v1.75: "Näytä kaikki toiminnot" – ponnahdusikkuna, jossa kaikki näppäimiin ja hiireen liitetyt toiminnot tilanteittain. Näytetään
+   oletusnäppäimet; jos pelaaja on vaihtanut näppäimen, perässä "nyt: X". Rivi: [toiminnon id tai null, oletusnäppäin, kuvaus]. */
+const ALL_KEYS=[
+  ['Pelatessa',[['fwd',0,'liiku eteen'],['back',0,'liiku taakse'],['left',0,'liiku vasemmalle'],['right',0,'liiku oikealle'],['run',0,'juokse (pohjassa)'],['jump',0,'hyppää / kiipeä ylös'],
+    ['crouch',0,'kyykky / hiipiminen (jousella kyykyssä tarkka tähtäin)'],['interact',0,'poimi, avaa, puhu, nuku, käytä'],[null,'Hiiren vasen','isku; jousella pidä pohjassa = jännitä, päästä = ammu'],
+    [null,'Hiiren oikea','torju kilvellä (pohjassa)'],[null,'1–8','valitse pikapaikka; ruoka syödään, varuste otetaan käteen'],[null,'Hiiren rulla','kameran zoom (tai pikapaikat, Asetukset › Ohjaus)'],
+    ['up',0,'pudota valitusta pikapaikasta 1 (Shift = koko pino)'],['remove',0,'pura katsottu rakennusosa'],['repair',0,'korjaa katsottu rakennusosa'],
+    ['hud',0,'tehtävä ja tavoite näkyviin / piiloon'],['minizoom',0,'minikartan zoom'],['full',0,'koko näyttö'],[null,'Esc','vapauttaa hiiren (selain) – käytä mieluummin P:tä']]],
+  ['Rakentaessa (vasara kädessä)',[['build',0,'rakennusvalikko'],[null,'Hiiren vasen','aseta rakennusosa'],[null,'Hiiren oikea','rakennusvalikko'],['rot',0,'käännä osaa'],[null,'Shift + R','osan asento / kaltevuus'],
+    ['snap',0,'sivuttaiskohdistus (tilat)'],['vsnap',0,'pystykohdistus'],['up',0,'nosta haamua'],['down',0,'laske haamua'],['remove',0,'pura'],['repair',0,'korjaa']]],
+  ['Lapio ja kuokka',[[null,'Hiiren vasen','lapio: kaiva · kuokka: nosta maata'],[null,'Hiiren oikea','lapio: tee polku · kuokka: palauta maasto']]],
+  ['Valikot ja paneelit',[['menu',0,'päävalikko / sulje avoin paneeli'],['inv',0,'reppu ja valmistus'],[null,'I','reppu (vaihtoehto)'],['map',0,'kartta'],['prog',0,'taso, saavutukset, tavoitteet'],['log',0,'viimeiset ilmoitukset'],
+    ['interact',0,'sulje avoin paneeli']]],
+  ['Repussa ja arkussa',[[null,'Hiiren vasen','valitse / siirrä esine toiseen ruutuun, raahaa'],[null,'Hiiren oikea','ota puolet pinosta'],[null,'Q / Shift + Q','pudota hiiren alla oleva tai valittu esine (Shift = koko pino)'],
+    [null,'Kirjoita','haku (valmistus- ja rakennusvalikko)'],[null,'Enter (haussa)','valmista ensimmäinen osuma / lopeta kirjoitus'],[null,'Esc (haussa)','tyhjennä haku'],[null,'Shift (pohjassa)','esineen lisätiedot vihjeessä']]],
+  ['Päävalikossa',[[null,'P / Esc','takaisin päänäkymään'],[null,'Enter','vahvista maailman nimi']]],
+  ['Erikoistilanteet',[[null,'Enter','herää uudelleen kaaduttua'],[null,'Mikä tahansa','ohita uuden maailman alkulento / avausotsikko (ei ensikäynnin esittelyä)']]],
+];
+function showAllKeys(){let d=$('#allKeys');if(!d){d=document.createElement('div');d.id='allKeys';d.className='dlg';document.body.appendChild(d);d.onclick=e=>{if(e.target===d)d.hidden=true;};}
+  const row=([a,k,t])=>{const def=a?keyLabel(BIND_DEF[a]):k,now=a&&BIND[a]!==BIND_DEF[a]?`<small class="now">nyt: ${keyLabel(BIND[a])}</small>`:'';return `<div class="akRow"><span class="kb fixed">${def}</span><span>${t}${now}</span></div>`;};
+  d.innerHTML=`<div class="dlgBox akBox"><div class="akHead"><b>Kaikki toiminnot</b><button class="btn" id="akClose">Sulje</button></div><p class="note">Oletusnäppäimet. Jos olet vaihtanut näppäimen, nykyinen näkyy perässä.</p>
+    <div class="akGrid">${ALL_KEYS.map(([h,R])=>`<div class="akCat"><h3>${h}</h3>${R.map(row).join('')}</div>`).join('')}${DEV?`<div class="akCat"><h3>DEV-tila</h3>${[[null,'V (pohjassa)','10× nopeus'],[null,'Ä','DEV-valikko'],[null,'Välilyönti ×2','lento (jos päällä DEV-valikossa): välilyönti ylös, Shift alas, Ctrl nopeammin']].map(row).join('')}</div>`:''}</div></div>`;
+  d.hidden=false;$('#akClose').onclick=()=>{d.hidden=true;};}
 function keyDialog(text,btns,note){const d=$('#keyDlg');d.hidden=false;$('#keyDlgT').textContent=text;$('#keyDlgN').textContent=note||'';
   const b=$('#keyDlgB');b.innerHTML='';for(const [t,fn] of btns){const x=document.createElement('button');x.className='btn'+(t==='Vahvista'||t==='Palauta'?' pri':'');x.textContent=t;x.onclick=()=>{d.hidden=true;capture=null;if(fn)fn();};b.appendChild(x);}}
 function startCapture(a){const nm=ACTIONS.find(x=>x[0]===a)[1];capture={a,code:null};keyDialog(`Paina uutta näppäintä: ${nm}`,[['Peruuta',null]],'Esc peruu. Varatut ja jo käytössä olevat näppäimet hylätään.');}

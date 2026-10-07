@@ -451,3 +451,4 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Ensikäynnin aloitusjaksoa ja suorituskykytestiä ei voi ohittaa; merkintä tallentuu vasta jakson lopussa. Palaava kävijä voi ohittaa otsikon.
 - Suorituskykytestin aikana (ei tulosruudussa) yläreunassa kerrotaan, että testi on heikompia koneita varten ja grafiikan voi nostaa itse (Asetukset › Grafiikka).
 - Näppäinlistassa myös kaikki kiinteät näppäimet (I, Q repussa, Enter, ohitus, DEV-näppäimet).
+- Asetukset › Näppäimet: "Näytä kaikki toiminnot" avaa listan kaikista näppäin- ja hiiritoiminnoista tilanteittain (oletusnäppäimet, vaihdettu näkyy "nyt: X").

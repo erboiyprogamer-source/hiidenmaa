@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.74)
+## Nykytila (päivitetty v1.75)
 
-- **Versio 1.74**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
+- **Versio 1.75**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -91,6 +91,16 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.75 (näppäintesti + Kaikki toiminnot -ikkuna)
+- **Kaikki näppäimet testattu** (keytest: painallus + 8 ruutua, tilan ero): pelatessa W/A/S/D liike 4,6 m/s, Space hyppy, C kyykky (pohjassa),
+  B ilman vasaraa → viesti, Q pudottaa pikapaikasta, P tauko, Tab/I reppu, M kartta, J edistyminen, L loki, T HUD-tila, N minikartta,
+  2–8 pikapaikka, Ä DEV-valikko; E/X/F/K/Esc/Enter/V tarvitsevat kohteen/tilan (ei muutosta tyhjässä). Rakentaessa: R kierto, G
+  kohdistus, H pystykohdistus, Q/Z haamu ylös/alas, B valikko, Shift+R asento. Repussa: E/Tab/P sulkee, M kartta, Q pudottaa 1, Shift+Q
+  koko pinon. Kuolleena Enter herää. Ei virheitä; ei kuolleita näppäimiä (vapaat: O, U, Y, Ö, Backspace…).
+- **"Näytä kaikki toiminnot"** (Asetukset › Näppäimet, alareuna) → ponnahdusikkuna `#allKeys` (`showAllKeys`, data `ALL_KEYS`): Pelatessa,
+  Rakentaessa, Lapio ja kuokka, Valikot ja paneelit, Repussa ja arkussa, Päävalikossa, Erikoistilanteet (+ DEV-tila). Oletusnäppäimet;
+  vaihdettu näppäin → perässä "nyt: X" (käyttäjän valinta). Kolme palstaa (CSS columns), sulku Sulje-napista tai taustasta.
 
 ### v1.74 (näppäinlista täydeksi, hartiat ja kaulus)
 - **Näppäinlista (Asetukset › Näppäimet, Kiinteät):** lisätty I (reppu, Tab:n lisäksi), Q / Shift+Q repussa (hiiren alla tai valittu,
@@ -1861,7 +1871,7 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 6 (v1.53–) – julkaisupäivitys
-**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.74 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
+**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.75 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
 - A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
   eteenpäin, piikivikirves.
 - B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.
