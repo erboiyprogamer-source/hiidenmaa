@@ -93,7 +93,7 @@ const BONE_M=mat(0xd9d2bf),PUDDLE_M=new THREE.MeshStandardMaterial({color:0x0e14
 const _q4=new THREE.Quaternion(),_e4=new THREE.Euler(),_s4=new THREE.Vector3(),_p4=new THREE.Vector3(),_c4=new THREE.Color();
 // Monta samaa kappaletta yhtenä InstancedMeshinä: rivi = [x,y,z, rx,ry,rz, sx,sy,sz, väri?]
 function instM(geo,m,list,add,shadow){if(!list.length)return null;const im=new THREE.InstancedMesh(geo,m,list.length);im.frustumCulled=false;im.receiveShadow=true;im.castShadow=!!shadow;
-  list.forEach((t,i)=>{_p4.set(t[0],t[1],t[2]);_e4.set(t[3],t[4],t[5]);_q4.setFromEuler(_e4);_s4.set(t[6],t[7],t[8]);_m4.compose(_p4,_q4,_s4);im.setMatrixAt(i,_m4);if(t[9]!==undefined)im.setColorAt(i,_c4.setHex(t[9]));});
+  list.forEach((t,i)=>{_p4.set(t[0],t[1],t[2]);_e4.set(t[3],t[4],t[5]);_q4.setFromEuler(_e4);_s4.set(t[6],t[7],t[8]);_m4.compose(_p4,_q4,_s4);im.setMatrixAt(i,_m4);im.setColorAt(i,_c4.setHex(t[9]!==undefined?t[9]:0xffffff));});   // v1.38: aina instanssivärit (jaettu materiaali, KORJAUKSET 28)
   im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;add(im);return im;}
 // o: {r, add, cell(ix,iz), y0, ceil, cells:[[ix,iz,h,seiniä]], bones, stal, puddles, cave, rk, stalM}
 function dressFloor(o){const {r,y0}=o,bones=[],skulls=[],jaws=[],stal=[],mites=[],pud=[];

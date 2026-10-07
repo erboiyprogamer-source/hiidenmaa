@@ -154,7 +154,8 @@ function frame(now){
     else if(state==='paused'){updateEnvironment(0);updateGrass();updateLights();if(typeof updateMist==='function')updateMist(0);}   // v1.35 (kohta 18): asetusmuutokset näkyvät heti myös tauolla
     else if(state==='dead'||state==='win'){updateMobs(dt*.5);updateEnvironment(dt);updateEffects(dt);}
   }catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe pelisilmukassa: '+(err&&err.message||err));}}   // v1.26 näkyviin
-  if(!skip3d)renderer.render(scene,camera);
+  // v1.38: piirtovirhe näkyy tarkkana (ennen try-lohkon ulkopuolella → selain näytti vain "Script error.", KORJAUKSET 28)
+  if(!skip3d){try{renderer.render(scene,camera);}catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe piirrossa: '+(err&&err.message||err));}}}
 }
 updateLights();applyGfx();
 requestAnimationFrame(frame);

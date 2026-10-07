@@ -73,6 +73,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.38 (korjaus: "Script error." vuorilla porttien lähellä)
+- Syy: ruohoton alue → ruohon InstancedMesh ilman instanssivärejä, jaettu materiaali käännetty värien kanssa → three.js kaatui piirrossa.
+  Korjattu (`rebuildGrass` ei lisää tyhjää, `instM` aina värit), `renderer.render` try-lohkoon, three.js `crossorigin="anonymous"`,
+  laajennusten "Script error." ei näy. KORJAUKSET 28. Toistettu ja varmistettu testillä, joka kävelee kaikkien karttojen portille.
+
 ### v1.37 (lista 3: veri ja kuolema-animaatiot, palokuolema, savu, DEV-lento, portit, kirves/hakku IK, jousen veto, selkäesineet)
 - **Uusi tiedosto `js/effects.js`** (ladataan state.js:n jälkeen).
 - **Veri (kohta 24):** jokainen osuma: pisaroita (määrä vahingon ja koon mukaan, isoilla enemmän) ja läntti maahan, joka häipyy 10 s:ssa
@@ -1450,7 +1455,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 3: 33 kohtaa + lisät (v1.32–) – kaikki kysymykset kysytty etukäteen, vastaukset alla
-**JATKA TÄSTÄ (lista 3, nykytila v1.37):** KAIKKI kohdat 1–41 TEHTY v1.32–v1.37. Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #24 auki
+**JATKA TÄSTÄ (lista 3, nykytila v1.38 – korjaus KORJAUKSET 28):** KAIKKI kohdat 1–41 TEHTY v1.32–v1.37. Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #24 auki
 (main = v1.07). Seuraavaksi: odotetaan käyttäjän testiä ja Mergeä. Testaa aina commit-linkillä (välimuisti).
 1. TEHTY v1.32. Haamukuva pois kursorilta (näkyy vain raahatessa).
 2. TEHTY v1.32. Reppu ei liiku eikä veny: kiinteä koko. Tietoalue (tiedot, päivitys, ota käyttöön) kiinteässä paikassa, ei vieritystä tietoalueessa.

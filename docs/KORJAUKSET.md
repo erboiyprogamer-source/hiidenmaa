@@ -202,6 +202,19 @@ kohtaan keinotekoiset (`isTrusted=false`). Uudet paneelien hiirikäsittelijät t
 mousemove/wheel), mutta **CSS :hover ei toimi** – lisää vastaava `.vh`-luokan tyyli. Natiivi vieritys ja `<select>`-avaus eivät toimi
 keinotekoisilla tapahtumilla (rulla vierittää lähintä vieritettävää käsin); asetusvalikko on taukotilassa (lukitus vapaana), joten se toimii.
 
+## 28. "Virhe: Script error." vuorilla porttien lähellä (v1.38)
+**Oire:** kivisillä vuorilla (Kivivuori) ja porttien lähellä ruutuun tuli "Virhe: Script error." (toistui, kartat 0, 3, 4, 5).
+**Syy:** ruoho rakennetaan uudelleen 6 m välein. Alueella, jossa ruohoa ei ole (kivinen vuori, kohteiden suoja-alue), `rebuildGrass` loi
+InstancedMeshin ilman yhtään `setColorAt`-kutsua → `instanceColor = null`. Sama `GRASS_MAT` oli jo käännetty instanssiväreillä, ja three.js
+r128 käyttää samaa ohjelmaa → `bindingStates.setup` → `attributes.get(null)` → `Cannot read properties of null (reading
+'isInterleavedBufferAttribute')`. Virhe tuli `renderer.render`ista, joka oli pelisilmukan try-lohkon ulkopuolella, ja koska three.js ladataan
+toiselta sivustolta (cdnjs), selain näytti vain "Script error.".
+**Korjaus:** tyhjää ruohoa ei lisätä näkymään (`if(!n){im.dispose();return;}`); ulottuvuuksien `instM` asettaa instanssivärin aina (valkoinen
+oletus); `renderer.render` on try/catchissa (virhe näkyy tarkkana); three.js-tagissa `crossorigin="anonymous"` (tarkat virheviestit);
+"Script error." ilman tiedostoa (selainlaajennus) ei näy pelaajalle. **Sääntö: jos InstancedMesh käyttää instanssivärejä, KAIKKI saman
+materiaalin InstancedMeshit tarvitsevat ne (tai oman materiaalin).** Testi: `gate.mjs` (scratchpad) kävelee kaikkien karttojen porteille.
+Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: *` (crossorigin).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

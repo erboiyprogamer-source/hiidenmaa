@@ -298,6 +298,9 @@ function rebuildGrass(){let lv=+(SET.grass??1);grassDirty=false;if(AUTO.fx>=2)lv
       if(t===0&&(Math.abs(terrainH(x+.8,z)-y)>.9||pointBlocked(x,y+.3,z)||siteBlockedG(x,z)))break;
       const s=(.55+grassHash(i+31+t,j+17)*.6)*D[1]*(t===0?1:.75+grassHash(t,i)*.35);_grQ.setFromAxisAngle(_up,grassHash(i-5+t,j+9)*TAU);_grS.set(s,s,s);_grP.set(x,y-.03,z);_grM.compose(_grP,_grQ,_grS);im.setMatrixAt(n,_grM);
       _grC.setHex(D[3]).lerp(_grC2.setHex(D[2]),grassHash(i+77,j-3+t)*.45);im.setColorAt(n,_grC);n++;}}
-  im.count=n;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;scene.add(im);grassIM=im;grassC={x:cx,z:cz};}
+  // v1.38 (KORJAUKSET 28): ruohoton alue (kivinen vuori, kohteen ympäristö) → n = 0 eikä setColorAt-kutsua → instanceColor = null. Sama
+  // GRASS_MAT on jo käännetty instanssiväreillä, joten three.js r128 kaatui piirrossa ("Script error"). Tyhjää ei lisätä näkymään.
+  grassC={x:cx,z:cz};if(!n){im.dispose();return;}
+  im.count=n;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;scene.add(im);grassIM=im;}
 function updateGrass(){if(P.inDun){if(grassIM)grassIM.visible=false;return;}if(grassIM)grassIM.visible=true;
   if(grassDirty||dist2(P.pos.x,P.pos.z,grassC.x,grassC.z)>36)rebuildGrass();}
