@@ -15,7 +15,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Nykytila (päivitetty v1.82)
 
-- **Versio 1.82**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
+- **Versio 1.82**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.82, julkaisupäivitys, yhteenveto alla) odottaa yhdistämistä;
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -30,6 +30,76 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   pelin skriptejä), ulottuvuuden rakennus kestää testikoneella sekunteja (`waitForFunction`), suorituskykytesti ja aloitusjakso
   ohitetaan automaatiossa (`navigator.webdriver`; `?perf=1` ja `?splash=1` pakottavat; testinäkymän kuva: `preserveDrawingBuffer` + toDataURL, ruutukaappaus on liian hidas). Uusi maailma alkaa tilassa `intro`. Jousen
   narua mitatessa katso pätkien päätepisteet (KORJAUKSET 30). Testipalvelin: käynnistä taustakomentona pitkällä aikarajalla.
+
+## PR #25 – yhteenveto (v1.38–v1.82, valmis yhdistettäväksi)
+
+#### Korjaukset ja perusta
+- **v1.38** – "Script error" vuorilla porttien lähellä korjattu (ruohon piirto).
+- **v1.58** – Välimuistin vanhat tiedostot tunnistetaan, ja peli neuvoo käyttämään commit-linkkiä.
+
+#### Päivityslista 4 (v1.39–v1.44)
+- **v1.39** – Kyykky ja hiipiminen, ylämäen hidastus, selkäesineet, esineet maassa 3D:nä, pomot ja vartijat, kilpi, vihollisten terveyden vaihtelu, veren fysiikka, portaat.
+- **v1.40** – P = päävalikko (Esc ei enää sotke peliä), opasteet, reppunapsautukset, omat säätimet, arkku avautuu katseella.
+- **v1.41** – Lumi ja sade, seinäsoihtu, soihdun sytytys, uudet arkut.
+- **v1.42** – Ulottuvuuksien saalis, Kalmaherran tulilinjat, jousikalmot.
+- **v1.43** – Latausnäyttö (riimukivi), suorituskykytesti, uuden maailman alkulento, Tauko/Käynnissä-tila, aluebannerit.
+- **v1.44** – Optimoinnit asetuksiin (maaston LOD, kohteiden yhdistäminen, varjojen harvennus).
+
+#### Valikko (v1.45–v1.48)
+- Latausnäytön leimahdus, päävalikon uudistus, esiasetussäätimen teemat, 7 satunnaista logoteemaa.
+
+#### Päivityslista 5 (v1.49–v1.52)
+- **v1.49** – Tallennettu-ilmoitus, jousen tähtäin, kyykkyammunta ja tiputusristikko.
+- **v1.50** – Yöolennot palavat auringossa.
+- **v1.51** – 10 uutta valikkotaustaa, myrskyn sade, eeppinen portaali.
+- **v1.52** – Uusi maailma latausnäytön takana, pilvet aukeavat.
+
+#### Päivityslista 6 (v1.53–v1.57)
+- **v1.53** – Kävelyn keinunta pois, piikivikirves.
+- **v1.54** – Kääntymisen ja osoittimen herkkyys, nopeampi virtuaaliosoitin.
+- **v1.55** – Ensikäynnin aloitusjakso (EricStudios & KSPK-tech → HIIDENMAA → varoitus).
+- **v1.56** – Ultra-veri, lätäköt rinteen mukaan ja valuvina, jousi ja nuolet selässä.
+- **v1.57** – Jousen naru oikein päin, ote kahvasta, osumamerkki, Q-pudotus pikapaikasta, kirveen iskun pyörähdys pois.
+
+#### Aloitusjakso ja käynnistys (v1.59–v1.73)
+- **v1.59** – Studionimet allekkain, Esc-varoitus, näkyvä FPS-testi ja selvä tulos.
+- **v1.60** – Käynnistys uusiksi: jakso ja testi ennen latausta, joten animaatiot eivät pätki. Latausnäytössä riimut täyttyvät ja vaalea leimahdus tulee vasta latauksen jälkeen. Uusi `js/boot.js`.
+- **v1.61** – Myrskytaustan sade tuulen suuntaan, FPS-tuloksen suositusteksti.
+- **v1.62** – Intro vain ensimmäisellä käynnillä (ei maailman luonnissa), uusi kolmikerroksinen pilviverho heikoille koneille.
+- **v1.63–v1.64** – HIIDENMAA-otsikko pelkällä häivytyksellä, palaavalle kävijälle lyhyt otsikko, lyhyemmät ajat, Windows-yhteensopivuusrivi ja -ikoni.
+- **v1.65** – FPS-testi 7 s ja realistisempi.
+- **v1.66** – Logo nousee mustasta savusta ja vajoaa mustaan, ohitusteksti vain palaavalle.
+- **v1.67, v1.69** – Uusi riimusiirtymä: kehä piirtyy, riimut tavaavat HIIDENMAA, sininen ᚺ ja kaartuva riimurivi.
+- **v1.69** – FPS-testi kuormaportain kaikille 8 tasolle (Ultra, kun indeksi ≥ 140); tasaantumisnopeus ja tasaisuus vaikuttavat tulokseen.
+- **v1.71** – Ensikäynnin jaksoa ja testiä ei voi ohittaa, merkintä tallentuu vasta lopussa.
+- **v1.72–v1.73** – Testin aikana yläilmoitus: testi auttaa heikompia koneita, grafiikkaa voi nostaa itse.
+
+#### Pelaaja ja animaatiot
+- **v1.65–v1.66** – Jousen kantoasento: kaari alas, jänne suorana ylhäällä, seuraa käsivartta.
+- **v1.68** – Hengitys paikallaan, AFK-animaatio 3 s jälkeen, pieni kävelykeinunta.
+- **v1.69** – AFK-eleet ilman tärinää (heilunta, pään rapsutus, kädet levälleen) ja sulava paluu.
+- **v1.74** – Leveämmät hartiat ja hieman V-muotoinen vartalo, kaulan alla välkkynyt laikku korjattu.
+
+#### Taistelu ja pelattavuus
+- **v1.70** – Kaatuvan puun vihjeet: lyhyt ilmoitus osumasta ja vihje kuolinruudussa.
+- **v1.77** – Pääosumat jousella: tarkka pään osuma, +10 % vahinkoa, punainen merkki ja "Pääosuma!". Nuoliteksti hotbarin yläpuolella. Pikapaikan nimi harvinaisuusvärillä.
+- **v1.78** – Herätessä läheiset viholliset katoavat savuna.
+- **v1.81** – Kolme kuolemaa samalle pomolle: pomo ei enää palauta terveyttään (laskuri kuolinruudussa).
+
+#### Käyttöliittymä ja ohjaus
+- **v1.65–v1.66** – Valmistushaku kuten DEV-haussa, napsautus valitsee vanhan tekstin.
+- **v1.74–v1.75** – Täysi näppäinlista; kaikki näppäimet testattu; "Näytä kaikki toiminnot" -ikkuna tilanteittain (oletusnäppäimet + "nyt: X").
+- **v1.76** – Shift pohjassa näyttää esinetiedot liikkuessa, nopeampi osoitin, valikko ei kuormita pelissä (asetus: älä pysäytä animaatioita).
+- **v1.82** – DEV-työkalut oletuksena pois (kytkin Asetukset › Ohjaus ja ääni -sivun alareunassa) ja DEV-viitteet piilossa. "Early Access 1.0" -merkintä päävalikossa.
+
+#### Grafiikka
+- **v1.76** – Tulinuolen valo High+:lla ja Ultralla. Erittäin tarkat varjot omana valintana: Terävä 8192 / pehmeät reunat / laaja alue (punainen = raskain, "!" kun päällä).
+- **v1.79** – High–Ultra kytkevät kaikki automaattisäädön alavalinnat pois (myös varjojen laadun).
+- **v1.80** – Erittäin tarkat varjot ohittavat tavalliset varjoasetukset (harmaana): 8192 px, päivitys joka ruudussa, 90 / 110 / 160 m.
+
+#### Testaus
+- `tools/tarkistus.mjs`: KAIKKI OK jokaisen version jälkeen (oma tarkistusrivi jokaiselle uudelle ominaisuudelle).
+- Koko pelin tarkistus kaikilla 6 kartalla (päivä ja yö, 22 vihollistyyppiä, 3 ulottuvuutta pomoineen, Hautakumpu, tallennus ja lataus, 8 grafiikkatasoa), myös DEV pois päältä: 0 virhettä.
 
 ## Pysyvät päätökset
 
