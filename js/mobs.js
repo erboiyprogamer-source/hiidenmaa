@@ -185,6 +185,13 @@ const MOBDEF={
 // v0.92 (kohta 9): kaksijalkaiset hirviöt harppovat – askel ~40 % pidempi ja tahti hitaampi, 10 % nopeampi (moveMob), keinuva vartalo
 // (animMob), lyöntiulottuma +10 %. Koskee myös ulottuvuusversioita; pomot ja eläimet ennallaan.
 for(const k of ['hiisi','kalmo','ylimys','kivivartija','suonakki']){MOBDEF[k].stride=1;MOBDEF[k].range=+(MOBDEF[k].range*1.1).toFixed(2);}
+// v1.33 (lista 3, kohdat 5, 6, 11, 14): vaikeampi taistelu.
+//  - Kaikki eläimet ja hirviöt: terveys ja vahinko +25 %.
+//  - Pomot pelin vaiheen mukaan: Jäätär ×1,5 (840), Kalmaherra ×2 (1280), Aarnihirviö ×2,6 (1872), Kalmanvartija ×2,5 (2250, viimeinen).
+//  - Tavallisten vihollisten lyöntiulottuma noin 20 % pelaajan omaa lyhyempi (enint. 1,9 m). Karhu, kivivartija, pelottavat ja pomot ennallaan.
+const MOB_HARD=1.25,BOSS_HP_K={jaajattari:1.5,kalmaherra:2,aarnihirvio:2.6,vartija:2.5},MOB_RANGE_MAX=1.9,MOB_RANGE_KEEP=['karhu','kivivartija','hiidenkarhu','hiidenhirvi','kalmasusi','suonakki'];
+for(const [k,d] of Object.entries(MOBDEF)){const bk=BOSS_HP_K[k];d.hp=Math.round(d.hp*(bk||MOB_HARD));if(d.dmg)d.dmg=Math.round(d.dmg*(bk?1.15:MOB_HARD));
+  if(!bk&&d.range&&!MOB_RANGE_KEEP.includes(k)&&d.ai!=='flee')d.range=Math.min(d.range,MOB_RANGE_MAX);}
 // Vaikeustaso pääkalloina terveyspalkin alla (≥3 = vaikea: palkki näkyy jo kaukaa katsottaessa, parantuu 30 s iskuttomuuden jälkeen).
 const MOB_SKULL={hiidenkarhu:4,hiidenhirvi:4,kalmasusi:3,suonakki:3,karhu:3,hirvi:2,ilves:1,ahma:1,emakko:1,porsas:0,janis:0,kettu:0,metso:0,poro:0,peura:0,karju:1,hiisi:1,susi:2,kalmo:2,ylimys:3,vartija:5,kivivartija:3,routasusi:2,jaajattari:5,kalmaherra:5,aarnihirvio:5};
 let mobs=[], boss=null;

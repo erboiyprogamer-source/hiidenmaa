@@ -9,7 +9,7 @@ function serialize(){return{v:9,mapId:MAP_ID,bossPending:!!(boss&&!boss.dead&&!f
   moved:nodes.filter(n=>n.x!==n.ox||n.z!==n.oz||n.s!==n.s0).map(n=>[n.id,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
   terra:terraList(),mud:mudList(),
   planted:nodes.filter(n=>n.planted).map(n=>[n.type,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
-  nodes:nodes.filter(n=>!n.alive).map(n=>[n.id,Math.round(n.respawnAt-playTime)]),graves:graves.map(g=>({x:g.x,y:g.y,z:g.z,items:g.items})),dk:dunKilled,
+  nodes:nodes.filter(n=>!n.alive).map(n=>[n.id,Math.round(n.respawnAt-playTime)]),graves:graves.map(g=>({x:g.x,y:g.y,z:g.z,items:g.items,dim:g.dim})),dk:dunKilled,
   explored:btoa(String.fromCharCode.apply(null,packBits(explored)))};}
 function packBits(a){const o=new Uint8Array(Math.ceil(a.length/8));for(let i=0;i<a.length;i++)if(a[i])o[i>>3]|=1<<(i&7);return Array.from(o);}
 function saveGame(silent){try{localStorage.setItem(SKEY,JSON.stringify(serialize()));if(!silent)msg('Peli tallennettu.','loot');return true;}catch(e){if(!silent)msg('Tallennus selaimeen ei onnistunut. Käytä tallennuskoodia valikossa.','warn');return false;}}

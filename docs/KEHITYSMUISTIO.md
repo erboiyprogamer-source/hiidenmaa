@@ -73,6 +73,21 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.33 (lista 3: kilpien kuluminen, vaikeampi taistelu, pomojen paraneminen, lyönti liikkeestä, yöhirviö, hautamajakka, tulinuoli)
+- **Kilvet (kohta 4):** `SHIELD_HITS` puu 20, kupari 15, rauta 15 torjuttua osumaa; torjunta 60/80/90 % ennallaan. Rikki (`s.shBrk`) → ei
+  torju 60 s (`SHIELD_FIX`), sitten ehjä (`shieldOk`, tarkistus HUD:ssa 1 s välein). Kunto näkyy tiedoissa ja palkkina ruudussa.
+- **Vaikeus (kohdat 5, 6, 11):** `MOB_HARD` 1,25 kaikkien terveyteen ja vahinkoon. Pomot `BOSS_HP_K`: Jäätär ×1,5 = 840, Kalmaherra ×2 = 1280,
+  Aarnihirviö ×2,6 = 1872, Kalmanvartija ×2,5 = 2250 (pomojen vahinko ×1,15). Esim. susi 44 → 55 hp, kivivartija 220 → 275, karhu 120 → 150.
+- **Pomojen paraneminen (kohta 7):** ilman osumaa 60 s → +10 %/s (täyteen ~10 s). Ulottuvuudesta poistuminen nollaa tallennetun hp:n (täysi).
+- **Lyönti liikkeestä (kohta 14):** `MOB_WIND` 0,1 s (ennen 0,4–0,8 s paikallaan), mob jatkaa liikettä lyödessä, jäähy `d.cd` ennallaan.
+  Tavallisten ulottuma enint. 1,9 m (`MOB_RANGE_MAX`); karhu, kivivartija ja pelottavat pitävät omansa.
+- **Pelaaja −10 % (kohta 28):** `PCOMBAT` 0,9: vahinko (myös jousi), tönäisy, lyönnin kesto /0,9.
+- **Yöhirviö (kohta 12):** `nightRoll` kerran yössä satunnaisella hetkellä: vuorilla (mountain/tunturi/rakka) 20 %, muualla 10 %, ja jos
+  edellinen yö jäi nukkumatta (`flags.missN`), varmasti. Syntyy 20–30 m päähän ja jahtaa heti, nopeus `SCARY_SPD` 6,6 m/s. Vanha satunnainen
+  0,8 %:n pelottava poistettu. Yöllä tavallisia enemmän: tahti 2,5 → 1,9 s, raja 14 → 18 (aarnimetsä 18 → 22).
+- **Hautamajakka (kohta 13):** hauta tallentaa tilansa (`g.dim`), näkyy ja loistaa vain omassa tilassaan, myös ulottuvuuksissa ja Hautakummussa.
+- **Tulinuoli (kohta 34):** valo hiipuu lennossa (sateessa 2×), osumasta (maa/kohde) sammuu 2 s:ssa (sateessa 1 s), `arrowFade`.
+
 ### v1.32 (lista 3: reppu kiinteäksi, käyttöönotto napsautuksella, syönti vain numerolla, pudotus eteen, keinunta)
 - **Reppu (kohdat 1–2):** kolme kiinteää saraketta (ruudukko 451 px | tiedot 300 px | valmistus 320 px), koko 1089×690, pienellä näytöllä
   skaalataan (`fitInv`, `--invK`). Ruudukon korkeus varattu 6 riville, joten mikään ei liiku valittaessa tai päivittäessä. Tiedot, päivitys
@@ -1371,10 +1386,10 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 1. TEHTY v1.32. Haamukuva pois kursorilta (näkyy vain raahatessa).
 2. TEHTY v1.32. Reppu ei liiku eikä veny: kiinteä koko. Tietoalue (tiedot, päivitys, ota käyttöön) kiinteässä paikassa, ei vieritystä tietoalueessa.
 3. TEHTY v1.32. Syöminen VAIN pikapaikan numerolla (ruoka käteen = syö kerran). Syö-nappi ja tuplaklikkaussyönti pois.
-4. Kilpi kuluu: Puukilpi 20 osumaa (torjuu vähiten), Kuparikilpi 15, Rautakilpi 15 (torjuu eniten). Rikki → ~60 s jäähy → ehjä. Ei uutta kilpeä.
-5/6/11. Kaikki eläimet ja hirviöt: terveys ja vahinko +25 %. Ulottuvuuksien pomot: Jäätär ×1,5, Kalmaherra ×2, Aarnihirviö ×2,6;
+4. TEHTY v1.33. Kilpi kuluu: Puukilpi 20 osumaa (torjuu vähiten), Kuparikilpi 15, Rautakilpi 15 (torjuu eniten). Rikki → ~60 s jäähy → ehjä. Ei uutta kilpeä.
+5/6/11. TEHTY v1.33. Kaikki eläimet ja hirviöt: terveys ja vahinko +25 %. Ulottuvuuksien pomot: Jäätär ×1,5, Kalmaherra ×2, Aarnihirviö ×2,6;
    Kalmanvartija ×2,5 (2250 hp).
-7. Pomot paranevat täyteen ~10 s:ssa, jos niihin ei osuta 1 min, tai pelaaja poistuu ulottuvuudesta.
+7. TEHTY v1.33. Pomot paranevat täyteen ~10 s:ssa, jos niihin ei osuta 1 min, tai pelaaja poistuu ulottuvuudesta.
 8. Uusi esine **Kalmankruunun sirpale** (vain Aarnihaudasta: Aarnihirviö 1 + 2 satunnaisessa Aarnihaudan arkussa). Kalmankehän alttari vaatii
    3 sirpaletta (ei enää hiidenkiviä). Kalmanvartija = viimeinen pomo Aarnihirviön jälkeen. Tavoitteet ja tehtävät järjestetään uudelleen
    (ulottuvuudet ennen vartijaa). Hiidenkivet jäävät valmistusaineiksi.
@@ -1382,10 +1397,10 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
    pelaajan repussa tai missään arkussa/säilytyksessä 2 min ja pelaaja on yli 10 m päässä, se siirtyy satunnaiseen maailman kohdearkkuun.
    Kartalta pudonnut sama. Myös bugin takia kadonneet uniikit (avaimet, sirpaleet, sydän) palautetaan.
 10. Vastattu: Vartijan sydän = Kalmanvartijan pudotus, tarvitaan Hiidenmiekkaan.
-12. Pelottava yömob kerran yössä: vuorella 20 %, muualla 10 %, syntyy lähelle ja hyökkää. Nukkuessa ei synny. Jos pelaaja ei nuku yöllä,
+12. TEHTY v1.33. Pelottava yömob kerran yössä: vuorella 20 %, muualla 10 %, syntyy lähelle ja hyökkää. Nukkuessa ei synny. Jos pelaaja ei nuku yöllä,
    seuraavana yönä 100 % varmasti yksi. Nopeus (4,6+8)/2 × 1,05 ≈ 6,6 m/s. Tavallisia yömobeja enemmän.
-13. Hautakiven majakka toimii myös ulottuvuuksissa/luolissa.
-14. Mobit lyövät kävellessä (ei pysähdystä, ei latausviivettä; 0,1 s viive), lyöntien välillä jäähy. Tavallisten mobien ulottuma ~20 %
+13. TEHTY v1.33. Hautakiven majakka toimii myös ulottuvuuksissa/luolissa.
+14. TEHTY v1.33. Mobit lyövät kävellessä (ei pysähdystä, ei latausviivettä; 0,1 s viive), lyöntien välillä jäähy. Tavallisten mobien ulottuma ~20 %
    pelaajaa lyhyempi (~1,9 m). Karhu, kivivartija, pelottavat ja pomot pitävät oman ulottumansa.
 15. Jousen veto: oikea käsi vetää enemmän oikealle, kyynärpää taittuu, olkavarsi pysyy oikealla hieman edessä samalla korkeudella.
 16. Varjot = Grafiikka-sivun väliotsikko (ei erillistä sivua).
@@ -1406,13 +1421,13 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 25. Maassa olevat esineet näyttävät ikonilta, jolla on syvyyttä (3D). Medium ja ylöspäin + oma asetus.
 26. TEHTY v1.32. Pelaajan pudotus heittää 2× kauemmas ja aina eteenpäin.
 27. Lumisade kulkee tuulen suuntaan, kulma tuulen nopeuden mukaan.
-28. Pelaajan taistelu −10 % kaikessa (vahinko, ampumanopeus/lyöntinopeus, tönäisy).
+28. TEHTY v1.33. Pelaajan taistelu −10 % kaikessa (vahinko, ampumanopeus/lyöntinopeus, tönäisy).
 29. TEHTY v1.32. Nuolet otetaan käyttöön painamalla niiden pikapaikan numeroa; käytössä pysyy (kuten kilpi).
 30. TEHTY v1.32. Haarniska, vaate, nuolet (ja kilpi): yksi klikkaus repussa ottaa käyttöön (keltainen). Jos seuraava klikkaus on toiseen ruutuun,
    esine siirtyy ja käyttöönotto perutaan.
 32. TEHTY v1.32. Käsien heilunta kävellessä/juostessa −10 %. Sivuttaiskeinunta: kävely puolet, juoksu −10 %.
 33. DEV-valikko: lento. Tuplahyppy aloittaa/lopettaa lennon, välilyönti ylös, Shift alas.
-34. (lisä) Sateessa tulinuolen valo hiipuu 2× nopeammin. Osuessa kohteeseen tai maahan nuolen valo sammuu 2 s:ssa (palavan mobin valo ei).
+34. TEHTY v1.33. Sateessa tulinuolen valo hiipuu 2× nopeammin. Osuessa kohteeseen tai maahan nuolen valo sammuu 2 s:ssa (palavan mobin valo ei).
 35. (lisä) Usva/sumu: oletus kevyemmäksi. Tasot: Ultra (= vanha Korkea), Korkea (= vanha Normaali), Normaali (uusi, kevyempi, oletus),
    Matala, Pois.
 
@@ -1428,6 +1443,8 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 40. (lisä) Riimukivien vihjeet päivitetään nykyiseen etenemiseen (ulottuvuudet → sirpaleet → vartija). Kartalle 2 kylttiä, joiden
    teksti (luetaan läheltä) antaa hyvin kryptisen vihjeen jonkin asian sijainnista (esim. jääavain, kiviröykkiö).
+
+41. (lisä) Ulottuvuusportteja koristellaan enemmän (riimut, soihtukulhot, kivipaasit, hehku).
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (nykytila v1.31):** Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #24 auki (ei vielä yhdistetty; main = v1.07).

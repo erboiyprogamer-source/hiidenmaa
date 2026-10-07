@@ -3,6 +3,8 @@
 'use strict';
 
 /* ---------------- MOB UPDATE ---------------- */
+// v1.33 (lista 3, kohta 14): lyönti lähtee 0,1 s viiveellä (ennen d.wind 0,4–0,8 s paikallaan seisten); lyöntien välissä jäähy d.cd.
+const MOB_WIND=.1;
 const _hitl=[];
 // Tulenarat viholliset: palava nuotio/grilli (7 m), seisova soihtu (5 m) ja pelaajan kädessä oleva soihtu (6 m; ei luolastossa). Lista päivittyy 0,4 s välein.
 let fireSrc=[],fireT=0;
@@ -27,6 +29,8 @@ function updateMobs(dt){
     // v1.31: tönäisty vihollinen on kyvytön lennon ajan (ei kävele eikä lyö; isku keskeytyy)
     if(d.ai!=='boss'&&d.ai!=='rboss'&&Math.hypot(m.vel.x,m.vel.z)>.5){m.wind=0;moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
     let tx=0,tz=0,spd=0;
+    // v1.33 (lista 3, kohta 7): pomo, johon ei ole osuttu minuuttiin, paranee täyteen noin 10 sekunnissa.
+    if((d.ai==='boss'||d.ai==='rboss')&&playTime-m.lastHit>60&&m.hp<m.maxHp)m.hp=Math.min(m.maxHp,m.hp+m.maxHp*.1*dt);
     if(d.ai==='boss'){bossAI(m,dt,dx,dz,dist);continue;}
     if(d.ai==='rboss'){realmBossAI(m,dt,dx,dz,dist);continue;}
     const night=isNight()&&!P.inDun;
@@ -83,7 +87,7 @@ function updateMobs(dt){
       tx=Math.sin(m.fleeA);tz=Math.cos(m.fleeA);spd=d.run;}
     else if(m.state==='chase'){
       if(m.wind>0){m.wind-=dt;if(m.wind<=0){if(mobReach(m,dist)<d.range+.25&&!P.dead&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){const f=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(f>.5){hurtPlayer(d.dmg,m.pos.x,m.pos.z);if(d.kb&&!P.dead){P.kbx=dx/(dist||1)*d.kb;P.kbz=dz/(dist||1)*d.kb;P.vy=Math.max(P.vy,d.kb*.25);}}}m.atkCd=d.cd;}}
-      else if(mobReach(m,dist)<d.range+.2&&m.atkCd<=0&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){m.wind=d.wind;}
+      else if(mobReach(m,dist)<d.range+.2&&m.atkCd<=0&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){m.wind=MOB_WIND;}
       else if(!m.siege&&m.atkCd<=0&&mobReach(m,dist)<d.range+1&&!losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true))m.siege=nearestOpening(m);
       else if(dist>d.range*.8){tx=dx;tz=dz;spd=d.run;}
       // Piiritys: jos seinät estävät tien, mobi menee lähimmälle ovelle tai ikkunalle ja hajottaa sen (2× vahinko).
@@ -91,7 +95,7 @@ function updateMobs(dt){
       if(!m.siege&&m.stuck>.5&&m.wind<=0)m.siege=nearestOpening(m);
       if(m.siege&&m.wind<=0){const sx=m.siege.x-m.pos.x,sz=m.siege.z-m.pos.z,sd=Math.hypot(sx,sz);
         if(sd<1.9){tx=sx;tz=sz;spd=0;if(m.atkCd<=0){damagePiece(m.siege,d.dmg*2,'mob');m.atkCd=d.cd;m.anim=.4;m.wind=0;}}else{tx=sx;tz=sz;spd=d.run;}}
-      if(m.wind>0){spd=d.mobile?d.run*.75:0;tx=dx;tz=dz;}   // karhu lyö liikkeestä
+      if(m.wind>0){spd=dist>d.range*.8?d.run:0;tx=dx;tz=dz;}   // v1.33 (kohta 14): kaikki lyövät liikkeestä, ei pysähtymistä
       if(d.fells&&spd>0)fellAhead(m,dt);
     }else{
       m.siege=null;m.t-=dt;if(m.t<=0||!m.wander){m.t=3+Math.random()*5;if(Math.random()<.45){const a=Math.random()*TAU;m.wander={x:m.pos.x+Math.cos(a)*10,z:m.pos.z+Math.sin(a)*10};}else m.wander=null;}
@@ -133,11 +137,22 @@ function stalkAI(m,dt,dx,dz,dist,hurt){const d=m.def;
   return false;}
 const SCARY={aarni:['hiidenkarhu','hiidenhirvi'],forest:['hiidenkarhu','kalmasusi'],moor:['hiidenhirvi','kalmasusi'],tunturi:['kalmasusi'],rakka:['kalmasusi'],suo:['suonakki']};
 // Yöllä pieni todennäköisyys (0,8 % / 2,5 s yritys ≈ kerran 5 minuutissa) spawnata pelottava 40–60 m päähän, enintään yksi kerrallaan.
-function spawnScary(){if(mobs.some(o=>o.def.stalk&&!o.dead))return false;
-  for(let t=0;t<8;t++){const a=Math.random()*TAU,dd=40+Math.random()*20;let x=P.pos.x+Math.sin(a)*dd,z=P.pos.z+Math.cos(a)*dd;const h=terrainH(x,z);if(h<.5)continue;
-    const L=SCARY[biomeAt(x,z,h)];if(!L||nearBase(x,z)||nearSite(x,z,40))continue;const type=L[Math.random()*L.length|0];
+// v1.33 (lista 3, kohta 12): yön pelottava. Kerran yössä (satunnaisena hetkenä) arvotaan: vuorilla 20 %, muualla 10 %. Jos pelaaja ei
+// nukkunut edellistä yötä, tulee varmasti. Syntyy 20–30 m päähän ja hyökkää heti, nopeus (4,6 + 8) / 2 × 1,05 ≈ 6,6 m/s.
+// Nukkuessa yö ohitetaan, joten silloin ei synny. Yön tunniste nightId(): ilta kuuluu päivään dayN, aamuyö edelliseen.
+const SCARY_SPD=6.6,MOUNT_ZONES={mountain:1,tunturi:1,rakka:1};
+function nightId(){return dayT>.5?dayN:dayN-1;}
+function nightRoll(){if(!isNight()){if(flags.nCur!=null){flags.missN=flags.sleptN===flags.nCur?0:1;flags.nCur=null;}return;}
+  const n=nightId();if(flags.nCur!==n){flags.nCur=n;flags.nRollAt=.15+Math.random()*.6;flags.nRolled=0;}
+  if(flags.nRolled||P.dead||P.inDun)return;const into=dayT>.5?(dayT-.79)/.42:(dayT+.21)/.42;if(into<flags.nRollAt)return;
+  flags.nRolled=1;const ch=flags.missN?1:MOUNT_ZONES[P.zone]?.2:.1;if(Math.random()>=ch)return;
+  if(spawnScary(true))flags.missN=0;}
+function spawnScary(hunt){if(mobs.some(o=>o.def.stalk&&!o.dead))return false;
+  for(let t=0;t<8;t++){const a=Math.random()*TAU,dd=hunt?20+Math.random()*10:40+Math.random()*20;let x=P.pos.x+Math.sin(a)*dd,z=P.pos.z+Math.cos(a)*dd;const h=terrainH(x,z);if(h<.5)continue;
+    const L=SCARY[biomeAt(x,z,h)]||(hunt?['kalmasusi','hiidenhirvi']:null);if(!L||(!hunt||t<4)&&(nearBase(x,z)||nearSite(x,z,40)))continue;const type=L[Math.random()*L.length|0];
     if(type==='suonakki'){nodesNear(x,z,12,_fellN);const pd=_fellN.find(n=>n.type==='lampare');if(pd){x=pd.x;z=pd.z;}}
-    const m=spawnMob(type,x,z);if(MOBDEF[type].rise)m.riseT=0;if(MOBDEF[type].howl){sfx('howl',1,.9);msg('Kaukaa kuuluu kalmea ulvonta…','warn');}return m;}
+    const m=spawnMob(type,x,z);if(MOBDEF[type].rise)m.riseT=0;if(MOBDEF[type].howl){sfx('howl',1,.9);msg('Kaukaa kuuluu kalmea ulvonta…','warn');}
+    if(hunt){m.def=Object.assign({},m.def,{run:SCARY_SPD});m.state='chase';m.angry=true;m.lastHit=playTime-5;msg('Jokin lähestyy pimeässä…','warn');}return m;}
   return false;}
 // v0.87 karhu kaataa jahdatessaan edessään (1,6 m) olevat puut (ei aarnipuita) sivulle tukeiksi, 0,25 s välein.
 const _fellN=[];
@@ -191,7 +206,7 @@ function animMob(m,dt){
     const fa=fl?Math.sin(playTime*28)*1.1:0;f.wings[0].rotation.z=-fa-(fl?.3:0);f.wings[1].rotation.z=fa+(fl?.3:0);f.tail.rotation.x=m.state==='flee'||m.state==='freeze'?-.2:.35;
     f.body.rotation.x=fl?-.25:0;}
   else{f.legs[0].rotation.x=sw;f.legs[3].rotation.x=sw;f.legs[1].rotation.x=-sw;f.legs[2].rotation.x=-sw;
-    if(m.def.mobile&&m.wind>0){const k=1-m.wind/m.def.wind;f.legs[1].rotation.x=-1.5*Math.sin(Math.min(1,k)*Math.PI);f.legs[1].userData.knee.rotation.x=.9;}   // karhun käpälänisku
+    if(m.def.mobile&&m.wind>0){const k=1-m.wind/MOB_WIND;f.legs[1].rotation.x=-1.5*Math.sin(Math.min(1,k)*Math.PI);f.legs[1].userData.knee.rotation.x=.9;}   // karhun käpälänisku
     if(f.hop){// v0.85 jänis loikkii: etu- ja takajalat pareittain, runko pomppaa
       const hs=Math.sin(m.walkPh*.8),mvk=Math.min(1,(m.speedNow||0)/2.5);f.legs[0].rotation.x=f.legs[1].rotation.x=hs*.9*mvk;f.legs[2].rotation.x=f.legs[3].rotation.x=-hs*1.1*mvk;f.g.position.y+=Math.abs(Math.sin(m.walkPh*.8))*.22*mvk;}
     // nivelletyt jalat (makeAnimal): polvi koukistuu jalan noustessa (etujalat taaksepäin, takajalat eteenpäin), häntä heiluu
@@ -275,10 +290,9 @@ function spawnSpot(night){
     const a=Math.random()*TAU,d=20+Math.random()*10;return {x:P.pos.x+Math.cos(a)*d,z:P.pos.z+Math.sin(a)*d,near:1};}
   const a=Math.random()*TAU,d=night?55+Math.random()*30:38+Math.random()*30;return {x:P.pos.x+Math.cos(a)*d,z:P.pos.z+Math.sin(a)*d};}
 function spawner(dt){
-  spawnT-=dt;if(spawnT>0||P.inDun||P.dead)return;
-  const night=isNight(),inA=P.zone==='aarni';spawnT=night&&inA?1.5:2.5;
-  if(night&&Math.random()<.008&&spawnScary())return;
-  const alive=mobs.filter(m=>!m.dun&&!m.dead&&m!==boss&&!m.guard);const cap=night?(inA?18:14):10;
+  nightRoll();spawnT-=dt;if(spawnT>0||P.inDun||P.dead)return;
+  const night=isNight(),inA=P.zone==='aarni';spawnT=night?(inA?1.2:1.9):2.5;   // v1.33: yöllä enemmän (tahti 2,5 → 1,9 s, raja 14 → 18)
+  const alive=mobs.filter(m=>!m.dun&&!m.dead&&m!==boss&&!m.guard);const cap=night?(inA?22:18):10;
   if(alive.length>=cap)return;
   const dayFoes=alive.filter(m=>m.def.ai==='hostile').length;
   for(let tries=0;tries<6;tries++){const sp=spawnSpot(night),x=sp.x,z=sp.z;const h=terrainH(x,z);if(h<.5)continue;
@@ -309,9 +323,10 @@ function updateStations(dt){
         if(dist2(p.x,p.z,P.pos.x,P.pos.z)<30*30){if(Math.random()<dt*1.8)emitEmber(p.x+(Math.random()-.5)*.15,p.y+1.9,p.z+(Math.random()-.5)*.15,'spark');if(Math.random()<dt*.4)emitEmber(p.x,p.y+2,p.z,'smoke');}}}
     if(p.t==='sulatin'){const run=(p.data.ore>0||p.data.iore>0)&&p.data.wood>0;p.mesh.userData.glow.visible=run;if(run){p.data.t+=dt;const iron=p.data.ore<=0;if(p.data.t>=(iron?10:7)){p.data.t=0;p.data.wood--;if(iron){p.data.iore--;p.data.idone++;}else{p.data.ore--;p.data.done++;}}}}
   }
-  for(const g of graves){const near=dist2(g.x,g.z,P.pos.x,P.pos.z)<50*50&&!P.inDun;g.beam.visible=near;if(near)g.beam.material.opacity=.28+Math.sin(playTime*3)*.1;}
+  for(const g of graves){const same=(g.dim||'world')===curDim(),near=same&&dist2(g.x,g.z,P.pos.x,P.pos.z)<50*50;g.mesh.visible=same;g.beam.visible=near;   // v1.33 (kohta 13): majakka myös ulottuvuuksissa, hauta näkyy vain omassa tilassaan
+    if(near)g.beam.material.opacity=.28+Math.sin(playTime*3)*.1;}
   for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i];{const s=l.userData.src;if(s&&s.move)l.position.set(s.x,s.y,s.z);}   /* v1.23 liikkuvat valot (tulinuoli, palava mob) */
-    const u=l.userData.fl||(l.userData.fl={cur:1,target:1,t:Math.random()*.2});l.intensity=!l.userData.base?0:l.userData.base*flick(u,dt)*(.95+Math.sin(playTime*(7+i*1.7)+i*3)*.05);}
+    const u=l.userData.fl||(l.userData.fl={cur:1,target:1,t:Math.random()*.2});{const s=l.userData.src;if(s&&s.fade!==false&&l.userData.base)l.userData.base=s.i*1.15;}l.intensity=!l.userData.base?0:l.userData.base*flick(u,dt)*(.95+Math.sin(playTime*(7+i*1.7)+i*3)*.05);}
   // Pistevalojen varjokartat päivitetään harvemmin (autoUpdate pois, needsUpdate nostetaan itse): pimeällä joka 2. (soihtu) / 3. (tuli) kehys,
   // päivällä harvemmin; vain jos valo palaa. Kun lähin tuli vaihtuu (updateLights), kartta päivitetään heti. Laatutaso (`QUAL`) voi harventaa lisää.
   {shFrame++;const dark=P.inDun||isNight()||indoorK>.5||wDark>.55,q=QUAL.lvl,rate=SET.shRate==='fast'?.5:SET.shRate==='slow'?2.5:1,fT=SET.shRate==='slow'?2:1;

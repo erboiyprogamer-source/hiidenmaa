@@ -239,7 +239,7 @@ function enterRealm(id){fadeTo(()=>{
   spawnRealmMobs(id);msg(`${REALMS[id].n}. Portin suoja: et ole haavoittuva 3 sekuntiin.`);});}
 function exitRealm(){fadeTo(()=>{
   const id=P.realm,F=portalFront(id);P.inDun=false;P.realm=null;P.pos.set(F.x,terrainH(F.x,F.z),F.z);P.vy=0;P.vel.set(0,0,0);camYaw=Math.atan2(-F.fx,-F.fz);P.spawnProt=3.2;
-  for(const m of [...mobs])if(m.dun){if(m.def.ai==='rboss'&&!m.dead)fo('rbHp')[m.realm]=m.hp;mobRemove(m);}});}// v0.75: pomon hp säilyy
+  for(const m of [...mobs])if(m.dun){if(m.def.ai==='rboss'&&!m.dead)delete fo('rbHp')[m.realm];mobRemove(m);}});}// v1.33 (kohta 7): poistuminen parantaa pomon täyteen
 function spawnRealmMobs(id){const R=BUILT[id],dk=fo('rm')[id]||(fo('rm')[id]={});
   R.mobs.forEach((s,i)=>{if(dk[i])return;const m=realmize(spawnMob(s.type,s.x,s.z,{y:DUN.y,dun:true}),id);m.rmIdx=i;});
   if(!fo('rb')[id]){const b=spawnMob(REALMS[id].boss,R.boss.x,R.boss.z,{y:DUN.y,dun:true});b.realm=id;b.rmIdx='B';b.state='sleep';const hp=fo('rbHp')[id];if(hp)b.hp=Math.min(b.maxHp,hp);}}

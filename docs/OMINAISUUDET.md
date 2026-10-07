@@ -301,3 +301,13 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - `localStorage` (`hiidenmaa_save_v1`, automaattisesti 90 s välein), pakattu tallennuskoodi (`HM2:`) ja .txt-tiedosto.
 - Tallentuu: pelaaja, reppu, rakennukset, maanmuokkaukset, kaadetut ja siirtyneet puut, haudat, liput (`flags`: tarina, löydöt, avaimet,
   ulottuvuuksien siemenet, kaatuneet pomot, avatut arkut). Ei tallennu: maassa olevat esineet, kaukaiset viholliset.
+
+## Taistelu v1.33 (lista 3)
+- Kilpi kuluu: puu 20, kupari 15, rauta 15 torjuntaa; rikki 60 s, sitten ehjä. Torjunta puu 60 %, kupari 80 %, rauta 90 %.
+- Kaikki eläimet ja hirviöt +25 % terveys ja vahinko. Pomot: Jäätär 840, Kalmaherra 1280, Aarnihirviö 1872, Kalmanvartija 2250.
+- Pomo paranee täyteen ~10 s:ssa, jos siihen ei osuta minuuttiin; ulottuvuudesta poistuminen palauttaa pomon täyteen.
+- Mobit lyövät liikkeestä 0,1 s viiveellä, jäähy lyöntien välillä. Tavallisten ulottuma enintään 1,9 m.
+- Pelaajan taistelu −10 % (vahinko, tönäisy, lyöntinopeus).
+- Yöhirviö: kerran yössä 20 % vuorilla / 10 % muualla, varmasti jos edellinen yö jäi nukkumatta; 6,6 m/s, hyökkää heti.
+- Haudan majakka näkyy myös ulottuvuuksissa ja Hautakummussa (vain siinä tilassa, jossa kuoli).
+- Tulinuolen valo hiipuu lennossa, sateessa kaksi kertaa nopeammin; osumasta sammuu 2 s:ssa.

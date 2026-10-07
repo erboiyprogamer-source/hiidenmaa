@@ -36,7 +36,7 @@ function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
       r.children[0].style.width=clamp((hp-j*HP_ROW)/c*100,0,100)+'%';r.children[1].style.width=c2>0?clamp((hp-cap-j*HP_ROW)/HP_ROW*100,0,100)+'%':'0%';}
     b.children[1].textContent=`${m.def.n} ${Math.ceil(m.hp)}/${m.maxHp}`;b.children[2].textContent='☠'.repeat(sk);}
   for(;k<mobBars.length;k++)mobBars[k].hidden=true;}
-function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq||(AMMO.includes(s.id)&&ammoId()===s.id)?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}" data-it="${s.id}" data-q="${s.q||1}" data-n="${s.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${s.id==='soihtu'?`<span class="fu${s.lit===false?' off':''}"><i style="width:${Math.max(0,(s.fuel??torchMax(s))/torchMax(s)*100)}%"></i></span>`:''}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
+function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq||(AMMO.includes(s.id)&&ammoId()===s.id)?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}" data-it="${s.id}" data-q="${s.q||1}" data-n="${s.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${d.cat==='shield'&&(s.shHit||s.shBrk!=null)?`<span class="fu${s.shBrk!=null?' off':''}"><i style="width:${s.shBrk!=null?Math.min(100,(playTime-s.shBrk)/SHIELD_FIX*100):100-(s.shHit||0)/(SHIELD_HITS[s.id]||15)*100}%"></i></span>`:''}${s.id==='soihtu'?`<span class="fu${s.lit===false?' off':''}"><i style="width:${Math.max(0,(s.fuel??torchMax(s))/torchMax(s)*100)}%"></i></span>`:''}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
 let hudT=0,msgHidden=false;
 function updateHUD(dt){
   hudT-=dt;updateMsgs(dt);updateFloaters(dt);updateMobBars();
@@ -50,6 +50,7 @@ function updateHUD(dt){
   // Ruudun ilmoitukset piilotetaan kun jokin valikko/paneeli on auki (tai peli tauolla); ne säilyvät T-lokissa ja palaavat valikon sulkeuduttua.
   {const hide=!!openPanel||state!=='play';if(hide!==msgHidden){msgHidden=hide;$('#msgs').style.visibility=hide?'hidden':'';}}
   if(hudT>0)return;hudT=.1;
+  if(((playTime*10)|0)%10===0)for(const x of inv)if(x&&x.shBrk!=null){shieldOk(x);invDirty=true;}   // v1.33: rikkinäisen kilven korjautuminen ja palkki
   const w=curWeapon();
   if(w.cat==='hammer'){const bh=$('#buildhint');bh.hidden=false;const h=buildSel?`<b>${PIECES[buildSel].n}</b> · ${reqText(PIECES[buildSel].req)} · <span class="kb">Hiiri V</span>rakenna <span class="kb">R</span>käännä 45° <span class="kb">Shift+R</span>asento <span class="kb">G</span>kohdistus: ${SNAP_NAMES[snapMode]} <span class="kb">X</span>pura <span class="kb">F</span>korjaa <span class="kb">B</span>valikko`+(ghost&&ghost.visible&&!ghostOk&&lastInvalid?` · <span style="color:var(--bad)">${lastInvalid}</span>`:''):`<span class="kb">B</span> tai hiiren oikea: valitse rakennus`;if(bh._h!==h){bh._h=h;bh.innerHTML=h;}}else $('#buildhint').hidden=true;
   $('#lockhint').hidden=!(state==='play'&&!locked&&!lockFailed&&!P.dead);
@@ -294,7 +295,7 @@ function itemProps(s,q){const d=ITEMS[s.id],o=[],f1=v=>v.toFixed(1).replace('.',
     if(d.chop)o.push(['Hakkuuteho',((5+d.chop*4)*(1+.25*(q-1))).toFixed(0)]);if(d.pick)o.push(['Louhintateho',((9+d.pick*3)*(1+.25*(q-1))).toFixed(0)]);if(d.range)o.push(['Ulottuvuus',f1(d.range)+' m']);if(d.kb)o.push(['Tönäisy',String(d.kb).replace('.',',')+(d.kb>=5?' (vahva)':'')]);   /* v1.31: arvo ilman yksikköä, 10 = 5 m */}
   if(d.cat==='bow'){const b=bowStats(s);o.push(['Vahinko enintään',weaponDmg({...d,q}).toFixed(0)],['Jännitysaika',f1(b.draw/(1+.25*(q-1)))+' s'],['Nuolen nopeus',((14+36)*(1+.1*(q-1))*b.spd).toFixed(0)+' m/s'],
     ['Hajonta vajaalla vedolla','enint. '+f1(10*b.acc/(1+.3*(q-1)))+'°']);}
-  if(d.cat==='shield')o.push(['Torjuu',pc(Math.min(.95,d.block*(1+.1*(q-1))))],['Torjunnan kestävyys',pc(SHIELD_COST[s.id]||.9)+' iskusta']);
+  if(d.cat==='shield')o.push(['Torjuu',pc(Math.min(.95,d.block*(1+.1*(q-1))))],['Kunto',s.shBrk!=null?`rikki – ehjä ${mss(Math.max(0,SHIELD_FIX-(playTime-s.shBrk)))} päästä`:`${(SHIELD_HITS[s.id]||15)-(s.shHit||0)} / ${SHIELD_HITS[s.id]||15} osumaa`],['Torjunnan kestävyys',pc(SHIELD_COST[s.id]||.9)+' iskusta']);
   // v1.23 (kohta 15): nuolten tiedot
   if(AMMO_STATS[s.id]){const a=AMMO_STATS[s.id],r=v=>v===1?'normaali':(v>1?'+':'−')+Math.round(Math.abs(v-1)*100)+' %';
     o.push(['Lentonopeus',r(a.spd)],['Kaaren pudotus',r(a.grav)],['Vahinko',r(a.dmg)],['Tuulen vaikutus',a.wind<1?'puolet':'normaali']);if(a.fire)o.push(['Sytyttää','5–10 s, 5 terveyttä/s (sade sammuttaa)']);}
@@ -454,7 +455,7 @@ function mapMarkers(g,sx,ox,oz){
     g.fillStyle='#eee5d3';g.font='600 12px Alegreya Sans, sans-serif';g.fillText(L.name,x+8,y+4);g.restore();}}
   for(const p of pieces)if(p.t==='tyopenkki'||p.t==='sanky'){const [x,y]=pt(p.x,p.z);g.fillStyle='#e8893b';g.fillRect(x-3,y-3,6,6);}
   // Pääkallo näkyy kunnes hautakasan tavarat on kerätty.
-  for(const gr of graves){const [x,y]=pt(gr.x,gr.z),r=sx>1?8:6;g.save();g.translate(x,y);g.fillStyle='#f2ecdc';g.strokeStyle='#7a1a12';g.lineWidth=1.6;g.beginPath();g.arc(0,-r*.15,r*.8,0,TAU);g.fill();g.stroke();g.fillRect(-r*.45,r*.4,r*.9,r*.6);g.strokeRect(-r*.45,r*.4,r*.9,r*.6);g.fillStyle='#1a1410';g.beginPath();g.arc(-r*.33,-r*.2,r*.22,0,TAU);g.arc(r*.33,-r*.2,r*.22,0,TAU);g.fill();g.restore();}
+  for(const gr of graves){if((gr.dim||'world')!=='world')continue;const [x,y]=pt(gr.x,gr.z),r=sx>1?8:6;g.save();g.translate(x,y);g.fillStyle='#f2ecdc';g.strokeStyle='#7a1a12';g.lineWidth=1.6;g.beginPath();g.arc(0,-r*.15,r*.8,0,TAU);g.fill();g.stroke();g.fillRect(-r*.45,r*.4,r*.9,r*.6);g.strokeRect(-r*.45,r*.4,r*.9,r*.6);g.fillStyle='#1a1410';g.beginPath();g.arc(-r*.33,-r*.2,r*.22,0,TAU);g.arc(r*.33,-r*.2,r*.22,0,TAU);g.fill();g.restore();}
 }
 // v0.84: tuulikompassi isolla kartalla (nuoli = puhallussuunta, kartan ylös = pohjoinen) + teksti "Tuuli: lounaasta 6 m/s".
 const mapCO={x:0,y:0,t:0};
