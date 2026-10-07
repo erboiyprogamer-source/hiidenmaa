@@ -11,10 +11,28 @@ function menuCamOld(dt){menuA+=dt*.03;const cx=Math.cos(menuA)*60,cz=Math.sin(me
 const MENU_SHOT_T=20;let menuShot=null,menuSpots=null,menuDeco=[],menuMob=null,menuLight=null,menuFading=false;
 
 /* ---------------- MENU ---------------- */
-function hasSave(){try{return!!localStorage.getItem(SKEY);}catch(e){return false;}}
-function refreshMenu(){const s=hasSave();const inGame=started;$('#bContinue').hidden=!s||inGame;$('#bResume').hidden=!inGame;$('#bSave').hidden=!inGame;$('#bNew').querySelector('small').textContent=inGame?'Aloittaa alusta uudella arvotulla kartalla – nykyinen eteneminen katoaa, ellei sitä ole tallennettu':'Aloita rannalta ilman mitään – kartta arvotaan';
-  $('#mapName').textContent=`Kartta: ${MAP.name}`;
-  if(s&&!inGame){try{const d=JSON.parse(localStorage.getItem(SKEY));$('#saveInfo').textContent=`${(MAPS[d.mapId||0]||MAPS[0]).name} · päivä ${d.dayN} · ${Math.round(d.playTime/60)} min pelattu`;}catch(e){}}}
+function hasSave(){return slotMeta().some(Boolean);}
+// v1.36 (lista 3, kohta 20): päävalikon maailmalista (enint. 5): nimi, viimeksi pelattu, päivä, taso ja kartta; Pelaa, Nimeä, Poista (vahvistus)
+// ja Uusi maailma omalla nimellä. Pelin aikana toiseen maailmaan siirtyminen tallentaa nykyisen ensin.
+function refreshMenu(){const inGame=started;$('#bResume').hidden=!inGame;$('#bSave').hidden=!inGame;
+  const m=slotMeta();$('#mapName').textContent=inGame?`Kartta: ${MAP.name}`:'';$('#curWorld').textContent=inGame&&curSlot>=0&&m[curSlot]?`Maailma: ${m[curSlot].name}`:'';renderWorlds();}
+const fmtAt=t=>{try{return new Date(t).toLocaleString('fi-FI',{dateStyle:'short',timeStyle:'short'});}catch(e){return '';}};
+function renderWorlds(){const el=$('#worlds');if(!el)return;const m=slotMeta(),used=m.filter(Boolean).length,free=m.findIndex(x=>!x);
+  el.innerHTML=`<h3>Maailmat <span class="note">${used} / ${SLOTS}</span></h3>`+m.map((w,i)=>!w?'':`<div class="world${started&&i===curSlot?' cur':''}" data-i="${i}">
+    <div class="wInfo"><b class="wName">${esc(w.name)}</b><span>${fmtAt(w.at)} · päivä ${w.day||1} · taso ${w.lvl||1} · ${(MAPS[w.mapId||0]||MAPS[0]).name}${w.min?` · ${w.min} min`:''}</span></div>
+    <div class="wBtns"><button class="btn pri" data-play="${i}">${started&&i===curSlot?'Pelissä':'Pelaa'}</button><button class="btn" data-ren="${i}">Nimeä</button><button class="btn" data-del="${i}">Poista</button></div></div>`).join('')+
+    (free>=0?`<div class="wNew"><input id="newName" class="search" maxlength="28" placeholder="Maailma ${free+1}"><button class="mbtn" id="bNewWorld">Uusi maailma<small>Aloita rannalta ilman mitään – kartta arvotaan</small></button></div>`
+      :`<div class="note">Kaikki ${SLOTS} paikkaa ovat käytössä. Poista maailma tehdäksesi uuden.</div>`);
+  el.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>{const i=+b.dataset.play;if(started&&i===curSlot){$('#bResume').click();return;}
+    const go=()=>{const d=slotData(i);if(!d){$('#saveMsg').textContent='Tallennus puuttuu tai on rikki.';return;}setCurSlot(i);playSave(d,`Tervetuloa takaisin: ${m[i].name}.`);};
+    if(started)keyDialog(`Siirrytäänkö maailmaan «${m[i].name}»? Nykyinen maailma tallennetaan ensin.`,[['Vahvista',()=>{saveGame(true);go();}],['Peruuta',null]]);else go();});
+  el.querySelectorAll('[data-ren]').forEach(b=>b.onclick=()=>{const i=+b.dataset.ren,row=el.querySelector(`.world[data-i="${i}"] .wName`);const inp=document.createElement('input');inp.className='search';inp.maxLength=28;inp.value=m[i].name;row.replaceWith(inp);inp.focus();inp.select();
+    const done=ok=>{if(inp.dataset.done)return;inp.dataset.done=1;if(ok&&inp.value.trim()){const mm=slotMeta();mm[i].name=inp.value.trim();setSlotMeta(mm);}refreshMenu();};
+    inp.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')done(true);else if(e.key==='Escape')done(false);};inp.onblur=()=>done(true);});
+  el.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const i=+b.dataset.del;keyDialog(`Poistetaanko maailma «${m[i].name}» pysyvästi?`,[['Vahvista',()=>{deleteSlot(i);refreshMenu();}],['Peruuta',null]],'Poistoa ei voi perua.');});
+  const nb=$('#bNewWorld');if(nb){const ni=$('#newName');ni.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')nb.click();};
+    nb.onclick=()=>{const name=ni.value.trim()||`Maailma ${free+1}`;const go=()=>{const mm=slotMeta();mm[free]={name,at:Date.now(),day:1,lvl:1,mapId:MAP_ID,min:0};setSlotMeta(mm);setCurSlot(free);startNewGame();};
+      if(started)keyDialog(`Aloitetaanko uusi maailma «${name}»? Nykyinen maailma tallennetaan ensin.`,[['Vahvista',()=>{saveGame(true);go();}],['Peruuta',null]]);else go();};}}
 // Valikon vierityksen vihjeet: ohuet, raaputetun näköiset tikkunuolet ylä- ja alareunassa, jotka sykkivät rauhallisesti,
 // kun sivua on piilossa ylhäällä tai alhaalla. Vierityspalkki on piilotettu CSS:llä.
 function scrollHints(el){
@@ -39,13 +57,11 @@ addEventListener('beforeunload',e=>{if(started&&!flags.won&&!reloading){e.preven
 let reloading=false;
 function switchMap(id,pending,data){try{localStorage.setItem('hiidenmaa_map',String(id));sessionStorage.setItem('hiidenmaa_pending',pending);if(data)sessionStorage.setItem('hiidenmaa_data',data);}catch(e){return false;}
   reloading=true;$('#fade').style.opacity=1;location.reload();return true;}
-function startNewGame(){const id=Math.floor(Math.random()*MAPS.length);if(id!==MAP_ID&&switchMap(id,'new'))return;newGame();startPlay();msg(`Kartta: ${MAP.name}`);}
-function playSave(s,welcome){const mid=s.mapId||0;if(mid!==MAP_ID&&switchMap(mid,'load',JSON.stringify(s)))return;loadData(s);startPlay();msg(welcome,'loot');}
-$('#bNew').onclick=()=>{if(started&&!confirmNew){confirmNew=true;$('#bNew').firstChild.textContent='Vahvista: uusi peli';setTimeout(()=>{confirmNew=false;$('#bNew').firstChild.textContent='Uusi peli';},4000);return;}confirmNew=false;$('#bNew').firstChild.textContent='Uusi peli';startNewGame();};
-$('#bContinue').onclick=()=>{try{playSave(JSON.parse(localStorage.getItem(SKEY)),'Tervetuloa takaisin.');}catch(e){$('#ioMsg').textContent='Tallennuksen lataus epäonnistui.';}};
+function startNewGame(){const id=Math.floor(Math.random()*MAPS.length);if(id!==MAP_ID&&switchMap(id,'new'))return;newGame();startPlay();saveGame(true);msg(`Kartta: ${MAP.name}`);}
+function playSave(s,welcome){if(curSlot<0){const f=freeSlot();setCurSlot(f<0?0:f);}const mid=s.mapId||0;if(mid!==MAP_ID&&switchMap(mid,'load',JSON.stringify(s)))return;loadData(s);startPlay();msg(welcome,'loot');}
 $('#bResume').onclick=()=>{state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();};
 // Tallenna: ei avaa asetuksia; ilmoitus näkyy painikkeessa ja valikon tilariviltä
-$('#bSave').onclick=()=>{const ok=saveGame(true);const lbl=$('#bSave').firstChild,prevT=lbl.textContent;
+$('#bSave').onclick=()=>{const ok=saveGame(true);refreshMenu();const lbl=$('#bSave').firstChild,prevT=lbl.textContent;
   $('#saveMsg').textContent=ok?'Tallennettu selaimeen.':'Selaimen tallennus ei ole käytössä – avaa Asetukset › Tallennus ja tallenna koodi tai tiedosto.';
   lbl.textContent=ok?'Tallennettu ✓':'Tallennus epäonnistui';setTimeout(()=>{lbl.textContent=prevT;$('#saveMsg').textContent='';},2200);};
 $('#bKeys').onclick=()=>{if(!$('#settings').hidden&&setTab==='keys'){$('#settings').hidden=true;return;}openSettings('keys');};
@@ -56,7 +72,7 @@ $('#bWinCont').onclick=()=>{$('#winS').hidden=true;$('#hud').hidden=false;state=
 refreshMenu();scrollHints($("#menu"));
 // Kartanvaihdon jälkeinen jatko: aloita uusi peli tai lataa tallennus automaattisesti.
 (function(){let p=null,d=null;try{p=sessionStorage.getItem('hiidenmaa_pending');d=sessionStorage.getItem('hiidenmaa_data');sessionStorage.removeItem('hiidenmaa_pending');sessionStorage.removeItem('hiidenmaa_data');}catch(e){}
-  if(p==='new'){newGame();startPlay();setTimeout(()=>msg(`Kartta: ${MAP.name}`),300);}
+  if(p==='new'){newGame();startPlay();saveGame(true);setTimeout(()=>msg(`Kartta: ${MAP.name}`),300);}
   else if(p==='load'&&d){try{loadData(JSON.parse(d));startPlay();setTimeout(()=>msg('Tervetuloa takaisin.','loot'),300);}catch(e){}}})();
 
 /* ---------------- MAIN LOOP ---------------- */

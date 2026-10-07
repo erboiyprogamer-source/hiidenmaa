@@ -292,3 +292,18 @@ input.isdef{filter:brightness(1.25)}
 #sPreset{width:100%;accent-color:var(--ember)}
 .presetTicks{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin:2px 0 6px}.presetTicks span.on{color:var(--ember);font-weight:800}.presetTicks span.def::after{content:' •'}
 .profRow{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;padding:6px 8px;margin-top:6px;border:1px solid var(--line);background:rgba(0,0,0,.18)}
+
+/* v1.36 maailmalista */
+.worlds{margin-top:6px;display:flex;flex-direction:column;gap:6px;max-width:560px}
+.worlds h3{margin:8px 0 2px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ember)}
+.world{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:8px 10px;background:linear-gradient(180deg,rgba(74,46,24,.9),rgba(47,29,14,.9));border:2px solid #2a1a0c;box-shadow:inset 0 0 0 1px #6e4a28;border-radius:4px}
+.world.cur{box-shadow:inset 0 0 0 1px #e8a44a,0 0 12px rgba(232,164,74,.25)}
+.world .wInfo{display:flex;flex-direction:column;min-width:0}.world .wInfo b{font-size:17px;color:var(--bone)}.world .wInfo span{font-size:12px;color:var(--dim)}
+.world .wBtns{display:flex;gap:5px}.world .wBtns .btn{padding:5px 10px}.world input.search{font-size:15px;max-width:240px}
+.wNew{display:grid;grid-template-columns:1fr;gap:6px;margin-top:4px;max-width:300px}
+
+/* v1.36 virtuaalinen osoitin (hiiren lukitus pysyy paneelien ajan) */
+#vcur{position:fixed;left:0;top:0;width:20px;height:20px;margin:-1px 0 0 -1px;z-index:100000;pointer-events:none;background:no-repeat 0 0/20px 20px url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M1 1 L1 16 L5 12 L8 19 L11 18 L8 11 L14 11 Z' fill='%23f3e6c4' stroke='%232a1a0c' stroke-width='1.4' stroke-linejoin='round'/></svg>");filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.grid .slot.vh{border-color:var(--dim)}.btn.vh{border-color:var(--ember)}.card.vh{border-color:var(--ember)}#build .card.vh{border-color:#e8a44a;background:#3a2412}.tab.vh{border-color:#e8a44a}.mbtn.vh{border-color:var(--ember)}.kbtn.vh{border-color:#e8a44a;background:#7a4b1c}
+.menuBtns{max-width:560px}.menuBtns>.mbtn,.menuBtns>.note{max-width:300px}.wNew .mbtn{max-width:none}.wNew input.search{max-width:none}
+.world .wInfo b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

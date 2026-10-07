@@ -328,3 +328,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Usva ja höyry: Ultra / Korkea / Normaali (oletus, kevyempi kuin ennen) / Matala / Pois.
 - Profiilit-välilehti: kaikki asetukset ja näppäimet tallennetaan nimellä, otetaan käyttöön tai poistetaan.
 - Muutokset näkyvät heti myös tauolla. Automaattitallennus 2 min välein. Lumisade kulkee tuulen mukana.
+
+## Valikko ja hiiri v1.36
+- Päävalikon maailmalista: enintään 5 maailmaa (nimi, viimeksi pelattu, päivä, taso, kartta). Pelaa / Nimeä / Poista (vahvistus) / Uusi maailma.
+- Tallenna nyt valikosta, automaattisesti 2 min välein nykyiseen maailmaan.
+- Reppu, arkku, rakennusvalikko ja kartta pitävät hiiren lukittuna ja näyttävät pelin oman osoittimen: suljettaessa (Tab, E, M, B…) kamera
+  kääntyy heti ilman napsautusta. Esc-taukovalikon jälkeen selain vaatii yhden napsautuksen.

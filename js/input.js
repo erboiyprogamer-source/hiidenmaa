@@ -68,7 +68,7 @@ canvas.addEventListener('wheel',e=>{if(state!=='play')return;
 let lockFails=0;
 function lockFail(fromClick){if(!fromClick)return;lockFails++;if(lockFails>=2&&!lockFailed){lockFailed=true;msg('Hiiren lukitus ei ole käytössä: käännä kameraa vetämällä hiirellä.','warn');}}
 function requestLock(fromClick){try{const r=canvas.requestPointerLock();if(r&&r.catch)r.catch(()=>lockFail(fromClick));}catch(e){lockFail(fromClick);}}
-document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===canvas;if(locked)lockFails=0;if(!locked&&state==='play'&&!openPanel&&!suppressPause&&performance.now()-panelClosedAt>600)pauseGame();suppressPause=false;});
+document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===canvas;if(locked)lockFails=0;vcSync();if(!locked&&state==='play'&&!openPanel&&performance.now()-panelClosedAt<600)requestLock();   /* v1.36: yritetään heti takaisin */if(!locked&&state==='play'&&!openPanel&&!suppressPause&&performance.now()-panelClosedAt>600)pauseGame();suppressPause=false;});
 document.addEventListener('pointerlockerror',()=>{});
 let suppressPause=false,panelClosedAt=-9999,pausedAt=-9999;
 // Koko näyttö: Chromessa Esc tulee pelille (ei poistu koko näytöstä) kun näppäimistö on lukittu.
@@ -76,3 +76,33 @@ function toggleFullscreen(){try{if(document.fullscreenElement){document.exitFull
   const p=document.documentElement.requestFullscreen();const lk=()=>{if(navigator.keyboard&&navigator.keyboard.lock)navigator.keyboard.lock(['Escape']).catch(()=>{});};
   if(p&&p.then)p.then(lk).catch(()=>{});else lk();}catch(e){}}
 function releaseLock(){if(document.pointerLockElement){suppressPause=true;document.exitPointerLock();}}
+
+/* ---------------- VIRTUAALINEN OSOITIN (v1.36, lista 3 kohta 22) ---------------- */
+// Hiiren lukitus pysyy päällä myös repussa, arkussa, rakennusvalikossa, kartassa jne. Peli piirtää oman osoittimen (#vcur), jota liikutetaan
+// lukitun hiiren liikkeellä (movementX/Y), ja välittää napsautukset, raahauksen ja rullan osoittimen alla olevalle elementille
+// keinotekoisina tapahtumina. Kun paneeli suljetaan näppäimellä, lukitus on yhä päällä → kamera kääntyy heti ilman välinapsautusta.
+// Esc vapauttaa lukituksen aina (selaimen sääntö), joten Esc-taukovalikon jälkeen tarvitaan yhä yksi napsautus.
+const VC={x:innerWidth/2,y:innerHeight/2,on:false,el:null,hov:null,down:null};
+(function(){const el=document.createElement('div');el.id='vcur';el.hidden=true;document.body.appendChild(el);VC.el=el;})();
+function vcSync(){const on=locked&&!!openPanel&&state==='ui';if(on!==VC.on){VC.on=on;VC.el.hidden=!on;if(!on)vcHover(null);else{VC.x=clamp(VC.x,0,innerWidth-1);VC.y=clamp(VC.y,0,innerHeight-1);vcMove(0,0,true);}}}
+const vcAt=()=>{const t=document.elementFromPoint(VC.x,VC.y);return t||document.body;};
+const vcInit=(e,extra)=>Object.assign({bubbles:true,cancelable:true,composed:true,view:window,clientX:VC.x,clientY:VC.y,screenX:VC.x,screenY:VC.y,button:e?e.button:0,buttons:e?e.buttons:0,shiftKey:!!(e&&e.shiftKey),ctrlKey:!!(e&&e.ctrlKey),altKey:!!(e&&e.altKey),metaKey:!!(e&&e.metaKey)},extra||{});
+function vcFire(type,e,extra,tgt){const t=tgt||vcAt();t.dispatchEvent(type==='wheel'?new WheelEvent(type,vcInit(e,extra)):new MouseEvent(type,vcInit(e,extra)));return t;}
+// :hover ei toimi keinotekoisilla tapahtumilla → hiiren alla oleva elementti ja sen vanhemmat saavat luokan .vh (CSS:ssä samat tyylit kuin :hover)
+function vcHover(t){if(t===VC.hov)return;const old=new Set();for(let a=VC.hov;a&&a!==document.body;a=a.parentElement)old.add(a);const nw=new Set();for(let a=t;a&&a!==document.body;a=a.parentElement)nw.add(a);
+  for(const a of old)if(!nw.has(a))a.classList.remove('vh');for(const a of nw)a.classList.add('vh');
+  if(VC.hov){VC.hov.dispatchEvent(new MouseEvent('mouseout',vcInit(null,{relatedTarget:t})));VC.hov.dispatchEvent(new MouseEvent('mouseleave',vcInit(null,{bubbles:false})));}
+  if(t){t.dispatchEvent(new MouseEvent('mouseover',vcInit(null,{relatedTarget:VC.hov})));t.dispatchEvent(new MouseEvent('mouseenter',vcInit(null,{bubbles:false})));}VC.hov=t;}
+function vcMove(dx,dy,quiet){VC.x=clamp(VC.x+dx,0,innerWidth-1);VC.y=clamp(VC.y+dy,0,innerHeight-1);VC.el.style.transform=`translate(${VC.x}px,${VC.y}px)`;const t=vcAt();vcHover(t);
+  if(!quiet)vcFire('mousemove',VC.down,{movementX:dx,movementY:dy,buttons:VC.down?VC.down.buttons:0},t);}
+// Oikeat tapahtumat pysäytetään ikkunan kaappausvaiheessa (ennen muita kuuntelijoita) ja korvataan osoittimen kohtaan lähetetyillä.
+addEventListener('mousemove',e=>{if(!e.isTrusted)return;vcSync();if(!VC.on)return;e.stopImmediatePropagation();if(Math.abs(e.movementX)>300||Math.abs(e.movementY)>300)return;vcMove(e.movementX,e.movementY);},true);
+addEventListener('mousedown',e=>{if(!e.isTrusted)return;vcSync();if(!VC.on)return;e.stopImmediatePropagation();e.preventDefault();VC.down={button:e.button,buttons:e.buttons,shiftKey:e.shiftKey,ctrlKey:e.ctrlKey,altKey:e.altKey};
+  const t=vcFire('mousedown',e);const ae=document.activeElement;if(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))t.focus();else if(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))ae.blur();},true);
+addEventListener('mouseup',e=>{if(!e.isTrusted)return;if(!VC.on){VC.down=null;return;}e.stopImmediatePropagation();VC.down=null;vcFire('mouseup',e);},true);
+for(const ty of ['click','dblclick','contextmenu','auxclick'])addEventListener(ty,e=>{if(!e.isTrusted||!VC.on)return;e.stopImmediatePropagation();e.preventDefault();
+  const t=vcAt();if(ty==='click'&&typeof t.click==='function'&&t.tagName==='LABEL'){t.click();return;}vcFire(ty,e,null,t);},true);
+// Rulla: välitetään elementille ja vieritetään lähintä vieritettävää vanhempaa (keinotekoinen rulla ei vieritä itsestään).
+addEventListener('wheel',e=>{if(!e.isTrusted||!VC.on)return;e.stopImmediatePropagation();const t=vcAt();const ev=new WheelEvent('wheel',vcInit(e,{deltaX:e.deltaX,deltaY:e.deltaY,deltaMode:e.deltaMode}));
+  const ok=t.dispatchEvent(ev);if(!ok)return;for(let a=t;a&&a!==document.body;a=a.parentElement){const cs=getComputedStyle(a);if(/(auto|scroll)/.test(cs.overflowY)&&a.scrollHeight>a.clientHeight+1){a.scrollTop+=e.deltaMode===1?e.deltaY*18:e.deltaY;break;}}},{capture:true,passive:true});
+addEventListener('resize',()=>{if(VC.on)vcMove(0,0,true);});

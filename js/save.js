@@ -4,6 +4,19 @@
 
 /* ---------------- SAVE / LOAD ---------------- */
 const SKEY='hiidenmaa_save_v1';
+/* v1.36 (lista 3, kohdat 20–21): 5 tallennuspaikkaa. Paikka 0 = SKEY (vanha tallennus jatkuu siinä nimellä "Maailma 1"), paikat 1–4 =
+   SKEY+'_1'…'_4'. Tiedot listaa varten avaimessa hiidenmaa_slots = [{name, at, day, lvl, mapId, min} | null] ×5. Nykyinen paikka curSlot
+   säilyy kartanvaihdon uudelleenlatauksen yli (sessionStorage hiidenmaa_cur). */
+const SLOTS=5,slotKey=i=>i?SKEY+'_'+i:SKEY;
+let curSlot=-1;try{const c=sessionStorage.getItem('hiidenmaa_cur');if(c!==null)curSlot=+c;}catch(e){}
+function slotMeta(){let m=null;try{m=JSON.parse(localStorage.getItem('hiidenmaa_slots')||'null');}catch(e){}if(!Array.isArray(m))m=[];while(m.length<SLOTS)m.push(null);
+  for(let i=0;i<SLOTS;i++)if(!m[i]){let d=null;try{d=JSON.parse(localStorage.getItem(slotKey(i))||'null');}catch(e){}if(d)m[i]={name:'Maailma '+(i+1),at:Date.now(),day:d.dayN||1,lvl:0,mapId:d.mapId||0,min:Math.round((d.playTime||0)/60)};}
+  return m;}
+function setSlotMeta(m){try{localStorage.setItem('hiidenmaa_slots',JSON.stringify(m));}catch(e){}}
+function setCurSlot(i){curSlot=i;try{sessionStorage.setItem('hiidenmaa_cur',String(i));}catch(e){}}
+function freeSlot(){const m=slotMeta();return m.findIndex(x=>!x);}
+function slotData(i){try{return JSON.parse(localStorage.getItem(slotKey(i))||'null');}catch(e){return null;}}
+function deleteSlot(i){try{localStorage.removeItem(slotKey(i));}catch(e){}const m=slotMeta();m[i]=null;setSlotMeta(m);if(curSlot===i&&!started)setCurSlot(-1);}
 function serialize(){return{v:10,vdrops:drops.filter(d=>isValuable(d.id)).map(d=>({id:d.id,n:d.n,q:d.q})),mapId:MAP_ID,bossPending:!!(boss&&!boss.dead&&!flags.boss),playTime,dayT,dayN,weather,flags,P:{x:P.pos.x,y:P.pos.y,z:P.pos.z,hp:P.hp,stam:P.stam,hunger:P.hunger,buffs:P.buffs,spawn:P.spawn,deaths:P.deaths,kills:P.kills,inDun:P.inDun,realm:P.realm||null,packLv:P.packLv},cam:[camYaw,camPitch],inv,
   pieces:pieces.map(p=>({t:p.t,x:p.x,y:p.y,z:p.z,r:p.rot,f:p.f||0,hp:p.hp,d:PIECES[p.t].store?{items:p.data.items,lv:p.data.lv}:isFirePiece(p.t)?{fuel:p.data.fuel,burn:p.data.burn,cook:p.data.cook,full:p.data.full}:p.t==='soihtuteline'?{burn:p.data.burn,full:p.data.full}:p.t==='sulatin'?{ore:p.data.ore,iore:p.data.iore,wood:p.data.wood,done:p.data.done,idone:p.data.idone}:bt(p.t)==='ovi'?{open:p.data.open,dir:p.data.dir}:{}})),
   moved:nodes.filter(n=>n.x!==n.ox||n.z!==n.oz||n.s!==n.s0).map(n=>[n.id,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
@@ -12,7 +25,7 @@ function serialize(){return{v:10,vdrops:drops.filter(d=>isValuable(d.id)).map(d=
   nodes:nodes.filter(n=>!n.alive).map(n=>[n.id,Math.round(n.respawnAt-playTime)]),graves:graves.map(g=>({x:g.x,y:g.y,z:g.z,items:g.items,dim:g.dim})),dk:dunKilled,
   explored:btoa(String.fromCharCode.apply(null,packBits(explored)))};}
 function packBits(a){const o=new Uint8Array(Math.ceil(a.length/8));for(let i=0;i<a.length;i++)if(a[i])o[i>>3]|=1<<(i&7);return Array.from(o);}
-function saveGame(silent){try{localStorage.setItem(SKEY,JSON.stringify(serialize()));if(!silent)msg('Peli tallennettu.','loot');return true;}catch(e){if(!silent)msg('Tallennus selaimeen ei onnistunut. Käytä tallennuskoodia valikossa.','warn');return false;}}
+function saveGame(silent){try{if(curSlot<0){const f=freeSlot();setCurSlot(f<0?0:f);}localStorage.setItem(slotKey(curSlot),JSON.stringify(serialize()));{const m=slotMeta(),o=m[curSlot]||{name:'Maailma '+(curSlot+1)};Object.assign(o,{at:Date.now(),day:dayN,lvl:typeof lvlInfo==='function'?lvlInfo().L:0,mapId:MAP_ID,min:Math.round(playTime/60)});m[curSlot]=o;setSlotMeta(m);}if(!silent)msg('Peli tallennettu.','loot');return true;}catch(e){if(!silent)msg('Tallennus selaimeen ei onnistunut. Käytä tallennuskoodia valikossa.','warn');return false;}}
 function loadData(s){
   resetWorld();
   playTime=s.playTime||0;dayT=s.dayT??.3;dayN=s.dayN||1;weather=s.weather||weather;weather.until=Math.min(weather.until,playTime+300);

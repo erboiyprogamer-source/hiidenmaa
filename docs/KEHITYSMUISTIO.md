@@ -73,6 +73,19 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.36 (lista 3: maailmalista ja 5 tallennuspaikkaa, virtuaalinen osoitin – ei välinapsautusta)
+- **Maailmat (kohta 20):** päävalikossa lista (enint. 5): nimi, viimeksi pelattu (pvm + klo), päivä, taso, kartta, minuutit. Pelaa, Nimeä
+  (rivin sisällä, Enter/Esc), Poista (vahvistus). Uusi maailma omalla nimellä (oletus "Maailma N"). Pelin aikana toiseen maailmaan siirtyminen
+  ja uusi maailma tallentavat nykyisen ensin (vahvistus). Paikka 0 = vanha `hiidenmaa_save_v1` ("Maailma 1"), paikat 1–4 = `…_1`–`…_4`,
+  tiedot `hiidenmaa_slots`. Nykyinen paikka `curSlot` säilyy kartanvaihdon uudelleenlatauksen yli (`sessionStorage hiidenmaa_cur`).
+  "Jatka matkaa" ja "Uusi peli" -napit korvattu listalla; "Palaa peliin" näyttää maailman nimen.
+- **Tallennus (kohta 21):** "Tallenna nyt" tallentaa nykyiseen paikkaan, automaattisesti 2 min välein (v1.35).
+- **Hiiren lukitus (kohta 22):** paneelit (reppu, arkku, rakennus, kartta, edistyminen, loki, DEV) eivät enää vapauta lukitusta. Oma osoitin
+  `#vcur` liikkuu lukitun hiiren liikkeellä; oikeat hiiritapahtumat pysäytetään ikkunan kaappausvaiheessa ja lähetetään osoittimen alla olevalle
+  elementille (mousedown/up/click/dblclick/contextmenu/mousemove/wheel, hover = luokka `.vh`, tekstikentät saavat fokuksen, rulla vierittää
+  lähintä vieritettävää). Paneelin sulkeminen näppäimellä → kamera kääntyy heti. Esc vapauttaa lukituksen aina (selain); suljettaessa
+  yritetään heti lukita uudelleen, mutta selain voi vaatia napsautuksen. Testattu: valinta + siirto osoittimella, Tab sulkee → kamera kääntyy.
+
 ### v1.35 (lista 3: esiasetukset, varjot Grafiikka-sivulle, profiilit, heti voimaan, usvatasot, lumi tuulessa, autotallennus)
 - **Esiasetukset (kohta 17):** liukusäädin Grafiikka-sivun ylälaidassa, `PRESETS`/`PRESET_N` (Low, Low+, Medium-, Medium, Medium+, High, High+,
   Ultra), oletus Medium (= SET_DEF:n grafiikka). Esiasetus asettaa 18 avainta (res, piirtoetäisyys, yksityiskohdat, ruoho, heilunta, pilvet,
@@ -1442,10 +1455,10 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
    Ultra ylittää nykyiset maksimit (varjot 4096, piirtoetäisyys +30 %, tiheämpi ruoho). Low–Medium: autosäätö päälle, High–Ultra: pois.
 18. TEHTY v1.35. Asetukset tulevat voimaan heti valittaessa.
 19. TEHTY v1.35. Asetusprofiilit omalla nimellä – tallentaa KAIKKI asetukset (myös ohjaus, äänet, näppäimet).
-20. Päävalikko: tallennuslista, enintään 5 paikkaa. Uusi maailma (nimi + kartta) tai jatka valittua. Näkyy viimeksi pelattu, päivät, taso,
+20. TEHTY v1.36. Päävalikko: tallennuslista, enintään 5 paikkaa. Uusi maailma (nimi + kartta) tai jatka valittua. Näkyy viimeksi pelattu, päivät, taso,
    nimi. Uudelleennimeä, poista vahvistuksella. Vanha tallennus → "Maailma 1".
-21. Automaattitallennus 2 min välein, valikosta voi tallentaa itse.
-22. Hiiren lukitus pysyy päällä paneelien ajan, peli piirtää oman osoittimen (ei välikliksua). Esc-taukovalikko vaatii yhä klikkauksen (selain).
+21. TEHTY v1.35–v1.36. Automaattitallennus 2 min välein, valikosta voi tallentaa itse.
+22. TEHTY v1.36. Hiiren lukitus pysyy päällä paneelien ajan, peli piirtää oman osoittimen (ei välikliksua). Esc-taukovalikko vaatii yhä klikkauksen (selain).
 23/31. Kirves- ja hakkuanimaatio uusiksi: kädet koukistuvat noustessa, kirves olkapäiden yli, vuorotellen kumpaankin viistoon, kädet kiinni
    varressa ja olkapäissä, ei mene pään tai kehon läpi, kädet eivät mene päällekkäin.
 23b. Kuolema: ruumis kaatuu, raajat valahtavat, makaa ~7 s, vajoaa ja häipyy (alle 10 s); veriläntti. Pelaajan läntti jää 1 min.
