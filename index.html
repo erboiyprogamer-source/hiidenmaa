@@ -6,7 +6,7 @@
 <title>Hiidenmaa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700;800&family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;800&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=1.51">
+<link rel="stylesheet" href="css/style.css?v=1.52">
 </head>
 <body>
 
@@ -34,19 +34,23 @@
 <script>
 /* v1.43 (lista 4, kohta 10): latausnäyttö. Riimut syttyvät sitä mukaa kuin skriptit latautuvat (load-tapahtuma kaapataan dokumentista).
    Sumu ja kipinät ovat CSS-animaatioita (transform/opacity), joten ne liikkuvat vaikka pääsäie on kiireinen. */
-(function(){var T=29,n=0,R=[].slice.call(document.querySelectorAll('#loadScr .lsR')),bar=document.getElementById('lsBarI');
-  window.__ldSet=function(k){k=Math.max(0,Math.min(1,k));var on=Math.round(k*R.length);for(var i=0;i<R.length;i++)R[i].classList.toggle('on',i<on);bar.style.width=(k*100)+'%';};
+(function(){var T=29,n=0;
+  /* v1.52: haetaan elementit joka kutsulla, koska latausnäyttö voidaan näyttää uudelleen (uusi maailma, __ldShow) */
+  window.__ldSet=function(k){var R=document.querySelectorAll('#loadScr .lsR'),bar=document.getElementById('lsBarI');if(!bar)return;k=Math.max(0,Math.min(1,k));var on=Math.round(k*R.length);for(var i=0;i<R.length;i++)R[i].classList.toggle('on',i<on);bar.style.width=(k*100)+'%';};
   document.addEventListener('load',function(e){var t=e.target;if(t&&t.tagName==='SCRIPT'&&t.src){n++;window.__ldSet(n/T*.94);}},true);
   var V=['Kivi muistaa myrskyn äänen,<br>juuret juoksun vanhan veden.','Yhdeksän on talven taakka,<br>yksi tuli yötä vastaan.',
     'Ken on riimut herättävä,<br>sen on saari kantava.','Sumu nousee suon povesta,<br>vanha kumpu kuiskaa nimen.','Kirves kalskaa, kipinä lentää –<br>vielä rantaan venhe saapuu.'];
   document.getElementById('lsVerse').innerHTML=V[Math.random()*V.length|0];
-  window.__ldNote=function(t){document.getElementById('lsNote').textContent=t;};
+  window.__ldNote=function(t){var e=document.getElementById('lsNote');if(e)e.textContent=t;};
   /* v1.45: sivujen partikkelit – vasemmalla ja oikealla nousevia hiillospilkkuja ja leijuvaa tuhkaa (CSS, satunnaiset arvot) */
   (function(){var L=document.getElementById('loadScr');for(var side=0;side<2;side++){var d=document.createElement('div');d.className='lsSide '+(side?'r':'l');
     for(var i=0;i<34;i++){var e=document.createElement('i'),ash=i%3===0;if(ash)e.className='ash';e.style.cssText='--x:'+(Math.random()*100).toFixed(1)+'%;--dx:'+((Math.random()-.5)*90).toFixed(0)+'px;--t:'+(ash?7+Math.random()*6:3.2+Math.random()*3.5).toFixed(2)+'s;--dl:'+(-Math.random()*8).toFixed(2)+'s;--s:'+(ash?2.5+Math.random()*3:2.5+Math.random()*3.5).toFixed(1)+'px';d.appendChild(e);}
     L.insertBefore(d,L.firstChild);}})();
   /* v1.45: lataus valmis → 0,8 s riimut syttyvät lähes valkoisiksi ja kirkastuvat voimakkaasti (.done), sitten häivytys */
-  window.__ldDone=function(){window.__ldSet(1);var s=document.getElementById('loadScr');if(!s||s.classList.contains('done'))return;s.classList.add('done');setTimeout(function(){s.classList.add('out');setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},1400);},900);};})();
+  window.__ldHTML=document.getElementById('loadScr').outerHTML;   // v1.52: pohja uudelleennäyttöön (sivupartikkelit mukana)
+  window.__ldShow=function(note){var o=document.getElementById('loadScr');if(o)o.parentNode.removeChild(o);var d=document.createElement('div');d.innerHTML=window.__ldHTML;var s=d.firstChild;
+    s.classList.remove('done','out');document.body.appendChild(s);window.__ldSet(0);if(note)window.__ldNote(note);var V=['Kivi muistaa myrskyn äänen,<br>juuret juoksun vanhan veden.','Yhdeksän on talven taakka,<br>yksi tuli yötä vastaan.','Ken on riimut herättävä,<br>sen on saari kantava.','Sumu nousee suon povesta,<br>vanha kumpu kuiskaa nimen.','Kirves kalskaa, kipinä lentää –<br>vielä rantaan venhe saapuu.'];var v=document.getElementById('lsVerse');if(v)v.innerHTML=V[Math.random()*V.length|0];};
+  window.__ldDone=function(){window.__ldSet(1);var s=document.getElementById('loadScr');if(!s||s.classList.contains('done'))return;s.classList.add('done');setTimeout(function(){s.classList.add('out');if(window.__ldAfter){try{window.__ldAfter();}catch(e){}window.__ldAfter=null;}setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},1400);},900);};})();
 </script>
 <div id="game"></div>
 <div id="hurt"></div>
@@ -135,7 +139,7 @@
   <canvas id="menuFx"></canvas>
   <!-- v1.46: päänäkymä (ei vieritystä) ja vaihtuva leveä näkymä (Maailmat / Näppäimet / Asetukset), Takaisin-painike tai P -->
   <div class="inner mHome">
-    <h1 class="title mTitle"><small>Selviytymispeli · versio 1.51</small><span class="tWord" data-text="Hiidenmaa">Hiidenmaa</span><span class="tRunes" aria-hidden="true">ᚺᛁᛁᛞᛖᚾᛗᚨᚨ</span></h1>
+    <h1 class="title mTitle"><small>Selviytymispeli · versio 1.52</small><span class="tWord" data-text="Hiidenmaa">Hiidenmaa</span><span class="tRunes" aria-hidden="true">ᚺᛁᛁᛞᛖᚾᛗᚨᚨ</span></h1>
     <p class="lede">Haaksirikko jätti sinut saarelle, jota yhdeksän talven ajan on hallinnut kivinen Kalmanvartija. Kaada puita, rakenna suoja ennen yötä, takoa kuparista ase ja herätä vartija kivikehässä.</p>
     <div class="menuBtns">
       <p class="note" id="mapName" style="margin:0 0 6px"></p>
@@ -183,40 +187,40 @@
 <script>
 /* v1.26 käynnistysvahti: näyttää virheet ruudulla (versio mukana) ja ohjeen, jos peli ei käynnisty 20 s:ssa.
    Syy: v1.23:ssa peli kaatui käynnistyksessä hiljaa (musta ruutu); raw.githack/selain voi myös näyttää vanhaa versiota välimuistista. */
-window.HV='1.51';(function(){function box(t){var b=document.getElementById('bootErr');if(!b){b=document.createElement('div');b.id='bootErr';b.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;max-width:min(92vw,720px);padding:10px 14px;background:rgba(60,12,10,.94);border:1px solid #e0614f;border-radius:4px;color:#f3e6d8;font:600 13px/1.4 sans-serif;white-space:pre-wrap';(document.body||document.documentElement).appendChild(b);}
+window.HV='1.52';(function(){function box(t){var b=document.getElementById('bootErr');if(!b){b=document.createElement('div');b.id='bootErr';b.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;max-width:min(92vw,720px);padding:10px 14px;background:rgba(60,12,10,.94);border:1px solid #e0614f;border-radius:4px;color:#f3e6d8;font:600 13px/1.4 sans-serif;white-space:pre-wrap';(document.body||document.documentElement).appendChild(b);}
   b.dataset.m=(b.dataset.m?b.dataset.m+'\n':'')+t;b.textContent=b.dataset.m+'\n(Hiidenmaa versio '+window.HV+'. Jos versio on vanha, paina Ctrl+F5 tai käytä commit-linkkiä.)';}
   window.__bootBox=box;var n=0;window.addEventListener('error',function(e){/* v1.38: 'Script error.' ilman tiedostoa = toisen sivuston skripti (yleensä selainlaajennus, esim. kääntäjä); ei näytetä pelaajalle */if(/^Script error\.?$/.test(e.message||'')&&!e.filename){window.__xerr=(window.__xerr||0)+1;return;}if(++n>3)return;box('Virhe: '+(e.message||e)+(e.filename?' ('+e.filename.split('/').pop()+':'+e.lineno+')':''));});
   setTimeout(function(){if(!window.__game)box('Peli ei käynnistynyt. Päivitä sivu (Ctrl+F5).');},20000);})();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
 <!-- Tavalliset skriptit jakavat saman globaalin näkyvyysalueen. Järjestyksellä on väliä. -->
-<script src="js/core.js?v=1.51"></script>
-<script src="js/world.js?v=1.51"></script>
-<script src="js/render.js?v=1.51"></script>
-<script src="js/collision.js?v=1.51"></script>
-<script src="js/items.js?v=1.51"></script>
-<script src="js/audio.js?v=1.51"></script>
-<script src="js/models.js?v=1.51"></script>
-<script src="js/resources.js?v=1.51"></script>
-<script src="js/landmarks.js?v=1.51"></script>
-<script src="js/pieces.js?v=1.51"></script>
-<script src="js/mobs.js?v=1.51"></script>
-<script src="js/dungeons.js?v=1.51"></script>
-<script src="js/story.js?v=1.51"></script>
-<script src="js/state.js?v=1.51"></script>
-<script src="js/effects.js?v=1.51"></script>
-<script src="js/settings.js?v=1.51"></script>
-<script src="js/input.js?v=1.51"></script>
-<script src="js/actions.js?v=1.51"></script>
-<script src="js/building.js?v=1.51"></script>
-<script src="js/environment.js?v=1.51"></script>
-<script src="js/player.js?v=1.51"></script>
-<script src="js/ai.js?v=1.51"></script>
-<script src="js/camera.js?v=1.51"></script>
-<script src="js/ui.js?v=1.51"></script>
-<script src="js/progress.js?v=1.51"></script>
-<script src="js/save.js?v=1.51"></script>
-<script src="js/menubg.js?v=1.51"></script>
-<script src="js/main.js?v=1.51"></script>
+<script src="js/core.js?v=1.52"></script>
+<script src="js/world.js?v=1.52"></script>
+<script src="js/render.js?v=1.52"></script>
+<script src="js/collision.js?v=1.52"></script>
+<script src="js/items.js?v=1.52"></script>
+<script src="js/audio.js?v=1.52"></script>
+<script src="js/models.js?v=1.52"></script>
+<script src="js/resources.js?v=1.52"></script>
+<script src="js/landmarks.js?v=1.52"></script>
+<script src="js/pieces.js?v=1.52"></script>
+<script src="js/mobs.js?v=1.52"></script>
+<script src="js/dungeons.js?v=1.52"></script>
+<script src="js/story.js?v=1.52"></script>
+<script src="js/state.js?v=1.52"></script>
+<script src="js/effects.js?v=1.52"></script>
+<script src="js/settings.js?v=1.52"></script>
+<script src="js/input.js?v=1.52"></script>
+<script src="js/actions.js?v=1.52"></script>
+<script src="js/building.js?v=1.52"></script>
+<script src="js/environment.js?v=1.52"></script>
+<script src="js/player.js?v=1.52"></script>
+<script src="js/ai.js?v=1.52"></script>
+<script src="js/camera.js?v=1.52"></script>
+<script src="js/ui.js?v=1.52"></script>
+<script src="js/progress.js?v=1.52"></script>
+<script src="js/save.js?v=1.52"></script>
+<script src="js/menubg.js?v=1.52"></script>
+<script src="js/main.js?v=1.52"></script>
 </body>
 </html>

@@ -405,3 +405,5 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   ryntäilevät palaen ~3 s, hidastuvat ja muuttuvat tuhkaksi ~6 s:ssa (ei saalista). Liian lähelle mennessä syttyy itsekin.
 - Valikossa 21 animoitua taustaa (mm. kaatuvia puita myrskyssä, raivoava karhu, susilauma, hirvi järvellä, ulottuvuuksien vihjeet,
   Kalmanvartijan varjo salamoissa, nousevat kalmot, ahjo). Portaalikuva on eeppinen riimukaari, joskus hahmo portin edessä.
+- Uutta maailmaa luotaessa näkyy riimukivi-latausnäyttö; sen jälkeen pilvet aukeavat kameran edestä sivuille (Medium+ 3D-pilvet,
+  muuten pilviverho) ja intro alkaa pilvien yläpuolelta ilman nykimistä.

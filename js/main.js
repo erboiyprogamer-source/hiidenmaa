@@ -82,7 +82,7 @@ addEventListener('beforeunload',e=>{if(started&&!flags.won&&!reloading){e.preven
 let reloading=false;
 function switchMap(id,pending,data){try{localStorage.setItem('hiidenmaa_map',String(id));sessionStorage.setItem('hiidenmaa_pending',pending);if(data)sessionStorage.setItem('hiidenmaa_data',data);}catch(e){return false;}
   reloading=true;$('#fade').style.opacity=1;location.reload();return true;}
-function startNewGame(){const id=Math.floor(Math.random()*MAPS.length);if(id!==MAP_ID&&switchMap(id,'new'))return;newGame();startPlay();saveGame(true);msg(`Kartta: ${MAP.name}`);startIntro();}
+function startNewGame(){const id=Math.floor(Math.random()*MAPS.length);if(id!==MAP_ID&&switchMap(id,'new'))return;worldLoad(()=>{newGame();startPlay();saveGame(true);msg(`Kartta: ${MAP.name}`);startIntro(true);});}
 function playSave(s,welcome){if(curSlot<0){const f=freeSlot();setCurSlot(f<0?0:f);}const mid=s.mapId||0;if(mid!==MAP_ID&&switchMap(mid,'load',JSON.stringify(s)))return;loadData(s);startPlay();msg(welcome,'loot');}
 $('#bRun').onclick=()=>{pauseRun=!pauseRun;try{localStorage.setItem('hiidenmaa_prun',pauseRun?'1':'0');}catch(e){}refreshMenu();};
 $('#bResume').onclick=()=>{state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();};
@@ -98,27 +98,55 @@ $('#bWinCont').onclick=()=>{$('#winS').hidden=true;$('#hud').hidden=false;state=
 refreshMenu();scrollHints($("#menu"));
 // Kartanvaihdon jälkeinen jatko: aloita uusi peli tai lataa tallennus automaattisesti.
 (function(){let p=null,d=null;try{p=sessionStorage.getItem('hiidenmaa_pending');d=sessionStorage.getItem('hiidenmaa_data');sessionStorage.removeItem('hiidenmaa_pending');sessionStorage.removeItem('hiidenmaa_data');}catch(e){}
-  if(p==='new'){newGame();startPlay();saveGame(true);setTimeout(()=>msg(`Kartta: ${MAP.name}`),300);startIntro();}
+  if(p==='new'){newGame();startPlay();saveGame(true);setTimeout(()=>msg(`Kartta: ${MAP.name}`),300);startIntro(true);introVeil(true);window.__ldAfter=introRelease;}
   else if(p==='load'&&d){try{loadData(JSON.parse(d));startPlay();setTimeout(()=>msg('Tervetuloa takaisin.','loot'),300);}catch(e){}}})();
 
 /* v1.43 (lista 4, kohta 11): uuden maailman intro ~6 s. 4 s korkealla pilvien yläpuolella (175 m, hidas kierto pelaajan ympäri),
    "Hiidenmaa" ja kartan nimi animoituna; sitten 2 s nopea syöksy (easeInOut) tavalliseen kameraan. Ohitus millä tahansa näppäimellä tai napsautuksella. */
 const _iP=new THREE.Vector3(),_iQ=new THREE.Quaternion(),_iH=new THREE.Vector3(),_iHQ=new THREE.Quaternion();
-function startIntro(){if(P.inDun)return;intro={t:0,a0:Math.random()*TAU};state='intro';$('#hud').hidden=true;const el=$('#introT');if(!el)return;$('#introMap').textContent='Kartta · '+MAP.name;
-  el.hidden=false;el.classList.remove('on','out');void el.offsetWidth;el.classList.add('on');}
-function endIntro(){if(!intro)return;intro=null;const el=$('#introT');if(el){el.classList.add('out');el.classList.remove('on');setTimeout(()=>{if(!intro)el.hidden=true;},900);}
+function startIntro(hold){if(P.inDun)return;intro={t:0,a0:Math.random()*TAU,hold:!!hold};state='intro';$('#hud').hidden=true;const el=$('#introT');if(!el)return;$('#introMap').textContent='Kartta · '+MAP.name;
+  el.hidden=false;el.classList.remove('on','out');if(hold){el.classList.add('out');return;}void el.offsetWidth;el.classList.add('on');}
+function endIntro(){if(!intro)return;intro=null;introCloudsClear();const el=$('#introT');if(el){el.classList.add('out');el.classList.remove('on');setTimeout(()=>{if(!intro)el.hidden=true;},900);}
   if(state==='intro'){state='play';$('#hud').hidden=false;}}
-function introCam(dt){if(!intro)return;intro.t+=Math.min(dt,.05);const t=intro.t,px=P.pos.x,py=P.pos.y,pz=P.pos.z;
+function introCam(dt){if(!intro)return;if(!intro.hold)intro.t+=Math.min(dt,.05);const t=intro.t,px=P.pos.x,py=P.pos.y,pz=P.pos.z;
   _iP.copy(camera.position);_iQ.copy(camera.quaternion);   // tavallinen kolmannen persoonan kamera (updateCamera juuri laski)
   const a=intro.a0+t*.11;_iH.set(px+Math.cos(a)*80,175,pz+Math.sin(a)*80);camera.position.copy(_iH);camera.lookAt(px,py,pz);_iHQ.copy(camera.quaternion);
   let k=0;if(t>4){const u=Math.min(1,(t-4)/2);k=u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;}
   camera.position.lerpVectors(_iH,_iP,k);camera.quaternion.copy(_iHQ).slerp(_iQ,k);
   if(k<1){const nf=scene.fog.near,ff=scene.fog.far;scene.fog.near=lerp(260,nf,k);scene.fog.far=lerp(700,ff,k);updateChunkVis();}
   if(t>=4.3&&$('#introT').classList.contains('on')){$('#introT').classList.remove('on');$('#introT').classList.add('out');}
-  if(t>=6)endIntro();}
-addEventListener('keydown',e=>{if(state==='intro'){e.stopPropagation();e.preventDefault();endIntro();}},true);
-addEventListener('mousedown',e=>{if(state==='intro'){e.stopPropagation();endIntro();}},true);
-addEventListener('touchstart',()=>{if(state==='intro')endIntro();},{capture:true,passive:true});
+  introCloudsTick(dt);if(t>=6)endIntro();}
+/* v1.52 (lista 5, kohta 4): uusi maailma latausnäytön takana. Riimukivi näytetään (__ldShow), maailma rakennetaan, intron korkea
+   kamera piirretään muutama kuva valmiiksi (varjostimet, ruudut) intro pidossa (hold). Kun latausnäyttö leimahtaa ja alkaa häipyä
+   (__ldAfter), pilvet aukeavat sivuille: Medium ja yli → 3D-lisäpilvet kameran edessä (poistetaan animaation jälkeen), alle Medium
+   CSS-pilviverho (#cloudVeil). Sitten intro jatkuu normaalisti (4 s ylhäällä + 2 s syöksy). Karttavaihdossa (sivun lataus) sama pito. */
+function introHiQ(){const pi=presetIdx();return pi<0?(SET.shadow==='high'&&(+SET.lights||6)>=6):pi>=3;}
+function worldLoad(build){if(window.__ldShow)window.__ldShow('Saari nousee merestä…');if(window.__ldSet)window.__ldSet(.08);
+  introVeil(true);
+  setTimeout(()=>{if(window.__ldSet)window.__ldSet(.45);build();let n=0;const tick=()=>{if(window.__ldSet)window.__ldSet(.45+n/24*.55);if(++n<24)requestAnimationFrame(tick);else introReady();};requestAnimationFrame(tick);},90);}
+function introReady(){window.__ldAfter=introRelease;if(window.__ldDone)window.__ldDone();else introRelease();}
+function introRelease(){if(!intro){introVeil(false);return;}intro.hold=false;intro.t=0;const el=$('#introT');if(el){el.classList.remove('out');void el.offsetWidth;el.classList.add('on');}
+  if(introHiQ()){introVeil(false,true);introCloudsMake();}else introVeil(false);}
+// CSS-pilviverho: kaksi puoliskoa jotka liukuvat sivuille
+function introVeil(on,instant){let v=$('#cloudVeil');if(on){if(!v){v=document.createElement('div');v.id='cloudVeil';v.innerHTML='<i class="cvL"></i><i class="cvR"></i>';document.body.appendChild(v);}v.className='';return;}
+  if(!v)return;if(instant){v.remove();return;}v.className='open';setTimeout(()=>{if(v.parentNode)v.remove();},2300);}
+// 3D-lisäpilvet: sprite-ryppäät kameran edessä, vasen puoli liukuu vasemmalle ja oikea oikealle 2 s:ssa, häipyen
+let IC=null;
+function introCloudTex(){if(introCloudTex.t)return introCloudTex.t;const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');
+  for(let i=0;i<26;i++){const r=28+Math.random()*34,x=r+8+Math.random()*(240-2*r-16),y=r+30+Math.random()*(200-2*r-30),gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(255,255,255,.9)');gr.addColorStop(.6,'rgba(245,248,255,.5)');gr.addColorStop(1,'rgba(240,244,250,0)');g.fillStyle=gr;g.fillRect(0,0,256,256);}
+  return introCloudTex.t=new THREE.CanvasTexture(c);}
+function introCloudsMake(){introCloudsClear();const tex=introCloudTex(),L=[];const tint=.55+.45*lightK;
+  for(let i=0;i<22;i++){const side=i%2?1:-1,m=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,depthTest:false,fog:false,color:new THREE.Color(tint,tint,tint*1.02)}));
+    m.renderOrder=999;const sc=5+Math.random()*4;m.scale.set(sc*1.5,sc,1);scene.add(m);L.push({m,side,lx:side*(.3+Math.random()*3.2),ly:(Math.random()-.5)*5,lz:-(5+Math.random()*4),sp:.7+Math.random()*.6});}
+  IC={L,t:0};}
+const _icV=new THREE.Vector3();
+function introCloudsTick(dt){if(!IC)return;IC.t+=Math.min(dt,.05);const k=Math.min(1,IC.t/2.1),e=k*k*(3-2*k);camera.updateMatrixWorld(true);
+  for(const c of IC.L){_icV.set(c.lx+c.side*e*14*c.sp,c.ly+e*.8,c.lz+e*1.5);camera.localToWorld(_icV);c.m.position.copy(_icV);c.m.material.opacity=1-Math.max(0,(k-.55)/.45);}
+  if(k>=1)introCloudsClear();}
+function introCloudsClear(){if(!IC)return;for(const c of IC.L){scene.remove(c.m);c.m.material.dispose();}IC=null;}
+addEventListener('keydown',e=>{if(state==='intro'&&!(intro&&intro.hold)){e.stopPropagation();e.preventDefault();endIntro();}},true);
+addEventListener('mousedown',e=>{if(state==='intro'&&!(intro&&intro.hold)){e.stopPropagation();endIntro();}},true);
+addEventListener('touchstart',()=>{if(state==='intro'&&!(intro&&intro.hold))endIntro();},{capture:true,passive:true});
 /* v1.43 (lista 4, kohta 31): ensimmäisellä käynnillä 3 s suorituskykytesti latausnäytön aikana (3D-valikkokamera oletusasetuksilla;
    0,6 s lämmittely, sitten FPS). ≥ 50 → oletus (Medium), 35–50 → Medium-, 22–35 → Low+, < 22 → Low. Tulos: localStorage hiidenmaa_perf.
    Ohitetaan, jos asetuksia on jo tallennettu tai selain on automaation ohjaama (testit); ?perf=1 pakottaa testin. */

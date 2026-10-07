@@ -16,7 +16,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ## Nykytila (päivitetty v1.44)
 
 - **Päivityslista 4 (32 kohtaa + extrat 1–2 + aluebannerit) on KOKONAAN TEHTY** v1.39–v1.44 (+ v1.45 latausnäytön leimahdus ja sivupartikkelit, v1.46 valikon uudistus, v1.47 säädinteemat ja logo, v1.48 7 logoteemaa satunnaisesti), haara
-  `claude/hiidenmaa-survival-game-fmxt0m`, PR #25 odottaa yhdistämistä (main = v1.37). Seuraava työ: päivityslista 5 (alla).
+  `claude/hiidenmaa-survival-game-fmxt0m`, PR #25 odottaa yhdistämistä (main = v1.37). Päivityslista 5 tehty v1.49–v1.52. Seuraava työ: uusi lista käyttäjältä.
 - Erät: A v1.39, B v1.40, C v1.41, D v1.42, E v1.43 (+ aluebannerit), F v1.44 – yksityiskohdat versiolokissa ja kohdassa "Päivityslista 4".
 - Testauksen huomiot: headless-testissä CSS-animaatiot eivät etene raskaan 3D:n aikana (tarkista ulkoasu animaatiot pois), ulottuvuuden
   rakennus kestää testikoneella sekunteja (odota `waitForFunction`illa), suorituskykytesti ohitetaan automaatiossa (`navigator.webdriver`),
@@ -82,6 +82,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.52 (lista 5, erä D: uuden maailman latausnäyttö ja aukeavat pilvet)
+- `startNewGame` → `worldLoad(build)`: riimukivi-latausnäyttö uudelleen (`__ldShow`, index.html; latausnäytön funktiot hakevat elementit
+  joka kutsulla ja pohja `__ldHTML` talteen), maailma rakennetaan, intro alkaa pidossa (`startIntro(true)`, `intro.hold`: korkea kamera
+  piirtyy valmiiksi 24 kuvan ajan, otsikko piilossa, ohitus ei toimi). `__ldDone` → leimahdus → häivytyksen alkaessa `__ldAfter` =
+  `introRelease`: pito pois, otsikko näkyviin ja pilvet aukeavat. Karttavaihdossa (sivu latautuu) sama pito ja `__ldAfter`.
+- Pilvet: Medium ja yli (`introHiQ`: esiasetus ≥ Medium, Custom = varjot Hyvät + valot 6) → 22 sprite-pilveä kameran edessä
+  (`introCloudsMake`/`introCloudsTick`), vasen puoli liukuu vasemmalle ja oikea oikealle 2,1 s ja häipyy, sitten poistetaan.
+  Alle Medium: CSS-pilviverho `#cloudVeil` (kaksi puoliskoa liukuvat sivuille 2 s). Sitten tavallinen intro (4 s ylhäällä + 2 s syöksy).
 
 ### v1.51 (lista 5, erä C: kymmenen uutta valikkotaustaa, myrskyn sade, eeppinen portaali)
 - **Uudet kuvat (`MBG_SCENES.push`, menubg.js):** Myrskytuuli (puut taipuvat puuskissa, yksi kaatuu 9 s välein pölypilveen, salamat,
@@ -1637,7 +1646,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 5 (v1.49–) – vastaukset ja erät
-**JATKA TÄSTÄ (lista 5):** erät A–D alla; PR #25 auki.
+**JATKA TÄSTÄ (lista 5):** KAIKKI erät A–D tehty (v1.49–v1.52); PR #25 auki odottaa yhdistämistä.
 **Erät:**
 - A (v1.49): 5 Tallennettu-teksti piilossa (bugi: `#bSave.firstChild` on nyt riimulaatta), 3 jousen tähtäin ja kyykkyammunta.
 - B (v1.50): 2 yöolennot palavat auringossa.
