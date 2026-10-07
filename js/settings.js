@@ -38,10 +38,10 @@ function validateKey(action,code){
 // shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
 const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,grass:1,particles:1,detail:'high',bldDetail:true,
   renderDist:165,lights:6,mist:.6,clouds:1,drop3d:true,blood:1,bloodFx:false,keyHints:true,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
-  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,hudMode:0,arrowLight:false,menuBg:'img'};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
+  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,sens:1,curSens:1,hudMode:0,arrowLight:false,menuBg:'img'};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
 // Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
 // v1.35 (lista 3, kohta 16): varjot ovat Grafiikka-sivun väliotsikko (ei omaa sivua).
-const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar'],ctl:['wheelHotbar','zoom','sound','invY','keyHints']};
+const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints']};
 /* v1.35 (lista 3, kohta 17): esiasetukset Low … Ultra (8 tasoa, oletus Medium = SET_DEF:n grafiikka). Esiasetus muuttaa kaikki alla
    luetellut asetukset; Low–Medium kytkee automaattisäädön päälle, High–Ultra pois. Ultra ylittää aiemmat maksimit (piirtoetäisyys 520 m,
    ruoho Ultra, varjoalue 140 m, tulien varjot 1024). Jos jotain säädetään käsin, nimi on "Custom". */
@@ -193,12 +193,16 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
     body.innerHTML=`<div class="setGrid">${
       setRow('Hiiren rulla vaihtaa pikapaikkaa','wheelHotbar',null,'rulla vaihtaa pikapaikkaa zoomin sijaan; zoom säädetään alta')+
       row('Kameran etäisyys'+(isDef('zoom')?' <span class="defTag">oletus</span>':''),sldHTML('sZoom',2.2,10,.1,SET.zoom),`<span id="sZoomV">${(+SET.zoom).toFixed(1)} m</span>`)+
+      row('Kääntymisen herkkyys'+(isDef('sens')?' <span class="defTag">oletus</span>':''),sldHTML('sSens',.2,3,.05,SET.sens),`<span id="sSensV">${(+SET.sens).toFixed(2)}×</span>`)+
+      row('Osoittimen herkkyys (pelin paneelit)'+(isDef('curSens')?' <span class="defTag">oletus</span>':''),sldHTML('sCur',.3,3,.05,SET.curSens),`<span id="sCurV">${(+SET.curSens).toFixed(2)}×</span>`)+
+      `<div class="note" style="grid-column:1/-1;margin:-4px 0 4px">Osoittimen herkkyys koskee pelin sisäisiä paneeleja (reppu, rakentaminen, kartta…). Päävalikossa käytetään tietokoneen omaa osoitinta, jonka nopeuden selain ei anna muuttaa.</div>`+
       setRow('Äänet','sound')+
       setRow('Käännä pystyhiiri','invY')+
       setRow('Näppäinopasteet','keyHints',null,'pienet vihjeet paneeleissa ja ruudun nurkassa (esim. Päävalikko: P)')
     }</div>`+resetBtn;
     bindSet(SET_PAGES.ctl);$('#bPageReset').onclick=()=>resetPage('ctl');
     bindSld('sZoom',v=>{SET.zoom=+v;$('#sZoomV').textContent=SET.zoom.toFixed(1)+' m';camDist=SET.zoom;},()=>saveSet());
+    bindSld('sSens',v=>{SET.sens=+v;$('#sSensV').textContent=SET.sens.toFixed(2)+'×';},()=>saveSet());bindSld('sCur',v=>{SET.curSens=+v;$('#sCurV').textContent=SET.curSens.toFixed(2)+'×';},()=>saveSet());
   }else{
     body.innerHTML=`<p class="note">Tallennuskoodi on pakattu: sen voi kopioida, tallentaa .txt-tiedostoksi ja ladata takaisin toisella koneella.</p>
       <textarea id="saveCode" spellcheck="false" placeholder="Tallennuskoodi tulee tähän"></textarea>

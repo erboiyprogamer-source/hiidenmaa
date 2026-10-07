@@ -66,7 +66,7 @@ addEventListener('mousemove',e=>{
   let dx=0,dy=0;
   if(locked){dx=e.movementX;dy=e.movementY;}else if(lockFailed&&(e.buttons&1||e.buttons&2)){dx=e.movementX;dy=e.movementY;}
   if(Math.abs(dx)>200||Math.abs(dy)>200)return;
-  camYaw-=dx*.0028;camPitch=clamp(camPitch+dy*.0028*(invertY?-1:1),-.6,1.25);
+  const k=.0028*(+SET.sens||1);camYaw-=dx*k;camPitch=clamp(camPitch+dy*k*(invertY?-1:1),-.6,1.25);   // v1.54 kääntymisen herkkyys
 });
 // Rulla: zoom tai (asetus) pikapaikan vaihto – valittu pikapaikka varustetaan heti jos esine on varustettava
 canvas.addEventListener('wheel',e=>{if(state!=='play')return;
@@ -100,13 +100,17 @@ function vcHover(t){if(t===VC.hov)return;const old=new Set();for(let a=VC.hov;a&
   for(const a of old)if(!nw.has(a))a.classList.remove('vh');for(const a of nw)a.classList.add('vh');
   if(VC.hov){VC.hov.dispatchEvent(new MouseEvent('mouseout',vcInit(null,{relatedTarget:t})));VC.hov.dispatchEvent(new MouseEvent('mouseleave',vcInit(null,{bubbles:false})));}
   if(t){t.dispatchEvent(new MouseEvent('mouseover',vcInit(null,{relatedTarget:VC.hov})));t.dispatchEvent(new MouseEvent('mouseenter',vcInit(null,{bubbles:false})));}VC.hov=t;}
-function vcMove(dx,dy,quiet){VC.x=clamp(VC.x+dx,0,innerWidth-1);VC.y=clamp(VC.y+dy,0,innerHeight-1);VC.el.style.transform=`translate(${VC.x}px,${VC.y}px)`;const t=vcAt();vcHover(t);
-  if(!quiet)vcFire('mousemove',VC.down,{movementX:dx,movementY:dy,buttons:VC.down?VC.down.buttons:0},t);}
+// v1.54: osoitin siirtyy heti (vain transform, GPU), mutta raskas osa – elementFromPoint (pakottaa asettelun), hover-luokat ja
+// keinotekoinen mousemove – tehdään kerran ruudunpäivitystä kohti kertyneellä liikkeellä (ennen joka hiiritapahtumalla → viive).
+let vcPend=null;
+function vcMove(dx,dy,quiet){VC.x=clamp(VC.x+dx,0,innerWidth-1);VC.y=clamp(VC.y+dy,0,innerHeight-1);VC.el.style.transform=`translate3d(${VC.x}px,${VC.y}px,0)`;
+  if(quiet){vcHover(vcAt());return;}if(!vcPend){vcPend={dx:0,dy:0};requestAnimationFrame(vcFlush);}vcPend.dx+=dx;vcPend.dy+=dy;}
+function vcFlush(){const p=vcPend;vcPend=null;if(!p||!VC.on)return;const t=vcAt();vcHover(t);vcFire('mousemove',VC.down,{movementX:p.dx,movementY:p.dy,buttons:VC.down?VC.down.buttons:0},t);}
 // Oikeat tapahtumat pysäytetään ikkunan kaappausvaiheessa (ennen muita kuuntelijoita) ja korvataan osoittimen kohtaan lähetetyillä.
-addEventListener('mousemove',e=>{if(!e.isTrusted)return;vcSync();if(!VC.on)return;e.stopImmediatePropagation();if(Math.abs(e.movementX)>300||Math.abs(e.movementY)>300)return;vcMove(e.movementX,e.movementY);},true);
-addEventListener('mousedown',e=>{if(!e.isTrusted)return;vcSync();if(!VC.on)return;e.stopImmediatePropagation();e.preventDefault();VC.down={button:e.button,buttons:e.buttons,shiftKey:e.shiftKey,ctrlKey:e.ctrlKey,altKey:e.altKey};
+addEventListener('mousemove',e=>{if(!e.isTrusted)return;vcSync();if(!VC.on)return;e.stopImmediatePropagation();if(Math.abs(e.movementX)>300||Math.abs(e.movementY)>300)return;const k=+SET.curSens||1;vcMove(e.movementX*k,e.movementY*k);},true);   // v1.54 osoittimen herkkyys
+addEventListener('mousedown',e=>{if(!e.isTrusted)return;vcSync();if(!VC.on)return;if(vcPend)vcFlush();e.stopImmediatePropagation();e.preventDefault();VC.down={button:e.button,buttons:e.buttons,shiftKey:e.shiftKey,ctrlKey:e.ctrlKey,altKey:e.altKey};
   const t=vcFire('mousedown',e);const ae=document.activeElement;if(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))t.focus();else if(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))ae.blur();},true);
-addEventListener('mouseup',e=>{if(!e.isTrusted)return;if(!VC.on){VC.down=null;return;}e.stopImmediatePropagation();VC.down=null;vcFire('mouseup',e);},true);
+addEventListener('mouseup',e=>{if(!e.isTrusted)return;if(!VC.on){VC.down=null;return;}if(vcPend)vcFlush();e.stopImmediatePropagation();VC.down=null;vcFire('mouseup',e);},true);
 for(const ty of ['click','dblclick','contextmenu','auxclick'])addEventListener(ty,e=>{if(!e.isTrusted||!VC.on)return;e.stopImmediatePropagation();e.preventDefault();
   const t=vcAt();if(ty==='click'&&typeof t.click==='function'&&t.tagName==='LABEL'){t.click();return;}vcFire(ty,e,null,t);},true);
 // Rulla: välitetään elementille ja vieritetään lähintä vieritettävää vanhempaa (keinotekoinen rulla ei vieritä itsestään).

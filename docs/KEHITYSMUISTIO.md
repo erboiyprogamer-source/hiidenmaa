@@ -83,6 +83,14 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.54 (lista 6, erä B: herkkyydet ja osoittimen viive)
+- Ohjaus: **Kääntymisen herkkyys** `SET.sens` (0,2–3×, oletus 1 = 0,0028 rad/px) ja **Osoittimen herkkyys** `SET.curSens` (0,3–3×)
+  pelin paneelien virtuaaliosoittimelle. Päävalikko käyttää käyttöjärjestelmän osoitinta (selain ei salli nopeuden muuttamista) –
+  tästä huomautus asetussivulla.
+- Viive: `vcMove` siirtää osoitinta heti (`translate3d`, `will-change`), mutta `elementFromPoint` (pakottaa asettelun), hover-luokat ja
+  keinotekoinen mousemove tehdään kerran ruudunpäivitystä kohti kertyneellä liikkeellä (`vcFlush`, rAF); painallus/vapautus purkaa
+  jonon ensin. Testi: 8 liikettä → 1 välitetty mousemove.
+
 ### v1.53 (lista 6, erä A: liikkeen keinunta, jousen tarkistus, piikivikirves)
 - Jousen veto kuvattu edestä, takaa, molemmilta sivuilta ja ylhäältä seisten ja kyykyssä: jousi ojennetussa kädessä, nuoli jänteellä,
   vetokäsi kasvojen vieressä – ei korjattavaa.

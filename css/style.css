@@ -567,3 +567,4 @@ button:focus,select:focus{outline:none}
   background:radial-gradient(ellipse at 30% 30%,#fff 0 18%,rgba(255,255,255,0) 45%),radial-gradient(ellipse at 70% 60%,#f4f7fb 0 20%,rgba(255,255,255,0) 50%),radial-gradient(ellipse at 40% 80%,#eef2f8 0 22%,rgba(255,255,255,0) 52%),radial-gradient(ellipse at 80% 20%,#f8fafc 0 16%,rgba(255,255,255,0) 44%),linear-gradient(#e9eef5,#dfe6ef)}
 #cloudVeil .cvL{left:-6%;border-radius:0 45% 45% 0/0 50% 50% 0}#cloudVeil .cvR{right:-6%;border-radius:45% 0 0 45%/50% 0 0 50%}
 #cloudVeil.open .cvL{transform:translateX(-110%);opacity:.3}#cloudVeil.open .cvR{transform:translateX(110%);opacity:.3}
+#vcur{will-change:transform}   /* v1.54 */
