@@ -83,6 +83,14 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.50 (lista 5, erä B: yöolennot palavat auringossa)
+- `sunBurnAI` / `sunExposed` (ai.js), tarkistus 0,5 s välein: `SUN_BURN` = kalmo, ylimys, hiidenkarhu, hiidenhirvi, kalmasusi, suonakki
+  (+ `stalk`-tyypit), ei pomoja eikä vartijoita (`m.guard`). Altistus: `lightK` ≥ .55, `wDark` ≤ .35, `wRain` ≤ .25, biomi ei
+  korpi/koivikko/aarnimetsä (`SUN_SHADE`) eikä katosta yläpuolella (`roofTopAt`).
+- Kulku: syttyy (`igniteMob`, `burnT` pidetään yllä, `updateBurn` ei vähennä hp:tä), 0–3 s paniikkiryntäily 1,3× juoksu satunnaisiin
+  suuntiin, 3–5,2 s hidastuu ja horjuu, sitten `killMob` `sunKill`-lipulla → tuhkakuolema, ei saalista, XP:tä eikä tappotilastoa.
+  1 m päässä ryntäilevä sytyttää pelaajan (`P.burnT` 4 s). Testattu: niityllä kuoli 5,5 s, metsässä ja yöllä ei, susi ei pala.
+
 ### v1.49 (lista 5, erä A: Tallennettu-teksti, jousen tähtäin ja kyykkyammunta)
 - **Tallennettu (5):** syy: v1.46:ssa painikkeeseen lisätty riimulaatta on `firstChild`, joten "Tallennettu ✓" kirjoitettiin laatan sisään
   (piiloon). Nyt teksti on omassa `.bLbl`-elementissä ja painike välähtää vihreänä (`.saved`) 2,2 s; alle "Tallennettu selaimeen."

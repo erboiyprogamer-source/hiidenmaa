@@ -401,3 +401,5 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Jousi: seisten täysin vedettynä pieni tähtäinympyrä ja pieni hajonta; kyykyssä täysin vedettynä tähtäin pistemäinen, ei hajontaa,
   veto ja nuolen nopeus +10 %, ja näkyviin tulee tiputusristikko (20–70 m).
 - Valikon Tallenna nyt -painike näyttää "Tallennettu ✓" ja välähtää vihreänä.
+- Kalmot ja pelottavat yöolennot syttyvät auringossa avoimella alueella (ei metsässä, katoksen alla, pilvisellä/sateella eikä yöllä):
+  ryntäilevät palaen ~3 s, hidastuvat ja muuttuvat tuhkaksi ~6 s:ssa (ei saalista). Liian lähelle mennessä syttyy itsekin.

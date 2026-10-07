@@ -25,6 +25,7 @@ function updateMobs(dt){
     if(m.dun!==P.inDun){continue;}
     m.flash=Math.max(0,m.flash-dt);for(const mt of m.mats)mt.emissive.setHex(m.flash>0?0x661111:0x000000);
     if(m.burnT>0&&updateBurn(m,dt))continue;
+    if(!m.dun&&!m.dead&&sunBurnAI(m,dt))continue;   // v1.50 yöolennot palavat auringossa
     if(!(m.burnT>0)&&!m.dun)for(const s of fireSrc)if(!s.torch&&s.r===7&&dist2(s.x,s.z,m.pos.x,m.pos.z)<.8*.8){igniteMob(m);break;}   // v1.37: nuotioon astuva syttyy
     m.atkCd-=dt;
     // v1.31: tönäisty vihollinen on kyvytön lennon ajan (ei kävele eikä lyö; isku keskeytyy)
@@ -190,6 +191,25 @@ function archerAI(m,dt,dx,dz,dist){const d=m.def,los=losClear(m.pos.x,mobEyeY(m)
   if(!los||dist>14)return {spd:d.run};
   if(dist<6){m.vel.x-=dx/dist*10*dt;m.vel.z-=dz/dist*10*dt;}
   return {spd:0};}
+/* v1.50 (lista 5, kohta 2): kalmot ja pelottavat yöolennot (SCARY-tyypit, stalk) palavat auringossa avoimella alueella.
+   Suojaa: katos (rakennus yläpuolella), sää (pilvisyys wDark > .35 tai sade), metsäbiomit (korpi, koivikko, aarnimetsä), yö (lightK < .55).
+   Kulku ~6 s: 0–3 s paniikkiryntäily (suunta vaihtuu 0,35–0,6 s välein, 1,3× juoksu), 3–5,2 s hidastuu ja horjuu, sitten kaatuu tuhkaksi
+   (killMob → tuhkakuolema, ei saalista). Ryntäilevä sytyttää pelaajan 1 m päästä (P.burnT 4 s). Tarkistus 0,5 s välein. */
+const SUN_BURN=new Set(['kalmo','ylimys','hiidenkarhu','hiidenhirvi','kalmasusi','suonakki']),SUN_SHADE={forest:1,koivu:1,aarni:1};
+function sunExposed(m){if(lightK<.55||wDark>.35||wRain>.25)return false;const b=biomeHere(m.pos.x,m.pos.z);if(SUN_SHADE[b]||b==='sea')return false;
+  return roofTopAt(m.pos.x,m.pos.z)<m.pos.y+1;}
+function sunBurnAI(m,dt){const d=m.def;
+  if(!m.sunBurn){if(m.boss||m.guard||d.ai==='boss'||d.ai==='rboss'||!(SUN_BURN.has(m.type)||d.stalk))return false;
+    m.sunChk=(m.sunChk||Math.random()*.5)-dt;if(m.sunChk>0)return false;m.sunChk=.5;if(!sunExposed(m))return false;
+    m.sunBurn=1;m.sunT=0;m.wind=0;m.act=null;igniteMob(m);m.burnT=99;sfx('roar',1.3,.6);burst(m.pos.x,m.pos.y+1,m.pos.z,0xff9a3a,14,4);}
+  m.sunT+=dt;m.burnT=Math.max(m.burnT,1);const t=m.sunT;
+  if(t<3){m.panT=(m.panT||0)-dt;if(m.panT<=0){m.panT=.35+Math.random()*.25;m.panA=Math.random()*TAU;}moveMob(m,Math.sin(m.panA),Math.cos(m.panA),(d.run||4)*1.3,dt);}
+  else{const k=clamp(1-(t-3)/2.2,0,1);m.panT=(m.panT||0)-dt;if(m.panT<=0){m.panT=.6;m.panA+=(Math.random()-.5)*2;}moveMob(m,Math.sin(m.panA),Math.cos(m.panA),(d.run||4)*.6*k,dt);
+    m.f.g.rotation.z=Math.sin(playTime*7)*.12*(1-k);}
+  if(!P.dead&&!(P.burnT>0)&&dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<1&&Math.abs(P.pos.y-m.pos.y)<1.5){P.burnT=4;msg('Palava olento sytytti sinut!','warn');}
+  animMob(m,dt);
+  if(t>=5.2){m.f.g.rotation.z=0;m.sunKill=1;m.hp=0;stopBurn(m);m.burnT=1;killMob(m);m.burnT=0;}
+  return true;}
 function moveMob(m,tx,tz,spd,dt){
   spd*=MOB_SPD;
   // v0.83: Aarnimetsässä hirviöt ovat vihaisia ja liikkuvat 20 % nopeammin (biomi tarkistetaan sekunnin välein)
