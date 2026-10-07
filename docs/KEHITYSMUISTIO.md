@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.60)
+## Nykytila (päivitetty v1.61)
 
-- **Versio 1.60**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
+- **Versio 1.61**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -91,6 +91,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.61 (intro vain ensikäynnillä, ohitus millä tahansa näppäimellä, valikon myrskysade)
+- **Aloitusjakso + FPS-testi vain ensikäynnillä tai Shift+F5/Ctrl+F5:n jälkeen.** Tunnistus: navigaatio `reload` ja `css/style.css` siirtyi
+  kokonaan verkosta (`transferSize > encodedBodySize`); tavallisessa F5:ssä tyylitiedosto tulee välimuistista (0) tai 304:nä. Testattu:
+  F5 → 0 tavua, välimuistin ohittava lataus → koko tiedosto. Palaava pelaaja → suoraan latausnäyttöön, ei testiä eikä grafiikan säätöä.
+  (Huom: Playwrightin `page.route` poistaa välimuistin → mittaa ilman reitityksiä.)
+- **Ohitus:** mikä tahansa näppäin tai napsautus → suoraan latausnäyttöön (ei pelkät Shift/Ctrl/Alt/Meta eikä F-näppäimet tai toistot,
+  jottei Shift+F5 ohita heti).
+- **Tulosteksti:** "Grafiikka-asetukset säädettiin automaattisesti suorituskyvyn mukaan." + "Grafiikkavalinnan suositus: X" + ohje
+  Asetukset › Grafiikka.
+- **Valikon myrskytaustat:** partikkelikerroksen (`MFX` storm) sadepisarat menivät vasemmalle (vx −220) vastoin taustan sadetta, puita ja
+  lehtiä → nyt `vx = vy·0,45` oikealle (tuulen suuntaan), osa syntyy vasemmasta reunasta.
 
 ### v1.60 (käynnistys uusiksi: sulavat animaatiot, testi ennen latausta, ohitus)
 - **Uusi järjestys (`js/boot.js`):** aloitusjakso (studio 6,5 s → HIIDENMAA 7,2 s → varoitus 11 s) → suorituskykytesti (0,8 s lämmittely + 5 s
@@ -1744,7 +1756,7 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 6 (v1.53–) – julkaisupäivitys
-**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.60 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
+**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.61 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
 - A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
   eteenpäin, piikivikirves.
 - B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.

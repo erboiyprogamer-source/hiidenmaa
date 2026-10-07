@@ -334,7 +334,7 @@ function mfxNew(k,W,H,init){const r=Math.random,p={t:k,x:r()*W,y:init?r()*H:0,vx
     case 'runes':if(r()<.45){p.t='glyph';p.y=init?r()*H:H+20;p.vy=-(14+r()*18);p.g='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ'[r()*24|0];p.s=12+r()*12;p.c=r()<.6?'#ffb35a':'#7ff0e0';p.max=9+r()*6;}
       else{p.t='motes';p.vx=(r()-.5)*8;p.vy=-(4+r()*8);p.s=1.2+r()*1.8;p.c='rgba(255,190,110,1)';}break;
     case 'storm':if(r()<.12){p.t='leaf';p.y=r()*H;p.x=init?r()*W:-10;p.vx=160+r()*160;p.vy=(r()-.3)*60;p.s=4+r()*3;p.rot=r()*TAU;p.vr=(r()-.5)*10;p.c=['#6a7a2a','#8a6a2a','#5a4a1e'][r()*3|0];p.max=10;}
-      else{p.t='rain';p.y=init?r()*H:-20;p.x=r()*W*1.2-W*.1;p.vy=700+r()*300;p.vx=-220;p.s=12+r()*14;p.max=3;}break;
+      else{p.t='rain';p.vy=700+r()*300;if(!init&&r()<.35){p.x=-50;p.y=r()*H;}else{p.y=init?r()*H:-20;p.x=r()*(W+50)-50;}p.vx=p.vy*.45;p.s=12+r()*14;p.max=3;}break;   // v1.61: pisarat tuulen suuntaan (oikealle, kuten taustan sade, puut ja lehdet)
     case 'frost':p.vx=(r()-.5)*10;p.vy=8+r()*14;p.s=1.4+r()*2;p.c='rgba(180,225,255,1)';p.max=8+r()*6;break;
     case 'spores':p.y=init?r()*H:H+10;p.vy=-(10+r()*20);p.vx=(r()-.5)*8;p.s=1.4+r()*2;p.c='rgba(140,255,160,1)';p.max=8+r()*6;break;
     case 'magic':p.y=init?r()*H:H+10;p.x=W*(.45+r()*.5);p.vy=-(25+r()*45);p.s=1.5+r()*2.5;p.c=r()<.5?'rgba(190,120,255,1)':'rgba(110,240,230,1)';p.max=6+r()*6;break;}

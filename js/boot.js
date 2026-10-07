@@ -3,14 +3,19 @@
    vasta sitten latausnäyttö ja pelin skriptit. Ennen jakso pyöri pelin latauksen päällä, jolloin häivytykset pätkivät. Pelin skriptit
    esiladataan taustalla (<link rel=preload>) ja ajetaan yksi kerrallaan pienellä tauolla, jotta riimut ehtivät syttyä näkyvästi.
    Välilyönti, Enter tai napsautus ohittaa koko jakson (ja testin) ja vie suoraan latausnäyttöön. */
-window.__BJV='1.60';
+window.__BJV='1.61';
 (function(){
   var Q=location.search,wd=!!navigator.webdriver;
   function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
   function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
   var pend=false;try{pend=!!sessionStorage.getItem('hiidenmaa_pending');}catch(e){}
-  var needSplash=/[?&]splash=1/.test(Q)||(!wd&&!pend&&!ls('hiidenmaa_intro'));
-  var needPerf=/[?&]perf=1/.test(Q)||(!wd&&!ls('hiidenmaa_perf')&&!ls('hiidenmaa_set'));
+  /* v1.61: aloitusjakso + testi vain ensikäynnillä tai "ilman välimuistia" (Shift+F5 / Ctrl+F5: uudelleenlataus, jossa sivu ladattiin
+     kokonaan verkosta – tavallinen F5 ottaa style.css:n välimuistista tai saa 304:n, jolloin siirretty koko < tiedoston koko). Muuten suoraan latausnäyttöön;
+     testi ei silloin säädä grafiikkaa. */
+  var hard=false;try{var nv=performance.getEntriesByType('navigation')[0],cs=performance.getEntriesByType('resource').filter(function(e){return /css\/style\.css/.test(e.name);})[0];
+    hard=!!nv&&nv.type==='reload'&&!!cs&&cs.encodedBodySize>0&&cs.transferSize>cs.encodedBodySize;}catch(e){}   // tyylitiedosto: F5 = välimuisti (0) tai 304, Shift+F5 = koko tiedosto
+  var needSplash=/[?&]splash=1/.test(Q)||(!wd&&!pend&&(!ls('hiidenmaa_intro')||hard));
+  var needPerf=/[?&]perf=1/.test(Q)||needSplash;
   var JS=window.__GJS||[],PERF_T=5,RES_T=9,LV=['Low','Low+','Medium-','Medium'];
   window.__ldT=JS.length;
 
@@ -88,8 +93,9 @@ window.__BJV='1.60';
       pf.partial=function(){return mt>=1.5?n/mt:-1;};
       function perfFinish(){var fps=pf.err?0:n/Math.max(.001,mt);pf.stop();pf.end=true;var i=perfStore(fps),f=Math.round(fps),lvl=f>=50?'Sujuva':f>=35?'Hyvä':f>=22?'Kohtalainen':'Raskas';
         el.classList.add('res');
-        P.innerHTML='<small class="pHead">Suorituskykytesti valmis</small><b>Tulos: '+f+' FPS <small>('+lvl+')</small></b><p>Grafiikaksi valittiin <em>'+LV[i]+'</em>.</p>'+
-          '<p class="pTip">Voit muuttaa grafiikkaa milloin tahansa itse: <em>Asetukset › Grafiikka</em> (esiasetus-liukusäädin tai yksittäiset asetukset).</p><div class="pBar t"><i></i></div>';
+        P.innerHTML='<small class="pHead">Suorituskykytesti valmis</small><b>Tulos: '+f+' FPS <small>('+lvl+')</small></b>'+
+          '<p>Grafiikka-asetukset säädettiin automaattisesti suorituskyvyn mukaan.</p><p class="pRec">Grafiikkavalinnan suositus: <em>'+LV[i]+'</em></p>'+
+          '<p class="pTip">Voit vaihtaa grafiikkaa milloin tahansa itse: <em>Asetukset › Grafiikka</em> (esiasetus-liukusäädin tai yksittäiset asetukset).</p><div class="pBar t"><i></i></div>';
         setTimeout(function(){G.kill();},400);pf.tm=setTimeout(function(){done(i);},RES_T*1000);}
       pf.finish=perfFinish;});}
 
@@ -105,9 +111,9 @@ window.__BJV='1.60';
     var ld=document.getElementById('loadScr');if(ld)ld.classList.add('enter');
     setTimeout(function(){window.__splashOn=false;if(S.parentNode)S.parentNode.removeChild(S);},750);
     setTimeout(startGame,needSplash||needPerf?1250:0);}   // latausnäytön sisääntulo ehtii valmiiksi ennen raskasta latausta
-  /* Ohitus: välilyönti, Enter tai napsautus → suoraan latausnäyttöön. Kesken jäänyt testi: tulos, jos mitattu ≥ 1,5 s, muuten testi tulee
+  /* Ohitus (v1.61): mikä tahansa näppäin (ei pelkät Shift/Ctrl/Alt/Meta eikä F-näppäimet, jottei Shift+F5 ohita heti) tai napsautus → suoraan latausnäyttöön. Kesken jäänyt testi: tulos, jos mitattu ≥ 1,5 s, muuten testi tulee
      uudelleen seuraavalla kerralla (oletusasetukset). */
-  function skip(e){if(e.type==='keydown'&&e.code!=='Space'&&e.code!=='Enter'&&e.code!=='NumpadEnter')return;e.stopPropagation();if(e.cancelable)e.preventDefault();
+  function skip(e){if(e.type==='keydown'&&(e.repeat||/^(Shift|Control|Alt|Meta|OS|F\d+)/.test(e.key||'')))return;e.stopPropagation();if(e.cancelable)e.preventDefault();
     if(performance.now()-st<500)return;
     if(pf&&!pf.end){pf.stop();var f=pf.partial?pf.partial():-1;if(f>=0)perfStore(f);if(pf.g)pf.g.kill();pf.end=true;}
     else if(pf&&pf.g&&pf.end){/* tulos jo tallennettu */}

@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.60';
+:root{--css-v:'1.61';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -625,3 +625,4 @@ button:focus,select:focus{outline:none}
 #splash .ppPanel .pBar.t i{width:100%;transform-origin:left;animation:ppT 9s linear forwards;background:rgba(255,179,90,.5)}
 @keyframes ppT{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 #splash .ppPanel .pRow{display:flex;justify-content:space-between;font:700 13px var(--font-b);color:#b8a888}#splash .ppPanel #ppF{color:#ffb35a}
+#splash .ppPanel .pRec{font:700 18px var(--font-b);color:#f2e6cc}
