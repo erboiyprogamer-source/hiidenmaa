@@ -89,6 +89,8 @@ function updateMobs(dt){
       const zig=d.per&&d.per.zig;m.fleeT=(m.fleeT||0)-dt;if(m.fleeT<=0){m.fleeT=zig?.35+Math.random()*.35:1.2+Math.random()*1.8;m.fleeA=(m.herdA??Math.atan2(-dx,-dz))+(Math.random()-.5)*(zig?2.2:hurt?1.6:.8);m.herdA=null;}
       tx=Math.sin(m.fleeA);tz=Math.cos(m.fleeA);spd=d.run;}
     else if(m.state==='chase'){
+      const ar=m.archer&&dist>2.4&&dist<22&&m.wind<=0?archerAI(m,dt,dx,dz,dist):null;   // v1.42 jousikalmo
+      if(ar){tx=dx;tz=dz;spd=ar.spd;}else{
       if(m.wind>0){m.wind-=dt;if(m.wind<=0){if(mobReach(m,dist)<d.range+.25&&!P.dead&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){const f=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(f>.5){hurtPlayer(d.dmg,m.pos.x,m.pos.z);if(d.kb&&!P.dead){P.kbx=dx/(dist||1)*d.kb;P.kbz=dz/(dist||1)*d.kb;P.vy=Math.max(P.vy,d.kb*.25);}}}m.atkCd=d.cd;}}
       else if(mobReach(m,dist)<d.range+.2&&m.atkCd<=0&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){m.wind=MOB_WIND;}
       else if(!m.siege&&m.atkCd<=0&&mobReach(m,dist)<d.range+1&&!losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true))m.siege=nearestOpening(m);
@@ -99,7 +101,7 @@ function updateMobs(dt){
       if(m.siege&&m.wind<=0){const sx=m.siege.x-m.pos.x,sz=m.siege.z-m.pos.z,sd=Math.hypot(sx,sz);
         if(sd<1.9){tx=sx;tz=sz;spd=0;if(m.atkCd<=0){damagePiece(m.siege,d.dmg*2,'mob');m.atkCd=d.cd;m.anim=.4;m.wind=0;}}else{tx=sx;tz=sz;spd=d.run;}}
       if(m.wind>0){spd=dist>d.range*.8?d.run:0;tx=dx;tz=dz;}   // v1.33 (kohta 14): kaikki lyövät liikkeestä, ei pysähtymistä
-      if(d.fells&&spd>0)fellAhead(m,dt);
+      if(d.fells&&spd>0)fellAhead(m,dt);}
     }else{
       m.siege=null;m.t-=dt;if(m.t<=0||!m.wander){m.t=3+Math.random()*5;if(Math.random()<.45){const a=Math.random()*TAU;m.wander={x:m.pos.x+Math.cos(a)*10,z:m.pos.z+Math.sin(a)*10};}else m.wander=null;}
       if(m.wander){tx=m.wander.x-m.pos.x;tz=m.wander.z-m.pos.z;if(Math.hypot(tx,tz)<1)m.wander=null;spd=d.walk;}
@@ -107,6 +109,7 @@ function updateMobs(dt){
     if(atBorder&&spd>0){const ox=m.pos.x-m.guard.x,oz=m.pos.z-m.guard.z;if(tx*ox+tz*oz>0){spd=0;m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*6));}}   // rajalla: ei ulospäin
     moveMob(m,tx,tz,spd,dt);
     animMob(m,dt);
+    if(m.archer&&m.aimT>0){m.f.armR.rotation.x=-1.45;m.f.armR.rotation.z=0;}   // jousi tähtäyksessä
   }
   HURT_K=1;
   // separation
@@ -175,6 +178,18 @@ function flyMob(m,dt){const F=m.fly;F.t+=dt;const k=Math.min(1,F.t/F.dur);m.pos.
 function mobReach(m,dist){const sy=m.pos.y+(m.f.biped?1:.6)*(m.f.s||1),gap=Math.max(0,sy-(P.pos.y+1.8),P.pos.y-sy);return Math.hypot(dist,gap);}
 // Kaikkien vihollisten ja eläinten liikenopeus × MOB_SPD (−15 %, v0.63)
 const MOB_SPD=.85;
+// v1.42 (lista 4, kohta 16): jousikalmo ampuu 3–20 m päästä 1 nuolen / 2,5 s (0,6 s tähtäys), vahinko kuin lähi-iskussa; pitää 6–14 m
+// etäisyyden (peruuttaa kasvot pelaajaan päin), lähestyy jos ei näe. Alle 2,4 m lyö tavalliseen tapaan.
+const _arF=new V3(),_arD=new V3();
+function archerAI(m,dt,dx,dz,dist){const d=m.def,los=losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true);
+  if(m.aimT>0){m.aimT-=dt;if(m.aimT<=0&&!P.dead&&los){const fx=Math.sin(m.yaw),fz=Math.cos(m.yaw);_arF.set(m.pos.x+fx*.55,m.pos.y+1.35,m.pos.z+fz*.55);
+      const sp=30,t=dist/sp,sc=(Math.random()-.5)*.9*dist/20;_arD.set(P.pos.x+P.vel.x*t*.6+sc-_arF.x,P.pos.y+1.15-_arF.y,P.pos.z+P.vel.z*t*.6-sc*.5-_arF.z);
+      _arD.y+=.5*7*t*t;const L=_arD.length();_arD.multiplyScalar(1/L);shootArrow(_arF,_arD,L/t,d.dmg,'mob',7);sfx('bow');m.atkCd=1.9;}
+    return {spd:0};}
+  if(!P.dead&&los&&dist>=3&&dist<=20&&m.atkCd<=0){m.aimT=.6;return {spd:0};}
+  if(!los||dist>14)return {spd:d.run};
+  if(dist<6){m.vel.x-=dx/dist*10*dt;m.vel.z-=dz/dist*10*dt;}
+  return {spd:0};}
 function moveMob(m,tx,tz,spd,dt){
   spd*=MOB_SPD;
   // v0.83: Aarnimetsässä hirviöt ovat vihaisia ja liikkuvat 20 % nopeammin (biomi tarkistetaan sekunnin välein)

@@ -73,6 +73,23 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.42 (lista 4, erä D: ulottuvuuksien saalis, Kalmaherra, jousikalmot, ensikäynnin otsikko)
+- **Saalis (12–13):** `realmLoot(id,base)`: Kalmankammion arkuissa ja kirstuissa määrät 2×; Kalmankammiossa ja Aarnihaudassa 30 %
+  mahdollisuus harvinaiseen (`RARE_LOOT`): 3–5 metson sulkaa, karhuntalja, 1–2 hiidenkiveä tai ★2 rautamiekka/-kirves, kuparimiekka,
+  keihäs, kupari-/rautakilpi tai jousi. Testattu 1000 avausta: 2× aina, harvinainen 28–31 %, Routaluolassa 0.
+- **Kalmaherra (14):** ryntäys 5 s välein (ennen 10 s, `chargeGap`), ei huitaise ilmaa (`noAir`: lyönti vain alle ulottuman + 0,6 m).
+  Kun hp ≤ 50 %: 20 s välein (ensimmäinen 4 s jälkeen) 1–3 latausiskua (0,7 s nosto, `act 'fireline'`), jokainen jättää 8 m tulilinjan
+  pelaajaa kohti (`fireLine`, pysähtyy seinään, oma valo): 20 vahinkoa kerran + palaminen 4 s (uusiutuu linjassa seistessä), kestää 5 s.
+- **Loppuvaihe (15):** alle 30 %: materiaalit kopioidaan ja hehkuvat sykkien punaisena (`bossFinalGlow`), vain ryntäyksiä (1,5 s tauko),
+  20 s välein 5 kalmoa ympärille (`summonMinions(m,5,12)`). Ei tulilinjoja loppuvaiheessa.
+- **Jousikalmot (16):** `makeArcher` (realmize, Kalmankammio, 10 %): kirves piiloon, jousi käteen. `archerAI` (ai.js): 0,6 s tähtäys
+  (käsi ylhäällä), nuoli 3–20 m kaarella ja ennakolla, vahinko = lähi-isku, 1 nuoli / 2,5 s; pitää 6–14 m (peruuttaa kasvot pelaajaan),
+  lähestyy jos ei näe; alle 2,4 m lyö. Kuollessa 50 %: 2–5 nuolta.
+- **Ensikäynti (17):** `realmIntro(id)`: ensimmäisellä kerralla (`fo('ri')`) koko ruudun otsikko ulottuvuuden hehkuvärillä (`#realmBan`:
+  riimurivit, "Astut ulottuvuuteen", nimi sumeasta väristen esiin + välke, tavoite "Kukista X ja ota Y.", karjaisu ja tärähdys, 6,5 s).
+  Myöhemmin vain sivuviesti; voitetussa ulottuvuudessa "X on kukistettu. Tutki rauhassa."
+  Huom. testaus: headless-selaimessa CSS-animaatiot eivät etene raskaan 3D:n aikana – ulkoasu tarkistettu animaatiot pois kytkettynä.
+
 ### v1.41 (lista 4, erä C: lumi ja sade, seinäsoihtu, soihdun sytytys, arkkujen ulkonäkö)
 - **Lumi (2):** hiutaleet ovat maailmankoordinaateissa (`updateSnow`): 50 × 50 m alue kiertää pelaajan ympäri silmukkana (x/z ±25 m),
   tuuli kuljettaa, maahan pudonnut syntyy ylös. Ei enää "seuraa kameraa". Sade ja lumi saavat pistekohtaiset värit (`precipTint`):
@@ -1500,7 +1517,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 4: 32 kohtaa (v1.39–) – tarkentavat kysymykset kysytään ensin, vastaukset kirjataan tähän
-**JATKA TÄSTÄ (lista 4):** PR #25 auki. Erät A, B, C tehty (v1.39–v1.41); seuraavaksi D (v1.42), sitten E ja F.
+**JATKA TÄSTÄ (lista 4):** PR #25 auki. Erät A–D tehty (v1.39–v1.42); seuraavaksi E (v1.43), sitten F.
 **Erät (lista 4):**
 - A (v1.39): 1 kyykky, 3 ylämäki, 5 selkäterät, 6 esineet maassa, 8–9 pomot/vartijat, 18 rikki kilpi, 19 Aarnihirviö, 25 hp-vaihtelu,
   extra 1 veren fysiikka, extra 2 linnakkeen portaat.

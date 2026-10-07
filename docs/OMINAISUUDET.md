@@ -364,3 +364,10 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Seinäsoihtu (2 puu, 1 pihka, 1 rauta): kiinnitetään seinään, palaa 15 min, pihka lisää 15 min (enint. 30).
 - Sammunut soihtu syttyy 2,5 m päässä liekistä (nuotio, soihtuteline, seinäsoihtu, hauta- ja ulottuvuussoihdut), kun seisoo 1–1,5 s.
 - Arkut: puuarkut lankuista rautavantein ja niitein, linnakkeen kiviarkku riimuin; lukonreikä, avattuna ontto.
+
+## Lista 4, erä D (v1.42)
+- Kalmankammion arkuissa kaksinkertainen saalis; Kalmankammiossa ja Aarnihaudassa 30 % mahdollisuus harvinaiseen (sulat, karhuntalja, hiidenkivi, ★2-ase tai -kilpi).
+- Kalmaherra ryntää 5 s välein eikä huitaise ilmaa. Alle 50 %: 20 s välein 1–3 tulilinjaa (8 m, 20 vahinkoa + palaminen 4 s, kestää 5 s).
+  Alle 30 %: hehkuu punaisena, vain ryntäyksiä 1,5 s välein, 5 kalmoa 20 s välein.
+- Kalmankammion kalmoista 10 % on jousikalmoja: ampuvat 3–20 m päästä 2,5 s välein, pitävät etäisyyttä, pudottavat joskus nuolia.
+- Ensimmäinen käynti ulottuvuudessa: iso animoitu otsikko ja tavoite; myöhemmin sivuviesti.
