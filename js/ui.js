@@ -38,12 +38,26 @@ function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
   for(;k<mobBars.length;k++)mobBars[k].hidden=true;}
 function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq||(AMMO.includes(s.id)&&ammoId()===s.id)?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}" data-it="${s.id}" data-q="${s.q||1}" data-n="${s.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${d.cat==='shield'&&(s.shHit||s.shBrk!=null)?`<span class="fu${s.shBrk!=null?' off':''}"><i style="width:${s.shBrk!=null?Math.min(100,(playTime-s.shBrk)/SHIELD_FIX*100):100-(s.shHit||0)/(SHIELD_HITS[s.id]||15)*100}%"></i></span>`:''}${s.id==='soihtu'?`<span class="fu${s.lit===false?' off':''}"><i style="width:${Math.max(0,(s.fuel??torchMax(s))/torchMax(s)*100)}%"></i></span>`:''}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
 let hudT=0,msgHidden=false;
+/* v1.77: jousen nuoliteksti hotbarin yläpuolella: jousi käteen → 2,5 s, latauksen alku → 2 s pienempänä (häivytys). */
+let ammoHeld=null,ammoTm=0;
+function showAmmo(dur,small){const e=$('#ammoT');if(!e)return;const am=typeof ammoId==='function'?ammoId():null;
+  e.innerHTML=am?`<span class="ic" style="background-image:url(${icon(am)})"></span>${ITEMS[am].n} <b>×${invCount(am)}</b>`:'Ei nuolia – valmista tai hae nuolia';
+  e.className=(am?'':'none')+(small?' sm':'');e.hidden=false;void e.offsetWidth;e.classList.add('on');clearTimeout(ammoTm);ammoTm=setTimeout(()=>{e.classList.remove('on');ammoTm=setTimeout(()=>{e.hidden=true;},450);},dur*1000);}
+/* v1.77: pikapaikan valinnassa esineen nimi valitun ruudun yläpuolelle ~1 s + häivytys. Väri harvinaisuuden mukaan: arvoesine / harvinainen
+   = kulta, valmistustaso ≥ 6 = sininen, taso ≥ 3 tai laatu ≥ 2 = vihreä, muut vaaleat. Yksi elementti → vaihdettaessa vanha nimi pois heti. */
+let hnSel=-1;
+function itemRarity(s){const id=s.id,r=RECIPE_BY[id],lv=r&&r.lvl||0;return isValuable(id)?'leg':lv>=6?'rare':(lv>=3||(s.q||1)>=2)?'unc':'com';}
+function showHotName(i){const e=$('#hotName'),s=inv[i],sl=document.querySelectorAll('#hotbar .slot')[i];if(!e)return;e.className='';if(!s||!sl)return;
+  const r=sl.getBoundingClientRect();e.textContent=ITEMS[s.id].n+((s.q||1)>1?' ★'.repeat(s.q-1):'');e.style.left=(r.left+r.width/2)+'px';void e.offsetWidth;e.className='on r_'+itemRarity(s);}
 function updateHUD(dt){
+  if(hotSel!==hnSel){if(hnSel>=0)showHotName(hotSel);hnSel=hotSel;}
+  if(heldId!==ammoHeld){ammoHeld=heldId;if(heldId&&ITEMS[heldId].cat==='bow')showAmmo(2.5);}
   hudT-=dt;updateMsgs(dt);updateFloaters(dt);updateMobBars();
   $('#hurt').style.opacity=Math.min(1,P.hurtFlash*1.5+(P.hp<maxHp()*.25&&!P.dead?.35:0));
   // prompt
   // v1.23 (kohta 17): tähtäysympyrä = nuolen hajonta: iso alussa, pienenee vedettäessä, keltainen → punainen, täysi veto = pieni + piste
-  {const c=$('#cross');if(P.drawing){const sp=bowSpread(),k=Math.min(1,P.bowDraw||0),R=Math.max(4,Math.tan(sp*Math.PI/180)/Math.tan(camera.fov*Math.PI/360)*innerHeight/2);
+  updDropRet();
+  {const c=$('#cross');if(P.drawing){const sp=bowSpread(),k=Math.min(1,P.bowDraw||0),R=Math.max(bowCrouch()&&k>=1?2.5:4,Math.tan(sp*Math.PI/180)/Math.tan(camera.fov*Math.PI/360)*innerHeight/2);
       c.className='aim'+(sp<.35?' full':'');c.style.width=c.style.height=(R*2)+'px';c.style.margin=`${-R-2}px 0 0 ${-R-2}px`;
       c.style.borderColor=`rgb(${Math.round(lerp(232,224,k))},${Math.round(lerp(196,72,k))},${Math.round(lerp(90,60,k))})`;}
     else if(c.className){c.className='';c.style.width=c.style.height=c.style.margin=c.style.borderColor='';}}
@@ -77,20 +91,20 @@ let panelOpenedAt=0;
 // DEV-valikko (Ä): sää, kellonaika, terveys ja kylläisyys – muutokset heti. Sää pysyy valittuna 10 min.
 function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=dayT*24;return `${Math.floor(h)}:${String(Math.floor(h%1*60)).padStart(2,'0')}`;};
   B.innerHTML=`<div class="devRow"><b>Sää</b><div class="devBtns">${Object.entries(WEATHERS).map(([k,w])=>`<button class="btn${weather.cur===k?' on':''}" data-w="${k}">${w.n}</button>`).join('')}</div></div>
-  <div class="devRow"><b>Aika <span id="devClk">${clk()}</span></b><input id="devT" type="range" min="0" max="1" step="0.005" value="${dayT}"><div class="devBtns">${[['Aamu',.28],['Päivä',.5],['Ilta',.74],['Yö',.95]].map(([n,v])=>`<button class="btn" data-t="${v}">${n}</button>`).join('')}</div></div>
-  <div class="devRow"><b>Terveys <span id="devHpV">${Math.round(P.hp)} / ${maxHp()}</span></b><input id="devHp" type="range" min="1" max="${maxHp()}" step="1" value="${P.hp}"></div>
-  <div class="devRow"><b>Kylläisyys <span id="devHuV">${Math.round(P.hunger)}</span></b><input id="devHu" type="range" min="0" max="100" step="1" value="${P.hunger}"></div>
-  <div class="devRow"><b>Jumalvoimat</b><div class="devChk">${[['god','Ei voi kuolla'],['food','Ei nälkää'],['stam','Rajaton kestävyys'],['lvl','Korkein taso'],['weight','Ei painorajaa'],['fly','Lento (tuplahyppy)']].map(([k,n])=>`<label><input type="checkbox" data-dv="${k}"${DEVF[k]?' checked':''}> ${n}</label>`).join('')}</div>
+  <div class="devRow"><b>Aika <span id="devClk">${clk()}</span></b>${sldHTML('devT',0,1,.005,dayT)}<div class="devBtns">${[['Aamu',.28],['Päivä',.5],['Ilta',.74],['Yö',.95]].map(([n,v])=>`<button class="btn" data-t="${v}">${n}</button>`).join('')}</div></div>
+  <div class="devRow"><b>Terveys <span id="devHpV">${Math.round(P.hp)} / ${maxHp()}</span></b>${sldHTML('devHp',1,maxHp(),1,Math.round(P.hp))}</div>
+  <div class="devRow"><b>Kylläisyys <span id="devHuV">${Math.round(P.hunger)}</span></b>${sldHTML('devHu',0,100,1,Math.round(P.hunger))}</div>
+  <div class="devRow"><b>Jumalvoimat</b><div class="devChk">${[['god','Ei voi kuolla'],['food','Ei nälkää'],['stam','Rajaton kestävyys'],['lvl','Korkein taso'],['weight','Ei painorajaa'],['fly','Lento (tuplahyppy)']].map(([k,n])=>`<label class="tglRow">${tglHTML('dv_'+k,!!DEVF[k],`data-dv="${k}"`)} ${n}</label>`).join('')}</div>
     <div class="devBtns"><button class="btn" data-dvall="1">Kaikki päälle</button><button class="btn" data-dvall="0">Kaikki pois</button></div></div>
   <div class="devRow"><b>Hae esine (DEV)</b><div class="devGive"><input id="devQ" class="search" type="search" placeholder="Hae esinettä nimellä…" autocomplete="off" spellcheck="false" value="${esc(devQ)}">
-    <input id="devN" type="number" min="1" max="999" value="${devN}" title="Määrä"><button class="btn" id="devGo">Hae</button></div><div id="devList" class="devList"></div></div>
+    <input id="devN" type="text" inputmode="numeric" maxlength="3" placeholder="1" value="${devN>1?devN:''}" title="Määrä (tyhjä = 1)"><button class="btn" id="devGo">Hae</button></div><div id="devList" class="devList"></div></div>
   <div class="devRow"><b>Kartta</b><div class="devBtns"><button class="btn" id="devMap">Paljasta kartta ja kohteet</button></div></div>`;
   B.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{weather.cur=b.dataset.w;weather.until=playTime+600;renderDev();});
   B.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{dayT=+b.dataset.t;renderDev();});
-  $('#devT').oninput=e=>{dayT=+e.target.value;$('#devClk').textContent=clk();};
-  $('#devHp').oninput=e=>{P.hp=+e.target.value;$('#devHpV').textContent=`${P.hp} / ${maxHp()}`;};
-  $('#devHu').oninput=e=>{P.hunger=+e.target.value;$('#devHuV').textContent=P.hunger;};
-  B.querySelectorAll('[data-dv]').forEach(c=>c.onchange=()=>{DEVF[c.dataset.dv]=c.checked?1:0;saveDevF();invDirty=true;});
+  bindSld('devT',v=>{dayT=v;$('#devClk').textContent=clk();});
+  bindSld('devHp',v=>{P.hp=v;$('#devHpV').textContent=`${P.hp} / ${maxHp()}`;});
+  bindSld('devHu',v=>{P.hunger=v;$('#devHuV').textContent=P.hunger;});
+  B.querySelectorAll('[data-dv]').forEach(c=>c.onclick=()=>{DEVF[c.dataset.dv]=DEVF[c.dataset.dv]?0:1;saveDevF();invDirty=true;renderDev();});
   B.querySelectorAll('[data-dvall]').forEach(b=>b.onclick=()=>{for(const k in DEVF)DEVF[k]=+b.dataset.dvall;saveDevF();invDirty=true;renderDev();});
   // v1.05 DEV-esinehaku: hakusana + määrä hakunapin vieressä, osumalista "Anna"-napeilla (lähtee pois DEV-tilan mukana)
   const listGive=()=>{const q=fold($('#devQ').value.trim()),L=$('#devList');devQ=$('#devQ').value;devN=Math.max(1,Math.min(999,Math.round(+$('#devN').value||1)));
@@ -108,12 +122,18 @@ function devRevealMap(){explored.fill(1);resetFog();for(const k in LOC){const L=
 // v0.82: alueet (biomit). Nykyinen alue P.zone tarkistetaan 0,4 s välein; ensimmäisellä kerralla "Uusi alue löydetty" (flags.bio).
 let zoneT=0,zoneBanT=0;
 function updateZone(dt){zoneT-=dt;if(zoneT>0)return;zoneT=.4;if(P.inDun||P.dead)return;
-  const z=zoneAt(P.pos.x,P.pos.z);if(z===P.zone&&!zoneQuiet)return;const ch=z!==P.zone;P.zone=z;if(!flags.bio)flags.bio={meadow:1};
-  if(!flags.bio[z]){flags.bio[z]=1;if(!zoneQuiet)showZoneBanner(BIOMES[z].n);}
+  const z=zoneAt(P.pos.x,P.pos.z);if(z===P.zone&&!zoneQuiet&&(flags.bio&&flags.bio[z]))return;const ch=z!==P.zone;P.zone=z;if(!flags.bio)flags.bio={meadow:1};
+  if(!flags.bio[z]&&(zoneQuiet||zoneDeep(z))){flags.bio[z]=1;if(!zoneQuiet)showZoneBanner(BIOMES[z].n);}   // v1.43: löytyy vasta hieman syvemmältä
   if(ch&&z==='aarni'&&!zoneQuiet&&playTime-(flags.aarniMsg||-99)>60){flags.aarniMsg=playTime;setTimeout(()=>msg('Hirviöt ovat vihaisia Aarnimetsässä – ne liikkuvat täällä nopeammin.','warn'),flags.bio.aarni===1&&$('#zoneBan').classList.contains('on')?1500:0);}
   zoneQuiet=false;if(ch&&openPanel==='inv')renderBiome();}
-function showZoneBanner(name){const el=$('#zoneBan');$('#zoneBanN').textContent=name;el.classList.add('on');sfx('discover');msg(`Uusi alue löydetty: ${name}`,'loot');
-  clearTimeout(zoneBanT);zoneBanT=setTimeout(()=>el.classList.remove('on'),4000);}
+// v1.43: alue löytyy vasta, kun vähintään 5/6 pistettä 6 m säteellä pelaajasta on samaa aluetta (ei heti rajalla).
+function zoneDeep(z){let n=0;for(let i=0;i<6;i++){const a=i/6*TAU;if(zoneAt(P.pos.x+Math.cos(a)*6,P.pos.z+Math.sin(a)*6)===z)n++;}return n>=5;}
+// v1.43: aluebannerit jonossa – pitkä häivytys sisään (2,2 s), näkyy 3 s, häivytys ulos (3 s), 1 s tauko ennen seuraavaa; ei päällekkäin.
+const ZONE_IN=2200,ZONE_HOLD=3000,ZONE_OUT=3000,ZONE_GAP=1000,zoneQ=[];let zoneBusy=false;
+function showZoneBanner(name){zoneQ.push(name);if(!zoneBusy)nextZoneBanner();}
+function nextZoneBanner(){const name=zoneQ.shift();if(!name){zoneBusy=false;return;}zoneBusy=true;const el=$('#zoneBan');$('#zoneBanN').textContent=name;
+  el.classList.add('on');sfx('discover');msg(`Uusi alue löydetty: ${name}`,'loot');
+  clearTimeout(zoneBanT);zoneBanT=setTimeout(()=>{el.classList.remove('on');zoneBanT=setTimeout(nextZoneBanner,ZONE_OUT+ZONE_GAP);},ZONE_IN+ZONE_HOLD);}
 function renderBiome(){const B=$('#biomeBox');if(!B)return;if(P.inDun||!P.zone||!BIOMES[P.zone]){B.innerHTML='';return;}const b=BIOMES[P.zone],dg=['','Rauhallinen','Kohtalainen','Vaarallinen'][b.danger]||'';
   B.innerHTML=`<h3>Alue: ${b.n}</h3><div class="bRow"><span>Sää ja lämpö</span><span>${b.temp}</span></div><div class="bRow"><span>Vaarallisuus</span><span>${dg}</span></div>
   <div class="bRow"><span>Eläimet</span><span>${b.life}</span></div><div class="bRow"><span>Viholliset</span><span>${b.foe}</span></div><div class="bRow"><span>Resurssit</span><span>${b.res}</span></div>${b.note?`<div class="bNote">${b.note}</div>`:''}
@@ -133,8 +153,13 @@ function renderLog(){const fm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60))
 // v1.32: kiinteän kokoinen reppu skaalataan pienelle näytölle sopivaksi.
 function fitInv(){const el=$('#inv');if(el)el.style.setProperty('--invK',Math.min(1,(innerWidth-16)/1131,(innerHeight-16)/732).toFixed(3));}
 addEventListener('resize',fitInv);
+// v1.40 (lista 4, kohta 28): näppäinopasteet – paneelin oikeaan yläkulmaan "Sulje: P / Tab", pelinäkymän vasempaan alakulmaan "Päävalikko: P".
+const PANEL_KEY={inv:['#inv','inv'],build:['#build','build'],chest:['#chest','interact'],prog:['#progP','prog'],log:['#logP','log'],map:['#mapP','map'],dev:['#devP',null]};
+function refreshKeyHints(){const on=SET.keyHints!==false;for(const k in PANEL_KEY){const [sel,a]=PANEL_KEY[k],el=$(sel);if(!el)continue;let h=el.querySelector(':scope>.pHint');
+    if(!h){h=document.createElement('span');h.className='pHint';el.appendChild(h);}h.hidden=!on;h.textContent=`Sulje: ${keyLabel(BIND.menu)}${a?' / '+keyLabel(BIND[a]):k==='dev'?' / Ä':''}`;}
+  let g=$('#gameHint');if(!g){g=document.createElement('div');g.id='gameHint';$('#hud').appendChild(g);}g.hidden=!on;g.textContent=`Päävalikko: ${keyLabel(BIND.menu)}`;}
 function togglePanel(name){if(openPanel===name){closePanels();return;}if(P.dead)return;panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';if(!locked)releaseLock();else{VC.x=innerWidth/2;VC.y=innerHeight/2;}mouseL=false;mouseR=false;P.drawing=false;
-  if(name==='inv'){$('#inv').hidden=false;fitInv();renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){$('#devP').hidden=false;renderDev();}vcSync();}
+  if(name==='inv'){$('#inv').hidden=false;fitInv();{const cs=$('#craftSearch');if(cs)cs.value='';}renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;{const bs=$('#buildSearch');if(bs)bs.value='';}renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){devQ='';devN=1;$('#devP').hidden=false;renderDev();}refreshKeyHints();vcSync();}
 function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;selHalf=false;selEq=null;slotDrag=null;hoverSlot=null;if(typeof updGhost==='function')updGhost();if(!keep){state='play';if(!skipLock&&!locked)requestLock();}vcSync();}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
 function nearStations(){const s={};for(const p of pieces){const k=isFirePiece(p.t)?'nuotio':p.t;if(['tyopenkki','nuotio','ahjo'].includes(k)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(k==='nuotio'?4:8)**2&&!P.inDun){if(k==='nuotio'&&p.data.fuel<=0)continue;s[k]=1;}}return s;}
@@ -152,7 +177,7 @@ function renderInv(){initSearch();renderEffects();
       if(selSlot>=0&&selSlot!==i&&inv[selSlot]){if(selEq&&selEq.i===selSlot)selEq.undo();selEq=null;(selHalf?moveHalf:moveSlot)(inv,selSlot,inv,i);selSlot=-1;selHalf=false;upPrev=null;invDirty=true;updateGear();renderInv();return;}
       upPrev=null;selHalf=false;selEq=null;if(selSlot===i){selSlot=-1;renderInv();return;}selSlot=inv[i]?i:-1;
       if(inv[i]&&clickEquips(inv[i]))selEq={i,undo:clickEquip(inv[i])};renderInv();};
-    el.ondblclick=()=>{const s=inv[i];if(s&&!ITEMS[s.id].food&&!clickEquips(s))useSlot(i);selSlot=-1;renderInv();};el.oncontextmenu=e=>{e.preventDefault();if(dragEat)return;if(selSlot>=0&&selSlot!==i&&inv[selSlot]){selEq=null;moveHalf(inv,selSlot,inv,i);invDirty=true;updateGear();renderInv();}
+    el.ondblclick=()=>{const s=inv[i];if(s&&!ITEMS[s.id].food&&!clickEquips(s))useSlot(i);selSlot=-1;renderInv();};el.oncontextmenu=e=>{e.preventDefault();if(dragEat)return;if(selSlot>=0&&selSlot!==i&&inv[selSlot]){if(selEq&&selEq.i===selSlot)selEq.undo();selEq=null;moveHalf(inv,selSlot,inv,i);   /* v1.40 (kohta 26): vasen tai oikea valinta → oikea toiseen ruutuun = puolet */invDirty=true;updateGear();renderInv();}
       else{const h=pickHalf(inv[i]);upPrev=null;selEq=null;if(selSlot===i&&selHalf===h){selSlot=-1;selHalf=false;}else{selSlot=inv[i]?i:-1;selHalf=h;}renderInv();}};   // v1.30: oikea = ota puolet valituksi
     slotUX(el,'i',i);});
   $('#invW').textContent=`Paino ${invWeight().toFixed(0)} / ${MAXW}`;updGhost();
@@ -187,7 +212,8 @@ function renderInv(){initSearch();renderEffects();
   const qs=searchQ('#craftSearch'),sug=!qs&&craftTab==='suos'?suggestCrafts(st):null;
   for(const [id,nm] of [['suos','Ehdotukset'],...CRAFT_CATS]){const b=document.createElement('button');b.className='tab'+(id===craftTab&&!qs?' on':'')+(id==='suos'?' sug':'');b.textContent=nm;b.onclick=()=>{craftTab=id;$('#craftSearch').value='';renderInv();};tabs.appendChild(b);}
   const sugL=sug?[...(sug.now.length?[{h:'Voit valmistaa nyt'}]:[]),...sug.now,...(sug.next.length?[{h:'Hyödyllistä seuraavaksi'}]:[]),...sug.next]:null;
-  const list=qs?RECIPES.filter(r=>recipeKnown(r)&&searchHit(ITEMS[r.id].n,qs)):sugL?sugL.map(x=>x.h?x:x.r):RECIPES.filter(r=>recipeKnown(r)&&(craftTab==='alku'?r.alku:recipeCat(r)===craftTab));
+  const rank=r=>{const n=fold(ITEMS[r.id].n);return n===qs||r.id===qs?0:n.startsWith(qs)||r.id.startsWith(qs)?1:2;};   // v1.65: kuten DEV-haku (nimi tai tunniste, järjestys)
+  const list=qs?RECIPES.filter(r=>recipeKnown(r)&&(searchHit(ITEMS[r.id].n,qs)||r.id.includes(qs))).sort((a,b)=>rank(a)-rank(b)||ITEMS[a.id].n.localeCompare(ITEMS[b.id].n,'fi')):sugL?sugL.map(x=>x.h?x:x.r):RECIPES.filter(r=>recipeKnown(r)&&(craftTab==='alku'?r.alku:recipeCat(r)===craftTab));
   if(!list.length)cl.innerHTML=`<div class="note">${qs?'Ei osumia haulle “'+esc(qs)+'”.':'Ei ehdotuksia juuri nyt.'}</div>`;
   for(let li=0;li<list.length;li++){const r=list[li];if(r.h){const h=document.createElement('div');h.className='sugH';h.textContent=r.h;cl.appendChild(h);continue;}
     const why=sugL?sugL[li].why:'';
@@ -262,7 +288,7 @@ function suggestBuilds(hasBench){const out=[],has=t=>pieces.some(p=>p.t===t||PIE
   return out.sort((a,b)=>b.sc-a.sc).slice(0,10);}
 let _srchInit=false;
 function initSearch(){if(_srchInit)return;_srchInit=true;
-  const cs=$('#craftSearch'),bs=$('#buildSearch');if(cs)cs.addEventListener('input',()=>renderInv());if(bs)bs.addEventListener('input',()=>renderBuild());
+  const cs=$('#craftSearch'),bs=$('#buildSearch');if(cs){cs.addEventListener('input',()=>renderInv());cs.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const b=$('#craftList .rec:not(.na) .btn.pri');if(b)b.click();}});}   /* v1.65: Enter valmistaa ensimmäisen osuman (kuten DEV-haku) */if(bs)bs.addEventListener('input',()=>renderBuild());
   for(const el of [cs,bs])if(el)el.addEventListener('keydown',e=>{if(e.key==='Escape'){if(el.value){el.value='';el.dispatchEvent(new Event('input'));}else el.blur();e.stopPropagation();}});}
 const costChips=req=>Object.entries(req).map(([id,n])=>{const h=invCount(id);return `<span class="mat ${h>=n?'ok':'bad'}">${ITEMS[id].n} ${Math.min(h,999)}/${n}</span>`;}).join('');
 function renderBuild(){initSearch();const c=$('#buildCards');c.innerHTML='';const hasBench=!!nearPiece('tyopenkki',P.pos.x,P.pos.z,20);
@@ -394,9 +420,20 @@ addEventListener('mouseup',e=>{const d=slotDrag;slotDrag=null;if(!d||!d.on)retur
 addEventListener('click',e=>{if(dragEat){dragEat=false;e.stopPropagation();e.preventDefault();}},true);
 addEventListener('contextmenu',e=>{if(dragEat){e.stopPropagation();e.preventDefault();}},true);   // v1.30: oikealla raahauksen jälkeinen contextmenu
 // v1.31: Q pudottaa hiiren alla olevan esineen (repussa ja arkussa) ilman valintaa: Q yksi, Shift+Q koko pino.
+// v1.40 (lista 4, kohdat 27 ja 29): napsautus paneelin reunojen ulkopuolelle – valittu esine pudotetaan (puolet jos puolikas valittu),
+// muuten paneeli sulkeutuu.
+addEventListener('mousedown',e=>{if(!openPanel||state!=='ui'||performance.now()-panelOpenedAt<250||dragEat)return;const t=e.target;
+  if(t.closest&&t.closest('.panel,#keyDlg,#hotbar,.dlg,#settings'))return;
+  const cs=chestSel||(selSlot>=0&&inv[selSlot]?{g:'i',i:selSlot,half:selHalf}:null);
+  if(cs){const arr=uxArr(cs.g),s=arr[cs.i];if(s){const n=cs.half?Math.max(1,Math.floor(s.n/2)):s.n;if(s.eq&&n>=s.n){s.eq=false;}playerDrop(s.id,n,s.q);s.n-=n;if(s.n<=0)arr[cs.i]=null;sfx('pickup',.8,.5);msg(`Pudotit: ${ITEMS[s.id].n}${n>1?' ×'+n:''}`);}
+    selSlot=-1;selHalf=false;selEq=null;chestSel=null;invDirty=true;updateGear();uxRerender();updGhost();return;}
+  closePanels(false);});
 function dropAt(g,i,all){const arr=uxArr(g),s=arr[i];if(!s)return false;const n=all?s.n:1;if(s.eq&&(all||s.n<=1)){s.eq=false;updateGear();}
   playerDrop(s.id,n,s.q);s.n-=n;if(s.n<=0){arr[i]=null;if(g==='i'&&selSlot===i)selSlot=-1;if(chestSel&&chestSel.g===g&&chestSel.i===i)chestSel=null;}
   sfx('pickup',.8,.5);invDirty=true;uxRerender();updGhost();return true;}
+// v1.57: pikapaikan pudotus pelissä (Q yksi, Shift+Q koko pino)
+function dropHot(all){const s=inv[hotSel];if(!s){msg('Pikapaikka on tyhjä.');return;}const n=all?s.n:1;if(s.eq&&(all||s.n<=1)){s.eq=false;updateGear();}
+  playerDrop(s.id,n,s.q);s.n-=n;if(s.n<=0)inv[hotSel]=null;sfx('pickup',.8,.5);invDirty=true;}
 // Valitun esineen pudotus (Q yksi, Shift+Q kaikki).
 function dropSel(all){const s=inv[selSlot];if(!s)return;const n=all?s.n:1;if(s.eq&&(all||s.n<=1)){s.eq=false;updateGear();}
   playerDrop(s.id,n,s.q);s.n-=n;if(s.n<=0){inv[selSlot]=null;selSlot=-1;selEq=null;}sfx('pickup',.8,.5);invDirty=true;renderInv();}
@@ -530,3 +567,13 @@ function applyHudMode(){const md=SET.hudMode|0,g=$('#goal'),q=$('#quest');if(!g|
   h.style.display=what?'':'none';h.classList.toggle('below',md===2);if(what)h.innerHTML=`<b>${what}</b><span>Näytä painamalla (${keyLabel(BIND.hud)})</span>`;
   if(md===2)h.style.top=(g.offsetTop+g.offsetHeight+6)+'px';else h.style.top='';}
 applyHudMode();
+
+/* v1.49 (lista 5, kohta 3): tiputusristikko – vain kyykyssä täysin vedettynä. Vaakaviivat 40, 80 ja 120 m (v1.57, ennen 20–70 m) etäisyyksille: nuolen pudotus
+   d:n matkalla ≈ ½·g·(d/v)², kulma atan(pudotus/d) → pikseleinä kameran näkökentän mukaan. Lyhyemmät viivat kauemmas, numerot oikealla. */
+let dropKey='';
+function updDropRet(){const el=$('#dropRet');if(!el)return;const on=P.drawing&&bowCrouch()&&(P.bowDraw||0)>=1&&state==='play';
+  if(!on){if(!el.hidden){el.hidden=true;dropKey='';}return;}const bs=bowShot(1),H2=innerHeight/2,tf=Math.tan(camera.fov*Math.PI/360),key=bs.v.toFixed(1)+bs.g+innerHeight+camera.fov;
+  el.hidden=false;if(key===dropKey)return;dropKey=key;let h='';
+  for(const d of [40,80,120]){const t=d/bs.v,drop=.5*bs.g*t*t,y=drop/d/tf*H2,w=Math.max(14,40-d*.18);
+    h+=`<i style="top:${y.toFixed(1)}px;width:${w.toFixed(0)}px;margin-left:${(-w/2).toFixed(0)}px"></i><b style="top:${(y-6.5).toFixed(1)}px;left:${(w/2+4).toFixed(0)}px">${d} m</b>`;}
+  el.innerHTML=h;}

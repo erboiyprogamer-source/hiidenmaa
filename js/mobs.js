@@ -179,7 +179,7 @@ const MOBDEF={
   kivivartija:{n:'Kivivartija',hp:220,r:.6,ai:'hostile',walk:1.2,run:3.8,aggro:13,dmg:17,range:2.55,   /* v1.31: × stride 1,1 = 2,8 m */cd:1.9,wind:.7,weak:{blunt:1.7,pierce:.5,fire:.8},drops:[['kivi',2,4],['piikivi',1,3],['kupari',0,2]],fig:()=>figGolem(1.3,false)},
   routasusi:{n:'Routasusi',hp:68,r:.5,ai:'hostile',walk:2,run:5,aggro:18,dmg:14,range:1.7,cd:1.1,wind:.28,weak:{fire:1.4},drops:[['nahka',1,2],['luu',0,1]],fig:()=>makeAnimal({kind:'wolf',ice:1,s:.95,body:0xc9dce8,dark:0x8aa6ba,legs:0xa8bfce,belly:0xeef6fb,ruff:0xe4f0f7,headC:0xd8e8f2,tailTip:0x7f9db5,legH:.62,len:1.1,eyes:0x7fe0ff})},
   jaajattari:{n:'Jäätär',hp:560,r:1.2,ai:'rboss',walk:2,run:3.6,aggro:17,dmg:22,range:3.6,cd:1.8,wind:.8,fh:4.6,eye:3.2,weak:{blunt:1.2,pierce:.8,fire:1.5},kit:['swipe','slam','throw','nova'],sum:[],drops:[['rauta',3,5],['hiidenkivi',1,1],['kupari',4,6]],fig:figJaatar},
-  kalmaherra:{n:'Kalmaherra',hp:640,r:.9,ai:'rboss',walk:2.1,run:4,aggro:17,dmg:24,range:3.2,cd:1.7,wind:.75,fh:4.4,eye:3,weak:{blunt:1.4,pierce:.6,fire:1.3},kit:['swipe','charge','summon','nova'],sum:[2,3],drops:[['rauta',3,5],['hiidenkivi',1,1],['kupari',4,6]],fig:figKalmaherra},
+  kalmaherra:{n:'Kalmaherra',hp:640,r:.9,ai:'rboss',chargeGap:5,noAir:1,fireLine:1,final:1,walk:2.1,run:4,aggro:17,dmg:24,range:3.2,cd:1.7,wind:.75,fh:4.4,eye:3,weak:{blunt:1.4,pierce:.6,fire:1.3},kit:['swipe','charge','summon','nova'],sum:[2,3],drops:[['rauta',3,5],['hiidenkivi',1,1],['kupari',4,6]],fig:figKalmaherra},
   aarnihirvio:{n:'Aarnihirviö',hp:720,r:1.1,ai:'rboss',walk:2.2,run:4,aggro:18,dmg:26,range:3.8,cd:1.7,wind:.8,fh:5,eye:3.2,weak:{blunt:1.2,pierce:.8,fire:1.6},kit:['swipe','charge','slam','summon'],sum:[3],drops:[['rauta',4,6],['hiidenkivi',1,1],['kupari',5,7],['pihka',3,5]],fig:figAarni},
 };
 // v0.92 (kohta 9): kaksijalkaiset hirviöt harppovat – askel ~40 % pidempi ja tahti hitaampi, 10 % nopeampi (moveMob), keinuva vartalo
@@ -201,6 +201,9 @@ function spawnMob(type,x,z,opts={}){
   f.g.position.set(x,y,z);scene.add(f.g);
   const mats=[],cl=new Map();f.g.traverse(m=>{if(m.isMesh&&m.material.isMeshStandardMaterial){let c=cl.get(m.material);if(!c){c=m.material.clone();cl.set(m.material,c);mats.push(c);}m.material=c;}});
   const m={type,def,f,mats,pos:new V3(x,y,z),vel:new V3(),yaw:rng()*TAU,hp:def.hp,maxHp:def.hp,state:'idle',t:0,wander:null,atkCd:1,wind:0,angry:false,flash:0,walkPh:0,lastHit:-99,stuck:0,home:{x,z},dun:!!opts.dun,anim:0,dead:false,deadT:0,hurtT:-99};
+  // v1.39 (lista 4, kohta 25): vihollisten ja eläinten hp 100–160 %, vahvemmat hieman isompia (+0–10 %). Ei pomoille.
+  if(def.ai!=='boss'&&def.ai!=='rboss'&&!opts.noVar){const k=1+Math.random()*.6;m.hp=m.maxHp=Math.round(def.hp*k);m.hpK=k;f.g.scale.multiplyScalar(1+(k-1)/6);}
   mobs.push(m);return m;
 }
+function bossTired(type){return ((flags.bossDeaths||{})[type]||0)>=3;}   // v1.81
 function mobRemove(m){scene.remove(m.f.g);if(m.da){if(m.da.flames)scene.remove(m.da.flames);if(m.da.pile)scene.remove(m.da.pile);}mobs.splice(mobs.indexOf(m),1);if(m===boss)boss=null;}

@@ -190,11 +190,14 @@ function makePlayer(){
   const mkLeg=x=>{const p=new THREE.Group();p.position.set(x,hip,0);tube(p,.092,.078,.4,pant,0,-.2,0,1,1,8);rnd(p,0,-.4,0,.072,pant,1,1,1,8);
     const k=new THREE.Group();k.position.set(0,-.4,0);p.add(k);tube(k,.072,.06,.4,pant,0,-.2,0,1,1,8);tube(k,.07,.07,.2,boot,0,-.3,0,1,1,8);tube(k,.083,.083,.06,fur,0,-.2,0,1,1,8);rnd(k,0,-.37,.07,.075,boot,1,.7,1.8,8);rig.add(p);return[p,k];};
   const [legL,kneeL]=mkLeg(-.12),[legR,kneeR]=mkLeg(.12);
-  const torso=tube(rig,.2,.22,.76,cloth,0,hip+.38,0,1.18,.62,8);
+  /* v1.74 (käyttäjä): hieman V-muotoinen vartalo (ylä .218 / ala .205, ennen .2/.22). Yläpinta laskettu kauluksen sisään (korkeus .74,
+     ennen .76 → yläkansi samassa tasossa kuin kauluksen kansi → välkkyvä tumma laikku). Tumma osa näkyy nyt pyöreäreunaisena kumpuna
+     hieman kauluksen yläpuolella. Alkuperäinen koodi: docs/KEHITYSMUISTIO.md v1.74 (peruutusta varten). */
+  const torso=tube(rig,.218,.205,.74,cloth,0,hip+.37,0,1.18,.62,8);rnd(rig,0,hip+.758,0,.2,cloth,1.12,.13,.58,10);
   tube(rig,.235,.235,.07,leather,0,hip+.1,0,1.18,.65,8);rnd(rig,.22,hip+.08,.1,.06,leather,1,1.2,.8,6);{const pc=new THREE.Group(),dk=F(0x4a3220);   // v1.37 (lista 3, kohta 37): vyön takana nahkapussi (ennen irrallinen karvapallo), kiinni vyössä
     pc.add(bx(.13,.13,.055,leather,0,-.01,0),bx(.136,.05,.062,dk,0,.05,-.002),bx(.03,.03,.02,F(0xb08d57),0,.03,-.034),bx(.02,.05,.012,dk,-.045,.075,.026),bx(.02,.05,.012,dk,.045,.075,.026));
     pc.position.set(-.165,hip+.03,-.15);pc.rotation.y=.42;rig.add(pc);}
-  tube(rig,.27,.23,.12,fur,0,hip+.7,0,1.2,.7,8);
+  tube(rig,.285,.235,.12,fur,0,hip+.7,0,1.22,.7,8);   // v1.74: kaulus hieman leveämpi (ennen .27/.23, sx 1.2) → olkapäät kiinni
   const cloths=[torso];
   const mkArm=x=>{const p=new THREE.Group();p.position.set(x,hip+.68,0);rnd(p,0,0,0,.085,fur,1,1,1,8);
     const up=tube(p,.063,.056,.33,cloth,0,-.18,0,1,1,8);cloths.push(up);
@@ -278,6 +281,10 @@ function shaft(g,len,m,r=.032,z0=-.1){const me=new THREE.Mesh(new THREE.Cylinder
 function makeHeld(id){
   const g=new THREE.Group(),W=smat(0x7b4f2b),metalOf=(c,o)=>mat(c,Object.assign({metalness:.2,roughness:.55},o||{}));
   switch(id){
+    case 'piikivikirves':{shaft(g,.85,W);const fm=mat(0x3e444c,{roughness:.35,metalness:.1});   // v1.53 lohkottu piikiviterä, nahkasidos ristiin
+      g.add(poly([[.55,.06],[.58,-.05],[.63,-.26],[.74,-.31],[.86,-.25],[.9,-.12],[.88,.0],[.8,.07]],.05,fm));
+      for(const [y,r] of [[-.14,.4],[-.06,-.4]]){const b=new THREE.Mesh(new THREE.BoxGeometry(.02,.06,.075),mat(0x6a4a2a));b.position.set(.57,y+.04,0);b.rotation.z=r;g.add(b);}
+      const bind=new THREE.Mesh(new THREE.CylinderGeometry(.047,.047,.08,8),mat(0x6a4a2a));bind.rotation.x=Math.PI/2;bind.position.z=.58;g.add(bind);break;}
     case 'kirves':case 'kuparikirves':case 'rautakirves':{shaft(g,.85,W);const mm=id==='kirves'?mat(0x8f8d86):metalOf(id==='rautakirves'?0x9aa6b3:0xd98a4e);
       g.add(poly([[.56,.05],[.57,-.04],[.6,-.27],[.82,-.3],[.9,-.14],[.9,.02],[.8,.06]],.05,mm));
       const bind=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.06,8),mat(0x4a2f18));bind.rotation.x=Math.PI/2;bind.position.z=.58;g.add(bind);break;}
@@ -317,7 +324,7 @@ function makeHeld(id){
 }
 // Jousen jänne ja nuoli: k = vedon määrä 0–1 (0 = ei vedossa, jänne suorana).
 function updateBowMesh(g,k,nocked){const b=g.userData.bow;if(!b)return;const nz=b.tipZ-(k>0?.1+k*.32:0);   /* v1.22 veto .42 → .32 (käsi ylettyy, jänne posken kohdalle) */
-  for(const [s,sy] of [[b.s1,1],[b.s2,-1]]){const dy=-sy*b.tipY,dz=nz-b.tipZ,L=Math.hypot(dy,dz);s.scale.y=L;s.position.set(0,sy*b.tipY+dy/2,b.tipZ+dz/2);s.rotation.x=-Math.atan2(dz,dy);}
+  for(const [s,sy] of [[b.s1,1],[b.s2,-1]]){const dy=-sy*b.tipY,dz=nz-b.tipZ,L=Math.hypot(dy,dz);s.scale.y=L;s.position.set(0,sy*b.tipY+dy/2,b.tipZ+dz/2);s.rotation.x=Math.atan2(dz,dy);}   /* v1.57: etumerkki korjattu – ennen pätkät peilautuivat keskipisteensä ympäri (naru 180° väärin, kärki kahvalla) */
   b.ar.visible=k>0||!!nocked;b.ar.position.z=nz-.02;}
 function makeShield(id){const g=new THREE.Group(),wood=id==='kilpi',R=.4,
     base=wood?smat(0x8a5a32):smat(id==='rautakilpi'?0x8c97a4:0xc87a3e,{metalness:.35,roughness:.5}),

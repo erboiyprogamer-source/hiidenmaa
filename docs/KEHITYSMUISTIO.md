@@ -13,9 +13,99 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
+## Nykytila (päivitetty v1.83)
+
+- **Versio 1.83**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.83, julkaisupäivitys, yhteenveto alla) odottaa yhdistämistä;
+  `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
+  logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
+- **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
+  8 grafiikkatasoa): 0 virhettä, 0 NaN; `tools/tarkistus.mjs` KAIKKI OK.
+- **Avoimet huomiot (eivät bugeja):** (1) ensimmäinen yö on kova – paikallaan seisova pelaaja kuolee aloituspaikalla ~30 s:ssa;
+  (2) Ultra jopa ~830 piirtokutsua (heikoille koneille suorituskykytesti valitsee kevyemmän). Aiempi huomio "isojen taisteluiden jälkeen
+  +100 objektia" selvitetty: se oli pudonnutta saalista, joka katoaa 5 min:ssa (ks. katoamisajat OMINAISUUDET.md) – ei vuoto.
+- **Katoamisajat:** osumaläiskät ja pisaraläiskät 10 s, vihollisen lammikko ja ruumis 9,4 s (tavallinen ja tuhka), pelaajan lammikko
+  60 s, valumanoro 40 s, läiskiä enintään 140, ilmassa oleva pisara 3 s, juuttunut nuoli 6 s, maassa oleva esine 5 min (vilkkuu
+  viimeiset 15 s; arvoesineet siirtyvät arkkuun), pelaajan ruumis/tuhkakasa uudelleensyntymässä.
+- Testauksen huomiot: headless-testissä CSS-animaatiot eivät etene raskaan 3D:n aikana (tarkista ulkoasu animaatiot pois tai ilman
+  pelin skriptejä), ulottuvuuden rakennus kestää testikoneella sekunteja (`waitForFunction`), suorituskykytesti ja aloitusjakso
+  ohitetaan automaatiossa (`navigator.webdriver`; `?perf=1` ja `?splash=1` pakottavat; testinäkymän kuva: `preserveDrawingBuffer` + toDataURL, ruutukaappaus on liian hidas). Uusi maailma alkaa tilassa `intro`. Jousen
+  narua mitatessa katso pätkien päätepisteet (KORJAUKSET 30). Testipalvelin: käynnistä taustakomentona pitkällä aikarajalla.
+
+## PR #25 – yhteenveto (v1.38–v1.83, valmis yhdistettäväksi)
+
+#### Korjaukset ja perusta
+- **v1.38** – "Script error" vuorilla porttien lähellä korjattu (ruohon piirto).
+- **v1.58** – Välimuistin vanhat tiedostot tunnistetaan, ja peli neuvoo käyttämään commit-linkkiä.
+
+#### Päivityslista 4 (v1.39–v1.44)
+- **v1.39** – Kyykky ja hiipiminen, ylämäen hidastus, selkäesineet, esineet maassa 3D:nä, pomot ja vartijat, kilpi, vihollisten terveyden vaihtelu, veren fysiikka, portaat.
+- **v1.40** – P = päävalikko (Esc ei enää sotke peliä), opasteet, reppunapsautukset, omat säätimet, arkku avautuu katseella.
+- **v1.41** – Lumi ja sade, seinäsoihtu, soihdun sytytys, uudet arkut.
+- **v1.42** – Ulottuvuuksien saalis, Kalmaherran tulilinjat, jousikalmot.
+- **v1.43** – Latausnäyttö (riimukivi), suorituskykytesti, uuden maailman alkulento, Tauko/Käynnissä-tila, aluebannerit.
+- **v1.44** – Optimoinnit asetuksiin (maaston LOD, kohteiden yhdistäminen, varjojen harvennus).
+
+#### Valikko (v1.45–v1.48)
+- Latausnäytön leimahdus, päävalikon uudistus, esiasetussäätimen teemat, 7 satunnaista logoteemaa.
+
+#### Päivityslista 5 (v1.49–v1.52)
+- **v1.49** – Tallennettu-ilmoitus, jousen tähtäin, kyykkyammunta ja tiputusristikko.
+- **v1.50** – Yöolennot palavat auringossa.
+- **v1.51** – 10 uutta valikkotaustaa, myrskyn sade, eeppinen portaali.
+- **v1.52** – Uusi maailma latausnäytön takana, pilvet aukeavat.
+
+#### Päivityslista 6 (v1.53–v1.57)
+- **v1.53** – Kävelyn keinunta pois, piikivikirves.
+- **v1.54** – Kääntymisen ja osoittimen herkkyys, nopeampi virtuaaliosoitin.
+- **v1.55** – Ensikäynnin aloitusjakso (EricStudios & KSPK-tech → HIIDENMAA → varoitus).
+- **v1.56** – Ultra-veri, lätäköt rinteen mukaan ja valuvina, jousi ja nuolet selässä.
+- **v1.57** – Jousen naru oikein päin, ote kahvasta, osumamerkki, Q-pudotus pikapaikasta, kirveen iskun pyörähdys pois.
+
+#### Aloitusjakso ja käynnistys (v1.59–v1.73)
+- **v1.59** – Studionimet allekkain, Esc-varoitus, näkyvä FPS-testi ja selvä tulos.
+- **v1.60** – Käynnistys uusiksi: jakso ja testi ennen latausta, joten animaatiot eivät pätki. Latausnäytössä riimut täyttyvät ja vaalea leimahdus tulee vasta latauksen jälkeen. Uusi `js/boot.js`.
+- **v1.61** – Myrskytaustan sade tuulen suuntaan, FPS-tuloksen suositusteksti.
+- **v1.62** – Intro vain ensimmäisellä käynnillä (ei maailman luonnissa), uusi kolmikerroksinen pilviverho heikoille koneille.
+- **v1.63–v1.64** – HIIDENMAA-otsikko pelkällä häivytyksellä, palaavalle kävijälle lyhyt otsikko, lyhyemmät ajat, Windows-yhteensopivuusrivi ja -ikoni.
+- **v1.65** – FPS-testi 7 s ja realistisempi.
+- **v1.66** – Logo nousee mustasta savusta ja vajoaa mustaan, ohitusteksti vain palaavalle.
+- **v1.67, v1.69** – Uusi riimusiirtymä: kehä piirtyy, riimut tavaavat HIIDENMAA, sininen ᚺ ja kaartuva riimurivi.
+- **v1.69** – FPS-testi kuormaportain kaikille 8 tasolle (Ultra, kun indeksi ≥ 140); tasaantumisnopeus ja tasaisuus vaikuttavat tulokseen.
+- **v1.71** – Ensikäynnin jaksoa ja testiä ei voi ohittaa, merkintä tallentuu vasta lopussa.
+- **v1.72–v1.73** – Testin aikana yläilmoitus: testi auttaa heikompia koneita, grafiikkaa voi nostaa itse.
+
+#### Pelaaja ja animaatiot
+- **v1.65–v1.66** – Jousen kantoasento: kaari alas, jänne suorana ylhäällä, seuraa käsivartta.
+- **v1.68** – Hengitys paikallaan, AFK-animaatio 3 s jälkeen, pieni kävelykeinunta.
+- **v1.69** – AFK-eleet ilman tärinää (heilunta, pään rapsutus, kädet levälleen) ja sulava paluu.
+- **v1.74** – Leveämmät hartiat ja hieman V-muotoinen vartalo, kaulan alla välkkynyt laikku korjattu.
+
+#### Taistelu ja pelattavuus
+- **v1.70** – Kaatuvan puun vihjeet: lyhyt ilmoitus osumasta ja vihje kuolinruudussa.
+- **v1.77** – Pääosumat jousella: tarkka pään osuma, +10 % vahinkoa, punainen merkki ja "Pääosuma!". Nuoliteksti hotbarin yläpuolella. Pikapaikan nimi harvinaisuusvärillä.
+- **v1.78** – Herätessä läheiset viholliset katoavat savuna.
+- **v1.81** – Kolme kuolemaa samalle pomolle: pomo ei enää palauta terveyttään (laskuri kuolinruudussa).
+
+#### Käyttöliittymä ja ohjaus
+- **v1.65–v1.66** – Valmistushaku kuten DEV-haussa, napsautus valitsee vanhan tekstin.
+- **v1.74–v1.75** – Täysi näppäinlista; kaikki näppäimet testattu; "Näytä kaikki toiminnot" -ikkuna tilanteittain (oletusnäppäimet + "nyt: X").
+- **v1.76** – Shift pohjassa näyttää esinetiedot liikkuessa, nopeampi osoitin, valikko ei kuormita pelissä (asetus: älä pysäytä animaatioita).
+- **v1.82** – DEV-työkalut oletuksena pois (kytkin Asetukset › Ohjaus ja ääni -sivun alareunassa) ja DEV-viitteet piilossa. "Early Access 1.0" -merkintä päävalikossa.
+
+#### Grafiikka
+- **v1.76** – Tulinuolen valo High+:lla ja Ultralla. Erittäin tarkat varjot omana valintana: Terävä 8192 / pehmeät reunat / laaja alue (punainen = raskain, "!" kun päällä).
+- **v1.79** – High–Ultra kytkevät kaikki automaattisäädön alavalinnat pois (myös varjojen laadun).
+- **v1.80** – Erittäin tarkat varjot ohittavat tavalliset varjoasetukset (harmaana): 8192 px, päivitys joka ruudussa, 90 / 110 / 160 m.
+- **v1.83** – Veren fysiikka päällä Mediumista ylöspäin.
+
+#### Testaus
+- `tools/tarkistus.mjs`: KAIKKI OK jokaisen version jälkeen (oma tarkistusrivi jokaiselle uudelle ominaisuudelle).
+- Koko pelin tarkistus kaikilla 6 kartalla (päivä ja yö, 22 vihollistyyppiä, 3 ulottuvuutta pomoineen, Hautakumpu, tallennus ja lataus, 8 grafiikkatasoa), myös DEV pois päältä: 0 virhettä.
+
 ## Pysyvät päätökset
 
 - **Pelin teksteissä ei mainita muita pelejä** (esim. Minecraft, Valheim) – v1.11, käyttäjän toive.
+- Alueen löytöotsikot eivät koskaan tule päällekkäin (jono), ja alue paljastuu vasta hieman rajan sisäpuolella (v1.43, käyttäjän toive).
 - Oma alkuperäinen teos, ei Valheimin nimiä, hahmoja tai grafiikkaa. Nimistö on suomalaisesta
   kansanperinteestä (hiisi, kalmo, hiidenkivi).
 - Yksi HTML-sivu + tavalliset skriptit, ei build-vaihetta. three.js r128 cdnjs:stä.
@@ -72,6 +162,471 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.83 (veren fysiikka Mediumista ylöspäin)
+- `bloodFx` (pisarat lentävät lyönnin suuntaan ja jäävät maahan, lammikko kasvaa) päällä esiasetuksissa Medium–Ultra (ennen vain High+/Ultra)
+  ja oletuksena (`SET_DEF`, Medium). Kertasiirto `SET._v` 4: esiasetusta vastaava vanha tallenne saa uuden arvon (ei Customiksi).
+
+### v1.82 (DEV-työkalut oletuksena pois)
+- `DEV` (core.js) ei ole enää kiinteä `true`: luetaan `localStorage.hiidenmaa_devon` ('1' = päällä) sivun latauksessa; `?dev=1` kytkee
+  päälle pysyvästi. Kytkin: Asetukset › Ohjaus ja ääni › alareunan "Kehittäjä" › Kehittäjätyökalut (DEV) → vahvistus, peli tallennetaan,
+  sivu ladataan uudelleen. DEV pois → ei DEV-valikkoa (Ä), ei 10× nopeutta (V), ei DEV-merkkiä, ei DEV-etuja (kestävyys, korkein taso,
+  painoraja) – normaali eteneminen. Tarkistus: DEV-paneelin tarkistus ehdolliseksi.
+- Kun DEV pois, kaikki DEV-viitteet piilossa (merkki, paneeli, näppäinlistan ja Kaikki toiminnot -ikkunan DEV-rivit, kytkimen kuvaus
+  lyhyenä); vain kytkin "Kehittäjätyökalut (DEV)" näkyy. Testattu tekstihaulla.
+- **Päävalikko:** "Selviytymispeli · versio X" perään turkoosi tunnus "Early Access 1.0" (`.eaTag`). **Pysyvä sääntö:** numeroa 1.0 ei
+  muuteta päivitysten mukana (käyttäjä); bump.sh muuttaa vain "versio X".
+
+### v1.81 (pomo väsyy: 3 kuolemaa → ei enää parane)
+- `playerDie`: tappaja = lähin elossa oleva pomo (`ai` boss/rboss) ≤ 45 m samassa tilassa (maailma/ulottuvuus) → `flags.bossDeaths[tyyppi]++`
+  (tallentuu maailman mukana, maailmakohtainen). `bossTired(type)` (mobs.js) ≥ 3 → ai.js:n pomojen terveyden palautus ohitetaan pysyvästi.
+  Kuolinruudun vihje: "X kaatoi sinut (1/3) … kolme kertaa → ei enää palauta terveyttään" ja 3. kerralla "X on voittanut sinut 3 kertaa.
+  Se ei enää palauta terveyttään". Testattu: laskuri 1→3, palautus 50 % → 50 % (ilman 50 % → 55 %), tallennus/lataus säilyttää.
+
+### v1.80 (erittäin tarkat varjot ohittavat varjoasetukset)
+- Kun `shUltra` päällä (`SHU`, `shUltraOn`): varjot aina päällä (myös jos Varjot = Pois/Kevyet), kartta 8192 (tai suurin tuettu, ei
+  puolitusta), päivitys joka ruutu (autoUpdate, shRate/shFar ohitetaan), automaattinen varjojen laatu pois, oma etäisyys: Terävä 90 m,
+  pehmeät 110 m (PCF, säde 3,5), laaja 160 m näkymän suuntaan (siirto 72 m). Bias −0,00035, varjokameran far 420. Ohitetut rivit
+  (`SHU_OVR`: Varjot, tarkkuus, etäisyys, päivitystiheys, automaattinen laatu, harvemmin paikallaan) harmaina ja lukittuina, huomautus
+  "ohitettu"; ultrarivin huomautus näyttää tason arvot. Testattu: kartta 8192 kaikilla, alueet 90/110/160, joka ruutu, varjo selvästi terävämpi.
+
+### v1.79 (esiasetukset kytkevät automaattisäädön alavalinnat)
+- Käyttäjä huomasi: Ultralla "Automaattinen varjojen laatu" jäi Päällä-tilaan (esiasetus kytki vain `autoAll`:n). Nyt esiasetukset asettavat
+  myös `autoRes`, `autoFx`, `autoDist`, `autoQ`: Low–Medium+ päällä, High–Ultra pois. Kertasiirto `SET._v` 3: vanha tallenne, joka vastaa
+  esiasetusta näitä (ja arrowLight) lukuun ottamatta, saa ne esiasetuksesta (ei muutu Customiksi). Testattu: Ultra → kaikki pois, Medium →
+  päällä, vanha Ultra-tallenne → edelleen Ultra.
+- **Päätös:** v1.74:n hartia/kaulus/V-vartalomuutos jää pysyväksi (käyttäjä piti siitä); peruutuskoodi säilyy v1.74:n kohdassa.
+
+### v1.78 (herätessä läheiset viholliset katoavat)
+- `respawn()`: herätyspaikan ≤ 35 m säteellä olevat viholliset (hostile, myös suuttunut neutraali kuten karhu) poistetaan savupilvellä,
+  jottei pelaaja kuole heti uudelleen. Jäävät: pomot, vartijat (`m.guard`), ulottuvuuksien viholliset, rauhalliset eläimet. Testi: 2 kalmoa
+  lähellä poistuivat, 60 m päässä ja peura jäivät.
+
+### v1.77 (jousen nuoliteksti, pääosumat, pikapaikan nimi)
+- **Nuoliteksti** (`#ammoT`, `showAmmo`): jousi käteen → hotbarin yläpuolelle 2,5 s "Piikivinuolet ×12" (kuvake) tai punertava "Ei nuolia";
+  latauksen alussa 2 s pienempänä; häivytys. z-index 6 (muuten HUD-elementti peitti).
+- **Pääosuma** (`headShot`, state.js): nuolen kulkema jana (edellinen → nykyinen kohta) vs. pään rajauslaatikko (`f.head`, animaatio mukana)
+  pallona (45 % suurimmasta sivusta + 3 cm), tarkistetaan ennen vartaloa. +10 % vahinko, punainen osumamerkki, "Pääosuma!". Testi: päähän
+  13,2 vs. vartaloon 12.
+- **Pikapaikan nimi** (`#hotName`, `showHotName`, `itemRarity`): valinnassa nimi valitun ruudun yläpuolelle ~1 s + häivytys, ohut fontti
+  (300), väri: kulta = arvoesine/harvinainen (rare, VALUABLE), sininen = valmistustaso ≥ 6, vihreä = taso ≥ 3 tai laatu ≥ 2, muut vaalea.
+  Yksi elementti → nopeassa vaihdossa vanha nimi korvautuu heti. Laatutähdet nimen perässä.
+
+### v1.76 (grafiikkatasot, erittäin tarkat varjot, valikon kuorma, osoitin, Shift-tiedot)
+- **Esiasetukset:** tulinuolten valo päällä High+ ja Ultra (muilla pois). Automaattisäädöt pois High-tasolta ylöspäin (autoAll false, kuten ennen).
+- **Erittäin tarkat varjot** (`SET.shUltra`, ei esiasetuksissa, oletus Pois): Terävä 8192 / Terävä + pehmeät reunat (PCFShadowMap, säde 3,5) /
+  Terävä + laaja alue (1,6× alue näkymän suuntaan, päivitys joka ruutu; punainen = raskain). 8192 tai suurin tuettu (maxTextureSize).
+  Rivi violetilla katkoviivakehyksellä, valintanapit pyöreinä, päällä punainen kehys + "!" (`ultraShRow`). Aito kaskadivarjo vaatisi
+  three.js-lisäosan (CSM), jota r128-buildissa ei ole – siksi "laaja alue" näkymään sovitettuna.
+- **Valikko ei kuormita pelissä:** taustakuva piirretään vain päävalikossa, partikkelit (`mfxFrame`) vain kun valikko näkyy, esiasetus-
+  säätimen efektit pysähtyvät itsestään, CSS-animaatiot eivät pyöri piilossa. Uutta: valikon avautuessa partikkelikerros häivyttyy esiin
+  (`.mfFade`). Asetus Ohjaus ja ääni › "Älä pysäytä valikon animaatioita pelin aikana" (`menuAnimKeep`, oletus pois).
+- **Osoitin:** Chromen `pointerrawupdate` liikuttaa osoitinta heti (mousemove varalla, jos raw ei tule 150 ms:iin); paneelin ollessa auki
+  3D piirretään joka toinen ruutu (`uiAlt`) → osoittimen päivitys tihenee.
+- **Shift-tiedot:** VC:n keinotekoiset hiiritapahtumat saavat Shift/Ctrl-tilan näppäimistä (`vcInit`) → Shift pohjassa esinetiedot näkyvät
+  heti, kun osoitin siirtyy esineen päälle (kaikkialla, missä `[data-it]`). Ennen piti siirtyä ensin ja sitten painaa Shift.
+
+### v1.75 (näppäintesti + Kaikki toiminnot -ikkuna)
+- **Kaikki näppäimet testattu** (keytest: painallus + 8 ruutua, tilan ero): pelatessa W/A/S/D liike 4,6 m/s, Space hyppy, C kyykky (pohjassa),
+  B ilman vasaraa → viesti, Q pudottaa pikapaikasta, P tauko, Tab/I reppu, M kartta, J edistyminen, L loki, T HUD-tila, N minikartta,
+  2–8 pikapaikka, Ä DEV-valikko; E/X/F/K/Esc/Enter/V tarvitsevat kohteen/tilan (ei muutosta tyhjässä). Rakentaessa: R kierto, G
+  kohdistus, H pystykohdistus, Q/Z haamu ylös/alas, B valikko, Shift+R asento. Repussa: E/Tab/P sulkee, M kartta, Q pudottaa 1, Shift+Q
+  koko pinon. Kuolleena Enter herää. Ei virheitä; ei kuolleita näppäimiä (vapaat: O, U, Y, Ö, Backspace…).
+- **"Näytä kaikki toiminnot"** (Asetukset › Näppäimet, alareuna) → ponnahdusikkuna `#allKeys` (`showAllKeys`, data `ALL_KEYS`): Pelatessa,
+  Rakentaessa, Lapio ja kuokka, Valikot ja paneelit, Repussa ja arkussa, Päävalikossa, Erikoistilanteet (+ DEV-tila). Oletusnäppäimet;
+  vaihdettu näppäin → perässä "nyt: X" (käyttäjän valinta). Kolme palstaa (CSS columns), sulku Sulje-napista tai taustasta.
+
+### v1.74 (näppäinlista täydeksi, hartiat ja kaulus)
+- **Näppäinlista (Asetukset › Näppäimet, Kiinteät):** lisätty I (reppu, Tab:n lisäksi), Q / Shift+Q repussa (hiiren alla tai valittu,
+  koko pino), Enter (herää uudelleen / lopeta kirjoitus), Mikä tahansa (ohita maailman alkulento ja avausotsikko), DEV-tilassa V ja Ä,
+  sekä tarkemmat hiiren vasen/oikea (jousi, lapio, kuokka). Vaihdettavat näppäimet tulevat ACTIONS-listasta kuten ennen.
+- **Pelaajamalli (käyttäjä hyväksyi v1.79 – pysyvä):** kaulus (turkis) hieman leveämpi → olkapäät näyttävät kiinnittyvän;
+  vartalo hieman V-muotoinen; kaulan alla välkkynyt tumma laikku korjattu (vartalon yläkansi oli samassa tasossa kuin kauluksen kansi):
+  vartalon yläpinta kauluksen sisään ja tumma osa pyöreäreunaisena kumpuna 2,4 cm kauluksen yläpuolelle.
+  **PERUUTUS – alkuperäinen koodi (`js/models.js` makePlayer):**
+  `const torso=tube(rig,.2,.22,.76,cloth,0,hip+.38,0,1.18,.62,8);` (ilman `rnd(rig,0,hip+.758,…)`-kumpua) ja
+  `tube(rig,.27,.23,.12,fur,0,hip+.7,0,1.2,.7,8);`. Uudet: `tube(rig,.218,.205,.74,cloth,0,hip+.37,…)` + `rnd(rig,0,hip+.758,0,.2,cloth,1.12,.13,.58,10)`
+  ja `tube(rig,.285,.235,.12,fur,0,hip+.7,0,1.22,.7,8)`.
+
+### v1.73 (yläilmoitus vain testin ajan, tiiviimpi)
+- `.ppTop` näkyy vain testin aikana ja häipyy ylös tuloksen tullessa (`.spPerf.res`). Teksti tiivistetty: "Testi auttaa heikompia koneita
+  – grafiikkaa kevennetään vain tarvittaessa. Jaksaako koneesi enemmän? Nosta laatua: Asetukset › Grafiikka."
+
+### v1.72 (suorituskykytestin yläilmoitus)
+- Testin ja tuloksen ajan yläreunassa (`.ppTop`): "Testi varmistaa sujuvan pelin myös heikommilla koneilla. Se säätää grafiikkaa
+  kevyemmäksi vain, jos koneesi tehot jäävät tavallista pienemmiksi. Jos tiedät koneesi jaksavan enemmän, voit nostaa grafiikan laatua
+  milloin tahansa: Asetukset › Grafiikka." Matalilla näytöillä (≤ 620 px) pienempi, tulospaneeli alareunaan.
+
+### v1.71 (ensikäynnin jakso ei ohitettavissa)
+- Ensikäynnillä (ei merkintää `hiidenmaa_intro`) koko jakso studio → HIIDENMAA → varoitus → suorituskykytesti → siirtymä ilman ohitusta
+  (`skip` palaa heti, kun `needSplash`), jotta testi tehdään aina. Palaavan kävijän otsikon voi ohittaa edelleen.
+- Merkintä tallennetaan vasta jakson lopussa (`end`), ei alussa: kesken suljettu ensikäynti näyttää jakson ja testin uudelleen.
+
+### v1.70 (kaatuvan puun vihjeet + päivän tarkistus)
+- Kaatuvan puun osuma, jos henkiin jää: lyhyt sivuilmoitus "Kaatuva puu osui! Väistä sivuun, kun puu kallistuu." Jos puu tappaa:
+  `P.deathCause='tree'` → kuolinruudussa (#deadTip) vihje: astu sivuun kun puu narisee ja kallistuu, älä jää kaatumissuuntaan; myös
+  myrskytuuli ja pedot kaatavat puita. Kuolinsyy nollataan jokaisen kuoleman jälkeen (muut kuolemat ilman vihjettä).
+- **Päivän tarkistus (v1.59–v1.70):** kaikki käyttäjän pyynnöt käyty läpi. Poistetut koodit vs. v1.58 tarkistettu: vain tarkoitukselliset
+  korvaukset (perfStart/Step/End/Needed → boot.js perfRun/perfApply; aloitusjakson skripti → boot.js; vanha latausleimahdus, pilviverho ja
+  riimusiirtymä → uudet). Koko pelin tarkistus (full157: 6 karttaa, päivä/yö, 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu,
+  tallennus v10, 8 esiasetusta): 0 virhettä, 0 NaN.
+
+### v1.69 (suorituskykytesti kaikille tasoille, riimusiirtymän loppu, AFK-eleet)
+- **Suorituskykytesti:** selain tahdistaa piirron näytön virkistystaajuuteen (yleensä 60 Hz, ei muuta rajoitinta), joten pelkkä FPS ei
+  erota tehokkaita koneita. Nyt kuormaportaat: 0–2,5 s 1×, 2,5–4,7 s 2× ja 4,7–7 s 4× (näkymä piirretään 2/4 kertaa ruudussa), jos edellinen
+  porras ≥ 45 FPS. **Suorituskykyindeksi** = ylimmän portaan FPS × kerroin. Vähennykset: hidas tasaantuminen (> 1,5 s, 0,5 s:n liukuva FPS
+  90 %:iin) enintään −20 %, nykivyys (> 5 % ruuduista > 1,6 × mediaani) enintään −25 %. Tasot: < 22 Low, 22 Low+, 30 Medium-, 40 Medium,
+  55 Medium+, 75 High, 100 High+, **≥ 140 Ultra** (esim. 4× kuormalla ≥ 35 FPS). Tulos näyttää indeksin, tasaantumisajan ja tasaisuuden.
+  `perfApply` hyväksyy nyt indeksit 0–7.
+- **Riimusiirtymän loppu** (3,5 s): päällekkäinen sinetti poistettu. ᚺ syttyy sinisenä keskelle ja muut riimut (ᛁᛁᛞᛖᚾᛗᚨᚨ) liukuvat sen
+  alta sivuille oransseina kaartuvaksi riviksi (ulommat alempana ja kallistettuina), sitten leimahdus 2,7 s.
+- **AFK-kädet:** v1.68:ssa hengityksen/AFK:n z-merkit väärin → kädet painuivat vartaloon ja armClear tärisytti (vasen käsi 41 suunnanvaihtoa
+  / 20 s → 1). Nyt kädet ulospäin ja irti reisistä. Eleet 5,5 s jaksoissa: heilunta → pään rapsutus (oikea käsi, kyynärpää rapsuttaa) →
+  heilunta → kädet levälleen; pehmeät käyrät (sstep). Liikkeelle lähtiessä afkK laskee 2,6/s → kädet palaavat sulavasti (~0,5 s).
+
+### v1.68 (elävä hahmo: hengitys, AFK, kävelykeinunta)
+- **Kävely:** pieni sivukeinunta ±0,012 rad (~0,7°) kävelyssä, juoksussa ennallaan ±0,045 (v1.53 kävelyssä 0).
+- **Hengitys** paikallaan (`P.idleK`, maassa, nopeus < 0,3, ei isku/veto/torjunta/kyykky): 4,2 s rytmi, rungon nousu ±6 mm, rinta ±0,012 rad,
+  pää vastaliike, kädet avautuvat ±0,035 rad.
+- **AFK** (`P.afkT` > 3 s ilman näppäintä, hiiren nappia tai kameran kääntöä; `P.afkK` nousee ~1 s): pää katselee ympärilleen (±0,6 rad +
+  pieni nopeampi liike, nyökkäys ±0,09), kädet heiluvat hieman (±0,13), polvet joustavat ja paino siirtyy jalalta toiselle (polvet
+  0–0,14, rungon kallistus ±0,03, lasku 2,2 cm). Mikä tahansa syöte palauttaa nopeasti (4/s).
+
+### v1.67 (uusi riimusiirtymä latausnäyttöön)
+- Vanha siirtymä (yksi ᚺ + rengas skaalattuna ×160 → suttuinen litteä kehä, ja edellisen ruudun teksti näkyi läpi) korvattu, 2,9 s:
+  peittävä tausta; SVG-riimukehä piirtyy (stroke-dashoffset), 48 asteikkoviivaa ja pisteviivakehä, 24 vanhemman riimurivin riimua syttyy
+  kierroksena; keskellä riimut tavaavat ᚺᛁᛁᛞᛖᚾᛗᚨᚨ (HIIDENMAA, 0,15 s välein), sitten 6 riimua sulautuu päällekkäin sinetiksi, joka
+  leimahtaa: 22 kipinää, kaksi paineaaltoa, valkoinen välähdys → latausnäyttö. Kipinöissä/aalloissa `forwards` (ei `both`, muuten ne näkyvät
+  keskellä ennen vuoroaan).
+
+### v1.66 (jousi kaari alas, hakukentän valinta, HIIDENMAA mustasta pilvestä)
+- **Jousen kanto:** kaari (etupuoli, josta nuoli lähtee) alas, kaari aukeaa ylöspäin, jänne suorana ylhäällä, raajat eteen/taakse.
+  Käden mukainen kierto `BOW_CARRY`=1,71 (mitattu: levossa jänteen päiden korkeusero 0,001 m; kävellessä heiluu käsivarren mukana –
+  käyttäjän toive). Vartaloon lukittu suunta (aina vaakatasossa) kokeiltiin ja hylättiin. Mittaus: jänteen kärkien maailmakorkeudet.
+- **Ohitusteksti:** ensikäynnillä piilossa (`#splash.first`), palaavalle kävijälle pieni ja himmeä "Ohita: mikä tahansa näppäin".
+- **Hakukentät:** virtuaalisen osoittimen napsautus tekstikenttään valitsee aina koko tekstin (ennen vain kun kenttä ei ollut jo valittuna),
+  joten kirjoitus korvaa vanhan haun – kuten DEV-haussa. (`input.js` vcFire mousedown.)
+- **HIIDENMAA-otsikko:** studio häivyttyy ensin (z-index päällä), ruutu mustana `--tw` (ensikäynti 1,5 s = 1 s häivytys + 0,5 s musta,
+  palaava 0,5 s), sitten logo nousee mustasta: 8 mustaa savuläiskää (`.spSm i`) väistyvät ulospäin ja reunavarjo (`.spVig`) avautuu keskeltä.
+  Lopussa reunavarjo tummenee ensin, savu valuu takaisin ja lopuksi täysi musta (`.spFull`). Vain opacity/transform. Kesto: ensikäynti
+  6,2 s, palaava 4,1 s.
+
+### v1.65 (jousen kantoasento, pidempi ja tarkempi testi, valmistushaku)
+- **Jousen kanto** (ei vedossa): kuten ennen pystyssä jousikädessä (vasen), mutta kierretty `BOW_CARRY`=0,75 rad käden x-akselin ympäri →
+  kaari (rungon etupuoli, joka vedossa osoittaa kohdetta) osoittaa alaviistoon maata kohti. Vaakasuora kanto vartalon edessä kokeiltiin ja
+  hylättiin (käyttäjä). Vedossa ennallaan (-0,15 + bowAim).
+- **Suorituskykytesti:** 5 → 7 s, lämmittely 0,8 → 1,2 s; puiden latvat heiluvat (matriisipäivitykset ≈ pelin CPU-kuorma); tulos =
+  keskimääräinen ruutuaika ilman hitaimpia 3 % (nykäisyt kuten varjostinkäännös eivät vääristä). Headless edelleen 2 FPS (sama kuin peli).
+- **Valmistushaku** kuten DEV-esinehaku: osuu nimeen tai tunnisteeseen, järjestys täsmälleen sama → alkaa → sisältää, Enter valmistaa
+  ensimmäisen valmistettavan osuman. Hakupalkki max 300 px.
+- Varoitusruudun Windows-ikoni suoraan Windows-sanan edessä tekstin sisällä.
+
+### v1.64 (aloitusjakson ajat, Windows-rivi)
+- Ajat: studio 6,5 → 3,5 s, HIIDENMAA 7,2 → 5,2 s, varoitus 11 → 9 s; palaavan kävijän otsikko 4,6 → 3,6 s.
+- Varoitusruudun alaosaan "Paras yhteensopivuus Windows-käyttöjärjestelmällä" ja pieni valkoinen neliruutuikoni (`.spWin`).
+
+### v1.63 (HIIDENMAA-otsikko: pelkkä häivytys; palaavalle kävijälle otsikko)
+- Otsikko "paljastui monta kertaa": vaiheen oma opacity-siirtymä + logon opacity 2,6 s + skaalaus 1,06→1 + alhaalta nouseva pyyhkäisyvarjo
+  (`spShade`). Nyt vain logon häivytys sisään 1,6 s ja ulos 1,3 s (animaatiot `spLogoIn`/`spLogoOut`, kesto `--td`), muut pois.
+- **Palaava kävijä** (merkintä löytyy, ei maailman käynnistys): HIIDENMAA-otsikko 4,6 s → latausnäyttö → valikko (`needTitle`; ?title=1 pakottaa
+  testissä). Ohitettavissa millä tahansa näppäimellä/napsautuksella. Maailman luonnin intro ennallaan (käyttäjä: täydellinen).
+
+### v1.62 (intro vain kerran, uusi pilviverho)
+- **Intro tuli maailman käynnistyksessä:** syy oli testilinkin `?splash=1`, joka säilyy karttavaihdon/uuden maailman sivun uudelleenlatauksessa.
+  Nyt jaksoa ei koskaan näytetä, kun `sessionStorage.hiidenmaa_pending` on asetettu (maailman käynnistys), eikä silloin myöskään testiä.
+- **Vain ensimmäinen käynti:** Shift+F5-tunnistus poistettu (käyttäjän toive). Merkintä `localStorage.hiidenmaa_intro='1'` tallennetaan heti
+  jakson alkaessa; jos se löytyy → latausnäyttö → valikko. Uusi maailma: latausnäyttö → pilvet aukeavat → yläilman kamera.
+- **Pilviverho (alle Medium, `introVeil`/`veilCloud`):** ennen kaksi litteää CSS-puoliskoa. Nyt 3 kerrosta × 2 puolta canvasilla maalattuja
+  kumpupilviä (läpinäkymättömät kummut ylhäältä alas, valo ylhäältä, sinertävä varjo, rosoinen aaltoileva sisäreuna, utu, blur 3,5 px),
+  sävy `lightK`:n mukaan. Aukeaminen: kerrokset liukuvat ulos eri nopeuksilla (1,9/2,3/2,7 s) ja kasvavat 1,08–1,4×, keskeltä valohehku,
+  tausta häipyy; vain transform/opacity. Maalaus kerran latausnäytön aikana.
+
+### v1.61 (intro vain ensikäynnillä, ohitus millä tahansa näppäimellä, valikon myrskysade)
+- **(Korvattu v1.62:ssa: vain ensikäynti.)** Aloitusjakso + FPS-testi vain ensikäynnillä tai Shift+F5/Ctrl+F5:n jälkeen. Tunnistus: navigaatio `reload` ja `css/style.css` siirtyi
+  kokonaan verkosta (`transferSize > encodedBodySize`); tavallisessa F5:ssä tyylitiedosto tulee välimuistista (0) tai 304:nä. Testattu:
+  F5 → 0 tavua, välimuistin ohittava lataus → koko tiedosto. Palaava pelaaja → suoraan latausnäyttöön, ei testiä eikä grafiikan säätöä.
+  (Huom: Playwrightin `page.route` poistaa välimuistin → mittaa ilman reitityksiä.)
+- **Ohitus:** mikä tahansa näppäin tai napsautus → suoraan latausnäyttöön (ei pelkät Shift/Ctrl/Alt/Meta eikä F-näppäimet tai toistot,
+  jottei Shift+F5 ohita heti).
+- **Tulosteksti:** "Grafiikka-asetukset säädettiin automaattisesti suorituskyvyn mukaan." + "Grafiikkavalinnan suositus: X" + ohje
+  Asetukset › Grafiikka.
+- **Valikon myrskytaustat:** partikkelikerroksen (`MFX` storm) sadepisarat menivät vasemmalle (vx −220) vastoin taustan sadetta, puita ja
+  lehtiä → nyt `vx = vy·0,45` oikealle (tuulen suuntaan), osa syntyy vasemmasta reunasta.
+
+### v1.60 (käynnistys uusiksi: sulavat animaatiot, testi ennen latausta, ohitus)
+- **Uusi järjestys (`js/boot.js`):** aloitusjakso (studio 6,5 s → HIIDENMAA 7,2 s → varoitus 11 s) → suorituskykytesti (0,8 s lämmittely + 5 s
+  mittaus, tulos näkyy 9 s) → riimusiirtymä → latausnäyttö → valikko. Pelin skriptit ladataan vasta latausnäytössä (`window.__GJS`, järjestys
+  säilyy; esiladataan taustalla jakson aikana). Ennen jakso pyöri latauksen päällä ja pätki (KORJAUKSET 32).
+- **Suorituskykytesti omassa näkymässä:** pieni metsä (230 puuta, 60 kiveä, 24 000 ruohonkortta, 2048-varjot, 4 pistevaloa, sumu), kuorma
+  pelin Medium-tason luokkaa (headless-vertailu: sama 2 FPS kuin vanha pelinäkymätesti). Paneeli: selitys, palkki, sekunnit ja eläva FPS;
+  tulos "Tulos: N FPS (taso)", valittu esiasetus ja ohje Asetukset › Grafiikka. Tallennus `hiidenmaa_perf {fps,preset,idx,pend:1}`;
+  main.js `perfApply()` ottaa esiasetuksen käyttöön ladattuaan ja nollaa `pend`. Vanhat `perfStart/perfStep/perfEnd` poistettu.
+- **Ohitus:** välilyönti, Enter tai napsautus ohittaa KOKO jakson ja testin → suoraan latausnäyttöön. Kesken jäänyt testi: tulos tallentuu,
+  jos mitattu ≥ 1,5 s; muuten testi tulee seuraavalla kerralla (ilman aloitusjaksoa). Muut näppäimet eivät ohita.
+- **Latausnäyttö:** latauksen aikana vain riimujen oranssi täyttyminen + palkki (kipinät, sumu, sivupartikkelit ja kiven keinunta levossa).
+  Valmis → vaalea leimahdus (`.lsGlow`, opacity/transform), riimut vaaleiksi, partikkelit esiin; 1,7 s myöhemmin häivytys valikkoon.
+- Käynnistysvahti (20 s) alkaa vasta latauksen alkaessa (`__bootWatch`), versiotarkistus (`__verCheck`) myös boot.js:lle (`__BJV`).
+
+### v1.59 (aloitusjakso ja näkyvä suorituskykytesti)
+- **Studiotunnus:** "EricStudios & KSPK-tech" yhtä isoina allekkain (välissä pieni &). Tekijänoikeusrivin versio asetetaan vasta
+  kun `window.HV` on määritelty (DOMContentLoaded), ennen rivillä luki pelkkä "Versio".
+- **Varoitusruutu:** lisätty laatikko "Vältä turhaa Esc-näppäimen painamista – selaimessa Esc vapauttaa hiiren ja keskeyttää pelin…
+  Valikko ja paneelien sulkeminen: P". Ruutu näkyy 6,5 s (ennen lyhyempi).
+- **Suorituskykytesti näkyväksi:** kesto 3 s → 5 s (`PERF_T`). Latausnäytön alle paneeli `#lsPerf`: otsikko, selitys, edistymispalkki ja
+  sekuntilaskuri. Lopuksi selvä tulos "Tulos: N FPS (Sujuva/Hyvä/Kohtalainen/Raskas)", valittu esiasetus ja ohje "Voit muuttaa
+  grafiikkaa milloin tahansa itse: Asetukset › Grafiikka". Tulos näkyy 5 s ennen valikkoa. Testi alkaa vasta aloitusjakson jälkeen.
+
+### v1.58 (korjaus: välimuistin vanhat tiedostot)
+- Käyttäjän näkymä: valikko ilman tyylejä ja virhe main.js:39 Ctrl+Shift+R:n jälkeen haaralinkissä. Syy: raw.githack antoi vanhan
+  main.js:n ja style.css:n uuden index.html:n kanssa (KORJAUKSET 31). Lisätty versiotarkistus (`__JSV`, `__JSV2`, `--css-v` vs. `HV`), joka
+  kertoo selvästi, että tiedostot ovat vanhoja ja ohjaa commit-linkkiin. Pelikoodissa ei vikaa (commit-linkki toimii).
+
+### v1.57 (lista 6, erä E: jousen naru, ote, osumamerkki, ristikko, Q-pudotus + koko pelin tarkistus)
+- **Jousen naru (käyttäjä huomasi):** `updateBowMesh` pätkien kulma oli väärää etumerkkiä (`-atan2`) → kumpikin pätkä peilautui
+  keskipisteensä ympäri: narun päät eivät olleet jousen kärjissä vaan ampujan takana ja kärki kahvalla, eli naru "veti eteenpäin".
+  Nyt `rotation.x = atan2(dz,dy)`: päät kärjissä, kärki vedetään poskelle. (Aiemmat mittaukset katsoivat vain pätkien keskipisteitä.)
+- **Ote:** kädessä jousi pidetään kaaren kahvasta (`position = (0,0,−.12)` kierrettynä), ennen käsi oli 12 cm rungon takana ilmassa.
+- **Kyynärpää vedossa:** napavektori `_poleBow` (−1, −.95, .3) → (−1.85, −.95, .15): olkapäästä hieman enemmän sivulle (käyttäjän
+  toive kahdessa vaiheessa; taaksevienti kokeiltu ja hylätty).
+- **Kirveen/hakun isku:** kädet koko iskun ajan 5 cm ylempänä ja 6 cm edempänä. "Pyörähdys" poistettu: jatkuvassa hakkuussa paino ei
+  enää putoa uuden iskun alussa (ennen 82–171° hyppy yhdessä ruudussa), nosto alkaa edellisen iskun loppuasennosta ja kirveen kierto
+  siirtyy kiertona (slerp) nostovaiheen ajan (huippu 46°/ruutu); lopetuksessa asento häivytetään (−5/s) eikä hypätä. Läpäisytesti ok.
+- **Osumamerkki (`hitMarker`, state.js):** pelaajan nuolen osuessa viholliseen valkoinen X osumakohdassa, näkyy kaikkien esineiden läpi
+  (depthTest pois), 0,28 s, ei animaatiota, koko etäisyyden mukaan.
+- **Tiputusristikko:** viivat 40, 80 ja 120 m, ohuemmat (1 px), teksti viivan vieressä keskitettynä.
+- **Q pelissä:** pudottaa valitusta pikapaikasta 1, Shift+Q koko pinon (`dropHot`); rakennustilassa Q nostaa haamua kuten ennen.
+
+**Koko pelin tarkistus (v1.57, `full157.mjs`):** kaikki 6 karttaa: päivä 20 s, yö 30 s, aamu 20 s, kaikki 22 vihollistyyppiä yhtä
+aikaa, 3 ulottuvuutta + pomojen kaato (avain reppuun `giveOrDrop`), Hautakumpu sisään/ulos, tallennus/lataus (v 10), kaikki 8 esiasetusta
+piirtäen, NaN-tarkistus joka kuvalla → 0 virhettä, 0 NaN. Huomiot: (1) yöllä aloituspaikalla paikallaan seisova pelaaja kuolee 30 s:ssa
+(kartta 3) – vaikeus, ei bugi; (2) isojen taisteluiden jälkeen scene-lapsia +100 (kartat 0 ja 4: saalis, läikät, ruumiit) – poistuvat ajan
+kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
+
+### v1.56 (lista 6, erä D: veri, jousi selässä, jousen kuvake)
+- **Ultra-veri (`bloodUltra`):** veren fysiikalla ja Ultra-esiasetuksella (tai Custom + piirtoetäisyys ≥ 520) pisaroita ja
+  hiukkasia 2×, lentonopeus ×1,45, sivuhajonta 2×, pystyvauhti ×1,3, pisararaja 240.
+- **Läikät rinteen mukaan (`slopeN`):** maanpinnalla olevat läikät käännetään maastonormaalin suuntaisiksi (ei rakennuksilla/luolassa).
+- **Valuminen (`poolFlow`/`updateFlow`, Medium+ `fxHiQ`):** kuoleman lammikko (mobit ja pelaaja), jos rinne > 45° (gradientti > 1):
+  10 s ajan noro etenee alarinteeseen (0,35 → 0,06 m/s), 0,12 s välein pitkulainen pieni läikkä (elää 40 s). Läikkäraja 60 → 140.
+- **Jousi selässä:** litteänä selkää vasten (kaari sivulle, `m.rotation.y = π/2`), ja jos repussa on nuolia (`hasArrows`), 3 nuolta
+  jousen keskellä sen suuntaisesti, kärjet alaviistoon; päivittyy repun muuttuessa (`updateBack`-avaimessa nuolilippu).
+- **Jousen jänne:** 3D-mallissa jänne ja kaari tarkistettu (veto posken kohdalle, kaari tähtäyssuuntaan) – oikein. Väärin päin oli
+  **repun kuvake**: kaari pullistui taaksepäin ja jänne kulki kaaren sisällä. Korjattu: kaari tähtäyssuuntaan, jänne kärkien välissä,
+  nuoli sulkineen jänteeltä kaaren läpi.
+
+### v1.55 (lista 6, erä C: ensikäynnin aloitusjakso)
+- `#splash` (index.html, oma skripti latausnäytön skriptin jälkeen), vain ensikäynnillä (`hiidenmaa_intro` puuttuu, ei karttavaihdon
+  uudelleenlataus, ei automaatioselain; `?splash=1` pakottaa). Kesto ~18 s, napsautus/näppäin siirtää seuraavaan vaiheeseen:
+  0,8 s musta → **EricStudios** (Cinzel, kirjainväli laajenee) + pieni **KSPK-tech** + alareunassa © 2026 EricStudios · KSPK-tech,
+  oikeudet pidätetään, kuvitteellisuuslauseke ja versio (5,2 s) → **HIIDENMAA** halkeillut kivikaiverrus (SVG: kivi + rae, 16
+  satunnaista halkeamaa, viistetty valo, rosoiset reunat) pitkä fade in 2,6 s + hidas zoom, 4,2 s kohdalla varjo nousee alhaalta ja
+  nielaisee sen (6,4 s) → varoitus "Toimii parhaiten tietokoneella" + näppäimistö- ja hiirikuvake (4,2 s) → siirtymä (1,3 s):
+  hehkuva riimu ᚺ kasvaa ja valorengas laajenee koko ruutuun → latausnäyttö tulee esiin zoomaten (`#loadScr.enter`).
+- `__ldDone` kääritään: jakson aikana valmistuminen jää odottamaan (`__ldPend`) ja tehdään 1,4 s jakson jälkeen, jotta latausnäyttö
+  ja sen leimahdus nähdään aina. `#pcHint` ("Toimii parhaiten…") ei enää näy valikossa. Testi: peli valmis 1,9 s, jakso ohitettuna
+  6,8 s, latausnäyttö pois 10,6 s, valikko auki, ei virheitä.
+
+### v1.54 (lista 6, erä B: herkkyydet ja osoittimen viive)
+- Ohjaus: **Kääntymisen herkkyys** `SET.sens` (0,2–3×, oletus 1 = 0,0028 rad/px) ja **Osoittimen herkkyys** `SET.curSens` (0,3–3×)
+  pelin paneelien virtuaaliosoittimelle. Päävalikko käyttää käyttöjärjestelmän osoitinta (selain ei salli nopeuden muuttamista) –
+  tästä huomautus asetussivulla.
+- Viive: `vcMove` siirtää osoitinta heti (`translate3d`, `will-change`), mutta `elementFromPoint` (pakottaa asettelun), hover-luokat ja
+  keinotekoinen mousemove tehdään kerran ruudunpäivitystä kohti kertyneellä liikkeellä (`vcFlush`, rAF); painallus/vapautus purkaa
+  jonon ensin. Testi: 8 liikettä → 1 välitetty mousemove.
+
+### v1.53 (lista 6, erä A: liikkeen keinunta, jousen tarkistus, piikivikirves)
+- Jousen veto kuvattu edestä, takaa, molemmilta sivuilta ja ylhäältä seisten ja kyykyssä: jousi ojennetussa kädessä, nuoli jänteellä,
+  vetokäsi kasvojen vieressä – ei korjattavaa.
+- Keinunta (player.js): kävelyssä ei sivukallistusta (ennen ±1°), juoksussa ±2,6° (ennen ±4,4°) ja askeltahtinen eteenpäin
+  nyökkäys |sin|·2° (osa kallistuksesta eteenpäin).
+- **Piikivikirves** `piikivikirves`: työpenkki, 3 puuta + 3 piikiveä + 1 nahka, taso 2. chop 1,5 (puuhun 11 / isku, kivikirves 9,
+  kuparikirves 13; ei kovia puita), vahinko 10, nopeus .49. Malli: tumma lohkottu piikiviterä, nahkasidokset ristiin.
+
+### v1.52 (lista 5, erä D: uuden maailman latausnäyttö ja aukeavat pilvet)
+- `startNewGame` → `worldLoad(build)`: riimukivi-latausnäyttö uudelleen (`__ldShow`, index.html; latausnäytön funktiot hakevat elementit
+  joka kutsulla ja pohja `__ldHTML` talteen), maailma rakennetaan, intro alkaa pidossa (`startIntro(true)`, `intro.hold`: korkea kamera
+  piirtyy valmiiksi 24 kuvan ajan, otsikko piilossa, ohitus ei toimi). `__ldDone` → leimahdus → häivytyksen alkaessa `__ldAfter` =
+  `introRelease`: pito pois, otsikko näkyviin ja pilvet aukeavat. Karttavaihdossa (sivu latautuu) sama pito ja `__ldAfter`.
+- Pilvet: Medium ja yli (`introHiQ`: esiasetus ≥ Medium, Custom = varjot Hyvät + valot 6) → 22 sprite-pilveä kameran edessä
+  (`introCloudsMake`/`introCloudsTick`), vasen puoli liukuu vasemmalle ja oikea oikealle 2,1 s ja häipyy, sitten poistetaan.
+  Alle Medium: CSS-pilviverho `#cloudVeil` (kaksi puoliskoa liukuvat sivuille 2 s). Sitten tavallinen intro (4 s ylhäällä + 2 s syöksy).
+
+### v1.51 (lista 5, erä C: kymmenen uutta valikkotaustaa, myrskyn sade, eeppinen portaali)
+- **Uudet kuvat (`MBG_SCENES.push`, menubg.js):** Myrskytuuli (puut taipuvat puuskissa, yksi kaatuu 9 s välein pölypilveen, salamat,
+  lentävät oksat), Karhun raivo (karhu nousee takajaloilleen karjuen, iskee koivuun → puu tärisee, linnut pakenevat, lehtiä putoaa),
+  Routaluolan suu (jääpuikot, sininen huuru hengittää ulos, sisällä himmeä sykkivä valo), Kalmankammion käytävä (perspektiivikäytävä,
+  kynttilät lepattavat, kaukana hahmo kulkee ohi hehkuvin silmin), Aarnihaudan juurakko (jättipuun juuret kaartuvat kuopan yli, vihreä
+  hohde ja itiöt), Susilauma kuutamossa (kolme sutta kalliolla ulvoo vuorotellen, usva), Hirvi aamujärvellä (hirvi juo, väreet,
+  heijastus, sumuvyöt), Kalmanvartijan varjo (jättisiluetti näkyy salamoiden välähdyksissä, hehkuvat silmät aina), Hautakummun usva
+  (kalmot nousevat kummuista ja vajoavat), Ahjo yöllä (seppä takoo, kipinäryöppy ja välähdys iskussa, savu). Ulottuvuuksien kuvat
+  eivät paljasta pomoja. Apurit: `mbgBear`, `mbgWolf`, `mbgElk`, `mbgFigure`, `mbgFlash`, `mbgBolt`, `mbgRain`.
+- **Myrsky:** sade viistää nyt oikealle alas, samaan suuntaan kuin puut kallistuvat.
+- **Portaali (`mbgPortalBg`/`mbgPortalFx`):** riimuin kaiverrettu kivikaari lohkoista (riimut syttyvät aaltona), lakikivi, raunioituneet
+  pylväät, portaat, kerroksellinen pyörre aukossa (leikattu kaaren ja portaiden väliin), hehkuvat maan halkeamat, leijuvat kivet,
+  energiakipinät. Kaksi versiota: "Portaalin hehku" ja "Portaalin vartija" (viittapäinen hahmo sauvoineen portaiden juurella).
+- **Partikkelit:** `MFX_KIND` 21 kpl; uudet lajit `frost` (Routaluola) ja `spores` (Aarnihauta).
+
+### v1.50 (lista 5, erä B: yöolennot palavat auringossa)
+- `sunBurnAI` / `sunExposed` (ai.js), tarkistus 0,5 s välein: `SUN_BURN` = kalmo, ylimys, hiidenkarhu, hiidenhirvi, kalmasusi, suonakki
+  (+ `stalk`-tyypit), ei pomoja eikä vartijoita (`m.guard`). Altistus: `lightK` ≥ .55, `wDark` ≤ .35, `wRain` ≤ .25, biomi ei
+  korpi/koivikko/aarnimetsä (`SUN_SHADE`) eikä katosta yläpuolella (`roofTopAt`).
+- Kulku: syttyy (`igniteMob`, `burnT` pidetään yllä, `updateBurn` ei vähennä hp:tä), 0–3 s paniikkiryntäily 1,3× juoksu satunnaisiin
+  suuntiin, 3–5,2 s hidastuu ja horjuu, sitten `killMob` `sunKill`-lipulla → tuhkakuolema, ei saalista, XP:tä eikä tappotilastoa.
+  1 m päässä ryntäilevä sytyttää pelaajan (`P.burnT` 4 s). Testattu: niityllä kuoli 5,5 s, metsässä ja yöllä ei, susi ei pala.
+
+### v1.49 (lista 5, erä A: Tallennettu-teksti, jousen tähtäin ja kyykkyammunta)
+- **Tallennettu (5):** syy: v1.46:ssa painikkeeseen lisätty riimulaatta on `firstChild`, joten "Tallennettu ✓" kirjoitettiin laatan sisään
+  (piiloon). Nyt teksti on omassa `.bLbl`-elementissä ja painike välähtää vihreänä (`.saved`) 2,2 s; alle "Tallennettu selaimeen."
+- **Jousi (3):** `bowSpread` + `BOW_STAND_MIN` 1,1°: seisten täysi veto = pieni ympyrä (~26 px) ja pientä hajontaa. Kyykyssä (`bowCrouch`)
+  täysi veto paikallaan = hajonta 0, tähtäin 5 px; veto ja nuolen nopeus ×1,1 (`BOW_CROUCH_K`; 1,6 → 1,455 s, 50 → 55 m/s).
+  `bowShot(k,am)` laskee nopeuden ja painovoiman (sama ammuttaessa ja ristikossa).
+- **Tiputusristikko:** `#dropRet` (`updDropRet`, ui.js) vain kyykyssä täysin vedettynä: vaakaviivat 20–70 m etäisyyksille
+  (pudotus ½·g·(d/v)² → kulma → pikselit näkökentän mukaan), numerot 20/40/60 m.
+
+### v1.48 (logoteemat, käyttäjän tarkennus)
+- **Käyttäjä tarkensi:** jokainen logotyyli on oma logonsa, ja valikkoon tultaessa arvotaan yksi (ei yhdistelmää aina).
+- `LOGO_T` (menubg.js), 7 teemaa: `crack` halkeillut kivi (paljon haarautuvia halkeamia, lohkeamat), `hiisi` hehkuva hiidenkivi (vihreä
+  läpikuultava kivi, hehkuvat suonet ja kristallit kaikissa kirjaimissa, vihreä aura), `moss` sammalkivi (tiheä sammal myös alas valuvana,
+  jäkäläpisteet), `iron` taottu rauta (metalliliuku, vasaranjäljet, niitit, hehkuva ahjon kuumuus alareunassa), `ore` malmikallio
+  (ruskea kallio, paljon kulta-, kupari-, hopea- ja vihermalmia, kultasuonet, kimallukset), `rune` riimukivi (punaiseksi maalatut
+  kaiverretut riimut jotka hehkuvat, punainen riimurivi), `all` v1.47:n yhdistelmä.
+- `logoRandom()` sivun latauksessa ja `pauseGame`:ssa; ei samaa kahdesti peräkkäin. Fontin latauduttua sama teema rakennetaan uudelleen.
+- Korjattu samalla: lisäys meni ensin `menuBack`iin (sama merkkijono) ja rivikommentti nieli koodin – KORJAUKSET 29 pätee yhä.
+
+### v1.47 (esiasetussäätimen teemat ja uusi logo, käyttäjän pyyntö)
+- **Esiasetussäädin (`pvTheme`, `PV_FX`, `pvFxStart`):** `#presetBox` saa luokan pv0…pv7 (pvc = Custom). Low kivi (karhea harmaa täyttö,
+  pyöreä kivinuppi, putoavaa pölyä), Low+ vaskipatina (turkoosi, nousevia itiöitä), Medium- metsä (vihreä, tulikärpäset), Medium
+  ennallaan, Medium+ kulta (liukuva kimallus, kultapöly), High routa (jäänsininen, vinoneliönuppi, jääkiteitä), High+ punainen ja palava
+  (liikkuva tuligradientti, lepattava nuppi ja nimi, nousevat kipinät), Ultra violetti taika (kimalteleva gradientti, sykkivä nuppi,
+  nupin ympäri kiertävät ja nousevat violetit hiukkaset). Partikkelit omalla canvasilla täytön kohdalta, määrä × Hiukkaset-asetus.
+  Vedettäessä teema, nimi ja asteikon korostus vaihtuvat heti.
+- **Logo (`buildLogo`, menubg.js):** SVG, kirjaimet leikkausmaskina (Cinzel Decorative, `textLength` 968). Sisällä kivi (liukuväri +
+  läikät + rae), malmisuonet ja -kokkareet (kulta, kupari, rauta), halkeamat haaroineen, sammal yläreunoilla (rosoistettu), kaiverretut
+  riimut (syttyvät oransseiksi hiiren alla), kolmessa kirjaimessa hehkuvat hiidenkivikristallit (sykkivät). Ulkona taottu rautareunus
+  vasarajäljin. Kivi viistetään valolla (feSpecularLighting) ja reunat rosoistetaan (feDisplacementMap). Valojuova 8 s välein.
+  Kirjainten paikat `getExtentOfChar`; rakennetaan uudelleen fonttien latauduttua; kiinteä siemen. Vanha teksti jää varalle (`.hasLogo`).
+
+### v1.46 (valikon uudistus, käyttäjän pyyntö)
+- **Päätökset (käyttäjän vastaukset):** tyyli "yllätä, käytä kaikkia" → kivi + taottu metalli + riimut yhdessä; valikot eivät vieritä vaan
+  korvaavat päänäkymän leveällä näkymällä tyhjään tilaan (Takaisin-painike ja P/Esc); partikkelit vaihtuvat taustakuvan mukaan;
+  jatka/aloita-painike on erityinen, silmään pistävä.
+- **Rakenne:** `#menu[data-view]` = `main` | `worlds` | `settings`. Päänäkymä `.mHome` (otsikko, tarina, painikkeet), leveä näkymä `#mView`
+  (`.mvHead` Takaisin + otsikko, `.mvBody` jossa `#worlds` tai `#settings`). `setMenuView`, `menuBack` (P/Esc valikossa ja tauolla:
+  ensin takaisin, päänäkymässä P jatkaa peliä). `#settings`-paneelin hidden-tila ohjaa settings-näkymää (MutationObserver), otsikko
+  Näppäimet/Asetukset välilehden mukaan. Pelin aikana tarina piilossa (`#menu.inGame`), jotta kaikki mahtuu 768 px korkeuteen.
+- **Otsikko:** Cinzel Decorative 900 (Google Fonts, varalla Uncial Antiqua), kivitekstuuri (SVG-kohina) + pronssi-luugradientti
+  tekstin täyttönä, kaiverrusvarjo, sykkivä hiilloshehku, valojuova 7 s välein, alla riimurivi ᚺᛁᛁᛞᛖᚾᛗᚨᚨ (kirkastuu hiiren alla).
+- **Painikkeet:** tumma puu + syykuvio, rautaniitit kulmissa, vasemmalla kivinen riimulaatta (`data-rune` → `.mIco`), Cinzel-teksti;
+  hiiren alla siirtymä, hehkureuna, riimu syttyy ja kääntyy, valojuova (`.mSheen`); painettaessa painuma. Sisääntulo porrastettuna.
+- **Sankaripainike `.mHero`:** `#bContinue` (ei pelissä: "Jatka seikkailua" viimeisimpään maailmaan tai "Aloita seikkailu" kun
+  maailmoja ei ole → luo uuden) ja `#bResume` (pelissä): pyörivä kultainen conic-reunus (`@property --ha`), sykkivä hehku, pyöreä hehkuva
+  riimusinetti katkoviivakehällä, kultainen gradienttiteksti, reunoilta jatkuvasti nousevia kipinöitä, painettaessa iso kipinäryöppy.
+- **Maailmat-näkymä:** kortit ruudukkona (pelaa / nimeä / poista), uusi maailma katkoviivakortissa.
+- **Partikkelit (`menubg.js`, `MFX`, `#menuFx`):** laji `MFX_KIND[MBG.i]`: hiillos, kultapöly, kevyt lumi, tulikärpäset, virvatulet+tuhka,
+  valopöly+lehdet, nousevat riimut, vino sade+lehdet, lumisade, taikakipinät; 3D-taustalla/tauolla hiillos. Hiiri työntää hiukkasia,
+  painikkeet kipinöivät. Määrä × Hiukkaset-asetus, enintään 45 kuvaa/s, enintään 420 hiukkasta.
+
+### v1.45 (latausnäytön viimeistely, käyttäjän pyyntö)
+- **Loppuleimahdus:** kun lataus (ja mahdollinen suorituskykytesti) valmistuu, `__ldDone` lisää `#loadScr.done`: 0,8 s kaikki riimut
+  syttyvät lähes valkoisiksi (#fff → #fff4e0) voimakkaalla hehkulla (`lsFlare`, porrastettu 12 ms/riimu), kivi ja otsikko kirkastuvat,
+  palkki valkoinen; sen jälkeen häivytys 1,3 s (ennen 0,4 s viive).
+- **Sivupartikkelit:** vasemmalle ja oikealle reunalle (`.lsSide`, 24 % leveys, reunat häivytetty) 34 nousevaa hiilloshiukkasta ja
+  leijuvaa tuhkaa kummallekin puolelle (satunnainen koko, ajo, sivuttaisajelehdinta); leimahduksessa hiukkaset vaalenevat.
+
+### v1.44 (lista 4, erä F: optimoinnit asetuksiin)
+- **Kaukainen maasto (terrLod):** sama kärkipuskuri, uusi indeksipuskuri: kameran 100 m säteellä täysi 2 m ruudukko, kauempana
+  8 m lohkot viuhkana; tarkan naapurin puolelle kaikki reunakärjet → ei rakoja. Uudelleen kun kamera liikkuu 24 m (`terrLodTick`,
+  `updateChunkVis`). Maaston kolmiot ~245 000 → ~35 000 (kokonaisuus 797k → 586k kolmiota). Lapion muokkaukset toimivat (kärjet samat).
+- **Staattisten yhdistäminen (mergeSt):** `mergeStatics` 64 m ruuduittain + materiaali + varjoliput; alkuperäiset piiloon (`userData.mg`,
+  `MG_HID`), ei luolastoa/instansseja/arkun kansia/liekkejä/läpinäkyviä; uudet kohteet → yhdistetään uudelleen (`mergeTick`).
+  Alussa 553 meshiä → 112. Ulkoasu sama (sama materiaaliolio).
+- **Auringon varjot harvemmin (shFar):** `sun.shadow.autoUpdate=false`; paikallaan joka 4. kuva, liikkeessä/hyökätessä/kameraa
+  kääntäessä joka kuva; kaukaisen tulen varjokartta 2× harvemmin.
+- **Esiasetukset:** Low, Low+, Medium-: kaikki päällä; Medium–Ultra: vain yhdistäminen. Vanhaan tallenteeseen puuttuvat avaimet otetaan
+  sen esiasetuksesta (nimi ei muutu Customiksi). Asetussivulla uusi väliotsikko "Suorituskyky".
+
+### v1.43 (lista 4, erä E: latausnäyttö, suorituskykytesti, maailman intro, tauko/käynnissä + aluebannerit)
+- **Latausnäyttö (10):** `#loadScr` heti `<body>`:n alussa: riimukivi (SVG, 24 riimua kahdessa nauhassa) jonka riimut syttyvät sitä
+  mukaa kuin 29 skriptiä latautuu (dokumentin `load`-tapahtuma kaapataan, `__ldSet`), sumukerrokset, nousevat kipinät (CSS, toimivat
+  vaikka pääsäie on kiireinen), satunnainen säe (5 omaa säettä), edistymispalkki. `__ldDone()` häivyttää 1,3 s:ssa ja poistaa.
+- **Suorituskykytesti (31):** ensimmäisellä käynnillä (ei `hiidenmaa_perf`- eikä `hiidenmaa_set`-tallennetta) latausnäytön aikana 3 s:
+  3D-valikkokamera oletusasetuksilla, 0,6 s lämmittely, sitten FPS. ≥ 50 → Medium (oletus), 35–50 → Medium-, 22–35 → Low+, < 22 → Low.
+  Tulos `hiidenmaa_perf` ja näkyy latausnäytöllä ("Grafiikka: X (N FPS)"). Automaatioselaimessa (`navigator.webdriver`) ohitetaan,
+  `?perf=1` pakottaa. Testattu: swiftshader 2 FPS → Low.
+- **Intro (11):** `startIntro()` uudessa maailmassa (myös karttavaihdon jälkeen): `state='intro'`, 4 s 175 m korkeudella 80 m säteellä
+  hitaasti kiertäen, otsikko "Hiidenmaa" + "Kartta · nimi" (`#introT`), sumu kauas (260–700 m) ja ruudut näkyviin; 2 s syöksy
+  easeInOut tavalliseen kameraan (sijainti lerp + kierto slerp). Mikä tahansa näppäin/napsautus/kosketus ohittaa (`endIntro`).
+- **Tauko/Käynnissä (32):** taukovalikon painike `#bRun` "Tila: Tauko / Käynnissä" (muistetaan, `hiidenmaa_prun`). Käynnissä-tilassa
+  `update(dt)` ajetaan valikon takana (syötteet eivät liikuta pelaajaa); pelaaja ei ota vahinkoa eikä kuole tauolla/introssa.
+- **Aluebannerit (käyttäjän lisäpyyntö):** alue löytyy vasta, kun 5/6 pistettä 6 m säteellä on samaa aluetta (`zoneDeep`). Bannerit
+  jonossa (`zoneQ`): häivytys sisään 2,2 s, näkyy 3 s, ulos 3 s, 1 s tauko → seuraava; ei koskaan päällekkäin.
+
+### v1.42 (lista 4, erä D: ulottuvuuksien saalis, Kalmaherra, jousikalmot, ensikäynnin otsikko)
+- **Saalis (12–13):** `realmLoot(id,base)`: Kalmankammion arkuissa ja kirstuissa määrät 2×; Kalmankammiossa ja Aarnihaudassa 30 %
+  mahdollisuus harvinaiseen (`RARE_LOOT`): 3–5 metson sulkaa, karhuntalja, 1–2 hiidenkiveä tai ★2 rautamiekka/-kirves, kuparimiekka,
+  keihäs, kupari-/rautakilpi tai jousi. Testattu 1000 avausta: 2× aina, harvinainen 28–31 %, Routaluolassa 0.
+- **Kalmaherra (14):** ryntäys 5 s välein (ennen 10 s, `chargeGap`), ei huitaise ilmaa (`noAir`: lyönti vain alle ulottuman + 0,6 m).
+  Kun hp ≤ 50 %: 20 s välein (ensimmäinen 4 s jälkeen) 1–3 latausiskua (0,7 s nosto, `act 'fireline'`), jokainen jättää 8 m tulilinjan
+  pelaajaa kohti (`fireLine`, pysähtyy seinään, oma valo): 20 vahinkoa kerran + palaminen 4 s (uusiutuu linjassa seistessä), kestää 5 s.
+- **Loppuvaihe (15):** alle 30 %: materiaalit kopioidaan ja hehkuvat sykkien punaisena (`bossFinalGlow`), vain ryntäyksiä (1,5 s tauko),
+  20 s välein 5 kalmoa ympärille (`summonMinions(m,5,12)`). Ei tulilinjoja loppuvaiheessa.
+- **Jousikalmot (16):** `makeArcher` (realmize, Kalmankammio, 10 %): kirves piiloon, jousi käteen. `archerAI` (ai.js): 0,6 s tähtäys
+  (käsi ylhäällä), nuoli 3–20 m kaarella ja ennakolla, vahinko = lähi-isku, 1 nuoli / 2,5 s; pitää 6–14 m (peruuttaa kasvot pelaajaan),
+  lähestyy jos ei näe; alle 2,4 m lyö. Kuollessa 50 %: 2–5 nuolta.
+- **Ensikäynti (17):** `realmIntro(id)`: ensimmäisellä kerralla (`fo('ri')`) koko ruudun otsikko ulottuvuuden hehkuvärillä (`#realmBan`:
+  riimurivit, "Astut ulottuvuuteen", nimi sumeasta väristen esiin + välke, tavoite "Kukista X ja ota Y.", karjaisu ja tärähdys, 6,5 s).
+  Myöhemmin vain sivuviesti; voitetussa ulottuvuudessa "X on kukistettu. Tutki rauhassa."
+  Huom. testaus: headless-selaimessa CSS-animaatiot eivät etene raskaan 3D:n aikana – ulkoasu tarkistettu animaatiot pois kytkettynä.
+
+### v1.41 (lista 4, erä C: lumi ja sade, seinäsoihtu, soihdun sytytys, arkkujen ulkonäkö)
+- **Lumi (2):** hiutaleet ovat maailmankoordinaateissa (`updateSnow`): 50 × 50 m alue kiertää pelaajan ympäri silmukkana (x/z ±25 m),
+  tuuli kuljettaa, maahan pudonnut syntyy ylös. Ei enää "seuraa kameraa". Sade ja lumi saavat pistekohtaiset värit (`precipTint`):
+  yöllä tummat (sade hyvin tumma, kerroin `max(.12, lightK·(1−.35·wDark))`), Medium+ (valot ≥ 4 ja hiukkaset ≥ 50 %) 8 m sisällä
+  olevat valot (myös oma soihtu) värjäävät lämpimäksi.
+- **Seinäsoihtu (20):** `seinasoihtu` (Valo): 2 puu, 1 pihka, 1 rauta; kiinnitetään vain rakennuksen pystypintaan (`wallMount`,
+  kierto pinnan normaalista, haamu punainen muualla). Palaa 15 min, pihka +15 min (enint. 30 min). Sytyttää käsisoihdun, valaisee.
+  Ulottuvuuksien seinäsoihtujen takana luolissa kivilohkare (Aarnihaudan soihdut kiveen).
+- **Sytytys (21–22):** sammunut käsisoihtu syttyy 2,5 m sisällä palavasta nuotiosta, soihtutelineestä, seinäsoihdusta tai Hautakummun /
+  ulottuvuuden soihdusta (`FLAMES`-rekisteri, landmarks.js). Heti viesti "Pysy paikallasi hetki – soihtu syttyy…", sitten 1–1,5 s
+  paikallaan (liike kuluttaa aikaa takaisin). Testattu: syttyi 1,13 s:ssa, 8 m päässä ei.
+- **Arkut (24):** `makeChest(kind,w,h,d)` / `openLid(g,k)`: puuarkku lankuista, rautavanteet ja niitit, lukkolevy + lukonreikä;
+  linnakkeen kiviarkku kivinen riimuin. Avattu arkku on ontto (kansi aukeaa saranasta, tumma sisus). Käytössä raunioissa, löytöpaikoilla,
+  linnakkeissa, kätköissä, ulottuvuuksissa (ei hautakirstuissa) ja rakennettavassa arkussa. Rauniot palauttavat avatun kannen latauksessa
+  (`syncChests`). Korjattu samalla: lumen vanha silmukka jäi environment.js:ään (syntaksivirhe) ja `flags` luettiin ennen state.js:ää.
+
+### v1.40 (lista 4, erä B: P-näppäin, Esc pois, opasteet, reppunapsautukset, omat säätimet, arkku katseella)
+- **P (7):** uusi toiminto `menu` (KeyP, vaihdettavissa): avaa ja sulkee päävalikon, sulkee minkä tahansa paneelin. Esc ei tee pelissä
+  mitään (selain vapauttaa silti hiiren → taukovalikko näkyy). Kiinteiden näppäinten listaan selitys.
+- **Opasteet (28):** paneelin oikeaan yläkulmaan "Sulje: P / Tab" jne. (`refreshKeyHints`, `.pHint`), pelinäkymän vasempaan alakulmaan
+  "Päävalikko: P" (`#gameHint`); asetus Ohjaus › Näppäinopasteet (`SET.keyHints`).
+- **Reppu (26, 27, 29):** puolitus: oikea valitsee puolet ja vasen tai oikea toiseen ruutuun siirtää; vasen valinta + oikea toiseen = puolet
+  (testattu). Napsautus paneelin reunojen ulkopuolelle: ilman valintaa sulkee paneelin, valittuna pudottaa esineen (puolikkaan jos valittu).
+- **Omat säätimet (4):** liukusäätimet `sldHTML`/`bindSld` (esiasetus, zoom, DEV aika/terveys/kylläisyys) ja kytkimet `tglHTML`
+  (asetukset, DEV-jumalvoimat) korvaavat selaimen omat; napit ja valikot eivät jää fokukseen; tekstikenttään palatessa vanha teksti
+  valitaan (kirjoitus korvaa). Hakukentät tyhjenevät paneelia avattaessa, DEV-määrä tyhjä (= 1). Paneelissa kirjoittaminen menee suoraan
+  hakuun (paitsi toimintonäppäimet E, Tab, I, P, B, M, J, L, K, T, Q, Ä); Enter lopettaa kirjoittamisen, Tab sulkee repun.
+  Huom: kun hakukenttä on aktiivinen, P kirjoittaa tekstiä – Enter ensin, sitten P.
+- **Arkku katseella (23):** arkut, tynnyrit, kirstut, säkit, rakennetut säiliöt ja hautakasa vain kun tähtäin on päällä tai 15° sisällä.
+
+### v1.39 (lista 4, erä A: kyykky, ylämäki, selkäterät, esineet maassa, pomot/vartijat, kilpi, hp-vaihtelu, veren fysiikka, portaat)
+- **Kyykky (1):** eläimet (pakenevat ja luonteelliset) eivät huomaa kyykyssä lainkaan; noustessa 0,1 s viive (`P.uncrouchT`).
+- **Ylämäki (3):** juoksu ja hyppy ylämäkeen (rinne > 0,1) kestävyys ×1,3 (jyrkkä enint. ×1,6), `P.upK`.
+- **Selkäterät (5):** miekka, lapio ja kuokka lappeellaan selkää vasten (`backPose` y = selän normaali).
+- **Esineet maassa (6):** `dropGround` = korkein maakohta viidestä pisteestä, leijuu 0,25 m (kuvake 0,38 m) ylempänä.
+- **Pomot ja vartijat (8–9):** `HURT_K` (actions.js) asetetaan mob-silmukassa: pomot ×1,2, vartijat (portit ja kohteet, `m.guard`) ×1,8;
+  koskee myös heitettyjä kiviä ja nuolia. Vartijat eivät pelkää tulta (pomot eivät ole koskaan pelänneet).
+- **Kilpi rikki (18):** ei torjuntaa, viesti "Kilpi on rikki (m:ss)", kilpi näkyy selässä kunnes ehjä.
+- **Aarnihirviö (19):** paranee 1,7 min jälkeen 1 %/s (muut pomot 1 min, 10 %/s).
+- **Hp-vaihtelu (25):** viholliset ja eläimet 100–160 % (`m.hpK`), koko +0–10 %. Pomot ennallaan.
+- **Veren fysiikka (extra 1):** asetus `bloodFx` (High+ ja Ultra): pisarat lentävät iskun suuntaan 1–5 m tönäisyn mukaan, jäävät läikiksi maahan,
+  lattioille ja seinien/kivien kylkiin (`drips`); viiltävä isku → punainen viilto ja mobista tippuu verta 5 s; kuoleman lammikko kasvaa
+  4 s (+25 %). `pointBlocked(...,circ)`: nuolet ja pisarat osuvat nyt myös puihin, kiviin, tukkeihin ja linnakkeen muuriin.
+- **Linnakkeen portaat (extra 2):** muurin osuma ympyröinä kaaren mukaan (ennen kierretyn lohkon AABB ulottui portaille), askelmat 0,82 → 1,05 m.
+
+### v1.38 (korjaus: "Script error." vuorilla porttien lähellä)
+- Syy: ruohoton alue → ruohon InstancedMesh ilman instanssivärejä, jaettu materiaali käännetty värien kanssa → three.js kaatui piirrossa.
+  Korjattu (`rebuildGrass` ei lisää tyhjää, `instM` aina värit), `renderer.render` try-lohkoon, three.js `crossorigin="anonymous"`,
+  laajennusten "Script error." ei näy. KORJAUKSET 28. Toistettu ja varmistettu testillä, joka kävelee kaikkien karttojen portille.
 
 ### v1.37 (lista 3: veri ja kuolema-animaatiot, palokuolema, savu, DEV-lento, portit, kirves/hakku IK, jousen veto, selkäesineet)
 - **Uusi tiedosto `js/effects.js`** (ladataan state.js:n jälkeen).
@@ -1449,8 +2004,128 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
+### Päivityslista 6 (v1.53–) – julkaisupäivitys
+**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.83 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
+- A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
+  eteenpäin, piikivikirves.
+- B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.
+- C: ensikäynnin aloitusjakso: musta → "EricStudios" + "KSPK-tech" + tekijänoikeusrivi → HIIDENMAA (kivi, halkeamat) pitkä fade in,
+  katoaa varjoon → varoitus "toimii parhaiten tietokoneella, hiirellä ja näppäimistöllä" (ei enää valikossa) → siirtymäanimaatio
+  latausnäyttöön.
+
+### Päivityslista 5 (v1.49–) – vastaukset ja erät
+**JATKA TÄSTÄ (lista 5):** KAIKKI erät A–D tehty (v1.49–v1.52); PR #25 auki odottaa yhdistämistä.
+**Erät:**
+- A (v1.49): 5 Tallennettu-teksti piilossa (bugi: `#bSave.firstChild` on nyt riimulaatta), 3 jousen tähtäin ja kyykkyammunta.
+- B (v1.50): 2 yöolennot palavat auringossa.
+- C (v1.51): 1 kymmenen uutta valikkotaustaa, myrskyn sade puiden suuntaan, eeppisempi portaali (2 versiota: hahmolla ja ilman).
+- D (v1.52): 4 uuden maailman latausnäyttö + pilvet aukeavat.
+**Vastaukset:**
+- 1: kaikki neljä ryhmää: ulottuvuuksien vihjeet (Routaluola, Kalmankammio, Aarnihauta, eivät paljasta pomoja), eläimet/luonto,
+  vaara/jännitys, selviytyjän elämä; lisäksi myrsky jossa puita kaatuu ja metsä jossa karhu riehuu. Myrskyn sade puiden taipumisen
+  suuntaan. Portaali: riimukaari ja kivipylväät, leijuvat kivet ja partikkelit; hahmo portin edessä vain joskus (kaksi versiota).
+- 2: palavat vain niityllä (avoimella alueella) olevat kalmot ja pelottavat yöolennot (SCARY-tyypit). Katos, sää (pilvi/sade) ja tiheä
+  metsä suojaavat. Noin 6 s: ~3 s ryntäilee paniikissa, ~2 s hidastuu, kaatuu ja muuttuu tuhkaksi. Sytyttää pelaajan läheltä (1 m).
+  Ei saalista, ei rakennusten sytytystä.
+- 3: seisten täysin vedettynä tähtäimen pienin ympyrä pieni (ei mini) ja pientä hajontaa; kyykyssä täysin vedettynä tähtäin hyvin pieni,
+  ei hajontaa, veto ja nuolen nopeus +10 %; tiputusristikko (viivat eri etäisyyksille) vain kyykyssä täysin vedettynä.
+- 4: uutta maailmaa luotaessa riimukivi-latausnäyttö; sen jälkeen pilvet aukeavat sivuille: Medium ja yli 3D-lisäpilvet kameran edessä
+  (poistuvat animaation jälkeen), alle Medium CSS-pilviverho. Ei nykimistä eikä teleporttia näkyviin.
+- 5: Tallennettu-teksti näkyy samassa paikassa kuin ennen (painikkeessa), mutta ei saa jäädä piiloon.
+
+### Päivityslista 4: 32 kohtaa (v1.39–) – tarkentavat kysymykset kysytään ensin, vastaukset kirjataan tähän
+**JATKA TÄSTÄ (lista 4):** PR #25 auki. KAIKKI erät A–F tehty (v1.39–v1.44) + aluebannerien jono/syvyys. PR #25 odottaa yhdistämistä.
+**Erät (lista 4):**
+- A (v1.39): 1 kyykky, 3 ylämäki, 5 selkäterät, 6 esineet maassa, 8–9 pomot/vartijat, 18 rikki kilpi, 19 Aarnihirviö, 25 hp-vaihtelu,
+  extra 1 veren fysiikka, extra 2 linnakkeen portaat.
+- B (v1.40): 7 P-näppäin ja Esc pois, 28 opasteet, 26/27/29 reppunapsautukset, 4 omat kentät, 23 arkun katse.
+- C (v1.41): 2 lumi/sade, 20 seinäsoihtu, 21–22 soihtujen sytytys, 24 arkkujen ulkonäkö.
+- D (v1.42): 12–13 saalis, 14–15 Kalmaherra, 16 jousikalmot, 17 ulottuvuuden intro.
+- E (v1.43): 10 latausnäyttö, 11 maailman intro, 31 suorituskykytesti, 32 tauko/käynnissä.
+- F (v1.44): 30 optimoinnit asetuksiin.
+- Lisäpyyntö (tehty v1.43): aluebannerit pitkä häivytys sisään/ulos, jonossa ei päällekkäin, alue löytyy vasta ~6 m syvemmällä.
+**Vastaukset (lista 4):**
+- 1: kyykyssä täysin huomaamaton (myös liikkuessa, ellei lyö); nousu kyykystä → 0,1 s → säikähtää.
+- 3: vain juoksu ja hyppy ylämäkeen +30 %.
+- 7: Esc ei tee pelissä mitään. P = yleinen sulkunäppäin (sulkee minkä tahansa paneelin) ja avaa/sulkee päävalikon (tauon).
+  Valikon oma näppäin sulkee myös sen (Tab, M…). Pienet näppäinopasteet nurkkaan (esim. "Päävalikko: P"), asetuksista pois päältä.
+- 2: pelaajan ympärille alue, jossa lumihiutaleet kiertävät silmukkana ylhäältä alas, suunta tuulen mukaan (ei näkyvää kameran seurantaa).
+  Pimetessä sade ja lumi tummuvat (sade yöllä hyvin tumma). Medium ja ylöspäin: lähellä olevat valot (myös pelaajan soihtu) värjäävät
+  pisarat ja hiutaleet kellertäviksi/vaaleammiksi (heijastus).
+- 4: omat valintaruudut ja liukusäätimet (selaimen omat eivät toimi kunnolla); fokus ei jää päälle; tekstikentät: kursori tekstin
+  loppuun, kun palaa kirjoittamaan vanha teksti valittuna (kirjoitus korvaa); DEV-määrä: kursori oikealla, ei muista määrää (tyhjä);
+  hakukenttä aina tyhjä avattaessa; valikoissa kirjoittaminen menee suoraan hakuun ilman napsautusta.
+
+- 5: miekka, lapio ja kuokka selässä lappeellaan selkää vasten (kierto 90° pituusakselin ympäri), terä alas vinosti.
+- 6: molemmat: esine lepää korkeimman maakohdan päällä alueen alla, leijuu 0,25 m ylempänä, pysähtyy rinteessä oikein.
+- 8: pomojen iskut +20 %. 9: porttien JA kohteiden (rauniotalot, linnakkeet) vartijat: +80 % vahinko, eivät pelkää tulta; pomot eivät pelkää.
+- 10: latausnäyttö – yllätä (esim. riimukivi, jonka riimut syttyvät latauksen edetessä, usva, kipinät, runosäe).
+- 11: uuden maailman intro ~6 s: 4 s korkealla pilvien yllä hidas kierto + "Hiidenmaa" ja kartan nimi animoituna, 2 s nopea syöksy
+  pelaajaan; ohitettavissa.
+- 12–13: Kalmankammio 2× saalis; Kalmankammio ja Aarnihauta: 30 % mahdollisuus harvinaiseen (metson sulat, karhuntalja, hiidenkivi, ★2-ase/kilpi).
+- 14: Kalmaherra: ryntää 2× useammin, ei lyö ilmaa; kun hp ≤ 50 %, 20 s välein 1–3 ladattua iskua (0,7 s), jokainen 8 m tulijana
+  pelaajaa kohti, 20 vahinkoa + palaminen 4 s, jana palaa maassa 5 s.
+- 15: loppuvaihe hp < 30 %: hehkuu punaisena, vain ryntäyksiä (~1,5 s välein), 5 kalmoa ympärille 20 s välein.
+- 16: jousikalmot 10 %: ampuu 3–20 m, 1 nuoli / 2,5 s, vahinko kuin lyönti, pitää etäisyyttä, pudottaa joskus nuolia.
+- 17: ensimmäisellä kerralla iso pelottava animoitu teksti (alueen löytymisbannerin tyyliin + ulottuvuuden koristeet): pomo ja esine;
+  myöhemmin vain viesti sivuun.
+- 18: rikkinäinen kilpi: oikea hiiri → viesti "Kilpi on rikki (0:42)", ei torjuntaa; kilpi selässä kunnes ehjä.
+- 19: Aarnihirviö: 1,7 min ilman osumaa → paranee hitaasti (1 %/s).
+- 20: seinäsoihtu: 2 puuta, 1 pihka, 1 rauta, palaa 15 min, pihkaa lisäämällä lisää; Aarnihaudan seinäsoihdut kiinni kivissä.
+- 21–22: sytytys alle 2,5 m nuotiosta/soihdusta/seinäsoihdusta/ulottuvuuden soihdusta; heti viesti "Pysy paikallasi hetki…", 1–1,5 s
+  paikallaan → syttyy. Nuotio sytyttää pelaajan ja mobit alle 0,8 m.
+- 23: arkku/tynnyri: tähtäin päällä tai 15° sisällä.
+- 24: puuarkut lankkutekstuuri + rautavanteet + niitit, kansi saranoista; kiviarkku kivitekstuuri + riimut, avattuna ontto, lukonreikä.
+- 25: viholliset + eläimet (ei pomot) hp 100–160 %, vahvemmat +0–10 % kokoa.
+- 26: oikea valitsee puolet, seuraava vasen TAI oikea toiseen ruutuun siirtää puolet; vasen valitsee kaiken, sitten oikea toiseen = puolet.
+- 27/29: napsautus paneelin reunojen ulkopuolelle: ilman valintaa sulkee, valittuna pudottaa.
+- 28: paneelin oikeaan yläkulmaan "Sulje: P / Tab"; pelinäkymän vasempaan alakulmaan "P päävalikko"; asetus Näppäinopasteet.
+- 30: LOD kaukomaastolle, staattisten yhdistäminen, varjot harvemmin kaukana – kaikki grafiikka-asetuksiin, esiasetukset päättävät.
+- 31: suorituskykytesti 3 s latausnäytön aikana ensimmäisellä käynnillä → esiasetus (läppärit pääsevät valikkoon).
+- 32: päävalikossa (tauko) vaihdettava nappi "Tila: Tauko / Käynnissä" – käynnissä maailma päivittyy taustalla ja muutokset näkyvät heti.
+
+Extra 1. (lisä) High+ ja Ultra: veri lentää lyönnin suuntaan pisaroina, jotka jäävät maahan pieniksi läikiksi; kuoleman lammikko kasvaa
+   hitaasti. Oma asetus (Veren fysiikka), esiasetukset High+ ja Ultra päällä.
+Extra 2. (lisä) Arkkukivilinnakkeen kierreportaat leveämmiksi: muurin osumalaatikko (kierretyn lohkon AABB) on iso ja vie askelmista
+   tilaa, joten portaita on vaikea kävellä.
+- Extra 1 tarkennus: pisarat 1–5 m tönäisyn mukaan, lammikko +25 %; viiltävä ase → punaiset viillot mobiin ja mobista tippuu pisaroita
+  5 s; pisarat jäävät kaikkiin pintoihin (maa, lattiat, kivet, seinät); myös pelaajasta; tarkista että nuolet jäävät kaikkiin objekteihin.
+- Extra 2 tarkennus: muurin osuma tarkaksi (kaaren mukaan) + hieman leveämmät portaat, askel 0,3 m ennallaan.
+1. Kyykyssä eläin ei huomaa; kun nousee kyykystä, 0,1 s viive ja eläin säikähtää.
+2. Lumisade ei saa näkyvästi seurata pelaajaa/kameraa (kevyt korjaus).
+3. Ylämäkeen kävely/juoksu kuluttaa kestävyyttä 30 % enemmän.
+4. Liukusäätimet (myös DEV), hakukentät (ei muista hakua – aina tyhjä), valintaruudut: ei jää fokukseen/siniseksi; omat valintaruudut.
+5. Miekka selässä: kierto 90° oman pituusakselinsa ympäri (lappeen tasainen puoli selkää vasten).
+6. Maassa olevat esineet ylemmäs (eivät uppoa maahan) tai parempi maaston osuma.
+7. Esc pois käytöstä (näyttää oikean kursorin); valikko toisella näppäimellä (H?), valikoista poistutaan samalla näppäimellä.
+8. Pomojen iskut +20 % vahinkoa.
+9. Porttien vartijat eivät pelkää valoa, +80 % vahinkoa; pomot ja vartijat eivät pelkää valoa.
+10. Latausnäyttö sivua avattaessa (teeman mukainen, yllätä).
+11. Uusi maailma: korkea kamera-ajo pilvien yläpuolella, hidas kierto, "Hiidenmaa" + kartan nimi hienoin animaatioin, sitten nopeasti pelaajaan.
+12. Kalmankammion arkkuihin enemmän saalista.
+13. Kahden viimeisen ulottuvuuden arkkuihin harvinaisia esineitä (kuten metson saalis).
+14. Kalmaherra: ei lyö ilmaa jatkuvasti, ryntää useammin, ladattu isku 3 putkeen → tulijanat maassa ~5 s, sytyttää pelaajan.
+15. Kalmaherran loppuvaihe: hehkuu punaisena, pelkkää ryntäystä, 5 kalmoa ympärille 20 s välein.
+16. Kalmankammiossa ~10 % kalmoista ampuu jousella.
+17. Ulottuvuuteen astuessa viiveellä teksti: kukista (pomo) ja ota siltä (esine).
+18. Rikki oleva kilpi: ei voi torjua, menee selkään vaikka valittu; ehjänä takaisin käteen.
+19. Aarnihirviö: hp palautuu, jos siihen ei ole osuttu 1,7 min.
+20. Aarnihaudan seinäsoihdut kiinni kivissä; vasaralla rakennettava seinäsoihtu.
+21. Ulottuvuuksien soihdut ja nuotiot sytyttävät pelaajan soihdun (ei tarvitse olla kiinni); nuotiot sytyttävät pelaajan ja mobit tuleen.
+22. Uudelleensytytys 1–1,5 s, viesti "pysy paikallasi hetki" heti tulen vieressä.
+23. Tynnyri/arkku avautuu vain suoraan katsottaessa.
+24. Kiviarkku ja luonnon arkut paremmalla tekstuurilla; avattuna ontto, lukonreikä.
+25. Vihollisten hp vaihtelee 100–160 %.
+26. Puolitus: oikea → vasen tai vasen → oikea napsautus siirtää puolet haluttuun paikkaan.
+27. Valikossa ilman valintaa napsautus valikon ulkopuolelle sulkee sen.
+28. Pieniä näppäinvihjeitä (esim. "Poistu: H").
+29. Valittu esine pudotetaan, kun napsautetaan repun/ruutujen ulkopuolelle.
+30. Kysymys: optimointi – rasittavatko ulottuvuudet maailmassa ollessa, toimiiko piirtoetäisyys kuten oikeissa peleissä. Suunnitellaan yhdessä.
+31. Ensimmäisellä käynnillä 3 s suorituskykytesti → esiasetus; resurssien kevyt lataus valikossa.
+32. Pelissä grafiikka-asetusten muutokset näkyvät heti (esim. varjot).
+
 ### Päivityslista 3: 33 kohtaa + lisät (v1.32–) – kaikki kysymykset kysytty etukäteen, vastaukset alla
-**JATKA TÄSTÄ (lista 3, nykytila v1.37):** KAIKKI kohdat 1–41 TEHTY v1.32–v1.37. Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #24 auki
+**JATKA TÄSTÄ (lista 3, nykytila v1.38 – korjaus KORJAUKSET 28):** KAIKKI kohdat 1–41 TEHTY v1.32–v1.37. Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #24 auki
 (main = v1.07). Seuraavaksi: odotetaan käyttäjän testiä ja Mergeä. Testaa aina commit-linkillä (välimuisti).
 1. TEHTY v1.32. Haamukuva pois kursorilta (näkyy vain raahatessa).
 2. TEHTY v1.32. Reppu ei liiku eikä veny: kiinteä koko. Tietoalue (tiedot, päivitys, ota käyttöön) kiinteässä paikassa, ei vieritystä tietoalueessa.

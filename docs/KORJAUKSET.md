@@ -202,6 +202,57 @@ kohtaan keinotekoiset (`isTrusted=false`). Uudet paneelien hiirikäsittelijät t
 mousemove/wheel), mutta **CSS :hover ei toimi** – lisää vastaava `.vh`-luokan tyyli. Natiivi vieritys ja `<select>`-avaus eivät toimi
 keinotekoisilla tapahtumilla (rulla vierittää lähintä vieritettävää käsin); asetusvalikko on taukotilassa (lukitus vapaana), joten se toimii.
 
+## 28. "Virhe: Script error." vuorilla porttien lähellä (v1.38)
+**Oire:** kivisillä vuorilla (Kivivuori) ja porttien lähellä ruutuun tuli "Virhe: Script error." (toistui, kartat 0, 3, 4, 5).
+**Syy:** ruoho rakennetaan uudelleen 6 m välein. Alueella, jossa ruohoa ei ole (kivinen vuori, kohteiden suoja-alue), `rebuildGrass` loi
+InstancedMeshin ilman yhtään `setColorAt`-kutsua → `instanceColor = null`. Sama `GRASS_MAT` oli jo käännetty instanssiväreillä, ja three.js
+r128 käyttää samaa ohjelmaa → `bindingStates.setup` → `attributes.get(null)` → `Cannot read properties of null (reading
+'isInterleavedBufferAttribute')`. Virhe tuli `renderer.render`ista, joka oli pelisilmukan try-lohkon ulkopuolella, ja koska three.js ladataan
+toiselta sivustolta (cdnjs), selain näytti vain "Script error.".
+**Korjaus:** tyhjää ruohoa ei lisätä näkymään (`if(!n){im.dispose();return;}`); ulottuvuuksien `instM` asettaa instanssivärin aina (valkoinen
+oletus); `renderer.render` on try/catchissa (virhe näkyy tarkkana); three.js-tagissa `crossorigin="anonymous"` (tarkat virheviestit);
+"Script error." ilman tiedostoa (selainlaajennus) ei näy pelaajalle. **Sääntö: jos InstancedMesh käyttää instanssivärejä, KAIKKI saman
+materiaalin InstancedMeshit tarvitsevat ne (tai oman materiaalin).** Testi: `gate.mjs` (scratchpad) kävelee kaikkien karttojen porteille.
+Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: *` (crossorigin).
+
+## 29. Ylimmän tason muuttujat käytössä ennen esittelyä (v1.41, v1.43)
+- **Oire:** peli ei käynnisty (`flags is not defined`, `Cannot access 'intro' before initialization`), tai syntaksivirhe kesken tiedoston.
+- **Syy:** v1.41 landmarks.js luki `flags`-olion ylimmällä tasolla (state.js latautuu myöhemmin); v1.43 main.js:n karttavaihdon jatko
+  (IIFE) kutsui `startIntro()`a ennen `let intro` -riviä (TDZ). Lisäksi rivikommentti `// …` ennen samalla rivillä olevaa koodia nieli koodin.
+- **Korjaus:** tila palautetaan latauksessa funktiolla (`syncChests()` loadData/newGame), `let`-muuttujat tiedoston alkuun ennen IIFE:itä,
+  rivikommentin jälkeen aina rivinvaihto. Testaa aina myös karttavaihdon jatko (tarkistus: "Karttavaihto + automaattinen aloitus").
+
+## 30. Jousen naru "väärin päin" (v1.57)
+- **Oire:** vedossa naru näytti venyvän eteenpäin; narun päät eivät olleet jousen kärjissä.
+- **Syy:** `updateBowMesh` asetti pätkän kulman `rotation.x = -atan2(dz,dy)`. Laatikko on pitkin +y:tä; kierto x:n ympäri vie (0,1,0) →
+  (0,cos,sin), joten oikea kulma on `+atan2(dz,dy)`. Väärä etumerkki peilasi molemmat pätkät keskipisteensä ympäri. Mittaukset, jotka
+  katsoivat vain pätkien keskipisteitä tai nuolen paikkaa, eivät paljastaneet vikaa → mittaa aina pätkän PÄÄTEPISTEET (tai katso kuva sivulta).
+- **Myös:** repun kuvakkeessa kaari ja naru olivat väärin päin (v1.56).
+
+## 31. "Cannot set properties of null (setting 'onclick') (main.js:39)", valikko ilman tyylejä (v1.58)
+- **Oire:** Ctrl+Shift+R:n jälkeen haaralinkissä (raw.githack) uusi index.html (versio näkyy oikein), mutta logo, riimut ja Takaisin-nappi
+  muotoilemattomina ja virhe main.js:39.
+- **Syy:** välityspalvelimen välimuisti antoi vanhan main.js:n ja style.css:n (~v1.25, rivi 39 = `$('#bNew').onclick`, nappia ei enää ole)
+  `?v=`-numerosta huolimatta. Toistettu testissä ohjaamalla vanhat tiedostot uuden index.html:n kanssa → täsmälleen sama virhe.
+- **Korjaus:** versiotarkistus: `window.__JSV` (core.js), `window.__JSV2` (main.js) ja `--css-v` (style.css) verrataan `window.HV`:hen;
+  ero → ilmoitus "Välimuisti antoi vanhentuneita tiedostoja … avaa commit-linkillä". `bump.sh` päivittää kaikki merkit.
+  Suosittele käyttäjälle aina commit-SHA-linkkiä heti päivityksen jälkeen (kaikki tiedostot samasta versiosta).
+
+## 32. Aloitusjakso ja latausnäytön animaatiot pätkivät (v1.60)
+- **Oire:** studio-/logo-/varoitusruudun häivytykset ja latausnäytön leimahdus nykivät; suorituskykytesti tehtiin latauksen sekaan.
+- **Syy:** aloitusjakso pyöri pelin skriptien latauksen ja maailman rakennuksen päällä (pääsäie varattu sekunteja). Lisäksi latausnäytön
+  riimuissa oli ikuinen opacity-animaatio ja leimahdus animoi SVG-tekstien `filter: drop-shadow`-ketjua → koko SVG piirrettiin joka ruudussa.
+- **Korjaus:** `js/boot.js`: jakso + testi (oma kevyt three.js-näkymä) ENSIN, pelin skriptit vasta niiden jälkeen (`window.__GJS`,
+  yksi kerrallaan 16 ms tauoin, esiladattu `<link rel=preload>`). Latauksen aikana `#loadScr.loading` (koristeet levossa, vain riimujen
+  täyttyminen), valmis → kaksi rAF:ia → `.done`: vaalea hehku `.lsGlow` pelkillä opacity/transform-animaatioilla. Älä animoi suotimia
+  (filter) latausnäytössä äläkä aja raskasta työtä animaatioiden aikana. Käynnistysvahdin 20 s ajastin alkaa vasta latauksen alkaessa.
+
+## 33. Kädet tärisevät (AFK/hengitys, v1.68)
+- **Oire:** seistessä kädet nytkyvät edestakaisin.
+- **Syy:** kohdekulma vei kättä vartaloon/reiteen päin (vasemman käsivarren z-kierto väärällä merkillä); `armClear` työntää käden ulos
+  joka ruudussa ja lerp vetää takaisin → värinä. Mittaa: nivelkulmien suunnanvaihdot ruutujen välillä (> 0,003 rad).
+- **Korjaus:** vasen käsi ulospäin = +z, oikea = −z; seisoessa kädet hieman irti reisistä. Älä aseta käsien lepokohdetta vartalon sisään.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

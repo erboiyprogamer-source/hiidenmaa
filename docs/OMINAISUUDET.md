@@ -345,3 +345,123 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Selkäesineet viistoon (pitkä osa/terä sivulle), jousi ja työkalu ristiin; vyön takana nahkapussi.
 - Ulottuvuusportit koristeltu (riimut, kulhot, paadet, teemakoristeet).
 - DEV: lento tuplahypyllä (välilyönti ylös, Shift alas).
+
+## Lista 4, erä A (v1.39)
+- Kyykyssä eläimet eivät huomaa; ylämäkeen juoksu ja hyppy kuluttavat +30 % kestävyyttä.
+- Pomojen iskut +20 %, porttien ja kohteiden vartijat +80 % eivätkä pelkää tulta. Vihollisten hp vaihtelee 100–160 %.
+- Rikkinäinen kilpi ei torju ja on selässä. Aarnihirviö paranee vasta 1,7 min jälkeen hitaasti.
+- Veren fysiikka (asetus, High+/Ultra): pisarat lentävät iskun suuntaan ja jäävät pintoihin, viillot ja tippuminen.
+- Nuolet osuvat puihin ja kiviin. Linnakkeen portaat leveämmät ja muuri ei estä niitä.
+
+## Lista 4, erä B (v1.40)
+- P avaa päävalikon ja sulkee kaikki paneelit; Esc ei tee pelissä mitään. Näppäinopasteet (asetus).
+- Napsautus paneelin ulkopuolelle sulkee sen, tai pudottaa valitun esineen. Puolitus oikealla napsautuksella kumpaankin suuntaan.
+- Omat liukusäätimet ja kytkimet; paneelissa kirjoittaminen menee hakuun.
+- Arkut ja tynnyrit avautuvat vain, kun niitä katsoo.
+
+## Lista 4, erä C (v1.41)
+- Lumi kiertää pelaajan ympärillä maailmassa ja kulkee tuulen mukana. Sade ja lumi tummuvat yöllä; Medium+ lähivalot värjäävät ne lämpimiksi.
+- Seinäsoihtu (2 puu, 1 pihka, 1 rauta): kiinnitetään seinään, palaa 15 min, pihka lisää 15 min (enint. 30).
+- Sammunut soihtu syttyy 2,5 m päässä liekistä (nuotio, soihtuteline, seinäsoihtu, hauta- ja ulottuvuussoihdut), kun seisoo 1–1,5 s.
+- Arkut: puuarkut lankuista rautavantein ja niitein, linnakkeen kiviarkku riimuin; lukonreikä, avattuna ontto.
+
+## Lista 4, erä D (v1.42)
+- Kalmankammion arkuissa kaksinkertainen saalis; Kalmankammiossa ja Aarnihaudassa 30 % mahdollisuus harvinaiseen (sulat, karhuntalja, hiidenkivi, ★2-ase tai -kilpi).
+- Kalmaherra ryntää 5 s välein eikä huitaise ilmaa. Alle 50 %: 20 s välein 1–3 tulilinjaa (8 m, 20 vahinkoa + palaminen 4 s, kestää 5 s).
+  Alle 30 %: hehkuu punaisena, vain ryntäyksiä 1,5 s välein, 5 kalmoa 20 s välein.
+- Kalmankammion kalmoista 10 % on jousikalmoja: ampuvat 3–20 m päästä 2,5 s välein, pitävät etäisyyttä, pudottavat joskus nuolia.
+- Ensimmäinen käynti ulottuvuudessa: iso animoitu otsikko ja tavoite; myöhemmin sivuviesti.
+
+## Lista 4, erä E (v1.43)
+- Latausnäyttö: riimukiven riimut syttyvät latauksen edetessä, sumu, kipinät ja säe.
+- Palaava kävijä näkee käynnistyksessä HIIDENMAA-otsikon (häivytys sisään/ulos, 3,6 s) ja sitten latausnäytön. Otsikossa vain häivytys.
+- Vain ensimmäisellä käynnillä (merkintä localStorage hiidenmaa_intro; F5 ei tyhjennä) 7 s suorituskykytesti ENNEN latausnäyttöä omassa metsänäkymässään (palkki, laskuri, eläva FPS; tulos 9 s:
+  FPS, taso, valittu esiasetus + ohje Asetukset › Grafiikka) säätää grafiikan automaattisesti (suositus: ≥50 Medium, 35–50 Medium-, 22–35 Low+, <22 Low).
+  Palaavalla pelaajalla ei introa eikä testiä (suoraan latausnäyttöön), eikä grafiikkaa säädetä.
+- Uusi maailma alkaa 6 s introlla pilvien yläpuolelta (ohitettavissa millä tahansa näppäimellä). Ei aloitusjaksoa. Alle Medium-grafiikalla
+  pilvet ovat 3-kerroksinen maalattu pilviverho (kumpupilvet, valo ja varjo, kerrokset aukeavat eri nopeuksilla), Medium+ 3D-pilvet.
+- Taukovalikossa "Tila: Tauko / Käynnissä": Käynnissä-tilassa maailma jatkuu valikon takana (et ota vahinkoa).
+- Uusi alue löytyy vasta hieman syvemmällä (~6 m); löytöotsikot häivyttyvät hitaasti eivätkä tule päällekkäin (jono).
+
+## Lista 4, erä F (v1.44)
+- Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
+  Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+
+## Latausnäyttö (v1.45)
+- Latauksen valmistuttua riimut leimahtavat 0,8 s lähes valkoisiksi ja kirkkaiksi, sitten näyttö häipyy. Reunoilla nousee hiilloshiukkasia ja tuhkaa.
+
+## Päävalikko (v1.46)
+- Päänäkymä ilman vieritystä: otsikko (kivi/metalli/riimut), sankaripainike Jatka seikkailua / Aloita seikkailu (pelissä Palaa peliin),
+  Maailmat, Näppäimet, Asetukset (pelissä myös Tila ja Tallenna).
+- Maailmat, Näppäimet ja Asetukset avautuvat leveäksi näkymäksi; takaisin Takaisin-painikkeella tai P:llä (Esc valikossa).
+- Partikkelit vaihtuvat taustakuvan mukaan; painikkeet kipinöivät hiiren alla ja painettaessa.
+- (v1.47) Esiasetussäätimen ulkoasu vaihtuu tason mukaan: Low kivi, Low+ vaskipatina, Medium- metsä, Medium ennallaan, Medium+ kulta,
+  High routa, High+ palava punainen, Ultra violetti taika (partikkelit). Logo on halkeillut, sammaloitunut, malmeja ja riimuja sisältävä
+  kivikaiverrus rautareunuksella ja hehkuvilla hiidenkivikristalleilla.
+- (v1.48) Logolla on 7 teemaa, joista yksi arvotaan aina valikkoon tultaessa: halkeillut kivi, hiidenkivi, sammalkivi, taottu rauta,
+  malmikallio, riimukivi ja yhdistelmä.
+
+## Lista 5 (v1.49–)
+- Jousi: seisten täysin vedettynä pieni tähtäinympyrä ja pieni hajonta; kyykyssä täysin vedettynä tähtäin pistemäinen, ei hajontaa,
+  veto ja nuolen nopeus +10 %, ja näkyviin tulee tiputusristikko (20–70 m).
+- Valikon Tallenna nyt -painike näyttää "Tallennettu ✓" ja välähtää vihreänä.
+- Kalmot ja pelottavat yöolennot syttyvät auringossa avoimella alueella (ei metsässä, katoksen alla, pilvisellä/sateella eikä yöllä):
+  ryntäilevät palaen ~3 s, hidastuvat ja muuttuvat tuhkaksi ~6 s:ssa (ei saalista). Liian lähelle mennessä syttyy itsekin.
+- Valikossa 21 animoitua taustaa (mm. kaatuvia puita myrskyssä, raivoava karhu, susilauma, hirvi järvellä, ulottuvuuksien vihjeet,
+  Kalmanvartijan varjo salamoissa, nousevat kalmot, ahjo). Portaalikuva on eeppinen riimukaari, joskus hahmo portin edessä.
+- Uutta maailmaa luotaessa näkyy riimukivi-latausnäyttö; sen jälkeen pilvet aukeavat kameran edestä sivuille (Medium+ 3D-pilvet,
+  muuten pilviverho) ja intro alkaa pilvien yläpuolelta ilman nykimistä.
+
+## Lista 6 (v1.53–)
+- Piikivikirves (työpenkki: 3 puuta, 3 piikiveä, 1 nahka; taso 2): kaataa puut kivikirvestä nopeammin, ei kovia puita.
+- Kävellessä hahmo keinuu hyvin vähän sivuille (~0,7°); juostessa enemmän ja osin eteenpäin.
+- Paikallaan hahmo hengittää (4,2 s rytmi). Jos peliin ei kosketa 3 s, AFK-animaatio: pää katselee ympärilleen, kädet liikkuvat ja paino siirtyy jalalta toiselle.
+- Asetukset › Ohjaus: kääntymisen herkkyys ja pelin paneelien osoittimen herkkyys. Osoitin liikkuu viiveettä.
+- Ensimmäisellä käynnillä aloitusjakso: "EricStudios & KSPK-tech" allekkain ja tekijänoikeudet → HIIDENMAA kivikaiverruksena → varoitus
+  (tietokone, hiiri ja näppäimistö; vältä turhaa Esc-painamista, valikko = P) → suorituskykytesti → riimusiirtymä latausnäyttöön (studio 3,5 s, logo 5,2 s, varoitus 9 s; varoituksessa myös "Paras yhteensopivuus Windows-käyttöjärjestelmällä"). Mikä tahansa näppäin tai napsautus ohittaa
+  kaiken suoraan latausnäyttöön. Peli latautuu vasta tämän jälkeen; latauksen aikana vain riimujen täyttyminen, valmiina vaalea leimahdus.
+- Ultra-asetuksella veri lentää tuplasti rajummin. Verilätäköt mukailevat rinnettä, ja Medium+ jyrkässä (> 45°) rinteessä lammikko
+  valuu 10 s alas.
+- Jousi on selässä litteänä; jos repussa on nuolia, selässä näkyy 3 nuolta.
+- Jousi: naru vedetään oikein taaksepäin, ote kahvasta, osumamerkki (X) osumasta. Kyykkyristikko 40/80/120 m.
+- Q pudottaa pelissä valitusta pikapaikasta yhden, Shift+Q koko pinon (reppu auki: hiiren alla oleva/valittu kuten ennen).
+- Kirveellä/hakulla hakatessa kädet hieman ylempänä ja edempänä, eikä iskujen välissä tai lopussa ole pyörähdystä.
+
+## Katoamisajat (v1.57)
+| Mikä | Katoaa |
+| --- | --- |
+| Osuman veriläiskä, pisaran läiskä (maa/seinä) | 10 s (häivytys viimeiset 2,5 s) |
+| Vihollisen kuoleman lammikko ja ruumis | 9,4 s (ruumis vajoaa 7 s jälkeen; tuhkakasa samoin) |
+| Pelaajan kuoleman lammikko | 60 s; ruumis/tuhkakasa uudelleensyntymässä |
+| Rinteessä valuvan noron läiskät | 40 s |
+| Läiskien enimmäismäärä | 140 (vanhin poistuu) |
+| Juuttunut nuoli | 6 s |
+| Maassa oleva esine | 5 min (vilkkuu viimeiset 15 s); arvoesineet siirtyvät arkkuun |
+
+## v1.65
+- Jousta kannetaan jousikädessä kaari alas (aukeaa ylöspäin) ja jänne suorana ylhäällä; jousi heiluu käsivarren mukana (vedossa normaali asento).
+- Aloitusjaksossa ei ohitustekstiä ensikäynnillä; palaavalle kävijälle pieni "Ohita: mikä tahansa näppäin".
+- Hakukentän napsautus valitsee vanhan tekstin, joten uusi haku kirjoitetaan suoraan päälle.
+- HIIDENMAA-otsikko nousee mustasta savusta ja vajoaa mustaan reunat edellä (ensikäynnillä studioiden jälkeen 0,5 s mustaa).
+- Valmistusvalikon haku toimii kuten DEV-haku (nimi tai tunniste, parhaat osumat ensin, Enter valmistaa ensimmäisen).
+- Siirtymä latausnäyttöön: riimukehä piirtyy, keskellä riimut tavaavat HIIDENMAA, sulautuvat sinetiksi joka leimahtaa (paineaalto, kipinät).
+- Suorituskykytesti valitsee kaikista 8 tasosta (Ultra, kun indeksi ≥ 140) ja huomioi tasaantumisnopeuden ja tasaisuuden.
+- AFK-eleet: heilunta, pään rapsutus, kädet levälleen; siirtymän lopussa sininen ᚺ ja kaartuva riimurivi.
+- Kaatuva puu: osumasta lyhyt sivuilmoitus (väistä sivuun); jos puu tappaa, kuolinruudussa vihje.
+- Ensikäynnin aloitusjaksoa ja suorituskykytestiä ei voi ohittaa; merkintä tallentuu vasta jakson lopussa. Palaava kävijä voi ohittaa otsikon.
+- Suorituskykytestin aikana (ei tulosruudussa) yläreunassa kerrotaan, että testi on heikompia koneita varten ja grafiikan voi nostaa itse (Asetukset › Grafiikka).
+- Näppäinlistassa myös kaikki kiinteät näppäimet (I, Q repussa, Enter, ohitus, DEV-näppäimet).
+- Asetukset › Näppäimet: "Näytä kaikki toiminnot" avaa listan kaikista näppäin- ja hiiritoiminnoista tilanteittain (oletusnäppäimet, vaihdettu näkyy "nyt: X").
+- Tulinuolten valo kuuluu High+- ja Ultra-esiasetuksiin. Erittäin tarkat varjot (3 tasoa) valitaan erikseen Grafiikka › Varjot (punainen = raskain, päällä "!").
+- Valikon partikkelit ja animaatiot pysähtyvät pelin ajaksi ja häivyttyvät esiin valikossa (asetus: älä pysäytä).
+- Shift pohjassa: esinetiedot näkyvät heti osoittimen alla olevasta esineestä.
+- Jousi käteen / lataus: hotbarin yläpuolella käytössä oleva nuoli ja määrä (tai "Ei nuolia").
+- Pääosuma jousella: +10 % vahinko, punainen osumamerkki ja "Pääosuma!".
+- Pikapaikan valinnassa esineen nimi ruudun yläpuolella ~1 s, väri harvinaisuuden mukaan (kulta, sininen, vihreä, vaalea).
+- Herätessä (uudelleensyntyminen) viholliset 35 m säteellä katoavat savuna (ei pomot, vartijat eikä rauhalliset eläimet).
+- Esiasetukset Low–Medium+ kytkevät automaattisäädöt (myös osa-alueet ja varjojen laadun) päälle, High–Ultra pois.
+- Erittäin tarkat varjot ohittavat tavalliset varjoasetukset (näkyvät harmaina): 8192 px, päivitys joka ruutu, etäisyys 90 / 110 / 160 m.
+- Jos kuolet samalle pomolle 3 kertaa (sama maailma), se pomo ei enää koskaan palauta terveyttään. Kuolinruutu näyttää laskurin (1/3, 2/3).
+- Kehittäjätyökalut (DEV) ovat oletuksena pois; päälle Asetukset › Ohjaus ja ääni › alin rivi (sivu latautuu uudelleen).
+- Päävalikossa versionumeron perässä "Early Access 1.0". DEV-viitteet näkyvät vain DEV-tilassa.
+- Veren fysiikka (pisarat lentävät ja jäävät maahan) on päällä Medium-esiasetuksesta ylöspäin.

@@ -18,7 +18,7 @@ function buildPoiRuin(k){const L=LOC[k],y=terrainH(L.x,L.z),r=mulberry32(k.charC
   for(const [cx,cz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const h=3+r()*1.2;stoneBox(1.1,h,1.1,L.x+cx*W/2,y+h/2-.1,L.z+cz*D/2,0,stoneM());}
   statics.add(bx(W-1,.2,D-1,mat(0x55524c),L.x,y+.05,L.z,false));
   for(let i=0;i<4;i++)stoneBox(.7+r(),.5,.7,L.x+(r()-.5)*5,y+.2,L.z+(r()-.5)*3.5,r()*3,stoneM());
-  const cx=L.x+sx*2.6,cz=L.z-1.2,ch=bx(1,.7,.65,MAT.wood,cx,y+.35,cz);ch.add(bx(1.04,.1,.7,mat(0x4a4a4a),0,.2,0));statics.add(ch);addBox(cx-.5,y,cz-.33,cx+.5,y+.7,cz+.33,'static');
+  const cx=L.x+sx*2.6,cz=L.z-1.2,ch=makeChest('wood',1,.7,.65);ch.position.set(cx,y,cz);statics.add(ch);addBox(cx-.5,y,cz-.33,cx+.5,y+.7,cz+.33,'static');
   chestUse(k,ch,cx,y,cz);
 }
 // v1.01 (käyttäjän pyyntö): arkkukivi on suljettu kivilinnake – 3,5 m korkea umpinainen muuri (säde 5,5 m, paksuus 0,8 m), ulkopuolella
@@ -29,7 +29,9 @@ function buildPoiRock(k){const L=LOC[k],y=terrainH(L.x,L.z),r=mulberry32(k.charC
   const stoneM=()=>mat(rockC(0x6f6c66,r())),P2=(rr,a)=>[L.x+Math.cos(a)*rr,L.z+Math.sin(a)*rr];
   // muuri: 18 lohkoa renkaana (alaosa maan alle rinteen varalta), sammalta harjalla
   for(let i=0;i<18;i++){const a=i/18*TAU,[x,z]=P2(WR,a),gy=Math.min(y,terrainH(x,z)),h=WH+(y-gy)+1,len=WR*TAU/18+.35;
-    const m=stoneBox(WT,h,len,x,gy-1+h/2,z,-a,stoneM());m.add(bx(WT*1.02,.15,len*.95,mossM,0,h/2,0,false));}
+    const m=stoneBox(WT,h,len,x,gy-1+h/2,z,-a,stoneM(),false);m.add(bx(WT*1.02,.15,len*.95,mossM,0,h/2,0,false));}
+  // v1.39 (lista 4, extra 2): muurin osuma kaaren mukaan ympyröinä (ennen kierretyn lohkon AABB, joka ulottui jopa ~0,9 m sisään portaille)
+  for(let i=0,n=Math.ceil(WR*TAU/.42);i<n;i++){const a=i/n*TAU,[x,z]=P2(WR,a),gy=Math.min(y,terrainH(x,z));addCircle(x,z,WT/2+.04,gy-1,y+WH,'static');}
   // v1.03 vaikeammat hypyt: 5 kapeaa pilaria (0,75–0,85 m) siksakissa (säde vuorotellen 8,2 / 10,2 m), nousu 0,8 m (huippu 4,0 m),
   // välit reunasta reunaan 2,0–2,4 m → vaatii juoksuhypyn (kävellen ~2,4 m, juosten ~4 m). Viimeiseltä pudotaan 0,5 m muurin harjalle (väli 1,6 m).
   const PH=[.8,1.6,2.4,3.2,4.0];let a=a0,prevP=null;
@@ -39,11 +41,11 @@ function buildPoiRock(k){const L=LOC[k],y=terrainH(L.x,L.z),r=mulberry32(k.charC
     f.pillars.push({x,z,top,w});prevP={x,z,w};});
   // v1.03 kierreportaat: muurin sisäpintaa kiertävä portaikko harjalta (3,5 m) alas 0,3 m askelin (askelma 1,2 m leveä, ~0,75 m syvä),
   // kiertää ~300° ja päättyy maahan; samaa tietä takaisin ylös. Alkaa pilarireitin kohdalta (viimeisen pilarin kulma).
-  {const aw=Math.atan2(f.pillars[4].z-L.z,f.pillars[4].x-L.x),rs=WR-WT/2-.62,n=Math.round(WH/.3);let a2=aw;
-   for(let s=1;s<n;s++){const top=y+WH-s*.3;a2+=.78/rs;const [x,z]=P2(rs,a2),h=top-y+1;stoneBox(.82,h,1.24,x,top-h/2,z,-a2+Math.PI/2,stoneM()).add(bx(.84,.06,1.26,mossM,0,h/2,0,false));f.steps.push({x,z,top});}}
+  {const aw=Math.atan2(f.pillars[4].z-L.z,f.pillars[4].x-L.x),rs=WR-WT/2-.56,n=Math.round(WH/.3);let a2=aw;
+   for(let s=1;s<n;s++){const top=y+WH-s*.3;a2+=.78/rs;const [x,z]=P2(rs,a2),h=top-y+1;stoneBox(1.05,h,1.24,x,top-h/2,z,-a2+Math.PI/2,stoneM()).add(bx(1.07,.06,1.26,mossM,0,h/2,0,false));   /* v1.39: leveämmät askelmat (0,82 → 1,05 m) */f.steps.push({x,z,top});}}
   stoneBox(2.2,.5,2.2,L.x,y,L.z,.4,mat(0x5b5853),false);
   const g=bx(.5,1.2,.04,MAT.glow,0,0,0,false);{const [gx,gz]=P2(WR-WT/2-.03,a0+Math.PI);g.position.set(gx,y+2.2,gz);g.rotation.y=-(a0+Math.PI)+Math.PI/2;statics.add(g);}   // hehkuva riimu muurin sisäpinnalla
-  const ch=bx(.9,.6,.6,MAT.wood,L.x,y+.55,L.z);ch.add(bx(.94,.1,.64,mat(0x4a4a4a),0,.16,0));statics.add(ch);
+  const ch=makeChest('stone',.95,.65,.62);ch.position.set(L.x,y+.25,L.z);statics.add(ch);
   chestUse(k,ch,L.x,y+.4,L.z,true);
   lightSources.push({x:L.x,y:y+2,z:L.z,c:0x7fd6cc,i:.8,on:()=>true});
 }
@@ -52,7 +54,7 @@ function chestUse(k,mesh,x,y,z,noBox){
   interactables.push({x,y:y+.6,z,r:2.6,label:()=>foundEmpty(fk)?'Arkku (tyhjä)':'Avaa arkku',use:()=>{const first=!fo('poi')[k];
     openFound(fk,LOC[k].name||'Arkku',first?POI_LOOT[k]||[['kupari',3]]:null);if(!first)return;
     const guards=mobs.filter(m=>m.siteK===k&&!m.dead&&dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<14*14);
-    fo('poi')[k]=1;mesh.children[0].position.x=.5;mesh.children[0].rotation.z=.3;
+    fo('poi')[k]=1;openLid(mesh);
     msg(guards.length?'Arkku aukesi – vartijat eivät ole tyytyväisiä!':'Arkku avattiin.','loot');addXp(25,'Löytö');burst(x,y+1,z,0x7fd6cc,12,3);}});
 }
 for(const k of SITE_KEYS){if(LOC[k].kind==='ruin')buildPoiRuin(k);else if(LOC[k].kind==='rock')buildPoiRock(k);}
@@ -167,7 +169,7 @@ const STASHES=(function(){const r=mulberry32(24680+MAP_ID*104729),out=[],tmp=[];
   for(const c of out){const y=c.y,rr=mulberry32((c.x*31^c.z*17)|0),gap=rr()*TAU,inGap=a=>{for(const g0 of [gap,gap+Math.PI]){const da=Math.abs(((a-g0)%TAU+TAU+Math.PI)%TAU-Math.PI);if(da<.8)return true;}return false;};
     const n=7;for(let i=0;i<n;i++){const a=i/n*TAU+rr()*.3,w=1.4+rr()*1.1,hh=1.3+rr()*1.8,d=2.3+w*.6+rr()*.6;if(inGap(a))continue;const x=c.x+Math.cos(a)*d,z=c.z+Math.sin(a)*d;
       const m=stoneBox(w,hh,w*(.7+rr()*.4),x,y+hh/2-.2,z,a+Math.PI/2+(rr()-.5)*.4,mat(rockC(0x6f6c66,rr())));m.add(bx(w*.9,.22,w*.8,mossM,0,hh/2,0,false));}
-    stoneBox(2,.45,2,c.x,y,c.z,.3,mat(0x5b5853),false);const ch=bx(.9,.6,.6,MAT.wood,c.x,y+.52,c.z);ch.add(bx(.94,.1,.64,mat(0x4a4a4a),0,.16,0));statics.add(ch);
+    stoneBox(2,.45,2,c.x,y,c.z,.3,mat(0x5b5853),false);const ch=makeChest('wood',.9,.62,.6);ch.position.set(c.x,y+.22,c.z);statics.add(ch);
     const key='stash:'+c.k,loot=[[['kupari',2],['nuolet',10],['liha',2]],[['pihka',3],['kivi',8],['luu',3]]][out.indexOf(c)%2];
     interactables.push({x:c.x,y:y+.6,z:c.z,r:2.6,label:()=>foundEmpty(key)?'Arkku (tyhjä)':'Avaa arkku',use:()=>{const first=!fo('fc')[key];openFound(key,'Kiviröykkiön arkku',loot);if(first)addXp(20,'Kiviröykkiö tutkittu');}});}
   return out;})();

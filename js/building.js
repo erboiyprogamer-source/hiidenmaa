@@ -109,6 +109,10 @@ function updateGhost(){
   const cell=(v,o)=>Math.floor((v-o)/G)*G+G/2+o,edge=(v,o)=>Math.round((v-o)/G)*G+o,half=(v,o)=>Math.round((v-o)/(G/2))*(G/2)+o,fr=v=>Math.round(v*4)/4;
   const baseY=hit.n.y>.6?hit.pt.y:(hit.piece?hit.piece.y:hit.pt.y);
   const gcell=a=>{const v=a==='x'?hx:hz,o=a==='x'?ox:oz;return m1?r1(v):hf?half(v,o):cell(v,o);};
+  // v1.41: seinäsoihtu kiinnittyy osuman pystypintaan (normaali → kierto 45° portaissa), muuten paikka ei kelpaa
+  if(def.wallMount){const okW=hit.piece&&Math.abs(hit.n.y)<.5;if(okW){rot=((Math.round(Math.atan2(hit.n.x,hit.n.z)/(Math.PI/4))%8)+8)%8;x=hit.pt.x+hit.n.x*.02;z=hit.pt.z+hit.n.z*.02;y=hit.pt.y-.35;}else{x=hx;z=hz;y=hit.pt.y;}
+    ghost.position.set(x,y,z);ghost.rotation.y=rot*Math.PI/4;ghostPos={x,y,z};ghostRot=rot;ghostOk=okW&&validPlace(t,x,y,z,rot,0);if(!okW)lastInvalid='Seinäsoihtu kiinnitetään seinään – tähtää seinään.';
+    const mw=ghostOk?MAT.ghostOk:MAT.ghostBad;ghost.traverse(o=>{if(o.isMesh)o.material=mw;});updateGrid(false);return;}
   const es=hit.piece&&mode!=='vapaa'?smartSnap(t,rot,poseOf(t),hit,mode==='reuna',gcell):null;
   if(es){x=es.x;z=es.z;y=es.y;if(es.rot!==undefined)rot=es.rot;}
   else if(mode==='vapaa'){x=fr(hx);z=fr(hz);y=hit.piece?baseY:def.snap==='floor'?Math.round(baseY*4)/4+.1:def.snap==='cell'?baseY:terrainH(x,z);}

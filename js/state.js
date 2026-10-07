@@ -23,12 +23,13 @@ scene.add(fig.g);let heldMesh=null,heldId=null,offMesh=null,offId=null,armorId=n
 // Repussa olevat mutta käyttämättömät aseet, kilvet ja työkalut näkyvät pelaajan selässä (kilpi keskellä, jousi vinossa, työkalut varret ylöspäin).
 const backG=new THREE.Group();fig.rig.add(backG);let backKey='',backHang=null;
 const ARMOR_BACK={nahkavaatteet:{ch:.045,bt:.02},karhuhaarniska:{ch:.15,bt:.1},kuparipanssari:{ch:.055,bt:.025},rautapanssari:{ch:.05,bt:.025},hiidenpanssari:{ch:.065,bt:.025}};
-function updateBack(){const items=inv.filter(s=>s&&!s.eq&&['weapon','bow','shield','shovel','hammer'].includes(ITEMS[s.id].cat));
+function hasArrows(){return typeof AMMO!=='undefined'&&AMMO.some(id=>invCount(id)>0);}
+function updateBack(){const items=inv.filter(s=>s&&(!s.eq||(ITEMS[s.id].cat==='shield'&&s.shBrk!=null))&&['weapon','bow','shield','shovel','hammer'].includes(ITEMS[s.id].cat));   // v1.39: rikki oleva kilpi selässä
   const sh=items.find(s=>ITEMS[s.id].cat==='shield'),hm=items.find(s=>s.id==='vasara'),bo=items.find(s=>ITEMS[s.id].cat==='bow'),one=items.find(s=>ITEMS[s.id].cat!=='shield'&&s.id!=='vasara'&&ITEMS[s.id].cat!=='bow'),tl=one?[one]:[];
   // v0.90: haarniska paksuntaa selkää → selkätavarat ja kilpi siirretään haarniskan pinnalle (mitattu selän ulkonema + 2 cm),
   // ilman haarniskaa ne palaavat entiselle paikalleen. ch = rinnan korkeus (kilpi, jousi, työkalut), bt = vyö (vasara).
   const ar=equipped('armor'),AB=ARMOR_BACK[ar?ar.id:'']||{ch:0,bt:0};
-  const key=[sh,bo,hm,...tl].map(s=>s?s.id:'-').join()+'|'+(ar?ar.id:'');if(key===backKey)return;backKey=key;while(backG.children.length)backG.remove(backG.children[0]);backHang=null;
+  const key=[sh,bo,hm,...tl].map(s=>s?s.id:'-').join()+'|'+(ar?ar.id:'')+'|'+(bo&&hasArrows()?'a':'');if(key===backKey)return;backKey=key;while(backG.children.length)backG.remove(backG.children[0]);backHang=null;
   // Vasara roikkuu vyöllä takana (v0.72): pää vyön päällä selän suuntaisesti (pää 90° pystyakselin ympäri aiemmasta), varsi alas.
   // Ripustuspiste = vyön yläreuna selän puolella (y 0,94, z −0,24); heiluu kävellessä (player.js, backHang).
   if(hm){const m=makeHeld(hm.id),o=new THREE.Group();m.rotation.x=-Math.PI/2;m.position.set(0,-.47,0);o.add(m);o.position.set(.13,.94,-.24-AB.bt);o.rotation.y=.18;backG.add(o);backHang=o;}
@@ -38,7 +39,12 @@ function updateBack(){const items=inv.filter(s=>s&&!s.eq&&['weapon','bow','shiel
   //  kirves/nuija/hakku: varsi vasemmalta lantiolta oikean olan taakse, pää/terä ylhäällä; miekka ja lapio/kuokka: kahva oikean olan
   //  takana, terä alaspäin vasemmalle lantiolle; jousi vasemmalta olalta oikealle lantiolle ja keihäs ristiin (kärki ylös).
   //  BACK_POSE: p = kahvan pään paikka, d = varren suunta (kahvasta päähän), y = esineen paikallinen +y (terä/piikit selän tasossa).
-  if(bo){const m=makeHeld(bo.id),o=new THREE.Group();o.add(m);o.position.set(.02,1.15,z0+.01);o.rotation.set(0,0,-.55);o.scale.setScalar(.95);backG.add(o);}
+  // v1.56: jousi litteänä selkää vasten (kaari sivulle, ei kehoon eikä ulos); jos repussa on nuolia, 3 nuolta jousen keskellä sen
+  //  suuntaisesti, kärjet alaviistoon (ryhmän kallistus −0,55 rad)
+  if(bo){const m=makeHeld(bo.id),o=new THREE.Group();m.rotation.y=Math.PI/2;o.add(m);
+    if(hasArrows()){for(let i=0;i<3;i++){const a=new THREE.Group(),sh=mat(0xc9b48a);a.add(bx(.02,.72,.02,sh,0,0,0,false));a.add(bx(.045,.09,.045,mat(0x4d535c),0,-.4,0,false));
+      for(const sx of[-1,1])a.add(bx(.004,.12,.05,mat(0xe8e2d2),sx*.012,.3,0,false));a.position.set((i-1)*.035,-.02+i*.02,.03);a.rotation.z=(i-1)*.04;o.add(a);}}
+    o.position.set(.02,1.15,z0+.01);o.rotation.set(0,0,-.55);o.scale.setScalar(.95);backG.add(o);}
   tl.forEach(s=>{const m=makeHeld(s.id),o=new THREE.Group(),P0=backPose(s.id);o.add(m);
     _bkD.fromArray(P0.d).normalize();_bkY.fromArray(P0.y);_bkY.addScaledVector(_bkD,-_bkY.dot(_bkD)).normalize();_bkX.crossVectors(_bkY,_bkD).normalize();_bkM.makeBasis(_bkX,_bkY,_bkD);
     o.quaternion.setFromRotationMatrix(_bkM);o.position.set(P0.p[0],P0.p[1],z0+(P0.dz||0));o.scale.setScalar(.85);backG.add(o);});}
@@ -47,14 +53,14 @@ function backPose(id){const d=ITEMS[id];
   if(d.chop||id==='nuija')return{p:[.2,.82],d:[-.55,.85,0],y:[.85,.55,0]};          // terä −y → alas oikealle (sivulle)
   if(d.pick)return{p:[.2,.82],d:[-.55,.85,0],y:[.85,.55,0]};                         // piikit ±y selän tasossa
   if(id==='keihas')return{p:[-.2,.86],d:[.5,.86,0],y:[-.86,.5,0],dz:-.03};
-  if(/miekka/.test(id))return{p:[-.2,1.42],d:[.45,-.9,0],y:[.9,.45,0]};               // terä litteänä selkää vasten, alaspäin
-  if(d.cat==='shovel')return{p:[-.22,1.48],d:[.42,-.9,0],y:[.9,.42,0]};
+  if(/miekka/.test(id))return{p:[-.2,1.42],d:[.45,-.9,0],y:[0,0,1]};   // v1.39 (lista 4, kohta 5): lappeellaan selkää vasten               // terä litteänä selkää vasten, alaspäin
+  if(d.cat==='shovel')return{p:[-.22,1.48],d:[.42,-.9,0],y:[0,0,1]};
   return{p:[.15,.85],d:[-.4,.9,0],y:[.9,.4,0]};}
 function updateGear(){updateBack();
   {const w0=equipped('weapon');if(!w0||w0.id!=='vasara')setBuildSel(null);}
   const w=equipped('weapon'),wid=w?w.id:null;
   if(wid!==heldId){if(heldMesh)heldMesh.parent.remove(heldMesh);heldMesh=null;heldId=wid;if(wid){heldMesh=makeHeld(wid);(ITEMS[wid].cat==='bow'?fig.handL:fig.hand).add(heldMesh);}}
-  const o=equipped('offhand'),oid=o?o.id:null;
+  const o=equipped('offhand'),oid=o&&!(ITEMS[o.id].cat==='shield'&&o.shBrk!=null)?o.id:null;   // v1.39 (kohta 18): rikki oleva kilpi ei ole kädessä
   if(oid!==offId){if(offMesh)fig.handL.remove(offMesh);offMesh=null;offId=oid;if(oid){offMesh=ITEMS[oid].cat==='shield'?makeShield(oid):makeHeld(oid);fig.handL.add(offMesh);}}
   const a=equipped('armor'),aid=a?a.id:null;
   if(aid!==armorId){armorId=aid;const c=aid==='rautapanssari'?0x6c747c:aid==='kuparipanssari'?0x8a5228:aid==='nahkavaatteet'||aid==='karhuhaarniska'?0x6a4a30:aid==='hiidenpanssari'?0x2a3036:0x8a6a46;const cm=smat(c);for(const m of fig.cloth)m.material=cm;buildArmor(fig,aid);}
@@ -112,6 +118,8 @@ function spawnDrop(id,n,x,y,z,q=1,silent,byPlayer){const me=dropMesh(id);me.posi
 function valGlow(d){const c=new THREE.Color(ITEMS[d.id].c||'#ffd36a');
   const h=new THREE.Mesh(new THREE.SphereGeometry(.42,12,8),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.28,blending:THREE.AdditiveBlending,depthWrite:false}));d.mesh.add(h);d.halo=h;
   d.light={x:d.mesh.position.x,y:d.mesh.position.y+.4,z:d.mesh.position.z,c:c.getHex(),i:.9,move:true,dun:d.dim!=='world',on:()=>drops.includes(d)&&(d.dim||'world')===curDim()};lightSources.push(d.light);}
+// v1.39 (lista 4, kohta 6): esine lepää korkeimman maakohdan päällä (keskusta + 4 pistettä 0,28 m säteellä), jottei uppoa rinteeseen
+function dropGround(x,z,y){let g=-1e9;for(const [ox,oz] of [[0,0],[.28,0],[-.28,0],[0,.28],[0,-.28]])g=Math.max(g,groundAt(x+ox,z+oz,.2,y+.5));return g;}
 function removeDrop(d){scene.remove(d.mesh);const i=drops.indexOf(d);if(i>=0)drops.splice(i,1);if(d.light){const j=lightSources.indexOf(d.light);if(j>=0)lightSources.splice(j,1);d.light=null;}}
 // v1.32 (lista 3, kohta 26): pelaajan pudottama esine lentää aina kameran suuntaan eteenpäin, noin kaksi kertaa entistä kauemmas (~2,5–3 m).
 function playerDrop(id,n,q){const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw);spawnDrop(id,n,P.pos.x+fx*.6,P.pos.y+1.1,P.pos.z+fz*.6,q,false,true);
@@ -127,7 +135,7 @@ function updateDrops(dt){
       if(d.lost>VAL_LOST||m.position.y<-20){removeDrop(d);relocateValuable(d.id,d.n,d.q);continue;}}
     if((d.dim||'world')!==dim)continue;d.t+=dt;
     if(!val){if(d.t>DROP_LIFE){removeDrop(d);continue;}m.visible=d.t<DROP_LIFE-15||((d.t*5)|0)%2===0;}
-    if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=groundAt(m.position.x,m.position.z,.2,m.position.y+.5)+(m.userData.ico?.3:.18);if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
+    if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=dropGround(m.position.x,m.position.z,m.position.y)+(m.userData.ico?.38:.25);if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
     else{m.position.y=d.baseY+.12+Math.sin(d.t*3)*.06;m.rotation.y+=dt*1.5;}
     if(d.light){d.light.x=m.position.x;d.light.y=m.position.y+.4;d.light.z=m.position.z;d.light.i=.75+Math.sin(d.t*3.2)*.25;}
     if(d.halo){d.halo.material.opacity=.2+Math.sin(d.t*3.2)*.1;if(Math.random()<dt*5&&typeof emitEmber==='function')emitEmber(m.position.x+(Math.random()-.5)*.5,m.position.y+.1,m.position.z+(Math.random()-.5)*.5,'spark');}
@@ -197,18 +205,18 @@ function treeHit(n,a,x,z,y){const H=(TREE_H[n.type]||5)*n.s,dx=x-n.x,dz=z-n.z,al
 function crushPlayer(n,a,src){
   for(const m of mobs)if(m!==src&&!m.dead&&!m.dun&&treeHit(n,a,m.pos.x,m.pos.z,m.pos.y)){damageMob(m,m.maxHp*.8,null,Math.sin(a),Math.cos(a),3);}
   if(P.dead||P.inDun||devOn('god'))return;
-  if(treeHit(n,a,P.pos.x,P.pos.z,P.pos.y)){const d=maxHp()*.8;P.hp-=d;P.hurtFlash=.8;shake(.6);sfx('hurt');floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,P.pos.z,'#e0614f');msg('Kaatuva puu osui sinuun!','warn');if(P.hp<=0)playerDie();}}
+  if(treeHit(n,a,P.pos.x,P.pos.z,P.pos.y)){const d=maxHp()*.8;P.hp-=d;P.hurtFlash=.8;shake(.6);sfx('hurt');floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,P.pos.z,'#e0614f');if(P.hp<=0){P.deathCause='tree';playerDie();}else msg('Kaatuva puu osui! Väistä sivuun, kun puu kallistuu.','warn');}}   // v1.70: lyhyt vihje sivuilmoituksena, kuolema → kuolinruudun vihje   // v1.70: kuolinsyy → vihje kuolinruudussa
 function shockwave(x,y,z,r,color=0x8ffff0){const m=new THREE.Mesh(new THREE.RingGeometry(.8,1,32),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.8,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.set(x,y+.15,z);scene.add(m);fx.push({obj:m,t:0,update:(f)=>{const k=f.t/.5;m.scale.setScalar(.5+k*r);m.material.opacity=.8*(1-k);return k>=1;}});}
 
 /* ---------------- PROJECTILES ---------------- */
 const projs=[];
-function shootArrow(from,dir,speed,dmg,owner,grav,fire){const m=new THREE.Group();m.add(bx(.04,.04,.8,mat(0xc9b48a),0,0,0,false),bx(.07,.07,.12,mat(0x4d535c),0,0,.42,false));
+function shootArrow(from,dir,speed,dmg,owner,grav,fire){if(owner!=='player')dmg*=HURT_K;const m=new THREE.Group();m.add(bx(.04,.04,.8,mat(0xc9b48a),0,0,0,false),bx(.07,.07,.12,mat(0x4d535c),0,0,.42,false));
   if(fire){const fl=new THREE.Mesh(new THREE.ConeGeometry(.06,.2,6),MAT.flame);fl.rotation.x=-Math.PI/2;fl.position.z=.36;m.add(fl);m.add(bx(.08,.08,.06,mat(0x3a2a1c),0,0,.34,false));}m.position.copy(from);scene.add(m);const pr={m,v:dir.clone().multiplyScalar(speed),dmg,owner,t:0,g:grav||7,kind:'arrow',fire:!!fire};projs.push(pr);
   if(fire&&SET.arrowLight){pr.light={x:from.x,y:from.y,z:from.z,c:0xff8a3a,i:1.5,on:()=>true,move:true};lightSources.push(pr.light);updateLights();}}   // v1.23 asetus: tulinuolen valo
-function throwRock(from,target,dmg){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,0),mat(0x5d5a54));m.castShadow=true;m.position.copy(from);scene.add(m);const d=_tmpV.subVectors(target,from);const T=1.1/.7;   // v0.89: kivi lentää 30 % hitaammin (ennen 1,1 s)
+function throwRock(from,target,dmg){dmg*=HURT_K;const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,0),mat(0x5d5a54));m.castShadow=true;m.position.copy(from);scene.add(m);const d=_tmpV.subVectors(target,from);const T=1.1/.7;   // v0.89: kivi lentää 30 % hitaammin (ennen 1,1 s)
   const v=new V3(d.x/T,(d.y+.5*14*T*T)/T,d.z/T);projs.push({m,v,dmg,owner:'boss',t:0,g:14,kind:'rock'});}
 const arrowFade=[];
-function updateProjs(dt){
+function updateProjs(dt){updateHitMarks(dt);
   const dropLight=p=>{if(p.light){const j=lightSources.indexOf(p.light);if(j>=0)lightSources.splice(j,1);p.light=null;updateLights();}};
   // v1.33 (lista 3, kohta 34): tulinuolen valo hiipuu lennossa (sateessa 2× nopeammin) ja sammuu 2 s:ssa osumasta (sateessa 1 s).
   const rainK=!P.inDun&&wRain>.3?2:1;
@@ -219,10 +227,30 @@ function updateProjs(dt){
     p.v.y-=p.g*dt;if(p.kind==='arrow'&&!P.inDun){const wa=WIND.spd*.08*dt*(p.steady?.5:1);p.v.x+=WIND.x*wa;p.v.z+=WIND.z*wa;} // v0.84: tuuli kallistaa nuolen rataa (13 m/s ≈ 0,5 m / 30 m)
     p.m.position.addScaledVector(p.v,dt);if(p.kind==='arrow')p.m.lookAt(_tmpV.copy(p.m.position).add(p.v));else{p.m.rotation.x+=dt*5;}
     const pos=p.m.position;let hit=false;
-    if(p.owner==='player'){for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){m.fireHit=!!p.fire;damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);m.fireHit=false;if(p.fire)igniteMob(m);hit=true;break;}}}
+    if(p.owner==='player'){const hm=headShot(p,pos,dt);if(hm){const m=hm;m.fireHit=!!p.fire;damageMob(m,p.dmg*1.1,'pierce',p.v.x,p.v.z);hitMarker(pos.x,pos.y,pos.z,true);m.fireHit=false;if(p.fire)igniteMob(m);floatText('Pääosuma!',pos.x,pos.y+.4,pos.z,'#ff5a4a');hit=true;}
+     if(!hit)for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){m.fireHit=!!p.fire;damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);hitMarker(pos.x,pos.y,pos.z);m.fireHit=false;if(p.fire)igniteMob(m);hit=true;break;}}}
     else{if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<(p.kind==='rock'?2.2*2.2:.6)&&pos.y<P.pos.y+2.2&&pos.y>P.pos.y-.5){hurtPlayer(p.dmg,pos.x-p.v.x,pos.z-p.v.z);hit=true;}}
     const g=P.inDun?DUN.y:terrainH(pos.x,pos.z);
-    if(!hit&&(pos.y<g||pointBlocked(pos.x,pos.y,pos.z))){if(p.kind==='rock'){shockwave(pos.x,g,pos.z,3);burst(pos.x,g+.3,pos.z,0x5d5a54,10,5);sfx('slam');if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<9)hurtPlayer(p.dmg,pos.x,pos.z);scene.remove(p.m);projs.splice(i,1);continue;}p.stuck=true;p.t=0;continue;}
+    if(!hit&&(pos.y<g||pointBlocked(pos.x,pos.y,pos.z,false,true))){if(p.kind==='rock'){shockwave(pos.x,g,pos.z,3);burst(pos.x,g+.3,pos.z,0x5d5a54,10,5);sfx('slam');if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<9)hurtPlayer(p.dmg,pos.x,pos.z);scene.remove(p.m);projs.splice(i,1);continue;}p.stuck=true;p.t=0;continue;}
     if(hit||p.t>8){if(p.kind==='rock'){shockwave(pos.x,pos.y-.5,pos.z,3);sfx('slam');}if(hit&&p.light){arrowFade.push({L:p.light,t:0});p.light.move=false;p.light=null;}dropLight(p);scene.remove(p.m);projs.splice(i,1);}
   }
 }
+
+/* v1.77: pääosuma – nuolen kulkema jana (edellinen → nykyinen kohta, ettei nopea nuoli hyppää pään yli) vs. pään todellinen rajauslaatikko
+   (f.head, animaatio mukana) pallona; säde = 45 % laatikon suurimmasta sivusta + 3 cm. +10 % vahinko, punainen merkki, "Pääosuma!". */
+const _hb=new THREE.Box3(),_hc=new THREE.Vector3(),_hs=new THREE.Vector3();
+function headShot(p,pos,dt){let best=null,bd=1e9;const ax=pos.x-p.v.x*dt,ay=pos.y-p.v.y*dt,az=pos.z-p.v.z*dt,dx=pos.x-ax,dy=pos.y-ay,dz=pos.z-az,L2=dx*dx+dy*dy+dz*dz;
+  for(const m of mobs){if(m.dead||!m.f||!m.f.head)continue;if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)>(m.def.r+4)*(m.def.r+4))continue;
+    _hb.setFromObject(m.f.head);if(_hb.isEmpty())continue;_hb.getCenter(_hc);_hb.getSize(_hs);const r=Math.max(_hs.x,_hs.y,_hs.z)*.45+.03;
+    let t=L2>0?((_hc.x-ax)*dx+(_hc.y-ay)*dy+(_hc.z-az)*dz)/L2:0;t=Math.max(0,Math.min(1,t));const qx=ax+dx*t-_hc.x,qy=ay+dy*t-_hc.y,qz=az+dz*t-_hc.z,d=qx*qx+qy*qy+qz*qz;
+    if(d<r*r&&d<bd){bd=d;best=m;}}
+  return best;}
+/* v1.57: jousen osumamerkki – valkoinen X osumakohdassa, näkyy kaikkien esineiden läpi (depthTest pois), 0,28 s, ei animaatiota */
+let _hmTex=null,_hmTexR=null;const hitMarks=[];
+function hitMarker(x,y,z,head){const mk=col=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.lineCap='round';
+    for(const [w,cc] of [[11,'rgba(0,0,0,.55)'],[6,col]]){g.strokeStyle=cc;g.lineWidth=w;g.beginPath();for(const [a,b,c2,d] of [[12,12,26,26],[52,12,38,26],[12,52,26,38],[52,52,38,38]]){g.moveTo(a,b);g.lineTo(c2,d);}g.stroke();}
+    return new THREE.CanvasTexture(c);};
+  if(!_hmTex)_hmTex=mk('#ffffff');if(!_hmTexR)_hmTexR=mk('#ff3a2a');   // v1.77: pääosuma punaisella
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:head?_hmTexR:_hmTex,depthTest:false,depthWrite:false,transparent:true,fog:false}));s.renderOrder=1000;s.position.set(x,y,z);
+  const d=camera.position.distanceTo(s.position);s.scale.setScalar(.045*d);scene.add(s);hitMarks.push({s,t:.28});}
+function updateHitMarks(dt){for(let i=hitMarks.length-1;i>=0;i--){const h=hitMarks[i];h.t-=dt;if(h.t<=0){scene.remove(h.s);h.s.material.dispose();hitMarks.splice(i,1);}}}

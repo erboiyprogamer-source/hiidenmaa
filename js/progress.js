@@ -49,7 +49,7 @@ function checkAch(){fixFlags();let any=false;
 const anyP=f=>pieces.some(f),isStone=p=>PIECES[p.t].stone||p.t==='kiviseina';
 const GOALS=[
   {id:'poimi',t:'Poimi oksia ja kiviä',d:'Kävele niiden luo ja paina E. Tarvitset 3 puuta ja 2 kiveä.',xp:10,ok:()=>invCount('puu')>=3&&invCount('kivi')>=2||invCount('kirves')||cnt('crafted')>0},
-  {id:'kirves',t:'Valmista kivikirves',d:'Avaa reppu Tab-näppäimellä ja valmista kirves.',xp:10,ok:()=>invCount('kirves')||invCount('kuparikirves')},
+  {id:'kirves',t:'Valmista kivikirves',d:'Avaa reppu Tab-näppäimellä ja valmista kirves.',xp:10,ok:()=>invCount('kirves')||invCount('piikivikirves')||invCount('kuparikirves')},
   {id:'puu1',t:'Kaada ensimmäinen puu',d:'Lyö puuta kirveellä (hiiren vasen) kunnes se kaatuu.',xp:10,ok:()=>cnt('trees')>=1},
   {id:'puu10',t:'Kaada kymmenen puuta',d:'Puuta tarvitaan kaikkeen. Tukit voi poimia maasta.',xp:15,ok:()=>cnt('trees')>=10},
   {id:'vasara',t:'Valmista vasara',d:'Vasara on rakennustyökalu. Valmista se repun valmistusvalikosta.',xp:10,ok:()=>invCount('vasara')||anyP(p=>p.t==='tyopenkki')||cnt('built')>0},
