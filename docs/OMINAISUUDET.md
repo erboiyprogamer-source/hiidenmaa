@@ -445,3 +445,5 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - HIIDENMAA-otsikko nousee mustasta savusta ja vajoaa mustaan reunat edellä (ensikäynnillä studioiden jälkeen 0,5 s mustaa).
 - Valmistusvalikon haku toimii kuten DEV-haku (nimi tai tunniste, parhaat osumat ensin, Enter valmistaa ensimmäisen).
 - Siirtymä latausnäyttöön: riimukehä piirtyy, keskellä riimut tavaavat HIIDENMAA, sulautuvat sinetiksi joka leimahtaa (paineaalto, kipinät).
+- Suorituskykytesti valitsee kaikista 8 tasosta (Ultra, kun indeksi ≥ 140) ja huomioi tasaantumisnopeuden ja tasaisuuden.
+- AFK-eleet: heilunta, pään rapsutus, kädet levälleen; siirtymän lopussa sininen ᚺ ja kaartuva riimurivi.

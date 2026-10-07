@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.68)
+## Nykytila (päivitetty v1.69)
 
-- **Versio 1.68**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
+- **Versio 1.69**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -91,6 +91,19 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.69 (suorituskykytesti kaikille tasoille, riimusiirtymän loppu, AFK-eleet)
+- **Suorituskykytesti:** selain tahdistaa piirron näytön virkistystaajuuteen (yleensä 60 Hz, ei muuta rajoitinta), joten pelkkä FPS ei
+  erota tehokkaita koneita. Nyt kuormaportaat: 0–2,5 s 1×, 2,5–4,7 s 2× ja 4,7–7 s 4× (näkymä piirretään 2/4 kertaa ruudussa), jos edellinen
+  porras ≥ 45 FPS. **Suorituskykyindeksi** = ylimmän portaan FPS × kerroin. Vähennykset: hidas tasaantuminen (> 1,5 s, 0,5 s:n liukuva FPS
+  90 %:iin) enintään −20 %, nykivyys (> 5 % ruuduista > 1,6 × mediaani) enintään −25 %. Tasot: < 22 Low, 22 Low+, 30 Medium-, 40 Medium,
+  55 Medium+, 75 High, 100 High+, **≥ 140 Ultra** (esim. 4× kuormalla ≥ 35 FPS). Tulos näyttää indeksin, tasaantumisajan ja tasaisuuden.
+  `perfApply` hyväksyy nyt indeksit 0–7.
+- **Riimusiirtymän loppu** (3,5 s): päällekkäinen sinetti poistettu. ᚺ syttyy sinisenä keskelle ja muut riimut (ᛁᛁᛞᛖᚾᛗᚨᚨ) liukuvat sen
+  alta sivuille oransseina kaartuvaksi riviksi (ulommat alempana ja kallistettuina), sitten leimahdus 2,7 s.
+- **AFK-kädet:** v1.68:ssa hengityksen/AFK:n z-merkit väärin → kädet painuivat vartaloon ja armClear tärisytti (vasen käsi 41 suunnanvaihtoa
+  / 20 s → 1). Nyt kädet ulospäin ja irti reisistä. Eleet 5,5 s jaksoissa: heilunta → pään rapsutus (oikea käsi, kyynärpää rapsuttaa) →
+  heilunta → kädet levälleen; pehmeät käyrät (sstep). Liikkeelle lähtiessä afkK laskee 2,6/s → kädet palaavat sulavasti (~0,5 s).
 
 ### v1.68 (elävä hahmo: hengitys, AFK, kävelykeinunta)
 - **Kävely:** pieni sivukeinunta ±0,012 rad (~0,7°) kävelyssä, juoksussa ennallaan ±0,045 (v1.53 kävelyssä 0).
@@ -1813,7 +1826,7 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 6 (v1.53–) – julkaisupäivitys
-**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.68 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
+**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.69 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
 - A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
   eteenpäin, piikivikirves.
 - B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.

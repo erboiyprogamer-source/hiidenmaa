@@ -82,7 +82,7 @@ function updatePlayer(dt){
   {const act=mouseL||mouseR||Object.keys(keys).some(k=>keys[k])||Math.abs(camYaw-(P._cy||0))>.002||Math.abs(camPitch-(P._cp||0))>.002||hv>.3||state!=='play';
    P._cy=camYaw;P._cp=camPitch;P.afkT=act?0:(P.afkT||0)+dt;
    const still=P.onGround&&!P.swim&&hv<.3&&!P.atk&&!P.drawing&&!P.blocking&&P.crouchK<.1&&!P.dead;
-   P.idleK=lerp(P.idleK||0,still?1:0,Math.min(1,dt*3));P.afkK=lerp(P.afkK||0,still&&P.afkT>3?1:0,Math.min(1,dt*(P.afkT>3?.9:4)));
+   P.idleK=lerp(P.idleK||0,still?1:0,Math.min(1,dt*3));P.afkK=lerp(P.afkK||0,still&&P.afkT>3?1:0,Math.min(1,dt*(P.afkT>3?.9:2.6)));
    P.brPh=(P.brPh||0)+dt*TAU/4.2;P.afkPh=P.afkK>.01?(P.afkPh||0)+dt:0;}
   const brth=Math.sin(P.brPh)*P.idleK,aK=P.afkK,aP=P.afkPh,sway2=Math.sin(aP*.45);
   {let bobC=0;const K=P.crouchK;P.landT=Math.max(0,(P.landT||0)-dt);const land=Math.min(1,P.landT/.25);
@@ -106,8 +106,14 @@ function updatePlayer(dt){
   // Kädet: lasketaan tavoitekulmat ja siirrytään niihin pehmeästi (ei äkillisiä hyppyjä).
   let tRx=sw*(.63+.315*runK),tRz=0,tLx=-sw*(.63+.315*runK),tLz=0,tSh=.35,rate=14,grip=false,eRo=null,eLo=null;
   if(runK>.3&&!P.atk&&!P.blocking&&!P.drawing){eRo=-1.15*runK;eLo=-1.15*runK;}   // juostessa kyynärpäät koukussa
-  if(P.idleK>.01){const ik=P.idleK;tLz-=brth*.035;tRz+=brth*.035;   // v1.68 hengitys: kädet avautuvat hieman sisäänhengityksessä
-    if(aK>0){tLx+=aK*Math.sin(aP*.8)*.13;tRx+=aK*Math.sin(aP*.8+1.7)*.13;tLz-=aK*(.04+.04*Math.sin(aP*.6));tRz+=aK*(.04+.04*Math.sin(aP*.6+2));}}
+  /* v1.69: hengitys avaa kädet ULOSPÄIN (vasen +z, oikea −z; v1.68:ssa merkit väärin → kädet painuivat vartaloon ja armClear tärisytti).
+     AFK-eleet 5,5 s jaksoissa: heilunta → pään rapsutus (oikea käsi) → heilunta → kädet levälleen. Jokaisella eleellä pehmeä sisään/ulos-
+     käyrä (sstep), ja kaikki kerrotaan afkK:lla, joten liikkeelle lähtiessä kädet palaavat sulavasti. */
+  if(P.idleK>.01){tLz+=brth*.035;tRz-=brth*.035;
+    if(aK>0){const sw2=Math.sin(aP*.7)*.1*aK;tLx+=sw2-.06*aK;tRx-=sw2+.06*aK;tLz+=.09*aK;tRz-=.09*aK;   // kädet hieman irti reisistä (ei armClear-värinää)
+      const seg=Math.floor(aP/5.5),u=aP-seg*5.5-1.1,env=sstep(0,.8,u)*(1-sstep(2.6,3.4,u))*aK,g=['sway','scratch','sway','stretch'][seg%4];
+      if(env>0&&g==='scratch'){tRx=lerp(tRx,-2.75,env);tRz=lerp(tRz,-.55,env);eRo=lerp(-.2,-2.25+Math.sin(aP*11)*.12*sstep(.7,1,u)*(1-sstep(2.3,2.6,u)),env);}
+      if(env>0&&g==='stretch'){const o=1.25*env;tLz+=o;tRz-=o;tLx=lerp(tLx,-.15,env);tRx=lerp(tRx,-.15,env);eLo=lerp(-.15,-.05,env);eRo=lerp(-.15,-.05,env);}}}
   const hold=mouseL&&state==='play';
   if(P.atk){const k=P.atk.t/P.atk.dur,hk=P.atk.hitAt/P.atk.dur,two=(P.atk.w.chop||P.atk.w.pick)&&!P.atk.offBusy,sd=P.atk.side||1;
     if(P.atk.w.id==='keihas'){// työntö: nostokulma = kohteen suunta; käsi vedetään taakse ja ojennetaan

@@ -3,7 +3,7 @@
    vasta sitten latausnäyttö ja pelin skriptit. Ennen jakso pyöri pelin latauksen päällä, jolloin häivytykset pätkivät. Pelin skriptit
    esiladataan taustalla (<link rel=preload>) ja ajetaan yksi kerrallaan pienellä tauolla, jotta riimut ehtivät syttyä näkyvästi.
    Välilyönti, Enter tai napsautus ohittaa koko jakson (ja testin) ja vie suoraan latausnäyttöön. */
-window.__BJV='1.68';
+window.__BJV='1.69';
 (function(){
   var Q=location.search,wd=!!navigator.webdriver;
   function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
@@ -18,7 +18,7 @@ window.__BJV='1.68';
   /* v1.63: palaava kävijä näkee käynnistäessään HIIDENMAA-otsikon (pelkkä häivytys sisään/ulos, 4,6 s) ja sitten latausnäytön.
      Ei maailman käynnistyksessä (pend) eikä automaatiossa; ?title=1 pakottaa. */
   var needTitle=!pend&&!needSplash&&(/[?&]title=1/.test(Q)||!wd);
-  var JS=window.__GJS||[],PERF_T=7,RES_T=9,LV=['Low','Low+','Medium-','Medium'];
+  var JS=window.__GJS||[],PERF_T=7,RES_T=9,LV=['Low','Low+','Medium-','Medium','Medium+','High','High+','Ultra'],PT=[22,30,40,55,75,100,140];
   window.__ldT=JS.length;
 
   /* ---------- pelin skriptit ---------- */
@@ -34,7 +34,7 @@ window.__BJV='1.68';
     function nx(){if(i>=JS.length){if(window.__verCheck)window.__verCheck();return;}addScript(JS[i++],function(){setTimeout(nx,16);});}}   // tauko = riimu ehtii piirtyä
 
   var S=document.getElementById('splash');
-  if(!needSplash&&!needPerf&&!needTitle){startGame();window.__boot={needSplash:false,needPerf:false,needTitle:false,PERF_T:PERF_T};return;}
+  if(!needSplash&&!needPerf&&!needTitle){startGame();window.__boot={needSplash:false,needPerf:false,needTitle:false,PERF_T:PERF_T,perfLevel:perfLevel};return;}
   loadThree(function(){});
   window.__splashOn=true;S.hidden=false;S.classList.toggle('noIntro',!needSplash);S.classList.toggle('first',needSplash);   // v1.66: ensikäynnillä ei ohitustekstiä (ohitus toimii silti)
   var spV=function(){var e=document.getElementById('spVer');if(e)e.textContent='Versio '+(window.HV||'');};
@@ -53,8 +53,10 @@ window.__BJV='1.68';
      0,8 s lämmittely (varjostimien käännös), sitten 5 s mittaus. ≥ 50 FPS → Medium, 35–50 → Medium-, 22–35 → Low+, < 22 → Low.
      Tulos: localStorage hiidenmaa_perf {fps, preset, idx, pend:1}; main.js ottaa esiasetuksen käyttöön ladattuaan (pend → 0). ---------- */
   var pf=null;
-  function perfLevel(f){return f>=50?3:f>=35?2:f>=22?1:0;}
-  function perfStore(fps){var i=perfLevel(fps);lsSet('hiidenmaa_perf',JSON.stringify({fps:Math.round(fps),preset:LV[i],idx:i,pend:1,at:Date.now()}));return i;}
+  /* v1.69: taso kapasiteetista (Medium-tason testinäkymän FPS × kuormakerroin): < 22 Low, 22 Low+, 30 Medium-, 40 Medium, 55 Medium+,
+     75 High, 100 High+, ≥ 140 Ultra. Selain tahdistaa piirron näytön virkistystaajuuteen (yleensä 60 Hz), joten pelkkä FPS ei erota tehokkaita koneita. */
+  function perfLevel(sc){var i=0;while(i<PT.length&&sc>=PT[i])i++;return i;}
+  function perfStore(sc,fps){var i=perfLevel(sc);lsSet('hiidenmaa_perf',JSON.stringify({fps:Math.round(fps||sc),score:Math.round(sc),preset:LV[i],idx:i,pend:1,at:Date.now()}));return i;}
   function perfScene(cv){var T=window.THREE,W=innerWidth,H=innerHeight,r;
     try{r=new T.WebGLRenderer({canvas:cv,antialias:true,powerPreference:'high-performance'});}catch(e){return null;}if(!r.getContext())return null;
     r.setPixelRatio(Math.min(devicePixelRatio||1,1.5));r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=T.PCFSoftShadowMap;
@@ -79,33 +81,49 @@ window.__BJV='1.68';
     for(i=0;i<24000;i++){a=rnd()*6.283;d=rnd()*70;x=Math.cos(a)*d;z=Math.sin(a)*d;o.position.set(x,hgt(x,z),z);o.rotation.set(0,rnd()*6.28,0);o.scale.setScalar(.6+rnd()*.8);o.updateMatrix();gm.setMatrixAt(i,o.matrix);}
     sc.add(gm);
     return {r:r,frame:function(t){for(var j=0;j<CR.length;j++){CR[j].rotation.z=Math.sin(t*1.3+j)*.05;CR[j].rotation.x=Math.cos(t*1.1+j*.7)*.04;}   /* v1.65: tuulen heilunta = matriisipäivityksiä kuten pelissä (CPU-kuorma) */
-      var a=t*.09;cam.position.set(Math.cos(a)*34,hgt(Math.cos(a)*34,Math.sin(a)*34)+7,Math.sin(a)*34);cam.lookAt(Math.cos(a+1.1)*6,3,Math.sin(a+1.1)*6);r.render(sc,cam);},
+      var a=t*.09;cam.position.set(Math.cos(a)*34,hgt(Math.cos(a)*34,Math.sin(a)*34)+7,Math.sin(a)*34);cam.lookAt(Math.cos(a+1.1)*6,3,Math.sin(a+1.1)*6);for(var q=0;q<(this.mult||1);q++)r.render(sc,cam);},
       kill:function(){cv.style.display='none';sc.traverse(function(m){if(m.geometry)m.geometry.dispose();if(m.material)m.material.dispose();});r.dispose();try{r.forceContextLoss();}catch(e){}}};}
   function perfRun(done){var el=S.querySelector('.spPerf'),P=el.querySelector('.ppPanel'),cv=el.querySelector('canvas');
     P.innerHTML='<b>Suorituskykytesti</b><p>Mitataan, kuinka sujuvasti Hiidenmaa pyörii koneellasi, jotta grafiikka voidaan säätää sopivaksi. Testi kestää '+PERF_T+' sekuntia.</p>'+
       '<div class="pBar"><i id="ppB"></i></div><div class="pRow"><span id="ppT">Valmistellaan…</span><span id="ppF"></span></div>';
     loadThree(function(){if(over)return;var G=window.THREE?perfScene(cv):null;
       if(!G){P.innerHTML='<b>Suorituskykytesti ohitettiin</b><p>3D-grafiikkaa ei voitu käynnistää testiä varten. Peli käyttää oletusasetuksia.</p>';pf={end:true};done(null);return;}
-      var t0=performance.now(),last=t0,n=0,mt=0,FT=[],warm=1.2,b=document.getElementById('ppB'),tt=document.getElementById('ppT'),ff=document.getElementById('ppF'),sh=0;
+      /* v1.69: kuormaportaat. 0–2,5 s normaali kuorma (1×), sitten 2× ja 4× (näkymä piirretään 2 tai 4 kertaa ruutua kohden), jos edellinen
+         porras pysyi ≥ 45 FPS:ssä – näin nähdään koneen varaa näytön tahdistuksen (60 Hz) yli. Vakautumisaika: kuinka nopeasti 0,5 s:n
+         liukuva FPS nousee 90 %:iin 1×-portaan tasosta; hidas nousu (> 1,5 s) pienentää tulosta enintään 20 %. */
+      var t0=performance.now(),last=t0,warm=1.2,b=document.getElementById('ppB'),tt=document.getElementById('ppT'),ff=document.getElementById('ppF'),sh=0,
+        PH=[{a:0,e:2.5,m:1,F:[]},{a:2.5,e:4.7,m:2,F:[]},{a:4.7,e:7,m:4,F:[]}],R=[],cur=0;
       pf={g:G,stop:function(){if(pf&&pf.raf)cancelAnimationFrame(pf.raf);}};
-      (function loop(){var now=performance.now(),dt=Math.min(.5,(now-last)/1000),t=(now-t0)/1000;last=now;
+      function robust(F){var a=F.slice().sort(function(x,y){return x-y;}),k=a.length>20?Math.ceil(a.length*.03):0,s=0;a=a.slice(0,a.length-k);for(var j=0;j<a.length;j++)s+=a[j];return a.length?a.length/Math.max(.001,s):0;}
+      function result(){var f1=robust(PH[0].F),top=PH[0];for(var j=1;j<3;j++)if(PH[j].F.length>8)top=PH[j];var sc=robust(top.F)*top.m;
+        var ramp=0,acc=[];for(var j=0;j<R.length;j++){acc.push(R[j]);while(acc.length&&R[j][0]-acc[0][0]>.5)acc.shift();var s2=0;for(var q=0;q<acc.length;q++)s2+=acc[q][1];if(R[j][0]>.5&&acc.length/Math.max(.001,s2)>=f1*.9){ramp=Math.max(0,R[j][0]-.5);break;}}
+        if(ramp>1.5)sc*=Math.max(.8,1-(ramp-1.5)*.1);
+        /* tasaisuus 1×-portaalta: osuus ruuduista, jotka kestävät > 1,6 × mediaani (nykäisyt). Yli 5 % nykiviä → tulosta alas enintään 25 %,
+           jotta heikko tai epätasainen kone saa varmasti kevyemmän asetuksen. */
+        var A=PH[0].F.slice().sort(function(x,y){return x-y;}),med=A.length?A[A.length>>1]:0,st=0;for(var j=0;j<A.length;j++)if(A[j]>med*1.6)st++;st=A.length?st/A.length:0;
+        if(st>.05)sc*=Math.max(.75,1-(st-.05)*2);
+        return {f1:f1,sc:sc,m:top.m,fm:robust(top.F),ramp:ramp,st:st};}
+      (function loop(){var now=performance.now(),dt=Math.min(.5,(now-last)/1000),t=(now-t0)/1000,m=t-warm;last=now;
+        if(m>0){var ph=PH[cur];if(cur<2&&m>=PH[cur+1].a){var f=robust(ph.F);if(f>=45)cur++;else{PH[cur+1].a=PH[cur].a;PH[cur+1].F=PH[cur].F;PH[cur+1].m=PH[cur].m;cur++;}}
+          ph=PH[cur];G.mult=ph.m;}
         try{G.frame(t);}catch(e){pf.err=1;}
-        if(t>warm){n++;mt+=dt;FT.push(dt);}var k=Math.max(0,Math.min(1,(t-warm)/PERF_T));b.style.width=(k*100)+'%';
-        if(t>warm){tt.textContent='Mitataan… '+Math.max(0,Math.ceil(PERF_T-(t-warm)))+' s';if(now-sh>250&&mt>0){sh=now;ff.textContent=Math.round(n/mt)+' FPS';}}
-        if(t-warm>=PERF_T||pf.err){perfFinish();return;}pf.raf=requestAnimationFrame(loop);})();
-      pf.partial=function(){return mt>=1.5?robust():-1;};
-      /* v1.65: tulos = keskimääräinen ruudunpiirto ilman hitaimpia 3 % (yksittäiset nykäisyt, esim. varjostimen käännös, eivät vääristä) */
-      function robust(){var a=FT.slice().sort(function(x,y){return x-y;}),k=a.length>20?Math.ceil(a.length*.03):0,s=0;a=a.slice(0,a.length-k);for(var j=0;j<a.length;j++)s+=a[j];return a.length/Math.max(.001,s);}
-      function perfFinish(){var fps=pf.err?0:robust();pf.stop();pf.end=true;var i=perfStore(fps),f=Math.round(fps),lvl=f>=50?'Sujuva':f>=35?'Hyvä':f>=22?'Kohtalainen':'Raskas';
+        if(m>0){var P2=PH[cur];if(m-P2.a>.3||cur===0)P2.F.push(dt);if(cur===0)R.push([m,dt]);}
+        var k=Math.max(0,Math.min(1,m/PERF_T));b.style.width=(k*100)+'%';
+        if(m>0){tt.textContent='Mitataan… '+Math.max(0,Math.ceil(PERF_T-m))+' s';if(now-sh>250){sh=now;var F=PH[cur].F,fr=F.length?robust(F.slice(-20)):0;ff.textContent=Math.round(fr)+' FPS'+(PH[cur].m>1?' · kuorma '+PH[cur].m+'×':'');}}
+        if(m>=PERF_T||pf.err){perfFinish();return;}pf.raf=requestAnimationFrame(loop);})();
+      pf.partial=function(){return PH[0].F.length>30?result().sc:-1;};
+      function perfFinish(){var r=pf.err?{f1:0,sc:0,m:1,fm:0,ramp:0,st:0}:result();pf.stop();pf.end=true;var i=perfStore(r.sc,r.f1),f=Math.round(r.f1),sc=Math.round(r.sc),
+        lvl=sc>=140?'Erinomainen':sc>=75?'Sujuva':sc>=40?'Hyvä':sc>=22?'Kohtalainen':'Raskas';
         el.classList.add('res');
         P.innerHTML='<small class="pHead">Suorituskykytesti valmis</small><b>Tulos: '+f+' FPS <small>('+lvl+')</small></b>'+
+          '<p class="pDet">Suorituskykyindeksi <em>'+sc+'</em>'+(r.m>1?' (kuormalla '+r.m+'×: '+Math.round(r.fm)+' FPS)':'')+' · tasaantui '+r.ramp.toFixed(1).replace('.',',')+' s:ssa · tasaisuus '+Math.round((1-(r.st||0))*100)+' %</p>'+
           '<p>Grafiikka-asetukset säädettiin automaattisesti suorituskyvyn mukaan.</p><p class="pRec">Grafiikkavalinnan suositus: <em>'+LV[i]+'</em></p>'+
           '<p class="pTip">Voit vaihtaa grafiikkaa milloin tahansa itse: <em>Asetukset › Grafiikka</em> (esiasetus-liukusäädin tai yksittäiset asetukset).</p><div class="pBar t"><i></i></div>';
         setTimeout(function(){G.kill();},400);pf.tm=setTimeout(function(){done(i);},RES_T*1000);}
       pf.finish=perfFinish;});}
 
   /* ---------- jakson ohjaus ---------- */
-  var ST=[];if(needSplash)ST.push(['spStudio',3500],['spTitle',6200],['spWarn',9000]);if(needPerf)ST.push(['spPerf',0]);if(needSplash||needPerf)ST.push(['spTrans',2900]);else ST.push(['spTitle',4100]);
+  var ST=[];if(needSplash)ST.push(['spStudio',3500],['spTitle',6200],['spWarn',9000]);if(needPerf)ST.push(['spPerf',0]);if(needSplash||needPerf)ST.push(['spTrans',3500]);else ST.push(['spTitle',4100]);
   var i=-1,tm=0,st=performance.now(),over=false;
   function show(n){var all=S.querySelectorAll('.spStage');for(var j=0;j<all.length;j++)all[j].classList.remove('on');var el=S.querySelector('.'+n);if(n==='spTitle'){el.style.setProperty('--td',ST[i][1]+'ms');el.style.setProperty('--tw',(needSplash?1500:500)+'ms');}void el.offsetWidth;el.classList.add('on');S.classList.toggle('trans',n==='spTrans');}
   function next(){clearTimeout(tm);if(over)return;i++;if(i>=ST.length){end();return;}var n=ST[i][0];show(n);

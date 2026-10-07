@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.68';
+:root{--css-v:'1.69';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -666,11 +666,11 @@ button:focus,select:focus{outline:none}
 #splash .spTrans{background:radial-gradient(circle at 50% 50%,#24130a 0%,#0b0604 50%,#000 85%);transition:opacity .4s ease;overflow:hidden}
 #splash .stGlow{position:absolute;left:50%;top:50%;width:90vmin;height:90vmin;margin:-45vmin 0 0 -45vmin;border-radius:50%;opacity:0;will-change:opacity,transform;
   background:radial-gradient(circle,rgba(255,170,80,.42) 0%,rgba(255,120,40,.16) 32%,rgba(255,90,20,0) 62%)}
-#splash .spTrans.on .stGlow{animation:stGlow 2.9s ease forwards}
-@keyframes stGlow{0%{opacity:0;transform:scale(.6)}25%{opacity:.7;transform:scale(1)}60%{opacity:.55;transform:scale(.95)}70%{opacity:1;transform:scale(1.25)}100%{opacity:0;transform:scale(1.6)}}
+#splash .spTrans.on .stGlow{animation:stGlow 3.5s ease forwards}
+@keyframes stGlow{0%{opacity:0;transform:scale(.6)}22%{opacity:.7;transform:scale(1)}74%{opacity:.6;transform:scale(.95)}80%{opacity:1;transform:scale(1.25)}100%{opacity:0;transform:scale(1.6)}}
 #splash .stRing{position:absolute;left:50%;top:50%;width:min(76vmin,560px);height:min(76vmin,560px);transform:translate(-50%,-50%);overflow:visible;opacity:0;will-change:transform,opacity}
-#splash .spTrans.on .stRing{animation:stRing 2.9s cubic-bezier(.3,.6,.3,1) forwards}
-@keyframes stRing{0%{opacity:0;transform:translate(-50%,-50%) rotate(-40deg) scale(.9)}12%{opacity:1}68%{opacity:1;transform:translate(-50%,-50%) rotate(0) scale(1)}78%{opacity:.9;transform:translate(-50%,-50%) rotate(6deg) scale(1.08)}100%{opacity:0;transform:translate(-50%,-50%) rotate(14deg) scale(1.5)}}
+#splash .spTrans.on .stRing{animation:stRing 3.5s cubic-bezier(.3,.6,.3,1) forwards}
+@keyframes stRing{0%{opacity:0;transform:translate(-50%,-50%) rotate(-40deg) scale(.9)}12%{opacity:1}76%{opacity:1;transform:translate(-50%,-50%) rotate(0) scale(1)}84%{opacity:.9;transform:translate(-50%,-50%) rotate(6deg) scale(1.08)}100%{opacity:0;transform:translate(-50%,-50%) rotate(14deg) scale(1.5)}}
 #splash .stRing circle{fill:none}
 #splash .stRing .g{stroke:#ff8a2a;stroke-width:9;opacity:.16}
 #splash .stRing .c1{stroke:#ffc47a;stroke-width:1.6;stroke-dasharray:943;stroke-dashoffset:943}
@@ -689,17 +689,22 @@ button:focus,select:focus{outline:none}
   text-shadow:0 0 10px #ffd08a,0 0 26px #ffa040,0 0 60px #ff6a1a}
 #splash .spTrans.on .stCyc span{animation:stCyc .3s ease calc(.45s + var(--i)*.15s) both}
 @keyframes stCyc{0%{opacity:0;transform:translate(-50%,-50%) scale(1.35)}30%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.85)}}
-#splash .stFin span{opacity:0;text-shadow:0 0 8px #ffe2b0,0 0 22px #ffb35a}
-#splash .spTrans.on .stFin span{animation:stFin 1.05s cubic-bezier(.2,.7,.3,1) 1.8s both}
-@keyframes stFin{0%{opacity:0;transform:translate(-50%,-50%) scale(1.7) rotate(var(--r))}28%{opacity:.75;transform:translate(-50%,-50%) scale(1)}55%{opacity:.75;transform:translate(-50%,-50%) scale(1.04)}100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}}
 #splash .stSp{position:absolute;left:50%;top:50%}
 #splash .stSp i{position:absolute;left:-2px;top:-2px;width:4px;height:4px;border-radius:50%;background:#fff0d0;box-shadow:0 0 6px #ffb35a,0 0 12px #ff7a1a;opacity:0;will-change:transform,opacity}
-#splash .spTrans.on .stSp i{animation:stSpark var(--t) cubic-bezier(.1,.7,.3,1) 2.05s forwards}
+#splash .spTrans.on .stSp i{animation:stSpark var(--t) cubic-bezier(.1,.7,.3,1) 2.7s forwards}
 @keyframes stSpark{0%{opacity:1;transform:translate(0,0) scale(1.4)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
 #splash .stWave{position:absolute;left:50%;top:50%;width:30vmin;height:30vmin;margin:-15vmin 0 0 -15vmin;border-radius:50%;border:2px solid rgba(255,220,170,.9);box-shadow:0 0 18px rgba(255,160,70,.6),inset 0 0 18px rgba(255,160,70,.45);opacity:0;will-change:transform,opacity}
-#splash .spTrans.on .stWave{animation:stWave .85s cubic-bezier(.15,.6,.35,1) 2.05s forwards}
-#splash .spTrans.on .stWave.w2{animation-delay:2.2s;animation-duration:.75s}
+#splash .spTrans.on .stWave{animation:stWave .85s cubic-bezier(.15,.6,.35,1) 2.7s forwards}
+#splash .spTrans.on .stWave.w2{animation-delay:2.85s;animation-duration:.75s}
 @keyframes stWave{0%{opacity:1;transform:scale(.25)}100%{opacity:0;transform:scale(4.2)}}
 #splash .stFlash{position:absolute;inset:0;background:radial-gradient(circle,#fff6e6 0%,rgba(255,220,170,.6) 35%,rgba(255,180,100,0) 70%);opacity:0;will-change:opacity}
-#splash .spTrans.on .stFlash{animation:stFlash .7s ease-out 2.05s forwards}
+#splash .spTrans.on .stFlash{animation:stFlash .7s ease-out 2.7s forwards}
 @keyframes stFlash{0%{opacity:0}18%{opacity:.85}100%{opacity:0}}
+#splash .ppPanel .pDet{font-size:13.5px;color:#b8a888;margin-top:4px}
+/* v1.69: lopetus – ᚺ syttyy sinisenä keskelle, muut HIIDENMAA-riimut liukuvat sen alta sivuille oransseina kaartuvaksi riviksi (ei päällekkäin) */
+#splash .stFin span{text-shadow:0 0 8px #ffd08a,0 0 20px #ff8a2a;font-size:min(8.5vmin,64px);color:#ffcf8a}
+#splash .stFin span.h{font-size:min(20vmin,160px);color:#eaf6ff;text-shadow:0 0 10px #bfe6ff,0 0 26px #5ab4ff,0 0 64px #1f6aff;z-index:2}
+#splash .spTrans.on .stFin span.h{animation:stH 1.65s cubic-bezier(.2,.7,.3,1) 1.9s both}
+#splash .spTrans.on .stFin span:not(.h){animation:stSide 1.25s cubic-bezier(.2,.75,.25,1) calc(2.08s + var(--d)) both}
+@keyframes stH{0%{opacity:0;transform:translate(-50%,-50%) scale(1.5)}22%{opacity:1;transform:translate(-50%,-50%) scale(1)}55%{opacity:1;transform:translate(-50%,-50%) scale(1.03)}62%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}100%{opacity:0;transform:translate(-50%,-50%) scale(.7)}}
+@keyframes stSide{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}35%{opacity:1;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) rotate(var(--rot)) scale(1)}70%{opacity:1;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) rotate(var(--rot)) scale(1)}100%{opacity:0;transform:translate(calc(-50% + var(--tx)*1.25),calc(-50% + var(--ty)*1.25)) rotate(var(--rot)) scale(.85)}}

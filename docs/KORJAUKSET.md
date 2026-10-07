@@ -247,6 +247,12 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   täyttyminen), valmis → kaksi rAF:ia → `.done`: vaalea hehku `.lsGlow` pelkillä opacity/transform-animaatioilla. Älä animoi suotimia
   (filter) latausnäytössä äläkä aja raskasta työtä animaatioiden aikana. Käynnistysvahdin 20 s ajastin alkaa vasta latauksen alkaessa.
 
+## 33. Kädet tärisevät (AFK/hengitys, v1.68)
+- **Oire:** seistessä kädet nytkyvät edestakaisin.
+- **Syy:** kohdekulma vei kättä vartaloon/reiteen päin (vasemman käsivarren z-kierto väärällä merkillä); `armClear` työntää käden ulos
+  joka ruudussa ja lerp vetää takaisin → värinä. Mittaa: nivelkulmien suunnanvaihdot ruutujen välillä (> 0,003 rad).
+- **Korjaus:** vasen käsi ulospäin = +z, oikea = −z; seisoessa kädet hieman irti reisistä. Älä aseta käsien lepokohdetta vartalon sisään.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`
