@@ -10,9 +10,9 @@ function stoneBox(w,h,d,x,y,z,ry=0,m=MAT.stone,col=true){const me=bx(w,h,d,m,x,y
 // Kiven sävy: kerrotaan värin kanavat luvulla 0,85–1,15 (ei lisätä lukua, ettei kanavat vuoda toisiinsa)
 const rockC=(c,t)=>{const k=.85+t*.3,f=v=>Math.min(255,v*k|0);return(f(c>>16&255)<<16)|(f(c>>8&255)<<8)|f(c&255);};
 const RUNES=[
-  {k:'rune1',t:'Riimukivi – Rannan kivi',txt:'”Merien yli tullut, kuule: tämä on Hiidenmaa. Kalmanvartija on pitänyt saarta otteessaan yhdeksän talvea. Kerää oksia ja kiviä, rakenna suoja ennen ensimmäistä yötä. Yöllä sudet laskeutuvat niityille.”',reveal:null},
-  {k:'rune2',t:'Riimukivi – Nummen laita',txt:()=>`”Kalmanummella, ${dirText(LOC.rune2,'barrow')}, nukkuvat vanhat päälliköt Hautakummussa. Heidän kirstuissaan lepää kolme hiidenkiveä. Ota tuli mukaasi, sillä kumpu on pimeä.”`,reveal:'barrow'},
-  {k:'rune3',t:'Riimukivi – Tunturin juuri',txt:()=>`”Kalmankehä on ${dirText(LOC.rune3,'circle')}. Kun kolme hiidenkiveä kohtaa sen alttarin, vartija herää. Kivinen iho kestää terän, mutta nuija murskaa sen. Kupari kasvaa metsän vanhoissa lohkareissa.”`,reveal:'circle'},
+  {k:'rune1',t:'Riimukivi – Rannan kivi',txt:'”Merien yli tullut, kuule: tämä on Hiidenmaa. Kalmanvartija on pitänyt saarta otteessaan yhdeksän talvea. Kolme porttia ja kolme sisarta seisovat sinun ja hänen välissään. Kerää oksia ja kiviä, rakenna suoja ennen ensimmäistä yötä. Yöllä sudet laskeutuvat niityille.”',reveal:null},
+  {k:'rune2',t:'Riimukivi – Nummen laita',txt:()=>`”Kalmanummella, ${dirText(LOC.rune2,'barrow')}, nukkuvat vanhat päälliköt Hautakummussa. Heidän kirstuissaan lepää hiidenkiviä, joista taotaan vahvimmat aseet – ja joskus jotain kylmempää. Ota tuli mukaasi, sillä kumpu on pimeä.”`,reveal:'barrow'},
+  {k:'rune3',t:'Riimukivi – Tunturin juuri',txt:()=>`”Kalmankehä on ${dirText(LOC.rune3,'circle')}. Kun kolme Kalmankruunun sirpaletta kohtaa sen alttarin, vartija herää. Sirpaleet lepäävät viimeisen portin takana. Kivinen iho kestää terän, mutta nuija murskaa sen. Kupari kasvaa metsän vanhoissa lohkareissa.”`,reveal:'circle'},
 ];
 for(const R of RUNES){const L=LOC[R.k],y=terrainH(L.x,L.z);const me=stoneBox(.9,2.6,.5,L.x,y+1.1,L.z,.3,mat(0x6f6c66));
   const glyph=bx(.5,1.6,.04,MAT.glow,0,0,.26,false);me.add(glyph);
@@ -51,7 +51,7 @@ const circleStones=[],altarGems=[];
   stoneBox(2.6,1,1.6,L.x,y+.4,L.z,0,mat(0x4d4a45));
   // v0.89: vajonneen vartijan kivet näkyvät alttarilla hehkuvina (altarGems) ja alttari on valmis herättämään ilman uusia kiviä
   for(let i=0;i<3;i++){const gm=new THREE.Mesh(new THREE.OctahedronGeometry(.22,0),MAT.glow);gm.position.set(L.x+(i-1)*.7,y+1.15,L.z);gm.scale.y=1.5;gm.visible=false;scene.add(gm);altarGems.push(gm);}
-  interactables.push({x:L.x,y:y+1,z:L.z,r:3,label:()=>{syncAltar();return flags.boss?'Kehä on hiljainen':boss?'…':flags.altarSt?'Hiidenkivet valmiina (3/3) – herätä vartija':`Aseta hiidenkivet alttarille (${invCount('hiidenkivi')}/3)`;},use:()=>useAltar()});})();
+  interactables.push({x:L.x,y:y+1,z:L.z,r:3,label:()=>{syncAltar();return flags.boss?'Kehä on hiljainen':boss?'…':flags.altarSt?'Sirpaleet valmiina (3/3) – herätä vartija':`Aseta Kalmankruunun sirpaleet alttarille (${invCount('kruunusirpale')}/3)`;},use:()=>useAltar()});})();
 function syncAltar(){const v=!!flags.altarSt&&!boss&&!flags.boss;for(const g of altarGems)if(g.visible!==v)g.visible=v;}
 // Dungeon interior
 const DMAP=[

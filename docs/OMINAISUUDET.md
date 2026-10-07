@@ -25,6 +25,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Etäisyydet ja suunnat lasketaan** (`dirIn`, `dirText`): tarinateksteissä ei ole kiinteitä ilmansuuntia (pohjoinen = −z).
 
 ## 2. Pelaaja ja liikkumisen fysiikka (player.js)
+- **Enimmäisterveys (v1.20):** 60 tasolla 1, +10 per taso tasoille 2–5 (taso 5: 100), lisäksi saavutukset ja voima; tason nousu lisää terveyttä heti.
 
 | Asia | Arvo |
 | --- | --- |
@@ -58,12 +59,19 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Kylmä tulee:** märkänä, lumisateessa vuorilla tai yöllä ulkona ilman lämpimiä vaatteita, ellei tulen lähellä.
 - **Lepo ja uni:** sänky asettaa herätyspaikan; nukkuminen vaatii yön, katon eikä vihollisia 20 m sisällä → seuraava aamu, levännyt.
 - **Kuoleman ruutu (Kaaduit):** kaikki valikot ja päävalikko sulkeutuvat, kursori näkyy, herätys napista tai Enterillä.
+- **Päävalikon tausta (v1.25):** oletuksena 10 animoitua kuvaa (ei 3D-piirtoa valikossa); kuva arvotaan aina (v1.31, myös sivun avauksessa),
+  vaihtuu 20 s välein. Asetus "Valikon tausta": kuvat / 3D-kamera (alla, v1.15).
+- **Päävalikon tausta (v1.15):** kamera näyttää satunnaisia kohteita lähikuvina (biomit, järvi, hylätty leiri päivällä ja yöllä, eläimet),
+  20 s / kohde, hidas kierto, vaihto mustan kautta; ensimmäinen kohde arvotaan joka latauksella.
+- **Päävalikko (v1.14):** "Toimii parhaiten tietokoneella hiirellä ja näppäimistöllä" näkyy ruudun yläkeskellä kerran per käynnistys 3 s (v1.30) ja häipyy.
 - **Ruoho (v1.00, v1.04 kasoina):** ohuita läpikuultavia heinäkasoja harvakseltaan biomin mukaan (ei kohteiden päällä), heiluu ja kallistuu tuulessa; asetus Grafiikka → Ruoho (Pois / Normaali / Täysi).
 - **Kasvillisuuden esto (v1.04):** puut, kivet ja poimittavat eivät kasva uudelleen leirien, kiviröykkiöiden, linnakkeiden, raunioiden, portaalien ym. päälle (suoja 3,5–15 m).
 - **Hylätyt leirit (v0.99):** 1–2 per kartta: sammunut nuotio (sytytä puulla), teltta jossa sänky (herätyspaikka, nukkuminen), tukki ja säkki tarvikkeineen. Teltan voi myös rakentaa itse (Kalusto).
 - **Arkkukivet (v1.01, v1.03):** suljettu 3,5 m kivilinnake: arkulle pääsee juoksuhypyin viittä kapeaa siksak-pilaria pitkin muurin harjalle ja kierreportaita alas.
 - **Kiviröykkiöt (v1.03):** 2 per kartta, avoin kivikasa, arkku näkyvissä keskellä (pieni saalis).
 - **Aluevartijat (v0.97):** vartioalue 30–32 m; rajalla vartija jää seisomaan ja taistelemaan 1–10 s ennen paluuta, palaa jahtiin jos pelaaja tulee alueelle.
+  **v1.09:** paluu kävellen (kalmo 30 m ≈ 21 s), paranee paluun aikana 1 %/s; pelaaja alle 8 m päässä keskeyttää paluun (myös alueen
+  ulkopuolella) ja vartija taistelee niin kauan kuin pelaaja on alle 8 m päässä; sen jälkeen uusi 1–10 s ajastin ja paluu.
 - **Kuokka ja lapio (v0.96):** kuokka vasen nostaa maata 0,3 m (perusväri), oikea palauttaa maan värin; lapio vasen kaivaa 0,3 m kuopan (enint. 3 m), oikea tekee ruskean polun.
 - **Tietoikkuna (v0.94):** Shift pohjassa ja hiiri esineen päällä (reppu, arkku, valmistus) → esineen tiedot kursorin vieressä.
 - **Hautakasa (v0.93):** ei katoa koskaan; jos kaikki ei mahdu reppuun, avautuu arkkuikkunaksi, tyhjänä vajoaa maahan.
@@ -81,10 +89,13 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Uusiutuminen:** kaadetut puut kasvavat takaisin **kerran yössä** pelaajan **100 m** säteellä (`nightRegrow`), enintään 5 m alkuperäisestä
   paikasta, samaan biomiin. Muut solmut uusiutuvat ajan kuluttua (> 40 m pelaajasta). Marjat ja kasvit uusiutuvat nukkuessa.
 - **Rakennusalue on suojattu:** ei kasvua 15 m:n säteelle mistään pelaajan rakennusosasta eikä työpenkin alueelle + 30 % (26 m) (`nearBase`).
-- **Myrsky kaataa puun noin 5 s välein** 9–100 m päässä (ei aarnipuita eikä rakennusalueelta).
+- **Myrsky kaataa puun noin 5 s välein** 2–100 m päässä (ei aarnipuita eikä rakennusalueelta); 70 % tuulen suuntaan, 30 % satunnaisesti (v1.19).
+- **Kaatuva puu (v1.19):** kaikki kaatuvat puut (myrsky, kirves, karhu) osuvat rungon alle jääviin: 80 % suurimmasta terveydestä, haarniska ei suojaa;
+  osuu myös mobeihin, ei puun kaatanutta karhua. **Tuulen taivutus:** myrskyssä latva n. 12–17°, 10 m/s n. 3°.
 - **Työkalutasot:** kirves/hakku taso 1–3 (piikivi/kivi, kupari, rauta); aarnipuu vaatii tason 3, rautasuoni tason 2.
 - **Maanmuokkaus:** lapio tasoittaa ja tekee maasta multaisen (polut), kuokka nostaa maata ja palauttaa alkuperäisen (`TERRA`, `MUD`, tallentuu).
-- **Esineet maassa** katoavat 5 min jälkeen; maahan pudonneita ei tallenneta.
+- **Esineet maassa** katoavat 5 min jälkeen (v1.17: aika kuluu vain, kun olet samassa ulottuvuudessa); maahan pudonneita ei tallenneta.
+- **Täysi reppu (v1.17):** poiminta ei onnistu, jos kaikki ei mahdu (esine jää paikalleen), viesti "Reppu on täynnä – et voi poimia".
 
 ## 5. Valmistus ja esineet (items.js)
 
@@ -95,7 +106,14 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Laatu (★1–3):** kehittäminen parantaa vahinkoa, nopeutta ja jousen vetoa; käsisoihdun palamisaika +50 % per taso.
 - **Löydetyt arkut ja tynnyrit:** avautuvat arkkuikkunaan kuten omat arkut; sisältö pysyy (`flags.fc`), esineitä voi ottaa ja jättää.
 - **Repun käyttö:** napsautus valitsee, toinen napsautus siirtää/vaihtaa paikat, oikea puolittaa pinon, kaksoisnapsautus käyttää,
-  Q pudottaa yhden, Shift+Q kaikki. Arkuissa napsautus–napsautus siirtää, Shift+napsautus siirtää heti. E sulkee valikot.
+  Q pudottaa yhden, Shift+Q kaikki (v1.31: hiiren alla oleva esine, myös arkussa, ilman valintaa; itse pudotettu ei imeydy heti takaisin). Arkuissa napsautus–napsautus siirtää, Shift+napsautus siirtää heti. E sulkee valikot.
+  **v1.08 (reppu ja arkku):** valittu ruutu sykkii oranssina ja nousee, sen kuvake seuraa hiirtä haamuna, kohderuudussa vihje
+  Siirrä / Pinoa / Vaihda ja tietolaatikossa ohjeteksti. Valittuna oikea napsautus toiseen ruutuun siirtää puolet (tyhjään tai samaan
+  esineeseen). Raahaus (hiiri pohjassa) siirtää ruutuun / pikapalkkiin; paneelin ulkopuolelle raahattu esine putoaa maahan.
+  **v1.30:** oikea napsautus pinoon ottaa puolet valituksi (haamussa määrä), vasen laskee ne; oikealla raahaus siirtää puolet.
+- **Valmistusehdotukset (v1.16):** kaksi osiota: "Voit valmistaa nyt" (aineet repussa, enint. 6; puuttuva työpiste merkitään, rakentamaton työpiste
+  → myös toiseen osioon) ja "Hyödyllistä seuraavaksi" (enint. 4, pelin vaiheeseen sopivat). Järjestys: ei koskaan valmistettu → usein
+  tarvittavat (nuolet, soihdut, ruoka) → valmistettu mutta ei mukana → välituotteet. Tarpeettomia varusteita ei ehdoteta.
 - **Ehdotukset ja haku:** valmistuksen ja rakennusvalikon oletusvälilehti *Ehdotukset* näyttää syineen ne, joihin aineet ovat valmiina,
   puuttuvat tai paremmat varusteet ja pelin vaiheeseen sopivat rakennukset (työpenkki → nuotio → sänky → suoja → sulatin/ahjo).
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
@@ -109,6 +127,16 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Lyönnit:** nosto pään/olan yli → isku viistosti alas vartalon eteen → loppuliike edessä; vuorottelevat suunnat. Kädet eivät mene vartalon läpi (`armClear`).
 - **Selässä kannettavat:** kilpi ja jousi selässä, yksi muu työkalu/ase selässä; vasara roikkuu vyöllä takana (heiluu kävellessä).
 - **Jousi:** hiiren vasen pohjassa jännittää, vapautus laukaisee (veto > 0,15). Täysi veto 1,6 s (laatu 2: 1,3 s, laatu 3: 1,07 s); vajaa veto = vähemmän vahinkoa, hitaampi nuoli, jyrkempi kaari.
+  **Vetoasento (v1.22):** vartalo kääntyy sivuttain, jousi keskellä edessä, oikea käsi vetää jänteen posken oikealle puolelle; levossa jousi heiluu käden mukana.
+  **Tähtäys (v1.23):** ympyrä = hajonta: vedon alussa n. 10°, pienenee vedettäessä (keltainen → punainen), täysi veto paikallaan = 0° (pieni ympyrä + piste); liike lisää 2–3°.
+  **Jouset (v1.23):** hiidenjousi vetää 1,15 s, nuoli +25 % nopeampi, hajonta ×0,7; ★ nopeuttaa vetoa ja pienentää hajontaa.
+- **Nuolet (v1.23):** piikivi = perus; sulitettu +25 % nopeus, −40 % pudotus, +15 % vahinko, tuuli puolet; tulinuoli = perus + sytyttää. Asetus: tulinuolten valo (oletus pois).
+- **Kestävyys / isku (v1.23):** kupari −10 %, rauta −20 %, hiiden −30 %; kilven torjunta kuluttaa puu 90 %, kupari 75 %, rauta 60 % iskusta.
+- **Palava mob (v1.23):** isommat liekit, kipinöitä ja savua, oranssi valo maahan.
+- **Repun käyttö (v1.32):** kiinteä kolmen sarakkeen näkymä (ruudukko | tiedot | valmistus), mikään ei liiku. Napsautus valitsee,
+  toinen napsautus siirtää. Haarniska/vaate, kilpi, soihtu ja nuolet otetaan käyttöön jo valintanapsautuksella (keltainen); jos seuraava
+  napsautus siirtää esineen, käyttöönotto perutaan. Ruoka syödään VAIN pikapaikan numerolla. Pudotus (Q, Pudota-nappi, raahaus ulos) heittää
+  esineen ~3 m eteenpäin kameran suuntaan.
 - **Reppu:** 32 paikkaa, kehitys +8 paikkaa / +40 painoa (2 tasoa). Arkku 16→24→32, tynnyri 10→16→22.
 - **Avaimet:** Jääavain, Luuavain, Aarniavain (ulottuvuuksien portit).
 
@@ -161,12 +189,15 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## 9. Viholliset ja eläimet (mobs.js, ai.js)
 
 - **Nopeudet −15 %** (`MOB_SPD` 0,85 kaikessa liikkeessä).
+- **Terveyspalkit (v1.21):** rivi = 100 hp, rivit päällekkäin (enint. 5, ylin tyhjenee ensin), yli 500 hp:lla toinen värikerros (oranssi).
 - **Terveyspalkit:** mobin yläpuolella (mallin korkeus + 0,45 m), nimi ja pääkallot palkin yllä; näkyy kun katse osuu mobiin (~11°, vahvat ~9°)
   alle 12 m (vahvat 70 m) tai 10 s osuman jälkeen. Pomoilla oma palkki ruudun yläreunassa.
 - **Juoksu (v0.93):** harppova juoksuanimaatio (takajalka taakse, polvi ylös, kädet koukussa); kävelyaskel hieman pidempi.
+  **v1.13:** runko keinuu sivuttain edessä olevan jalan puolelle (kävely ±2°, juoksu ±5°); juoksusta kävelyyn etukeno ja askel palautuvat pehmeästi (~1,2 s).
 - **Kalmanpesä (v0.93):** murskautuu millä tahansa, muulla kuin hakulla kaksi kertaa hitaammin; murskatun pesän ympärille ei synny mobeja.
 - **Harppovat hirviöt (v0.92):** kaksijalkaiset hirviöt liikkuvat 10 % nopeammin pitkin, keinuvin askelin ja lyövät 10 % kauemmas.
-- **Tönäisy (v0.92):** jokaisella aseella tönäisyarvo (tiedoissa metreinä); nuija tönäisee eniten (~1,9 m), isot olennot vähemmän.
+- **Tönäisy (v1.31):** arvo ilman yksikköä, N = N/2 m tavalliseen viholliseen (10 = 5 m); nuija 6 (eniten), kivikirves 2, keihäs ja rautakirves 3,
+  hiidenmiekka 3,5; isot olennot lentävät vähemmän. Tönäisty vihollinen on kyvytön lennon ajan (ei kävele eikä lyö).
 - **Ulottuvuusmobit (v0.91):** teeman mukaiset koristeet (huurre/jää, hautavaatteet ja pronssikorut, sammal ja hohtavat sienet), liekkimäisesti
   sykkivät silmät ulottuvuuden värillä (kirkastuvat jahdatessa, räpäyttävät), +10 % terveys ja lisäsaalis. Ulkomaailman mobit ennallaan.
 - **Haarniskat (v0.90):** jokaisella oma painava malli ja kypärä/huppu (kasvot näkyvät; Hiidenpanssarissa suljettu visiiri): nahkavaatteet,
@@ -202,6 +233,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 - **Kalmanvartija (Kalmankehä):** herätetään 3 hiidenkivellä alttarilla; vaihe 2 alle 50 % (kalmot maasta); palaa maahan > 90 m päässä
   (kivet jäävät alttarille). Kaatuminen = voitto.
+- **Pomojen iskut (v1.17):** ryntäys enintään kerran 10 s:ssa; maahaniskussa kädet ylhäällä latautumassa 0,8 s ennen iskua.
 - **Ulottuvuuksien pomot** (Jäätär, Kalmaherra, Aarnihirviö, `realmBossAI`): nukkuvat kunnes < 17 m; vaiheet 100–66 / 66–33 / 33–0 %
   (nopeampi). Iskut: pyyhkäisy, maahanlyönti, rynnäkkö, kiven heitto, nova (vaihe 3, väistä hyppäämällä), kutsu (apulaiset, max 4).
   Pudottavat raudan, kuparin, hiidenkiven ja seuraavan avaimen (suoraan reppuun).
@@ -239,17 +271,24 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## 14. Kartta (ui.js)
 
+- **Kartta (v1.20):** avatun alueen päällä ohuet liikkuvat pilvet (20 %); paikkojen nimillä pehmeä varjo (näkyvät lumisilla vuorilla).
 - **Iso kartta (M):** paljastettu alue 12 m säteellä (pehmeä), tutkimaton pilviverhon takana (liikkuvat kumpupilvet vain kartta auki),
   zoom rullalla, raahaus, rakennukset ylhäältä pikseleinä. **Merkit näkyvät vain paljastetulla alueella.**
 - **Minikartta:** 3 zoomia (60 / 35 / 110 m, N tai napsautus), taso näkyy alareunassa.
-- **Ilmoitukset:** näkyvät pituuden mukaan pidempään, piiloon valikoissa; T näyttää 10 viimeisintä.
+- **Ilmoitukset:** näkyvät pituuden mukaan pidempään, piiloon valikoissa; L näyttää 10 viimeisintä (v1.18; ennen T).
+- **Tehtävä ja tavoite piiloon (v1.18):** T kiertää: molemmat → vain tehtävä → vain tavoite → ei kumpaakaan; piilotettuna pieni vihje, valinta muistetaan.
 
 ## 15. Asetukset ja näppäimet (settings.js)
 
 - **Näppäimet** vaihdettavissa vahvistuksella (ei varattuja eikä päällekkäisiä); oletus mm. WASD, Shift juoksu, Välilyönti hyppy, C kyykky,
-  E käytä, B rakennus, R/G/H/Q/Z/X/F rakentaminen, Tab reppu, M kartta, J taso, T ilmoitukset, K koko näyttö, N minikartan zoom.
+  E käytä, B rakennus, R/G/H/Q/Z/X/F rakentaminen, Tab reppu, M kartta, J taso, L ilmoitukset, T tehtävä/tavoite piiloon, K koko näyttö, N minikartan zoom.
 - **Grafiikka:** 3D-resoluutio, automaattinen laatu, piirtoetäisyys 60–400 m, yksityiskohdat, rakennusten yksityiskohdat, hiukkaset,
   valonlähteiden määrä, usva ja höyry, pilvet, valonsäteet, puiden heiluminen.
+  **Väliotsikot (v1.12):** Yleiset, Luonto, Valo, Partikkelit, Rakennukset; Varjot-sivulla Auringon varjot ja Tulien varjot.
+  **Automaattinen säätö (v1.12):** yleinen kytkin + osa-alueet (resoluutio, hiukkaset/usva/ruoho, piirtoetäisyys, varjot); nykiessä yksi
+  askel kerrallaan 6 s välein, sujuessa takaisin. **FPS-näyttö:** valittava kulma (oletus pois, ensimmäinen vaihtoehto oikea yläkulma).
+  **Usva ja höyry (v1.10):** Korkea (entinen), Normaali (oletus: höyry ja sisäkiehkurat puolet haituvista, 1,2× isommat ja 1,39× tiheämmät
+  → sama paksuus), Matala, Pois. Maanpinnan usva täysimääräinen Korkealla ja Normaalilla.
 - **Varjot:** laatu, auringon varjojen tarkkuus ja etäisyys, päivitystiheys, tulien varjot ja niiden tarkkuus.
 - **Äänet:** proseduraaliset (`sfx`), sävelkorkeus vaihtelee ±3,5 % joka soitolla. Puun ja tukin iskut ovat sama kirveenisku; viimeinen isku
   lähes sama (pystypuu: hiljainen ritinä, tukki: pehmeä tumma tömähdys), kaatunut puu tömähtää tummasti. Tömähdyksen sävel puun koon ja
@@ -262,3 +301,47 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - `localStorage` (`hiidenmaa_save_v1`, automaattisesti 90 s välein), pakattu tallennuskoodi (`HM2:`) ja .txt-tiedosto.
 - Tallentuu: pelaaja, reppu, rakennukset, maanmuokkaukset, kaadetut ja siirtyneet puut, haudat, liput (`flags`: tarina, löydöt, avaimet,
   ulottuvuuksien siemenet, kaatuneet pomot, avatut arkut). Ei tallennu: maassa olevat esineet, kaukaiset viholliset.
+
+## Taistelu v1.33 (lista 3)
+- Kilpi kuluu: puu 20, kupari 15, rauta 15 torjuntaa; rikki 60 s, sitten ehjä. Torjunta puu 60 %, kupari 80 %, rauta 90 %.
+- Kaikki eläimet ja hirviöt +25 % terveys ja vahinko. Pomot: Jäätär 840, Kalmaherra 1280, Aarnihirviö 1872, Kalmanvartija 2250.
+- Pomo paranee täyteen ~10 s:ssa, jos siihen ei osuta minuuttiin; ulottuvuudesta poistuminen palauttaa pomon täyteen.
+- Mobit lyövät liikkeestä 0,1 s viiveellä, jäähy lyöntien välillä. Tavallisten ulottuma enintään 1,9 m.
+- Pelaajan taistelu −10 % (vahinko, tönäisy, lyöntinopeus).
+- Yöhirviö: kerran yössä 20 % vuorilla / 10 % muualla, varmasti jos edellinen yö jäi nukkumatta; 6,6 m/s, hyökkää heti.
+- Haudan majakka näkyy myös ulottuvuuksissa ja Hautakummussa (vain siinä tilassa, jossa kuoli).
+- Tulinuolen valo hiipuu lennossa, sateessa kaksi kertaa nopeammin; osumasta sammuu 2 s:ssa.
+
+## Eteneminen ja arvoesineet v1.34
+- Järjestys: Jääavain (satunnainen vanha arkku, portti kertoo suunnan) → Routaportti → Jäätär (luuavain) → Kalmankammio → Kalmaherra
+  (aarniavain) → Aarnihauta → Aarnihirviö (Kalmankruunun sirpale) + 2 sirpaletta Aarnihaudan arkuissa → Kalmankehän alttari (3 sirpaletta)
+  → Kalmanvartija (viimeinen pomo).
+- Pääsaaren arkkujen tavalliset tavarat arvotaan maailman luonnissa.
+- Arvoesineet (avaimet, Vartijan sydän, sirpaleet, hiidenkivet, harvinaiset ★) eivät katoa maasta, hehkuvat ja siirtyvät 2 min jälkeen
+  (pelaaja > 10 m tai muualla) satunnaiseen pääsaaren arkkuun. Kadonneet uniikit palautetaan automaattisesti.
+- Kaksi kylttiä antaa kryptiset vihjeet (E lukee).
+- Maassa olevat esineet näkyvät kuvakkeina, joilla on paksuutta (asetus).
+
+## Asetukset v1.35
+- Grafiikka-sivun ylälaidassa esiasetusliukusäädin Low → Ultra (8 tasoa, oletus Medium); käsin säädettynä "Custom".
+- Varjot ovat Grafiikka-sivun väliotsikko. Uudet: Veri (Normaali/Vähän/Pois), Maassa olevat esineet (3D-kuvake/kevyt), Ultra-tasot.
+- Usva ja höyry: Ultra / Korkea / Normaali (oletus, kevyempi kuin ennen) / Matala / Pois.
+- Profiilit-välilehti: kaikki asetukset ja näppäimet tallennetaan nimellä, otetaan käyttöön tai poistetaan.
+- Muutokset näkyvät heti myös tauolla. Automaattitallennus 2 min välein. Lumisade kulkee tuulen mukana.
+
+## Valikko ja hiiri v1.36
+- Päävalikon maailmalista: enintään 5 maailmaa (nimi, viimeksi pelattu, päivä, taso, kartta). Pelaa / Nimeä / Poista (vahvistus) / Uusi maailma.
+- Tallenna nyt valikosta, automaattisesti 2 min välein nykyiseen maailmaan.
+- Reppu, arkku, rakennusvalikko ja kartta pitävät hiiren lukittuna ja näyttävät pelin oman osoittimen: suljettaessa (Tab, E, M, B…) kamera
+  kääntyy heti ilman napsautusta. Esc-taukovalikon jälkeen selain vaatii yhden napsautuksen.
+
+## Efektit ja animaatiot v1.37
+- Osumasta lentää verta (isoista enemmän) ja maahan jää läntti, joka häipyy 10 s:ssa; haavat näkyvät mobin pinnassa. Ei-elävät pölisevät.
+  Asetus Veri: Normaali / Vähän / Pois.
+- Kuollut mob kaatuu velttona, veriläntti alle, katoaa alle 10 s:ssa. Palanut: mustuu ja muuttuu vajoavaksi tuhkakasaksi.
+- Pelaajan kuolema: kaatuminen ja veriläntti (1 min); palokuolema → tuhka. Nuotion päällä pelaaja syttyy (sade/vesi sammuttaa).
+- Palava mob: isot liekit ja paljon savua.
+- Kirves ja hakku: kahden käden isku olan yli vuorotellen kummaltakin puolelta, ei pään läpi. Jousen vetokäsi oikealla olan korkeudella.
+- Selkäesineet viistoon (pitkä osa/terä sivulle), jousi ja työkalu ristiin; vyön takana nahkapussi.
+- Ulottuvuusportit koristeltu (riimut, kulhot, paadet, teemakoristeet).
+- DEV: lento tuplahypyllä (välilyönti ylös, Shift alas).

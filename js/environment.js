@@ -80,7 +80,7 @@ function updateWind(dt){const w=windState();
   const t=playTime;WIND.gust=Math.max(0,Math.sin(t*.37)*.5+Math.sin(t*1.13+1.7)*.35+Math.sin(t*2.9)*.15)*.25;
   WIND.spd=w.spd*(1+WIND.gust);WIND.a=w.a+Math.sin(t*.05)*.1+Math.sin(t*.13+2)*.04;WIND.x=Math.sin(WIND.a);WIND.z=Math.cos(WIND.a);
   // puiden (ja tulevan ruohon) kallistus tuulen suuntaan: voimakkuus 0–1 (22 m/s = 1)
-  SWAY.uWDir.value.set(WIND.x,0,WIND.z);SWAY.uLean.value=SET.sway?Math.min(1.2,WIND.spd/22):0;}
+  SWAY.uWDir.value.set(WIND.x,0,WIND.z);SWAY.uLean.value=SET.sway?3.4*Math.pow(Math.min(1.1,WIND.spd/22),1.6):0;}   /* v1.19: myrskyssä latva n. 12–17° (puuskat), 8 m/s n. 2–3° */
 const WIND_DIRS=['pohjoisesta','koillisesta','idästä','kaakosta','etelästä','lounaasta','lännestä','luoteesta'];
 // Mistä tuuli tulee (vastakkainen puhallussuunnalle). Kartan pohjoinen = −z (kuten minikartta "P").
 function windFromText(){const from=Math.atan2(-WIND.x,WIND.z);return WIND_DIRS[((Math.round(from/(Math.PI/4))%8)+8)%8];}
@@ -123,13 +123,16 @@ function updateEnvironment(dt){
   moon.position.set(camera.position.x-sd.x*370,camera.position.y-sd.y*370,camera.position.z-sd.z*370);moon.visible=-sd.y>-.08&&wDark<.5;moon.material.color.setScalar(.35+.65*ph);
   updateClouds(dt,wCloud,light,el);updateSky(light,sd,el,sunK);
   rain.visible=wRain>.15;if(rain.visible){rain.material.opacity=.45*Math.min(1,wRain);updateRain(dt);}
-  snow.visible=wSnow>.1&&P.pos.y>10;if(snow.visible){snow.material.opacity=.9*Math.min(1,wSnow);const a=snow.geometry.attributes.position.array;for(let i=0;i<a.length;i+=3){a[i+1]-=2.2*dt;a[i]+=Math.sin(playTime*.8+i)*.4*dt;if(a[i+1]<-4){a[i]=(Math.random()-.5)*50;a[i+1]=20+Math.random()*6;a[i+2]=(Math.random()-.5)*50;}}snow.geometry.attributes.position.needsUpdate=true;snow.position.set(camera.position.x,camera.position.y-8,camera.position.z);}
+  snow.visible=wSnow>.1&&P.pos.y>10;if(snow.visible){snow.material.opacity=.9*Math.min(1,wSnow);const a=snow.geometry.attributes.position.array;const wv=WIND.spd*.32,wx=WIND.x*wv,wz=WIND.z*wv;   // v1.35 (kohta 27): lumi kulkee tuulen mukana; kulma kasvaa tuulen nopeuden mukaan (13 m/s ≈ 62°)
+    for(let i=0;i<a.length;i+=3){a[i+1]-=2.2*dt;a[i]+=(wx+Math.sin(playTime*.8+i)*.4)*dt;a[i+2]+=(wz+Math.cos(playTime*.7+i)*.25)*dt;
+      if(a[i+1]<-4||Math.abs(a[i])>30||Math.abs(a[i+2])>30){a[i]=(Math.random()-.5)*50-wx*3;a[i+1]=20+Math.random()*6;a[i+2]=(Math.random()-.5)*50-wz*3;}}snow.geometry.attributes.position.needsUpdate=true;snow.position.set(camera.position.x,camera.position.y-8,camera.position.z);}
   water.position.y=Math.sin(playTime*.6)*.04;
 }
 // Myrsky kaataa harvoin puun pelaajan lähellä (3–40 m). Puun alle jäävä menettää 80 % terveydestä.
 const _sl=[];
-function stormFellTree(){const list=nodesNear(P.pos.x,P.pos.z,100,_sl).filter(n=>n.def.kind==='tree'&&n.type!=='aarnipuu'&&dist2(n.x,n.z,P.pos.x,P.pos.z)>9*9&&!nearBase(n.x,n.z));
-  if(!list.length)return null;const n=list[Math.random()*list.length|0];killNode(n);fallTree(n,Math.random()*TAU,true);
+// v1.19: myrsky voi kaataa myös pelaajan vieressä olevan puun (ennen > 9 m); 70 % kaatuu tuulen suuntaan (±25°), 30 % satunnaisesti.
+function stormFellTree(){const list=nodesNear(P.pos.x,P.pos.z,100,_sl).filter(n=>n.def.kind==='tree'&&n.type!=='aarnipuu'&&dist2(n.x,n.z,P.pos.x,P.pos.z)>2*2&&!nearBase(n.x,n.z));
+  if(!list.length)return null;const n=list[Math.random()*list.length|0];killNode(n);const wa=Math.atan2(WIND.x,WIND.z);fallTree(n,Math.random()<.7?wa+(Math.random()-.5)*.87:Math.random()*TAU,true);
   if(dist2(n.x,n.z,P.pos.x,P.pos.z)<40*40&&playTime>stormMsgT){stormMsgT=playTime+30;msg('Myrsky kaataa puita!','warn');}return n;}
 // Sadepisarat elävät maailmakoordinaateissa ja pysähtyvät maahan tai rakennuksen katon yläpintaan (ei sadetta katon läpi).
 const RAIN_STOP=new Float32Array(900);let rainInit=false;
@@ -145,7 +148,7 @@ function updateRain(dt){const a=rain.geometry.attributes.position.array,sp=26*(w
 function updateLights(){
   const src=lightSources.filter(s=>s.on()&&(!!s.dun===P.inDun)).sort((a,b)=>dist2(a.x,a.z,P.pos.x,P.pos.z)-dist2(b.x,b.z,P.pos.x,P.pos.z));
   const nL=Math.min(LIGHTS.length,+SET.lights||6);
-  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=i<nL?src[i]:null;if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){if(i===0&&(l.position.x!==s.x||l.position.z!==s.z))l.shadow.needsUpdate=true;l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;}else{l.intensity=0;l.userData.base=0;}}
+  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=i<nL?src[i]:null;if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){if(i===0&&(l.position.x!==s.x||l.position.z!==s.z))l.shadow.needsUpdate=true;l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;l.userData.src=s;}else{l.intensity=0;l.userData.base=0;l.userData.src=null;}}
 }
 // Tilat: jokaisella on vaikutus pelaajan kykyihin (P.fx), kuvaus ja halutessa ajastin (s). effects() kerää aktiiviset, calcFx() laskee kertoimet.
 function effects(){const e=[],wt=invWeight(),b=P.buffs,add=(key,name,kind,desc,t)=>e.push({key,name,kind,desc,t});

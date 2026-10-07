@@ -19,6 +19,7 @@ const ITEMS={
   luuavain:{n:'Luuavain',w:.3,s:1,c:'#e6e0cf',d:'Luusta veistetty avain, jonka Jäätär kantoi. Aukaisee Kalmankammion portin lukon.'},
   aarniavain:{n:'Aarniavain',w:.3,s:1,c:'#7aff9a',d:'Sammaleen peittämä vihreä avain. Aukaisee Aarnihaudan portin lukon.'},
   hiidenkivi:{n:'Hiidenkivi',w:2,s:10,c:'#7fd6cc',d:'Kylmä, sisältä hehkuva kivi. Kalmankehän alttari kaipaa kolmea.'},
+  kruunusirpale:{n:'Kalmankruunun sirpale',w:1,s:5,c:'#9aff7a',d:'Murtuneen kruunun hehkuva palanen Aarnihaudan syvyyksistä. Kalmankehän alttari kaipaa kolmea. (Harvinainen)'},
   sydan:{n:'Vartijan sydän',w:3,s:1,c:'#5fe6d9',d:'Kivinen sydän, joka sykkii vielä hiljaa. Voittosi merkki.'},
   liha:{n:'Raaka liha',w:1,s:20,c:'#c9554e',food:{h:6,raw:true},d:'Paista nuotiolla. Raakana vatsa voi kääntyä.'},
   paisti:{n:'Paistettu liha',w:1,s:20,c:'#8d4b2b',food:{h:30,hp:22},d:'Täyttävää ja lämmintä.'},
@@ -30,24 +31,24 @@ const ITEMS={
   nuolet:{n:'Piikivinuolet',w:.1,s:100,c:'#6d6a60',d:'Ammuksia jouselle.'},
   karhuntalja:{n:'Karhuntalja',w:4,s:5,c:'#5a4030',d:'Paksu karhun talja. Siitä tehdään karhuntaljamatto (Kalusto).'},
   sulka:{n:'Metson sulka',w:.05,s:50,c:'#3a3a40',d:'Metson pyrstösulka. Sulitetut nuolet lentävät suorempaan.'},
-  sulkanuolet:{n:'Sulitetut nuolet',w:.1,s:100,c:'#4a4f58',d:'Metson sulilla sulitetut nuolet: 12 % nopeampi lento, 15 % enemmän vahinkoa ja tuuli kallistaa rataa vain puolet.'},
+  sulkanuolet:{n:'Sulitetut nuolet',w:.1,s:100,c:'#4a4f58',d:'Metson sulilla sulitetut nuolet: 25 % nopeampi lento, kaari putoaa 40 % vähemmän (kantaa kauemmas), 15 % enemmän vahinkoa ja tuuli kallistaa rataa vain puolet.'},
   tulinuolet:{n:'Tulinuolet',w:.12,s:100,c:'#e8893b',d:'Pihkaan kastetut nuolet syttyvät lennossa: osuma sytyttää kohteen tuleen 5–10 sekunniksi (5 terveyttä sekunnissa). Sade ja vesi sammuttavat.'},
-  kirves:{n:'Kivikirves',w:2,s:1,c:'#9a8a70',cat:'weapon',kb:5,dmg:8,dt:'slash',chop:1,range:2.3,st:6,spd:.5,d:'Kaataa puita. Kelpaa hätätilassa aseeksi.'},
-  kuparikirves:{n:'Kuparikirves',w:2.5,s:1,c:'#d98a4e',cat:'weapon',kb:5.5,dmg:13,dt:'slash',chop:2,range:2.4,st:6,spd:.48,d:'Kaataa puut puolet nopeammin.'},
-  nuija:{n:'Puunuija',w:3,s:1,c:'#7b5434',cat:'weapon',kb:14,dmg:12,dt:'blunt',range:2.3,st:9,spd:.62,d:'Paksu, mailamainen murskaava ase. Puree hyvin luuhun ja kiveen ja tönäisee vihollisia kauimmas.'},
-  hakku:{n:'Piikivihakku',w:3,s:1,c:'#58606b',cat:'weapon',kb:4,dmg:6,dt:'pierce',pick:1,range:2.4,st:7,spd:.6,d:'Louhii lohkareita ja kupariesiintymiä.'},
-  kuparihakku:{n:'Kuparihakku',w:3.5,s:1,c:'#d98a4e',cat:'weapon',kb:4.5,dmg:9,dt:'pierce',pick:2,range:2.4,st:7,spd:.56,d:'Louhii myös rautasuonia.'},
-  rautahakku:{n:'Rautahakku',w:4,s:1,c:'#8a96a3',cat:'weapon',kb:5,dmg:12,dt:'pierce',pick:3,range:2.5,st:7,spd:.52,d:'Paras hakku. Louhii kaiken nopeasti.'},
-  rautakirves:{n:'Rautakirves',w:3,s:1,c:'#8a96a3',cat:'weapon',kb:6.5,dmg:18,dt:'slash',chop:3,range:2.5,st:6,spd:.46,d:'Kaataa myös aarnipuut.'},
-  rautamiekka:{n:'Rautamiekka',w:2.5,s:1,c:'#b8c2cc',cat:'weapon',kb:5,dmg:34,dt:'slash',range:2.7,st:8,spd:.42,d:'Pitkä ja terävä rautaterä.'},
-  keihas:{n:'Piikivikeihäs',w:2,s:1,c:'#66707a',cat:'weapon',kb:6,dmg:15,dt:'pierce',range:3.1,st:8,spd:.55,d:'Pitkä ulottuvuus.'},
-  miekka:{n:'Kuparimiekka',w:2,s:1,c:'#e0904f',cat:'weapon',kb:4.5,dmg:24,dt:'slash',range:2.6,st:8,spd:.44,d:'Nopea ja terävä.'},
+  kirves:{n:'Kivikirves',w:2,s:1,c:'#9a8a70',cat:'weapon',kb:2,dmg:8,dt:'slash',chop:1,range:2.3,st:6,spd:.5,d:'Kaataa puita. Kelpaa hätätilassa aseeksi.'},
+  kuparikirves:{n:'Kuparikirves',w:2.5,s:1,c:'#d98a4e',cat:'weapon',kb:2.5,dmg:13,dt:'slash',chop:2,range:2.4,st:6,spd:.48,d:'Kaataa puut puolet nopeammin.'},
+  nuija:{n:'Puunuija',w:3,s:1,c:'#7b5434',cat:'weapon',kb:6,dmg:12,dt:'blunt',range:2.3,st:9,spd:.62,d:'Paksu, mailamainen murskaava ase. Puree hyvin luuhun ja kiveen ja tönäisee vihollisia kauimmas.'},
+  hakku:{n:'Piikivihakku',w:3,s:1,c:'#58606b',cat:'weapon',kb:1.5,dmg:6,dt:'pierce',pick:1,range:2.4,st:7,spd:.6,d:'Louhii lohkareita ja kupariesiintymiä.'},
+  kuparihakku:{n:'Kuparihakku',w:3.5,s:1,c:'#d98a4e',cat:'weapon',kb:1.5,dmg:9,dt:'pierce',pick:2,range:2.4,st:7,spd:.56,d:'Louhii myös rautasuonia.'},
+  rautahakku:{n:'Rautahakku',w:4,s:1,c:'#8a96a3',cat:'weapon',kb:2,dmg:12,dt:'pierce',pick:3,range:2.5,st:7,spd:.52,d:'Paras hakku. Louhii kaiken nopeasti.'},
+  rautakirves:{n:'Rautakirves',w:3,s:1,c:'#8a96a3',cat:'weapon',kb:3,dmg:18,dt:'slash',chop:3,range:2.5,st:6,spd:.46,d:'Kaataa myös aarnipuut.'},
+  rautamiekka:{n:'Rautamiekka',w:2.5,s:1,c:'#b8c2cc',cat:'weapon',kb:2.5,dmg:34,dt:'slash',range:2.7,st:8,spd:.42,d:'Pitkä ja terävä rautaterä.'},
+  keihas:{n:'Piikivikeihäs',w:2,s:1,c:'#66707a',cat:'weapon',kb:3,dmg:15,dt:'pierce',range:3.1,st:8,spd:.55,d:'Pitkä ulottuvuus.'},
+  miekka:{n:'Kuparimiekka',w:2,s:1,c:'#e0904f',cat:'weapon',kb:2,dmg:24,dt:'slash',range:2.6,st:8,spd:.44,d:'Nopea ja terävä.'},
   soihtu:{n:'Soihtu',w:1,s:1,c:'#ff9a3a',cat:'offhand',light:true,d:'Valaisee pimeässä. Pidä toisessa kädessä aseen tai työkalun rinnalla.'},
   jousi:{n:'Metsästysjousi',w:2,s:1,c:'#8a5a32',cat:'bow',dmg:16,dt:'pierce',st:4,d:'Pidä hiiren vasenta pohjassa jännittääksesi. Tarvitsee nuolia.'},
   kuokka:{n:'Kuokka',w:2.5,s:1,c:'#7a6a50',cat:'shovel',d:'Vasen: nostaa maata 0,3 m kerralla (maa saa biomin perusvärin). Oikea: palauttaa maan alkuperäisen värin. Ei rakennusten lähellä.'},
   lapio:{n:'Lapio',w:2.5,s:1,c:'#8a7a60',cat:'shovel',d:'Vasen: kaivaa kuoppaa 0,3 m kerralla (enint. 3 m). Oikea: ruskea polku – tasoittaa maan jalkojesi korkeudelle ja tummentaa sen (kestävyys −6). Ei rakennusten lähellä.'},
-  hiidenjousi:{n:'Hiidenjousi',w:2,s:1,c:'#5fe6d9',cat:'bow',dmg:30,dt:'pierce',st:4,rare:1,d:'Hiidenkivellä vahvistettu jousi. Hyvin voimakas. (Harvinainen)'},
-  hiidenmiekka:{n:'Hiidenmiekka',w:3,s:1,c:'#7fe9dd',cat:'weapon',kb:7,dmg:52,dt:'slash',range:2.8,st:8,spd:.4,rare:1,d:'Vartijan sydämen ja hiidenkivien voimalla taottu terä. (Harvinainen)'},
+  hiidenjousi:{n:'Hiidenjousi',w:2,s:1,c:'#5fe6d9',cat:'bow',dmg:30,dt:'pierce',st:4,rare:1,d:'Hiidenkivellä vahvistettu jousi: vetää nopeammin (1,15 s), nuoli lentää 25 % nopeammin ja kauemmas, tarkempi vajaalla vedolla. (Harvinainen)'},
+  hiidenmiekka:{n:'Hiidenmiekka',w:3,s:1,c:'#7fe9dd',cat:'weapon',kb:3.5,dmg:52,dt:'slash',range:2.8,st:8,spd:.4,rare:1,d:'Vartijan sydämen ja hiidenkivien voimalla taottu terä. (Harvinainen)'},
   vasara:{n:'Vasara',w:2,s:1,c:'#7c6a52',cat:'hammer',d:'Rakennustyökalu. B avaa rakennusvalikon.'},
   kilpi:{n:'Puukilpi',w:4,s:1,c:'#8a5a32',cat:'shield',block:.6,d:'Torju hiiren oikealla. Torjunta kuluttaa kestävyyttä.'},
   kuparikilpi:{n:'Kuparikilpi',w:5,s:1,c:'#d98a4e',cat:'shield',block:.8,d:'Raskas, mutta pitää.'},
@@ -99,7 +100,7 @@ const CRAFT_CATS=[['alku','Alkupeli'],['tyokalut','Työkalut'],['aseet','Aseet']
 function recipeCat(r){const d=ITEMS[r.id];if(d.food)return 'ruoka';if(d.cat==='armor'||d.cat==='shield')return 'varusteet';if(d.cat==='weapon'&&(d.chop||d.pick))return 'tyokalut';if(d.cat==='shovel'||d.cat==='hammer')return 'tyokalut';if(d.cat==='weapon'||d.cat==='bow'||r.id==='nuolet'||r.id==='tulinuolet')return 'aseet';return 'muut';}
 
 /* ---------------- ICONS ---------------- */
-const ICON={};
+const ICON={};const ICONC={};   // v1.34: kuvakkeiden canvasit (maassa olevat 3D-kuvakkeet)
 function icon(id){
   if(ICON[id])return ICON[id];
   const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.scale(64/48,64/48);const d=ITEMS[id];g.lineCap='round';g.lineJoin='round';
@@ -121,6 +122,7 @@ function icon(id){
     case 'kupari':poly([[8,32],[14,20],[40,20],[44,32]],'#e0904f','#8f5326');poly([[14,20],[18,14],[36,14],[40,20]],'#f2b07a');break;
     case 'hiidenkivi':poly([[24,6],[34,20],[30,40],[18,40],[14,20]],'#7fd6cc','#2f8f86');poly([[24,10],[28,20],[24,34],[20,20]],'#c9fff8');break;
     case 'jaaavain':case 'aarniavain':case 'luuavain':{const c1=id==='jaaavain'?'#9fd8ff':id==='luuavain'?'#e6e0cf':'#7aff9a',c2=id==='jaaavain'?'#3d7fa8':id==='luuavain'?'#8a8070':'#2f8f4a';circ(15,15,9,c1,c2);circ(15,15,4,'#13110e');line(21,21,40,40,5,c1);line(33,33,38,28,4,c1);line(38,38,42,34,4,c1);line(21,21,40,40,1.5,c2);break;}
+    case 'kruunusirpale':poly([[10,30],[16,14],[22,26],[28,8],[34,24],[40,16],[38,36],[12,38]],'#9aff7a','#2f6a2a');poly([[16,18],[22,28],[28,12],[30,26]],'#e8ffd8');circ(24,33,3,'#ffe27a');break;
     case 'sydan':circ(18,20,9,'#5fe6d9');circ(30,20,9,'#5fe6d9');poly([[10,24],[38,24],[24,40]],'#5fe6d9');circ(20,18,3,'#d8fffb');break;
     case 'liha':case 'paisti':circ(28,22,12,d.c,'#4a2216');line(18,32,9,41,5,'#e7e1cf');circ(8,42,3.5,'#e7e1cf');if(id==='paisti')line(22,18,34,24,2,'#c47a4a');break;
     case 'marjat':[[18,20],[28,18],[22,29],[32,28],[15,31]].forEach(p=>circ(p[0],p[1],6,'#c82a3c','#6a1220'));line(22,8,24,16,2,'#5a7a2a');break;
@@ -166,5 +168,5 @@ function icon(id){
       g.restore();
     }
   }
-  return ICON[id]=c.toDataURL();
+  ICONC[id]=c;return ICON[id]=c.toDataURL();
 }

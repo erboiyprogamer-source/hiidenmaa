@@ -4,9 +4,9 @@
 
 const fo=k=>flags[k]||(flags[k]={});
 const REALMS={
-  portal1:{n:'Routaluola',gen:'maze',W:31,H:31,wall:0x9fb4c6,floor:0x6a7c8c,tc:0x8fd0ff,fog:0x08121a,glow:0x7fd0ff,mist:0xb8d8f0,boss:'jaajattari',mobs:['routasusi','routasusi','kalmo'],dens:.04,spw:'routasusi',lock:'jaaavain',key:'luuavain',alt:()=>!!fo('poi').poiR1,hint:()=>`Jääavain on kätketty rauniotaloon (${LOC.poiR1.name}).`,reveal:'poiR1'},
+  portal1:{n:'Routaluola',gen:'maze',W:31,H:31,wall:0x9fb4c6,floor:0x6a7c8c,tc:0x8fd0ff,fog:0x08121a,glow:0x7fd0ff,mist:0xb8d8f0,boss:'jaajattari',mobs:['routasusi','routasusi','kalmo'],dens:.04,spw:'routasusi',lock:'jaaavain',key:'luuavain',alt:()=>!!(flags.wl&&flags.wl._key&&fo('fc')[flags.wl._key])||!!fo('poi').poiR1&&!(flags.wl&&flags.wl._key),hint:()=>keyHint(),reveal:null},
   portal2:{n:'Kalmankammio',gen:'rooms',W:43,H:35,wall:0x9a8f7e,floor:0x5c554a,tc:0xff8a36,fog:0x0d0806,glow:0xe6e0cf,mist:0xcfc4b0,boss:'kalmaherra',mobs:['kalmo','kalmo','kalmo','ylimys'],dens:.035,spw:'kalmo',lock:'luuavain',key:'aarniavain',alt:()=>!!fo('rb').portal1,hint:()=>'Luuavain on Jäättärellä Routaluolan perimmäisessä kammiossa.',reveal:'portal1'},
-  portal3:{n:'Aarnihauta',gen:'cave',W:47,H:47,wall:0x6f8a5a,floor:0x4a5a3a,tc:0x9aff7a,fog:0x050c06,glow:0x7aff9a,mist:0x9fd8a0,boss:'aarnihirvio',mobs:['hiisi','hiisi','susi','kivivartija'],dens:.03,spw:'hiisi',lock:'aarniavain',key:null,alt:()=>!!fo('rb').portal2,hint:()=>'Aarniavain on Kalmaherralla Kalmankammiossa.',reveal:'portal2'},
+  portal3:{n:'Aarnihauta',gen:'cave',W:47,H:47,wall:0x6f8a5a,floor:0x4a5a3a,tc:0x9aff7a,fog:0x050c06,glow:0x7aff9a,mist:0x9fd8a0,boss:'aarnihirvio',mobs:['hiisi','hiisi','susi','kivivartija'],dens:.03,spw:'hiisi',lock:'aarniavain',key:'kruunusirpale',alt:()=>!!fo('rb').portal2,hint:()=>'Aarniavain on Kalmaherralla Kalmankammiossa.',reveal:'portal2'},
 };
 const SPW_T=20; // spawnerin tauko (s) sen jälkeen, kun sen kaikki viholliset ovat kuolleet
 const SPW_HP=240; // Kalmanpesän kestävyys: murskataan hakulla (louhintateho per isku), tuhottu pesä tallentuu (flags.sd[ulottuvuus])
@@ -180,6 +180,7 @@ function ensureRealm(id){
       R.spw={x:p.x,z:p.z,y:y0+2.6,y0,cr,t:SPW_T-2,list:[],hp:SPW_HP,g:sg,cols:sc,light:lit(p.x,y0+2.8,p.z,D.glow,2)};}}
   R.entry=cell(L.ent.ix,L.ent.iz);R.boss=cell(L.boss.ix,L.boss.iz);
   R.mobs=L.mobs.map(m=>({...cell(m.ix,m.iz),type:m.type}));
+  if(id==='portal3'&&!flags.sirpC&&L.chests.length){const a=[...L.chests.keys()].sort(()=>Math.random()-.5);flags.sirpC=a.slice(0,Math.min(2,a.length));}   // v1.34: 2 sirpaletta satunnaisiin arkkuihin
   L.chests.forEach((c,i)=>{const p=cell(c.ix,c.iz),key=id+':'+i,sarc=D.gen==='rooms';
     const b=bx(sarc?1.1:1,sarc?.8:.7,sarc?2.2:.65,sarc?MAT.stone:MAT.wood,p.x,y0+(sarc?.4:.35),p.z);b.add(bx(sarc?1.2:1.04,.18,sarc?2.3:.7,sarc?mat(0x6f6a62):mat(0x4a4a4a),0,sarc?.5:.38,0));add(b);
     R.cols.push(addBox(p.x-.5,y0,p.z-(sarc?1.1:.33),p.x+.5,y0+.7,p.z+(sarc?1.1:.33),'static'));
@@ -207,6 +208,20 @@ function buildPortal(id){
   part(1.1,4.6,1.1,-2.4,0,y+2.3,dark);part(1.1,4.6,1.1,2.4,0,y+2.3,dark);part(6.4,.95,1.4,0,0,y+5.1,dark);
   part(8,.3,3,0,0,y+.15,mat(0x5b5853));part(1.5,.5,1.5,-2.4,0,y+4.8,mat(0x6f6c66));part(1.5,.5,1.5,2.4,0,y+4.8,mat(0x6f6c66));
   for(const sgn of [-1,1]){part(.5,1.6,.5,sgn*4.4,sgn*.6,y+.8,mat(0x5b5853));const [bx0,bz0]=P3(sgn*4.4,sgn*.6);const f=bx(.2,.35,.2,MAT.flame,bx0,y+1.8,bz0,false);statics.add(f);}
+  // v1.37 (lista 3, kohta 41): koristelu – hehkuvat riimut pylväissä, lakikivi sarvineen, kivikulhot liekeillä, riimupaadet polun varrella,
+  // portaat ja ulottuvuuden teema (Routa: jääpuikot, Kalma: kallot, Aarni: sammal ja köynnökset).
+  {const gl=new THREE.MeshBasicMaterial({color:D.glow}),deco=(a,h,p,u,v,yy,m)=>{const [x,z]=P3(u,v),[w,d]=dims(a,p);const o=bx(w,h,d,m,x,yy,z,false);statics.add(o);return o;};
+   for(const su of [-2.4,2.4])for(const sv of [-.57,.57])for(let i=0;i<3;i++)deco(.34-(i%2)*.12,.22,.04,su+(i%2?.08:-.05),sv,y+1.4+i*.85,gl);
+   part(1.2,1.1,1.7,0,0,y+5.95,mat(0x77736b));deco(.5,.5,.06,0,.87,y+5.95,gl);deco(.5,.5,.06,0,-.87,y+5.95,gl);
+   for(const su of [-3.1,3.1]){const [hx,hz]=P3(su,0),hn=new THREE.Mesh(new THREE.ConeGeometry(.28,1.3,6),dark);hn.position.set(hx,y+5.9,hz);hn.rotation.z=ax==='x'?-Math.sign(su)*.7:0;hn.rotation.x=ax==='x'?0:Math.sign(su)*.7;statics.add(hn);}
+   for(const sv of [-2.1,2.1]){part(3.6,.22,1,0,sv,y+.11,mat(0x5f5c56));part(2.8,.2,.8,0,sv+Math.sign(sv)*.85,y+.05,mat(0x56534e));}
+   for(const [u,v] of [[-3.8,-2.6],[3.8,2.6],[3.8,-2.6],[-3.8,2.6]]){const h=1.9+Math.abs(u+v)*.12;part(.75,h,.35,u,v,y+h/2-.1,mat(0x6a6c70));deco(.36,.9,.04,u,v+(v>0?-.19:.19),y+h*.55,gl);}
+   for(const sgn of [-1,1]){const [bx1,bz1]=P3(sgn*4.4,sgn*.6),bowl=new THREE.Mesh(new THREE.CylinderGeometry(.42,.26,.32,10),mat(0x4a4744));bowl.position.set(bx1,y+1.75,bz1);statics.add(bowl);
+     for(let i=0;i<4;i++){const f=new THREE.Mesh(new THREE.ConeGeometry(.13,.55+i*.06,6),i%2?MAT.flame2:MAT.flame);const a2=i/4*TAU;f.position.set(bx1+Math.cos(a2)*.16,y+2.15,bz1+Math.sin(a2)*.16);statics.add(f);}}
+   if(id==='portal1')for(let i=0;i<9;i++){const u=-2.9+i*.72,ic=new THREE.Mesh(new THREE.ConeGeometry(.09+Math.random()*.06,.5+Math.random()*.7,5),mat(0xcfe8ff,{roughness:.2}));const [ix,iz]=P3(u,(i%2?.55:-.55));ic.position.set(ix,y+4.35,iz);ic.rotation.x=Math.PI;statics.add(ic);}
+   if(id==='portal2')for(const [u,v] of [[-2.4,.62],[2.4,.62],[-2.4,-.62],[2.4,-.62],[0,.75],[0,-.75]]){const [kx,kz]=P3(u,v),sk=new THREE.Group();sk.add(bx(.3,.26,.28,mat(0xe6e0cf),0,0,0,false),bx(.2,.08,.2,mat(0xd8d0bc),0,-.15,0,false),bx(.07,.07,.02,mat(0x1a1612),-.07,.03,.14,false),bx(.07,.07,.02,mat(0x1a1612),.07,.03,.14,false));sk.position.set(kx,u===0?y+5.4:y+3.9,kz);sk.rotation.y=(ax==='x'?0:Math.PI/2)+(v<0?Math.PI:0);statics.add(sk);}
+   if(id==='portal3'){for(const su of [-2.4,2.4])for(let i=0;i<6;i++){const [mx,mz]=P3(su+(Math.random()-.5)*.6,(Math.random()<.5?-.6:.6)),m2=new THREE.Mesh(new THREE.SphereGeometry(.18+Math.random()*.14,6,5),mat(0x4d6a3a));m2.position.set(mx,y+.4+Math.random()*4,mz);m2.scale.y=.5;statics.add(m2);}
+     for(let i=0;i<7;i++){const u=-2.6+i*.86,[vx,vz]=P3(u,.62),vn=bx(.06,.8+Math.random()*1.4,.06,mat(0x3e5a2a),vx,y+4.2-(.4+Math.random()*.6),vz,false);statics.add(vn);}}}
   const [px,pz]=P3(0,0),gm=new THREE.MeshBasicMaterial({color:D.glow,transparent:true,opacity:.6,side:THREE.DoubleSide,depthWrite:false});
   const plane=new THREE.Mesh(new THREE.PlaneGeometry(3.7,4.3),gm);plane.position.set(px,y+2.4,pz);plane.rotation.y=ax==='x'?0:Math.PI/2;statics.add(plane);
   const [w2,d2]=dims(3.7,.5);addBox(px-w2/2,y,pz-d2/2,px+w2/2,y+4.4,pz+d2/2,'static');
@@ -239,7 +254,7 @@ function enterRealm(id){fadeTo(()=>{
   spawnRealmMobs(id);msg(`${REALMS[id].n}. Portin suoja: et ole haavoittuva 3 sekuntiin.`);});}
 function exitRealm(){fadeTo(()=>{
   const id=P.realm,F=portalFront(id);P.inDun=false;P.realm=null;P.pos.set(F.x,terrainH(F.x,F.z),F.z);P.vy=0;P.vel.set(0,0,0);camYaw=Math.atan2(-F.fx,-F.fz);P.spawnProt=3.2;
-  for(const m of [...mobs])if(m.dun){if(m.def.ai==='rboss'&&!m.dead)fo('rbHp')[m.realm]=m.hp;mobRemove(m);}});}// v0.75: pomon hp säilyy
+  for(const m of [...mobs])if(m.dun){if(m.def.ai==='rboss'&&!m.dead)delete fo('rbHp')[m.realm];mobRemove(m);}});}// v1.33 (kohta 7): poistuminen parantaa pomon täyteen
 function spawnRealmMobs(id){const R=BUILT[id],dk=fo('rm')[id]||(fo('rm')[id]={});
   R.mobs.forEach((s,i)=>{if(dk[i])return;const m=realmize(spawnMob(s.type,s.x,s.z,{y:DUN.y,dun:true}),id);m.rmIdx=i;});
   if(!fo('rb')[id]){const b=spawnMob(REALMS[id].boss,R.boss.x,R.boss.z,{y:DUN.y,dun:true});b.realm=id;b.rmIdx='B';b.state='sleep';const hp=fo('rbHp')[id];if(hp)b.hp=Math.min(b.maxHp,hp);}}
@@ -306,7 +321,7 @@ function realmBossAI(m,dt,dx,dz,dist){
   const slow=d.kit.includes('throw')?BOSS_SLOW:1;   // v0.89: kiviä heittävä ulottuvuuspomo +10 % viive
   if(m.act){const a=m.act;a.t+=dt/slow;
     if(a.k==='swipe'){f.armR.rotation.x=a.t<.8?-2.6*a.t/.8:lerp(-2.6,-.2,Math.min(1,(a.t-.8)/.2));if(a.t>=.8&&!a.hit){a.hit=1;sfx('swing');if(dist<d.range+.8&&(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1)>.1)hurtPlayer(d.dmg,m.pos.x,m.pos.z);}if(a.t>1.4)m.act=null;}
-    else if(a.k==='slam'){f.armR.rotation.x=f.armL.rotation.x=a.t<1.1?-3*a.t/1.1:lerp(-3,-.6,Math.min(1,(a.t-1.1)/.15));if(a.t>=1.1&&!a.hit){a.hit=1;sfx('slam');shake(.6);const fx=m.pos.x+Math.sin(m.yaw)*2.5,fz=m.pos.z+Math.cos(m.yaw)*2.5;shockwave(fx,m.pos.y,fz,7,REALMS[m.realm].glow);burst(fx,m.pos.y+.3,fz,REALMS[m.realm].wall,16,7);if(dist2(fx,fz,P.pos.x,P.pos.z)<49&&P.pos.y-m.pos.y<1.5)hurtPlayer(d.dmg*1.2,fx,fz);}if(a.t>1.9)m.act=null;}
+    else if(a.k==='slam'){slamArms(f,a.t,1.1);if(a.t>=1.1&&!a.hit){a.hit=1;sfx('slam');shake(.6);const fx=m.pos.x+Math.sin(m.yaw)*2.5,fz=m.pos.z+Math.cos(m.yaw)*2.5;shockwave(fx,m.pos.y,fz,7,REALMS[m.realm].glow);burst(fx,m.pos.y+.3,fz,REALMS[m.realm].wall,16,7);if(dist2(fx,fz,P.pos.x,P.pos.z)<49&&P.pos.y-m.pos.y<1.5)hurtPlayer(d.dmg*1.2,fx,fz);}if(a.t>1.9)m.act=null;}
     else if(a.k==='charge'){if(a.t<.6){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*6);f.g.rotation.x=-.2;}else{moveMob(m,Math.sin(m.yaw),Math.cos(m.yaw),14*sp,dt);if(!a.hit&&dist<2.8){a.hit=1;hurtPlayer(d.dmg*1.1,m.pos.x,m.pos.z);P.vel.x+=Math.sin(m.yaw)*10;P.vel.z+=Math.cos(m.yaw)*10;}}if(a.t>1.6){m.act=null;f.g.rotation.x=0;}}
     else if(a.k==='throw'){f.armR.rotation.x=-2.8*Math.min(1,a.t/.8);if(a.t>=.8&&!a.hit){a.hit=1;const hp=new V3();f.hand.getWorldPosition(hp);throwRock(hp,new V3(P.pos.x+P.vel.x*.6,P.pos.y,P.pos.z+P.vel.z*.6),22);}if(a.t>1.3)m.act=null;}
     else if(a.k==='nova'){f.armR.rotation.x=f.armL.rotation.x=-2.9*Math.min(1,a.t/1.2);if(a.t>=1.2&&!a.hit){a.hit=1;sfx('slam');shake(.7);shockwave(m.pos.x,m.pos.y,m.pos.z,11,REALMS[m.realm].glow);burst(m.pos.x,m.pos.y+.4,m.pos.z,REALMS[m.realm].glow,22,8);if(dist<11&&P.pos.y-m.pos.y<.9)hurtPlayer(d.dmg*1.1,m.pos.x,m.pos.z);}if(a.t>1.8)m.act=null;}
@@ -317,7 +332,8 @@ function realmBossAI(m,dt,dx,dz,dist){
     const nm=mobs.filter(o=>o.boss===m&&!o.dead).length;
     const kit=d.kit.filter(k=>k!=='nova'||ph>=3).filter(k=>k!=='summon'||(ph>=2&&nm<3&&m.sumT<=0));
     const near=dist<6;let pool=kit.filter(k=>near?(k==='swipe'||k==='slam'||k==='nova'):(k==='charge'||k==='throw'||k==='summon'||k==='nova'));
-    if(!pool.length)pool=kit;m.act={k:pool[(Math.random()*pool.length)|0],t:0};m.atkCd=(ph===1?1.9:ph===2?1.4:1)*slow;
+    if(playTime-(m.chargeT||-99)<BOSS_CHARGE_GAP)pool=pool.filter(k=>k!=='charge');   // v1.17 ryntäys max 1 / 10 s
+    if(!pool.length)pool=kit.filter(k=>k!=='charge'||playTime-(m.chargeT||-99)>=BOSS_CHARGE_GAP);if(!pool.length)pool=['swipe'];m.act={k:pool[(Math.random()*pool.length)|0],t:0};if(m.act.k==='charge')m.chargeT=playTime;m.atkCd=(ph===1?1.9:ph===2?1.4:1)*slow;
   }
   if(!m.act){moveMob(m,dx,dz,dist>d.range*.9?d.run*sp:0,dt);if(dist<=d.range+1)m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*4);animMob(m,dt);}
   else{f.g.position.copy(m.pos);f.g.rotation.y=m.yaw;}
@@ -368,7 +384,10 @@ for(const k in LOC){const L=LOC[k];if(L.kind==='rock')VENTS.push({x:L.x+1.5,y:te
 VENTS.push({x:LOC.barrow.x+9.6,y:terrainH(LOC.barrow.x+10.5,LOC.barrow.z)+.1,z:LOC.barrow.z-1,col:0xcfd4d0,rate:2.5,acc:0},{x:LOC.barrow.x+9.6,y:terrainH(LOC.barrow.x+10.5,LOC.barrow.z)+.1,z:LOC.barrow.z+1,col:0xcfd4d0,rate:2.5,acc:0});
 [[5,6],[12,10],[16,2],[8,10],[17,5]].forEach(([ix,iz])=>{const p=dunCell(ix,iz);VENTS.push({x:p.x,y:DUN.y+.1,z:p.z,col:0xb8b2a6,rate:3,dun:true,acc:0});});
 function updateMist(dt){
-  const dun=P.inDun,D=dun&&P.realm?REALMS[P.realm]:null,q=(QUAL.lvl>=2?.4:1)*(SET.mist??1);
+  /* v1.10 (lista 2, kohta 3): SET.mist 2 = Korkea (entinen ulkonäkö), 1 = Normaali (oletus), .5 = Matala, 0 = Pois.
+     Normaalilla höyryä ja sisäkiehkuroita on puolet vähemmän, mutta haituvat ovat 1,2× isompia ja 1,39× tiheämpiä
+     (määrä × koko² × peitto ≈ sama), joten ne näyttävät yhtä paksuilta. Maanpinnan usva pysyy täysimääräisenä Normaalilla. */
+  const dun=P.inDun,D=dun&&P.realm?REALMS[P.realm]:null,ML=SET.mist??1,hi=ML>=2,q0=AUTO_K.fx[AUTO.fx],q=q0*Math.min(1,ML),fxN=q0*(hi?1:ML>=1?.5:ML*.5),szK=hi?1:1.2,opK=hi?1:1.39;
   let ax=P.pos.x,az=P.pos.z,on=dun,col=D?D.mist:0xa8a49a;
   if(!dun){let bd=60*60;for(const k in LOC){const L=LOC[k];if(L.kind!=='portal'&&L.kind!=='rock'&&L.kind!=='ruin'&&k!=='barrow')continue;const d2=dist2(L.x,L.z,P.pos.x,P.pos.z);if(d2<bd){bd=d2;ax=L.x;az=L.z;on=true;}}col=0xc9d6da;}
   const n=MIST.length*q;
@@ -377,16 +396,16 @@ function updateMist(dt){
     if(s.life<=0){if(!on)return;const a=Math.random()*TAU,rr=Math.random()*(dun?15:10);s.x=ax+Math.cos(a)*rr;s.z=az+Math.sin(a)*rr;s.y=(dun?DUN.y:terrainH(s.x,s.z))+.3+Math.random()*1.1;const sp=dun?.9:.5;s.vx=(Math.random()-.5)*sp;s.vz=(Math.random()-.5)*sp;s.max=s.life=6+Math.random()*6;s.size=dun?4+Math.random()*3.5:5+Math.random()*4;s.op=dun?.17:.11;s.ph=Math.random()*6;}
     s.life-=dt;const k=s.life/s.max,f=Math.sin(Math.PI*(1-k));s.x+=(s.vx+Math.sin(playTime*.7+s.ph)*.25)*dt;s.z+=(s.vz+Math.cos(playTime*.6+s.ph)*.25)*dt;s.y+=Math.sin(playTime*.9+s.ph)*.05*dt;
     s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar(s.size*(1+.25*(1-k)));s.m.material.opacity=s.op*f;s.m.material.color.setHex(col);s.m.visible=true;});
-  for(const v of VENTS){if(!!v.dun!==dun||dist2(v.x,v.z,P.pos.x,P.pos.z)>30*30)continue;v.acc+=dt*v.rate*q;
-    while(v.acc>=1){v.acc--;const s=STEAM.find(o=>o.life<=0);if(!s)break;s.x=v.x+(Math.random()-.5)*.5;s.y=v.y;s.z=v.z+(Math.random()-.5)*.5;s.vx=(Math.random()-.5)*.3;s.vz=(Math.random()-.5)*.3;s.vy=.9+Math.random()*.7;s.max=s.life=2.4+Math.random()*1.2;s.col=v.col;}}
+  for(const v of VENTS){if(!!v.dun!==dun||dist2(v.x,v.z,P.pos.x,P.pos.z)>30*30)continue;v.acc+=dt*v.rate*fxN;
+    while(v.acc>=1){v.acc--;const s=STEAM.find(o=>o.life<=0);if(!s)break;s.x=v.x+(Math.random()-.5)*.5;s.y=v.y;s.z=v.z+(Math.random()-.5)*.5;s.vx=(Math.random()-.5)*.3;s.vz=(Math.random()-.5)*.3;s.vy=.9+Math.random()*.7;s.max=s.life=2.4+Math.random()*1.2;s.col=v.col;s.szK=szK;s.opK=opK;}}
   // Usvakiehkurat: pienet, nopeammin kiertelevät hattarat sisätiloissa (lattiasta noin 3,5 m korkeuteen)
-  WISP.forEach((s,i)=>{if(!dun||i>=WISP.length*q){if(s.life>0)s.life-=dt*3;s.m.visible=s.life>0&&dun;return;}
+  WISP.forEach((s,i)=>{if(!dun||i>=WISP.length*fxN){if(s.life>0)s.life-=dt*3;s.m.visible=s.life>0&&dun;return;}
     if(s.life<=0){const a=Math.random()*TAU,rr=2+Math.random()*12;s.x=P.pos.x+Math.cos(a)*rr;s.z=P.pos.z+Math.sin(a)*rr;s.y=DUN.y+.2+Math.random()*3.3;s.ang=Math.random()*TAU;s.spd=.5+Math.random()*.9;s.turn=(Math.random()-.5)*1.6;s.max=s.life=4+Math.random()*4;s.size=1+Math.random()*1.4;}
     s.life-=dt;s.ang+=s.turn*dt;const k=s.life/s.max;s.x+=Math.cos(s.ang)*s.spd*dt;s.z+=Math.sin(s.ang)*s.spd*dt;s.y+=Math.sin(playTime*1.3+s.ang)*.12*dt;
-    s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar(s.size*(1+.4*(1-k)));s.m.material.opacity=.2*Math.sin(Math.PI*(1-k));s.m.material.color.setHex(col);s.m.visible=true;});
+    s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar(s.size*szK*(1+.4*(1-k)));s.m.material.opacity=Math.min(.6,.2*opK)*Math.sin(Math.PI*(1-k));s.m.material.color.setHex(col);s.m.visible=true;});
   for(const s of STEAM){if(s.life<=0){s.m.visible=false;continue;}
     s.life-=dt;const k=s.life/s.max;s.x+=s.vx*dt;s.y+=s.vy*dt;s.z+=s.vz*dt;
-    s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar(.7+(1-k)*2.8);s.m.material.opacity=.3*Math.sin(Math.PI*(1-k));s.m.material.color.setHex(s.col);s.m.visible=true;}
+    s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar((.7+(1-k)*2.8)*(s.szK||1));s.m.material.opacity=.3*(s.opK||1)*Math.sin(Math.PI*(1-k));s.m.material.color.setHex(s.col);s.m.visible=true;}
 }
 
 /* ---------------- TIPPUVAT PISARAT ---------------- */

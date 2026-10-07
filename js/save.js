@@ -4,15 +4,28 @@
 
 /* ---------------- SAVE / LOAD ---------------- */
 const SKEY='hiidenmaa_save_v1';
-function serialize(){return{v:9,mapId:MAP_ID,bossPending:!!(boss&&!boss.dead&&!flags.boss),playTime,dayT,dayN,weather,flags,P:{x:P.pos.x,y:P.pos.y,z:P.pos.z,hp:P.hp,stam:P.stam,hunger:P.hunger,buffs:P.buffs,spawn:P.spawn,deaths:P.deaths,kills:P.kills,inDun:P.inDun,realm:P.realm||null,packLv:P.packLv},cam:[camYaw,camPitch],inv,
+/* v1.36 (lista 3, kohdat 20–21): 5 tallennuspaikkaa. Paikka 0 = SKEY (vanha tallennus jatkuu siinä nimellä "Maailma 1"), paikat 1–4 =
+   SKEY+'_1'…'_4'. Tiedot listaa varten avaimessa hiidenmaa_slots = [{name, at, day, lvl, mapId, min} | null] ×5. Nykyinen paikka curSlot
+   säilyy kartanvaihdon uudelleenlatauksen yli (sessionStorage hiidenmaa_cur). */
+const SLOTS=5,slotKey=i=>i?SKEY+'_'+i:SKEY;
+let curSlot=-1;try{const c=sessionStorage.getItem('hiidenmaa_cur');if(c!==null)curSlot=+c;}catch(e){}
+function slotMeta(){let m=null;try{m=JSON.parse(localStorage.getItem('hiidenmaa_slots')||'null');}catch(e){}if(!Array.isArray(m))m=[];while(m.length<SLOTS)m.push(null);
+  for(let i=0;i<SLOTS;i++)if(!m[i]){let d=null;try{d=JSON.parse(localStorage.getItem(slotKey(i))||'null');}catch(e){}if(d)m[i]={name:'Maailma '+(i+1),at:Date.now(),day:d.dayN||1,lvl:0,mapId:d.mapId||0,min:Math.round((d.playTime||0)/60)};}
+  return m;}
+function setSlotMeta(m){try{localStorage.setItem('hiidenmaa_slots',JSON.stringify(m));}catch(e){}}
+function setCurSlot(i){curSlot=i;try{sessionStorage.setItem('hiidenmaa_cur',String(i));}catch(e){}}
+function freeSlot(){const m=slotMeta();return m.findIndex(x=>!x);}
+function slotData(i){try{return JSON.parse(localStorage.getItem(slotKey(i))||'null');}catch(e){return null;}}
+function deleteSlot(i){try{localStorage.removeItem(slotKey(i));}catch(e){}const m=slotMeta();m[i]=null;setSlotMeta(m);if(curSlot===i&&!started)setCurSlot(-1);}
+function serialize(){return{v:10,vdrops:drops.filter(d=>isValuable(d.id)).map(d=>({id:d.id,n:d.n,q:d.q})),mapId:MAP_ID,bossPending:!!(boss&&!boss.dead&&!flags.boss),playTime,dayT,dayN,weather,flags,P:{x:P.pos.x,y:P.pos.y,z:P.pos.z,hp:P.hp,stam:P.stam,hunger:P.hunger,buffs:P.buffs,spawn:P.spawn,deaths:P.deaths,kills:P.kills,inDun:P.inDun,realm:P.realm||null,packLv:P.packLv},cam:[camYaw,camPitch],inv,
   pieces:pieces.map(p=>({t:p.t,x:p.x,y:p.y,z:p.z,r:p.rot,f:p.f||0,hp:p.hp,d:PIECES[p.t].store?{items:p.data.items,lv:p.data.lv}:isFirePiece(p.t)?{fuel:p.data.fuel,burn:p.data.burn,cook:p.data.cook,full:p.data.full}:p.t==='soihtuteline'?{burn:p.data.burn,full:p.data.full}:p.t==='sulatin'?{ore:p.data.ore,iore:p.data.iore,wood:p.data.wood,done:p.data.done,idone:p.data.idone}:bt(p.t)==='ovi'?{open:p.data.open,dir:p.data.dir}:{}})),
   moved:nodes.filter(n=>n.x!==n.ox||n.z!==n.oz||n.s!==n.s0).map(n=>[n.id,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
   terra:terraList(),mud:mudList(),
   planted:nodes.filter(n=>n.planted).map(n=>[n.type,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
-  nodes:nodes.filter(n=>!n.alive).map(n=>[n.id,Math.round(n.respawnAt-playTime)]),graves:graves.map(g=>({x:g.x,y:g.y,z:g.z,items:g.items})),dk:dunKilled,
+  nodes:nodes.filter(n=>!n.alive).map(n=>[n.id,Math.round(n.respawnAt-playTime)]),graves:graves.map(g=>({x:g.x,y:g.y,z:g.z,items:g.items,dim:g.dim})),dk:dunKilled,
   explored:btoa(String.fromCharCode.apply(null,packBits(explored)))};}
 function packBits(a){const o=new Uint8Array(Math.ceil(a.length/8));for(let i=0;i<a.length;i++)if(a[i])o[i>>3]|=1<<(i&7);return Array.from(o);}
-function saveGame(silent){try{localStorage.setItem(SKEY,JSON.stringify(serialize()));if(!silent)msg('Peli tallennettu.','loot');return true;}catch(e){if(!silent)msg('Tallennus selaimeen ei onnistunut. Käytä tallennuskoodia valikossa.','warn');return false;}}
+function saveGame(silent){try{if(curSlot<0){const f=freeSlot();setCurSlot(f<0?0:f);}localStorage.setItem(slotKey(curSlot),JSON.stringify(serialize()));{const m=slotMeta(),o=m[curSlot]||{name:'Maailma '+(curSlot+1)};Object.assign(o,{at:Date.now(),day:dayN,lvl:typeof lvlInfo==='function'?lvlInfo().L:0,mapId:MAP_ID,min:Math.round(playTime/60)});m[curSlot]=o;setSlotMeta(m);}if(!silent)msg('Peli tallennettu.','loot');return true;}catch(e){if(!silent)msg('Tallennus selaimeen ei onnistunut. Käytä tallennuskoodia valikossa.','warn');return false;}}
 function loadData(s){
   resetWorld();
   playTime=s.playTime||0;dayT=s.dayT??.3;dayN=s.dayN||1;weather=s.weather||weather;weather.until=Math.min(weather.until,playTime+300);
@@ -40,20 +53,21 @@ function loadData(s){
   Object.assign(dunKilled,s.dk||{});
   if(s.explored&&!oldWorld){const b=atob(s.explored);for(let i=0;i<explored.length;i++)explored[i]=(b.charCodeAt(i>>3)>>(i&7))&1;}
   for(let i=0;i<3;i++)if(flags.sarc[i]){sarcs[i].lid.position.x=.7;sarcs[i].lid.rotation.z=.3;}
-  if(s.bossPending)invAdd('hiidenkivi',3);
+  if(s.bossPending)invAdd(s.v>=10?'kruunusirpale':'hiidenkivi',3);
+  if(!flags.wl)planLoot(true);for(const d of s.vdrops||[])if(ITEMS[d.id])relocateValuable(d.id,d.n,d.q);   // v1.34: arvoesineiden suunnitelma ja maassa olleet arvoesineet arkkuun
   resetFog();invDirty=true;updateGear();goalShown=-1;syncAltar();ensureCamps();
 }
-function resetWorld(){
-  for(const p of [...pieces])removePiece(p);for(const m of [...mobs])mobRemove(m);for(const d of drops)scene.remove(d.mesh);drops=[];for(const g of [...graves])removeGrave(g);graves=[];
+function resetWorld(){endPlayerDeath();for(const s of [...splats]){scene.remove(s.m);}splats.length=0;
+  for(const p of [...pieces])removePiece(p);for(const m of [...mobs])mobRemove(m);for(const d of [...drops])removeDrop(d);drops=[];for(const g of [...graves])removeGrave(g);graves=[];
   clearLogs();unplantAll();resetTerra();for(const n of nodes)restoreNode(n);for(const k in dunKilled)delete dunKilled[k];resetRealms();for(const m of [...mobs])mobRemove(m);explored.fill(0);
   for(const p of projs)scene.remove(p.m);projs.length=0;
   circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));sarcs.forEach(s=>{s.lid.position.x=0;s.lid.rotation.z=0;});
   $('#bossbar').hidden=true;
 }
 function newGame(){
-  resetWorld();playTime=0;dayT=.28;dayN=1;weather={cur:'selkea',until:240};flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{},xp:0,cnt:{},ach:{},first:{},gv:2,bio:{meadow:1}};zoneQuiet=true;
-  P.packLv=0;recalcBon();inv=new Array(32).fill(null);P.pos.set(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z);P.hp=60;P.stam=100;P.hunger=80;P.buffs={};P.spawn=null;P.deaths=0;P.kills=0;P.inDun=false;P.realm=null;P.spawnProt=0;P.dead=false;P.heal=0;P.wetT=0;
-  camYaw=Math.PI*1.1;camPitch=.3;P.yaw=camYaw+Math.PI;fig.g.rotation.x=0;resetFog();invDirty=true;updateGear();goalShown=-1;
+  resetWorld();playTime=0;dayT=.28;dayN=1;weather={cur:'selkea',until:240};flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{},xp:0,cnt:{},ach:{},first:{},gv:3,bio:{meadow:1}};zoneQuiet=true;
+  P.packLv=0;recalcBon();inv=new Array(32).fill(null);P.pos.set(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z);P.hp=maxHp();P.stam=100;P.hunger=80;P.buffs={};P.spawn=null;P.deaths=0;P.kills=0;P.inDun=false;P.realm=null;P.spawnProt=0;P.dead=false;P.heal=0;P.wetT=0;
+  camYaw=Math.PI*1.1;camPitch=.3;P.yaw=camYaw+Math.PI;fig.g.rotation.x=0;resetFog();invDirty=true;updateGear();goalShown=-1;planLoot(false);
   // start with a few mobs around
   ensureCamps();   // v0.99 hylätyt leirit
   for(let i=0;i<3;i++){const a=i*2.1,d=30+i*6;spawnMob('peura',LOC.spawn.x+Math.cos(a)*d,LOC.spawn.z+Math.sin(a)*d);}

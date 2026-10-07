@@ -149,6 +149,59 @@ function onPrimaryUp(){if(P.drawing){P.drawing=false;if(P.bowDraw>.15&&ammoId())
 **Korjaus:** `CylinderGeometry(.095,.034,…)` (paksu = top = kärki). Kartioiville osille: top-säde menee +z:aan, kun rotation.x = +π/2.
 Tarkistuksessa rivi "v1.06 nuija".
 
+### 22. Peli ei käynnisty "Uusi peli" -napin jälkeen, ruutu musta – v1.24
+**Oire:** "Uusi peli" arpoo toisen kartan → sivu latautuu uudelleen → musta ruutu, valikko ei toimi, peliin ei pääse.
+**Syy:** karttavaihdon jälkeinen automaattinen aloitus (`sessionStorage 'hiidenmaa_pending'`) kutsuu `startPlay()`:tä jo `main.js`:n alussa.
+v1.15:ssä `startPlay` alkoi kutsua `menuClear()`:ia, joka käyttää `let menuDeco` -muuttujaa – se esiteltiin vasta myöhemmin tiedostossa
+(TDZ) → `ReferenceError: Cannot access 'menuDeco' before initialization` → koko `main.js` kaatui, pääsilmukka ei käynnistynyt.
+Testit eivät kulkeneet uudelleenlatauspolun kautta (ne kutsuivat `newGame()` suoraan).
+**Korjaus:** valikkokameran tila esitellään `main.js`:n alussa. Uusi tarkistusrivi avaa sivun `hiidenmaa_pending='new'` -tilassa ja varmistaa,
+että peli käynnistyy. **Sääntö:** kaikki ylimmän tason `let/const`, joita `startPlay`/`newGame`/`loadData` käyttävät, ennen tiedoston
+alun automaattista aloitusta. Ks. myös 19.
+
+### 23. "Painan pelaa, mitään ei tapahdu, uudet kuvat eivät näy" – v1.26
+**Tilanne:** käyttäjän ruudulla valikossa luki "versio 1.23" (rikkinäinen versio, ks. 22), vaikka haarassa oli jo 1.25.
+**Syy (todennäköisin):** raw.githackin haaralinkki ja selaimen välimuisti voivat näyttää vanhaa `index.html`:ää minuutteja push-jälkeen.
+Paikallinen toisto vanhan version tallennuksella ja asetuksilla (`real.mjs`-tyyppinen testi: v1.07 → pelaa, tallenna, muuta asetuksia →
+avaa uusi versio samalla localStoragella): "Jatka matkaa" ja "Uusi peli" toimivat, kuvat näkyvät, ei virheitä. Pilvisessiosta ei pääse
+raw.githackiin eikä GitHub Pagesiin, joten käyttäjän näkymää ei voi tarkistaa suoraan.
+**Korjaus / suoja:** `index.html`:n käynnistysvahti (`window.HV`, `#bootErr`): kaikki käsittelemättömät virheet ja pelisilmukan virheet
+näkyvät ruudulla versionumeron kanssa; jos `window.__game` ei synny 20 s:ssa → "Peli ei käynnistynyt. Päivitä sivu (Ctrl+F5)".
+**Ohje käyttäjälle:** testaa commit-linkillä (ei välimuistiviivettä), tarkista valikon versionumero, Ctrl+F5. `window.HV` = versio, päivitä
+samalla kuin `?v=`.
+
+### 24. Selain ei anna WebGL:ää → kaikki kaatuu ("Script error", "Cannot access '_e' before initialization") – v1.28
+**Oire (käyttäjän käynnistysvahdin laatikko, v1.27):** "Script error." + "Cannot access '_e' before initialization (render.js:74)" +
+"scene is not defined (landmarks.js:8)" + "Peli ei käynnistynyt". Valikko musta, napit eivät tee mitään. Käyttäjä vahvisti: selain ei saa
+WebGL:ää päälle.
+**Syy:** `render.js`:n ensimmäinen rivi `new THREE.WebGLRenderer()` heittää virheen (three.js-tiedosto on toiselta palvelimelta → "Script error.").
+render.js keskeytyy ennen `const _e/scene…` -rivejä, ja kaikki myöhemmät skriptit kaatuvat niihin (TDZ). Koodi oli sama kuin toimivassa
+v1.07:ssä → syy selaimessa: Chrome estää WebGL:n sivulta näytönohjaimen kaatumisen/jumin jälkeen (esim. v1.23:n kaatumiset ja toistuvat
+lataukset), laitteistokiihdytys pois tai liikaa 3D-välilehtiä. Esto poistuu, kun koko selain käynnistetään uudelleen.
+**Korjaus:** piirturi luodaan kolmella yrityksellä (antialias + high-performance → ilman antialiasia → low-power/mediump); jos mikään ei onnistu,
+`webglFail()` näyttää koko ruudun suomenkielisen ohjeen (sulje koko selain, grafiikkakiihdytys, chrome://gpu, "Yritä uudelleen"). Myös
+`webglcontextlost` kesken pelin näyttää ohjeen. Testattu Chromiumilla `--disable-webgl`: ohje näkyy; normaali käynnistys ennallaan.
+
+## 25. Vanhat tarkistusrivit rikkoutuivat, kun pomojen/mobien arvot ja asetussivut muuttuivat (v1.33, v1.35)
+**Oire:** `tools/tarkistus.mjs` näytti XX rivillä "karhu" (hp 2×60), "v1.31 … kivivartija 220", "asetussivut" ja "v1.10 usva".
+**Syy:** rivit vertasivat kiinteisiin lukuihin (hp, `SET_PAGES.shadow`, `SET_DEF.mist===1`), joita lista 3 muutti tarkoituksella.
+**Korjaus:** rivit laskevat arvon kertoimesta (`Math.round(220*MOB_HARD)`) ja tarkistavat uuden rakenteen (`SET_PAGES.gfx.includes('shadow')`,
+`SET_DEF.mist===.6`). Kun muutat tasapainoarvoa tarkoituksella, päivitä vanha rivi kertoimen kautta äläkä poista sitä.
+
+## 26. Kirves meni pään läpi nostossa (vanha avainasento + vasemman käden ote, ennen v1.37)
+**Oire:** kirves/hakku nousi pään yli ja varsi kulki pään läpi (mitattu: varren piste 3–4 cm pään keskeltä), kädet melkein päällekkäin.
+**Syy:** nosto tehtiin olan kulmilla (rx −2,1, kyynärpää −1,45) → kyynärvarsi ja varsi osoittivat pään yli; lisäksi vasemman käden ote veti
+oikean käden kohti vasenta olkaa (keskilinjaan). Pelkkä olan kääntäminen jälkikäteen (headClear) ei auttanut, koska ote veti takaisin.
+**Korjaus:** `chopIK` (player.js): käsi ja varren suunta avainasennoista rig-koordinaateissa (`CHOP_K`), IK + varren kierto käteen; oikean
+käden vetäminen otetta kohti ohitetaan kun `P.chopW > .3`; kädet ≥ 0,17 m. Mitattu: varsi ≥ 0,22 m pään keskeltä koko iskun ajan.
+Tarkistus: `sw137.mjs` (scratchpad) mittaa minHead/pen/hands. **Älä palauta nostoa olan kulmilla.**
+
+## 27. Virtuaalinen osoitin: paneelien hiiritapahtumat ovat keinotekoisia (v1.36)
+Kun hiiri on lukittu ja paneeli auki, `input.js` pysäyttää oikeat hiiritapahtumat ikkunan kaappausvaiheessa ja lähettää osoittimen (#vcur)
+kohtaan keinotekoiset (`isTrusted=false`). Uudet paneelien hiirikäsittelijät toimivat sellaisenaan (mousedown/up/click/dblclick/contextmenu/
+mousemove/wheel), mutta **CSS :hover ei toimi** – lisää vastaava `.vh`-luokan tyyli. Natiivi vieritys ja `<select>`-avaus eivät toimi
+keinotekoisilla tapahtumilla (rulla vierittää lähintä vieritettävää käsin); asetusvalikko on taukotilassa (lukitus vapaana), joten se toimii.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

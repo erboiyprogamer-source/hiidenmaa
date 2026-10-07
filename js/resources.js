@@ -269,7 +269,7 @@ GRASS_MAT.onBeforeCompile=sh=>{sh.uniforms.uTime=SWAY.uTime;sh.uniforms.uWind=SW
   sh.vertexShader='uniform float uTime;uniform float uWind;uniform vec3 uWDir;uniform float uLean;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
   float gPh=instanceMatrix[3].x*.31+instanceMatrix[3].z*.27;float gh=max(0.,position.y);float gk=gh*gh;
   mat3 gM=mat3(instanceMatrix);vec3 gL=vec3(dot(gM[0],uWDir),dot(gM[1],uWDir),dot(gM[2],uWDir));gL/=max(length(gL),1e-4);
-  float gs=(.1+uWind*.25)*sin(uTime*2.3+gPh)+uLean*(.35+.12*sin(uTime*1.7+gPh*1.3));
+  float gs=(.1+uWind*.25)*sin(uTime*2.3+gPh)+min(uLean,1.2)*(.35+.12*sin(uTime*1.7+gPh*1.3));
   transformed.x+=gL.x*gs*gk;transformed.z+=gL.z*gs*gk;transformed.y-=abs(gs)*gk*.25;
   transformed.x+=sin(uTime*3.1+gPh*2.)*.025*gh*(.3+uWind);`);};
 // Tupsu: 7 kortta eri suuntiin ja pituuksiin (kolmio, tyvi tumma → kärki vaalea), kaarevuus pieni kallistus ulospäin.
@@ -285,9 +285,9 @@ function grassHash(i,j){let h=Math.imul(i,374761393)+Math.imul(j,668265263)|0;h=
 // v1.04 (käyttäjän palaute: "kevyempi, ohuempi, vähemmän, kasoja, läpinäkyvä"): ruoho on harvaan sirottuneita pieniä **kasoja** – ruudukon
 // solu (normaali 2,6 m, täysi 1,8 m) saa todennäköisyydellä tiheys × laikku × 0,6 yhden kasan, jossa 3–6 tupsua 0,5 m säteellä.
 function siteBlockedG(x,z){for(const k in LOC){const L=LOC[k],r=(SITE_CLEAR[L.kind]||(k==='barrow'?13:k==='circle'?15:k.startsWith('rune')?3.5:k.startsWith('ruin')?10:0))*.6;if(r&&dist2(x,z,L.x,L.z)<r*r)return true;}return false;}
-function rebuildGrass(){const lv=+(SET.grass??1);grassDirty=false;
+function rebuildGrass(){let lv=+(SET.grass??1);grassDirty=false;if(AUTO.fx>=2)lv=0;else if(AUTO.fx>=1&&lv>=2)lv=1;   /* v1.12 automaattisäätö */
   if(grassIM){scene.remove(grassIM);grassIM.dispose();grassIM=null;}if(!lv||P.inDun)return;
-  const R=lv>=2?40:30,C=lv>=2?1.8:2.6,cx=P.pos.x,cz=P.pos.z,N=Math.ceil(Math.PI*R*R/(C*C))*6+10;
+  const R=lv>=3?54:lv>=2?40:30,C=lv>=3?1.45:lv>=2?1.8:2.6,cx=P.pos.x,cz=P.pos.z,N=Math.ceil(Math.PI*R*R/(C*C))*6+10;
   const im=new THREE.InstancedMesh(GRASS_GEO,GRASS_MAT,N);im.castShadow=false;im.receiveShadow=true;im.frustumCulled=false;
   let n=0;const i0=Math.floor((cx-R)/C),i1=Math.ceil((cx+R)/C),j0=Math.floor((cz-R)/C),j1=Math.ceil((cz+R)/C);
   for(let j=j0;j<=j1&&n<N-6;j++)for(let i=i0;i<=i1&&n<N-6;i++){const ox=(i+grassHash(i,j))*C,oz=(j+grassHash(j+7919,i-104729))*C;if((ox-cx)**2+(oz-cz)**2>R*R)continue;

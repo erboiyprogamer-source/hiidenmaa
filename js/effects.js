@@ -1,0 +1,111 @@
+/* Hiidenmaa – effects.js
+   Veri ja haavat, kuolema-animaatiot (lössähtäminen, palokuolema → tuhkakasa), savupilvet ja pelaajan palaminen (v1.37, lista 3) */
+'use strict';
+
+/* ---------------- VERI (kohta 24) ---------------- */
+// Jokainen osuma: pisaroita (määrä vahingon ja koon mukaan) ja läntti maahan, joka häipyy 10 s:ssa. Asetus SET.blood: 1 / .5 / 0.
+// Kivihahmot pölisevät kivisiruja, kalmot luupölyä, Jäätär jääsiruja, Suonäkki usvaa, hiidet ja Aarnihirviö vihreää mahlaa.
+const BLEED={kivivartija:'stone',vartija:'stone',kalmo:'bone',ylimys:'bone',kalmaherra:'bone',jaajattari:'ice',suonakki:'mist',hiisi:'sap',aarnihirvio:'sap'};
+const BLEED_C={blood:[0x5a0808,0x7e0e0e],stone:[0x6a6660,0x8d887f],bone:[0xd8d0bc,0xb8ae98],ice:[0xbfe6ff,0x8fd0ff],mist:[0x9aa8a0,0xc8d0c8],sap:[0x34501a,0x56722a]};
+const bleedKind=t=>BLEED[t]||'blood';
+const splats=[],_spGeo=new THREE.CircleGeometry(1,16);
+function splat(x,y,z,r,color,life,op=.85){if(!(r>0))return null;
+  const mt=new THREE.MeshBasicMaterial({color,transparent:true,opacity:0,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  const m=new THREE.Mesh(_spGeo,mt);m.rotation.x=-Math.PI/2;m.rotation.z=Math.random()*TAU;m.position.set(x,y+.025,z);m.scale.set(r*(.8+Math.random()*.5),r*(.6+Math.random()*.5),1);m.renderOrder=1;scene.add(m);
+  const s={m,t:0,life,op,r0:m.scale.x,r1:m.scale.y};splats.push(s);while(splats.length>60){const o=splats.shift();scene.remove(o.m);o.m.material.dispose();}return s;}
+function updateSplats(dt){for(let i=splats.length-1;i>=0;i--){const s=splats[i];s.t+=dt;const g=Math.min(1,s.t/.35);s.m.scale.set(s.r0*(.4+.6*g),s.r1*(.4+.6*g),1);
+  s.m.material.opacity=s.op*Math.min(1,s.t*6)*Math.min(1,(s.life-s.t)/2.5);if(s.t>=s.life){scene.remove(s.m);s.m.material.dispose();splats.splice(i,1);}}}
+const groundY=(x,z,y,dun)=>dun?DUN.y:Math.max(-1,groundAt(x,z,.2,(y??terrainH(x,z))+.6));
+// size ≈ olennon koko (säde), dmg = vahinko
+function bleed(x,y,z,kind,size,dmg,dun){const k=+(SET.blood??1);const C=BLEED_C[kind]||BLEED_C.blood;
+  if(kind!=='blood'&&kind!=='sap'){burst(x,y,z,C[0],Math.round(4+size*4),3);return;}   // ei verta: sirut/pöly
+  if(!k)return;const n=Math.round(clamp((3+dmg*.18)*(.6+size)*k,2,26));burst(x,y,z,C[Math.random()<.5?0:1],n,2.2+size*1.5);
+  const gy=groundY(x,z,y,dun);for(let i=0,m=1+(size>.9?2:size>.6?1:0);i<m;i++)splat(x+(Math.random()-.5)*size*1.4,gy,z+(Math.random()-.5)*size*1.4,(.18+Math.min(.5,dmg*.012))*(.7+size*.6)*Math.sqrt(k),C[0],10);}
+// Haava: tummanpunainen läikkä mobin pintaan (enint. 6), häviää ruumiin mukana.
+const _wGeo=new THREE.BoxGeometry(1,1,1),_wMat=new THREE.MeshStandardMaterial({color:0x5a0808,roughness:.5,metalness:.1}),_wSap=new THREE.MeshStandardMaterial({color:0x34501a,roughness:.5});
+function addWound(m){if(!(+(SET.blood??1))||(m.wounds|0)>=6)return;const kind=bleedKind(m.type);if(kind!=='blood'&&kind!=='sap')return;
+  const ms=[];m.f.g.traverse(o=>{if(o.isMesh&&o.geometry&&!o.userData.wound&&!(m.fireFx&&isChildOf(o,m.fireFx))&&o.material&&o.material.isMeshStandardMaterial)ms.push(o);});if(!ms.length)return;
+  const o=ms[Math.random()*ms.length|0];if(!o.geometry.boundingBox)o.geometry.computeBoundingBox();const b=o.geometry.boundingBox,ax=Math.random()*3|0,sg=Math.random()<.5?-1:1;
+  const p=new THREE.Vector3(lerp(b.min.x,b.max.x,.2+Math.random()*.6),lerp(b.min.y,b.max.y,.2+Math.random()*.6),lerp(b.min.z,b.max.z,.2+Math.random()*.6));p.setComponent(ax,sg>0?b.max.getComponent(ax):b.min.getComponent(ax));
+  const ws=o.getWorldScale(new THREE.Vector3()),sz=(.05+Math.random()*.06)*(m.def.r>.9?1.6:1);const w=new THREE.Mesh(_wGeo,kind==='sap'?_wSap:_wMat);w.userData.wound=1;
+  w.scale.set(sz/ws.x,sz/ws.y,sz/ws.z);w.scale.setComponent(ax,.012/ws.getComponent(ax));w.position.copy(p);o.add(w);m.wounds=(m.wounds|0)+1;}
+function isChildOf(o,p){for(let a=o;a;a=a.parent)if(a===p)return true;return false;}
+
+/* ---------------- SAVU (kohta 36) ---------------- */
+// Isot pehmeät savupilvet (palava mob, palokuolema): nousevat, laajenevat ja haalistuvat. Määrää rajoittaa hiukkasasetus PF.
+const puffs=[],_pfGeo=new THREE.IcosahedronGeometry(1,2);
+function smokePuff(x,y,z,size=1,dark=.25){if(puffs.length>48*PF||Math.random()>PF)return;const c=new THREE.Color().setScalar(dark+Math.random()*.12);
+  const m=new THREE.Mesh(_pfGeo,new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.0,depthWrite:false}));m.position.set(x,y,z);m.scale.setScalar(.2*size);scene.add(m);
+  puffs.push({m,t:0,life:2.2+Math.random()*1.4,size,vx:(Math.random()-.5)*.4+WIND.x*WIND.spd*.04,vz:(Math.random()-.5)*.4+WIND.z*WIND.spd*.04,vy:.9+Math.random()*.6});}
+function updatePuffs(dt){for(let i=puffs.length-1;i>=0;i--){const p=puffs[i];p.t+=dt;const k=p.t/p.life;
+  p.m.position.x+=p.vx*dt;p.m.position.y+=p.vy*dt;p.m.position.z+=p.vz*dt;p.m.scale.setScalar(p.size*.6*(.25+k*.9));p.m.material.opacity=.3*Math.min(1,p.t*4)*(1-k)*(1-k*.3);p.m.rotation.y+=dt*.4;
+  if(k>=1){scene.remove(p.m);p.m.material.dispose();puffs.splice(i,1);}}}
+
+/* ---------------- KUOLEMA (kohta 23b) ---------------- */
+// Tavallinen: ruumis kaatuu kyljelleen (0,6 s), raajat valahtavat, veriläntti alle; makaa ~7 s, vajoaa ja häipyy 2 s (yht. < 10 s).
+// Palokuolema (palaa kuollessa tai lyöty soihdulla / tulinuolella / kuoli nuotiossa): mustuu 1,5 s liekeissä → tuhkakasa, joka vajoaa 8 s.
+const DEATH_END=9.4;
+function mobDeathAnim(m,dt){const f=m.f,g=f.g,t=m.deadT;
+  if(!m.da){m.da={dir:Math.random()<.5?-1:1,ash:!!m.ashDeath,pool:false,y0:m.pos.y,legs:(f.legs||[]).map(()=>(Math.random()-.5)*.8)};if(m.da.ash)m.da.flames=ashFlames(m);}
+  const D=m.da,big=m.def.r>1;
+  if(D.ash)return ashAnim(m,dt);
+  const k=sstep(0,.6,t);g.rotation.z=D.dir*Math.PI/2*k*(f.quad||f.animal?.92:1);g.position.y=D.y0+Math.sin(k*Math.PI)*.15-(t>7?(t-7)*.35:0);
+  // raajat veltoiksi
+  const lk=Math.min(1,t/.8);
+  if(f.armL){f.armL.rotation.x=lerp(f.armL.rotation.x,-.35,lk*.2);f.armR.rotation.x=lerp(f.armR.rotation.x,.25,lk*.2);f.armL.rotation.z=lerp(f.armL.rotation.z,.5*D.dir,lk*.2);f.armR.rotation.z=lerp(f.armR.rotation.z,.4*D.dir,lk*.2);}
+  if(f.legL){f.legL.rotation.x=lerp(f.legL.rotation.x,.3,lk*.2);f.legR.rotation.x=lerp(f.legR.rotation.x,-.2,lk*.2);if(f.kneeL){f.kneeL.rotation.x=lerp(f.kneeL.rotation.x,.6,lk*.2);f.kneeR.rotation.x=lerp(f.kneeR.rotation.x,.25,lk*.2);}}
+  if(f.legs)f.legs.forEach((l,i)=>{l.rotation.x=lerp(l.rotation.x,D.legs[i],lk*.2);if(l.userData.knee)l.userData.knee.rotation.x=lerp(l.userData.knee.rotation.x,.2,lk*.2);});
+  if(f.head)f.head.rotation.x=lerp(f.head.rotation.x,.45,lk*.15);if(f.tail)f.tail.rotation.x=lerp(f.tail.rotation.x,.6,lk*.1);
+  if(!D.pool&&t>.45){D.pool=true;const kind=bleedKind(m.type),C=BLEED_C[kind],gy=groundY(m.pos.x,m.pos.z,m.pos.y,m.dun),bk=+(SET.blood??1);
+    if((kind==='blood'||kind==='sap')&&bk){D.sp=splat(m.pos.x+D.dir*m.def.r*.6,gy,m.pos.z,m.def.r*(1.3+Math.random()*.4)*Math.sqrt(bk),C[0],DEATH_END-.4,.9);}
+    else burst(m.pos.x,m.pos.y+.4,m.pos.z,C[0],big?22:12,big?5:3);}
+  if(t>7.4){const o=Math.max(0,1-(t-7.4)/2);for(const mt of m.mats){if(!mt.transparent){mt.transparent=true;mt.needsUpdate=true;}mt.opacity=o;}}
+  return t>DEATH_END;}
+function ashFlames(m){const g=new THREE.Group(),r=Math.max(.3,m.def.r*.8),h=(m.barH||m.def.r*2.8)*.4;
+  for(let i=0;i<9;i++){const a=i/9*TAU,c=new THREE.Mesh(new THREE.ConeGeometry(.14*r*2,(.5+Math.random()*.4)*r*2,6),i%2?MAT.flame2:MAT.flame);c.position.set(Math.cos(a)*r*.6,h,Math.sin(a)*r*.6);g.add(c);}
+  g.position.copy(m.pos);scene.add(g);return g;}
+function ashAnim(m,dt){const D=m.da,f=m.f,g=f.g,t=m.deadT,r=Math.max(.35,m.def.r);
+  if(t<1.6){const k=sstep(0,1.5,t);for(const mt of m.mats){mt.color.lerp(_ashC,Math.min(1,dt*2.2));mt.emissive.setRGB(.35*(1-k)*Math.random(),.08*(1-k),0);}
+    g.rotation.z=D.dir*Math.PI/2*sstep(.3,1.3,t)*.9;g.scale.y=1-.25*sstep(.6,1.5,t);
+    if(D.flames){D.flames.position.set(m.pos.x,m.pos.y,m.pos.z);D.flames.children.forEach((c,i)=>{c.scale.set(1,(.6+.5*Math.abs(Math.sin(playTime*10+i)))*(1-k*.4),1);});}
+    if(Math.random()<dt*22)emitEmber(m.pos.x+(Math.random()-.5)*r,m.pos.y+Math.random()*r*1.6,m.pos.z+(Math.random()-.5)*r,'spark');
+    if(Math.random()<dt*7)smokePuff(m.pos.x+(Math.random()-.5)*r,m.pos.y+r,m.pos.z+(Math.random()-.5)*r,1.2+r,.12);return false;}
+  if(!D.pile){g.visible=false;if(D.flames){scene.remove(D.flames);D.flames=null;}const gy=groundY(m.pos.x,m.pos.z,m.pos.y,m.dun);
+    const p=new THREE.Group(),am=new THREE.MeshStandardMaterial({color:0x3a3633,roughness:1,transparent:true,opacity:1}),em=new THREE.MeshBasicMaterial({color:0xff6a1a,transparent:true,opacity:.9});
+    p.add(new THREE.Mesh(new THREE.ConeGeometry(r*1.1,r*.7,9),am));for(let i=0;i<5;i++){const c=new THREE.Mesh(new THREE.ConeGeometry(r*.35,r*.35,6),am);const a=Math.random()*TAU;c.position.set(Math.cos(a)*r*.7,-r*.15,Math.sin(a)*r*.7);p.add(c);}
+    for(let i=0;i<6;i++){const e=new THREE.Mesh(new THREE.SphereGeometry(.04+Math.random()*.04,5,4),em);const a=Math.random()*TAU,d=Math.random()*r*.8;e.position.set(Math.cos(a)*d,-r*.2+Math.random()*r*.3,Math.sin(a)*d);p.add(e);}
+    p.position.set(m.pos.x,gy+r*.3,m.pos.z);scene.add(p);D.pile=p;D.pileMat=[am,em];D.gy=gy;burst(m.pos.x,gy+.3,m.pos.z,0x3a3633,14,3);}
+  const s=(t-1.6)/(DEATH_END-1.6);D.pile.position.y=D.gy+r*.3-s*r*1.1;D.pileMat[1].opacity=.9*(1-s)*(.6+.4*Math.sin(playTime*6));if(s>.7)D.pileMat[0].opacity=1-(s-.7)/.3;
+  if(Math.random()<dt*2.5*(1-s))smokePuff(m.pos.x,D.gy+.3,m.pos.z,.8+r*.6,.3);
+  if(t>DEATH_END){scene.remove(D.pile);for(const mt of D.pileMat)mt.dispose();return true;}return false;}
+const _ashC=new THREE.Color(0x0e0c0b);
+
+/* ---------------- PELAAJA: PALAMINEN JA KUOLEMA ---------------- */
+// Palavan nuotion päällä seisova pelaaja syttyy (4 s, 4 hp/s, sade/vesi sammuttaa). Kuolema: kaatuminen ja raajojen valahtaminen,
+// veriläntti jää 60 s; palokuolemassa hahmo mustuu ja muuttuu tuhkakasaksi (näkyy taas herätessä).
+function updatePlayerBurn(dt){if(P.dead)return;
+  if(!P.inDun&&!(P.burnT>0)){for(const p of pieces){if(!isFirePiece(p.t)||!(p.data.fuel>0))continue;if(dist2(p.x,p.z,P.pos.x,P.pos.z)<.8*.8&&Math.abs(P.pos.y-(p.y||0))<1.2){P.burnT=4;msg('Syttyit tuleen! Pois tulesta – vesi tai sade sammuttaa.','warn');sfx('build',1.4,.6);break;}}}
+  if(!(P.burnT>0)){if(P.fireFx){fig.g.remove(P.fireFx);P.fireFx=null;}return;}
+  if((wRain>.5&&!P.inDun)||P.inWater){P.burnT=0;burst(P.pos.x,P.pos.y+1,P.pos.z,0x9a9a9a,6,2);return;}
+  P.burnT-=dt;if(!devOn('god')){P.hp-=4*dt;P.hurtFlash=Math.max(P.hurtFlash,.2);}P.lastFire=playTime;
+  if(!P.fireFx){const g=new THREE.Group();for(let i=0;i<7;i++){const a=i/7*TAU,c=new THREE.Mesh(new THREE.ConeGeometry(.12,.45+Math.random()*.25,6),i%2?MAT.flame2:MAT.flame);c.position.set(Math.cos(a)*.22,.5+Math.random()*.9,Math.sin(a)*.18);g.add(c);}fig.g.add(g);P.fireFx=g;}
+  P.fireFx.children.forEach((c,i)=>{c.scale.y=.7+.5*Math.abs(Math.sin(playTime*11+i*1.3));});
+  if(Math.random()<dt*12)emitEmber(P.pos.x+(Math.random()-.5)*.5,P.pos.y+.4+Math.random()*1.4,P.pos.z+(Math.random()-.5)*.5,'spark');if(Math.random()<dt*3)smokePuff(P.pos.x,P.pos.y+1.6,P.pos.z,1,.2);
+  if(P.hp<=0){P.ashDeath=true;playerDie();}}
+let pDeath=null;
+function startPlayerDeath(){const ash=!!P.ashDeath||(playTime-(P.lastFire||-99)<1.2);P.ashDeath=false;if(P.fireFx){fig.g.remove(P.fireFx);P.fireFx=null;}P.burnT=0;
+  pDeath={t:0,ash,dir:Math.random()<.5?-1:1,y0:fig.g.position.y,pool:false,saved:null};}
+function updatePlayerDeath(dt){const D=pDeath;if(!D)return;D.t+=dt;const t=D.t,f=fig;
+  const k=sstep(0,.7,t);f.g.rotation.x=-Math.PI/2*k;f.g.rotation.z=D.dir*.25*k;f.g.position.y=D.y0+.15*k;
+  const lk=Math.min(1,dt*5);f.armL.rotation.x=lerp(f.armL.rotation.x,-.6,lk);f.armR.rotation.x=lerp(f.armR.rotation.x,.2,lk);f.armL.rotation.z=lerp(f.armL.rotation.z,.6,lk);f.armR.rotation.z=lerp(f.armR.rotation.z,-.5,lk);
+  f.legL.rotation.x=lerp(f.legL.rotation.x,.25,lk);f.legR.rotation.x=lerp(f.legR.rotation.x,-.1,lk);if(f.kneeL){f.kneeL.rotation.x=lerp(f.kneeL.rotation.x,.5,lk);f.kneeR.rotation.x=lerp(f.kneeR.rotation.x,.15,lk);}f.head.rotation.x=lerp(f.head.rotation.x,-.3,lk);
+  if(D.ash){if(!D.saved){D.saved=[];f.g.traverse(o=>{if(o.isMesh){D.saved.push([o,o.material]);o.material=_pAshMat;}});}
+    _pAshMat.emissive.setRGB(.3*Math.max(0,1-t/1.5)*Math.random(),.06*Math.max(0,1-t/1.5),0);
+    if(t<1.5&&Math.random()<dt*20)emitEmber(P.pos.x+(Math.random()-.5)*.8,P.pos.y+Math.random()*.6,P.pos.z+(Math.random()-.5)*.8,'spark');
+    if(t<2.5&&Math.random()<dt*6)smokePuff(P.pos.x,P.pos.y+.6,P.pos.z,1.4,.15);
+    if(t>1.5&&!D.pile){f.g.visible=false;const gy=groundY(P.pos.x,P.pos.z,P.pos.y,P.inDun);const am=new THREE.MeshStandardMaterial({color:0x3a3633,roughness:1});const p=new THREE.Mesh(new THREE.ConeGeometry(.55,.4,9),am);p.position.set(P.pos.x,gy+.15,P.pos.z);scene.add(p);D.pile=p;D.gy=gy;burst(P.pos.x,gy+.3,P.pos.z,0x3a3633,14,3);}
+    if(D.pile){const s=Math.min(1,(t-1.5)/8);D.pile.position.y=D.gy+.15-s*.55;}}
+  else if(!D.pool&&t>.5){D.pool=true;const bk=+(SET.blood??1);if(bk)splat(P.pos.x,groundY(P.pos.x,P.pos.z,P.pos.y,P.inDun),P.pos.z,.95*Math.sqrt(bk),BLEED_C.blood[0],60,.9);}}
+const _pAshMat=new THREE.MeshStandardMaterial({color:0x111010,roughness:1,emissive:0x000000});
+function endPlayerDeath(){const D=pDeath;pDeath=null;if(!D)return;if(D.saved)for(const [o,mt] of D.saved)o.material=mt;if(D.pile){scene.remove(D.pile);}fig.g.visible=true;fig.g.rotation.z=0;}
+function updateEffects(dt){updateSplats(dt);updatePuffs(dt);updatePlayerDeath(dt);}

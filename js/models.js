@@ -191,7 +191,9 @@ function makePlayer(){
     const k=new THREE.Group();k.position.set(0,-.4,0);p.add(k);tube(k,.072,.06,.4,pant,0,-.2,0,1,1,8);tube(k,.07,.07,.2,boot,0,-.3,0,1,1,8);tube(k,.083,.083,.06,fur,0,-.2,0,1,1,8);rnd(k,0,-.37,.07,.075,boot,1,.7,1.8,8);rig.add(p);return[p,k];};
   const [legL,kneeL]=mkLeg(-.12),[legR,kneeR]=mkLeg(.12);
   const torso=tube(rig,.2,.22,.76,cloth,0,hip+.38,0,1.18,.62,8);
-  tube(rig,.235,.235,.07,leather,0,hip+.1,0,1.18,.65,8);rnd(rig,.22,hip+.08,.1,.06,leather,1,1.2,.8,6);rnd(rig,-.16,hip+.06,-.15,.055,fur,1,1.1,.8,6);
+  tube(rig,.235,.235,.07,leather,0,hip+.1,0,1.18,.65,8);rnd(rig,.22,hip+.08,.1,.06,leather,1,1.2,.8,6);{const pc=new THREE.Group(),dk=F(0x4a3220);   // v1.37 (lista 3, kohta 37): vyön takana nahkapussi (ennen irrallinen karvapallo), kiinni vyössä
+    pc.add(bx(.13,.13,.055,leather,0,-.01,0),bx(.136,.05,.062,dk,0,.05,-.002),bx(.03,.03,.02,F(0xb08d57),0,.03,-.034),bx(.02,.05,.012,dk,-.045,.075,.026),bx(.02,.05,.012,dk,.045,.075,.026));
+    pc.position.set(-.165,hip+.03,-.15);pc.rotation.y=.42;rig.add(pc);}
   tube(rig,.27,.23,.12,fur,0,hip+.7,0,1.2,.7,8);
   const cloths=[torso];
   const mkArm=x=>{const p=new THREE.Group();p.position.set(x,hip+.68,0);rnd(p,0,0,0,.085,fur,1,1,1,8);
@@ -227,6 +229,9 @@ function buildArmor(f,id){for(const m of f.armorParts)if(m.parent)m.parent.remov
   const S=(par,r,m,x,y,z,sx=1,sy=1,sz=1,seg=10)=>{const me=new THREE.Mesh(new THREE.SphereGeometry(r,seg,Math.max(6,seg-2)),m);me.position.set(x,y,z);me.scale.set(sx,sy,sz);return add(par,me);};
   const B=(par,w,h,d,m,x,y,z,rx=0,ry=0,rz=0)=>{const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);me.position.set(x,y,z);me.rotation.set(rx,ry,rz);return add(par,me);};
   const helmHair=()=>{for(const h of f.hairTop)h.visible=false;};
+  // v1.12: hupun alla hiukset jäävät näkyviin (otsalla ja sivuilla hupun aukosta); piiloon vain ne, jotka puhkaisisivat hupun
+  const hoodHair=(r,y,sy)=>{for(const h of f.hairTop){const p=h.position,rr=(h.geometry.parameters.radius||.07)*Math.max(h.scale.x,h.scale.y,h.scale.z);
+    h.visible=Math.hypot(p.x,(p.y-y)/sy,(p.z+.02)/1.06)+rr<r*.99;}};
   // kupoli (yläosa otsalle asti) ja edestä avoin huppu/kaulus: kasvot jäävät näkyviin
   const cap=(r,m,y,th=.47)=>{const me=new THREE.Mesh(new THREE.SphereGeometry(r,14,8,0,TAU,0,Math.PI*th),m);me.position.set(0,y,-.01);me.scale.set(1,1.05,1.08);return add(f.head,me);};
   const openShell=(r,m,y,open=.3,sy=1.05)=>{const mm=m.clone();mm.side=THREE.DoubleSide;const me=new THREE.Mesh(new THREE.SphereGeometry(r,14,10,Math.PI/2+open*Math.PI,TAU*(1-open)),mm);me.position.set(0,y,-.02);me.scale.set(1,sy,1.06);return add(f.head,me);};
@@ -240,7 +245,7 @@ function buildArmor(f,id){for(const m of f.armorParts)if(m.parent)m.parent.remov
     T(f.rig,.235,.25,.62,lt,0,hip+.4,0,1.18,.68,10);for(let i=0;i<4;i++)B(f.rig,.02,.5,.02,st,-.08+i*.055,hip+.42,.165);   // nahkatakki + nyöritys
     T(f.rig,.31,.25,.16,fur,0,hip+.7,0,1.15,.75,10);T(f.rig,.255,.255,.07,dk,0,hip+.12,0,1.18,.7,10);   // turkiskaulus, vyö
     bracer(lt,dk);for(const k of [f.kneeL,f.kneeR])T(k,.082,.08,.18,dk,0,-.3,0,1,1,8);tassets(lt,dk,6,.22);
-    openShell(.245,lt,.3,.36,1.08);B(f.head,.34,.26,.07,lt,0,.14,-.2,.3,0,0);helmHair();   // huppu (edestä avoin) + niskaosa
+    openShell(.255,lt,.3,.36,1.08);B(f.head,.34,.26,.07,lt,0,.14,-.2,.3,0,0);hoodHair(.255,.3,1.08);   // huppu (edestä avoin) + niskaosa
     if(id==='karhuhaarniska'){const cape=S(f.rig,.34,fur,0,hip+.48,-.14,1.15,1.35,.45,10);cape.rotation.x=.08;S(f.rig,.3,fur,0,hip+.66,-.02,1.25,.5,.9,10);   // taljaviitta
       for(const [arm,sd] of [[f.armL,1],[f.armR,-1]])S(arm,.13,fur,sd*.02,.02,0,1.2,.75,1.2,8);
       const bh=S(f.head,.2,fur,0,.42,.02,1.1,.8,1.15,10);S(f.head,.09,fur,0,.37,.21,1,.8,1.2,8);S(f.head,.04,F(0x1a120c),0,.38,.3,1,.8,1,6);   // karhun pää hupuksi
@@ -257,8 +262,8 @@ function buildArmor(f,id){for(const m of f.armorParts)if(m.parent)m.parent.remov
     T(f.rig,.2,.24,.12,fe,0,hip+.78,0,1.05,.8,10);T(f.rig,.27,.27,.08,lt,0,hip+.12,0,1.2,.72,10);   // kaulasuoja, vyö
     pauldron(fe,fd,1.45);tassets(fe,fd,8,.3);greave(fe,fd,true);bracer(fe,fd);
     cap(.245,fe,.3,.42);T(f.head,.25,.25,.05,fd,0,.37,0,1,1.08,12);helmHair();   // kypärä (kupoli otsaan asti)
-    for(const sd of [-1,1]){const r=new THREE.Mesh(new THREE.TorusGeometry(.05,.012,5,10),fd);r.position.set(sd*.07,.31,.21);add(f.head,r);}B(f.head,.035,.12,.03,fd,0,.26,.23);   // silmäsuojat
-    openRing(.25,.29,.2,mail,.2,.34);return;}   // niskasuoja (rengasverho, edestä avoin)
+    for(const sd of [-1,1]){const r=new THREE.Mesh(new THREE.TorusGeometry(.05,.012,5,10),fd);r.position.set(sd*.07,.31,.21);add(f.head,r);}B(f.head,.035,.12,.03,fd,0,.29,.23);   /* v1.14 nenäpalkki ylemmäs (.26 → .29) */   // silmäsuojat
+    openRing(.25,.29,.2,mail,.24,.34);return;}   // niskasuoja (rengasverho, edestä avoin); v1.14 nostettu 4 cm (y .2 → .24) käyttäjän toiveesta
   if(id==='hiidenpanssari'){const st=M(0x2a3036,.3,.6),sd2=M(0x3a434b,.35,.55),gl=new THREE.MeshBasicMaterial({color:0x5fe6d9});
     for(let i=0;i<4;i++)T(f.rig,.25,.26,.15,i%2?sd2:st,0,hip+.2+i*.15,0,1.2,.72,8);for(let i=0;i<4;i++)B(f.rig,.4,.012,.02,gl,0,hip+.27+i*.15,.18);   // kivilevyt + hehkuvat riimusaumat
     B(f.rig,.012,.5,.02,gl,0,hip+.45,.185);T(f.rig,.3,.26,.14,st,0,hip+.74,0,1.12,.78,8);
@@ -311,7 +316,7 @@ function makeHeld(id){
   return g;
 }
 // Jousen jänne ja nuoli: k = vedon määrä 0–1 (0 = ei vedossa, jänne suorana).
-function updateBowMesh(g,k,nocked){const b=g.userData.bow;if(!b)return;const nz=b.tipZ-(k>0?.1+k*.42:0);
+function updateBowMesh(g,k,nocked){const b=g.userData.bow;if(!b)return;const nz=b.tipZ-(k>0?.1+k*.32:0);   /* v1.22 veto .42 → .32 (käsi ylettyy, jänne posken kohdalle) */
   for(const [s,sy] of [[b.s1,1],[b.s2,-1]]){const dy=-sy*b.tipY,dz=nz-b.tipZ,L=Math.hypot(dy,dz);s.scale.y=L;s.position.set(0,sy*b.tipY+dy/2,b.tipZ+dz/2);s.rotation.x=-Math.atan2(dz,dy);}
   b.ar.visible=k>0||!!nocked;b.ar.position.z=nz-.02;}
 function makeShield(id){const g=new THREE.Group(),wood=id==='kilpi',R=.4,

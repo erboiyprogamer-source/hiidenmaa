@@ -176,7 +176,7 @@ const MOBDEF={
   kalmo:{n:'Kalmo',hp:50,r:.45,ai:'hostile',walk:1.4,run:4.6,aggro:14,dmg:13,range:1.8,cd:1.5,wind:.5,weak:{blunt:1.6,pierce:.6,fire:1.3},drops:[['luu',1,3],['kivi',0,1]],fig:figKalmo},
   ylimys:{n:'Kalmon ylimys',hp:150,r:.6,ai:'hostile',walk:1.3,run:4.2,aggro:12,dmg:20,range:2.2,cd:1.8,wind:.65,weak:{blunt:1.5,pierce:.6,fire:1.3},drops:[['luu',3,5],['kupari',2,3]],fig:figYlimys},
   vartija:{n:'Kalmanvartija',hp:900,r:1.6,ai:'boss',walk:2.2,run:3.6,aggro:60,dmg:24,range:4.2,cd:2,wind:.8,weak:{blunt:1.3,pierce:.75,fire:1},drops:[['sydan',1,1],['kupari',6,8],['hiidenkivi',0,0]],fig:()=>figGolem(3.1,true)},
-  kivivartija:{n:'Kivivartija',hp:110,r:.6,ai:'hostile',walk:1.2,run:3.8,aggro:13,dmg:17,range:2,cd:1.9,wind:.7,weak:{blunt:1.7,pierce:.5,fire:.8},drops:[['kivi',2,4],['piikivi',1,3],['kupari',0,2]],fig:()=>figGolem(1.3,false)},
+  kivivartija:{n:'Kivivartija',hp:220,r:.6,ai:'hostile',walk:1.2,run:3.8,aggro:13,dmg:17,range:2.55,   /* v1.31: × stride 1,1 = 2,8 m */cd:1.9,wind:.7,weak:{blunt:1.7,pierce:.5,fire:.8},drops:[['kivi',2,4],['piikivi',1,3],['kupari',0,2]],fig:()=>figGolem(1.3,false)},
   routasusi:{n:'Routasusi',hp:68,r:.5,ai:'hostile',walk:2,run:5,aggro:18,dmg:14,range:1.7,cd:1.1,wind:.28,weak:{fire:1.4},drops:[['nahka',1,2],['luu',0,1]],fig:()=>makeAnimal({kind:'wolf',ice:1,s:.95,body:0xc9dce8,dark:0x8aa6ba,legs:0xa8bfce,belly:0xeef6fb,ruff:0xe4f0f7,headC:0xd8e8f2,tailTip:0x7f9db5,legH:.62,len:1.1,eyes:0x7fe0ff})},
   jaajattari:{n:'Jäätär',hp:560,r:1.2,ai:'rboss',walk:2,run:3.6,aggro:17,dmg:22,range:3.6,cd:1.8,wind:.8,fh:4.6,eye:3.2,weak:{blunt:1.2,pierce:.8,fire:1.5},kit:['swipe','slam','throw','nova'],sum:[],drops:[['rauta',3,5],['hiidenkivi',1,1],['kupari',4,6]],fig:figJaatar},
   kalmaherra:{n:'Kalmaherra',hp:640,r:.9,ai:'rboss',walk:2.1,run:4,aggro:17,dmg:24,range:3.2,cd:1.7,wind:.75,fh:4.4,eye:3,weak:{blunt:1.4,pierce:.6,fire:1.3},kit:['swipe','charge','summon','nova'],sum:[2,3],drops:[['rauta',3,5],['hiidenkivi',1,1],['kupari',4,6]],fig:figKalmaherra},
@@ -185,6 +185,13 @@ const MOBDEF={
 // v0.92 (kohta 9): kaksijalkaiset hirviöt harppovat – askel ~40 % pidempi ja tahti hitaampi, 10 % nopeampi (moveMob), keinuva vartalo
 // (animMob), lyöntiulottuma +10 %. Koskee myös ulottuvuusversioita; pomot ja eläimet ennallaan.
 for(const k of ['hiisi','kalmo','ylimys','kivivartija','suonakki']){MOBDEF[k].stride=1;MOBDEF[k].range=+(MOBDEF[k].range*1.1).toFixed(2);}
+// v1.33 (lista 3, kohdat 5, 6, 11, 14): vaikeampi taistelu.
+//  - Kaikki eläimet ja hirviöt: terveys ja vahinko +25 %.
+//  - Pomot pelin vaiheen mukaan: Jäätär ×1,5 (840), Kalmaherra ×2 (1280), Aarnihirviö ×2,6 (1872), Kalmanvartija ×2,5 (2250, viimeinen).
+//  - Tavallisten vihollisten lyöntiulottuma noin 20 % pelaajan omaa lyhyempi (enint. 1,9 m). Karhu, kivivartija, pelottavat ja pomot ennallaan.
+const MOB_HARD=1.25,BOSS_HP_K={jaajattari:1.5,kalmaherra:2,aarnihirvio:2.6,vartija:2.5},MOB_RANGE_MAX=1.9,MOB_RANGE_KEEP=['karhu','kivivartija','hiidenkarhu','hiidenhirvi','kalmasusi','suonakki'];
+for(const [k,d] of Object.entries(MOBDEF)){const bk=BOSS_HP_K[k];d.hp=Math.round(d.hp*(bk||MOB_HARD));if(d.dmg)d.dmg=Math.round(d.dmg*(bk?1.15:MOB_HARD));
+  if(!bk&&d.range&&!MOB_RANGE_KEEP.includes(k)&&d.ai!=='flee')d.range=Math.min(d.range,MOB_RANGE_MAX);}
 // Vaikeustaso pääkalloina terveyspalkin alla (≥3 = vaikea: palkki näkyy jo kaukaa katsottaessa, parantuu 30 s iskuttomuuden jälkeen).
 const MOB_SKULL={hiidenkarhu:4,hiidenhirvi:4,kalmasusi:3,suonakki:3,karhu:3,hirvi:2,ilves:1,ahma:1,emakko:1,porsas:0,janis:0,kettu:0,metso:0,poro:0,peura:0,karju:1,hiisi:1,susi:2,kalmo:2,ylimys:3,vartija:5,kivivartija:3,routasusi:2,jaajattari:5,kalmaherra:5,aarnihirvio:5};
 let mobs=[], boss=null;
@@ -196,4 +203,4 @@ function spawnMob(type,x,z,opts={}){
   const m={type,def,f,mats,pos:new V3(x,y,z),vel:new V3(),yaw:rng()*TAU,hp:def.hp,maxHp:def.hp,state:'idle',t:0,wander:null,atkCd:1,wind:0,angry:false,flash:0,walkPh:0,lastHit:-99,stuck:0,home:{x,z},dun:!!opts.dun,anim:0,dead:false,deadT:0,hurtT:-99};
   mobs.push(m);return m;
 }
-function mobRemove(m){scene.remove(m.f.g);mobs.splice(mobs.indexOf(m),1);if(m===boss)boss=null;}
+function mobRemove(m){scene.remove(m.f.g);if(m.da){if(m.da.flames)scene.remove(m.da.flames);if(m.da.pile)scene.remove(m.da.pile);}mobs.splice(mobs.indexOf(m),1);if(m===boss)boss=null;}
