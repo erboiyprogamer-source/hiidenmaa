@@ -1456,6 +1456,46 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 4: 32 kohtaa (v1.39–) – tarkentavat kysymykset kysytään ensin, vastaukset kirjataan tähän
 **JATKA TÄSTÄ (lista 4):** PR #25 (v1.38 korjaus) auki. Lista kirjattu, kysymykset kesken/vastaukset alla.
+**Vastaukset (lista 4):**
+- 1: kyykyssä täysin huomaamaton (myös liikkuessa, ellei lyö); nousu kyykystä → 0,1 s → säikähtää.
+- 3: vain juoksu ja hyppy ylämäkeen +30 %.
+- 7: Esc ei tee pelissä mitään. P = yleinen sulkunäppäin (sulkee minkä tahansa paneelin) ja avaa/sulkee päävalikon (tauon).
+  Valikon oma näppäin sulkee myös sen (Tab, M…). Pienet näppäinopasteet nurkkaan (esim. "Päävalikko: P"), asetuksista pois päältä.
+- 2: pelaajan ympärille alue, jossa lumihiutaleet kiertävät silmukkana ylhäältä alas, suunta tuulen mukaan (ei näkyvää kameran seurantaa).
+  Pimetessä sade ja lumi tummuvat (sade yöllä hyvin tumma). Medium ja ylöspäin: lähellä olevat valot (myös pelaajan soihtu) värjäävät
+  pisarat ja hiutaleet kellertäviksi/vaaleammiksi (heijastus).
+- 4: omat valintaruudut ja liukusäätimet (selaimen omat eivät toimi kunnolla); fokus ei jää päälle; tekstikentät: kursori tekstin
+  loppuun, kun palaa kirjoittamaan vanha teksti valittuna (kirjoitus korvaa); DEV-määrä: kursori oikealla, ei muista määrää (tyhjä);
+  hakukenttä aina tyhjä avattaessa; valikoissa kirjoittaminen menee suoraan hakuun ilman napsautusta.
+
+- 5: miekka, lapio ja kuokka selässä lappeellaan selkää vasten (kierto 90° pituusakselin ympäri), terä alas vinosti.
+- 6: molemmat: esine lepää korkeimman maakohdan päällä alueen alla, leijuu 0,25 m ylempänä, pysähtyy rinteessä oikein.
+- 8: pomojen iskut +20 %. 9: porttien JA kohteiden (rauniotalot, linnakkeet) vartijat: +80 % vahinko, eivät pelkää tulta; pomot eivät pelkää.
+- 10: latausnäyttö – yllätä (esim. riimukivi, jonka riimut syttyvät latauksen edetessä, usva, kipinät, runosäe).
+- 11: uuden maailman intro ~6 s: 4 s korkealla pilvien yllä hidas kierto + "Hiidenmaa" ja kartan nimi animoituna, 2 s nopea syöksy
+  pelaajaan; ohitettavissa.
+- 12–13: Kalmankammio 2× saalis; Kalmankammio ja Aarnihauta: 30 % mahdollisuus harvinaiseen (metson sulat, karhuntalja, hiidenkivi, ★2-ase/kilpi).
+- 14: Kalmaherra: ryntää 2× useammin, ei lyö ilmaa; kun hp ≤ 50 %, 20 s välein 1–3 ladattua iskua (0,7 s), jokainen 8 m tulijana
+  pelaajaa kohti, 20 vahinkoa + palaminen 4 s, jana palaa maassa 5 s.
+- 15: loppuvaihe hp < 30 %: hehkuu punaisena, vain ryntäyksiä (~1,5 s välein), 5 kalmoa ympärille 20 s välein.
+- 16: jousikalmot 10 %: ampuu 3–20 m, 1 nuoli / 2,5 s, vahinko kuin lyönti, pitää etäisyyttä, pudottaa joskus nuolia.
+- 17: ensimmäisellä kerralla iso pelottava animoitu teksti (alueen löytymisbannerin tyyliin + ulottuvuuden koristeet): pomo ja esine;
+  myöhemmin vain viesti sivuun.
+- 18: rikkinäinen kilpi: oikea hiiri → viesti "Kilpi on rikki (0:42)", ei torjuntaa; kilpi selässä kunnes ehjä.
+- 19: Aarnihirviö: 1,7 min ilman osumaa → paranee hitaasti (1 %/s).
+- 20: seinäsoihtu: 2 puuta, 1 pihka, 1 rauta, palaa 15 min, pihkaa lisäämällä lisää; Aarnihaudan seinäsoihdut kiinni kivissä.
+- 21–22: sytytys alle 2,5 m nuotiosta/soihdusta/seinäsoihdusta/ulottuvuuden soihdusta; heti viesti "Pysy paikallasi hetki…", 1–1,5 s
+  paikallaan → syttyy. Nuotio sytyttää pelaajan ja mobit alle 0,8 m.
+- 23: arkku/tynnyri: tähtäin päällä tai 15° sisällä.
+- 24: puuarkut lankkutekstuuri + rautavanteet + niitit, kansi saranoista; kiviarkku kivitekstuuri + riimut, avattuna ontto, lukonreikä.
+- 25: viholliset + eläimet (ei pomot) hp 100–160 %, vahvemmat +0–10 % kokoa.
+- 26: oikea valitsee puolet, seuraava vasen TAI oikea toiseen ruutuun siirtää puolet; vasen valitsee kaiken, sitten oikea toiseen = puolet.
+- 27/29: napsautus paneelin reunojen ulkopuolelle: ilman valintaa sulkee, valittuna pudottaa.
+- 28: paneelin oikeaan yläkulmaan "Sulje: P / Tab"; pelinäkymän vasempaan alakulmaan "P päävalikko"; asetus Näppäinopasteet.
+- 30: LOD kaukomaastolle, staattisten yhdistäminen, varjot harvemmin kaukana – kaikki grafiikka-asetuksiin, esiasetukset päättävät.
+- 31: suorituskykytesti 3 s latausnäytön aikana ensimmäisellä käynnillä → esiasetus (läppärit pääsevät valikkoon).
+- 32: päävalikossa (tauko) vaihdettava nappi "Tila: Tauko / Käynnissä" – käynnissä maailma päivittyy taustalla ja muutokset näkyvät heti.
+
 1. Kyykyssä eläin ei huomaa; kun nousee kyykystä, 0,1 s viive ja eläin säikähtää.
 2. Lumisade ei saa näkyvästi seurata pelaajaa/kameraa (kevyt korjaus).
 3. Ylämäkeen kävely/juoksu kuluttaa kestävyyttä 30 % enemmän.
