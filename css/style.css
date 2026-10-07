@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.71';
+:root{--css-v:'1.72';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -710,3 +710,9 @@ button:focus,select:focus{outline:none}
 @keyframes stSide{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}35%{opacity:1;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) rotate(var(--rot)) scale(1)}70%{opacity:1;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) rotate(var(--rot)) scale(1)}100%{opacity:0;transform:translate(calc(-50% + var(--tx)*1.25),calc(-50% + var(--ty)*1.25)) rotate(var(--rot)) scale(.85)}}
 #deadS .deadTip{max-width:560px;margin:4px auto 18px;padding:10px 14px;border:1px solid rgba(232,164,74,.45);border-left:3px solid #e8a44a;border-radius:4px;background:rgba(40,24,10,.55);font:500 16px/1.5 var(--font-b);color:#e8dcc0;text-align:left}
 #deadS .deadTip b{color:#ffb35a}
+/* v1.72: suorituskykytestin yläilmoitus (näkyy testin ja tuloksen ajan) */
+#splash .ppTop{position:absolute;left:50%;top:5vh;transform:translateX(-50%);width:min(640px,calc(100vw - 32px));box-sizing:border-box;padding:10px 16px;text-align:center;
+  font:500 14.5px/1.5 var(--font-b);color:#d8cdb4;background:rgba(10,7,4,.72);border:1px solid rgba(232,164,74,.3);border-radius:6px;opacity:0;transition:opacity .8s ease .6s}
+#splash .spPerf.on .ppTop{opacity:1}
+#splash .ppTop b{color:#f2e6cc;font-weight:700}#splash .ppTop em{font-style:normal;color:#ffb35a;font-weight:700}
+@media (max-height:620px){#splash .ppTop{font-size:12.5px;top:8px;padding:6px 10px}#splash .spPerf.res .ppPanel{bottom:12px}#splash .ppPanel{padding:12px 16px}}
