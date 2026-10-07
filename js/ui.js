@@ -199,7 +199,8 @@ function renderInv(){initSearch();renderEffects();
   const qs=searchQ('#craftSearch'),sug=!qs&&craftTab==='suos'?suggestCrafts(st):null;
   for(const [id,nm] of [['suos','Ehdotukset'],...CRAFT_CATS]){const b=document.createElement('button');b.className='tab'+(id===craftTab&&!qs?' on':'')+(id==='suos'?' sug':'');b.textContent=nm;b.onclick=()=>{craftTab=id;$('#craftSearch').value='';renderInv();};tabs.appendChild(b);}
   const sugL=sug?[...(sug.now.length?[{h:'Voit valmistaa nyt'}]:[]),...sug.now,...(sug.next.length?[{h:'Hyödyllistä seuraavaksi'}]:[]),...sug.next]:null;
-  const list=qs?RECIPES.filter(r=>recipeKnown(r)&&searchHit(ITEMS[r.id].n,qs)):sugL?sugL.map(x=>x.h?x:x.r):RECIPES.filter(r=>recipeKnown(r)&&(craftTab==='alku'?r.alku:recipeCat(r)===craftTab));
+  const rank=r=>{const n=fold(ITEMS[r.id].n);return n===qs||r.id===qs?0:n.startsWith(qs)||r.id.startsWith(qs)?1:2;};   // v1.65: kuten DEV-haku (nimi tai tunniste, järjestys)
+  const list=qs?RECIPES.filter(r=>recipeKnown(r)&&(searchHit(ITEMS[r.id].n,qs)||r.id.includes(qs))).sort((a,b)=>rank(a)-rank(b)||ITEMS[a.id].n.localeCompare(ITEMS[b.id].n,'fi')):sugL?sugL.map(x=>x.h?x:x.r):RECIPES.filter(r=>recipeKnown(r)&&(craftTab==='alku'?r.alku:recipeCat(r)===craftTab));
   if(!list.length)cl.innerHTML=`<div class="note">${qs?'Ei osumia haulle “'+esc(qs)+'”.':'Ei ehdotuksia juuri nyt.'}</div>`;
   for(let li=0;li<list.length;li++){const r=list[li];if(r.h){const h=document.createElement('div');h.className='sugH';h.textContent=r.h;cl.appendChild(h);continue;}
     const why=sugL?sugL[li].why:'';
@@ -274,7 +275,7 @@ function suggestBuilds(hasBench){const out=[],has=t=>pieces.some(p=>p.t===t||PIE
   return out.sort((a,b)=>b.sc-a.sc).slice(0,10);}
 let _srchInit=false;
 function initSearch(){if(_srchInit)return;_srchInit=true;
-  const cs=$('#craftSearch'),bs=$('#buildSearch');if(cs)cs.addEventListener('input',()=>renderInv());if(bs)bs.addEventListener('input',()=>renderBuild());
+  const cs=$('#craftSearch'),bs=$('#buildSearch');if(cs){cs.addEventListener('input',()=>renderInv());cs.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const b=$('#craftList .rec:not(.na) .btn.pri');if(b)b.click();}});}   /* v1.65: Enter valmistaa ensimmäisen osuman (kuten DEV-haku) */if(bs)bs.addEventListener('input',()=>renderBuild());
   for(const el of [cs,bs])if(el)el.addEventListener('keydown',e=>{if(e.key==='Escape'){if(el.value){el.value='';el.dispatchEvent(new Event('input'));}else el.blur();e.stopPropagation();}});}
 const costChips=req=>Object.entries(req).map(([id,n])=>{const h=invCount(id);return `<span class="mat ${h>=n?'ok':'bad'}">${ITEMS[id].n} ${Math.min(h,999)}/${n}</span>`;}).join('');
 function renderBuild(){initSearch();const c=$('#buildCards');c.innerHTML='';const hasBench=!!nearPiece('tyopenkki',P.pos.x,P.pos.z,20);

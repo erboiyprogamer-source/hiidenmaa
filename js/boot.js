@@ -3,7 +3,7 @@
    vasta sitten latausnäyttö ja pelin skriptit. Ennen jakso pyöri pelin latauksen päällä, jolloin häivytykset pätkivät. Pelin skriptit
    esiladataan taustalla (<link rel=preload>) ja ajetaan yksi kerrallaan pienellä tauolla, jotta riimut ehtivät syttyä näkyvästi.
    Välilyönti, Enter tai napsautus ohittaa koko jakson (ja testin) ja vie suoraan latausnäyttöön. */
-window.__BJV='1.64';
+window.__BJV='1.65';
 (function(){
   var Q=location.search,wd=!!navigator.webdriver;
   function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
@@ -18,7 +18,7 @@ window.__BJV='1.64';
   /* v1.63: palaava kävijä näkee käynnistäessään HIIDENMAA-otsikon (pelkkä häivytys sisään/ulos, 4,6 s) ja sitten latausnäytön.
      Ei maailman käynnistyksessä (pend) eikä automaatiossa; ?title=1 pakottaa. */
   var needTitle=!pend&&!needSplash&&(/[?&]title=1/.test(Q)||!wd);
-  var JS=window.__GJS||[],PERF_T=5,RES_T=9,LV=['Low','Low+','Medium-','Medium'];
+  var JS=window.__GJS||[],PERF_T=7,RES_T=9,LV=['Low','Low+','Medium-','Medium'];
   window.__ldT=JS.length;
 
   /* ---------- pelin skriptit ---------- */
@@ -70,30 +70,33 @@ window.__BJV='1.64';
     var gr=new T.Mesh(g,new T.MeshStandardMaterial({color:0x3d5228,roughness:.95}));gr.receiveShadow=true;sc.add(gr);
     var trunkM=new T.MeshStandardMaterial({color:0x4a3524,roughness:.9}),leafM=[0x2c4a24,0x35562a,0x284020].map(function(c){return new T.MeshStandardMaterial({color:c,roughness:.85});}),
       rockM=new T.MeshStandardMaterial({color:0x6a665e,roughness:.9}),tg=new T.CylinderGeometry(.25,.4,4,8),cg=new T.ConeGeometry(2,5.5,10),rg=new T.DodecahedronGeometry(1.2,1);
-    var rnd=function(){return Math.random();};
+    var rnd=function(){return Math.random();},CR=[];
     for(i=0;i<230;i++){var a=rnd()*6.283,d=8+rnd()*100,x=Math.cos(a)*d,z=Math.sin(a)*d,y=hgt(x,z),s=.7+rnd()*.7;
       var t=new T.Mesh(tg,trunkM);t.position.set(x,y+2*s,z);t.scale.setScalar(s);t.castShadow=t.receiveShadow=true;sc.add(t);
-      var cr=new T.Mesh(cg,leafM[i%3]);cr.position.set(x,y+(4+2.4)*s,z);cr.scale.setScalar(s);cr.castShadow=cr.receiveShadow=true;sc.add(cr);}
+      var cr=new T.Mesh(cg,leafM[i%3]);CR.push(cr);cr.position.set(x,y+(4+2.4)*s,z);cr.scale.setScalar(s);cr.castShadow=cr.receiveShadow=true;sc.add(cr);}
     for(i=0;i<60;i++){a=rnd()*6.283;d=6+rnd()*90;x=Math.cos(a)*d;z=Math.sin(a)*d;var rk=new T.Mesh(rg,rockM);rk.position.set(x,hgt(x,z)+.3,z);rk.scale.set(.6+rnd(),.4+rnd()*.6,.6+rnd());rk.rotation.y=rnd()*6;rk.castShadow=rk.receiveShadow=true;sc.add(rk);}
     var bl=new T.PlaneGeometry(.12,.7,1,2);bl.translate(0,.35,0);var gm=new T.InstancedMesh(bl,new T.MeshLambertMaterial({color:0x5f7a34,side:T.DoubleSide}),24000),o=new T.Object3D();
     for(i=0;i<24000;i++){a=rnd()*6.283;d=rnd()*70;x=Math.cos(a)*d;z=Math.sin(a)*d;o.position.set(x,hgt(x,z),z);o.rotation.set(0,rnd()*6.28,0);o.scale.setScalar(.6+rnd()*.8);o.updateMatrix();gm.setMatrixAt(i,o.matrix);}
     sc.add(gm);
-    return {r:r,frame:function(t){var a=t*.09;cam.position.set(Math.cos(a)*34,hgt(Math.cos(a)*34,Math.sin(a)*34)+7,Math.sin(a)*34);cam.lookAt(Math.cos(a+1.1)*6,3,Math.sin(a+1.1)*6);r.render(sc,cam);},
+    return {r:r,frame:function(t){for(var j=0;j<CR.length;j++){CR[j].rotation.z=Math.sin(t*1.3+j)*.05;CR[j].rotation.x=Math.cos(t*1.1+j*.7)*.04;}   /* v1.65: tuulen heilunta = matriisipäivityksiä kuten pelissä (CPU-kuorma) */
+      var a=t*.09;cam.position.set(Math.cos(a)*34,hgt(Math.cos(a)*34,Math.sin(a)*34)+7,Math.sin(a)*34);cam.lookAt(Math.cos(a+1.1)*6,3,Math.sin(a+1.1)*6);r.render(sc,cam);},
       kill:function(){cv.style.display='none';sc.traverse(function(m){if(m.geometry)m.geometry.dispose();if(m.material)m.material.dispose();});r.dispose();try{r.forceContextLoss();}catch(e){}}};}
   function perfRun(done){var el=S.querySelector('.spPerf'),P=el.querySelector('.ppPanel'),cv=el.querySelector('canvas');
     P.innerHTML='<b>Suorituskykytesti</b><p>Mitataan, kuinka sujuvasti Hiidenmaa pyörii koneellasi, jotta grafiikka voidaan säätää sopivaksi. Testi kestää '+PERF_T+' sekuntia.</p>'+
       '<div class="pBar"><i id="ppB"></i></div><div class="pRow"><span id="ppT">Valmistellaan…</span><span id="ppF"></span></div>';
     loadThree(function(){if(over)return;var G=window.THREE?perfScene(cv):null;
       if(!G){P.innerHTML='<b>Suorituskykytesti ohitettiin</b><p>3D-grafiikkaa ei voitu käynnistää testiä varten. Peli käyttää oletusasetuksia.</p>';pf={end:true};done(null);return;}
-      var t0=performance.now(),last=t0,n=0,mt=0,warm=.8,b=document.getElementById('ppB'),tt=document.getElementById('ppT'),ff=document.getElementById('ppF'),sh=0;
+      var t0=performance.now(),last=t0,n=0,mt=0,FT=[],warm=1.2,b=document.getElementById('ppB'),tt=document.getElementById('ppT'),ff=document.getElementById('ppF'),sh=0;
       pf={g:G,stop:function(){if(pf&&pf.raf)cancelAnimationFrame(pf.raf);}};
       (function loop(){var now=performance.now(),dt=Math.min(.5,(now-last)/1000),t=(now-t0)/1000;last=now;
         try{G.frame(t);}catch(e){pf.err=1;}
-        if(t>warm){n++;mt+=dt;}var k=Math.max(0,Math.min(1,(t-warm)/PERF_T));b.style.width=(k*100)+'%';
+        if(t>warm){n++;mt+=dt;FT.push(dt);}var k=Math.max(0,Math.min(1,(t-warm)/PERF_T));b.style.width=(k*100)+'%';
         if(t>warm){tt.textContent='Mitataan… '+Math.max(0,Math.ceil(PERF_T-(t-warm)))+' s';if(now-sh>250&&mt>0){sh=now;ff.textContent=Math.round(n/mt)+' FPS';}}
         if(t-warm>=PERF_T||pf.err){perfFinish();return;}pf.raf=requestAnimationFrame(loop);})();
-      pf.partial=function(){return mt>=1.5?n/mt:-1;};
-      function perfFinish(){var fps=pf.err?0:n/Math.max(.001,mt);pf.stop();pf.end=true;var i=perfStore(fps),f=Math.round(fps),lvl=f>=50?'Sujuva':f>=35?'Hyvä':f>=22?'Kohtalainen':'Raskas';
+      pf.partial=function(){return mt>=1.5?robust():-1;};
+      /* v1.65: tulos = keskimääräinen ruudunpiirto ilman hitaimpia 3 % (yksittäiset nykäisyt, esim. varjostimen käännös, eivät vääristä) */
+      function robust(){var a=FT.slice().sort(function(x,y){return x-y;}),k=a.length>20?Math.ceil(a.length*.03):0,s=0;a=a.slice(0,a.length-k);for(var j=0;j<a.length;j++)s+=a[j];return a.length/Math.max(.001,s);}
+      function perfFinish(){var fps=pf.err?0:robust();pf.stop();pf.end=true;var i=perfStore(fps),f=Math.round(fps),lvl=f>=50?'Sujuva':f>=35?'Hyvä':f>=22?'Kohtalainen':'Raskas';
         el.classList.add('res');
         P.innerHTML='<small class="pHead">Suorituskykytesti valmis</small><b>Tulos: '+f+' FPS <small>('+lvl+')</small></b>'+
           '<p>Grafiikka-asetukset säädettiin automaattisesti suorituskyvyn mukaan.</p><p class="pRec">Grafiikkavalinnan suositus: <em>'+LV[i]+'</em></p>'+
