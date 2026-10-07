@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.65)
+## Nykytila (päivitetty v1.66)
 
-- **Versio 1.65**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
+- **Versio 1.66**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -91,6 +91,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.66 (jousi kaari alas, hakukentän valinta, HIIDENMAA mustasta pilvestä)
+- **Jousen kanto:** kaari (etupuoli, josta nuoli lähtee) alas, kaari aukeaa ylöspäin, jänne suorana ylhäällä, raajat eteen/taakse.
+  Käden mukainen kierto `BOW_CARRY`=1,71 (mitattu: levossa jänteen päiden korkeusero 0,001 m; kävellessä heiluu käsivarren mukana –
+  käyttäjän toive). Vartaloon lukittu suunta (aina vaakatasossa) kokeiltiin ja hylättiin. Mittaus: jänteen kärkien maailmakorkeudet.
+- **Ohitusteksti:** ensikäynnillä piilossa (`#splash.first`), palaavalle kävijälle pieni ja himmeä "Ohita: mikä tahansa näppäin".
+- **Hakukentät:** virtuaalisen osoittimen napsautus tekstikenttään valitsee aina koko tekstin (ennen vain kun kenttä ei ollut jo valittuna),
+  joten kirjoitus korvaa vanhan haun – kuten DEV-haussa. (`input.js` vcFire mousedown.)
+- **HIIDENMAA-otsikko:** studio häivyttyy ensin (z-index päällä), ruutu mustana `--tw` (ensikäynti 1,5 s = 1 s häivytys + 0,5 s musta,
+  palaava 0,5 s), sitten logo nousee mustasta: 8 mustaa savuläiskää (`.spSm i`) väistyvät ulospäin ja reunavarjo (`.spVig`) avautuu keskeltä.
+  Lopussa reunavarjo tummenee ensin, savu valuu takaisin ja lopuksi täysi musta (`.spFull`). Vain opacity/transform. Kesto: ensikäynti
+  6,2 s, palaava 4,1 s.
 
 ### v1.65 (jousen kantoasento, pidempi ja tarkempi testi, valmistushaku)
 - **Jousen kanto** (ei vedossa): kuten ennen pystyssä jousikädessä (vasen), mutta kierretty `BOW_CARRY`=0,75 rad käden x-akselin ympäri →
@@ -1786,7 +1798,7 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 6 (v1.53–) – julkaisupäivitys
-**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.65 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
+**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.66 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
 - A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
   eteenpäin, piikivikirves.
 - B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.

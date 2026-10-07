@@ -109,7 +109,8 @@ function vcFlush(){const p=vcPend;vcPend=null;if(!p||!VC.on)return;const t=vcAt(
 // Oikeat tapahtumat pysäytetään ikkunan kaappausvaiheessa (ennen muita kuuntelijoita) ja korvataan osoittimen kohtaan lähetetyillä.
 addEventListener('mousemove',e=>{if(!e.isTrusted)return;vcSync();if(!VC.on)return;e.stopImmediatePropagation();if(Math.abs(e.movementX)>300||Math.abs(e.movementY)>300)return;const k=+SET.curSens||1;vcMove(e.movementX*k,e.movementY*k);},true);   // v1.54 osoittimen herkkyys
 addEventListener('mousedown',e=>{if(!e.isTrusted)return;vcSync();if(!VC.on)return;if(vcPend)vcFlush();e.stopImmediatePropagation();e.preventDefault();VC.down={button:e.button,buttons:e.buttons,shiftKey:e.shiftKey,ctrlKey:e.ctrlKey,altKey:e.altKey};
-  const t=vcFire('mousedown',e);const ae=document.activeElement;if(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))t.focus();else if(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))ae.blur();},true);
+  const t=vcFire('mousedown',e);const ae=document.activeElement;if(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)){t.focus();if(t.tagName==='INPUT'&&/^(text|search)$/.test(t.type))setTimeout(()=>{try{t.select();}catch(err){}},0);}   /* v1.65: napsautus valitsee tekstin aina (kirjoita päälle) */
+  else if(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))ae.blur();},true);
 addEventListener('mouseup',e=>{if(!e.isTrusted)return;if(!VC.on){VC.down=null;return;}if(vcPend)vcFlush();e.stopImmediatePropagation();VC.down=null;vcFire('mouseup',e);},true);
 for(const ty of ['click','dblclick','contextmenu','auxclick'])addEventListener(ty,e=>{if(!e.isTrusted||!VC.on)return;e.stopImmediatePropagation();e.preventDefault();
   const t=vcAt();if(ty==='click'&&typeof t.click==='function'&&t.tagName==='LABEL'){t.click();return;}vcFire(ty,e,null,t);},true);

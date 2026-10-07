@@ -438,5 +438,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 | Maassa oleva esine | 5 min (vilkkuu viimeiset 15 s); arvoesineet siirtyvät arkkuun |
 
 ## v1.65
-- Jousta kannetaan pystyssä jousikädessä kallistettuna: kaari osoittaa alaviistoon maata kohti (vedossa normaali asento).
+- Jousta kannetaan jousikädessä kaari alas (aukeaa ylöspäin) ja jänne suorana ylhäällä; jousi heiluu käsivarren mukana (vedossa normaali asento).
+- Aloitusjaksossa ei ohitustekstiä ensikäynnillä; palaavalle kävijälle pieni "Ohita: mikä tahansa näppäin".
+- Hakukentän napsautus valitsee vanhan tekstin, joten uusi haku kirjoitetaan suoraan päälle.
+- HIIDENMAA-otsikko nousee mustasta savusta ja vajoaa mustaan reunat edellä (ensikäynnillä studioiden jälkeen 0,5 s mustaa).
 - Valmistusvalikon haku toimii kuten DEV-haku (nimi tai tunniste, parhaat osumat ensin, Enter valmistaa ensimmäisen).

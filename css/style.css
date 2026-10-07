@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.65';
+:root{--css-v:'1.66';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -640,10 +640,29 @@ button:focus,select:focus{outline:none}
 #splash .spTitle{transition:none}
 #splash .spShade{display:none}
 #splash #spLogo{transform:none;transition:none;opacity:0}
-#splash .spTitle.on #spLogo{opacity:0;transform:none;animation:spLogoIn 1.6s ease .15s forwards,spLogoOut 1.3s ease calc(var(--td,7200ms) - 1.45s) forwards}
 @keyframes spLogoIn{from{opacity:0}to{opacity:1}}@keyframes spLogoOut{from{opacity:1}to{opacity:0}}
 /* v1.64: varoitusruudun alaosaan Windows-yhteensopivuus (valkoinen Windows 11 -tyylinen ikoni tekstin vieressä) */
 #splash .spWin{position:absolute;left:0;right:0;bottom:56px;display:flex;align-items:center;justify-content:center;gap:10px;font:600 14px var(--font-b);color:#e8e2d4;letter-spacing:.04em;opacity:0;transition:opacity 1s ease .6s}
 #splash .spWarn.on .spWin{opacity:.9}
 #splash .spWin svg{width:15px;height:15px;fill:#fff;vertical-align:-2px;margin:0 6px 0 2px}   /* v1.65: ikoni Windows-sanan edessä */
 #inv #craftSearch{max-width:300px}   /* v1.65: lyhyempi hakupalkki */
+/* v1.66: HIIDENMAA nousee mustasta pilvestä ja vajoaa mustaan. Studio häivyttyy ensin (se on päällimmäisenä), sitten --tw musta
+   (0,5 s ruudun mustana), musta savu (8 pehmeää läiskää) väistyy ulospäin ja reunojen varjo (.spVig) avautuu keskeltä; lopussa varjo
+   tummenee reunoilta ensin, savu valuu takaisin keskelle ja lopuksi täysi musta. Vain opacity/transform → kevyt. */
+#splash .spStudio{z-index:2}
+#splash .spTitle.on #spLogo{animation:spLogoIn 2.4s ease-out var(--tw,1500ms) both,spLogoOut 1.4s ease-in calc(var(--td,6200ms) - 1.5s) forwards}
+#splash .spTitle .spFull,#splash .spTitle .spVig{position:absolute;inset:0;pointer-events:none;opacity:0;will-change:opacity}
+#splash .spTitle .spFull{background:#000}
+#splash .spTitle .spVig{background:radial-gradient(ellipse 62% 58% at 50% 50%,transparent 18%,rgba(0,0,0,.75) 55%,#000 82%)}
+#splash .spTitle.on .spFull{animation:spOut 1.4s ease var(--tw,1500ms) both,spIn .8s ease-in calc(var(--td,6200ms) - .85s) forwards}
+#splash .spTitle.on .spVig{animation:spOut 2.6s ease calc(var(--tw,1500ms) + .5s) both,spIn 1.2s ease-in calc(var(--td,6200ms) - 1.9s) forwards}
+#splash .spSm{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+#splash .spSm i{position:absolute;left:50%;top:50%;width:44vmax;height:26vmax;margin:-13vmax 0 0 -22vmax;border-radius:50%;opacity:0;will-change:transform,opacity;
+  background:radial-gradient(closest-side,rgba(0,0,0,.96),rgba(0,0,0,.82) 45%,rgba(0,0,0,0))}
+#splash .spTitle.on .spSm i{animation:spSmOut 3s cubic-bezier(.3,.6,.4,1) var(--tw,1500ms) both,spSmIn 1.6s ease-in calc(var(--td,6200ms) - 1.7s) forwards}
+@keyframes spOut{from{opacity:1}to{opacity:0}}@keyframes spIn{from{opacity:0}to{opacity:1}}
+@keyframes spSmOut{from{opacity:1;transform:translate(var(--x),var(--y)) scale(var(--s))}to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(calc(var(--s)*1.8))}}
+@keyframes spSmIn{from{opacity:0;transform:translate(var(--dx),var(--dy)) scale(calc(var(--s)*1.8))}to{opacity:1;transform:translate(var(--x),var(--y)) scale(var(--s))}}
+/* v1.66: ohitusteksti vain palaavalle kävijälle, pienenä ja huomaamattomana; ensikäynnillä piilossa */
+#splash.first .spSkip{display:none}
+#splash .spSkip{font-size:10.5px;color:#3e382f;letter-spacing:.04em;right:16px;bottom:12px}

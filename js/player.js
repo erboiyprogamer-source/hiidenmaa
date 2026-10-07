@@ -227,9 +227,10 @@ function chopApply(w){
   _chB.addScaledVector(_chD,-_chB.dot(_chD));if(_chB.lengthSq()<1e-6)_chB.set(0,1,0);_chB.normalize();
   _chY.copy(_chB).negate();_chX.crossVectors(_chY,_chD).normalize();_chY.crossVectors(_chD,_chX).normalize();_chM.makeBasis(_chX,_chY,_chD);_chQ.setFromRotationMatrix(_chM);
   fig.hand.getWorldQuaternion(_chQh);_chQh.invert().multiply(_chQ);heldMesh.quaternion.copy(heldMesh.userData.q0).slerp(_chQh,w);}
-/* v1.65: jousen kantoasento (käyttäjän toive): kuten ennen pystyssä kädessä, mutta kallistettuna niin, että kaari (rungon etupuoli, joka
-   vedossa osoittaa kohdetta) osoittaa alaviistoon maata kohti ja yläpää eteen-ylös. Kierto käden x-akselin ympäri. */
-const BOW_CARRY=.75;
+/* v1.65/v1.66: jousen kantoasento (käyttäjä): kaari (rungon etupuoli, josta nuoli lähtee) alas, kaari aukeaa ylöspäin ja jänne on ylhäällä
+   suorana. Kierto käden x-akselin ympäri, joten jousi seuraa käsivartta (heiluu sen mukana); kulma säädetty niin, että levossa jänne on
+   vaakatasossa. (Vartaloon lukittu suunta kokeiltiin v1.66:ssa ja hylättiin: käyttäjä haluaa käsivarren mukaisen.) */
+const BOW_CARRY=1.71;
 function armClear(arm,elbow,hand){let i=0;const sx=Math.sign(arm.position.x)||1;for(;i<16;i++){fig.g.updateMatrixWorld(true);if(bodyPen(hand,.07)<=0&&bodyPen(elbow,.06)<=0)break;if(arm.rotation.x>-1.45)arm.rotation.x-=.06;else arm.rotation.z+=sx*.06;}return i;}
 // Kahden nivelen IK napavektorilla (v0.72): kämmen osuu maailman pisteeseen T ja kyynärpää osoittaa luonnolliseen suuntaan (pole,
 // vanhemman eli rigin koordinaateissa; oletus alas ja ulospäin). Olkavarsi a = 0,35 m, kyynärvarsi b = 0,33 m.

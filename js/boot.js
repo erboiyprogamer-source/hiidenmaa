@@ -3,7 +3,7 @@
    vasta sitten latausnäyttö ja pelin skriptit. Ennen jakso pyöri pelin latauksen päällä, jolloin häivytykset pätkivät. Pelin skriptit
    esiladataan taustalla (<link rel=preload>) ja ajetaan yksi kerrallaan pienellä tauolla, jotta riimut ehtivät syttyä näkyvästi.
    Välilyönti, Enter tai napsautus ohittaa koko jakson (ja testin) ja vie suoraan latausnäyttöön. */
-window.__BJV='1.65';
+window.__BJV='1.66';
 (function(){
   var Q=location.search,wd=!!navigator.webdriver;
   function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
@@ -36,7 +36,7 @@ window.__BJV='1.65';
   var S=document.getElementById('splash');
   if(!needSplash&&!needPerf&&!needTitle){startGame();window.__boot={needSplash:false,needPerf:false,needTitle:false,PERF_T:PERF_T};return;}
   loadThree(function(){});
-  window.__splashOn=true;S.hidden=false;S.classList.toggle('noIntro',!needSplash);
+  window.__splashOn=true;S.hidden=false;S.classList.toggle('noIntro',!needSplash);S.classList.toggle('first',needSplash);   // v1.66: ensikäynnillä ei ohitustekstiä (ohitus toimii silti)
   var spV=function(){var e=document.getElementById('spVer');if(e)e.textContent='Versio '+(window.HV||'');};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',spV);else spV();
 
@@ -105,9 +105,9 @@ window.__BJV='1.65';
       pf.finish=perfFinish;});}
 
   /* ---------- jakson ohjaus ---------- */
-  var ST=[];if(needSplash)ST.push(['spStudio',3500],['spTitle',5200],['spWarn',9000]);if(needPerf)ST.push(['spPerf',0]);if(needSplash||needPerf)ST.push(['spTrans',1300]);else ST.push(['spTitle',3600]);
+  var ST=[];if(needSplash)ST.push(['spStudio',3500],['spTitle',6200],['spWarn',9000]);if(needPerf)ST.push(['spPerf',0]);if(needSplash||needPerf)ST.push(['spTrans',1300]);else ST.push(['spTitle',4100]);
   var i=-1,tm=0,st=performance.now(),over=false;
-  function show(n){var all=S.querySelectorAll('.spStage');for(var j=0;j<all.length;j++)all[j].classList.remove('on');var el=S.querySelector('.'+n);if(n==='spTitle')el.style.setProperty('--td',ST[i][1]+'ms');void el.offsetWidth;el.classList.add('on');S.classList.toggle('trans',n==='spTrans');}
+  function show(n){var all=S.querySelectorAll('.spStage');for(var j=0;j<all.length;j++)all[j].classList.remove('on');var el=S.querySelector('.'+n);if(n==='spTitle'){el.style.setProperty('--td',ST[i][1]+'ms');el.style.setProperty('--tw',(needSplash?1500:500)+'ms');}void el.offsetWidth;el.classList.add('on');S.classList.toggle('trans',n==='spTrans');}
   function next(){clearTimeout(tm);if(over)return;i++;if(i>=ST.length){end();return;}var n=ST[i][0];show(n);
     if(n==='spPerf')setTimeout(function(){if(!over)perfRun(function(){next();});},700);else tm=setTimeout(next,ST[i][1]);}
   function end(){if(over)return;over=true;clearTimeout(tm);S.classList.add('out');if(needSplash)lsSet('hiidenmaa_intro','1');
