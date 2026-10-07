@@ -6,7 +6,7 @@
 <title>Hiidenmaa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700;800&family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;800&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=1.58">
+<link rel="stylesheet" href="css/style.css?v=1.59">
 </head>
 <body>
 
@@ -30,6 +30,7 @@
   <div class="lsVerse" id="lsVerse"></div>
   <div class="lsBar"><i id="lsBarI"></i></div>
   <div class="lsNote" id="lsNote">Riimut heräävät…</div>
+  <div class="lsPerf" id="lsPerf" hidden></div>
 </div>
 <script>
 /* v1.43 (lista 4, kohta 10): latausnäyttö. Riimut syttyvät sitä mukaa kuin skriptit latautuvat (load-tapahtuma kaapataan dokumentista).
@@ -54,21 +55,21 @@
 </script>
 <!-- v1.55: ensikäynnin aloitusjakso (studio → HIIDENMAA → varoitus → siirtymä latausnäyttöön). Napsautus/näppäin siirtyy seuraavaan. -->
 <div id="splash" hidden>
-  <div class="spStage spStudio"><div class="spStudioN">EricStudios</div><div class="spStudioS">KSPK-tech</div>
+  <div class="spStage spStudio"><div class="spStudioN">EricStudios</div><div class="spAmp">&amp;</div><div class="spStudioN n2">KSPK-tech</div>
     <div class="spCopy">© 2026 EricStudios · KSPK-tech. Kaikki oikeudet pidätetään.<br>Hiidenmaa on itsenäinen peli. Kaikki hahmot, paikat ja tapahtumat ovat kuvitteellisia.<br><span id="spVer"></span></div></div>
   <div class="spStage spTitle"><svg id="spLogo" viewBox="0 0 1000 230" aria-label="Hiidenmaa"></svg><div class="spShade"></div></div>
   <div class="spStage spWarn"><svg class="spDev" viewBox="0 0 120 60" aria-hidden="true"><rect x="2" y="16" width="78" height="40" rx="5" fill="none" stroke="currentColor" stroke-width="3"/>
       <g fill="currentColor"><rect x="10" y="24" width="8" height="7" rx="1"/><rect x="21" y="24" width="8" height="7" rx="1"/><rect x="32" y="24" width="8" height="7" rx="1"/><rect x="43" y="24" width="8" height="7" rx="1"/><rect x="54" y="24" width="8" height="7" rx="1"/><rect x="65" y="24" width="8" height="7" rx="1"/>
       <rect x="10" y="34" width="8" height="7" rx="1"/><rect x="21" y="34" width="8" height="7" rx="1"/><rect x="32" y="34" width="8" height="7" rx="1"/><rect x="43" y="34" width="8" height="7" rx="1"/><rect x="54" y="34" width="8" height="7" rx="1"/><rect x="65" y="34" width="8" height="7" rx="1"/><rect x="20" y="44" width="42" height="6" rx="1"/></g>
       <rect x="92" y="10" width="24" height="40" rx="12" fill="none" stroke="currentColor" stroke-width="3"/><line x1="104" y1="10" x2="104" y2="24" stroke="currentColor" stroke-width="3"/></svg>
-    <b>Toimii parhaiten tietokoneella</b><p>Hiidenmaa on tehty pelattavaksi <em>hiirellä ja näppäimistöllä</em>.<br>Kosketusnäytöillä ohjaus on rajallinen.</p></div>
+    <b>Toimii parhaiten tietokoneella</b><p>Hiidenmaa on tehty pelattavaksi <em>hiirellä ja näppäimistöllä</em>.<br>Kosketusnäytöillä ohjaus on rajallinen.</p><p class="spEsc"><kbd>Esc</kbd> Vältä turhaa Esc-näppäimen painamista: selaimessa Esc vapauttaa hiiren ja keskeyttää pelin, mikä aiheuttaa haasteita. Valikko ja paneelien sulkeminen: <kbd>P</kbd>.</p></div>
   <div class="spStage spTrans"><span class="spRune">ᚺ</span><i class="spRing"></i></div>
   <div class="spSkip">Jatka: napsautus tai mikä tahansa näppäin</div>
 </div>
 <script>
 (function(){var first=false;try{first=!localStorage.getItem('hiidenmaa_intro')&&!sessionStorage.getItem('hiidenmaa_pending');if(/[?&]splash=1/.test(location.search))first=true;else if(navigator.webdriver)first=false;}catch(e){}
   var real=window.__ldDone;window.__ldDone=function(){if(window.__splashOn){window.__ldPend=true;return;}real();};   // latausnäyttö valmistuu vasta jakson jälkeen
-  if(!first)return;window.__splashOn=true;var S=document.getElementById('splash');S.hidden=false;document.getElementById('spVer').textContent='Versio '+(window.HV||'');
+  if(!first)return;window.__splashOn=true;var S=document.getElementById('splash');S.hidden=false;var spV=function(){document.getElementById('spVer').textContent='Versio '+(window.HV||'');};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',spV);else spV();
   // HIIDENMAA: kivi, halkeamat (satunnaiset), viistetty valo, rosoiset reunat
   var L=document.getElementById('spLogo'),TX='<text x="500" y="176" text-anchor="middle" font-family="\'Cinzel Decorative\',\'Uncial Antiqua\',serif" font-weight="900" font-size="172" textLength="968" lengthAdjust="spacingAndGlyphs">HIIDENMAA</text>',ck='';
   for(var c=0;c<16;c++){var x=40+Math.random()*920,y=Math.random()<.5?30:200,d='M'+x.toFixed(0)+','+y;for(var k=0;k<8;k++){x+=(Math.random()-.5)*34;y+=(y<120?1:-1)*(10+Math.random()*14);d+=' L'+x.toFixed(0)+','+y.toFixed(0);}
@@ -77,7 +78,7 @@
     '<filter id="spGr" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3"/><feColorMatrix values="0 0 0 0 .2  0 0 0 0 .17  0 0 0 0 .14  0 0 0 -1.6 1.15"/></filter>'+
     '<filter id="spCv" x="-3%" y="-8%" width="106%" height="116%"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G" result="d"/><feGaussianBlur in="d" stdDeviation="1.8" result="b"/><feSpecularLighting in="b" surfaceScale="3.5" specularConstant=".9" specularExponent="20" lighting-color="#fff1d8" result="s"><feDistantLight azimuth="235" elevation="42"/></feSpecularLighting><feComposite in="s" in2="d" operator="in" result="s2"/><feComposite in="d" in2="s2" operator="arithmetic" k2="1" k3=".6"/></filter></defs>'+
     '<g filter="url(#spCv)"><g clip-path="url(#spClip)"><rect width="1000" height="230" fill="url(#spSt)"/><rect width="1000" height="230" filter="url(#spGr)"/>'+ck+'</g></g>';
-  var T=[['spStudio',5200],['spTitle',6400],['spWarn',4200],['spTrans',1300]],i=-1,tm=0,st=performance.now();
+  var T=[['spStudio',5200],['spTitle',6400],['spWarn',6500],['spTrans',1300]],i=-1,tm=0,st=performance.now();
   function next(){clearTimeout(tm);i++;var all=S.querySelectorAll('.spStage');for(var j=0;j<all.length;j++)all[j].classList.remove('on');
     if(i>=T.length){end();return;}var el=S.querySelector('.'+T[i][0]);void el.offsetWidth;el.classList.add('on');S.classList.toggle('trans',T[i][0]==='spTrans');tm=setTimeout(next,T[i][1]);}
   function end(){S.classList.add('out');try{localStorage.setItem('hiidenmaa_intro','1');}catch(e){}removeEventListener('keydown',skip,true);removeEventListener('mousedown',skip,true);
@@ -173,7 +174,7 @@
   <canvas id="menuFx"></canvas>
   <!-- v1.46: päänäkymä (ei vieritystä) ja vaihtuva leveä näkymä (Maailmat / Näppäimet / Asetukset), Takaisin-painike tai P -->
   <div class="inner mHome">
-    <h1 class="title mTitle"><small>Selviytymispeli · versio 1.58</small><span class="tWord" data-text="Hiidenmaa">Hiidenmaa</span><span class="tRunes" aria-hidden="true">ᚺᛁᛁᛞᛖᚾᛗᚨᚨ</span></h1>
+    <h1 class="title mTitle"><small>Selviytymispeli · versio 1.59</small><span class="tWord" data-text="Hiidenmaa">Hiidenmaa</span><span class="tRunes" aria-hidden="true">ᚺᛁᛁᛞᛖᚾᛗᚨᚨ</span></h1>
     <p class="lede">Haaksirikko jätti sinut saarelle, jota yhdeksän talven ajan on hallinnut kivinen Kalmanvartija. Kaada puita, rakenna suoja ennen yötä, takoa kuparista ase ja herätä vartija kivikehässä.</p>
     <div class="menuBtns">
       <p class="note" id="mapName" style="margin:0 0 6px"></p>
@@ -221,41 +222,41 @@
 <script>
 /* v1.26 käynnistysvahti: näyttää virheet ruudulla (versio mukana) ja ohjeen, jos peli ei käynnisty 20 s:ssa.
    Syy: v1.23:ssa peli kaatui käynnistyksessä hiljaa (musta ruutu); raw.githack/selain voi myös näyttää vanhaa versiota välimuistista. */
-window.HV='1.58';(function(){function box(t){var b=document.getElementById('bootErr');if(!b){b=document.createElement('div');b.id='bootErr';b.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;max-width:min(92vw,720px);padding:10px 14px;background:rgba(60,12,10,.94);border:1px solid #e0614f;border-radius:4px;color:#f3e6d8;font:600 13px/1.4 sans-serif;white-space:pre-wrap';(document.body||document.documentElement).appendChild(b);}
+window.HV='1.59';(function(){function box(t){var b=document.getElementById('bootErr');if(!b){b=document.createElement('div');b.id='bootErr';b.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;max-width:min(92vw,720px);padding:10px 14px;background:rgba(60,12,10,.94);border:1px solid #e0614f;border-radius:4px;color:#f3e6d8;font:600 13px/1.4 sans-serif;white-space:pre-wrap';(document.body||document.documentElement).appendChild(b);}
   b.dataset.m=(b.dataset.m?b.dataset.m+'\n':'')+t;b.textContent=b.dataset.m+'\n(Hiidenmaa versio '+window.HV+'. Jos versio on vanha, paina Ctrl+F5 tai käytä commit-linkkiä.)';}
   window.__bootBox=box;var n=0;window.addEventListener('error',function(e){/* v1.38: 'Script error.' ilman tiedostoa = toisen sivuston skripti (yleensä selainlaajennus, esim. kääntäjä); ei näytetä pelaajalle */if(/^Script error\.?$/.test(e.message||'')&&!e.filename){window.__xerr=(window.__xerr||0)+1;return;}if(++n>3)return;box('Virhe: '+(e.message||e)+(e.filename?' ('+e.filename.split('/').pop()+':'+e.lineno+')':''));});
   setTimeout(function(){if(!window.__game)box('Peli ei käynnistynyt. Päivitä sivu (Ctrl+F5).');},20000);})();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
 <!-- Tavalliset skriptit jakavat saman globaalin näkyvyysalueen. Järjestyksellä on väliä. -->
-<script src="js/core.js?v=1.58"></script>
-<script src="js/world.js?v=1.58"></script>
-<script src="js/render.js?v=1.58"></script>
-<script src="js/collision.js?v=1.58"></script>
-<script src="js/items.js?v=1.58"></script>
-<script src="js/audio.js?v=1.58"></script>
-<script src="js/models.js?v=1.58"></script>
-<script src="js/resources.js?v=1.58"></script>
-<script src="js/landmarks.js?v=1.58"></script>
-<script src="js/pieces.js?v=1.58"></script>
-<script src="js/mobs.js?v=1.58"></script>
-<script src="js/dungeons.js?v=1.58"></script>
-<script src="js/story.js?v=1.58"></script>
-<script src="js/state.js?v=1.58"></script>
-<script src="js/effects.js?v=1.58"></script>
-<script src="js/settings.js?v=1.58"></script>
-<script src="js/input.js?v=1.58"></script>
-<script src="js/actions.js?v=1.58"></script>
-<script src="js/building.js?v=1.58"></script>
-<script src="js/environment.js?v=1.58"></script>
-<script src="js/player.js?v=1.58"></script>
-<script src="js/ai.js?v=1.58"></script>
-<script src="js/camera.js?v=1.58"></script>
-<script src="js/ui.js?v=1.58"></script>
-<script src="js/progress.js?v=1.58"></script>
-<script src="js/save.js?v=1.58"></script>
-<script src="js/menubg.js?v=1.58"></script>
-<script src="js/main.js?v=1.58"></script>
+<script src="js/core.js?v=1.59"></script>
+<script src="js/world.js?v=1.59"></script>
+<script src="js/render.js?v=1.59"></script>
+<script src="js/collision.js?v=1.59"></script>
+<script src="js/items.js?v=1.59"></script>
+<script src="js/audio.js?v=1.59"></script>
+<script src="js/models.js?v=1.59"></script>
+<script src="js/resources.js?v=1.59"></script>
+<script src="js/landmarks.js?v=1.59"></script>
+<script src="js/pieces.js?v=1.59"></script>
+<script src="js/mobs.js?v=1.59"></script>
+<script src="js/dungeons.js?v=1.59"></script>
+<script src="js/story.js?v=1.59"></script>
+<script src="js/state.js?v=1.59"></script>
+<script src="js/effects.js?v=1.59"></script>
+<script src="js/settings.js?v=1.59"></script>
+<script src="js/input.js?v=1.59"></script>
+<script src="js/actions.js?v=1.59"></script>
+<script src="js/building.js?v=1.59"></script>
+<script src="js/environment.js?v=1.59"></script>
+<script src="js/player.js?v=1.59"></script>
+<script src="js/ai.js?v=1.59"></script>
+<script src="js/camera.js?v=1.59"></script>
+<script src="js/ui.js?v=1.59"></script>
+<script src="js/progress.js?v=1.59"></script>
+<script src="js/save.js?v=1.59"></script>
+<script src="js/menubg.js?v=1.59"></script>
+<script src="js/main.js?v=1.59"></script>
 <script>
 /* v1.58: tiedostojen versiotarkistus. Jos välityspalvelin (esim. raw.githack) antaa vanhan main.js/core.js/style.css-tiedoston uuden
    index.html:n kanssa, peli kaatuisi epäselvästi. Nyt näytetään ohje: avaa commit-linkki tai odota ja päivitä. */

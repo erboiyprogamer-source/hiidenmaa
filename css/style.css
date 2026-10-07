@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.58';
+:root{--css-v:'1.59';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -596,3 +596,14 @@ button:focus,select:focus{outline:none}
 #splash .spSkip{position:absolute;right:22px;bottom:18px;font:600 12px var(--font-b);color:#5a5244;letter-spacing:.06em}
 #loadScr.enter .lsCenter,#loadScr.enter .lsTitle{animation:ldEnter 1.1s cubic-bezier(.2,.8,.2,1) both}
 @keyframes ldEnter{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+/* v1.59 aloitusjakso: studiot allekkain yhtä isoina, Esc-ohje; suorituskykytestin paneeli latausnäytöllä */
+#splash .spStudioN.n2{transition-delay:.7s}#splash .spAmp{font:500 clamp(20px,2.4vw,30px) 'Cinzel',serif;color:#b8a888;margin:6px 0;opacity:0;transition:opacity 1.2s ease .45s}
+#splash .spStudio.on .spAmp{opacity:1}
+#splash .spEsc{max-width:620px;margin-top:18px !important;padding:10px 14px;border:1px solid rgba(232,164,74,.35);border-radius:6px;background:rgba(232,164,74,.06);font-size:15px !important}
+#splash kbd,#loadScr kbd{font:700 12px var(--font-b);padding:1px 7px;border:1px solid #8a6a44;border-radius:3px;color:#ffb35a;margin:0 2px}
+#loadScr .lsPerf{margin-top:16px;max-width:min(520px,90vw);padding:14px 18px;border:1px solid rgba(232,164,74,.45);border-radius:8px;background:rgba(20,14,9,.75);text-align:center;box-shadow:0 0 24px rgba(255,140,50,.15)}
+#loadScr .lsPerf b{display:block;font:800 22px 'Cinzel',serif;color:#f2e6cc}#loadScr .lsPerf b small{font:600 15px var(--font-b);color:#ffb35a}
+#loadScr .lsPerf p{font:500 15px/1.5 var(--font-b);color:#d8cdb4;margin:8px 0 0}#loadScr .lsPerf em{font-style:normal;color:#ffb35a;font-weight:700}
+#loadScr .lsPerf .pTip{font-size:14px;color:#b8a888}
+#loadScr .lsPerf .pBar{height:6px;margin:12px 0 6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}#loadScr .lsPerf .pBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8a4a1a,#ffb35a)}
+#loadScr .lsPerf span{font:700 13px var(--font-b);color:#b8a888}

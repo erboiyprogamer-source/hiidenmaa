@@ -374,7 +374,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## Lista 4, erä E (v1.43)
 - Latausnäyttö: riimukiven riimut syttyvät latauksen edetessä, sumu, kipinät ja säe.
-- Ensimmäisellä käynnillä 3 s suorituskykytesti valitsee grafiikan esiasetuksen (Low–Medium).
+- Ensimmäisellä käynnillä 5 s suorituskykytesti (näkyvä paneeli: palkki, laskuri, selvä FPS-tulos ja valittu esiasetus + ohje
+  Asetukset › Grafiikka) valitsee grafiikan esiasetuksen (Low–Medium).
 - Uusi maailma alkaa 6 s introlla pilvien yläpuolelta (ohitettavissa millä tahansa näppäimellä).
 - Taukovalikossa "Tila: Tauko / Käynnissä": Käynnissä-tilassa maailma jatkuu valikon takana (et ota vahinkoa).
 - Uusi alue löytyy vasta hieman syvemmällä (~6 m); löytöotsikot häivyttyvät hitaasti eivätkä tule päällekkäin (jono).
@@ -412,8 +413,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Piikivikirves (työpenkki: 3 puuta, 3 piikiveä, 1 nahka; taso 2): kaataa puut kivikirvestä nopeammin, ei kovia puita.
 - Kävellessä hahmo ei keinu sivulle; juostessa vähän ja osin eteenpäin.
 - Asetukset › Ohjaus: kääntymisen herkkyys ja pelin paneelien osoittimen herkkyys. Osoitin liikkuu viiveettä.
-- Ensimmäisellä käynnillä aloitusjakso: EricStudios / KSPK-tech ja tekijänoikeudet → HIIDENMAA kivikaiverruksena → varoitus
-  (tietokone, hiiri ja näppäimistö) → riimusiirtymä latausnäyttöön. Ohitettavissa napsautuksella tai näppäimellä.
+- Ensimmäisellä käynnillä aloitusjakso: "EricStudios & KSPK-tech" allekkain ja tekijänoikeudet → HIIDENMAA kivikaiverruksena → varoitus
+  (tietokone, hiiri ja näppäimistö; vältä turhaa Esc-painamista, valikko = P) → riimusiirtymä latausnäyttöön. Ohitettavissa napsautuksella tai näppäimellä.
 - Ultra-asetuksella veri lentää tuplasti rajummin. Verilätäköt mukailevat rinnettä, ja Medium+ jyrkässä (> 45°) rinteessä lammikko
   valuu 10 s alas.
 - Jousi on selässä litteänä; jos repussa on nuolia, selässä näkyy 3 nuolta.
