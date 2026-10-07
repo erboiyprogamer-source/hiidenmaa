@@ -191,7 +191,9 @@ function makePlayer(){
     const k=new THREE.Group();k.position.set(0,-.4,0);p.add(k);tube(k,.072,.06,.4,pant,0,-.2,0,1,1,8);tube(k,.07,.07,.2,boot,0,-.3,0,1,1,8);tube(k,.083,.083,.06,fur,0,-.2,0,1,1,8);rnd(k,0,-.37,.07,.075,boot,1,.7,1.8,8);rig.add(p);return[p,k];};
   const [legL,kneeL]=mkLeg(-.12),[legR,kneeR]=mkLeg(.12);
   const torso=tube(rig,.2,.22,.76,cloth,0,hip+.38,0,1.18,.62,8);
-  tube(rig,.235,.235,.07,leather,0,hip+.1,0,1.18,.65,8);rnd(rig,.22,hip+.08,.1,.06,leather,1,1.2,.8,6);rnd(rig,-.16,hip+.06,-.15,.055,fur,1,1.1,.8,6);
+  tube(rig,.235,.235,.07,leather,0,hip+.1,0,1.18,.65,8);rnd(rig,.22,hip+.08,.1,.06,leather,1,1.2,.8,6);{const pc=new THREE.Group(),dk=F(0x4a3220);   // v1.37 (lista 3, kohta 37): vyön takana nahkapussi (ennen irrallinen karvapallo), kiinni vyössä
+    pc.add(bx(.13,.13,.055,leather,0,-.01,0),bx(.136,.05,.062,dk,0,.05,-.002),bx(.03,.03,.02,F(0xb08d57),0,.03,-.034),bx(.02,.05,.012,dk,-.045,.075,.026),bx(.02,.05,.012,dk,.045,.075,.026));
+    pc.position.set(-.165,hip+.03,-.15);pc.rotation.y=.42;rig.add(pc);}
   tube(rig,.27,.23,.12,fur,0,hip+.7,0,1.2,.7,8);
   const cloths=[torso];
   const mkArm=x=>{const p=new THREE.Group();p.position.set(x,hip+.68,0);rnd(p,0,0,0,.085,fur,1,1,1,8);

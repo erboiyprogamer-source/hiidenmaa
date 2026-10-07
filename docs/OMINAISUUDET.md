@@ -334,3 +334,14 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Tallenna nyt valikosta, automaattisesti 2 min välein nykyiseen maailmaan.
 - Reppu, arkku, rakennusvalikko ja kartta pitävät hiiren lukittuna ja näyttävät pelin oman osoittimen: suljettaessa (Tab, E, M, B…) kamera
   kääntyy heti ilman napsautusta. Esc-taukovalikon jälkeen selain vaatii yhden napsautuksen.
+
+## Efektit ja animaatiot v1.37
+- Osumasta lentää verta (isoista enemmän) ja maahan jää läntti, joka häipyy 10 s:ssa; haavat näkyvät mobin pinnassa. Ei-elävät pölisevät.
+  Asetus Veri: Normaali / Vähän / Pois.
+- Kuollut mob kaatuu velttona, veriläntti alle, katoaa alle 10 s:ssa. Palanut: mustuu ja muuttuu vajoavaksi tuhkakasaksi.
+- Pelaajan kuolema: kaatuminen ja veriläntti (1 min); palokuolema → tuhka. Nuotion päällä pelaaja syttyy (sade/vesi sammuttaa).
+- Palava mob: isot liekit ja paljon savua.
+- Kirves ja hakku: kahden käden isku olan yli vuorotellen kummaltakin puolelta, ei pään läpi. Jousen vetokäsi oikealla olan korkeudella.
+- Selkäesineet viistoon (pitkä osa/terä sivulle), jousi ja työkalu ristiin; vyön takana nahkapussi.
+- Ulottuvuusportit koristeltu (riimut, kulhot, paadet, teemakoristeet).
+- DEV: lento tuplahypyllä (välilyönti ylös, Shift alas).

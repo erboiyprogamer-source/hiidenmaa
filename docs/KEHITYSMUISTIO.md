@@ -73,6 +73,27 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.37 (lista 3: veri ja kuolema-animaatiot, palokuolema, savu, DEV-lento, portit, kirves/hakku IK, jousen veto, selkäesineet)
+- **Uusi tiedosto `js/effects.js`** (ladataan state.js:n jälkeen).
+- **Veri (kohta 24):** jokainen osuma: pisaroita (määrä vahingon ja koon mukaan, isoilla enemmän) ja läntti maahan, joka häipyy 10 s:ssa
+  (`bleed`, `splat`, enint. 60). Haavat: tummanpunaiset läikät mobin pintaan (`addWound`, enint. 6). Kivihahmot: kivisiruja, kalmot: luupölyä,
+  Jäätär: jääsiruja, Suonäkki: usvaa, hiidet ja Aarnihirviö: vihreää mahlaa. Asetus `SET.blood` 1 / .5 / 0. Myös pelaaja vuotaa.
+- **Kuolema (kohta 23b):** `mobDeathAnim`: kaatuu kyljelleen 0,6 s, raajat valahtavat, veriläntti alle, makaa → 7,4 s alkaen häipyy ja vajoaa,
+  poistuu 9,4 s (`DEATH_END`). Palokuolema (palaa kuollessa, soihtu-isku `m.fireHit`, tulinuoli, nuotioon astunut): mustuu liekeissä 1,5 s
+  → tuhkakasa (hehkuvat hiillokset), joka vajoaa ~8 s, savua. Pelaaja: kaatuu selälleen, raajat veltoiksi, läntti 60 s; palokuolemassa
+  hahmo mustuu → tuhkakasa (`startPlayerDeath`, `endPlayerDeath` herätessä). Pelaaja syttyy nuotion päällä (4 s, 4 hp/s, sade/vesi sammuttaa).
+- **Tuli ja savu (kohta 36):** palavalla mobilla korkeampi liekkikruunu + hehkupallo, kipinöitä 24/s, isot pehmeät savupilvet (`smokePuff`).
+- **DEV-lento (kohta 33):** DEV-valikko › Jumalvoimat › Lento: tuplahyppy (0,35 s) aloittaa/lopettaa, välilyönti ylös, Shift alas, Ctrl 2×.
+- **Portit (kohta 41):** hehkuvat riimut pylväissä, lakikivi ja sarvet, kivikulhot liekkeineen, 4 riimupaatta, portaat; teema: Routa
+  jääpuikot, Kalma kallot, Aarni sammal ja köynnökset.
+- **Kirves ja hakku (kohdat 23, 31):** `chopIK` – käsi ja varren suunta avainasennoista (`CHOP_K`), nosto rinnan edestä olan yli viistoon
+  taakse vuorotellen oikea/vasen olka, isku eteen-alas, terä johtaa. Mitattu varsi ≥ 0,22 m pään keskeltä (ennen 0,04), ei vartalon läpäisyä,
+  vasen käsi varressa ≥ 0,17 m oikeasta. Hakku käyttää samaa kahden käden iskua. KORJAUKSET 26.
+- **Jousi (kohta 15):** jänne vedetään oikealle (−0,2 m), kyynärpää oikealla hieman edessä olan korkeudella (`_poleBow`).
+- **Selkäesineet (kohta 37):** `backPose`: kirves/nuija/hakku vasemmalta lantiolta oikean olan taakse, pää ylhäällä, terä/piikit sivulle;
+  miekka ja lapio/kuokka kahva oikean olan takana, terä alas; jousi vasemmalta olalta oikealle lantiolle (näkyy nyt työkalun lisäksi);
+  keihäs ristiin. Vasara vyöllä kuten ennen. Vyön takana karvapallon tilalla nahkapussi kiinni vyössä.
+
 ### v1.36 (lista 3: maailmalista ja 5 tallennuspaikkaa, virtuaalinen osoitin – ei välinapsautusta)
 - **Maailmat (kohta 20):** päävalikossa lista (enint. 5): nimi, viimeksi pelattu (pvm + klo), päivä, taso, kartta, minuutit. Pelaa, Nimeä
   (rivin sisällä, Enter/Esc), Poista (vahvistus). Uusi maailma omalla nimellä (oletus "Maailma N"). Pelin aikana toiseen maailmaan siirtyminen
@@ -1429,7 +1450,8 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 3: 33 kohtaa + lisät (v1.32–) – kaikki kysymykset kysytty etukäteen, vastaukset alla
-**JATKA TÄSTÄ (lista 3):** kaikki tarkennukset saatu. Tehdään erissä; merkitse kohta TEHTY + versio.
+**JATKA TÄSTÄ (lista 3, nykytila v1.37):** KAIKKI kohdat 1–41 TEHTY v1.32–v1.37. Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #24 auki
+(main = v1.07). Seuraavaksi: odotetaan käyttäjän testiä ja Mergeä. Testaa aina commit-linkillä (välimuisti).
 1. TEHTY v1.32. Haamukuva pois kursorilta (näkyy vain raahatessa).
 2. TEHTY v1.32. Reppu ei liiku eikä veny: kiinteä koko. Tietoalue (tiedot, päivitys, ota käyttöön) kiinteässä paikassa, ei vieritystä tietoalueessa.
 3. TEHTY v1.32. Syöminen VAIN pikapaikan numerolla (ruoka käteen = syö kerran). Syö-nappi ja tuplaklikkaussyönti pois.
@@ -1449,7 +1471,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 13. TEHTY v1.33. Hautakiven majakka toimii myös ulottuvuuksissa/luolissa.
 14. TEHTY v1.33. Mobit lyövät kävellessä (ei pysähdystä, ei latausviivettä; 0,1 s viive), lyöntien välillä jäähy. Tavallisten mobien ulottuma ~20 %
    pelaajaa lyhyempi (~1,9 m). Karhu, kivivartija, pelottavat ja pomot pitävät oman ulottumansa.
-15. Jousen veto: oikea käsi vetää enemmän oikealle, kyynärpää taittuu, olkavarsi pysyy oikealla hieman edessä samalla korkeudella.
+15. TEHTY v1.37. Jousen veto: oikea käsi vetää enemmän oikealle, kyynärpää taittuu, olkavarsi pysyy oikealla hieman edessä samalla korkeudella.
 16. TEHTY v1.35. Varjot = Grafiikka-sivun väliotsikko (ei erillistä sivua).
 17. TEHTY v1.35. Esiasetukset liukusäätimellä: Low, Low+, Medium-, Medium, Medium+, High, High+, Ultra (oletus Medium). Säätö käsin → "Custom".
    Ultra ylittää nykyiset maksimit (varjot 4096, piirtoetäisyys +30 %, tiheämpi ruoho). Low–Medium: autosäätö päälle, High–Ultra: pois.
@@ -1459,11 +1481,11 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
    nimi. Uudelleennimeä, poista vahvistuksella. Vanha tallennus → "Maailma 1".
 21. TEHTY v1.35–v1.36. Automaattitallennus 2 min välein, valikosta voi tallentaa itse.
 22. TEHTY v1.36. Hiiren lukitus pysyy päällä paneelien ajan, peli piirtää oman osoittimen (ei välikliksua). Esc-taukovalikko vaatii yhä klikkauksen (selain).
-23/31. Kirves- ja hakkuanimaatio uusiksi: kädet koukistuvat noustessa, kirves olkapäiden yli, vuorotellen kumpaankin viistoon, kädet kiinni
+23/31. TEHTY v1.37. Kirves- ja hakkuanimaatio uusiksi: kädet koukistuvat noustessa, kirves olkapäiden yli, vuorotellen kumpaankin viistoon, kädet kiinni
    varressa ja olkapäissä, ei mene pään tai kehon läpi, kädet eivät mene päällekkäin.
-23b. Kuolema: ruumis kaatuu, raajat valahtavat, makaa ~7 s, vajoaa ja häipyy (alle 10 s); veriläntti. Pelaajan läntti jää 1 min.
+23b. TEHTY v1.37. Kuolema: ruumis kaatuu, raajat valahtavat, makaa ~7 s, vajoaa ja häipyy (alle 10 s); veriläntti. Pelaajan läntti jää 1 min.
    Palokuolema (palaa, soihtu-isku, nuotion päällä, tulinuoli) mobille, pelaajalle ja pomoille: mustuu → tuhkakasa vajoaa maahan.
-24. Osuma: veripisaroita (tummanpunainen, maltillinen; isoilla eläimillä enemmän) ja läntti maahan, häipyy 10 s. Haavoittuneen mobin
+24. TEHTY v1.37. Osuma: veripisaroita (tummanpunainen, maltillinen; isoilla eläimillä enemmän) ja läntti maahan, häipyy 10 s. Haavoittuneen mobin
    pintaan punaisia läikkiä. Kivihahmot: kivisiruja/pölyä, kalmot: luupölyä, usvaolennot: usvaa. Asetus Veri: Normaali / Vähän / Pois.
 25. TEHTY v1.34–v1.35. Maassa olevat esineet näyttävät ikonilta, jolla on syvyyttä (3D). Medium ja ylöspäin + oma asetus.
 26. TEHTY v1.32. Pelaajan pudotus heittää 2× kauemmas ja aina eteenpäin.
@@ -1473,13 +1495,13 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 30. TEHTY v1.32. Haarniska, vaate, nuolet (ja kilpi): yksi klikkaus repussa ottaa käyttöön (keltainen). Jos seuraava klikkaus on toiseen ruutuun,
    esine siirtyy ja käyttöönotto perutaan.
 32. TEHTY v1.32. Käsien heilunta kävellessä/juostessa −10 %. Sivuttaiskeinunta: kävely puolet, juoksu −10 %.
-33. DEV-valikko: lento. Tuplahyppy aloittaa/lopettaa lennon, välilyönti ylös, Shift alas.
+33. TEHTY v1.37. DEV-valikko: lento. Tuplahyppy aloittaa/lopettaa lennon, välilyönti ylös, Shift alas.
 34. TEHTY v1.33. Sateessa tulinuolen valo hiipuu 2× nopeammin. Osuessa kohteeseen tai maahan nuolen valo sammuu 2 s:ssa (palavan mobin valo ei).
 35. TEHTY v1.35. Usva/sumu: oletus kevyemmäksi. Tasot: Ultra (= vanha Korkea), Korkea (= vanha Normaali), Normaali (uusi, kevyempi, oletus),
    Matala, Pois.
 
-36. (lisä) Palavan mobin tuli näyttävämmäksi, savua paljon enemmän (isoja partikkeleita, kohtuudella).
-37. (lisä) Selässä olevat esineet asettuvat hyvin: pitkä osa sivuille (hakun piikit sivuille). Kirves/nuija viistossa, terä/pää ylös olan
+36. TEHTY v1.37. Palavan mobin tuli näyttävämmäksi, savua paljon enemmän (isoja partikkeleita, kohtuudella).
+37. TEHTY v1.37. Selässä olevat esineet asettuvat hyvin: pitkä osa sivuille (hakun piikit sivuille). Kirves/nuija viistossa, terä/pää ylös olan
    taakse. Jousi ja keihäs ristiin viistoon. Miekka ja lapio viistossa terä alaspäin. Vasara vyötärötasolla kuten ennen.
    Vyötärön takana oleva pallomainen osa kiinni vyötäröön ja paremman näköiseksi (pussi/laukku).
    Ei enää kysymyksiä – tehdään loppuun.
@@ -1491,7 +1513,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 40. TEHTY v1.34. Riimukivien vihjeet päivitetään nykyiseen etenemiseen (ulottuvuudet → sirpaleet → vartija). Kartalle 2 kylttiä, joiden
    teksti (luetaan läheltä) antaa hyvin kryptisen vihjeen jonkin asian sijainnista (esim. jääavain, kiviröykkiö).
 
-41. (lisä) Ulottuvuusportteja koristellaan enemmän (riimut, soihtukulhot, kivipaasit, hehku).
+41. TEHTY v1.37. Ulottuvuusportteja koristellaan enemmän (riimut, soihtukulhot, kivipaasit, hehku).
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (nykytila v1.31):** Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #24 auki (ei vielä yhdistetty; main = v1.07).

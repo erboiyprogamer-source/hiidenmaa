@@ -80,7 +80,7 @@ let last=performance.now(),slowT=0,saveT=0,lightT=0,menuA=0;
 function update(dt){
   playTime+=dt;dayT+=dt/DAY_LEN;if(dayT>=1){dayT-=1;dayN++;msg(`Päivä ${dayN}`);}
   const wasNight=isNight();
-  updatePlayer(dt);updateDungeons(dt);updateStory(dt);updateMobs(dt);updateProjs(dt);updateDrops(dt);updateFx(dt);updateStations(dt);spawner(dt);survival(dt);updateWeather();
+  updatePlayer(dt);updateEffects(dt);updateDungeons(dt);updateStory(dt);updateMobs(dt);updateProjs(dt);updateDrops(dt);updateFx(dt);updateStations(dt);spawner(dt);survival(dt);updateWeather();
   updateEnvironment(dt);updateCamera(dt);updateBenchRings();updateChunkVis();updateGrass();
   if(state==='play'){lookTarget=findInteract();updateGhost();}else if(ghost)ghost.visible=false;
   lightT-=dt;if(lightT<=0){lightT=.4;updateLights();}
@@ -152,7 +152,7 @@ function frame(now){
     else if(state==='menu'&&MENU_V2_OFF)menuCamOld(dt);
     else if(state==='menu'){if(SET.menuBg==='3d'){mbgShow(false);menuCam(Math.min(.25,raw));}else{mbgFrame(now);skip3d=true;}}   // v1.25: kuvat = ei 3D-piirtoa valikossa
     else if(state==='paused'){updateEnvironment(0);updateGrass();updateLights();if(typeof updateMist==='function')updateMist(0);}   // v1.35 (kohta 18): asetusmuutokset näkyvät heti myös tauolla
-    else if(state==='dead'||state==='win'){updateMobs(dt*.5);updateEnvironment(dt);}
+    else if(state==='dead'||state==='win'){updateMobs(dt*.5);updateEnvironment(dt);updateEffects(dt);}
   }catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe pelisilmukassa: '+(err&&err.message||err));}}   // v1.26 näkyviin
   if(!skip3d)renderer.render(scene,camera);
 }

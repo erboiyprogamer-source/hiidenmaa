@@ -6,7 +6,7 @@
 const DEV=true;
 // v0.93 DEV-täpät (DEV-valikko Ä, muistetaan selaimessa): god = ei voi kuolla eikä ota vahinkoa, food = ei nälkää, stam = rajaton kestävyys,
 // lvl = korkein taso, weight = ei painorajaa. Oletus: aiemmat DEV-edut päällä, uudet pois.
-const DEVF=(()=>{const d={god:0,food:0,stam:1,lvl:1,weight:1};if(!DEV)return d;try{Object.assign(d,JSON.parse(localStorage.getItem('hiidenmaa_dev')||'{}'));}catch(e){}return d;})();
+const DEVF=(()=>{const d={god:0,food:0,stam:1,lvl:1,weight:1,fly:0};if(!DEV)return d;try{Object.assign(d,JSON.parse(localStorage.getItem('hiidenmaa_dev')||'{}'));}catch(e){}return d;})();
 function devOn(k){return DEV&&!!DEVF[k];}
 function saveDevF(){try{localStorage.setItem('hiidenmaa_dev',JSON.stringify(DEVF));}catch(e){}}
 

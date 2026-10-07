@@ -62,7 +62,7 @@ function doMeleeHit(w){
     if(!losClear(P.pos.x,P.pos.y+1.3,P.pos.z,m.pos.x,mobEyeY(m),m.pos.z))continue;
     const sneak=P.crouch&&m.def.ai!=='boss'&&m.state!=='chase'&&m.state!=='flee';
     if(sneak)floatText('Hiiviskelyisku!',m.pos.x,m.pos.y+2.6,m.pos.z,'#ffd36a');
-    damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz,(w.kb||1.5)*KB_V*PCOMBAT);hitMob=true;if(torchLit())igniteMob(m);}
+    m.fireHit=torchLit();damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz,(w.kb||1.5)*KB_V*PCOMBAT);m.fireHit=false;hitMob=true;if(torchLit())igniteMob(m);}
   // Tulta ja seisovaa soihtua lyömällä ne sammuvat.
   if(!hitMob)for(const p of pieces){const lit=isFirePiece(p.t)?p.data.fuel>0:p.t==='soihtuteline'&&p.data.burn>0;if(!lit)continue;const dx=p.x-P.pos.x,dz=p.z-P.pos.z,d=Math.hypot(dx,dz);
     if(d>w.range+.5||(d>.6&&(dx*fx+dz*fz)/d<.5))continue;if(isFirePiece(p.t)){p.data.fuel=0;p.data.burn=0;}else p.data.burn=0;
@@ -97,7 +97,7 @@ function damageMob(m,dmg,dt,kx,kz,kb=4){
   m.hp-=dmg;m.flash=.15;m.lastHit=playTime;m.angry=true;m.hurtT=playTime;
   if(m.def.ai!=='boss'&&m.def.ai!=='rboss'){const l=Math.hypot(kx,kz)||1,k=kb*(m.def.r>.8?.4:m.def.r>.6?.7:1);m.vel.x+=kx/l*k;m.vel.z+=kz/l*k;m.wind=0;}
   floatText(Math.round(dmg)+'',m.pos.x,m.pos.y+(m.type==='vartija'?6:(m.def.fh||1.8)),mult>1.2?'#ffd36a':mult<.9?'#a99d89':'#eee5d3');
-  sfx('hit');burst(m.pos.x,m.pos.y+1,m.pos.z,m.type==='kalmo'||m.type==='ylimys'?0xe6e0cf:m.type==='vartija'?0x5d5a54:0x9a2a22,6,3);
+  sfx('hit');bleed(m.pos.x,m.pos.y+Math.min(3,(m.barH||m.def.r*2.4)*.55),m.pos.z,bleedKind(m.type),m.def.r,dmg,m.dun);if(Math.random()<.6)addWound(m);   // v1.37 (kohta 24): veri ja haavat
   if(m.hp<=0)killMob(m);
 }
 // Tuli (v0.75): soihdulla lyöty tai tulinuolella osuttu mobi/eläin palaa 5–10 s, 5 hp/s. Sade tai vesi sammuttaa heti.
@@ -105,6 +105,8 @@ function igniteMob(m){if(m.dead)return;if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-
   if(!m.fireFx){const g=new THREE.Group(),h=(m.barH||m.def.r*2.8)*.55,r=Math.max(.25,m.def.r*.7);
     for(const [x,z,s] of [[0,0,1],[r*.6,.1,.7],[-r*.6,-.1,.75],[.05,r*.5,.6]]){const a=new THREE.Mesh(new THREE.ConeGeometry(.16*s*r*2,.6*s*r*2,6),MAT.flame),b=new THREE.Mesh(new THREE.ConeGeometry(.09*s*r*2,.4*s*r*2,6),MAT.flame2);a.position.set(x,h,z);b.position.set(x,h-.03,z);g.add(a,b);}
     for(let i=0;i<4;i++){const c=new THREE.Mesh(new THREE.ConeGeometry(.1*r*2,.45*r*2,5),MAT.flame);const a2=i/4*TAU;c.position.set(Math.cos(a2)*r*.8,h*.55,Math.sin(a2)*r*.8);g.add(c);}   // v1.23 tulisempi: lisää liekkejä vartalolla
+    for(let i=0;i<6;i++){const a2=i/6*TAU+.5,c=new THREE.Mesh(new THREE.ConeGeometry(.12*r*2,(.7+Math.random()*.4)*r*2,6),i%2?MAT.flame2:MAT.flame);c.position.set(Math.cos(a2)*r*.5,h*(.9+Math.random()*.4),Math.sin(a2)*r*.5);g.add(c);}   // v1.37 (kohta 36): korkeampi liekkikruunu
+    {const gl=new THREE.Mesh(new THREE.SphereGeometry(r*1.1,10,8),new THREE.MeshBasicMaterial({color:0xff7a2a,transparent:true,opacity:.18,blending:THREE.AdditiveBlending,depthWrite:false}));gl.position.y=h*.8;gl.userData.glow=1;g.add(gl);}
     m.f.g.add(g);m.fireFx=g;}
   if(!m.fireLight){m.fireLight={x:m.pos.x,y:m.pos.y+.4,z:m.pos.z,c:0xff7a2a,i:2.2,on:()=>true,move:true};lightSources.push(m.fireLight);updateLights();}   // v1.23 valo maahan mobin alle
   if(fresh){sfx('build',1.4,.6);floatText('Syttyi!',m.pos.x,m.pos.y+(m.barH||2)+.6,m.pos.z,'#ff9a3a');}m.hurtT=playTime;}
@@ -112,7 +114,7 @@ function stopBurn(m){m.burnT=0;if(m.fireFx){m.f.g.remove(m.fireFx);m.fireFx=null
 // Palavan mobin päivitys: palauttaa true, jos mobi kuoli tulessa.
 function updateBurn(m,dt){if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9)){stopBurn(m);burst(m.pos.x,m.pos.y+1,m.pos.z,0x9a9a9a,6,2);return false;}
   m.burnT-=dt;m.hp-=5*dt;m.hurtT=playTime;m.lastHit=playTime;
-  if(m.fireFx){const t=playTime*9;m.fireFx.children.forEach((c,i)=>{c.scale.y=.8+.35*Math.abs(Math.sin(t+i*1.7));});if(Math.random()<dt*14)emitEmber(m.pos.x+(Math.random()-.5)*.7,m.pos.y+(m.barH||1.5)*(.3+Math.random()*.6),m.pos.z+(Math.random()-.5)*.7,'spark');if(Math.random()<dt*3)emitEmber(m.pos.x,m.pos.y+(m.barH||1.5),m.pos.z,'smoke');}
+  if(m.fireFx){const t=playTime*9;m.fireFx.children.forEach((c,i)=>{if(c.userData.glow){c.material.opacity=.14+.08*Math.abs(Math.sin(t*.7+i));return;}c.scale.y=.8+.35*Math.abs(Math.sin(t+i*1.7));});if(Math.random()<dt*24)emitEmber(m.pos.x+(Math.random()-.5)*.7,m.pos.y+(m.barH||1.5)*(.3+Math.random()*.6),m.pos.z+(Math.random()-.5)*.7,'spark');if(Math.random()<dt*3)emitEmber(m.pos.x,m.pos.y+(m.barH||1.5),m.pos.z,'smoke');if(Math.random()<dt*5)smokePuff(m.pos.x+(Math.random()-.5)*m.def.r,m.pos.y+(m.barH||1.5)*.9,m.pos.z+(Math.random()-.5)*m.def.r,1.1+m.def.r,.2);}   // v1.37 (kohta 36): isoja savupilviä
   if(m.fireLight){m.fireLight.x=m.pos.x;m.fireLight.y=m.pos.y+.4;m.fireLight.z=m.pos.z;}
   if(m.hp<=0){stopBurn(m);killMob(m);return true;}
   if(m.burnT<=0)stopBurn(m);return false;}
@@ -120,7 +122,7 @@ function updateBurn(m,dt){if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9)){stopBurn
 // ensin ja sen loputtua taas heikoimmasta alkaen. Uusi ammus lisätään listaan oikeaan kohtaan (esim. tulevat rautanuolet).
 const AMMO=['nuolet','sulkanuolet','tulinuolet'];
 function ammoId(){if(flags.ammo&&invCount(flags.ammo)>0)return flags.ammo;return AMMO.find(id=>invCount(id)>0)||null;}
-function killMob(m){m.dead=true;m.deadT=0;sfx('die');P.kills++;bump('kills');bump('k_'+m.type);addXp(Math.round(m.def.hp/(m.type==='vartija'?2:5))+3,m.def.n);
+function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;sfx('die');P.kills++;bump('kills');bump('k_'+m.type);addXp(Math.round(m.def.hp/(m.type==='vartija'?2:5))+3,m.def.n);
   for(const [id,lo,hi] of [...m.def.drops,...(m.rv&&REALM_LOOT[m.realm]||[])]){const c=rint(rng,lo,hi);if(c>0)spawnDrop(id,c,m.pos.x,m.pos.y+1,m.pos.z);}   // v0.91: ulottuvuusversioilla lisäsaalis
   if(m.type==='vartija'){flags.boss=1;$('#bossbar').hidden=true;bossDefeated();}
   if(m.dunIdx!==undefined)dunKilled[m.dunIdx]=1;
@@ -161,7 +163,7 @@ function hurtPlayer(dmg,fx,fz){
   if(P.blocking){const facing=(Math.sin(P.yaw)*dx+Math.cos(P.yaw)*dz)/l;let sh=equipped('shield');if(sh&&!shieldOk(sh))sh=null;const blk=sh?ITEMS[sh.id].block*(1+.1*((sh.q||1)-1)):.3;
     if(facing>.2){const cost=d*(sh?SHIELD_COST[sh.id]||.9:.9);if(P.stam>=cost){P.stam-=cost;P.stamDelay=1;d*=1-Math.min(.95,blk);sfx('block');if(sh)shieldWear(sh);burst(P.pos.x+dx/l*.7,P.pos.y+1.2,P.pos.z+dz/l*.7,0xffe08a,6,3);}else{P.stam=0;P.stagger=1.2;msg('Torjunta murtui!','warn');}}}
   const a=equipped('armor');if(a)d*=20/(20+ITEMS[a.id].arm*(1+.2*((a.q||1)-1)));
-  if(d>=1){P.hp-=d;P.hurtFlash=.6;sfx('hurt');shake(.25);floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,'#e0614f');P.vel.x-=dx/l*5;P.vel.z-=dz/l*5;}
+  if(d>=1){bleed(P.pos.x,P.pos.y+1.2,P.pos.z,'blood',.45,d,P.inDun);P.hp-=d;P.hurtFlash=.6;sfx('hurt');shake(.25);floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,'#e0614f');P.vel.x-=dx/l*5;P.vel.z-=dz/l*5;}
   P.invul=.25;
   if(P.hp<=0)playerDie();
 }

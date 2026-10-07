@@ -203,4 +203,4 @@ function spawnMob(type,x,z,opts={}){
   const m={type,def,f,mats,pos:new V3(x,y,z),vel:new V3(),yaw:rng()*TAU,hp:def.hp,maxHp:def.hp,state:'idle',t:0,wander:null,atkCd:1,wind:0,angry:false,flash:0,walkPh:0,lastHit:-99,stuck:0,home:{x,z},dun:!!opts.dun,anim:0,dead:false,deadT:0,hurtT:-99};
   mobs.push(m);return m;
 }
-function mobRemove(m){scene.remove(m.f.g);mobs.splice(mobs.indexOf(m),1);if(m===boss)boss=null;}
+function mobRemove(m){scene.remove(m.f.g);if(m.da){if(m.da.flames)scene.remove(m.da.flames);if(m.da.pile)scene.remove(m.da.pile);}mobs.splice(mobs.indexOf(m),1);if(m===boss)boss=null;}

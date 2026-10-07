@@ -57,7 +57,7 @@ function loadData(s){
   if(!flags.wl)planLoot(true);for(const d of s.vdrops||[])if(ITEMS[d.id])relocateValuable(d.id,d.n,d.q);   // v1.34: arvoesineiden suunnitelma ja maassa olleet arvoesineet arkkuun
   resetFog();invDirty=true;updateGear();goalShown=-1;syncAltar();ensureCamps();
 }
-function resetWorld(){
+function resetWorld(){endPlayerDeath();for(const s of [...splats]){scene.remove(s.m);}splats.length=0;
   for(const p of [...pieces])removePiece(p);for(const m of [...mobs])mobRemove(m);for(const d of [...drops])removeDrop(d);drops=[];for(const g of [...graves])removeGrave(g);graves=[];
   clearLogs();unplantAll();resetTerra();for(const n of nodes)restoreNode(n);for(const k in dunKilled)delete dunKilled[k];resetRealms();for(const m of [...mobs])mobRemove(m);explored.fill(0);
   for(const p of projs)scene.remove(p.m);projs.length=0;

@@ -17,7 +17,7 @@ function nearestOpening(m){let best=null,bd=1e9;for(const p of pieces){const b=b
 function updateMobs(dt){
   refreshFire(dt);
   for(let i=mobs.length-1;i>=0;i--){const m=mobs[i];
-    if(m.dead){if(m.fireFx)stopBurn(m);m.deadT+=dt;m.f.g.rotation.z=Math.min(Math.PI/2,m.deadT*4);m.f.g.position.y=m.pos.y-m.deadT*.3;if(m.deadT>2.2)mobRemove(m);continue;}
+    if(m.dead){if(m.fireFx)stopBurn(m);m.deadT+=dt;if(mobDeathAnim(m,dt))mobRemove(m);continue;}   // v1.37 (kohta 23b): lössähtäminen / tuhka, < 10 s
     const d=m.def,dx=P.pos.x-m.pos.x,dz=P.pos.z-m.pos.z,dist=Math.hypot(dx,dz);
     if(!m.dun&&m!==boss&&dist>120){mobRemove(m);continue;}
     // Piirtoetäisyyden ulkopuolella (sumun takana) mobia ei piirretä eikä animoida
@@ -25,6 +25,7 @@ function updateMobs(dt){
     if(m.dun!==P.inDun){continue;}
     m.flash=Math.max(0,m.flash-dt);for(const mt of m.mats)mt.emissive.setHex(m.flash>0?0x661111:0x000000);
     if(m.burnT>0&&updateBurn(m,dt))continue;
+    if(!(m.burnT>0)&&!m.dun)for(const s of fireSrc)if(!s.torch&&s.r===7&&dist2(s.x,s.z,m.pos.x,m.pos.z)<.8*.8){igniteMob(m);break;}   // v1.37: nuotioon astuva syttyy
     m.atkCd-=dt;
     // v1.31: tönäisty vihollinen on kyvytön lennon ajan (ei kävele eikä lyö; isku keskeytyy)
     if(d.ai!=='boss'&&d.ai!=='rboss'&&Math.hypot(m.vel.x,m.vel.z)>.5){m.wind=0;moveMob(m,0,0,0,dt);animMob(m,dt);continue;}

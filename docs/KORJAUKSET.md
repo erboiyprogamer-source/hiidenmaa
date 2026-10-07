@@ -182,6 +182,26 @@ lataukset), laitteistokiihdytys pois tai liikaa 3D-välilehtiä. Esto poistuu, k
 `webglFail()` näyttää koko ruudun suomenkielisen ohjeen (sulje koko selain, grafiikkakiihdytys, chrome://gpu, "Yritä uudelleen"). Myös
 `webglcontextlost` kesken pelin näyttää ohjeen. Testattu Chromiumilla `--disable-webgl`: ohje näkyy; normaali käynnistys ennallaan.
 
+## 25. Vanhat tarkistusrivit rikkoutuivat, kun pomojen/mobien arvot ja asetussivut muuttuivat (v1.33, v1.35)
+**Oire:** `tools/tarkistus.mjs` näytti XX rivillä "karhu" (hp 2×60), "v1.31 … kivivartija 220", "asetussivut" ja "v1.10 usva".
+**Syy:** rivit vertasivat kiinteisiin lukuihin (hp, `SET_PAGES.shadow`, `SET_DEF.mist===1`), joita lista 3 muutti tarkoituksella.
+**Korjaus:** rivit laskevat arvon kertoimesta (`Math.round(220*MOB_HARD)`) ja tarkistavat uuden rakenteen (`SET_PAGES.gfx.includes('shadow')`,
+`SET_DEF.mist===.6`). Kun muutat tasapainoarvoa tarkoituksella, päivitä vanha rivi kertoimen kautta äläkä poista sitä.
+
+## 26. Kirves meni pään läpi nostossa (vanha avainasento + vasemman käden ote, ennen v1.37)
+**Oire:** kirves/hakku nousi pään yli ja varsi kulki pään läpi (mitattu: varren piste 3–4 cm pään keskeltä), kädet melkein päällekkäin.
+**Syy:** nosto tehtiin olan kulmilla (rx −2,1, kyynärpää −1,45) → kyynärvarsi ja varsi osoittivat pään yli; lisäksi vasemman käden ote veti
+oikean käden kohti vasenta olkaa (keskilinjaan). Pelkkä olan kääntäminen jälkikäteen (headClear) ei auttanut, koska ote veti takaisin.
+**Korjaus:** `chopIK` (player.js): käsi ja varren suunta avainasennoista rig-koordinaateissa (`CHOP_K`), IK + varren kierto käteen; oikean
+käden vetäminen otetta kohti ohitetaan kun `P.chopW > .3`; kädet ≥ 0,17 m. Mitattu: varsi ≥ 0,22 m pään keskeltä koko iskun ajan.
+Tarkistus: `sw137.mjs` (scratchpad) mittaa minHead/pen/hands. **Älä palauta nostoa olan kulmilla.**
+
+## 27. Virtuaalinen osoitin: paneelien hiiritapahtumat ovat keinotekoisia (v1.36)
+Kun hiiri on lukittu ja paneeli auki, `input.js` pysäyttää oikeat hiiritapahtumat ikkunan kaappausvaiheessa ja lähettää osoittimen (#vcur)
+kohtaan keinotekoiset (`isTrusted=false`). Uudet paneelien hiirikäsittelijät toimivat sellaisenaan (mousedown/up/click/dblclick/contextmenu/
+mousemove/wheel), mutta **CSS :hover ei toimi** – lisää vastaava `.vh`-luokan tyyli. Natiivi vieritys ja `<select>`-avaus eivät toimi
+keinotekoisilla tapahtumilla (rulla vierittää lähintä vieritettävää käsin); asetusvalikko on taukotilassa (lukitus vapaana), joten se toimii.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

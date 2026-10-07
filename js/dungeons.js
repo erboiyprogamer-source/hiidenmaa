@@ -208,6 +208,20 @@ function buildPortal(id){
   part(1.1,4.6,1.1,-2.4,0,y+2.3,dark);part(1.1,4.6,1.1,2.4,0,y+2.3,dark);part(6.4,.95,1.4,0,0,y+5.1,dark);
   part(8,.3,3,0,0,y+.15,mat(0x5b5853));part(1.5,.5,1.5,-2.4,0,y+4.8,mat(0x6f6c66));part(1.5,.5,1.5,2.4,0,y+4.8,mat(0x6f6c66));
   for(const sgn of [-1,1]){part(.5,1.6,.5,sgn*4.4,sgn*.6,y+.8,mat(0x5b5853));const [bx0,bz0]=P3(sgn*4.4,sgn*.6);const f=bx(.2,.35,.2,MAT.flame,bx0,y+1.8,bz0,false);statics.add(f);}
+  // v1.37 (lista 3, kohta 41): koristelu – hehkuvat riimut pylväissä, lakikivi sarvineen, kivikulhot liekeillä, riimupaadet polun varrella,
+  // portaat ja ulottuvuuden teema (Routa: jääpuikot, Kalma: kallot, Aarni: sammal ja köynnökset).
+  {const gl=new THREE.MeshBasicMaterial({color:D.glow}),deco=(a,h,p,u,v,yy,m)=>{const [x,z]=P3(u,v),[w,d]=dims(a,p);const o=bx(w,h,d,m,x,yy,z,false);statics.add(o);return o;};
+   for(const su of [-2.4,2.4])for(const sv of [-.57,.57])for(let i=0;i<3;i++)deco(.34-(i%2)*.12,.22,.04,su+(i%2?.08:-.05),sv,y+1.4+i*.85,gl);
+   part(1.2,1.1,1.7,0,0,y+5.95,mat(0x77736b));deco(.5,.5,.06,0,.87,y+5.95,gl);deco(.5,.5,.06,0,-.87,y+5.95,gl);
+   for(const su of [-3.1,3.1]){const [hx,hz]=P3(su,0),hn=new THREE.Mesh(new THREE.ConeGeometry(.28,1.3,6),dark);hn.position.set(hx,y+5.9,hz);hn.rotation.z=ax==='x'?-Math.sign(su)*.7:0;hn.rotation.x=ax==='x'?0:Math.sign(su)*.7;statics.add(hn);}
+   for(const sv of [-2.1,2.1]){part(3.6,.22,1,0,sv,y+.11,mat(0x5f5c56));part(2.8,.2,.8,0,sv+Math.sign(sv)*.85,y+.05,mat(0x56534e));}
+   for(const [u,v] of [[-3.8,-2.6],[3.8,2.6],[3.8,-2.6],[-3.8,2.6]]){const h=1.9+Math.abs(u+v)*.12;part(.75,h,.35,u,v,y+h/2-.1,mat(0x6a6c70));deco(.36,.9,.04,u,v+(v>0?-.19:.19),y+h*.55,gl);}
+   for(const sgn of [-1,1]){const [bx1,bz1]=P3(sgn*4.4,sgn*.6),bowl=new THREE.Mesh(new THREE.CylinderGeometry(.42,.26,.32,10),mat(0x4a4744));bowl.position.set(bx1,y+1.75,bz1);statics.add(bowl);
+     for(let i=0;i<4;i++){const f=new THREE.Mesh(new THREE.ConeGeometry(.13,.55+i*.06,6),i%2?MAT.flame2:MAT.flame);const a2=i/4*TAU;f.position.set(bx1+Math.cos(a2)*.16,y+2.15,bz1+Math.sin(a2)*.16);statics.add(f);}}
+   if(id==='portal1')for(let i=0;i<9;i++){const u=-2.9+i*.72,ic=new THREE.Mesh(new THREE.ConeGeometry(.09+Math.random()*.06,.5+Math.random()*.7,5),mat(0xcfe8ff,{roughness:.2}));const [ix,iz]=P3(u,(i%2?.55:-.55));ic.position.set(ix,y+4.35,iz);ic.rotation.x=Math.PI;statics.add(ic);}
+   if(id==='portal2')for(const [u,v] of [[-2.4,.62],[2.4,.62],[-2.4,-.62],[2.4,-.62],[0,.75],[0,-.75]]){const [kx,kz]=P3(u,v),sk=new THREE.Group();sk.add(bx(.3,.26,.28,mat(0xe6e0cf),0,0,0,false),bx(.2,.08,.2,mat(0xd8d0bc),0,-.15,0,false),bx(.07,.07,.02,mat(0x1a1612),-.07,.03,.14,false),bx(.07,.07,.02,mat(0x1a1612),.07,.03,.14,false));sk.position.set(kx,u===0?y+5.4:y+3.9,kz);sk.rotation.y=(ax==='x'?0:Math.PI/2)+(v<0?Math.PI:0);statics.add(sk);}
+   if(id==='portal3'){for(const su of [-2.4,2.4])for(let i=0;i<6;i++){const [mx,mz]=P3(su+(Math.random()-.5)*.6,(Math.random()<.5?-.6:.6)),m2=new THREE.Mesh(new THREE.SphereGeometry(.18+Math.random()*.14,6,5),mat(0x4d6a3a));m2.position.set(mx,y+.4+Math.random()*4,mz);m2.scale.y=.5;statics.add(m2);}
+     for(let i=0;i<7;i++){const u=-2.6+i*.86,[vx,vz]=P3(u,.62),vn=bx(.06,.8+Math.random()*1.4,.06,mat(0x3e5a2a),vx,y+4.2-(.4+Math.random()*.6),vz,false);statics.add(vn);}}}
   const [px,pz]=P3(0,0),gm=new THREE.MeshBasicMaterial({color:D.glow,transparent:true,opacity:.6,side:THREE.DoubleSide,depthWrite:false});
   const plane=new THREE.Mesh(new THREE.PlaneGeometry(3.7,4.3),gm);plane.position.set(px,y+2.4,pz);plane.rotation.y=ax==='x'?0:Math.PI/2;statics.add(plane);
   const [w2,d2]=dims(3.7,.5);addBox(px-w2/2,y,pz-d2/2,px+w2/2,y+4.4,pz+d2/2,'static');
