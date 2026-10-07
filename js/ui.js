@@ -43,7 +43,8 @@ function updateHUD(dt){
   $('#hurt').style.opacity=Math.min(1,P.hurtFlash*1.5+(P.hp<maxHp()*.25&&!P.dead?.35:0));
   // prompt
   // v1.23 (kohta 17): tähtäysympyrä = nuolen hajonta: iso alussa, pienenee vedettäessä, keltainen → punainen, täysi veto = pieni + piste
-  {const c=$('#cross');if(P.drawing){const sp=bowSpread(),k=Math.min(1,P.bowDraw||0),R=Math.max(4,Math.tan(sp*Math.PI/180)/Math.tan(camera.fov*Math.PI/360)*innerHeight/2);
+  updDropRet();
+  {const c=$('#cross');if(P.drawing){const sp=bowSpread(),k=Math.min(1,P.bowDraw||0),R=Math.max(bowCrouch()&&k>=1?2.5:4,Math.tan(sp*Math.PI/180)/Math.tan(camera.fov*Math.PI/360)*innerHeight/2);
       c.className='aim'+(sp<.35?' full':'');c.style.width=c.style.height=(R*2)+'px';c.style.margin=`${-R-2}px 0 0 ${-R-2}px`;
       c.style.borderColor=`rgb(${Math.round(lerp(232,224,k))},${Math.round(lerp(196,72,k))},${Math.round(lerp(90,60,k))})`;}
     else if(c.className){c.className='';c.style.width=c.style.height=c.style.margin=c.style.borderColor='';}}
@@ -549,3 +550,13 @@ function applyHudMode(){const md=SET.hudMode|0,g=$('#goal'),q=$('#quest');if(!g|
   h.style.display=what?'':'none';h.classList.toggle('below',md===2);if(what)h.innerHTML=`<b>${what}</b><span>Näytä painamalla (${keyLabel(BIND.hud)})</span>`;
   if(md===2)h.style.top=(g.offsetTop+g.offsetHeight+6)+'px';else h.style.top='';}
 applyHudMode();
+
+/* v1.49 (lista 5, kohta 3): tiputusristikko – vain kyykyssä täysin vedettynä. Vaakaviivat 20–70 m etäisyyksille: nuolen pudotus
+   d:n matkalla ≈ ½·g·(d/v)², kulma atan(pudotus/d) → pikseleinä kameran näkökentän mukaan. Lyhyemmät viivat kauemmas, numerot oikealla. */
+let dropKey='';
+function updDropRet(){const el=$('#dropRet');if(!el)return;const on=P.drawing&&bowCrouch()&&(P.bowDraw||0)>=1&&state==='play';
+  if(!on){if(!el.hidden){el.hidden=true;dropKey='';}return;}const bs=bowShot(1),H2=innerHeight/2,tf=Math.tan(camera.fov*Math.PI/360),key=bs.v.toFixed(1)+bs.g+innerHeight+camera.fov;
+  el.hidden=false;if(key===dropKey)return;dropKey=key;let h='';
+  for(const d of [20,30,40,50,60,70]){const t=d/bs.v,drop=.5*bs.g*t*t,y=drop/d/tf*H2,w=Math.max(10,46-d*.55);
+    h+=`<i style="top:${y.toFixed(1)}px;width:${w.toFixed(0)}px;margin-left:${(-w/2).toFixed(0)}px"></i>`+(d%20===0?`<b style="top:${(y-7).toFixed(1)}px;left:${(w/2+5).toFixed(0)}px">${d} m</b>`:'');}
+  el.innerHTML=h;}

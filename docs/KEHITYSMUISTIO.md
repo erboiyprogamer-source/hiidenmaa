@@ -16,7 +16,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ## Nykytila (päivitetty v1.44)
 
 - **Päivityslista 4 (32 kohtaa + extrat 1–2 + aluebannerit) on KOKONAAN TEHTY** v1.39–v1.44 (+ v1.45 latausnäytön leimahdus ja sivupartikkelit, v1.46 valikon uudistus, v1.47 säädinteemat ja logo, v1.48 7 logoteemaa satunnaisesti), haara
-  `claude/hiidenmaa-survival-game-fmxt0m`, PR #25 odottaa yhdistämistä (main = v1.37). Seuraava työ: uusi lista käyttäjältä.
+  `claude/hiidenmaa-survival-game-fmxt0m`, PR #25 odottaa yhdistämistä (main = v1.37). Seuraava työ: päivityslista 5 (alla).
 - Erät: A v1.39, B v1.40, C v1.41, D v1.42, E v1.43 (+ aluebannerit), F v1.44 – yksityiskohdat versiolokissa ja kohdassa "Päivityslista 4".
 - Testauksen huomiot: headless-testissä CSS-animaatiot eivät etene raskaan 3D:n aikana (tarkista ulkoasu animaatiot pois), ulottuvuuden
   rakennus kestää testikoneella sekunteja (odota `waitForFunction`illa), suorituskykytesti ohitetaan automaatiossa (`navigator.webdriver`),
@@ -82,6 +82,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.49 (lista 5, erä A: Tallennettu-teksti, jousen tähtäin ja kyykkyammunta)
+- **Tallennettu (5):** syy: v1.46:ssa painikkeeseen lisätty riimulaatta on `firstChild`, joten "Tallennettu ✓" kirjoitettiin laatan sisään
+  (piiloon). Nyt teksti on omassa `.bLbl`-elementissä ja painike välähtää vihreänä (`.saved`) 2,2 s; alle "Tallennettu selaimeen."
+- **Jousi (3):** `bowSpread` + `BOW_STAND_MIN` 1,1°: seisten täysi veto = pieni ympyrä (~26 px) ja pientä hajontaa. Kyykyssä (`bowCrouch`)
+  täysi veto paikallaan = hajonta 0, tähtäin 5 px; veto ja nuolen nopeus ×1,1 (`BOW_CROUCH_K`; 1,6 → 1,455 s, 50 → 55 m/s).
+  `bowShot(k,am)` laskee nopeuden ja painovoiman (sama ammuttaessa ja ristikossa).
+- **Tiputusristikko:** `#dropRet` (`updDropRet`, ui.js) vain kyykyssä täysin vedettynä: vaakaviivat 20–70 m etäisyyksille
+  (pudotus ½·g·(d/v)² → kulma → pikselit näkökentän mukaan), numerot 20/40/60 m.
 
 ### v1.48 (logoteemat, käyttäjän tarkennus)
 - **Käyttäjä tarkensi:** jokainen logotyyli on oma logonsa, ja valikkoon tultaessa arvotaan yksi (ei yhdistelmää aina).
@@ -1603,6 +1612,26 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ## Ideajono
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+### Päivityslista 5 (v1.49–) – vastaukset ja erät
+**JATKA TÄSTÄ (lista 5):** erät A–D alla; PR #25 auki.
+**Erät:**
+- A (v1.49): 5 Tallennettu-teksti piilossa (bugi: `#bSave.firstChild` on nyt riimulaatta), 3 jousen tähtäin ja kyykkyammunta.
+- B (v1.50): 2 yöolennot palavat auringossa.
+- C (v1.51): 1 kymmenen uutta valikkotaustaa, myrskyn sade puiden suuntaan, eeppisempi portaali (2 versiota: hahmolla ja ilman).
+- D (v1.52): 4 uuden maailman latausnäyttö + pilvet aukeavat.
+**Vastaukset:**
+- 1: kaikki neljä ryhmää: ulottuvuuksien vihjeet (Routaluola, Kalmankammio, Aarnihauta, eivät paljasta pomoja), eläimet/luonto,
+  vaara/jännitys, selviytyjän elämä; lisäksi myrsky jossa puita kaatuu ja metsä jossa karhu riehuu. Myrskyn sade puiden taipumisen
+  suuntaan. Portaali: riimukaari ja kivipylväät, leijuvat kivet ja partikkelit; hahmo portin edessä vain joskus (kaksi versiota).
+- 2: palavat vain niityllä (avoimella alueella) olevat kalmot ja pelottavat yöolennot (SCARY-tyypit). Katos, sää (pilvi/sade) ja tiheä
+  metsä suojaavat. Noin 6 s: ~3 s ryntäilee paniikissa, ~2 s hidastuu, kaatuu ja muuttuu tuhkaksi. Sytyttää pelaajan läheltä (1 m).
+  Ei saalista, ei rakennusten sytytystä.
+- 3: seisten täysin vedettynä tähtäimen pienin ympyrä pieni (ei mini) ja pientä hajontaa; kyykyssä täysin vedettynä tähtäin hyvin pieni,
+  ei hajontaa, veto ja nuolen nopeus +10 %; tiputusristikko (viivat eri etäisyyksille) vain kyykyssä täysin vedettynä.
+- 4: uutta maailmaa luotaessa riimukivi-latausnäyttö; sen jälkeen pilvet aukeavat sivuille: Medium ja yli 3D-lisäpilvet kameran edessä
+  (poistuvat animaation jälkeen), alle Medium CSS-pilviverho. Ei nykimistä eikä teleporttia näkyviin.
+- 5: Tallennettu-teksti näkyy samassa paikassa kuin ennen (painikkeessa), mutta ei saa jäädä piiloon.
 
 ### Päivityslista 4: 32 kohtaa (v1.39–) – tarkentavat kysymykset kysytään ensin, vastaukset kirjataan tähän
 **JATKA TÄSTÄ (lista 4):** PR #25 auki. KAIKKI erät A–F tehty (v1.39–v1.44) + aluebannerien jono/syvyys. PR #25 odottaa yhdistämistä.

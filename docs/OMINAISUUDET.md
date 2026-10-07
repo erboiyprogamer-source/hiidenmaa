@@ -396,3 +396,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kivikaiverrus rautareunuksella ja hehkuvilla hiidenkivikristalleilla.
 - (v1.48) Logolla on 7 teemaa, joista yksi arvotaan aina valikkoon tultaessa: halkeillut kivi, hiidenkivi, sammalkivi, taottu rauta,
   malmikallio, riimukivi ja yhdistelmä.
+
+## Lista 5 (v1.49–)
+- Jousi: seisten täysin vedettynä pieni tähtäinympyrä ja pieni hajonta; kyykyssä täysin vedettynä tähtäin pistemäinen, ei hajontaa,
+  veto ja nuolen nopeus +10 %, ja näkyviin tulee tiputusristikko (20–70 m).
+- Valikon Tallenna nyt -painike näyttää "Tallennettu ✓" ja välähtää vihreänä.

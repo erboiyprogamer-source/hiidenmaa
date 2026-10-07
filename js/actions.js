@@ -137,9 +137,15 @@ function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;sfx(
 const BOW_STATS={jousi:{draw:1.6,spd:1,acc:1},hiidenjousi:{draw:1.15,spd:1.25,acc:.7}};
 const AMMO_STATS={nuolet:{spd:1,grav:1,dmg:1,wind:1},sulkanuolet:{spd:1.25,grav:.6,dmg:1.15,wind:.5},tulinuolet:{spd:1,grav:1,dmg:1,wind:1,fire:1}};
 function bowStats(w){return BOW_STATS[w.id]||BOW_STATS.jousi;}
-function bowDrawTime(){const w=curWeapon();return bowStats(w).draw/(1+.25*((w.q||1)-1));}
+// v1.49 (lista 5, kohta 3): kyykyssä veto ja nuolen nopeus +10 %, täysi veto paikallaan kyykyssä = ei hajontaa; seisten täydelläkin pieni hajonta.
+const BOW_CROUCH_K=1.1,BOW_STAND_MIN=1.1;
+function bowCrouch(){return !!P.crouch&&P.onGround;}
+function bowDrawTime(){const w=curWeapon();return bowStats(w).draw/(1+.25*((w.q||1)-1))/(bowCrouch()?BOW_CROUCH_K:1);}
+// nuolen lähtönopeus ja painovoima (sama kaava ammuttaessa ja tiputusristikossa)
+function bowShot(k,am){am=am||ammoId();const w=curWeapon(),q=w.q||1,a=AMMO_STATS[am]||AMMO_STATS.nuolet,b=bowStats(w);
+  return {v:(14+36*k)*(1+.1*(q-1))*b.spd*a.spd*(bowCrouch()?BOW_CROUCH_K:1),g:7/(1+.3*(q-1))*a.grav};}
 function bowSpread(){const w=curWeapon(),q=w.q||1,k=Math.min(1,P.bowDraw||0),hv=Math.hypot(P.vel.x,P.vel.z),mv=!P.onGround?1.5:hv>.6?1:0;
-  return (10*(1-k)+mv*2)*bowStats(w).acc/(1+.3*(q-1));}
+  return (10*(1-k)+mv*2+(bowCrouch()?0:BOW_STAND_MIN))*bowStats(w).acc/(1+.3*(q-1));}
 // v1.23 (kohta 16): paremmat materiaalit kuluttavat vähemmän kestävyyttä per isku (kivi/puu 1, kupari .9, rauta .8, hiiden .7)
 function matStamK(id){return !id?1:id.startsWith('hiiden')?.7:id.startsWith('rauta')?.8:(id.startsWith('kupari')||id==='miekka')?.9:1;}
 const SHIELD_COST={kilpi:.9,kuparikilpi:.75,rautakilpi:.6};
@@ -155,7 +161,7 @@ function fireBow(){
   from.addScaledVector(dir,.6);
   {const sp=bowSpread()*Math.PI/180;if(sp>1e-4){const r=Math.sqrt(Math.random())*Math.tan(sp),ph=Math.random()*TAU,ux=_tmpV2.set(-dir.z,0,dir.x).normalize(),vy=new V3().crossVectors(dir,ux);
     dir.addScaledVector(ux,Math.cos(ph)*r).addScaledVector(vy,Math.sin(ph)*r).normalize();}}   // vajaa veto: nuoli lähtee tähtäysympyrän alueelle
-  const q=w.q||1,a=AMMO_STATS[am]||AMMO_STATS.nuolet,b=bowStats(w);shootArrow(from,dir,(14+36*k)*(1+.1*(q-1))*b.spd*a.spd,weaponDmg(w)*(.2+.8*k)*a.dmg,'player',7/(1+.3*(q-1))*a.grav,!!a.fire);
+  const a=AMMO_STATS[am]||AMMO_STATS.nuolet,bs=bowShot(k,am);shootArrow(from,dir,bs.v,weaponDmg(w)*(.2+.8*k)*a.dmg,'player',bs.g,!!a.fire);
   if(a.wind<1)projs[projs.length-1].steady=1;sfx('bow');P.yaw=camYaw+Math.PI;
 }
 // v1.39 (lista 4, kohdat 8–9): vahinkokerroin sille, joka parhaillaan päivittyy (ai.js asettaa): pomot ×1,2, vartijat ×1,8.

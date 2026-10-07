@@ -87,9 +87,9 @@ function playSave(s,welcome){if(curSlot<0){const f=freeSlot();setCurSlot(f<0?0:f
 $('#bRun').onclick=()=>{pauseRun=!pauseRun;try{localStorage.setItem('hiidenmaa_prun',pauseRun?'1':'0');}catch(e){}refreshMenu();};
 $('#bResume').onclick=()=>{state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();};
 // Tallenna: ei avaa asetuksia; ilmoitus näkyy painikkeessa ja valikon tilariviltä
-$('#bSave').onclick=()=>{const ok=saveGame(true);refreshMenu();const lbl=$('#bSave').firstChild,prevT=lbl.textContent;
+$('#bSave').onclick=()=>{const ok=saveGame(true);refreshMenu();const lbl=$('#bSave .bLbl'),prevT='Tallenna nyt';$('#bSave').classList.toggle('saved',!!ok);   // v1.49: oma tekstielementti (firstChild on riimulaatta)
   $('#saveMsg').textContent=ok?'Tallennettu selaimeen.':'Selaimen tallennus ei ole käytössä – avaa Asetukset › Tallennus ja tallenna koodi tai tiedosto.';
-  lbl.textContent=ok?'Tallennettu ✓':'Tallennus epäonnistui';setTimeout(()=>{lbl.textContent=prevT;$('#saveMsg').textContent='';},2200);};
+  lbl.textContent=ok?'Tallennettu ✓':'Tallennus epäonnistui';setTimeout(()=>{lbl.textContent=prevT;$('#saveMsg').textContent='';$('#bSave').classList.remove('saved');},2200);};
 $('#bKeys').onclick=()=>{if(!$('#settings').hidden&&setTab==='keys'){$('#settings').hidden=true;return;}openSettings('keys');};
 $('#bMenuToggle').onclick=()=>{if(!$('#settings').hidden&&setTab!=='keys'){$('#settings').hidden=true;return;}openSettings(setTab==='keys'?'gfx':setTab);};
 $('#bSetClose').onclick=()=>{$('#settings').hidden=true;};
