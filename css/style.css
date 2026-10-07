@@ -284,3 +284,11 @@ input.isdef{filter:brightness(1.25)}
 #menuBg{position:fixed;inset:0;width:100%;height:100%;display:none}   /* v1.25 valikon animoitu tausta */
 #ghostIt{display:none;font:800 12px 'Alegreya Sans',sans-serif;color:#fff;text-align:right;line-height:1;padding:0 2px 2px 0;box-sizing:border-box;display:none;align-items:flex-end;justify-content:flex-end;text-shadow:0 1px 2px #000}
 #ghostIt.half{outline:2px dashed rgba(143,216,207,.85);outline-offset:-2px;border-radius:4px}
+
+/* v1.35 esiasetukset ja profiilit */
+.presetBox{border:1px solid var(--line);background:rgba(0,0,0,.22);padding:10px 12px;margin-bottom:12px;border-radius:3px}
+.presetHead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}.presetHead b{font-size:15px}
+#presetName{font-family:var(--font-d);font-size:22px;color:var(--ember)}#presetName.custom{color:var(--frost)}
+#sPreset{width:100%;accent-color:var(--ember)}
+.presetTicks{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin:2px 0 6px}.presetTicks span.on{color:var(--ember);font-weight:800}.presetTicks span.def::after{content:' •'}
+.profRow{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;padding:6px 8px;margin-top:6px;border:1px solid var(--line);background:rgba(0,0,0,.18)}

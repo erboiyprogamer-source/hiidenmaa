@@ -321,3 +321,10 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   (pelaaja > 10 m tai muualla) satunnaiseen pääsaaren arkkuun. Kadonneet uniikit palautetaan automaattisesti.
 - Kaksi kylttiä antaa kryptiset vihjeet (E lukee).
 - Maassa olevat esineet näkyvät kuvakkeina, joilla on paksuutta (asetus).
+
+## Asetukset v1.35
+- Grafiikka-sivun ylälaidassa esiasetusliukusäädin Low → Ultra (8 tasoa, oletus Medium); käsin säädettynä "Custom".
+- Varjot ovat Grafiikka-sivun väliotsikko. Uudet: Veri (Normaali/Vähän/Pois), Maassa olevat esineet (3D-kuvake/kevyt), Ultra-tasot.
+- Usva ja höyry: Ultra / Korkea / Normaali (oletus, kevyempi kuin ennen) / Matala / Pois.
+- Profiilit-välilehti: kaikki asetukset ja näppäimet tallennetaan nimellä, otetaan käyttöön tai poistetaan.
+- Muutokset näkyvät heti myös tauolla. Automaattitallennus 2 min välein. Lumisade kulkee tuulen mukana.

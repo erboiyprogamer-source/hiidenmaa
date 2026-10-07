@@ -6,7 +6,7 @@
 <title>Hiidenmaa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700;800&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=1.34">
+<link rel="stylesheet" href="css/style.css?v=1.35">
 </head>
 <body>
 
@@ -92,7 +92,7 @@
 <div id="menuFade"></div>
 <div id="menu" class="screen">
   <div class="inner">
-    <h1 class="title"><small>Selviytymispeli · versio 1.34</small>Hiidenmaa</h1>
+    <h1 class="title"><small>Selviytymispeli · versio 1.35</small>Hiidenmaa</h1>
     <p class="lede">Haaksirikko jätti sinut saarelle, jota yhdeksän talven ajan on hallinnut kivinen Kalmanvartija. Kaada puita, rakenna suoja ennen yötä, takoa kuparista ase ja herätä vartija kivikehässä.</p>
     <div class="menuBtns">
       <p class="note" id="mapName" style="margin:0 0 6px"></p>
@@ -133,39 +133,39 @@
 <script>
 /* v1.26 käynnistysvahti: näyttää virheet ruudulla (versio mukana) ja ohjeen, jos peli ei käynnisty 20 s:ssa.
    Syy: v1.23:ssa peli kaatui käynnistyksessä hiljaa (musta ruutu); raw.githack/selain voi myös näyttää vanhaa versiota välimuistista. */
-window.HV='1.34';(function(){function box(t){var b=document.getElementById('bootErr');if(!b){b=document.createElement('div');b.id='bootErr';b.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;max-width:min(92vw,720px);padding:10px 14px;background:rgba(60,12,10,.94);border:1px solid #e0614f;border-radius:4px;color:#f3e6d8;font:600 13px/1.4 sans-serif;white-space:pre-wrap';(document.body||document.documentElement).appendChild(b);}
+window.HV='1.35';(function(){function box(t){var b=document.getElementById('bootErr');if(!b){b=document.createElement('div');b.id='bootErr';b.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;max-width:min(92vw,720px);padding:10px 14px;background:rgba(60,12,10,.94);border:1px solid #e0614f;border-radius:4px;color:#f3e6d8;font:600 13px/1.4 sans-serif;white-space:pre-wrap';(document.body||document.documentElement).appendChild(b);}
   b.dataset.m=(b.dataset.m?b.dataset.m+'\n':'')+t;b.textContent=b.dataset.m+'\n(Hiidenmaa versio '+window.HV+'. Jos versio on vanha, paina Ctrl+F5 tai käytä commit-linkkiä.)';}
   window.__bootBox=box;var n=0;window.addEventListener('error',function(e){if(++n>3)return;box('Virhe: '+(e.message||e)+(e.filename?' ('+e.filename.split('/').pop()+':'+e.lineno+')':''));});
   setTimeout(function(){if(!window.__game)box('Peli ei käynnistynyt. Päivitä sivu (Ctrl+F5).');},20000);})();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <!-- Tavalliset skriptit jakavat saman globaalin näkyvyysalueen. Järjestyksellä on väliä. -->
-<script src="js/core.js?v=1.34"></script>
-<script src="js/world.js?v=1.34"></script>
-<script src="js/render.js?v=1.34"></script>
-<script src="js/collision.js?v=1.34"></script>
-<script src="js/items.js?v=1.34"></script>
-<script src="js/audio.js?v=1.34"></script>
-<script src="js/models.js?v=1.34"></script>
-<script src="js/resources.js?v=1.34"></script>
-<script src="js/landmarks.js?v=1.34"></script>
-<script src="js/pieces.js?v=1.34"></script>
-<script src="js/mobs.js?v=1.34"></script>
-<script src="js/dungeons.js?v=1.34"></script>
-<script src="js/story.js?v=1.34"></script>
-<script src="js/state.js?v=1.34"></script>
-<script src="js/settings.js?v=1.34"></script>
-<script src="js/input.js?v=1.34"></script>
-<script src="js/actions.js?v=1.34"></script>
-<script src="js/building.js?v=1.34"></script>
-<script src="js/environment.js?v=1.34"></script>
-<script src="js/player.js?v=1.34"></script>
-<script src="js/ai.js?v=1.34"></script>
-<script src="js/camera.js?v=1.34"></script>
-<script src="js/ui.js?v=1.34"></script>
-<script src="js/progress.js?v=1.34"></script>
-<script src="js/save.js?v=1.34"></script>
-<script src="js/menubg.js?v=1.34"></script>
-<script src="js/main.js?v=1.34"></script>
+<script src="js/core.js?v=1.35"></script>
+<script src="js/world.js?v=1.35"></script>
+<script src="js/render.js?v=1.35"></script>
+<script src="js/collision.js?v=1.35"></script>
+<script src="js/items.js?v=1.35"></script>
+<script src="js/audio.js?v=1.35"></script>
+<script src="js/models.js?v=1.35"></script>
+<script src="js/resources.js?v=1.35"></script>
+<script src="js/landmarks.js?v=1.35"></script>
+<script src="js/pieces.js?v=1.35"></script>
+<script src="js/mobs.js?v=1.35"></script>
+<script src="js/dungeons.js?v=1.35"></script>
+<script src="js/story.js?v=1.35"></script>
+<script src="js/state.js?v=1.35"></script>
+<script src="js/settings.js?v=1.35"></script>
+<script src="js/input.js?v=1.35"></script>
+<script src="js/actions.js?v=1.35"></script>
+<script src="js/building.js?v=1.35"></script>
+<script src="js/environment.js?v=1.35"></script>
+<script src="js/player.js?v=1.35"></script>
+<script src="js/ai.js?v=1.35"></script>
+<script src="js/camera.js?v=1.35"></script>
+<script src="js/ui.js?v=1.35"></script>
+<script src="js/progress.js?v=1.35"></script>
+<script src="js/save.js?v=1.35"></script>
+<script src="js/menubg.js?v=1.35"></script>
+<script src="js/main.js?v=1.35"></script>
 </body>
 </html>

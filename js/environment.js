@@ -123,7 +123,9 @@ function updateEnvironment(dt){
   moon.position.set(camera.position.x-sd.x*370,camera.position.y-sd.y*370,camera.position.z-sd.z*370);moon.visible=-sd.y>-.08&&wDark<.5;moon.material.color.setScalar(.35+.65*ph);
   updateClouds(dt,wCloud,light,el);updateSky(light,sd,el,sunK);
   rain.visible=wRain>.15;if(rain.visible){rain.material.opacity=.45*Math.min(1,wRain);updateRain(dt);}
-  snow.visible=wSnow>.1&&P.pos.y>10;if(snow.visible){snow.material.opacity=.9*Math.min(1,wSnow);const a=snow.geometry.attributes.position.array;for(let i=0;i<a.length;i+=3){a[i+1]-=2.2*dt;a[i]+=Math.sin(playTime*.8+i)*.4*dt;if(a[i+1]<-4){a[i]=(Math.random()-.5)*50;a[i+1]=20+Math.random()*6;a[i+2]=(Math.random()-.5)*50;}}snow.geometry.attributes.position.needsUpdate=true;snow.position.set(camera.position.x,camera.position.y-8,camera.position.z);}
+  snow.visible=wSnow>.1&&P.pos.y>10;if(snow.visible){snow.material.opacity=.9*Math.min(1,wSnow);const a=snow.geometry.attributes.position.array;const wv=WIND.spd*.32,wx=WIND.x*wv,wz=WIND.z*wv;   // v1.35 (kohta 27): lumi kulkee tuulen mukana; kulma kasvaa tuulen nopeuden mukaan (13 m/s ≈ 62°)
+    for(let i=0;i<a.length;i+=3){a[i+1]-=2.2*dt;a[i]+=(wx+Math.sin(playTime*.8+i)*.4)*dt;a[i+2]+=(wz+Math.cos(playTime*.7+i)*.25)*dt;
+      if(a[i+1]<-4||Math.abs(a[i])>30||Math.abs(a[i+2])>30){a[i]=(Math.random()-.5)*50-wx*3;a[i+1]=20+Math.random()*6;a[i+2]=(Math.random()-.5)*50-wz*3;}}snow.geometry.attributes.position.needsUpdate=true;snow.position.set(camera.position.x,camera.position.y-8,camera.position.z);}
   water.position.y=Math.sin(playTime*.6)*.04;
 }
 // Myrsky kaataa harvoin puun pelaajan lähellä (3–40 m). Puun alle jäävä menettää 80 % terveydestä.

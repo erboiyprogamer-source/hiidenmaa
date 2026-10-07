@@ -73,6 +73,21 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.35 (lista 3: esiasetukset, varjot Grafiikka-sivulle, profiilit, heti voimaan, usvatasot, lumi tuulessa, autotallennus)
+- **Esiasetukset (kohta 17):** liukusäädin Grafiikka-sivun ylälaidassa, `PRESETS`/`PRESET_N` (Low, Low+, Medium-, Medium, Medium+, High, High+,
+  Ultra), oletus Medium (= SET_DEF:n grafiikka). Esiasetus asettaa 18 avainta (res, piirtoetäisyys, yksityiskohdat, ruoho, heilunta, pilvet,
+  valot, säteet, hiukkaset, usva, rakennusdetaljit, 3D-esineet, varjot ×6, autosäätö). Low–Medium autosäätö päällä, High–Ultra pois.
+  Käsin säädettynä nimi "Custom" (`presetIdx` = −1). Ultra-tasot: piirtoetäisyys 520 m (uudet myös 120 ja 210), ruoho 3 (54 m, väli 1,45),
+  varjoalue 140 m, tulien varjot 1024.
+- **Varjot (kohta 16):** Varjot-välilehti poistettu, asetukset Grafiikka-sivun väliotsikon "Varjot" alla (`SET_PAGES.gfx`).
+- **Heti voimaan (kohta 18):** tauolla (asetukset avoinna) ruoho, valot ja usva päivittyvät joka kehys (main.js `paused`).
+- **Profiilit (kohta 19):** uusi välilehti Profiilit: nimi + "Tallenna nykyiset asetukset" tallentaa KAIKKI asetukset ja näppäimet
+  (`hiidenmaa_profiles`), "Ota käyttöön" ja "Poista" (vahvistus), korvaus kysyy vahvistuksen.
+- **Usva (kohta 35):** tasot Ultra 2 / Korkea 1 / Normaali .6 (uusi oletus) / Matala .3 / Pois; vanhat asetukset siirretään (`SET._v`=2).
+- **Uudet asetukset:** `drop3d` (maassa olevat esineet 3D-kuvakkeina, kohta 25), `blood` (Normaali/Vähän/Pois, erä 6).
+- **Lumi (kohta 27):** hiutaleet kulkevat tuulen suuntaan, vaakanopeus `WIND.spd*.32` (13 m/s → ~62° kulma).
+- **Automaattitallennus (kohta 21):** 90 s → 120 s.
+
 ### v1.34 (lista 3: Kalmankruunun sirpaleet, uusi etenemisjärjestys, arvottu saalis, arvoesineet eivät katoa, hehku, kyltit, 3D-kuvakkeet)
 - **Kalmankruunun sirpale (kohta 8):** `kruunusirpale`. Aarnihirviö antaa 1 (`REALMS.portal3.key`), 2 on Aarnihaudan satunnaisissa arkuissa
   (`flags.sirpC`, arvotaan kun ulottuvuus rakennetaan; lisätään `openFound`issa). Kalmankehän alttari vaatii 3 sirpaletta (ei hiidenkiviä).
@@ -1422,11 +1437,11 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 14. TEHTY v1.33. Mobit lyövät kävellessä (ei pysähdystä, ei latausviivettä; 0,1 s viive), lyöntien välillä jäähy. Tavallisten mobien ulottuma ~20 %
    pelaajaa lyhyempi (~1,9 m). Karhu, kivivartija, pelottavat ja pomot pitävät oman ulottumansa.
 15. Jousen veto: oikea käsi vetää enemmän oikealle, kyynärpää taittuu, olkavarsi pysyy oikealla hieman edessä samalla korkeudella.
-16. Varjot = Grafiikka-sivun väliotsikko (ei erillistä sivua).
-17. Esiasetukset liukusäätimellä: Low, Low+, Medium-, Medium, Medium+, High, High+, Ultra (oletus Medium). Säätö käsin → "Custom".
+16. TEHTY v1.35. Varjot = Grafiikka-sivun väliotsikko (ei erillistä sivua).
+17. TEHTY v1.35. Esiasetukset liukusäätimellä: Low, Low+, Medium-, Medium, Medium+, High, High+, Ultra (oletus Medium). Säätö käsin → "Custom".
    Ultra ylittää nykyiset maksimit (varjot 4096, piirtoetäisyys +30 %, tiheämpi ruoho). Low–Medium: autosäätö päälle, High–Ultra: pois.
-18. Asetukset tulevat voimaan heti valittaessa.
-19. Asetusprofiilit omalla nimellä – tallentaa KAIKKI asetukset (myös ohjaus, äänet, näppäimet).
+18. TEHTY v1.35. Asetukset tulevat voimaan heti valittaessa.
+19. TEHTY v1.35. Asetusprofiilit omalla nimellä – tallentaa KAIKKI asetukset (myös ohjaus, äänet, näppäimet).
 20. Päävalikko: tallennuslista, enintään 5 paikkaa. Uusi maailma (nimi + kartta) tai jatka valittua. Näkyy viimeksi pelattu, päivät, taso,
    nimi. Uudelleennimeä, poista vahvistuksella. Vanha tallennus → "Maailma 1".
 21. Automaattitallennus 2 min välein, valikosta voi tallentaa itse.
@@ -1437,9 +1452,9 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
    Palokuolema (palaa, soihtu-isku, nuotion päällä, tulinuoli) mobille, pelaajalle ja pomoille: mustuu → tuhkakasa vajoaa maahan.
 24. Osuma: veripisaroita (tummanpunainen, maltillinen; isoilla eläimillä enemmän) ja läntti maahan, häipyy 10 s. Haavoittuneen mobin
    pintaan punaisia läikkiä. Kivihahmot: kivisiruja/pölyä, kalmot: luupölyä, usvaolennot: usvaa. Asetus Veri: Normaali / Vähän / Pois.
-25. Maassa olevat esineet näyttävät ikonilta, jolla on syvyyttä (3D). Medium ja ylöspäin + oma asetus.
+25. TEHTY v1.34–v1.35. Maassa olevat esineet näyttävät ikonilta, jolla on syvyyttä (3D). Medium ja ylöspäin + oma asetus.
 26. TEHTY v1.32. Pelaajan pudotus heittää 2× kauemmas ja aina eteenpäin.
-27. Lumisade kulkee tuulen suuntaan, kulma tuulen nopeuden mukaan.
+27. TEHTY v1.35. Lumisade kulkee tuulen suuntaan, kulma tuulen nopeuden mukaan.
 28. TEHTY v1.33. Pelaajan taistelu −10 % kaikessa (vahinko, ampumanopeus/lyöntinopeus, tönäisy).
 29. TEHTY v1.32. Nuolet otetaan käyttöön painamalla niiden pikapaikan numeroa; käytössä pysyy (kuten kilpi).
 30. TEHTY v1.32. Haarniska, vaate, nuolet (ja kilpi): yksi klikkaus repussa ottaa käyttöön (keltainen). Jos seuraava klikkaus on toiseen ruutuun,
@@ -1447,7 +1462,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 32. TEHTY v1.32. Käsien heilunta kävellessä/juostessa −10 %. Sivuttaiskeinunta: kävely puolet, juoksu −10 %.
 33. DEV-valikko: lento. Tuplahyppy aloittaa/lopettaa lennon, välilyönti ylös, Shift alas.
 34. TEHTY v1.33. Sateessa tulinuolen valo hiipuu 2× nopeammin. Osuessa kohteeseen tai maahan nuolen valo sammuu 2 s:ssa (palavan mobin valo ei).
-35. (lisä) Usva/sumu: oletus kevyemmäksi. Tasot: Ultra (= vanha Korkea), Korkea (= vanha Normaali), Normaali (uusi, kevyempi, oletus),
+35. TEHTY v1.35. Usva/sumu: oletus kevyemmäksi. Tasot: Ultra (= vanha Korkea), Korkea (= vanha Normaali), Normaali (uusi, kevyempi, oletus),
    Matala, Pois.
 
 36. (lisä) Palavan mobin tuli näyttävämmäksi, savua paljon enemmän (isoja partikkeleita, kohtuudella).
