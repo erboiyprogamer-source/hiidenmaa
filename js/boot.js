@@ -3,19 +3,18 @@
    vasta sitten latausnäyttö ja pelin skriptit. Ennen jakso pyöri pelin latauksen päällä, jolloin häivytykset pätkivät. Pelin skriptit
    esiladataan taustalla (<link rel=preload>) ja ajetaan yksi kerrallaan pienellä tauolla, jotta riimut ehtivät syttyä näkyvästi.
    Välilyönti, Enter tai napsautus ohittaa koko jakson (ja testin) ja vie suoraan latausnäyttöön. */
-window.__BJV='1.61';
+window.__BJV='1.62';
 (function(){
   var Q=location.search,wd=!!navigator.webdriver;
   function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
   function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
   var pend=false;try{pend=!!sessionStorage.getItem('hiidenmaa_pending');}catch(e){}
-  /* v1.61: aloitusjakso + testi vain ensikäynnillä tai "ilman välimuistia" (Shift+F5 / Ctrl+F5: uudelleenlataus, jossa sivu ladattiin
-     kokonaan verkosta – tavallinen F5 ottaa style.css:n välimuistista tai saa 304:n, jolloin siirretty koko < tiedoston koko). Muuten suoraan latausnäyttöön;
-     testi ei silloin säädä grafiikkaa. */
-  var hard=false;try{var nv=performance.getEntriesByType('navigation')[0],cs=performance.getEntriesByType('resource').filter(function(e){return /css\/style\.css/.test(e.name);})[0];
-    hard=!!nv&&nv.type==='reload'&&!!cs&&cs.encodedBodySize>0&&cs.transferSize>cs.encodedBodySize;}catch(e){}   // tyylitiedosto: F5 = välimuisti (0) tai 304, Shift+F5 = koko tiedosto
-  var needSplash=/[?&]splash=1/.test(Q)||(!wd&&!pend&&(!ls('hiidenmaa_intro')||hard));
-  var needPerf=/[?&]perf=1/.test(Q)||needSplash;
+  /* v1.62: aloitusjakso + testi VAIN ensimmäisellä käynnillä: merkintä localStorage 'hiidenmaa_intro' tallennetaan heti jakson alkaessa,
+     ja jos se löytyy, mennään suoraan latausnäyttöön ja valikkoon (F5 ei tyhjennä sitä). Maailman käynnistys/karttavaihto (sivun
+     uudelleenlataus, sessionStorage hiidenmaa_pending) ei koskaan näytä jaksoa – ei edes ?splash=1-testilinkillä. */
+  var needSplash=!pend&&(/[?&]splash=1/.test(Q)||(!wd&&!ls('hiidenmaa_intro')));
+  var needPerf=!pend&&(/[?&]perf=1/.test(Q)||needSplash);
+  if(needSplash)lsSet('hiidenmaa_intro','1');
   var JS=window.__GJS||[],PERF_T=5,RES_T=9,LV=['Low','Low+','Medium-','Medium'];
   window.__ldT=JS.length;
 

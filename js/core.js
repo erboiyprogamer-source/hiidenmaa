@@ -1,7 +1,7 @@
 /* Hiidenmaa – core.js
    Apuvälineet: matematiikka, kohina, satunnaisluvut */
 'use strict';
-window.__JSV='1.61';   // v1.58: versiotarkistus (index.html vertaa window.HV:hen; eroaa → välimuisti antoi vanhoja tiedostoja)
+window.__JSV='1.62';   // v1.58: versiotarkistus (index.html vertaa window.HV:hen; eroaa → välimuisti antoi vanhoja tiedostoja)
 // ⚠ VÄLIAIKAINEN KEHITYSTILA (käyttäjän pyyntö v0.74): DEV=true → kestävyys ei kulu, korkein taso (kaikki ohjeet auki), ei painorajaa,
 // V pohjassa liikkuu 10× nopeammin (v0.77; ennen Alt/Ö), Ä avaa DEV-valikon (sää, aika, terveys, kylläisyys), vasemmassa alakulmassa merkki "DEV-tila". Poista käytöstä: DEV=false.
 const DEV=true;

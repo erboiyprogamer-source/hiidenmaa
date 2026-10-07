@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.61)
+## Nykytila (päivitetty v1.62)
 
-- **Versio 1.61**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
+- **Versio 1.62**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -92,8 +92,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.62 (intro vain kerran, uusi pilviverho)
+- **Intro tuli maailman käynnistyksessä:** syy oli testilinkin `?splash=1`, joka säilyy karttavaihdon/uuden maailman sivun uudelleenlatauksessa.
+  Nyt jaksoa ei koskaan näytetä, kun `sessionStorage.hiidenmaa_pending` on asetettu (maailman käynnistys), eikä silloin myöskään testiä.
+- **Vain ensimmäinen käynti:** Shift+F5-tunnistus poistettu (käyttäjän toive). Merkintä `localStorage.hiidenmaa_intro='1'` tallennetaan heti
+  jakson alkaessa; jos se löytyy → latausnäyttö → valikko. Uusi maailma: latausnäyttö → pilvet aukeavat → yläilman kamera.
+- **Pilviverho (alle Medium, `introVeil`/`veilCloud`):** ennen kaksi litteää CSS-puoliskoa. Nyt 3 kerrosta × 2 puolta canvasilla maalattuja
+  kumpupilviä (läpinäkymättömät kummut ylhäältä alas, valo ylhäältä, sinertävä varjo, rosoinen aaltoileva sisäreuna, utu, blur 3,5 px),
+  sävy `lightK`:n mukaan. Aukeaminen: kerrokset liukuvat ulos eri nopeuksilla (1,9/2,3/2,7 s) ja kasvavat 1,08–1,4×, keskeltä valohehku,
+  tausta häipyy; vain transform/opacity. Maalaus kerran latausnäytön aikana.
+
 ### v1.61 (intro vain ensikäynnillä, ohitus millä tahansa näppäimellä, valikon myrskysade)
-- **Aloitusjakso + FPS-testi vain ensikäynnillä tai Shift+F5/Ctrl+F5:n jälkeen.** Tunnistus: navigaatio `reload` ja `css/style.css` siirtyi
+- **(Korvattu v1.62:ssa: vain ensikäynti.)** Aloitusjakso + FPS-testi vain ensikäynnillä tai Shift+F5/Ctrl+F5:n jälkeen. Tunnistus: navigaatio `reload` ja `css/style.css` siirtyi
   kokonaan verkosta (`transferSize > encodedBodySize`); tavallisessa F5:ssä tyylitiedosto tulee välimuistista (0) tai 304:nä. Testattu:
   F5 → 0 tavua, välimuistin ohittava lataus → koko tiedosto. Palaava pelaaja → suoraan latausnäyttöön, ei testiä eikä grafiikan säätöä.
   (Huom: Playwrightin `page.route` poistaa välimuistin → mittaa ilman reitityksiä.)
@@ -1756,7 +1766,7 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 6 (v1.53–) – julkaisupäivitys
-**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.61 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
+**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.62 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
 - A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
   eteenpäin, piikivikirves.
 - B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.

@@ -1,7 +1,7 @@
 /* Hiidenmaa – main.js
    Valikko, pääsilmukka ja testirajapinta window.__game */
 'use strict';
-window.__JSV2='1.61';   // v1.58: versiotarkistus (viimeinen skripti)
+window.__JSV2='1.62';   // v1.58: versiotarkistus (viimeinen skripti)
 // v1.24 KORJAUS (KORJAUKSET 22): valikkokameran tila esitellään ennen kuin startPlay voidaan kutsua (karttavaihdon jälkeinen automaattinen
 // aloitus tapahtuu jo tiedoston alussa; ennen let-muuttujat olivat vielä alustamatta → ReferenceError → peli jäi mustaksi).
 let frameErrShown=false;
@@ -129,9 +129,28 @@ function worldLoad(build){if(window.__ldShow)window.__ldShow('Saari nousee meres
 function introReady(){window.__ldAfter=introRelease;if(window.__ldDone)window.__ldDone();else introRelease();}
 function introRelease(){if(!intro){introVeil(false);return;}intro.hold=false;intro.t=0;const el=$('#introT');if(el){el.classList.remove('out');void el.offsetWidth;el.classList.add('on');}
   if(introHiQ()){introVeil(false,true);introCloudsMake();}else introVeil(false);}
-// CSS-pilviverho: kaksi puoliskoa jotka liukuvat sivuille
-function introVeil(on,instant){let v=$('#cloudVeil');if(on){if(!v){v=document.createElement('div');v.id='cloudVeil';v.innerHTML='<i class="cvL"></i><i class="cvR"></i>';document.body.appendChild(v);}v.className='';return;}
-  if(!v)return;if(instant){v.remove();return;}v.className='open';setTimeout(()=>{if(v.parentNode)v.remove();},2300);}
+// CSS-pilviverho (alle Medium). v1.62: kolme kerrosta kummallakin puolella (taka/keski/etu), maalattu kerran canvasiin pehmeistä
+// varjostetuista pilvipalloista (alta sinertävä varjo, päältä valo), sävy vuorokaudenajan mukaan (lightK). Aukeaminen: kerrokset liukuvat
+// sivuille eri nopeuksilla ja kasvavat (lento pilvien läpi), keskeltä hehkuu valo. Vain transform/opacity → sulava heikollakin koneella.
+function veilCloud(side,layer,tint){const w=420,h=520,c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d'),R=Math.random;
+  const o=document.createElement('canvas');o.width=w;o.height=h;const q=o.getContext('2d'),dk=1-(2-layer)*.08,T=(v)=>Math.round(v*tint*dk);
+  // kumpupilvi: läpinäkymättömät kummut, valo ylävasemmalta ja sinertävä varjo alla; ylhäältä alas piirretyt kummut peittävät
+  // edellisten varjopuolen → kerroksellinen, pöyheä pinta. Sisäreuna aaltoilee (kaksi siniaaltoa + satunnaisuus) ja on kumpujen rosottama.
+  const C=[],lim=w*(.98-layer*.13),ph=R()*6;
+  for(let y=-50;y<h+50;y+=10+R()*16){const e=lim*(.66+.16*Math.sin(y*.011+ph)+.1*Math.sin(y*.029+ph*2.3)+(R()-.5)*.08),r=20+R()*(26+layer*10);
+    C.push([e-r*.35,y,r]);if(R()<.5)C.push([e-r*.9,y+(R()-.5)*16,r*(.6+R()*.5)]);for(let x=e-r*1.3-R()*30;x>-90;x-=60+R()*70)C.push([x,y+(R()-.5)*40,45+R()*75]);}
+  C.sort((p,k)=>p[1]-k[1]);
+  for(const [x0,y,r] of C){const x=side<0?x0:w-x0,gr=q.createRadialGradient(x-r*.28*side*-1,y-r*.45,r*.08,x,y,r*1.02);
+    gr.addColorStop(0,`rgb(${T(255)},${T(253)},${T(250)})`);gr.addColorStop(.5,`rgb(${T(236)},${T(241)},${T(248)})`);gr.addColorStop(.86,`rgb(${T(206)},${T(215)},${T(230)})`);gr.addColorStop(1,`rgba(${T(170)},${T(182)},${T(204)},0)`);
+    q.fillStyle=gr;q.beginPath();q.arc(x,y,r,0,6.2832);q.fill();}
+  // utu sisäosan päälle: suuret läpikuultavat vaaleat läiskät häivyttävät toistuvan kumpukuvion
+  for(let i=0;i<14;i++){const yy=R()*h,rr=60+R()*90,xx0=lim*(.1+R()*.45),xx=side<0?xx0:w-xx0,hz=q.createRadialGradient(xx,yy,0,xx,yy,rr);hz.addColorStop(0,`rgba(${T(246)},${T(248)},${T(252)},.55)`);hz.addColorStop(1,`rgba(${T(246)},${T(248)},${T(252)},0)`);q.fillStyle=hz;q.fillRect(xx-rr,yy-rr,rr*2,rr*2);}
+  g.filter='blur(3.5px)';g.drawImage(o,0,0);g.filter='none';
+  c.className=(side<0?'cL':'cR')+' l'+layer;return c;}
+function introVeil(on,instant){let v=$('#cloudVeil');if(on){if(!v){v=document.createElement('div');v.id='cloudVeil';const t=.5+.5*clamp(typeof lightK==='number'?lightK:1,0,1);
+    const bg=document.createElement('i');bg.className='cvBg';bg.style.filter=`brightness(${t.toFixed(2)})`;v.appendChild(bg);const sun=document.createElement('i');sun.className='cvSun';v.appendChild(sun);
+    for(let l=0;l<3;l++)for(const sd of [-1,1])v.appendChild(veilCloud(sd,l,t));document.body.appendChild(v);}v.className='';return;}
+  if(!v)return;if(instant){v.remove();return;}void v.offsetWidth;v.className='open';setTimeout(()=>{if(v.parentNode)v.remove();},3000);}
 // 3D-lisäpilvet: sprite-ryppäät kameran edessä, vasen puoli liukuu vasemmalle ja oikea oikealle 2 s:ssa, häipyen
 let IC=null;
 function introCloudTex(){if(introCloudTex.t)return introCloudTex.t;const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');

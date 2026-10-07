@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.61';
+:root{--css-v:'1.62';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -558,10 +558,19 @@ button:focus,select:focus{outline:none}
 @keyframes drIn{from{opacity:0}to{opacity:1}}
 /* v1.52 CSS-pilviverho uuden maailman intron alussa (alle Medium-grafiikka) */
 #cloudVeil{position:fixed;inset:0;z-index:8990;pointer-events:none;overflow:hidden}
-#cloudVeil i{position:absolute;top:-10%;bottom:-10%;width:62%;transition:transform 2s cubic-bezier(.5,0,.2,1),opacity 2s ease;
-  background:radial-gradient(ellipse at 30% 30%,#fff 0 18%,rgba(255,255,255,0) 45%),radial-gradient(ellipse at 70% 60%,#f4f7fb 0 20%,rgba(255,255,255,0) 50%),radial-gradient(ellipse at 40% 80%,#eef2f8 0 22%,rgba(255,255,255,0) 52%),radial-gradient(ellipse at 80% 20%,#f8fafc 0 16%,rgba(255,255,255,0) 44%),linear-gradient(#e9eef5,#dfe6ef)}
-#cloudVeil .cvL{left:-6%;border-radius:0 45% 45% 0/0 50% 50% 0}#cloudVeil .cvR{right:-6%;border-radius:45% 0 0 45%/50% 0 0 50%}
-#cloudVeil.open .cvL{transform:translateX(-110%);opacity:.3}#cloudVeil.open .cvR{transform:translateX(110%);opacity:.3}
+#cloudVeil .cvBg{position:absolute;inset:0;background:linear-gradient(#d4dce8,#eef2f7 45%,#cfd8e4);transition:opacity 1.2s ease .15s}
+#cloudVeil .cvSun{position:absolute;left:50%;top:45%;width:90vmax;height:90vmax;margin:-45vmax 0 0 -45vmax;border-radius:50%;opacity:0;transform:scale(.4);
+  background:radial-gradient(circle,rgba(255,250,235,.9) 0%,rgba(255,236,200,.45) 18%,rgba(255,220,170,.12) 40%,transparent 62%);transition:opacity 1s ease .2s,transform 2.4s ease-out;will-change:opacity,transform}
+#cloudVeil canvas{position:absolute;top:-9vh;height:118vh;width:68vw;will-change:transform,opacity;transform-origin:50% 50%}
+#cloudVeil .cL{left:-6vw}#cloudVeil .cR{right:-6vw}
+#cloudVeil .l0{transition:transform 2.7s cubic-bezier(.45,0,.2,1),opacity 1.1s ease 1.5s}
+#cloudVeil .l1{transition:transform 2.3s cubic-bezier(.45,0,.2,1),opacity 1s ease 1.2s}
+#cloudVeil .l2{transition:transform 1.9s cubic-bezier(.45,0,.2,1),opacity .9s ease .9s}
+#cloudVeil.open .cvBg{opacity:0}#cloudVeil.open .cvSun{opacity:1;transform:scale(1.1);transition:opacity .9s ease .1s,transform 2.6s ease-out}
+#cloudVeil.open .cL.l0{transform:translateX(-62%) scale(1.08);opacity:0}#cloudVeil.open .cR.l0{transform:translateX(62%) scale(1.08);opacity:0}
+#cloudVeil.open .cL.l1{transform:translateX(-90%) scale(1.2);opacity:0}#cloudVeil.open .cR.l1{transform:translateX(90%) scale(1.2);opacity:0}
+#cloudVeil.open .cL.l2{transform:translateX(-125%) scale(1.4);opacity:0}#cloudVeil.open .cR.l2{transform:translateX(125%) scale(1.4);opacity:0}
+#cloudVeil.open{animation:cvOut .8s ease 2.1s forwards}@keyframes cvOut{to{opacity:0}}
 #vcur{will-change:transform}   /* v1.54 */
 /* ================= v1.55 ensikäynnin aloitusjakso ================= */
 #splash{position:fixed;inset:0;z-index:9500;background:#000;color:#e8dcc0;overflow:hidden;cursor:default;transition:opacity .7s ease}
