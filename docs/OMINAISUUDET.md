@@ -412,3 +412,5 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Piikivikirves (työpenkki: 3 puuta, 3 piikiveä, 1 nahka; taso 2): kaataa puut kivikirvestä nopeammin, ei kovia puita.
 - Kävellessä hahmo ei keinu sivulle; juostessa vähän ja osin eteenpäin.
 - Asetukset › Ohjaus: kääntymisen herkkyys ja pelin paneelien osoittimen herkkyys. Osoitin liikkuu viiveettä.
+- Ensimmäisellä käynnillä aloitusjakso: EricStudios / KSPK-tech ja tekijänoikeudet → HIIDENMAA kivikaiverruksena → varoitus
+  (tietokone, hiiri ja näppäimistö) → riimusiirtymä latausnäyttöön. Ohitettavissa napsautuksella tai näppäimellä.

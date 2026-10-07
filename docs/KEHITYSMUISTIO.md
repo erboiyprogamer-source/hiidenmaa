@@ -83,6 +83,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.55 (lista 6, erä C: ensikäynnin aloitusjakso)
+- `#splash` (index.html, oma skripti latausnäytön skriptin jälkeen), vain ensikäynnillä (`hiidenmaa_intro` puuttuu, ei karttavaihdon
+  uudelleenlataus, ei automaatioselain; `?splash=1` pakottaa). Kesto ~18 s, napsautus/näppäin siirtää seuraavaan vaiheeseen:
+  0,8 s musta → **EricStudios** (Cinzel, kirjainväli laajenee) + pieni **KSPK-tech** + alareunassa © 2026 EricStudios · KSPK-tech,
+  oikeudet pidätetään, kuvitteellisuuslauseke ja versio (5,2 s) → **HIIDENMAA** halkeillut kivikaiverrus (SVG: kivi + rae, 16
+  satunnaista halkeamaa, viistetty valo, rosoiset reunat) pitkä fade in 2,6 s + hidas zoom, 4,2 s kohdalla varjo nousee alhaalta ja
+  nielaisee sen (6,4 s) → varoitus "Toimii parhaiten tietokoneella" + näppäimistö- ja hiirikuvake (4,2 s) → siirtymä (1,3 s):
+  hehkuva riimu ᚺ kasvaa ja valorengas laajenee koko ruutuun → latausnäyttö tulee esiin zoomaten (`#loadScr.enter`).
+- `__ldDone` kääritään: jakson aikana valmistuminen jää odottamaan (`__ldPend`) ja tehdään 1,4 s jakson jälkeen, jotta latausnäyttö
+  ja sen leimahdus nähdään aina. `#pcHint` ("Toimii parhaiten…") ei enää näy valikossa. Testi: peli valmis 1,9 s, jakso ohitettuna
+  6,8 s, latausnäyttö pois 10,6 s, valikko auki, ei virheitä.
+
 ### v1.54 (lista 6, erä B: herkkyydet ja osoittimen viive)
 - Ohjaus: **Kääntymisen herkkyys** `SET.sens` (0,2–3×, oletus 1 = 0,0028 rad/px) ja **Osoittimen herkkyys** `SET.curSens` (0,3–3×)
   pelin paneelien virtuaaliosoittimelle. Päävalikko käyttää käyttöjärjestelmän osoitinta (selain ei salli nopeuden muuttamista) –
