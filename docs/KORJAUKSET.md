@@ -229,6 +229,15 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   katsoivat vain pätkien keskipisteitä tai nuolen paikkaa, eivät paljastaneet vikaa → mittaa aina pätkän PÄÄTEPISTEET (tai katso kuva sivulta).
 - **Myös:** repun kuvakkeessa kaari ja naru olivat väärin päin (v1.56).
 
+## 31. "Cannot set properties of null (setting 'onclick') (main.js:39)", valikko ilman tyylejä (v1.58)
+- **Oire:** Ctrl+Shift+R:n jälkeen haaralinkissä (raw.githack) uusi index.html (versio näkyy oikein), mutta logo, riimut ja Takaisin-nappi
+  muotoilemattomina ja virhe main.js:39.
+- **Syy:** välityspalvelimen välimuisti antoi vanhan main.js:n ja style.css:n (~v1.25, rivi 39 = `$('#bNew').onclick`, nappia ei enää ole)
+  `?v=`-numerosta huolimatta. Toistettu testissä ohjaamalla vanhat tiedostot uuden index.html:n kanssa → täsmälleen sama virhe.
+- **Korjaus:** versiotarkistus: `window.__JSV` (core.js), `window.__JSV2` (main.js) ja `--css-v` (style.css) verrataan `window.HV`:hen;
+  ero → ilmoitus "Välimuisti antoi vanhentuneita tiedostoja … avaa commit-linkillä". `bump.sh` päivittää kaikki merkit.
+  Suosittele käyttäjälle aina commit-SHA-linkkiä heti päivityksen jälkeen (kaikki tiedostot samasta versiosta).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

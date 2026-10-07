@@ -15,7 +15,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Nykytila (päivitetty v1.57)
 
-- **Versio 1.57**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
+- **Versio 1.58**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -91,6 +91,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.58 (korjaus: välimuistin vanhat tiedostot)
+- Käyttäjän näkymä: valikko ilman tyylejä ja virhe main.js:39 Ctrl+Shift+R:n jälkeen haaralinkissä. Syy: raw.githack antoi vanhan
+  main.js:n ja style.css:n uuden index.html:n kanssa (KORJAUKSET 31). Lisätty versiotarkistus (`__JSV`, `__JSV2`, `--css-v` vs. `HV`), joka
+  kertoo selvästi, että tiedostot ovat vanhoja ja ohjaa commit-linkkiin. Pelikoodissa ei vikaa (commit-linkki toimii).
 
 ### v1.57 (lista 6, erä E: jousen naru, ote, osumamerkki, ristikko, Q-pudotus + koko pelin tarkistus)
 - **Jousen naru (käyttäjä huomasi):** `updateBowMesh` pätkien kulma oli väärää etumerkkiä (`-atan2`) → kumpikin pätkä peilautui
