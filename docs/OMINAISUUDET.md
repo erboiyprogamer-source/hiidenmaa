@@ -460,3 +460,4 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Pikapaikan valinnassa esineen nimi ruudun yläpuolella ~1 s, väri harvinaisuuden mukaan (kulta, sininen, vihreä, vaalea).
 - Herätessä (uudelleensyntyminen) viholliset 35 m säteellä katoavat savuna (ei pomot, vartijat eikä rauhalliset eläimet).
 - Esiasetukset Low–Medium+ kytkevät automaattisäädöt (myös osa-alueet ja varjojen laadun) päälle, High–Ultra pois.
+- Erittäin tarkat varjot ohittavat tavalliset varjoasetukset (näkyvät harmaina): 8192 px, päivitys joka ruutu, etäisyys 90 / 110 / 160 m.

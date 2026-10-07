@@ -116,7 +116,7 @@ function updateEnvironment(dt){
   indoorK=lerp(indoorK,indoorT,Math.min(1,dt*2));
   sun.intensity=sun.intensity*(1-.45*aarniK)*(1-.7*indoorK)+flash*.45*(1-indoorK);
   sun.target.position.copy(P.pos);
-  if(SET.shUltra==='wide'){const o=(+SET.shDist||55)*1.6*.45,fx=-Math.sin(camYaw)*o,fz=-Math.cos(camYaw)*o;sun.target.position.x+=fx;sun.target.position.z+=fz;sun.position.x+=fx;sun.position.z+=fz;}   // v1.76: laaja alue sovitetaan näkymän suuntaan
+  if(SET.shUltra==='wide'){const o=160*.45,fx=-Math.sin(camYaw)*o,fz=-Math.cos(camYaw)*o;sun.target.position.x+=fx;sun.target.position.z+=fz;sun.position.x+=fx;sun.position.z+=fz;}   // v1.76: laaja alue sovitetaan näkymän suuntaan
   hemi.intensity=((.07+.2*light*(1-wDark*.4))*(1-.45*aarniK)+flash*.55)*(1-.6*indoorK);amb.intensity=(.03+.025*light+flash*.22)*(1-.5*indoorK);
   hemi.color.setHex(light>.3?0xcfe4ff:0x6a7fa8);hemi.color.lerp(cIndoor,indoorK);
   stars.material.opacity=(1-light)*(1-wDark);stars.position.copy(camera.position);

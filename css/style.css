@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.79';
+:root{--css-v:'1.80';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -754,3 +754,4 @@ button:focus,select:focus{outline:none}
 @keyframes hnShow{0%{opacity:0;transform:translate(-50%,4px)}10%{opacity:1;transform:translate(-50%,0)}70%{opacity:1}100%{opacity:0}}
 #hotName.r_com{color:#ece4d2}#hotName.r_unc{color:#9fdc7a}#hotName.r_rare{color:#7fbcff}
 #hotName.r_leg{color:#f6cf5a;text-shadow:0 1px 2px #000,0 0 10px rgba(246,190,60,.55)}
+.setRow.ovr{opacity:.42;filter:grayscale(1);pointer-events:none}.setRow.ovr .note{color:#ffb0a0}   /* v1.80: erittäin tarkkojen varjojen ohittamat asetukset */

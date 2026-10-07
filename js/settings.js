@@ -72,7 +72,11 @@ let RDK=1,DETK=1,PF=1,hotSel=0,lastShadowOn=null;
 /* v1.12 automaattisäätö: tasot nousevat kun peli nykii (main.js autoQuality), kertoimet otetaan käyttöön applyGfx:ssä.
    res = 3D-resoluutio, fx = hiukkaset/usva/ruoho, dist = piirtoetäisyys. Varjojen taso on QUAL.lvl (render.js). */
 const AUTO={res:0,fx:0,dist:0},AUTO_K={res:[1,.85,.7,.55],fx:[1,.5,.25],dist:[1,.8,.6]};
-function autoOn(k){return !!SET.autoAll&&!!SET[{res:'autoRes',fx:'autoFx',dist:'autoDist',q:'autoQ'}[k]];}
+/* v1.80: erittäin tarkat varjot ohittavat tavalliset varjoasetukset: oma etäisyys, 8192 kartta, päivitys joka ruutu, varjot aina päällä */
+const SHU={sharp:{d:90,n:'8192 px · 90 m · päivitys joka ruutu'},soft:{d:110,n:'8192 px · 110 m · pehmeät reunat · joka ruutu'},wide:{d:160,n:'8192 px · 160 m näkymän suuntaan · joka ruutu'}};
+const SHU_OVR=['shadow','sunRes','shDist','shRate','autoQ','shFar'];
+function shUltraOn(){return !!SHU[SET.shUltra];}
+function autoOn(k){if(k==='q'&&shUltraOn())return false;return !!SET.autoAll&&!!SET[{res:'autoRes',fx:'autoFx',dist:'autoDist',q:'autoQ'}[k]];}
 // Ottaa asetukset käyttöön (kutsutaan käynnistyksessä ja kun asetusta muutetaan)
 function applyGfx(){
   if(typeof grassDirty!=='undefined')grassDirty=true;   // v1.00 ruohon tiheys vaihtui
@@ -80,13 +84,13 @@ function applyGfx(){
   const dpr=devicePixelRatio||1,pr=(SET.res==='native'?Math.min(dpr,2):Math.min(dpr,1.5)*(+SET.res||1))*AUTO_K.res[AUTO.res];
   if(Math.abs(renderer.getPixelRatio()-pr)>.001){renderer.setPixelRatio(pr);renderer.setSize(innerWidth,innerHeight);}
   {const ps=+SET.ptRes||384,l=LIGHTS[0];if(l.shadow.mapSize.x!==ps){l.shadow.mapSize.set(ps,ps);if(l.shadow.map){l.shadow.map.dispose();l.shadow.map=null;}l.shadow.needsUpdate=true;}}
-  sun.shadow.autoUpdate=SET.shRate!=='slow'&&!SET.shFar;   // v1.44 shFar: ai.js päivittää itse
+  sun.shadow.autoUpdate=shUltraOn()||SET.shRate!=='slow'&&!SET.shFar;   // v1.44 shFar: ai.js päivittää itse; v1.80 shUltra: joka ruutu
   /* v1.76: erittäin tarkat varjot (shUltra, ei esiasetuksissa): sharp = 8192 kartta, soft = 8192 + pehmeät reunat (PCF, säde 3,5),
      wide = 8192 + 1,6× alue näkymän suuntaan sovitettuna + päivitys joka ruutu (raskain, punainen). Kartan koko render.js setQuality. */
   {const u=SET.shUltra||'off',want=u==='soft'?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;if(renderer.shadowMap.type!==want){renderer.shadowMap.type=want;lastShadowOn=null;}
-   sun.shadow.radius=u==='soft'?3.5:1;const d=(+SET.shDist||55)*(u==='wide'?1.6:1),sc=sun.shadow.camera;if(sc.right!==d){sc.left=-d;sc.right=d;sc.top=d;sc.bottom=-d;sc.updateProjectionMatrix();}
-   if(u==='wide')sun.shadow.autoUpdate=true;}
-  const on=SET.shadow!=='off';renderer.shadowMap.enabled=on;
+   sun.shadow.radius=u==='soft'?3.5:1;const d=SHU[u]?SHU[u].d:(+SET.shDist||55),sc=sun.shadow.camera;if(sc.right!==d){sc.left=-d;sc.right=d;sc.top=d;sc.bottom=-d;sc.updateProjectionMatrix();}
+   sun.shadow.bias=SHU[u]?-.00035:-.0006;sc.far=SHU[u]?420:260;sc.updateProjectionMatrix();}
+  const on=SET.shadow!=='off'||shUltraOn();renderer.shadowMap.enabled=on;
   if(lastShadowOn!==on){lastShadowOn=on;scene.traverse(o=>{if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true);});}
   if(typeof setQuality==='function')setQuality(QUAL.lvl);
   soundOn=!!SET.sound;invertY=!!SET.invY;
@@ -191,6 +195,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
     }</div><p class="note">Vaaleana näkyvä valinta on oletus. Asetukset tulevat voimaan heti ja tallentuvat selaimeen.</p>`+resetBtn;
     bindSet(SET_PAGES.gfx);$('#bPageReset').onclick=()=>resetPage('gfx');
     body.querySelectorAll('[data-ush]').forEach(b=>b.onclick=()=>{SET.shUltra=b.dataset.ush;saveSet();applyGfx();renderSettings();});
+    if(shUltraOn())for(const k of SHU_OVR){const el=$('#s_'+k),r=el&&el.closest('.setRow');if(!r)continue;r.classList.add('ovr');if(el.tagName==='SELECT')el.disabled=true;const n=r.querySelector('.note');if(n)n.textContent='ohitettu: erittäin tarkat varjot päällä';}   // v1.80
     bindSld('sPreset',i=>{$('#presetName').textContent=PRESET_N[i];$('#presetName').className='';pvTheme(i);},i=>{applyPreset(i);renderSettings();});pvFxStart();
   }else if(setTab==='prof'){
     const P0=loadProfiles(),names=Object.keys(P0);
@@ -250,7 +255,7 @@ function showAllKeys(){let d=$('#allKeys');if(!d){d=document.createElement('div'
     <div class="akGrid">${ALL_KEYS.map(([h,R])=>`<div class="akCat"><h3>${h}</h3>${R.map(row).join('')}</div>`).join('')}${DEV?`<div class="akCat"><h3>DEV-tila</h3>${[[null,'V (pohjassa)','10× nopeus'],[null,'Ä','DEV-valikko'],[null,'Välilyönti ×2','lento (jos päällä DEV-valikossa): välilyönti ylös, Shift alas, Ctrl nopeammin']].map(row).join('')}</div>`:''}</div></div>`;
   d.hidden=false;$('#akClose').onclick=()=>{d.hidden=true;};}
 function ultraShRow(){const v=SET.shUltra||'off',on=v!=='off',O=[['off','Pois'],['sharp','Terävä 8192'],['soft','Terävä + pehmeät reunat'],['wide','Terävä + laaja alue']];
-  return `<div class="setRow ultraRow${on?' on':''}"><label>Erittäin tarkat varjot${on?' <span class="ultraBang" title="Erittäin raskas asetus päällä">!</span>':' <span class="defTag">oletus</span>'}</label><div class="ultraOpts">${O.map(([k,t])=>`<button class="uo${k===v?' sel':''}${k==='wide'?' red':''}" data-ush="${k}">${t}</button>`).join('')}</div><span class="note">ei kuulu esiasetuksiin – vain hyvin tehokkaille koneille; punainen on raskain</span></div>`;}
+  return `<div class="setRow ultraRow${on?' on':''}"><label>Erittäin tarkat varjot${on?' <span class="ultraBang" title="Erittäin raskas asetus päällä">!</span>':' <span class="defTag">oletus</span>'}</label><div class="ultraOpts">${O.map(([k,t])=>`<button class="uo${k===v?' sel':''}${k==='wide'?' red':''}" data-ush="${k}">${t}</button>`).join('')}</div><span class="note">${on?SHU[v].n+' – ohittaa alla harmaana näkyvät varjoasetukset':'ei kuulu esiasetuksiin – vain hyvin tehokkaille koneille; punainen on raskain'}</span></div>`;}
 function keyDialog(text,btns,note){const d=$('#keyDlg');d.hidden=false;$('#keyDlgT').textContent=text;$('#keyDlgN').textContent=note||'';
   const b=$('#keyDlgB');b.innerHTML='';for(const [t,fn] of btns){const x=document.createElement('button');x.className='btn'+(t==='Vahvista'||t==='Palauta'?' pri':'');x.textContent=t;x.onclick=()=>{d.hidden=true;capture=null;if(fn)fn();};b.appendChild(x);}}
 function startCapture(a){const nm=ACTIONS.find(x=>x[0]===a)[1];capture={a,code:null};keyDialog(`Paina uutta näppäintä: ${nm}`,[['Peruuta',null]],'Esc peruu. Varatut ja jo käytössä olevat näppäimet hylätään.');}
