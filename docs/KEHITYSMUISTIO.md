@@ -15,7 +15,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Nykytila (päivitetty v1.44)
 
-- **Päivityslista 4 (32 kohtaa + extrat 1–2 + aluebannerit) on KOKONAAN TEHTY** v1.39–v1.44 (+ v1.45 latausnäytön leimahdus ja sivupartikkelit), haara
+- **Päivityslista 4 (32 kohtaa + extrat 1–2 + aluebannerit) on KOKONAAN TEHTY** v1.39–v1.44 (+ v1.45 latausnäytön leimahdus ja sivupartikkelit, v1.46 valikon uudistus), haara
   `claude/hiidenmaa-survival-game-fmxt0m`, PR #25 odottaa yhdistämistä (main = v1.37). Seuraava työ: uusi lista käyttäjältä.
 - Erät: A v1.39, B v1.40, C v1.41, D v1.42, E v1.43 (+ aluebannerit), F v1.44 – yksityiskohdat versiolokissa ja kohdassa "Päivityslista 4".
 - Testauksen huomiot: headless-testissä CSS-animaatiot eivät etene raskaan 3D:n aikana (tarkista ulkoasu animaatiot pois), ulottuvuuden
@@ -82,6 +82,26 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.46 (valikon uudistus, käyttäjän pyyntö)
+- **Päätökset (käyttäjän vastaukset):** tyyli "yllätä, käytä kaikkia" → kivi + taottu metalli + riimut yhdessä; valikot eivät vieritä vaan
+  korvaavat päänäkymän leveällä näkymällä tyhjään tilaan (Takaisin-painike ja P/Esc); partikkelit vaihtuvat taustakuvan mukaan;
+  jatka/aloita-painike on erityinen, silmään pistävä.
+- **Rakenne:** `#menu[data-view]` = `main` | `worlds` | `settings`. Päänäkymä `.mHome` (otsikko, tarina, painikkeet), leveä näkymä `#mView`
+  (`.mvHead` Takaisin + otsikko, `.mvBody` jossa `#worlds` tai `#settings`). `setMenuView`, `menuBack` (P/Esc valikossa ja tauolla:
+  ensin takaisin, päänäkymässä P jatkaa peliä). `#settings`-paneelin hidden-tila ohjaa settings-näkymää (MutationObserver), otsikko
+  Näppäimet/Asetukset välilehden mukaan. Pelin aikana tarina piilossa (`#menu.inGame`), jotta kaikki mahtuu 768 px korkeuteen.
+- **Otsikko:** Cinzel Decorative 900 (Google Fonts, varalla Uncial Antiqua), kivitekstuuri (SVG-kohina) + pronssi-luugradientti
+  tekstin täyttönä, kaiverrusvarjo, sykkivä hiilloshehku, valojuova 7 s välein, alla riimurivi ᚺᛁᛁᛞᛖᚾᛗᚨᚨ (kirkastuu hiiren alla).
+- **Painikkeet:** tumma puu + syykuvio, rautaniitit kulmissa, vasemmalla kivinen riimulaatta (`data-rune` → `.mIco`), Cinzel-teksti;
+  hiiren alla siirtymä, hehkureuna, riimu syttyy ja kääntyy, valojuova (`.mSheen`); painettaessa painuma. Sisääntulo porrastettuna.
+- **Sankaripainike `.mHero`:** `#bContinue` (ei pelissä: "Jatka seikkailua" viimeisimpään maailmaan tai "Aloita seikkailu" kun
+  maailmoja ei ole → luo uuden) ja `#bResume` (pelissä): pyörivä kultainen conic-reunus (`@property --ha`), sykkivä hehku, pyöreä hehkuva
+  riimusinetti katkoviivakehällä, kultainen gradienttiteksti, reunoilta jatkuvasti nousevia kipinöitä, painettaessa iso kipinäryöppy.
+- **Maailmat-näkymä:** kortit ruudukkona (pelaa / nimeä / poista), uusi maailma katkoviivakortissa.
+- **Partikkelit (`menubg.js`, `MFX`, `#menuFx`):** laji `MFX_KIND[MBG.i]`: hiillos, kultapöly, kevyt lumi, tulikärpäset, virvatulet+tuhka,
+  valopöly+lehdet, nousevat riimut, vino sade+lehdet, lumisade, taikakipinät; 3D-taustalla/tauolla hiillos. Hiiri työntää hiukkasia,
+  painikkeet kipinöivät. Määrä × Hiukkaset-asetus, enintään 45 kuvaa/s, enintään 420 hiukkasta.
 
 ### v1.45 (latausnäytön viimeistely, käyttäjän pyyntö)
 - **Loppuleimahdus:** kun lataus (ja mahdollinen suorituskykytesti) valmistuu, `__ldDone` lisää `#loadScr.done`: 0,8 s kaikki riimut

@@ -385,3 +385,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## Latausnäyttö (v1.45)
 - Latauksen valmistuttua riimut leimahtavat 0,8 s lähes valkoisiksi ja kirkkaiksi, sitten näyttö häipyy. Reunoilla nousee hiilloshiukkasia ja tuhkaa.
+
+## Päävalikko (v1.46)
+- Päänäkymä ilman vieritystä: otsikko (kivi/metalli/riimut), sankaripainike Jatka seikkailua / Aloita seikkailu (pelissä Palaa peliin),
+  Maailmat, Näppäimet, Asetukset (pelissä myös Tila ja Tallenna).
+- Maailmat, Näppäimet ja Asetukset avautuvat leveäksi näkymäksi; takaisin Takaisin-painikkeella tai P:llä (Esc valikossa).
+- Partikkelit vaihtuvat taustakuvan mukaan; painikkeet kipinöivät hiiren alla ja painettaessa.

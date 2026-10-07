@@ -18,13 +18,35 @@ function hasSave(){return slotMeta().some(Boolean);}
 let pauseRun=false,intro=null,perf=null;   // intro ja perf ennen karttavaihdon jatkoa (KORJAUKSET 22)
 try{pauseRun=localStorage.getItem('hiidenmaa_prun')==='1';}catch(e){}
 function refreshMenu(){const inGame=started;$('#bResume').hidden=!inGame;$('#bSave').hidden=!inGame;{const b=$('#bRun');if(b){b.hidden=!inGame;$('#bRunT').textContent='Tila: '+(pauseRun?'Käynnissä':'Tauko');b.classList.toggle('on',pauseRun);}}
-  const m=slotMeta();$('#mapName').textContent=inGame?`Kartta: ${MAP.name}`:'';$('#curWorld').textContent=inGame&&curSlot>=0&&m[curSlot]?`Maailma: ${m[curSlot].name}`:'';renderWorlds();}
+  const m=slotMeta();$('#mapName').textContent=inGame?`Kartta: ${MAP.name}`:'';$('#curWorld').textContent=inGame&&curSlot>=0&&m[curSlot]?`Maailma: ${m[curSlot].name}`:'';renderWorlds();
+  // v1.46: sankaripainike – jatka viimeisintä maailmaa tai aloita ensimmäinen; Maailmat-painikkeen alateksti
+  {const used=m.filter(Boolean).length,li=lastWorld(m),c=$('#bContinue');if(c){c.hidden=inGame;
+    if(li>=0){const w=m[li];$('#bContT').textContent='Jatka seikkailua';$('#bContS').textContent=`${w.name} · päivä ${w.day||1} · taso ${w.lvl||1} · ${(MAPS[w.mapId||0]||MAPS[0]).name}`;}
+    else{$('#bContT').textContent='Aloita seikkailu';$('#bContS').textContent='Uusi maailma – haaksirikko, ranta ja arvottu saari';}}
+   const ws=$('#bWorldsS');if(ws)ws.textContent=used?`${used} / ${SLOTS} maailmaa – pelaa, nimeä tai aloita uusi`:'Ei vielä maailmoja – aloita uusi';}
+  $('#menu').classList.toggle('inGame',inGame);menuStagger();}
+function lastWorld(m){let b=-1,t=-1;m.forEach((w,i)=>{if(w&&(w.at||0)>t){t=w.at||0;b=i;}});return b;}
+/* v1.46: valikon näkymät. 'main' = päänäkymä ilman vieritystä; 'worlds' ja 'settings' (Asetukset/Näppäimet) korvaavat sen leveällä
+   näkymällä tyhjään tilaan. Takaisin-painike tai P palaa. #settings-paneelin hidden-tila ohjaa settings-näkymää (MutationObserver). */
+function setMenuView(v){const M=$('#menu');if(!M||M.dataset.view===v)return;M.dataset.view=v;
+  if(v==='worlds')$('#mvTitle').textContent='Maailmat';else if(v==='settings')$('#mvTitle').textContent=setTab==='keys'?'Näppäimet':'Asetukset';
+  else{M.classList.remove('anim');void M.offsetWidth;M.classList.add('anim');}
+  if(typeof sfx==='function')sfx('pickup',v==='main'?.8:1.2,.25);}
+function menuBack(){const M=$('#menu');if(!M||M.dataset.view==='main')return false;if(!$('#settings').hidden)$('#settings').hidden=true;setMenuView('main');return true;}
+function menuStagger(){let i=0;for(const b of $('#menu').querySelectorAll('.menuBtns>*'))if(!b.hidden)b.style.setProperty('--i',i++);}
+(function(){const M=$('#menu');if(!M)return;
+  for(const b of M.querySelectorAll('.mbtn[data-rune]')){if(b.querySelector('.mIco'))continue;const i=document.createElement('i');i.className='mIco';i.textContent=b.dataset.rune;b.prepend(i);const sh=document.createElement('b');sh.className='mSheen';b.appendChild(sh);}
+  new MutationObserver(()=>{const open=!$('#settings').hidden;if(open)setMenuView('settings');else if(M.dataset.view==='settings')setMenuView('main');}).observe($('#settings'),{attributes:true,attributeFilter:['hidden']});
+  new MutationObserver(()=>{if(M.dataset.view==='settings')$('#mvTitle').textContent=setTab==='keys'?'Näppäimet':'Asetukset';}).observe($('#setTabs'),{childList:true});
+  $('#bBack').onclick=menuBack;$('#bWorlds').onclick=()=>setMenuView('worlds');
+  $('#bContinue').onclick=()=>{const m=slotMeta(),li=lastWorld(m);if(li>=0){const b=$(`#worlds [data-play="${li}"]`);if(b)b.click();}else{const nb=$('#bNewWorld');if(nb)nb.click();}};
+  M.classList.add('anim');})();
 const fmtAt=t=>{try{return new Date(t).toLocaleString('fi-FI',{dateStyle:'short',timeStyle:'short'});}catch(e){return '';}};
 function renderWorlds(){const el=$('#worlds');if(!el)return;const m=slotMeta(),used=m.filter(Boolean).length,free=m.findIndex(x=>!x);
   el.innerHTML=`<h3>Maailmat <span class="note">${used} / ${SLOTS}</span></h3>`+m.map((w,i)=>!w?'':`<div class="world${started&&i===curSlot?' cur':''}" data-i="${i}">
     <div class="wInfo"><b class="wName">${esc(w.name)}</b><span>${fmtAt(w.at)} · päivä ${w.day||1} · taso ${w.lvl||1} · ${(MAPS[w.mapId||0]||MAPS[0]).name}${w.min?` · ${w.min} min`:''}</span></div>
     <div class="wBtns"><button class="btn pri" data-play="${i}">${started&&i===curSlot?'Pelissä':'Pelaa'}</button><button class="btn" data-ren="${i}">Nimeä</button><button class="btn" data-del="${i}">Poista</button></div></div>`).join('')+
-    (free>=0?`<div class="wNew"><input id="newName" class="search" maxlength="28" placeholder="Maailma ${free+1}"><button class="mbtn" id="bNewWorld">Uusi maailma<small>Aloita rannalta ilman mitään – kartta arvotaan</small></button></div>`
+    (free>=0?`<div class="wNew"><input id="newName" class="search" maxlength="28" placeholder="Maailma ${free+1}"><button class="mbtn" id="bNewWorld"><i class="mIco">ᚨ</i>Uusi maailma<small>Aloita rannalta ilman mitään – kartta arvotaan</small><b class="mSheen"></b></button></div>`
       :`<div class="note">Kaikki ${SLOTS} paikkaa ovat käytössä. Poista maailma tehdäksesi uuden.</div>`);
   el.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>{const i=+b.dataset.play;if(started&&i===curSlot){$('#bResume').click();return;}
     const go=()=>{const d=slotData(i);if(!d){$('#saveMsg').textContent='Tallennus puuttuu tai on rikki.';return;}setCurSlot(i);playSave(d,`Tervetuloa takaisin: ${m[i].name}.`);};
@@ -54,7 +76,7 @@ let started=false,confirmNew=false;
 (function(){const h=$('#pcHint');if(!h)return;/* ajastin alkaa vasta kun valikko on piirretty (2. kehys), jotta latausaika ei syö näkymisaikaa */
   requestAnimationFrame(()=>requestAnimationFrame(()=>{if(started)return;h.hidden=false;setTimeout(()=>h.classList.add('fade'),3000);setTimeout(()=>{h.hidden=true;},4600);   /* v1.30: 3 s (ennen 6 s) */}));})();
 function startPlay(){if(typeof menuClear==='function')menuClear();if(typeof mbgShow==='function'&&MBG.cv)mbgShow(false);setTimeout(()=>{if(typeof applyHudMode==='function')applyHudMode();},50);{const f=$('#menuFade');if(f)f.style.opacity=0;}fig.g.visible=true;started=true;{const h=$('#pcHint');if(h&&!h.hidden){h.classList.add('fade');setTimeout(()=>h.hidden=true,1600);}}state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();invDirty=true;}
-function pauseGame(){if(state!=='play'||openPanel||P.dead)return;state='paused';pausedAt=performance.now();$('#menu').hidden=false;$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
+function pauseGame(){if(state!=='play'||openPanel||P.dead)return;state='paused';pausedAt=performance.now();$('#menu').hidden=false;$('#settings').hidden=true;setMenuView('main');$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
 addEventListener('beforeunload',e=>{if(started&&!flags.won&&!reloading){e.preventDefault();e.returnValue='';}});
 // Maailma rakennetaan skriptien latautuessa, joten kartan vaihto = sivun uudelleenlataus.
 let reloading=false;
@@ -174,6 +196,7 @@ function autoQuality(raw){if(raw>.5)return;fAvg+=(raw-fAvg)*.05;qCool-=raw;
 let fpsN=0,fpsT=0;
 function updateFps(raw){if(SET.fps==='off')return;fpsN++;fpsT+=raw;if(fpsT<.5)return;const f=Math.round(fpsN/fpsT),el=$('#fps');fpsN=0;fpsT=0;
   if(el){el.textContent=f+' FPS';el.style.color=f>=50?'#8fd8a0':f>=30?'#e8c45a':'#e0614f';}}
+const MENU_EL=$('#menu');
 function frame(now){
   requestAnimationFrame(frame);
   const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;let skip3d=false;
@@ -189,6 +212,7 @@ function frame(now){
     else if(state==='dead'||state==='win'){updateMobs(dt*.5);updateEnvironment(dt);updateEffects(dt);}
   }catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe pelisilmukassa: '+(err&&err.message||err));}}   // v1.26 näkyviin
   // v1.38: piirtovirhe näkyy tarkkana (ennen try-lohkon ulkopuolella → selain näytti vain "Script error.", KORJAUKSET 28)
+  if(MENU_EL&&!MENU_EL.hidden){try{mfxFrame(now);}catch(err){console.error(err);}}   // v1.46 valikon partikkelit
   if(!skip3d){try{renderer.render(scene,camera);}catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe piirrossa: '+(err&&err.message||err));}}}
 }
 updateLights();applyGfx();refreshKeyHints();

@@ -16,7 +16,8 @@ addEventListener('keydown',e=>{
   if(e.code==='Tab'){e.preventDefault();}
   if(e.code===BIND.full&&!e.repeat&&(state==='play'||state==='ui'||state==='paused'))toggleFullscreen();
   // v1.40 (lista 4, kohta 7): Esc ei tee pelissä mitään (selain vapauttaa silti hiiren lukituksen). P = päävalikko ja yleinen sulkunäppäin.
-  if(state==='paused'&&e.code===BIND.menu&&!e.repeat&&performance.now()-pausedAt>250){e.preventDefault();if(!$('#keyDlg').hidden)return;if(!$('#settings').hidden)$('#settings').hidden=true;else $('#bResume').click();return;}
+  if(state==='paused'&&e.code===BIND.menu&&!e.repeat&&performance.now()-pausedAt>250){e.preventDefault();if(!$('#keyDlg').hidden)return;if(!menuBack())$('#bResume').click();return;}
+  if(state==='menu'&&(e.code===BIND.menu||e.code==='Escape')&&!e.repeat){if($('#keyDlg').hidden&&menuBack())e.preventDefault();return;}   // v1.46: P/Esc palaa päänäkymään
   // v0.80: kuoleman ruudulla Enter herättää (hiiren lisäksi); kuollessa muut näppäimet eivät avaa valikoita
   if(state==='dead'){if((e.code==='Enter'||e.code==='NumpadEnter')&&!e.repeat){e.preventDefault();respawn();}return;}
   if(P.dead)return;
