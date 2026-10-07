@@ -73,6 +73,22 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.41 (lista 4, erä C: lumi ja sade, seinäsoihtu, soihdun sytytys, arkkujen ulkonäkö)
+- **Lumi (2):** hiutaleet ovat maailmankoordinaateissa (`updateSnow`): 50 × 50 m alue kiertää pelaajan ympäri silmukkana (x/z ±25 m),
+  tuuli kuljettaa, maahan pudonnut syntyy ylös. Ei enää "seuraa kameraa". Sade ja lumi saavat pistekohtaiset värit (`precipTint`):
+  yöllä tummat (sade hyvin tumma, kerroin `max(.12, lightK·(1−.35·wDark))`), Medium+ (valot ≥ 4 ja hiukkaset ≥ 50 %) 8 m sisällä
+  olevat valot (myös oma soihtu) värjäävät lämpimäksi.
+- **Seinäsoihtu (20):** `seinasoihtu` (Valo): 2 puu, 1 pihka, 1 rauta; kiinnitetään vain rakennuksen pystypintaan (`wallMount`,
+  kierto pinnan normaalista, haamu punainen muualla). Palaa 15 min, pihka +15 min (enint. 30 min). Sytyttää käsisoihdun, valaisee.
+  Ulottuvuuksien seinäsoihtujen takana luolissa kivilohkare (Aarnihaudan soihdut kiveen).
+- **Sytytys (21–22):** sammunut käsisoihtu syttyy 2,5 m sisällä palavasta nuotiosta, soihtutelineestä, seinäsoihdusta tai Hautakummun /
+  ulottuvuuden soihdusta (`FLAMES`-rekisteri, landmarks.js). Heti viesti "Pysy paikallasi hetki – soihtu syttyy…", sitten 1–1,5 s
+  paikallaan (liike kuluttaa aikaa takaisin). Testattu: syttyi 1,13 s:ssa, 8 m päässä ei.
+- **Arkut (24):** `makeChest(kind,w,h,d)` / `openLid(g,k)`: puuarkku lankuista, rautavanteet ja niitit, lukkolevy + lukonreikä;
+  linnakkeen kiviarkku kivinen riimuin. Avattu arkku on ontto (kansi aukeaa saranasta, tumma sisus). Käytössä raunioissa, löytöpaikoilla,
+  linnakkeissa, kätköissä, ulottuvuuksissa (ei hautakirstuissa) ja rakennettavassa arkussa. Rauniot palauttavat avatun kannen latauksessa
+  (`syncChests`). Korjattu samalla: lumen vanha silmukka jäi environment.js:ään (syntaksivirhe) ja `flags` luettiin ennen state.js:ää.
+
 ### v1.40 (lista 4, erä B: P-näppäin, Esc pois, opasteet, reppunapsautukset, omat säätimet, arkku katseella)
 - **P (7):** uusi toiminto `menu` (KeyP, vaihdettavissa): avaa ja sulkee päävalikon, sulkee minkä tahansa paneelin. Esc ei tee pelissä
   mitään (selain vapauttaa silti hiiren → taukovalikko näkyy). Kiinteiden näppäinten listaan selitys.
@@ -1484,7 +1500,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 4: 32 kohtaa (v1.39–) – tarkentavat kysymykset kysytään ensin, vastaukset kirjataan tähän
-**JATKA TÄSTÄ (lista 4):** PR #25 (v1.38 korjaus) auki. Lista kirjattu, kysymykset kesken/vastaukset alla.
+**JATKA TÄSTÄ (lista 4):** PR #25 auki. Erät A, B, C tehty (v1.39–v1.41); seuraavaksi D (v1.42), sitten E ja F.
 **Erät (lista 4):**
 - A (v1.39): 1 kyykky, 3 ylämäki, 5 selkäterät, 6 esineet maassa, 8–9 pomot/vartijat, 18 rikki kilpi, 19 Aarnihirviö, 25 hp-vaihtelu,
   extra 1 veren fysiikka, extra 2 linnakkeen portaat.

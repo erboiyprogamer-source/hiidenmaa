@@ -165,7 +165,9 @@ function ensureRealm(id){
   box(D.cx-fw/2,y0-1,D.cz-fh/2,D.cx+fw/2,y0,D.cz+fh/2);
   add(bx(fw,.4,fh,mat(0x1d1a17),D.cx,y0+RCH+.2,D.cz,false));
   box(D.cx-fw/2,y0+RCH,D.cz-fh/2,D.cx+fw/2,y0+RCH+.8,D.cz+fh/2).noGround=true;
-  for(const [ix,iz,dir] of L.torches){const p=cell(ix,iz),fy=y0+hg(ix,iz),T=dir?wallTorch(R.g,p.x,fy,p.z,dir,cave?DC/2-.55:DC/2-.04):brazier(R.g,p.x,fy,p.z);lit(T.x,T.y,T.z,D.tc,1.8);}
+  for(const [ix,iz,dir] of L.torches){const p=cell(ix,iz),fy=y0+hg(ix,iz),T=dir?wallTorch(R.g,p.x,fy,p.z,dir,cave?DC/2-.55:DC/2-.04):brazier(R.g,p.x,fy,p.z);lit(T.x,T.y,T.z,D.tc,1.8);FLAMES.push({x:T.x,y:T.y,z:T.z,dim:id});
+    // v1.41 (kohta 20): luolassa (Aarnihauta) soihdun teline kiinni kivessä – kivilohkare telineen takana seinään asti
+    if(dir&&cave){const [dx,dz]=dir;R.g.add(bx(dx?.62:.7,1.1,dz?.62:.7,mat(rockC(D.wall,Math.random())),p.x+dx*(DC/2-.24),fy+2.2,p.z+dz*(DC/2-.24)));}}
   R.vl=[];for(const [ix,iz] of L.vents){const p=cell(ix,iz);add(bx(.9,.08,.9,mat(0x1a1714),p.x,y0+.04,p.z,false));const v={x:p.x,y:y0+.1,z:p.z,col:D.mist,rate:3.5,dun:true,acc:0};VENTS.push(v);R.vl.push(v);}
   dressFloor({r,add,cell,y0,ceil:RCH,cells:L.floors.filter(([x,z])=>!(x===L.ent.ix&&z===L.ent.iz)).map(([x,z])=>[x,z,hg(x,z),L.wallN(x,z)]),
     bones:D.gen==='rooms'?.32:.2,stal:cave?.38:.14,puddles:cave?.09:.035,cave,rk:id,stalM:new THREE.MeshStandardMaterial({color:rockC(D.wall,.3),roughness:.35,metalness:.1,flatShading:true})});
@@ -182,9 +184,9 @@ function ensureRealm(id){
   R.mobs=L.mobs.map(m=>({...cell(m.ix,m.iz),type:m.type}));
   if(id==='portal3'&&!flags.sirpC&&L.chests.length){const a=[...L.chests.keys()].sort(()=>Math.random()-.5);flags.sirpC=a.slice(0,Math.min(2,a.length));}   // v1.34: 2 sirpaletta satunnaisiin arkkuihin
   L.chests.forEach((c,i)=>{const p=cell(c.ix,c.iz),key=id+':'+i,sarc=D.gen==='rooms';
-    const b=bx(sarc?1.1:1,sarc?.8:.7,sarc?2.2:.65,sarc?MAT.stone:MAT.wood,p.x,y0+(sarc?.4:.35),p.z);b.add(bx(sarc?1.2:1.04,.18,sarc?2.3:.7,sarc?mat(0x6f6a62):mat(0x4a4a4a),0,sarc?.5:.38,0));add(b);
+    let b;if(sarc){b=bx(1.1,.8,2.2,MAT.stone,p.x,y0+.4,p.z);b.add(bx(1.2,.18,2.3,mat(0x6f6a62),0,.5,0));}else{b=makeChest('wood',1,.7,.65);b.position.set(p.x,y0,p.z);}add(b);   // v1.41 lankkuarkku
     R.cols.push(addBox(p.x-.5,y0,p.z-(sarc?1.1:.33),p.x+.5,y0+.7,p.z+(sarc?1.1:.33),'static'));
-    const open=()=>{b.children[0].position.x=.5;b.children[0].rotation.z=.3;};if(fo('rc')[key])open();
+    const open=()=>{if(!sarc){openLid(b);return;}b.children[0].position.x=.5;b.children[0].rotation.z=.3;};if(fo('rc')[key])open();
     const it={x:p.x,y:y0+.8,z:p.z,r:2.6,label:()=>(sarc?'Hautakirstu':'Arkku')+(foundEmpty(key)?' (tyhjä)':'')+' – avaa',use:()=>{const first=!fo('rc')[key];
       openFound(key,sarc?'Hautakirstu':'Arkku',first?CHEST_LOOT[(i+(seed&7))%CHEST_LOOT.length]:null);if(first){fo('rc')[key]=1;open();burst(p.x,y0+1,p.z,D.glow,12,3);}}};
     interactables.push(it);R.its.push(it);});

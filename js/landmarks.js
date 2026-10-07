@@ -18,15 +18,34 @@ for(const R of RUNES){const L=LOC[R.k],y=terrainH(L.x,L.z);const me=stoneBox(.9,
   const glyph=bx(.5,1.6,.04,MAT.glow,0,0,.26,false);me.add(glyph);
   interactables.push({x:L.x,y:y+1,z:L.z,r:2.6,label:()=>'Lue riimukivi',use:()=>readRune(R)});}
 function readRune(R){showLore(R.t,typeof R.txt==='function'?R.txt():R.txt);if(R.reveal&&!flags.disc[R.reveal]){flags.disc[R.reveal]=1;msg(`${LOC[R.reveal].name} merkittiin karttaan.`,'loot');}flags.runes[R.k]=1;}
+/* v1.41 (lista 4, kohta 24): arkkumalli. kind 'wood' = lankkuarkku rautavantein ja niitein, 'stone' = kaiverrettu kiviarkku riimuin.
+   Runko on ontto (pohja + 4 seinää, tumma sisus), edessä lukkolevy ja lukonreikä; kansi saranoitu takareunaan (g.userData.lid),
+   openLid(g) avaa sen. Origo = pohjan keskikohta. */
+const _chW=new THREE.MeshStandardMaterial({map:TEX.plank,roughness:.85,color:0xd8b48a}),_chS=new THREE.MeshStandardMaterial({map:TEX.stone,roughness:.95,color:0xa29d93}),
+  _chIn=new THREE.MeshStandardMaterial({color:0x1c140c,roughness:1}),_chIron=new THREE.MeshStandardMaterial({color:0x3c3f44,roughness:.45,metalness:.6}),
+  _chRune=new THREE.MeshBasicMaterial({color:0x7fd6cc});
+function makeChest(kind,w,h,d){const g=new THREE.Group(),M=kind==='stone'?_chS:_chW,t=kind==='stone'?.09:.05,hb=h*.72,add=(m,...a)=>{const o=bx(...a.slice(0,3),m,...a.slice(3));g.add(o);return o;};
+  add(M,w,t,d,0,t/2,0);add(M,w,hb,t,0,hb/2,d/2-t/2);add(M,w,hb,t,0,hb/2,-d/2+t/2);add(M,t,hb,d-2*t,w/2-t/2,hb/2,0);add(M,t,hb,d-2*t,-w/2+t/2,hb/2,0);
+  add(_chIn,w-2*t,.02,d-2*t,0,t+.01,0,false);   // tumma sisus pohjalla
+  const lid=new THREE.Group();lid.position.set(0,hb,-d/2);g.add(lid);const lh=h-hb;
+  const lt=bx(w+.03,lh,d+.03,M,0,lh/2,d/2);lid.add(lt);lid.add(bx(w-2*t,.02,d-2*t,_chIn,0,.005,d/2,false));
+  if(kind==='stone'){for(const s of [-1,1])lid.add(bx(.05,.02,d*.7,_chRune,s*w*.3,lh+.005,d/2,false));add(_chRune,w*.5,.04,.012,0,hb*.55,d/2+.006,false);add(_chRune,.04,hb*.45,.012,-w*.2,hb*.5,d/2+.006,false);add(_chRune,.04,hb*.45,.012,w*.2,hb*.5,d/2+.006,false);}
+  else{for(const x of [-w*.33,w*.33]){add(_chIron,.07,hb+.01,d+.02,x,hb/2,0);lid.add(bx(.07,lh+.01,d+.05,_chIron,x,lh/2,d/2));}
+    for(const x of [-w*.33,w*.33])for(const y of [hb*.25,hb*.75])add(_chIron,.03,.03,.02,x,y,d/2+.012,false);}
+  add(_chIron,.14,.16,.02,0,hb-.1,d/2+.011);add(_chIn,.035,.07,.01,0,hb-.12,d/2+.022,false);   // lukkolevy ja lukonreikä
+  g.userData.lid=lid;return g;}
+function openLid(g,k=1){const l=g&&g.userData&&g.userData.lid;if(l)l.rotation.x=-1.95*k;}
 function buildRuin(L,seed){const r=mulberry32(seed),y=terrainH(L.x,L.z);
   for(let i=0;i<9;i++){const a=i/9*TAU,d=4.5+r()*.6,h=.6+r()*2.4;if(r()<.2)continue;stoneBox(2.2,h,.8,L.x+Math.cos(a)*d,y+h/2-.2,L.z+Math.sin(a)*d,-a+Math.PI/2);}
   stoneBox(1.4,.4,1.4,L.x+1.5,y+.1,L.z-1,0.4);
-  const chest=bx(1,.7,.65,MAT.wood,L.x,y+.35,L.z);chest.add(bx(1.04,.1,.7,mat(0x4a4a4a),0,.2,0));statics.add(chest);addBox(L.x-.5,y,L.z-.33,L.x+.5,y+.7,L.z+.33,'static');
+  const chest=makeChest('wood',1,.7,.65);chest.position.set(L.x,y,L.z);statics.add(chest);addBox(L.x-.5,y,L.z-.33,L.x+.5,y+.7,L.z+.33,'static');
   return{chest,y};}
+const RUIN_CH={};   // v1.41 avattujen arkkujen kannet palautetaan latauksessa (syncChests)
 const RUIN_LOOT={ruinF:{piikivi:6,nahka:3,nuolet:15},ruinM:{kupari:5,malmi:3,pihka:3},ruinC:{piikivi:8,pihka:4,kupari:3}};
 for(const k of ['ruinF','ruinM','ruinC']){const L=LOC[k],{chest,y}=buildRuin(L,k.length*31+L.x|0);
   interactables.push({x:L.x,y:y+.5,z:L.z,r:2.4,label:()=>foundEmpty('ruin:'+k)?'Aarrearkku (tyhjä)':'Avaa aarrearkku',use:()=>{const first=!flags.ruins[k];
-    openFound('ruin:'+k,'Aarrearkku',first?Object.entries(RUIN_LOOT[k]):null);if(first){flags.ruins[k]=1;msg('Arkussa on tarvikkeita!','loot');}}});}
+    openFound('ruin:'+k,'Aarrearkku',first?Object.entries(RUIN_LOOT[k]):null);openLid(chest);if(first){flags.ruins[k]=1;msg('Arkussa on tarvikkeita!','loot');}}});}
+function syncChests(){for(const k in RUIN_CH)openLid(RUIN_CH[k],flags.ruins&&flags.ruins[k]?1:0);}
 // Barrow entrance: luolamainen kivinen portti kummun kyljessä, ympärillä rosoisia lohkareita, soihtuja, kalloja ja riimulaattoja
 (function(){const L=LOC.barrow,dx=10.5,ex=L.x+dx,ez=L.z,y=terrainH(ex,ez),r=mulberry32(4242),dk=mat(0x6a665e),mos=mat(0x4d6a3a);
   stoneBox(1.2,4.4,1.2,ex,y+2,ez-2.2,0,dk);stoneBox(1.2,4.4,1.2,ex,y+2,ez+2.2,0,dk);stoneBox(1.6,.9,6.2,ex,y+4.6,ez,0,dk);
@@ -74,6 +93,8 @@ const DC=3.2, DW=DMAP[0].length, DH=DMAP.length;
 // Seinäsoihtu telineessä: rautalevy seinässä, varsi, rengas ja vino soihtu. dir = [dx,dz] kohti seinää, back = levyn etäisyys ruudun keskeltä.
 // Palauttaa liekin kohdan (valolle). Ei törmäystä.
 const FLAME_CORE=new THREE.MeshBasicMaterial({color:0xffe9a0}),IRON_M=mat(0x2e2c2a,{metalness:.6});
+// v1.41 (lista 4, kohdat 20–22): FLAMES = kiinteät liekit (seinäsoihdut, tulimaljat) ulottuvuuksissa ja Hautakummussa – niistä voi sytyttää soihdun.
+const FLAMES=[];
 function wallTorch(par,x,y,z,dir,back=DC/2-.04){const [dx,dz]=dir,fx=x+dx*back,fz=z+dz*back,h=y+2.3,ir=IRON_M;
   par.add(bx(dx?.06:.34,.44,dz?.06:.34,ir,fx,h,fz,false));par.add(bx(dx?.42:.07,.07,dz?.42:.07,ir,fx-dx*.21,h-.12,fz-dz*.21,false));
   par.add(bx(.2,.06,.2,ir,fx-dx*.42,h-.06,fz-dz*.42,false));
@@ -93,7 +114,7 @@ const dunCell=(ix,iz)=>({x:DUN.x+(ix-DW/2+.5)*DC,z:DUN.z+(iz-DH/2+.5)*DC});
     if(ch==='#'){_m4.makeTranslation(p.x,DUN.y+2.1,p.z);im.setMatrixAt(i++,_m4);addBox(p.x-DC/2,DUN.y,p.z-DC/2,p.x+DC/2,DUN.y+4.2,p.z+DC/2,'static');}
     if(ch==='E')dunEntry=p;
     if(ch==='k'||ch==='B')dunSpawns.push({x:p.x,z:p.z,type:ch==='B'?'ylimys':'kalmo'});
-    if(ch==='t'){const dirs=[[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b])=>(DMAP[iz+b]||'')[ix+a]==='#'),L=dirs.length?wallTorch(statics,p.x,DUN.y,p.z,dirs[0]):brazier(statics,p.x,DUN.y,p.z);lightSources.push({x:L.x,y:L.y,z:L.z,c:0xff8a36,i:1.8,on:()=>true,dun:true});}
+    if(ch==='t'){const dirs=[[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b])=>(DMAP[iz+b]||'')[ix+a]==='#'),L=dirs.length?wallTorch(statics,p.x,DUN.y,p.z,dirs[0]):brazier(statics,p.x,DUN.y,p.z);FLAMES.push({x:L.x,y:L.y,z:L.z,dim:'barrow'});lightSources.push({x:L.x,y:L.y,z:L.z,c:0xff8a36,i:1.8,on:()=>true,dun:true});}
     if(ch==='C'){const idx=sarcs.length;const base=bx(1.1,.8,2.2,MAT.stone,p.x,DUN.y+.4,p.z);const lid=bx(1.2,.18,2.3,mat(0x6f6a62),0,.5,0);base.add(lid);statics.add(base);addBox(p.x-.55,DUN.y,p.z-1.1,p.x+.55,DUN.y+.8,p.z+1.1,'static');sarcs.push({lid,p});
       interactables.push({x:p.x,y:DUN.y+.8,z:p.z,r:2.6,label:()=>foundEmpty('sarc:'+idx)?'Hautakirstu (tyhjä)':'Avaa hautakirstu',use:()=>openSarc(idx)});}
   }));

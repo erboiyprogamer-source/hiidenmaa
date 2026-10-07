@@ -18,7 +18,7 @@ function freeSlot(){const m=slotMeta();return m.findIndex(x=>!x);}
 function slotData(i){try{return JSON.parse(localStorage.getItem(slotKey(i))||'null');}catch(e){return null;}}
 function deleteSlot(i){try{localStorage.removeItem(slotKey(i));}catch(e){}const m=slotMeta();m[i]=null;setSlotMeta(m);if(curSlot===i&&!started)setCurSlot(-1);}
 function serialize(){return{v:10,vdrops:drops.filter(d=>isValuable(d.id)).map(d=>({id:d.id,n:d.n,q:d.q})),mapId:MAP_ID,bossPending:!!(boss&&!boss.dead&&!flags.boss),playTime,dayT,dayN,weather,flags,P:{x:P.pos.x,y:P.pos.y,z:P.pos.z,hp:P.hp,stam:P.stam,hunger:P.hunger,buffs:P.buffs,spawn:P.spawn,deaths:P.deaths,kills:P.kills,inDun:P.inDun,realm:P.realm||null,packLv:P.packLv},cam:[camYaw,camPitch],inv,
-  pieces:pieces.map(p=>({t:p.t,x:p.x,y:p.y,z:p.z,r:p.rot,f:p.f||0,hp:p.hp,d:PIECES[p.t].store?{items:p.data.items,lv:p.data.lv}:isFirePiece(p.t)?{fuel:p.data.fuel,burn:p.data.burn,cook:p.data.cook,full:p.data.full}:p.t==='soihtuteline'?{burn:p.data.burn,full:p.data.full}:p.t==='sulatin'?{ore:p.data.ore,iore:p.data.iore,wood:p.data.wood,done:p.data.done,idone:p.data.idone}:bt(p.t)==='ovi'?{open:p.data.open,dir:p.data.dir}:{}})),
+  pieces:pieces.map(p=>({t:p.t,x:p.x,y:p.y,z:p.z,r:p.rot,f:p.f||0,hp:p.hp,d:PIECES[p.t].store?{items:p.data.items,lv:p.data.lv}:isFirePiece(p.t)?{fuel:p.data.fuel,burn:p.data.burn,cook:p.data.cook,full:p.data.full}:p.t==='soihtuteline'||p.t==='seinasoihtu'?{burn:p.data.burn,full:p.data.full}:p.t==='sulatin'?{ore:p.data.ore,iore:p.data.iore,wood:p.data.wood,done:p.data.done,idone:p.data.idone}:bt(p.t)==='ovi'?{open:p.data.open,dir:p.data.dir}:{}})),
   moved:nodes.filter(n=>n.x!==n.ox||n.z!==n.oz||n.s!==n.s0).map(n=>[n.id,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
   terra:terraList(),mud:mudList(),
   planted:nodes.filter(n=>n.planted).map(n=>[n.type,+n.x.toFixed(2),+n.z.toFixed(2),+n.s.toFixed(2)]),
@@ -55,7 +55,7 @@ function loadData(s){
   for(let i=0;i<3;i++)if(flags.sarc[i]){sarcs[i].lid.position.x=.7;sarcs[i].lid.rotation.z=.3;}
   if(s.bossPending)invAdd(s.v>=10?'kruunusirpale':'hiidenkivi',3);
   if(!flags.wl)planLoot(true);for(const d of s.vdrops||[])if(ITEMS[d.id])relocateValuable(d.id,d.n,d.q);   // v1.34: arvoesineiden suunnitelma ja maassa olleet arvoesineet arkkuun
-  resetFog();invDirty=true;updateGear();goalShown=-1;syncAltar();ensureCamps();
+  resetFog();invDirty=true;updateGear();goalShown=-1;syncAltar();ensureCamps();syncChests();
 }
 function resetWorld(){endPlayerDeath();for(const s of [...splats]){scene.remove(s.m);}splats.length=0;
   for(const p of [...pieces])removePiece(p);for(const m of [...mobs])mobRemove(m);for(const d of [...drops])removeDrop(d);drops=[];for(const g of [...graves])removeGrave(g);graves=[];
@@ -69,7 +69,7 @@ function newGame(){
   P.packLv=0;recalcBon();inv=new Array(32).fill(null);P.pos.set(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z);P.hp=maxHp();P.stam=100;P.hunger=80;P.buffs={};P.spawn=null;P.deaths=0;P.kills=0;P.inDun=false;P.realm=null;P.spawnProt=0;P.dead=false;P.heal=0;P.wetT=0;
   camYaw=Math.PI*1.1;camPitch=.3;P.yaw=camYaw+Math.PI;fig.g.rotation.x=0;resetFog();invDirty=true;updateGear();goalShown=-1;planLoot(false);
   // start with a few mobs around
-  ensureCamps();   // v0.99 hylätyt leirit
+  ensureCamps();syncChests();   // v0.99 hylätyt leirit
   for(let i=0;i<3;i++){const a=i*2.1,d=30+i*6;spawnMob('peura',LOC.spawn.x+Math.cos(a)*d,LOC.spawn.z+Math.sin(a)*d);}
   setTimeout(()=>{msg('Rannalla seisoo riimukivi. Lue se (E).');},800);
 }

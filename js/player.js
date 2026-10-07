@@ -160,9 +160,12 @@ function updatePlayer(dt){
       if(wRain>.5&&!shelterCache&&!P.inDun){ts.lit=false;msg('Sade sammutti soihtusi! Sytytä se uudelleen viemällä se kiinni toiseen liekkiin ja odota hetki.','warn');sfx('hit');}
       else if(P.inWater&&!P.inDun){ts.lit=false;msg('Vesi sammutti soihtusi! Sytytä se uudelleen viemällä se kiinni toiseen liekkiin ja odota hetki.','warn');sfx('hit');}
       else if(ts.fuel<=0){ts.fuel=0;ts.lit=false;msg('Soihtusi paloi loppuun! Avaa reppu (Tab) ja napsauta soihtua – sieltä voit lisätä siihen pihkaa. Sen jälkeen sytytä se toisen liekin avulla.','warn');invDirty=true;}}
-    else if(ts.fuel>0){// uudelleensytytys: soihtu kiinni toisessa liekissä (< 1.1 m) ja odotus 2.5 s
-      let near=false;for(const p of pieces){if(isFirePiece(p.t)?p.data.fuel>0:p.t==='soihtuteline'&&p.data.burn>0){if(dist2(p.x,p.z,P.pos.x,P.pos.z)<1.15*1.15){near=true;break;}}}
-      if(near&&!P.inWater&&!(wRain>.5&&!shelterCache&&!P.inDun)){if(torchIgn<=0)msg('Soihtu syttyy… pysy liekin vieressä.');torchIgn+=dt;if(torchIgn>=2.5){ts.lit=true;torchIgn=0;msg('Sytytit soihdun!','loot');sfx('pickup');}}else torchIgn=0;}
+    else if(ts.fuel>0){// v1.41 (lista 4, kohdat 21–22): uudelleensytytys alle 2,5 m nuotiosta, soihtutelineestä, seinäsoihdusta tai
+      // ulottuvuuden/Hautakummun soihdusta; heti viesti "Pysy paikallasi hetki…", 1–1,5 s paikallaan → syttyy (liike nollaa).
+      let near=false;const R2=2.5*2.5;for(const p of pieces){if(isFirePiece(p.t)?p.data.fuel>0:(p.t==='soihtuteline'||p.t==='seinasoihtu')&&p.data.burn>0){if(dist2(p.x,p.z,P.pos.x,P.pos.z)<R2&&Math.abs((p.y||0)-P.pos.y)<3){near=true;break;}}}
+      if(!near&&P.inDun){const dim=curDim();for(const f of FLAMES)if(f.dim===dim&&dist2(f.x,f.z,P.pos.x,P.pos.z)<R2&&Math.abs(f.y-P.pos.y-1.5)<2.5){near=true;break;}}
+      const still=Math.hypot(P.vel.x,P.vel.z)<.6;
+      if(near&&!P.inWater&&!(wRain>.5&&!shelterCache&&!P.inDun)){if(torchIgn<=0){msg('Pysy paikallasi hetki – soihtu syttyy…');P.ignNeed=1+Math.random()*.5;}if(still)torchIgn+=dt;else torchIgn=Math.max(.001,torchIgn-dt);if(torchIgn>=(P.ignNeed||1.2)){ts.lit=true;torchIgn=0;msg('Sytytit soihdun!','loot');sfx('pickup');}}else torchIgn=0;}
     // Käsisoihdun varjo vain pimeässä (yö, sisällä, luolasto, synkkä sää, Aarnimetsä); päivänvalossa varjokameran kantama kutistuu nollaan (liukuu pois), pimeässä 2.4 m
     {const dk=P.inDun?1:Math.max(1-lightK,indoorK,aarniK*.9,wDark>.55?.7:0);shDark+=(dk-shDark)*Math.min(1,dt*2.5);const far=.3+Math.max(0,shDark-.25)/.75*2.1;if(Math.abs(torchLight.shadow.camera.far-far)>.02){torchLight.shadow.camera.far=far;torchLight.shadow.camera.updateProjectionMatrix();}}
     torch=!!torchSlot()&&ts.lit&&ts.fuel>0;torchBarT-=dt;if(torchBarT<=0){torchBarT=1;invDirty=true;}

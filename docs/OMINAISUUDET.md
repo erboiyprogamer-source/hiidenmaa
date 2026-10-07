@@ -358,3 +358,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Napsautus paneelin ulkopuolelle sulkee sen, tai pudottaa valitun esineen. Puolitus oikealla napsautuksella kumpaankin suuntaan.
 - Omat liukusäätimet ja kytkimet; paneelissa kirjoittaminen menee hakuun.
 - Arkut ja tynnyrit avautuvat vain, kun niitä katsoo.
+
+## Lista 4, erä C (v1.41)
+- Lumi kiertää pelaajan ympärillä maailmassa ja kulkee tuulen mukana. Sade ja lumi tummuvat yöllä; Medium+ lähivalot värjäävät ne lämpimiksi.
+- Seinäsoihtu (2 puu, 1 pihka, 1 rauta): kiinnitetään seinään, palaa 15 min, pihka lisää 15 min (enint. 30).
+- Sammunut soihtu syttyy 2,5 m päässä liekistä (nuotio, soihtuteline, seinäsoihtu, hauta- ja ulottuvuussoihdut), kun seisoo 1–1,5 s.
+- Arkut: puuarkut lankuista rautavantein ja niitein, linnakkeen kiviarkku riimuin; lukonreikä, avattuna ontto.

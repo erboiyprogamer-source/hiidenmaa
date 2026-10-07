@@ -45,7 +45,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/audio.js` | `sfx(nimi, sävel, voimakkuus)` – proseduraaliset äänet, satunnainen sävelvaihtelu |
 | `js/models.js` | `makeHumanoid` (yksityiskohtaiset kaksijalkaiset), `makeAnimal` (eläimet), `makeBiped`, `makeQuad`, `makeHeld`, `makeShield`, `makeBird` (metso), pelaaja `makePlayer`, haarniskat `buildArmor` |
 | `js/resources.js` | `NODE`, `NGEO`, sijoittelu ruutuihin (`CHN`, `VIS_R`), `nodes`, tukit (`logs`), `regrowForest`, kohteiden suoja `siteBlocked`, ruoho `rebuildGrass` |
-| `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`), `wallTorch`, `brazier`, `rockC` |
+| `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`), `wallTorch`, `brazier`, `rockC`, liekkirekisteri `FLAMES`, arkut `makeChest`/`openLid`/`syncChests` |
 | `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, `PIECES`, `pieceBoxes`, `buildPieceMesh`, `addPiece`, `removePiece` |
 | `js/mobs.js` | `MOBDEF`, mallit (`figGolem`, `figYlimys`, `figKalmo`, `figHiisi`, ulottuvuuksien pomot), `spawnMob`, `mobs`, `boss` |
 | `js/dungeons.js` | `REALMS` (3 ulottuvuutta, avainketju `lock`/`key`/`alt`), generaattorit, `ensureRealm`, koristeet (`dressFloor`, tynnyrit, spawneri), portaalit, `realmBossAI`, Kalmanpesän murskaus `hitSpawner`, usva/höyry/pisarat, `P.spawnProt`, `fo(k)` |
