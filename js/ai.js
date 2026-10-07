@@ -33,7 +33,8 @@ function updateMobs(dt){
     let tx=0,tz=0,spd=0;
     // v1.33 (lista 3, kohta 7): pomo, johon ei ole osuttu minuuttiin, paranee täyteen noin 10 sekunnissa.
     // v1.39 (lista 4, kohta 19): Aarnihirviö 1,7 min jälkeen hitaasti (1 %/s)
-    if((d.ai==='boss'||d.ai==='rboss')&&m.hp<m.maxHp){const ar=m.type==='aarnihirvio';if(playTime-m.lastHit>(ar?102:60))m.hp=Math.min(m.maxHp,m.hp+m.maxHp*(ar?.01:.1)*dt);}
+    if((d.ai==='boss'||d.ai==='rboss')&&m.hp<m.maxHp&&!bossTired(m.type)){   // v1.81: 3 kuolemaa samalle pomolle → ei enää parane
+     const ar=m.type==='aarnihirvio';if(playTime-m.lastHit>(ar?102:60))m.hp=Math.min(m.maxHp,m.hp+m.maxHp*(ar?.01:.1)*dt);}
     if(d.ai==='boss'){bossAI(m,dt,dx,dz,dist);continue;}
     if(d.ai==='rboss'){realmBossAI(m,dt,dx,dz,dist);continue;}
     const night=isNight()&&!P.inDun;

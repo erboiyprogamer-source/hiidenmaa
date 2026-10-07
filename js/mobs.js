@@ -205,4 +205,5 @@ function spawnMob(type,x,z,opts={}){
   if(def.ai!=='boss'&&def.ai!=='rboss'&&!opts.noVar){const k=1+Math.random()*.6;m.hp=m.maxHp=Math.round(def.hp*k);m.hpK=k;f.g.scale.multiplyScalar(1+(k-1)/6);}
   mobs.push(m);return m;
 }
+function bossTired(type){return ((flags.bossDeaths||{})[type]||0)>=3;}   // v1.81
 function mobRemove(m){scene.remove(m.f.g);if(m.da){if(m.da.flames)scene.remove(m.da.flames);if(m.da.pile)scene.remove(m.da.pile);}mobs.splice(mobs.indexOf(m),1);if(m===boss)boss=null;}

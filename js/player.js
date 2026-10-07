@@ -285,11 +285,16 @@ function lerpAngle(a,b,t){let d=((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;return a+d*t
 function playerDie(){if(state==='paused'||state==='intro'){P.hp=Math.max(P.hp,1);return;}
   if(devOn('god')){P.hp=Math.max(1,P.hp);return;}   // DEV: kuolemattomuus
   if(P.dead)return;P.dead=true;P.deaths++;P.hp=0;sfx('die');
+  /* v1.81: pomokuolemat. Tappaja = lähin elossa oleva pomo ≤ 45 m (sama tila: maailma/ulottuvuus). flags.bossDeaths[tyyppi] tallentuu pelin
+     mukana; 3. kuolemasta alkaen se pomo ei enää palauta terveyttään (bossTired, ai.js). */
+  {let kb=null,bd=45*45;for(const m of mobs){if(m.dead||!(m.def.ai==='boss'||m.def.ai==='rboss')||!!m.dun!==!!P.inDun)continue;const d=dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z);if(d<bd){bd=d;kb=m;}}
+   if(kb){const B=flags.bossDeaths||(flags.bossDeaths={});B[kb.type]=(B[kb.type]||0)+1;P.bossKill={n:kb.def.n,c:B[kb.type]};}else P.bossKill=null;}
   const items=inv.filter(Boolean).map(s=>({id:s.id,n:s.n,q:s.q}));inv=new Array(invN()).fill(null);invDirty=true;updateGear();setBuildSel(null);
   if(items.length){const y=P.inDun?DUN.y:terrainH(P.pos.x,P.pos.z);makeGrave({x:P.pos.x,y,z:P.pos.z,items});}
   startPlayerDeath();   // v1.37: kaatumis-/tuhka-animaatio (effects.js)
   /* v1.70: kuolinsyyn vihje kuolinruudussa (nyt: kaatuva puu) */
-  const tip={tree:'<b>Puu kaatui päällesi.</b> Ole ensi kerralla varovainen: kun puu alkaa narista ja kallistua, astu nopeasti sivuun – älä jää sen kaatumissuuntaan. Myös myrskytuuli ja pedot voivat kaataa puita.'}[P.deathCause];P.deathCause=null;
+  const bk=P.bossKill,bTip=bk?(bk.c>=3?`<b>${bk.n} on voittanut sinut ${bk.c} kertaa.</b> Se ei enää palauta terveyttään – jatka siitä, mihin jäit!`:`<b>${bk.n} kaatoi sinut (${bk.c}/3).</b> Jos kaadut sille kolme kertaa, se ei enää palauta terveyttään.`):'';
+  const tip=bTip||{tree:'<b>Puu kaatui päällesi.</b> Ole ensi kerralla varovainen: kun puu alkaa narista ja kallistua, astu nopeasti sivuun – älä jää sen kaatumissuuntaan. Myös myrskytuuli ja pedot voivat kaataa puita.'}[P.deathCause];P.bossKill=null;P.deathCause=null;
   closeAllForDeath();setTimeout(()=>{closeAllForDeath();state='dead';releaseLock();const dt=$('#deadTip');if(dt){dt.hidden=!tip;dt.innerHTML=tip||'';}$('#deadS').hidden=false;$('#hud').hidden=true;},1400);
 }
 // Hautakasa: kivet + pieni valomajakka (läpikuultava pylväs + himmeä pistevalo), joka näkyy lähellä (updateStations).

@@ -461,3 +461,6 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Herätessä (uudelleensyntyminen) viholliset 35 m säteellä katoavat savuna (ei pomot, vartijat eikä rauhalliset eläimet).
 - Esiasetukset Low–Medium+ kytkevät automaattisäädöt (myös osa-alueet ja varjojen laadun) päälle, High–Ultra pois.
 - Erittäin tarkat varjot ohittavat tavalliset varjoasetukset (näkyvät harmaina): 8192 px, päivitys joka ruutu, etäisyys 90 / 110 / 160 m.
+- Jos kuolet samalle pomolle 3 kertaa (sama maailma), se pomo ei enää koskaan palauta terveyttään. Kuolinruutu näyttää laskurin (1/3, 2/3).
+- Kehittäjätyökalut (DEV) ovat oletuksena pois; päälle Asetukset › Ohjaus ja ääni › alin rivi (sivu latautuu uudelleen).
+- Päävalikossa versionumeron perässä "Early Access 1.0". DEV-viitteet näkyvät vain DEV-tilassa.

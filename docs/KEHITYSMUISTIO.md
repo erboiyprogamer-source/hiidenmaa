@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.80)
+## Nykytila (päivitetty v1.82)
 
-- **Versio 1.80**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
+- **Versio 1.82**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -91,6 +91,22 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.82 (DEV-työkalut oletuksena pois)
+- `DEV` (core.js) ei ole enää kiinteä `true`: luetaan `localStorage.hiidenmaa_devon` ('1' = päällä) sivun latauksessa; `?dev=1` kytkee
+  päälle pysyvästi. Kytkin: Asetukset › Ohjaus ja ääni › alareunan "Kehittäjä" › Kehittäjätyökalut (DEV) → vahvistus, peli tallennetaan,
+  sivu ladataan uudelleen. DEV pois → ei DEV-valikkoa (Ä), ei 10× nopeutta (V), ei DEV-merkkiä, ei DEV-etuja (kestävyys, korkein taso,
+  painoraja) – normaali eteneminen. Tarkistus: DEV-paneelin tarkistus ehdolliseksi.
+- Kun DEV pois, kaikki DEV-viitteet piilossa (merkki, paneeli, näppäinlistan ja Kaikki toiminnot -ikkunan DEV-rivit, kytkimen kuvaus
+  lyhyenä); vain kytkin "Kehittäjätyökalut (DEV)" näkyy. Testattu tekstihaulla.
+- **Päävalikko:** "Selviytymispeli · versio X" perään turkoosi tunnus "Early Access 1.0" (`.eaTag`). **Pysyvä sääntö:** numeroa 1.0 ei
+  muuteta päivitysten mukana (käyttäjä); bump.sh muuttaa vain "versio X".
+
+### v1.81 (pomo väsyy: 3 kuolemaa → ei enää parane)
+- `playerDie`: tappaja = lähin elossa oleva pomo (`ai` boss/rboss) ≤ 45 m samassa tilassa (maailma/ulottuvuus) → `flags.bossDeaths[tyyppi]++`
+  (tallentuu maailman mukana, maailmakohtainen). `bossTired(type)` (mobs.js) ≥ 3 → ai.js:n pomojen terveyden palautus ohitetaan pysyvästi.
+  Kuolinruudun vihje: "X kaatoi sinut (1/3) … kolme kertaa → ei enää palauta terveyttään" ja 3. kerralla "X on voittanut sinut 3 kertaa.
+  Se ei enää palauta terveyttään". Testattu: laskuri 1→3, palautus 50 % → 50 % (ilman 50 % → 55 %), tallennus/lataus säilyttää.
 
 ### v1.80 (erittäin tarkat varjot ohittavat varjoasetukset)
 - Kun `shUltra` päällä (`SHU`, `shUltraOn`): varjot aina päällä (myös jos Varjot = Pois/Kevyet), kartta 8192 (tai suurin tuettu, ei
@@ -1914,7 +1930,7 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 6 (v1.53–) – julkaisupäivitys
-**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.80 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
+**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.82 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
 - A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
   eteenpäin, piikivikirves.
 - B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.

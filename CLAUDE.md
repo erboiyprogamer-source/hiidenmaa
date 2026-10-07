@@ -38,7 +38,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | Tiedosto | Sisältö |
 | --- | --- |
 | `js/boot.js` | (ladataan `index.html`:ssä ennen muita) aloitusjakso, suorituskykytesti omassa näkymässä (`__boot`), pelin skriptien lataus listasta `window.__GJS` (uusi tiedosto lisätään SINNE) |
-| `js/core.js` | `$`, `clamp`, `lerp`, `sstep`, kohina (`fbm`, `ridge`), `mulberry32` |
+| `js/core.js` | `DEV` (oletus pois, `localStorage.hiidenmaa_devon` / `?dev=1`, kytkin Asetukset › Ohjaus ja ääni), `$`, `clamp`, `lerp`, `sstep`, kohina (`fbm`, `ridge`), `mulberry32` |
 | `js/world.js` | `WS` (skaala), `MAPS`/`MAP`/`MAP_ID` (6 karttaa), `dirIn`, `HALF`, `LOC` (+ arvotut `SITE_DEFS`-paikat), `AARNI`, `DUN`, `heightFn`, `biomeAt`, `zoneAt`, `BIOMES` (nimet + ominaisuudet), `terrainH` |
 | `js/render.js` | renderer, scene, camera, valot, tekstuurit, `MAT`, `mat()`, `bx()`, maasto, vesi, taivas, sade |
 | `js/collision.js` | törmäysruudukko: `addBox`, `addCircle`, `groundAt`, `collideXZ`, `pointBlocked`, `STEPUP` |
@@ -123,7 +123,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 - Käyttäjä työskentelee yleensä pilvisessiossa. Kun erä on valmis ja testattu: commit, push ja
   pull request `main`-haaraan. Kerro käyttäjälle lyhyesti mitä muuttui ja muistuta yhdistämään PR
   (Merge), jos et voi tehdä sitä itse.
-- Päivitä valikon versionumero (`index.html`, "Selviytymispeli · versio X"), `window.HV` (käynnistysvahti), versiotarkistuksen merkit
+- Päivitä valikon versionumero (`index.html`, "Selviytymispeli · versio X"; perässä oleva "Early Access 1.0" EI muutu – käyttäjän päätös), `window.HV` (käynnistysvahti), versiotarkistuksen merkit
   (`window.__JSV` core.js, `window.__JSV2` main.js, `--css-v` style.css, `window.__BJV` boot.js; KORJAUKSET 31) ja versioloki samalla.
 - **Välimuisti:** nosta samalla `index.html`:n kaikkien `<script src>`- ja `css`-linkkien `?v=X`, muuten
   raw.githack/selain voi näyttää vanhoja JS-tiedostoja. Anna testilinkki myös commit-SHA:lla.

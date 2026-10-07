@@ -217,8 +217,10 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       setRow('Käännä pystyhiiri','invY')+
       setRow('Näppäinopasteet','keyHints',null,'pienet vihjeet paneeleissa ja ruudun nurkassa (esim. Päävalikko: P)')+
       setRow('Älä pysäytä valikon animaatioita pelin aikana','menuAnimKeep',null,'oletus: valikon partikkelit ja animaatiot pysähtyvät pelissä ja häivyttyvät esiin valikkoon palatessa (kevyempi)')
-    }</div>`+resetBtn;
+    }</div>`+resetBtn+
+      `<h4 class="setSub" style="margin-top:22px">Kehittäjä</h4><div class="setGrid">${row('Kehittäjätyökalut (DEV)',tglHTML('s_devOn',DEV),DEV?'DEV-valikko (Ä), 10× nopeus (V), jumalvoimat, kaikki ohjeet auki – vaihto lataa sivun uudelleen (peli tallennetaan)':'kehittäjien testityökalut – oletus pois; vaihto lataa sivun uudelleen (peli tallennetaan)')}</div>`;   /* v1.82 */
     bindSet(SET_PAGES.ctl);$('#bPageReset').onclick=()=>resetPage('ctl');
+    $('#s_devOn').onclick=()=>keyDialog(DEV?'Poistetaanko kehittäjätyökalut käytöstä?':'Otetaanko kehittäjätyökalut käyttöön?',[[DEV?'Poista käytöstä':'Ota käyttöön',()=>{try{if(started&&!P.dead)saveGame(true);localStorage.setItem('hiidenmaa_devon',DEV?'0':'1');}catch(e){}location.reload();}],['Peruuta',null]],'Sivu ladataan uudelleen.');
     bindSld('sZoom',v=>{SET.zoom=+v;$('#sZoomV').textContent=SET.zoom.toFixed(1)+' m';camDist=SET.zoom;},()=>saveSet());
     bindSld('sSens',v=>{SET.sens=+v;$('#sSensV').textContent=SET.sens.toFixed(2)+'×';},()=>saveSet());bindSld('sCur',v=>{SET.curSens=+v;$('#sCurV').textContent=SET.curSens.toFixed(2)+'×';},()=>saveSet());
   }else{
