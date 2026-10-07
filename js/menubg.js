@@ -213,63 +213,81 @@ function mfxFrame(now){mfxInit();if(!MFX.cv)return;const raw=Math.min(.1,(now-(M
     g.globalCompositeOperation='lighter';g.globalAlpha=Math.max(0,a);const sz=p.s*(p.t==='spark'?3:4);g.drawImage(mfxSprite(p.c),p.x-sz/2,p.y-sz/2,sz,sz);}
   g.globalAlpha=1;g.globalCompositeOperation='source-over';}
 
-/* ---------------- v1.47 HIIDENMAA-LOGO (SVG) ----------------
-   Kirjaimet (Cinzel Decorative 900) toimivat leikkausmaskina; sisään piirretään: kivipinta + rae, malmisuonet ja -kokkareet
-   (kulta, kupari, rauta), halkeamat (tumma ura + vaalea reuna), sammal kirjainten yläreunoilla, kaiverretut riimut ja hehkuvat
-   hiidenkivikristallit. Ympärillä taottu rautareunus vasarajäljin, koko kirjain viistetään valolla (feSpecularLighting) ja reunat
-   rosoistetaan (feDisplacementMap). Kirjainten paikat mitataan getExtentOfChar:lla, joten piirteet osuvat kirjaimiin.
-   Rakennetaan uudelleen kun fontti latautuu. Siemen kiinteä → sama logo joka kerta. */
-function buildLogo(){const h=document.querySelector('#menu .mTitle');if(!h)return;let sv=h.querySelector('svg.tLogo');if(sv)sv.remove();
-  const NS='http://www.w3.org/2000/svg',W=1000,HH=230,FF="'Cinzel Decorative','Uncial Antiqua',serif",r=mulberry32(4711);
+/* ---------------- v1.47–v1.48 HIIDENMAA-LOGO (SVG), 7 TEEMAA ----------------
+   Kirjaimet (Cinzel Decorative 900, textLength 968) toimivat leikkausmaskina; sisään piirretään teeman mukaiset kerrokset.
+   Teema arvotaan aina valikkoon tultaessa (sivun lataus ja tauko), ei samaa kahdesti peräkkäin (`logoRandom`).
+   crack = halkeillut kivikaiverrus, hiisi = hehkuva hiidenkivi, moss = sammaloitunut kivi, iron = taottu rauta, ore = malmikallio,
+   rune = riimukivi, all = kaikki yhdessä (v1.47). Kirjainten paikat getExtentOfChar:lla, joten piirteet osuvat kirjaimiin. */
+const LOGO_T={
+  crack:{n:'Halkeillut kivi',fill:['#c4beb2','#99938a','#857f74','#55514a'],blotch:1,grain:1,cracks:[2,3],crW:[2.2,3.4],chips:5,rim:['#5a564f','#2e2b27','#1c1a17'],rimW:7,spec:'#fff1d8'},
+  hiisi:{n:'Hiidenkivi',fill:['#7affb0','#1f8a4a','#0e4a26','#06200f'],grain:1,veins:['#b8ffd0',5],cry:'all',cryN:[2,4],glow:'#5aff9a',rim:['#1a3a24','#0a1a10','#04100a'],rimW:8,spec:'#d8ffe8',pulse:1},
+  moss:{n:'Sammalkivi',fill:['#a8a596','#7d7a6c','#6a6758','#403e34'],blotch:1,grain:1,cracks:[0,1],crW:[1.6,2.2],moss:[26,38],mossDeep:1,lichen:10,rim:['#3e4a2c','#26301a','#141a0c'],rimW:7,spec:'#f0f4d8'},
+  iron:{n:'Taottu rauta',fill:['#d8dee6','#7c848e','#3e444c','#22262c'],hammer:1,rivets:1,rim:['#2a2d32','#141618','#0a0b0c'],rimW:6,spec:'#f2f6ff',heat:1},
+  ore:{n:'Malmikallio',fill:['#a07a5a','#6e5038','#5a3e2a','#2e2016'],blotch:1,grain:1,cracks:[0,1],crW:[1.4,2],ore:[16,26],veins:['#e8c35a',3],sparkle:1,rim:['#4a3624','#241a10','#140e08'],rimW:7,spec:'#ffe8c8'},
+  rune:{n:'Riimukivi',fill:['#b09a88','#8a7462','#6e5a4a','#3e3028'],blotch:1,grain:1,runes:[3,4],runeRed:1,cracks:[0,1],crW:[1.4,2],band:1,rim:['#4a3a2e','#261c14','#120c08'],rimW:8,spec:'#fff0e0'},
+  all:{n:'Kaikki',fill:['#b8b2a6','#8d877c','#7a7468','#4e4a43'],blotch:1,grain:1,cracks:[0,1],crW:[1.8,2.8],moss:[5,10],ore:[6,11],veins:['#c9a24a',1],runes:[1,2],cry:[1,4,7],cryN:[3,3],rim:['#9aa0a8','#2a2d32','#22252a'],rimW:11,spec:'#fff1d8'}};
+let logoTheme='',logoBuiltFont='';
+function logoRandom(){const ks=Object.keys(LOGO_T).filter(k=>k!==logoTheme);buildLogo(ks[Math.random()*ks.length|0]);}
+function buildLogo(theme){theme=theme||logoTheme||'all';const T=LOGO_T[theme]||LOGO_T.all;logoTheme=theme;
+  const h=document.querySelector('#menu .mTitle');if(!h)return;let sv=h.querySelector('svg.tLogo');if(sv)sv.remove();
+  const NS='http://www.w3.org/2000/svg',W=1000,HH=230,FF="'Cinzel Decorative','Uncial Antiqua',serif",r=mulberry32((Math.random()*1e9)|0);
   const TXT=`<text x="500" y="176" text-anchor="middle" font-family="${FF}" font-weight="900" font-size="172" textLength="968" lengthAdjust="spacingAndGlyphs">Hiidenmaa</text>`;
-  sv=document.createElementNS(NS,'svg');sv.setAttribute('class','tLogo');sv.setAttribute('viewBox',`0 0 ${W} ${HH}`);sv.setAttribute('role','img');sv.setAttribute('aria-label','Hiidenmaa');
+  sv=document.createElementNS(NS,'svg');sv.setAttribute('class','tLogo lg-'+theme);sv.setAttribute('viewBox',`0 0 ${W} ${HH}`);sv.setAttribute('role','img');sv.setAttribute('aria-label','Hiidenmaa');sv.dataset.theme=theme;
   sv.innerHTML=`<g id="lgMeas" opacity="0">${TXT}</g>`;h.insertBefore(sv,h.querySelector('.tRunes'));
   const te=sv.querySelector('#lgMeas text');let B=[];try{for(let i=0;i<9;i++){const e=te.getExtentOfChar(i);B.push({x:e.x,y:e.y+e.height*.2,w:e.width,h:e.height*.62});}}catch(e){B=[];}
-  if(B.length<9||!B[0].w){for(let i=0;i<9;i++)B.push({x:16+i*107.5,y:60,w:100,h:118});B=B.slice(-9);}
-  const R=(a,b)=>a+r()*(b-a),pick=a=>a[r()*a.length|0],poly=(cx,cy,rad,n,sx=1,sy=1)=>{let s='';for(let k=0;k<n;k++){const a=k/n*TAU+R(-.3,.3),d=rad*R(.6,1.1);s+=`${(cx+Math.cos(a)*d*sx).toFixed(1)},${(cy+Math.sin(a)*d*sy).toFixed(1)} `;}return s;};
-  let ore='',crk='',moss='',rune='',cry='',vein='';
-  const RU='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ';
+  if(B.length<9||!B[0].w){B=[];for(let i=0;i<9;i++)B.push({x:16+i*107.5,y:60,w:100,h:118});}
+  const R=(a,b)=>a+r()*(b-a),RI=a=>Math.round(R(a[0],a[1])),pick=a=>a[r()*a.length|0],f1=v=>v.toFixed(1),poly=(cx,cy,rad,n)=>{let s='';for(let k=0;k<n;k++){const a=k/n*TAU+R(-.3,.3),d=rad*R(.6,1.1);s+=`${f1(cx+Math.cos(a)*d)},${f1(cy+Math.sin(a)*d)} `;}return s;};
+  const L={vein:'',ore:'',crk:'',moss:'',lich:'',rune:'',cry:'',ham:'',riv:'',spk:''};const RU='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ';
+  const crack=(b,w)=>{let x=b.x+R(.15,.85)*b.w,y=r()<.5?b.y-10:b.y+b.h+30,dy=y<b.y?1:-1,d=`M${f1(x)},${f1(y)}`,pts=[];for(let k=0;k<8;k++){x+=R(-15,15);y+=dy*R(10,20);d+=` L${f1(x)},${f1(y)}`;pts.push([x,y]);}
+    for(let q=0;q<(r()<.6?2:1);q++){const P=pick(pts);let bx=P[0],by=P[1],d2=`M${f1(bx)},${f1(by)}`;for(let k=0;k<4;k++){bx+=R(-18,18);by+=dy*R(6,14);d2+=` L${f1(bx)},${f1(by)}`;}d+=' '+d2;}
+    L.crk+=`<path d="${d}" transform="translate(1.3,1.5)" stroke="rgba(255,235,200,.3)" stroke-width="1.5" fill="none"/><path d="${d}" stroke="#120a05" stroke-width="${f1(w)}" fill="none" stroke-linejoin="bevel"/>`;};
   B.forEach((b,i)=>{
-    // malmisuoni (kaareva vaalea juova) ja kokkareet
-    if(r()<.6){const y=b.y+R(.3,.8)*b.h;vein+=`<path d="M${b.x-4},${y.toFixed(1)} Q${(b.x+b.w/2).toFixed(1)},${(y+R(-18,18)).toFixed(1)} ${(b.x+b.w+4).toFixed(1)},${(y+R(-10,10)).toFixed(1)}" stroke="${pick(['#c9a24a','#b8682e','#8fa6bd'])}" stroke-width="${R(1.5,3).toFixed(1)}" fill="none" opacity=".55"/>`;}
-    for(let k=0;k<R(6,11);k++){const c=pick([['#f0cc5a','#fff3c0'],['#d47a3a','#ffd0a0'],['#9fb6cc','#f0f8ff'],['#c9a24a','#fff0c0']]),x=b.x+R(.05,.95)*b.w,y=b.y+R(0,1)*b.h,s=R(2.2,5.5);
-      ore+=`<polygon points="${poly(x,y,s,5)}" fill="${c[0]}"/><circle cx="${(x-s*.3).toFixed(1)}" cy="${(y-s*.3).toFixed(1)}" r="${(s*.28).toFixed(1)}" fill="${c[1]}"/>`;}
-    // halkeama: siksak ylhäältä tai alhaalta, joskus haara
-    if(r()<.75){let x=b.x+R(.2,.8)*b.w,y=r()<.5?b.y-8:b.y+b.h+30,dy=y<b.y?1:-1,d=`M${x.toFixed(1)},${y.toFixed(1)}`,pts=[];for(let k=0;k<7;k++){x+=R(-14,14);y+=dy*R(10,20);d+=` L${x.toFixed(1)},${y.toFixed(1)}`;pts.push([x,y]);}
-      if(r()<.6){const q=pick(pts);let bx2=q[0],by2=q[1],d2=`M${bx2.toFixed(1)},${by2.toFixed(1)}`;for(let k=0;k<3;k++){bx2+=R(-16,16);by2+=dy*R(6,13);d2+=` L${bx2.toFixed(1)},${by2.toFixed(1)}`;}d+=' '+d2;}
-      crk+=`<path d="${d}" transform="translate(1.2,1.4)" stroke="rgba(255,235,200,.28)" stroke-width="1.4" fill="none"/><path d="${d}" stroke="#140c06" stroke-width="${R(1.8,2.8).toFixed(1)}" fill="none" stroke-linejoin="bevel"/>`;}
-    // sammal yläreunalle ja vähän alas
-    for(let k=0;k<R(5,10);k++){const x=b.x+R(-.05,1.05)*b.w,y=b.y-R(14,30)+R(0,.25)*b.h*(r()<.8?1:3);moss+=`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${R(6,15).toFixed(1)}" ry="${R(3,8).toFixed(1)}" fill="${pick(['#4f7a2e','#5f8f34','#3c5e24','#7aa040'])}"/>`;}
-    // kaiverretut riimut
-    for(let k=0;k<(r()<.5?2:1);k++){const x=b.x+R(.2,.8)*b.w,y=b.y+R(.35,.9)*b.h,s=R(20,30),g=pick([...RU]);
-      rune+=`<text x="${(x+1).toFixed(1)}" y="${(y+1.2).toFixed(1)}" font-size="${s.toFixed(0)}" fill="rgba(255,230,190,.25)" text-anchor="middle" font-family="serif">${g}</text><text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="${s.toFixed(0)}" fill="#1e140c" text-anchor="middle" font-family="serif" class="lgRune">${g}</text>`;}
-    // hiidenkivikristallit (kolme kirjainta)
-    if(i===1||i===4||i===7){const x=b.x+R(.3,.7)*b.w,y=b.y+R(.45,.8)*b.h;for(let k=0;k<3;k++){const a=R(-.6,.6),L=R(12,22),w=R(4,7),cx=x+R(-6,6),cy=y+R(-4,4);
-      cry+=`<polygon transform="rotate(${(a*57).toFixed(0)} ${cx.toFixed(1)} ${cy.toFixed(1)})" points="${cx},${cy-L} ${cx+w},${cy-L*.35} ${cx+w*.7},${cy+L*.4} ${cx},${cy+L*.55} ${cx-w*.7},${cy+L*.4} ${cx-w},${cy-L*.35}" fill="url(#lgCry)" stroke="#e8ffe0" stroke-width=".8"/>`;}}});
+    if(T.veins){for(let k=0;k<T.veins[1];k++)if(r()<.7){const y=b.y+R(.1,.95)*b.h;L.vein+=`<path d="M${f1(b.x-6)},${f1(y)} Q${f1(b.x+b.w*R(.3,.7))},${f1(y+R(-24,24))} ${f1(b.x+b.w+6)},${f1(y+R(-14,14))}" stroke="${T.veins[0]}" stroke-width="${f1(R(1.2,3.2))}" fill="none" opacity="${theme==='hiisi'?.85:.6}"/>`;}}
+    if(T.ore)for(let k=0;k<RI(T.ore)/1;k++){const c=pick([['#f0cc5a','#fff3c0'],['#d47a3a','#ffd0a0'],['#9fb6cc','#f0f8ff'],['#c9a24a','#fff0c0'],['#6fc0a0','#e0fff0']]),x=b.x+R(.03,.97)*b.w,y=b.y-10+R(0,1.15)*b.h,sz=R(2.2,theme==='ore'?7:5.5);
+      L.ore+=`<polygon points="${poly(x,y,sz,5)}" fill="${c[0]}"/><circle cx="${f1(x-sz*.3)}" cy="${f1(y-sz*.3)}" r="${f1(sz*.28)}" fill="${c[1]}"/>`;if(T.sparkle&&r()<.25)L.spk+=`<circle class="lgSpk" cx="${f1(x)}" cy="${f1(y)}" r="${f1(sz*.5)}" fill="#fff6d0" style="animation-delay:${f1(R(0,4))}s"/>`;}
+    if(T.cracks){const n=RI(T.cracks);for(let k=0;k<n;k++)if(r()<.85)crack(b,R(T.crW[0],T.crW[1]));}
+    if(T.chips)for(let k=0;k<R(1,3);k++){const x=b.x+R(0,1)*b.w,y=b.y-12+R(0,1.1)*b.h;L.crk+=`<polygon points="${poly(x,y,R(4,9),5)}" fill="#3a3530" opacity=".75"/>`;}
+    if(T.moss){const n=RI(T.moss);for(let k=0;k<n;k++){const deep=T.mossDeep&&r()<.45,x=b.x+R(-.05,1.05)*b.w,y=deep?b.y+R(-.1,1)*b.h:b.y-R(14,30)+R(0,.25)*b.h;
+      L.moss+=`<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="${f1(R(6,deep?20:15))}" ry="${f1(R(3,deep?11:8))}" fill="${pick(['#4f7a2e','#5f8f34','#3c5e24','#7aa040','#6a9a38'])}"/>`;}
+      if(T.mossDeep)for(let k=0;k<2;k++){const x=b.x+R(.1,.9)*b.w,y=b.y-8;L.moss+=`<path d="M${f1(x-4)},${f1(y)} q4,${f1(R(30,70))} 8,0 z" fill="#3c5e24"/>`;}}
+    if(T.lichen)for(let k=0;k<R(0,T.lichen/2);k++){const x=b.x+R(0,1)*b.w,y=b.y+R(0,1)*b.h;L.lich+=`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(R(2,5))}" fill="${pick(['#d8b43a','#c8782a','#e8e0b0'])}" opacity=".8"/>`;}
+    if(T.runes){const n=RI(T.runes);for(let k=0;k<n;k++){const x=b.x+R(.15,.85)*b.w,y=b.y+R(.15,.95)*b.h,sz=R(T.runeRed?16:20,T.runeRed?26:30),g=pick([...RU]);
+      L.rune+=`<text x="${f1(x+1)}" y="${f1(y+1.2)}" font-size="${sz.toFixed(0)}" fill="rgba(255,230,190,.25)" text-anchor="middle" font-family="serif">${g}</text><text x="${f1(x)}" y="${f1(y)}" font-size="${sz.toFixed(0)}" fill="${T.runeRed?'#a8281a':'#1e140c'}" text-anchor="middle" font-family="serif" class="lgRune">${g}</text>`;}}
+    if(T.cry&&(T.cry==='all'||T.cry.includes(i))){const x=b.x+R(.25,.75)*b.w,y=b.y+R(.35,.85)*b.h;const n=RI(T.cryN);for(let k=0;k<n;k++){const a=R(-.7,.7),Ln=R(12,24),w=R(4,8),cx=x+R(-10,10),cy=y+R(-8,8);
+      L.cry+=`<polygon transform="rotate(${(a*57).toFixed(0)} ${f1(cx)} ${f1(cy)})" points="${f1(cx)},${f1(cy-Ln)} ${f1(cx+w)},${f1(cy-Ln*.35)} ${f1(cx+w*.7)},${f1(cy+Ln*.4)} ${f1(cx)},${f1(cy+Ln*.55)} ${f1(cx-w*.7)},${f1(cy+Ln*.4)} ${f1(cx-w)},${f1(cy-Ln*.35)}" fill="url(#lgCry)" stroke="#e8ffe0" stroke-width=".8"/>`;}}
+    if(T.hammer)for(let k=0;k<14;k++){const x=b.x+R(0,1)*b.w,y=b.y-10+R(0,1.15)*b.h,rr=R(3,7);L.ham+=`<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="${f1(rr)}" ry="${f1(rr*.7)}" fill="rgba(0,0,0,.22)"/><ellipse cx="${f1(x-1)}" cy="${f1(y-1)}" rx="${f1(rr*.6)}" ry="${f1(rr*.35)}" fill="rgba(255,255,255,.14)"/>`;}
+    if(T.rivets)for(const yy of [.05,.95]){const x=b.x+b.w*.5,y=b.y-6+yy*(b.h+16);L.riv+=`<circle cx="${f1(x)}" cy="${f1(y)}" r="4.5" fill="url(#lgRiv)"/>`;}});
+  const fill=T.fill,glow=T.glow||'#ff8a2a';
   sv.innerHTML=`<defs>
-    <linearGradient id="lgStone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8b2a6"/><stop offset=".45" stop-color="#8d877c"/><stop offset=".55" stop-color="#7a7468"/><stop offset="1" stop-color="#4e4a43"/></linearGradient>
-    <linearGradient id="lgIron" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9aa0a8"/><stop offset=".4" stop-color="#4a4e55"/><stop offset=".55" stop-color="#2a2d32"/><stop offset=".8" stop-color="#5e646c"/><stop offset="1" stop-color="#22252a"/></linearGradient>
+    <linearGradient id="lgStone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${fill[0]}"/><stop offset=".45" stop-color="${fill[1]}"/><stop offset=".55" stop-color="${fill[2]}"/><stop offset="1" stop-color="${fill[3]}"/></linearGradient>
+    <linearGradient id="lgIron" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.rim[0]}"/><stop offset=".5" stop-color="${T.rim[1]}"/><stop offset="1" stop-color="${T.rim[2]}"/></linearGradient>
     <linearGradient id="lgCry" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eaffe4"/><stop offset=".4" stop-color="#7aff9a"/><stop offset="1" stop-color="#1f7a3a"/></linearGradient>
-    <linearGradient id="lgSheenG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff6e0" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <radialGradient id="lgRiv" cx=".35" cy=".35"><stop offset="0" stop-color="#f4f6fa"/><stop offset=".5" stop-color="#7c848e"/><stop offset="1" stop-color="#1a1c20"/></radialGradient>
+    <linearGradient id="lgHeat" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="#ff5a10" stop-opacity="0"/><stop offset=".85" stop-color="#ff6a10" stop-opacity=".55"/><stop offset="1" stop-color="#ffd060" stop-opacity=".9"/></linearGradient>
+    <linearGradient id="lgSheenG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff6e0" stop-opacity="${theme==='iron'?.8:.5}"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
     <clipPath id="lgClip">${TXT}</clipPath>
-    <filter id="lgGrain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="3" seed="9"/><feColorMatrix values="0 0 0 0 .2  0 0 0 0 .17  0 0 0 0 .14  0 0 0 -1.6 1.15"/></filter>
-    <filter id="lgBlotch" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".018 .05" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .32  0 0 0 0 .26  0 0 0 0 .2  0 0 0 -2.2 1.1"/></filter>
+    <filter id="lgGrain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="${theme==='iron'?'.9 .15':'.75'}" numOctaves="3" seed="${RI([1,99])}"/><feColorMatrix values="0 0 0 0 .2  0 0 0 0 .17  0 0 0 0 .14  0 0 0 -1.6 ${theme==='iron'?.9:1.15}"/></filter>
+    <filter id="lgBlotch" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".018 .05" numOctaves="2" seed="${RI([1,99])}"/><feColorMatrix values="0 0 0 0 .32  0 0 0 0 .26  0 0 0 0 .2  0 0 0 -2.2 1.1"/></filter>
     <filter id="lgMoss" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".22" numOctaves="2" seed="5" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="9"/><feGaussianBlur stdDeviation=".4"/></filter>
-    <filter id="lgCarve" x="-3%" y="-8%" width="106%" height="116%"><feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="2" seed="11" result="n"/>
-      <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G" result="d"/>
-      <feGaussianBlur in="d" stdDeviation="1.8" result="b"/><feSpecularLighting in="b" surfaceScale="3.5" specularConstant=".9" specularExponent="20" lighting-color="#fff1d8" result="s"><feDistantLight azimuth="235" elevation="42"/></feSpecularLighting>
-      <feComposite in="s" in2="d" operator="in" result="s2"/><feComposite in="d" in2="s2" operator="arithmetic" k2="1" k3=".6"/></filter>
+    <filter id="lgCarve" x="-3%" y="-8%" width="106%" height="116%"><feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="2" seed="${RI([1,99])}" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="${theme==='iron'?1.5:theme==='crack'||theme==='ore'?7:5}" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="${theme==='iron'?1.3:1.8}" result="b"/><feSpecularLighting in="b" surfaceScale="${theme==='iron'?4.5:3.5}" specularConstant="${theme==='iron'?1.3:.9}" specularExponent="${theme==='iron'?34:20}" lighting-color="${T.spec}" result="s"><feDistantLight azimuth="235" elevation="42"/></feSpecularLighting>
+      <feComposite in="s" in2="d" operator="in" result="s2"/><feComposite in="d" in2="s2" operator="arithmetic" k2="1" k3="${theme==='iron'?.9:.6}"/></filter>
     <filter id="lgIronF" x="-3%" y="-8%" width="106%" height="116%"><feTurbulence type="fractalNoise" baseFrequency=".09" numOctaves="2" seed="21" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3" result="d"/>
       <feGaussianBlur in="d" stdDeviation="1.2" result="b"/><feSpecularLighting in="b" surfaceScale="2.5" specularConstant="1.1" specularExponent="28" lighting-color="#dfe8f2" result="s"><feDistantLight azimuth="235" elevation="50"/></feSpecularLighting>
       <feComposite in="s" in2="d" operator="in" result="s2"/><feComposite in="d" in2="s2" operator="arithmetic" k2="1" k3=".8"/></filter>
     <filter id="lgGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="lgOuter" x="-10%" y="-20%" width="120%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="9" result="b"/><feFlood flood-color="${glow}"/><feComposite in2="b" operator="in"/></filter>
   </defs>
-  <g filter="url(#lgIronF)"><text x="500" y="176" text-anchor="middle" font-family="${FF}" font-weight="900" font-size="172" textLength="968" lengthAdjust="spacingAndGlyphs" fill="none" stroke="url(#lgIron)" stroke-width="11" stroke-linejoin="round">Hiidenmaa</text></g>
+  ${T.glow||T.heat||T.runeRed?`<g class="lgAura" filter="url(#lgOuter)" opacity="${T.glow?.75:.4}">${TXT}</g>`:''}
+  <g filter="url(#lgIronF)"><text x="500" y="176" text-anchor="middle" font-family="${FF}" font-weight="900" font-size="172" textLength="968" lengthAdjust="spacingAndGlyphs" fill="none" stroke="url(#lgIron)" stroke-width="${T.rimW}" stroke-linejoin="round">Hiidenmaa</text></g>
   <g filter="url(#lgCarve)"><g clip-path="url(#lgClip)">
-    <rect width="${W}" height="${HH}" fill="url(#lgStone)"/><rect width="${W}" height="${HH}" filter="url(#lgBlotch)"/><rect width="${W}" height="${HH}" filter="url(#lgGrain)"/>
-    <g>${vein}</g><g>${ore}</g><g>${rune}</g><g>${crk}</g><g filter="url(#lgMoss)" opacity=".92">${moss}</g>
+    <rect width="${W}" height="${HH}" fill="url(#lgStone)"/>${T.blotch?`<rect width="${W}" height="${HH}" filter="url(#lgBlotch)"/>`:''}${T.grain?`<rect width="${W}" height="${HH}" filter="url(#lgGrain)"/>`:''}${theme==='iron'?`<rect width="${W}" height="${HH}" filter="url(#lgGrain)" opacity=".6"/>`:''}
+    <g>${L.ham}</g>${T.heat?`<rect width="${W}" height="${HH}" fill="url(#lgHeat)" class="lgHeat"/>`:''}<g>${L.vein}</g><g>${L.ore}</g><g>${L.lich}</g><g>${L.rune}</g><g>${L.crk}</g><g filter="url(#lgMoss)" opacity=".93">${L.moss}</g><g>${L.riv}</g>
   </g></g>
-  <g clip-path="url(#lgClip)"><g class="lgCry" filter="url(#lgGlow)">${cry}</g><rect class="lgSheen" x="-260" y="0" width="200" height="${HH}" fill="url(#lgSheenG)" transform="skewX(-18)"/></g>
+  <g clip-path="url(#lgClip)">${theme==='hiisi'?`<g class="lgVeinGlow" filter="url(#lgGlow)">${L.vein}</g>`:''}<g class="lgCry" filter="url(#lgGlow)">${L.cry}</g><g class="lgSpks" filter="url(#lgGlow)">${L.spk}</g>
+    ${T.runeRed?`<g class="lgRuneGlow" filter="url(#lgGlow)" opacity="0">${L.rune.replace(/#a8281a/g,'#ff7a3a')}</g>`:''}<rect class="lgSheen" x="-260" y="0" width="200" height="${HH}" fill="url(#lgSheenG)" transform="skewX(-18)"/></g>
   <g id="lgMeas" opacity="0">${TXT}</g>`;
-  h.classList.add('hasLogo');}
-(function(){const go=()=>{try{buildLogo();}catch(e){console.error(e);}};go();if(document.fonts){document.fonts.ready.then(go);document.fonts.addEventListener&&document.fonts.addEventListener('loadingdone',go);}})();
+  if(T.band){const rr=h.querySelector('.tRunes');if(rr)rr.classList.add('band');}else{const rr=h.querySelector('.tRunes');if(rr)rr.classList.remove('band');}
+  h.classList.add('hasLogo');h.dataset.logo=theme;}
+(function(){logoRandom();if(document.fonts){const re=()=>{try{const f=document.fonts.check("900 40px 'Cinzel Decorative'")?'c':'f';if(f!==logoBuiltFont){logoBuiltFont=f;buildLogo(logoTheme);}}catch(e){}};document.fonts.ready.then(re);document.fonts.addEventListener&&document.fonts.addEventListener('loadingdone',re);}})();

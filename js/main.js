@@ -76,7 +76,7 @@ let started=false,confirmNew=false;
 (function(){const h=$('#pcHint');if(!h)return;/* ajastin alkaa vasta kun valikko on piirretty (2. kehys), jotta latausaika ei syö näkymisaikaa */
   requestAnimationFrame(()=>requestAnimationFrame(()=>{if(started)return;h.hidden=false;setTimeout(()=>h.classList.add('fade'),3000);setTimeout(()=>{h.hidden=true;},4600);   /* v1.30: 3 s (ennen 6 s) */}));})();
 function startPlay(){if(typeof menuClear==='function')menuClear();if(typeof mbgShow==='function'&&MBG.cv)mbgShow(false);setTimeout(()=>{if(typeof applyHudMode==='function')applyHudMode();},50);{const f=$('#menuFade');if(f)f.style.opacity=0;}fig.g.visible=true;started=true;{const h=$('#pcHint');if(h&&!h.hidden){h.classList.add('fade');setTimeout(()=>h.hidden=true,1600);}}state='play';$('#menu').hidden=true;$('#hud').hidden=false;requestLock();invDirty=true;}
-function pauseGame(){if(state!=='play'||openPanel||P.dead)return;state='paused';pausedAt=performance.now();$('#menu').hidden=false;$('#settings').hidden=true;setMenuView('main');$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
+function pauseGame(){if(state!=='play'||openPanel||P.dead)return;state='paused';pausedAt=performance.now();$('#menu').hidden=false;$('#settings').hidden=true;setMenuView('main');if(typeof logoRandom==='function')logoRandom();/* v1.48: uusi logoteema joka valikkokäynnillä */$('#hud').hidden=true;refreshMenu();mouseL=mouseR=false;P.drawing=false;}
 addEventListener('beforeunload',e=>{if(started&&!flags.won&&!reloading){e.preventDefault();e.returnValue='';}});
 // Maailma rakennetaan skriptien latautuessa, joten kartan vaihto = sivun uudelleenlataus.
 let reloading=false;

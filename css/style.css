@@ -542,3 +542,15 @@ button:focus,select:focus{outline:none}
 @keyframes lgCry{0%,100%{opacity:.75}50%{opacity:1}}
 @keyframes lgSheen{0%,60%{transform:skewX(-18deg) translateX(0)}90%,100%{transform:skewX(-18deg) translateX(1500px)}}
 @media (max-height:760px){.mTitle .tLogo{width:min(500px,calc(100vw - 40px))}}
+/* v1.48 logoteemat */
+.mTitle .tLogo .lgAura{animation:lgAura 3.2s ease-in-out infinite}
+.mTitle .tLogo.lg-hiisi .lgVeinGlow{animation:lgCry 2.2s ease-in-out infinite}
+.mTitle .tLogo.lg-iron .lgHeat{animation:lgHeat 3s ease-in-out infinite}
+.mTitle .tLogo .lgSpk{animation:lgSpk 3.6s ease-in-out infinite;opacity:0}
+.mTitle .tLogo.lg-rune .lgRuneGlow{animation:lgRuneG 4.5s ease-in-out infinite}
+.mTitle:hover .tLogo.lg-rune .lgRuneGlow{opacity:1;animation:none}
+.mTitle .tRunes.band{color:#ff6a3a;text-shadow:0 0 8px #c8281a,0 0 18px rgba(255,90,40,.6);opacity:.85}
+@keyframes lgAura{0%,100%{opacity:.35}50%{opacity:.8}}
+@keyframes lgHeat{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes lgSpk{0%,70%,100%{opacity:0}80%{opacity:1}}
+@keyframes lgRuneG{0%,100%{opacity:.15}50%{opacity:.85}}

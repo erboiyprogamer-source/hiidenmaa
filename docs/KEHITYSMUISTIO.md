@@ -15,7 +15,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Nykytila (päivitetty v1.44)
 
-- **Päivityslista 4 (32 kohtaa + extrat 1–2 + aluebannerit) on KOKONAAN TEHTY** v1.39–v1.44 (+ v1.45 latausnäytön leimahdus ja sivupartikkelit, v1.46 valikon uudistus, v1.47 säädinteemat ja logo), haara
+- **Päivityslista 4 (32 kohtaa + extrat 1–2 + aluebannerit) on KOKONAAN TEHTY** v1.39–v1.44 (+ v1.45 latausnäytön leimahdus ja sivupartikkelit, v1.46 valikon uudistus, v1.47 säädinteemat ja logo, v1.48 7 logoteemaa satunnaisesti), haara
   `claude/hiidenmaa-survival-game-fmxt0m`, PR #25 odottaa yhdistämistä (main = v1.37). Seuraava työ: uusi lista käyttäjältä.
 - Erät: A v1.39, B v1.40, C v1.41, D v1.42, E v1.43 (+ aluebannerit), F v1.44 – yksityiskohdat versiolokissa ja kohdassa "Päivityslista 4".
 - Testauksen huomiot: headless-testissä CSS-animaatiot eivät etene raskaan 3D:n aikana (tarkista ulkoasu animaatiot pois), ulottuvuuden
@@ -82,6 +82,16 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.48 (logoteemat, käyttäjän tarkennus)
+- **Käyttäjä tarkensi:** jokainen logotyyli on oma logonsa, ja valikkoon tultaessa arvotaan yksi (ei yhdistelmää aina).
+- `LOGO_T` (menubg.js), 7 teemaa: `crack` halkeillut kivi (paljon haarautuvia halkeamia, lohkeamat), `hiisi` hehkuva hiidenkivi (vihreä
+  läpikuultava kivi, hehkuvat suonet ja kristallit kaikissa kirjaimissa, vihreä aura), `moss` sammalkivi (tiheä sammal myös alas valuvana,
+  jäkäläpisteet), `iron` taottu rauta (metalliliuku, vasaranjäljet, niitit, hehkuva ahjon kuumuus alareunassa), `ore` malmikallio
+  (ruskea kallio, paljon kulta-, kupari-, hopea- ja vihermalmia, kultasuonet, kimallukset), `rune` riimukivi (punaiseksi maalatut
+  kaiverretut riimut jotka hehkuvat, punainen riimurivi), `all` v1.47:n yhdistelmä.
+- `logoRandom()` sivun latauksessa ja `pauseGame`:ssa; ei samaa kahdesti peräkkäin. Fontin latauduttua sama teema rakennetaan uudelleen.
+- Korjattu samalla: lisäys meni ensin `menuBack`iin (sama merkkijono) ja rivikommentti nieli koodin – KORJAUKSET 29 pätee yhä.
 
 ### v1.47 (esiasetussäätimen teemat ja uusi logo, käyttäjän pyyntö)
 - **Esiasetussäädin (`pvTheme`, `PV_FX`, `pvFxStart`):** `#presetBox` saa luokan pv0…pv7 (pvc = Custom). Low kivi (karhea harmaa täyttö,

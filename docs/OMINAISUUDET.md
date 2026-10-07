@@ -394,3 +394,5 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - (v1.47) Esiasetussäätimen ulkoasu vaihtuu tason mukaan: Low kivi, Low+ vaskipatina, Medium- metsä, Medium ennallaan, Medium+ kulta,
   High routa, High+ palava punainen, Ultra violetti taika (partikkelit). Logo on halkeillut, sammaloitunut, malmeja ja riimuja sisältävä
   kivikaiverrus rautareunuksella ja hehkuvilla hiidenkivikristalleilla.
+- (v1.48) Logolla on 7 teemaa, joista yksi arvotaan aina valikkoon tultaessa: halkeillut kivi, hiidenkivi, sammalkivi, taottu rauta,
+  malmikallio, riimukivi ja yhdistelmä.
