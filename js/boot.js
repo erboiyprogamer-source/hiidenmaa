@@ -3,18 +3,18 @@
    vasta sitten latausnäyttö ja pelin skriptit. Ennen jakso pyöri pelin latauksen päällä, jolloin häivytykset pätkivät. Pelin skriptit
    esiladataan taustalla (<link rel=preload>) ja ajetaan yksi kerrallaan pienellä tauolla, jotta riimut ehtivät syttyä näkyvästi.
    Välilyönti, Enter tai napsautus ohittaa koko jakson (ja testin) ja vie suoraan latausnäyttöön. */
-window.__BJV='1.70';
+window.__BJV='1.71';
 (function(){
   var Q=location.search,wd=!!navigator.webdriver;
   function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
   function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
   var pend=false;try{pend=!!sessionStorage.getItem('hiidenmaa_pending');}catch(e){}
-  /* v1.62: aloitusjakso + testi VAIN ensimmäisellä käynnillä: merkintä localStorage 'hiidenmaa_intro' tallennetaan heti jakson alkaessa,
+  /* v1.62: aloitusjakso + testi VAIN ensimmäisellä käynnillä: merkintä localStorage 'hiidenmaa_intro' tallennetaan jakson lopussa (v1.71),
      ja jos se löytyy, mennään suoraan latausnäyttöön ja valikkoon (F5 ei tyhjennä sitä). Maailman käynnistys/karttavaihto (sivun
      uudelleenlataus, sessionStorage hiidenmaa_pending) ei koskaan näytä jaksoa – ei edes ?splash=1-testilinkillä. */
   var needSplash=!pend&&(/[?&]splash=1/.test(Q)||(!wd&&!ls('hiidenmaa_intro')));
   var needPerf=!pend&&(/[?&]perf=1/.test(Q)||needSplash);
-  if(needSplash)lsSet('hiidenmaa_intro','1');
+  /* v1.71: merkintä tallennetaan vasta jakson lopussa (end), jotta kesken suljettu ensikäynti näyttää jakson ja testin uudelleen */
   /* v1.63: palaava kävijä näkee käynnistäessään HIIDENMAA-otsikon (pelkkä häivytys sisään/ulos, 4,6 s) ja sitten latausnäytön.
      Ei maailman käynnistyksessä (pend) eikä automaatiossa; ?title=1 pakottaa. */
   var needTitle=!pend&&!needSplash&&(/[?&]title=1/.test(Q)||!wd);
@@ -136,7 +136,8 @@ window.__BJV='1.70';
     setTimeout(startGame,1250);}   // latausnäytön sisääntulo ehtii valmiiksi ennen raskasta latausta
   /* Ohitus (v1.61): mikä tahansa näppäin (ei pelkät Shift/Ctrl/Alt/Meta eikä F-näppäimet, jottei Shift+F5 ohita heti) tai napsautus → suoraan latausnäyttöön. Kesken jäänyt testi: tulos, jos mitattu ≥ 1,5 s, muuten testi tulee
      uudelleen seuraavalla kerralla (oletusasetukset). */
-  function skip(e){if(e.type==='keydown'&&(e.repeat||/^(Shift|Control|Alt|Meta|OS|F\d+)/.test(e.key||'')))return;e.stopPropagation();if(e.cancelable)e.preventDefault();
+  function skip(e){if(needSplash)return;   // v1.71: ensikäynnin jaksoa (ml. suorituskykytesti) ei voi ohittaa
+    if(e.type==='keydown'&&(e.repeat||/^(Shift|Control|Alt|Meta|OS|F\d+)/.test(e.key||'')))return;e.stopPropagation();if(e.cancelable)e.preventDefault();
     if(performance.now()-st<500)return;
     if(pf&&!pf.end){pf.stop();var f=pf.partial?pf.partial():-1;if(f>=0)perfStore(f);if(pf.g)pf.g.kill();pf.end=true;}
     else if(pf&&pf.g&&pf.end){/* tulos jo tallennettu */}
