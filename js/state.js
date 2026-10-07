@@ -216,7 +216,7 @@ function shootArrow(from,dir,speed,dmg,owner,grav,fire){if(owner!=='player')dmg*
 function throwRock(from,target,dmg){dmg*=HURT_K;const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,0),mat(0x5d5a54));m.castShadow=true;m.position.copy(from);scene.add(m);const d=_tmpV.subVectors(target,from);const T=1.1/.7;   // v0.89: kivi lentää 30 % hitaammin (ennen 1,1 s)
   const v=new V3(d.x/T,(d.y+.5*14*T*T)/T,d.z/T);projs.push({m,v,dmg,owner:'boss',t:0,g:14,kind:'rock'});}
 const arrowFade=[];
-function updateProjs(dt){
+function updateProjs(dt){updateHitMarks(dt);
   const dropLight=p=>{if(p.light){const j=lightSources.indexOf(p.light);if(j>=0)lightSources.splice(j,1);p.light=null;updateLights();}};
   // v1.33 (lista 3, kohta 34): tulinuolen valo hiipuu lennossa (sateessa 2× nopeammin) ja sammuu 2 s:ssa osumasta (sateessa 1 s).
   const rainK=!P.inDun&&wRain>.3?2:1;
@@ -227,10 +227,19 @@ function updateProjs(dt){
     p.v.y-=p.g*dt;if(p.kind==='arrow'&&!P.inDun){const wa=WIND.spd*.08*dt*(p.steady?.5:1);p.v.x+=WIND.x*wa;p.v.z+=WIND.z*wa;} // v0.84: tuuli kallistaa nuolen rataa (13 m/s ≈ 0,5 m / 30 m)
     p.m.position.addScaledVector(p.v,dt);if(p.kind==='arrow')p.m.lookAt(_tmpV.copy(p.m.position).add(p.v));else{p.m.rotation.x+=dt*5;}
     const pos=p.m.position;let hit=false;
-    if(p.owner==='player'){for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){m.fireHit=!!p.fire;damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);m.fireHit=false;if(p.fire)igniteMob(m);hit=true;break;}}}
+    if(p.owner==='player'){for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){m.fireHit=!!p.fire;damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);hitMarker(pos.x,pos.y,pos.z);m.fireHit=false;if(p.fire)igniteMob(m);hit=true;break;}}}
     else{if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<(p.kind==='rock'?2.2*2.2:.6)&&pos.y<P.pos.y+2.2&&pos.y>P.pos.y-.5){hurtPlayer(p.dmg,pos.x-p.v.x,pos.z-p.v.z);hit=true;}}
     const g=P.inDun?DUN.y:terrainH(pos.x,pos.z);
     if(!hit&&(pos.y<g||pointBlocked(pos.x,pos.y,pos.z,false,true))){if(p.kind==='rock'){shockwave(pos.x,g,pos.z,3);burst(pos.x,g+.3,pos.z,0x5d5a54,10,5);sfx('slam');if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<9)hurtPlayer(p.dmg,pos.x,pos.z);scene.remove(p.m);projs.splice(i,1);continue;}p.stuck=true;p.t=0;continue;}
     if(hit||p.t>8){if(p.kind==='rock'){shockwave(pos.x,pos.y-.5,pos.z,3);sfx('slam');}if(hit&&p.light){arrowFade.push({L:p.light,t:0});p.light.move=false;p.light=null;}dropLight(p);scene.remove(p.m);projs.splice(i,1);}
   }
 }
+
+/* v1.57: jousen osumamerkki – valkoinen X osumakohdassa, näkyy kaikkien esineiden läpi (depthTest pois), 0,28 s, ei animaatiota */
+let _hmTex=null;const hitMarks=[];
+function hitMarker(x,y,z){if(!_hmTex){const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.lineCap='round';
+    for(const [w,col] of [[11,'rgba(0,0,0,.55)'],[6,'#ffffff']]){g.strokeStyle=col;g.lineWidth=w;g.beginPath();for(const [a,b,c2,d] of [[12,12,26,26],[52,12,38,26],[12,52,26,38],[52,52,38,38]]){g.moveTo(a,b);g.lineTo(c2,d);}g.stroke();}
+    _hmTex=new THREE.CanvasTexture(c);}
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:_hmTex,depthTest:false,depthWrite:false,transparent:true,fog:false}));s.renderOrder=1000;s.position.set(x,y,z);
+  const d=camera.position.distanceTo(s.position);s.scale.setScalar(.045*d);scene.add(s);hitMarks.push({s,t:.28});}
+function updateHitMarks(dt){for(let i=hitMarks.length-1;i>=0;i--){const h=hitMarks[i];h.t-=dt;if(h.t<=0){scene.remove(h.s);h.s.material.dispose();hitMarks.splice(i,1);}}}

@@ -130,7 +130,7 @@ function updatePlayer(dt){
   // Jousi pysyy pystyssä (kämmenen kierto kumotaan käsivarren kulmalla); jänne ja nuoli seuraavat vetoa.
   // v1.22 (lista 2, kohta 14): levossa jousi heiluu käden mukana kuten muutkin esineet (ennen käden kierto kumottiin → jousi jäykkänä);
   // vedossa asento lasketaan alempana (bowAim).
-  if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-.15,0,0);heldMesh.position.set(0,0,0);updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
+  if(heldMesh&&ITEMS[heldId].cat==='bow'){heldMesh.rotation.set(-.15,0,0);heldMesh.position.set(0,0,-.12).applyQuaternion(heldMesh.quaternion);/* v1.57: ote rungon kahvasta (kaaren huippu z=.12 käteen; ennen käsi 12 cm rungon takana) */updateBowMesh(heldMesh,P.drawing?P.bowDraw:0);}
   // Kahden käden ote kirveestä: vasen käsi tarttuu varteen (IK, gripK pehmentää otteeseen menon ja irrotuksen).
   P.gripK=lerp(P.gripK||0,grip&&heldMesh?1:0,Math.min(1,dt*(grip?22:10)));
   if(!(P.drawK>.5))armClear(fig.armR,fig.elbowR,fig.hand);
@@ -203,12 +203,23 @@ const _chH=new V3(),_chD=new V3(),_chB=new V3(),_chX=new V3(),_chY=new V3(),_chM
 function chopLerp(A,B,t){_chA.fromArray(A.h).lerp(_chC.fromArray(B.h),t);_chH.copy(_chA);_chA.fromArray(A.d).normalize();_chC.fromArray(B.d).normalize();_chD.copy(_chA).lerp(_chC,t).normalize();}
 function chopIK(dt){const w0=heldMesh&&ITEMS[heldId]&&(ITEMS[heldId].chop||ITEMS[heldId].pick)&&!(P.atk&&P.atk.offBusy);
   if(heldMesh&&!heldMesh.userData.q0)heldMesh.userData.q0=heldMesh.quaternion.clone();
-  if(!w0||!P.atk){if(heldMesh&&heldMesh.userData.q0&&P.chopW>0){P.chopW=Math.max(0,(P.chopW||0)-dt*6);heldMesh.quaternion.copy(heldMesh.userData.q0);}return;}
+  // v1.57: iskun loputtua ei hypätä lepoasentoon (ennen kirves pyörähti) – viimeinen asento häivytetään pehmeästi (paino −5/s)
+  if(!w0||!P.atk){if(!w0||!P._chH||!(P.chopW>.001)){P.chopW=0;if(heldMesh&&heldMesh.userData.q0)heldMesh.quaternion.copy(heldMesh.userData.q0);return;}
+    P.chopW=Math.max(0,P.chopW-dt*5);_chH.copy(P._chH);_chD.copy(P._chD);chopApply(P.chopW);return;}
   const k=P.atk.t/P.atk.dur,hk=P.atk.hitAt/P.atk.dur,sd=P.atk.side||1,wk=hk*.55,W=sd>0?CHOP_K.WL:CHOP_K.WR,H=sd>0?CHOP_K.HL:CHOP_K.HR,E=sd>0?CHOP_K.EL:CHOP_K.ER,hold=mouseL&&state==='play';
-  let w;if(k<wk){chopLerp(W,W,0);w=sstep(0,1,k/(wk*.45));}
+  // v1.57: jatkuvassa hakkuussa paino pysyy ja nosto alkaa edellisen iskun loppuasennosta (siirtymä koko nostovaiheen ajan,
+  // ennen 82–87° hyppy yhdessä ruudussa)
+  if(P._chAtk!==P.atk){P._chAtk=P.atk;P._chS=(P.chopW||0)>.5&&P._chH?{h:P._chH.clone(),d:P._chD.clone(),q:heldMesh.quaternion.clone()}:null;}
+  let w;if(k<wk){chopLerp(W,W,0);if(P._chS){const t=sstep(0,1,k/wk);_chH.lerpVectors(P._chS.h,_chH,t);P._chBl=t;w=1;}else w=sstep(0,1,k/(wk*.45));}
   else if(k<hk){chopLerp(W,H,sstep(0,1,(k-wk)/(hk-wk)));w=1;}
   else{const kf=Math.min(1,(k-hk)/.16);chopLerp(H,E,sstep(0,1,kf));w=hold?1:1-sstep(0,1,Math.min(1,(k-hk-.16)/Math.max(.05,1-hk-.16)));}
-  P.chopW=w;if(w<=.001){heldMesh.quaternion.copy(heldMesh.userData.q0);return;}
+  _chH.y+=.05;_chH.z+=.06;   // v1.57: kädet hieman ylempänä ja edempänä koko iskun ajan
+  // v1.57: kohde ja paino pehmennetään (14/s) → ei nykäisyä iskujen välissä eikä lopussa
+  {const a=Math.min(1,dt*14);if(!P._chH||!(P.chopW>.001)){P._chH=_chH.clone();P._chD=_chD.clone();}else{P._chH.lerp(_chH,a);P._chD.lerp(_chD,a).normalize();}
+   P.chopW=(P.chopW||0)+(w-(P.chopW||0))*a;w=P.chopW;_chH.copy(P._chH);_chD.copy(P._chD);}
+  if(w<=.001){heldMesh.quaternion.copy(heldMesh.userData.q0);return;}chopApply(w);
+  if(P._chS&&k<wk){_chQ.copy(heldMesh.quaternion);heldMesh.quaternion.copy(P._chS.q).slerp(_chQ,P._chBl);}}   // kirveen kierto kiertona (slerp), ei pyörähdystä
+function chopApply(w){
   fig.g.updateMatrixWorld(true);const T=fig.rig.localToWorld(_chA.copy(_chH));armIK(fig.armR,fig.elbowR,T,w,_chH.x>-.05?_poleChopX:_poleChop);
   // varren suunta maailmaan (rig → maailma kiertona) ja käden paikalliseksi kierroksi
   fig.g.updateMatrixWorld(true);fig.rig.getWorldQuaternion(_chQ);_chD.applyQuaternion(_chQ).normalize();
@@ -234,7 +245,8 @@ function armIK(arm,elbow,T,w,pole){const V=arm.parent.worldToLocal(_ikV.copy(T))
   _ikY.copy(_ikU).negate();_ikZ.copy(_ikD).addScaledVector(_ikU,-_ikD.dot(_ikU));if(_ikZ.lengthSq()<1e-6)_ikZ.copy(_ikN).negate();_ikZ.normalize();
   _ikX.crossVectors(_ikY,_ikZ).normalize();_ikM.makeBasis(_ikX,_ikY,_ikZ);_ikQ.setFromRotationMatrix(_ikM);
   arm.quaternion.slerp(_ikQ,w);elbow.rotation.x=lerp(elbow.rotation.x,-f,w);}
-const _ikV=new V3(),_ikS=new V3(),_ikH=new V3(),_ikT=new V3(),_poleR=new V3(-.7,-1,.3),_poleBow=new V3(-1,-.95,.3),_poleBowL=new V3(.9,-.6,0);
+// v1.57: vetokäden kyynärpää kuten ennen, mutta olkapäästä hieman enemmän sivulle (napavektorin x −1 → −1,55)
+const _ikV=new V3(),_ikS=new V3(),_ikH=new V3(),_ikT=new V3(),_poleR=new V3(-.7,-1,.3),_poleBow=new V3(-1.85,-.95,.15),_poleBowL=new V3(.9,-.6,0);
 /* v1.22 (lista 2, kohta 14) jousen veto: jousi tuodaan keskelle eteen (vasen käsi IK:lla), jänne vedetään taakse pään oikealle puolelle
    (oikea käsi IK:lla). Ennen jänne ja oikea käsi menivät hahmon vasemmalle puolelle (jousen asento seurasi vasemman käden kiertoa).
    Pisteet hahmon suunnassa: F = eteen, Lv = vasemmalle (+x), y = posken korkeus. Jousen paikallinen +z = tähtäyssuunta (jänteeltä kahvaan). */

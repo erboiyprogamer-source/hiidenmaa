@@ -83,6 +83,27 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.57 (lista 6, erä E: jousen naru, ote, osumamerkki, ristikko, Q-pudotus + koko pelin tarkistus)
+- **Jousen naru (käyttäjä huomasi):** `updateBowMesh` pätkien kulma oli väärää etumerkkiä (`-atan2`) → kumpikin pätkä peilautui
+  keskipisteensä ympäri: narun päät eivät olleet jousen kärjissä vaan ampujan takana ja kärki kahvalla, eli naru "veti eteenpäin".
+  Nyt `rotation.x = atan2(dz,dy)`: päät kärjissä, kärki vedetään poskelle. (Aiemmat mittaukset katsoivat vain pätkien keskipisteitä.)
+- **Ote:** kädessä jousi pidetään kaaren kahvasta (`position = (0,0,−.12)` kierrettynä), ennen käsi oli 12 cm rungon takana ilmassa.
+- **Kyynärpää vedossa:** napavektori `_poleBow` (−1, −.95, .3) → (−1.85, −.95, .15): olkapäästä hieman enemmän sivulle (käyttäjän
+  toive kahdessa vaiheessa; taaksevienti kokeiltu ja hylätty).
+- **Kirveen/hakun isku:** kädet koko iskun ajan 5 cm ylempänä ja 6 cm edempänä. "Pyörähdys" poistettu: jatkuvassa hakkuussa paino ei
+  enää putoa uuden iskun alussa (ennen 82–171° hyppy yhdessä ruudussa), nosto alkaa edellisen iskun loppuasennosta ja kirveen kierto
+  siirtyy kiertona (slerp) nostovaiheen ajan (huippu 46°/ruutu); lopetuksessa asento häivytetään (−5/s) eikä hypätä. Läpäisytesti ok.
+- **Osumamerkki (`hitMarker`, state.js):** pelaajan nuolen osuessa viholliseen valkoinen X osumakohdassa, näkyy kaikkien esineiden läpi
+  (depthTest pois), 0,28 s, ei animaatiota, koko etäisyyden mukaan.
+- **Tiputusristikko:** viivat 40, 80 ja 120 m, ohuemmat (1 px), teksti viivan vieressä keskitettynä.
+- **Q pelissä:** pudottaa valitusta pikapaikasta 1, Shift+Q koko pinon (`dropHot`); rakennustilassa Q nostaa haamua kuten ennen.
+
+**Koko pelin tarkistus (v1.57, `full157.mjs`):** kaikki 6 karttaa: päivä 20 s, yö 30 s, aamu 20 s, kaikki 22 vihollistyyppiä yhtä
+aikaa, 3 ulottuvuutta + pomojen kaato (avain reppuun `giveOrDrop`), Hautakumpu sisään/ulos, tallennus/lataus (v 10), kaikki 8 esiasetusta
+piirtäen, NaN-tarkistus joka kuvalla → 0 virhettä, 0 NaN. Huomiot: (1) yöllä aloituspaikalla paikallaan seisova pelaaja kuolee 30 s:ssa
+(kartta 3) – vaikeus, ei bugi; (2) isojen taisteluiden jälkeen scene-lapsia +100 (kartat 0 ja 4: saalis, läikät, ruumiit) – poistuvat ajan
+kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
+
 ### v1.56 (lista 6, erä D: veri, jousi selässä, jousen kuvake)
 - **Ultra-veri (`bloodUltra`):** veren fysiikalla ja Ultra-esiasetuksella (tai Custom + piirtoetäisyys ≥ 520) pisaroita ja
   hiukkasia 2×, lentonopeus ×1,45, sivuhajonta 2×, pystyvauhti ×1,3, pisararaja 240.
@@ -1686,7 +1707,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 6 (v1.53–) – julkaisupäivitys
-**JATKA TÄSTÄ (lista 6):** erät A–D (v1.53–v1.56) tehty + koko pelin tarkistus (v1.57); PR #25 auki.
+**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.57 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
 - A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
   eteenpäin, piikivikirves.
 - B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.

@@ -558,8 +558,8 @@ button:focus,select:focus{outline:none}
 #menu .mbtn.saved{border-color:#7fd0a0;box-shadow:0 0 0 1px rgba(127,208,160,.5),0 0 22px rgba(127,208,160,.45)}#menu .mbtn.saved .bLbl{color:#bff5d0}#menu .mbtn.saved .mIco{color:#bff5d0;text-shadow:0 0 8px #7fd0a0}
 /* v1.49 tiputusristikko */
 #dropRet{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;animation:drIn .25s ease both}
-#dropRet i{position:absolute;left:0;height:2px;background:rgba(255,240,210,.9);box-shadow:0 0 0 1px rgba(0,0,0,.5)}
-#dropRet b{position:absolute;font:700 11px var(--font-b);color:#ffe8c0;text-shadow:0 1px 2px #000,0 0 3px #000}
+#dropRet i{position:absolute;left:0;height:1px;background:rgba(255,240,210,.85);box-shadow:0 0 0 .5px rgba(0,0,0,.45)}
+#dropRet b{position:absolute;line-height:13px;font:700 11px/13px var(--font-b);color:#ffe8c0;text-shadow:0 1px 2px #000,0 0 3px #000}
 @keyframes drIn{from{opacity:0}to{opacity:1}}
 /* v1.52 CSS-pilviverho uuden maailman intron alussa (alle Medium-grafiikka) */
 #cloudVeil{position:fixed;inset:0;z-index:8990;pointer-events:none;overflow:hidden}

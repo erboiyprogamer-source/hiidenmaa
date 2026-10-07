@@ -9,7 +9,7 @@ const ACTIONS=[
   ['run','Juokse','Liikkuminen','ShiftLeft'],['jump','Hyppää / kiipeä ylös','Liikkuminen','Space'],['crouch','Kyykky / hiipiminen','Liikkuminen','KeyC'],
   ['interact','Poimi, avaa, käytä','Toiminnot','KeyE'],
   ['build','Rakennusvalikko (vasara)','Rakentaminen','KeyB'],['rot','Käännä rakennetta (Shift = asento)','Rakentaminen','KeyR'],['snap','Sivuttaiskohdistus','Rakentaminen','KeyG'],['vsnap','Pystykohdistus','Rakentaminen','KeyH'],
-  ['up','Nosta haamua','Rakentaminen','KeyQ'],['down','Laske haamua','Rakentaminen','KeyZ'],['remove','Pura','Rakentaminen','KeyX'],['repair','Korjaa','Rakentaminen','KeyF'],
+  ['up','Nosta haamua (rakentaessa) / pudota pikapaikasta (Shift = koko pino)','Rakentaminen','KeyQ'],['down','Laske haamua','Rakentaminen','KeyZ'],['remove','Pura','Rakentaminen','KeyX'],['repair','Korjaa','Rakentaminen','KeyF'],
   ['menu','Päävalikko / sulje valikot','Valikot ja paneelit','KeyP'],['inv','Reppu ja valmistus','Valikot ja paneelit','Tab'],['map','Kartta','Valikot ja paneelit','KeyM'],['prog','Taso, saavutukset, tavoitteet','Valikot ja paneelit','KeyJ'],['log','Viimeiset ilmoitukset','Valikot ja paneelit','KeyL'],['hud','Tehtävä ja tavoite näkyviin / piiloon','Valikot ja paneelit','KeyT'],
   ['full','Koko näyttö','Näkymä','KeyK'],['minizoom','Minikartan zoom','Näkymä','KeyN'],
 ];

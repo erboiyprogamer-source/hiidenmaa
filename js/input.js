@@ -42,7 +42,7 @@ addEventListener('keydown',e=>{
     else if(c===BIND.rot){if(isBuilding()){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}}
     else if(c===BIND.snap){if(isBuilding())cycleSnap();}
     else if(c===BIND.vsnap){if(isBuilding())cycleVMode();}
-    else if(c===BIND.up){if(isBuilding())liftBuild(1);}
+    else if(c===BIND.up){if(isBuilding())liftBuild(1);else dropHot(e.shiftKey);}   // v1.57: pelissä Q pudottaa valitusta pikapaikasta 1, Shift+Q koko pinon
     else if(c===BIND.down){if(isBuilding())liftBuild(-1);}
     else if(c===BIND.remove)removeLooked();
     else if(c===BIND.repair)repairLooked();

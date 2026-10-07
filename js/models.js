@@ -321,7 +321,7 @@ function makeHeld(id){
 }
 // Jousen jänne ja nuoli: k = vedon määrä 0–1 (0 = ei vedossa, jänne suorana).
 function updateBowMesh(g,k,nocked){const b=g.userData.bow;if(!b)return;const nz=b.tipZ-(k>0?.1+k*.32:0);   /* v1.22 veto .42 → .32 (käsi ylettyy, jänne posken kohdalle) */
-  for(const [s,sy] of [[b.s1,1],[b.s2,-1]]){const dy=-sy*b.tipY,dz=nz-b.tipZ,L=Math.hypot(dy,dz);s.scale.y=L;s.position.set(0,sy*b.tipY+dy/2,b.tipZ+dz/2);s.rotation.x=-Math.atan2(dz,dy);}
+  for(const [s,sy] of [[b.s1,1],[b.s2,-1]]){const dy=-sy*b.tipY,dz=nz-b.tipZ,L=Math.hypot(dy,dz);s.scale.y=L;s.position.set(0,sy*b.tipY+dy/2,b.tipZ+dz/2);s.rotation.x=Math.atan2(dz,dy);}   /* v1.57: etumerkki korjattu – ennen pätkät peilautuivat keskipisteensä ympäri (naru 180° väärin, kärki kahvalla) */
   b.ar.visible=k>0||!!nocked;b.ar.position.z=nz-.02;}
 function makeShield(id){const g=new THREE.Group(),wood=id==='kilpi',R=.4,
     base=wood?smat(0x8a5a32):smat(id==='rautakilpi'?0x8c97a4:0xc87a3e,{metalness:.35,roughness:.5}),

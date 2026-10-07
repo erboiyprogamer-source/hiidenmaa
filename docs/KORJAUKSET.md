@@ -222,6 +222,13 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - **Korjaus:** tila palautetaan latauksessa funktiolla (`syncChests()` loadData/newGame), `let`-muuttujat tiedoston alkuun ennen IIFE:itä,
   rivikommentin jälkeen aina rivinvaihto. Testaa aina myös karttavaihdon jatko (tarkistus: "Karttavaihto + automaattinen aloitus").
 
+## 30. Jousen naru "väärin päin" (v1.57)
+- **Oire:** vedossa naru näytti venyvän eteenpäin; narun päät eivät olleet jousen kärjissä.
+- **Syy:** `updateBowMesh` asetti pätkän kulman `rotation.x = -atan2(dz,dy)`. Laatikko on pitkin +y:tä; kierto x:n ympäri vie (0,1,0) →
+  (0,cos,sin), joten oikea kulma on `+atan2(dz,dy)`. Väärä etumerkki peilasi molemmat pätkät keskipisteensä ympäri. Mittaukset, jotka
+  katsoivat vain pätkien keskipisteitä tai nuolen paikkaa, eivät paljastaneet vikaa → mittaa aina pätkän PÄÄTEPISTEET (tai katso kuva sivulta).
+- **Myös:** repun kuvakkeessa kaari ja naru olivat väärin päin (v1.56).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

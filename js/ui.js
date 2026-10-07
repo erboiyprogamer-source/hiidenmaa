@@ -417,6 +417,9 @@ addEventListener('mousedown',e=>{if(!openPanel||state!=='ui'||performance.now()-
 function dropAt(g,i,all){const arr=uxArr(g),s=arr[i];if(!s)return false;const n=all?s.n:1;if(s.eq&&(all||s.n<=1)){s.eq=false;updateGear();}
   playerDrop(s.id,n,s.q);s.n-=n;if(s.n<=0){arr[i]=null;if(g==='i'&&selSlot===i)selSlot=-1;if(chestSel&&chestSel.g===g&&chestSel.i===i)chestSel=null;}
   sfx('pickup',.8,.5);invDirty=true;uxRerender();updGhost();return true;}
+// v1.57: pikapaikan pudotus pelissä (Q yksi, Shift+Q koko pino)
+function dropHot(all){const s=inv[hotSel];if(!s){msg('Pikapaikka on tyhjä.');return;}const n=all?s.n:1;if(s.eq&&(all||s.n<=1)){s.eq=false;updateGear();}
+  playerDrop(s.id,n,s.q);s.n-=n;if(s.n<=0)inv[hotSel]=null;sfx('pickup',.8,.5);invDirty=true;}
 // Valitun esineen pudotus (Q yksi, Shift+Q kaikki).
 function dropSel(all){const s=inv[selSlot];if(!s)return;const n=all?s.n:1;if(s.eq&&(all||s.n<=1)){s.eq=false;updateGear();}
   playerDrop(s.id,n,s.q);s.n-=n;if(s.n<=0){inv[selSlot]=null;selSlot=-1;selEq=null;}sfx('pickup',.8,.5);invDirty=true;renderInv();}
@@ -551,12 +554,12 @@ function applyHudMode(){const md=SET.hudMode|0,g=$('#goal'),q=$('#quest');if(!g|
   if(md===2)h.style.top=(g.offsetTop+g.offsetHeight+6)+'px';else h.style.top='';}
 applyHudMode();
 
-/* v1.49 (lista 5, kohta 3): tiputusristikko – vain kyykyssä täysin vedettynä. Vaakaviivat 20–70 m etäisyyksille: nuolen pudotus
+/* v1.49 (lista 5, kohta 3): tiputusristikko – vain kyykyssä täysin vedettynä. Vaakaviivat 40, 80 ja 120 m (v1.57, ennen 20–70 m) etäisyyksille: nuolen pudotus
    d:n matkalla ≈ ½·g·(d/v)², kulma atan(pudotus/d) → pikseleinä kameran näkökentän mukaan. Lyhyemmät viivat kauemmas, numerot oikealla. */
 let dropKey='';
 function updDropRet(){const el=$('#dropRet');if(!el)return;const on=P.drawing&&bowCrouch()&&(P.bowDraw||0)>=1&&state==='play';
   if(!on){if(!el.hidden){el.hidden=true;dropKey='';}return;}const bs=bowShot(1),H2=innerHeight/2,tf=Math.tan(camera.fov*Math.PI/360),key=bs.v.toFixed(1)+bs.g+innerHeight+camera.fov;
   el.hidden=false;if(key===dropKey)return;dropKey=key;let h='';
-  for(const d of [20,30,40,50,60,70]){const t=d/bs.v,drop=.5*bs.g*t*t,y=drop/d/tf*H2,w=Math.max(10,46-d*.55);
-    h+=`<i style="top:${y.toFixed(1)}px;width:${w.toFixed(0)}px;margin-left:${(-w/2).toFixed(0)}px"></i>`+(d%20===0?`<b style="top:${(y-7).toFixed(1)}px;left:${(w/2+5).toFixed(0)}px">${d} m</b>`:'');}
+  for(const d of [40,80,120]){const t=d/bs.v,drop=.5*bs.g*t*t,y=drop/d/tf*H2,w=Math.max(14,40-d*.18);
+    h+=`<i style="top:${y.toFixed(1)}px;width:${w.toFixed(0)}px;margin-left:${(-w/2).toFixed(0)}px"></i><b style="top:${(y-6.5).toFixed(1)}px;left:${(w/2+4).toFixed(0)}px">${d} m</b>`;}
   el.innerHTML=h;}

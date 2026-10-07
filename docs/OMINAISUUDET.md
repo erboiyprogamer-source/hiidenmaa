@@ -417,3 +417,6 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Ultra-asetuksella veri lentää tuplasti rajummin. Verilätäköt mukailevat rinnettä, ja Medium+ jyrkässä (> 45°) rinteessä lammikko
   valuu 10 s alas.
 - Jousi on selässä litteänä; jos repussa on nuolia, selässä näkyy 3 nuolta.
+- Jousi: naru vedetään oikein taaksepäin, ote kahvasta, osumamerkki (X) osumasta. Kyykkyristikko 40/80/120 m.
+- Q pudottaa pelissä valitusta pikapaikasta yhden, Shift+Q koko pinon (reppu auki: hiiren alla oleva/valittu kuten ennen).
+- Kirveellä/hakulla hakatessa kädet hieman ylempänä ja edempänä, eikä iskujen välissä tai lopussa ole pyörähdystä.
