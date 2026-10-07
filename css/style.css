@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.63';
+:root{--css-v:'1.64';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -642,3 +642,7 @@ button:focus,select:focus{outline:none}
 #splash #spLogo{transform:none;transition:none;opacity:0}
 #splash .spTitle.on #spLogo{opacity:0;transform:none;animation:spLogoIn 1.6s ease .15s forwards,spLogoOut 1.3s ease calc(var(--td,7200ms) - 1.45s) forwards}
 @keyframes spLogoIn{from{opacity:0}to{opacity:1}}@keyframes spLogoOut{from{opacity:1}to{opacity:0}}
+/* v1.64: varoitusruudun alaosaan Windows-yhteensopivuus (valkoinen Windows 11 -tyylinen ikoni tekstin vieressä) */
+#splash .spWin{position:absolute;left:0;right:0;bottom:56px;display:flex;align-items:center;justify-content:center;gap:10px;font:600 14px var(--font-b);color:#e8e2d4;letter-spacing:.04em;opacity:0;transition:opacity 1s ease .6s}
+#splash .spWarn.on .spWin{opacity:.9}
+#splash .spWin svg{width:18px;height:18px;fill:#fff;flex:none}
