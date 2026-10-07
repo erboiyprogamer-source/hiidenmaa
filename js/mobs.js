@@ -201,6 +201,8 @@ function spawnMob(type,x,z,opts={}){
   f.g.position.set(x,y,z);scene.add(f.g);
   const mats=[],cl=new Map();f.g.traverse(m=>{if(m.isMesh&&m.material.isMeshStandardMaterial){let c=cl.get(m.material);if(!c){c=m.material.clone();cl.set(m.material,c);mats.push(c);}m.material=c;}});
   const m={type,def,f,mats,pos:new V3(x,y,z),vel:new V3(),yaw:rng()*TAU,hp:def.hp,maxHp:def.hp,state:'idle',t:0,wander:null,atkCd:1,wind:0,angry:false,flash:0,walkPh:0,lastHit:-99,stuck:0,home:{x,z},dun:!!opts.dun,anim:0,dead:false,deadT:0,hurtT:-99};
+  // v1.39 (lista 4, kohta 25): vihollisten ja eläinten hp 100–160 %, vahvemmat hieman isompia (+0–10 %). Ei pomoille.
+  if(def.ai!=='boss'&&def.ai!=='rboss'&&!opts.noVar){const k=1+Math.random()*.6;m.hp=m.maxHp=Math.round(def.hp*k);m.hpK=k;f.g.scale.multiplyScalar(1+(k-1)/6);}
   mobs.push(m);return m;
 }
 function mobRemove(m){scene.remove(m.f.g);if(m.da){if(m.da.flames)scene.remove(m.da.flames);if(m.da.pile)scene.remove(m.da.pile);}mobs.splice(mobs.indexOf(m),1);if(m===boss)boss=null;}

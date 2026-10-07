@@ -73,6 +73,21 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.39 (lista 4, erä A: kyykky, ylämäki, selkäterät, esineet maassa, pomot/vartijat, kilpi, hp-vaihtelu, veren fysiikka, portaat)
+- **Kyykky (1):** eläimet (pakenevat ja luonteelliset) eivät huomaa kyykyssä lainkaan; noustessa 0,1 s viive (`P.uncrouchT`).
+- **Ylämäki (3):** juoksu ja hyppy ylämäkeen (rinne > 0,1) kestävyys ×1,3 (jyrkkä enint. ×1,6), `P.upK`.
+- **Selkäterät (5):** miekka, lapio ja kuokka lappeellaan selkää vasten (`backPose` y = selän normaali).
+- **Esineet maassa (6):** `dropGround` = korkein maakohta viidestä pisteestä, leijuu 0,25 m (kuvake 0,38 m) ylempänä.
+- **Pomot ja vartijat (8–9):** `HURT_K` (actions.js) asetetaan mob-silmukassa: pomot ×1,2, vartijat (portit ja kohteet, `m.guard`) ×1,8;
+  koskee myös heitettyjä kiviä ja nuolia. Vartijat eivät pelkää tulta (pomot eivät ole koskaan pelänneet).
+- **Kilpi rikki (18):** ei torjuntaa, viesti "Kilpi on rikki (m:ss)", kilpi näkyy selässä kunnes ehjä.
+- **Aarnihirviö (19):** paranee 1,7 min jälkeen 1 %/s (muut pomot 1 min, 10 %/s).
+- **Hp-vaihtelu (25):** viholliset ja eläimet 100–160 % (`m.hpK`), koko +0–10 %. Pomot ennallaan.
+- **Veren fysiikka (extra 1):** asetus `bloodFx` (High+ ja Ultra): pisarat lentävät iskun suuntaan 1–5 m tönäisyn mukaan, jäävät läikiksi maahan,
+  lattioille ja seinien/kivien kylkiin (`drips`); viiltävä isku → punainen viilto ja mobista tippuu verta 5 s; kuoleman lammikko kasvaa
+  4 s (+25 %). `pointBlocked(...,circ)`: nuolet ja pisarat osuvat nyt myös puihin, kiviin, tukkeihin ja linnakkeen muuriin.
+- **Linnakkeen portaat (extra 2):** muurin osuma ympyröinä kaaren mukaan (ennen kierretyn lohkon AABB ulottui portaille), askelmat 0,82 → 1,05 m.
+
 ### v1.38 (korjaus: "Script error." vuorilla porttien lähellä)
 - Syy: ruohoton alue → ruohon InstancedMesh ilman instanssivärejä, jaettu materiaali käännetty värien kanssa → three.js kaatui piirrossa.
   Korjattu (`rebuildGrass` ei lisää tyhjää, `instM` aina värit), `renderer.render` try-lohkoon, three.js `crossorigin="anonymous"`,
@@ -1456,6 +1471,14 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 4: 32 kohtaa (v1.39–) – tarkentavat kysymykset kysytään ensin, vastaukset kirjataan tähän
 **JATKA TÄSTÄ (lista 4):** PR #25 (v1.38 korjaus) auki. Lista kirjattu, kysymykset kesken/vastaukset alla.
+**Erät (lista 4):**
+- A (v1.39): 1 kyykky, 3 ylämäki, 5 selkäterät, 6 esineet maassa, 8–9 pomot/vartijat, 18 rikki kilpi, 19 Aarnihirviö, 25 hp-vaihtelu,
+  extra 1 veren fysiikka, extra 2 linnakkeen portaat.
+- B (v1.40): 7 P-näppäin ja Esc pois, 28 opasteet, 26/27/29 reppunapsautukset, 4 omat kentät, 23 arkun katse.
+- C (v1.41): 2 lumi/sade, 20 seinäsoihtu, 21–22 soihtujen sytytys, 24 arkkujen ulkonäkö.
+- D (v1.42): 12–13 saalis, 14–15 Kalmaherra, 16 jousikalmot, 17 ulottuvuuden intro.
+- E (v1.43): 10 latausnäyttö, 11 maailman intro, 31 suorituskykytesti, 32 tauko/käynnissä.
+- F (v1.44): 30 optimoinnit asetuksiin.
 **Vastaukset (lista 4):**
 - 1: kyykyssä täysin huomaamaton (myös liikkuessa, ellei lyö); nousu kyykystä → 0,1 s → säikähtää.
 - 3: vain juoksu ja hyppy ylämäkeen +30 %.
@@ -1496,6 +1519,13 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 - 31: suorituskykytesti 3 s latausnäytön aikana ensimmäisellä käynnillä → esiasetus (läppärit pääsevät valikkoon).
 - 32: päävalikossa (tauko) vaihdettava nappi "Tila: Tauko / Käynnissä" – käynnissä maailma päivittyy taustalla ja muutokset näkyvät heti.
 
+Extra 1. (lisä) High+ ja Ultra: veri lentää lyönnin suuntaan pisaroina, jotka jäävät maahan pieniksi läikiksi; kuoleman lammikko kasvaa
+   hitaasti. Oma asetus (Veren fysiikka), esiasetukset High+ ja Ultra päällä.
+Extra 2. (lisä) Arkkukivilinnakkeen kierreportaat leveämmiksi: muurin osumalaatikko (kierretyn lohkon AABB) on iso ja vie askelmista
+   tilaa, joten portaita on vaikea kävellä.
+- Extra 1 tarkennus: pisarat 1–5 m tönäisyn mukaan, lammikko +25 %; viiltävä ase → punaiset viillot mobiin ja mobista tippuu pisaroita
+  5 s; pisarat jäävät kaikkiin pintoihin (maa, lattiat, kivet, seinät); myös pelaajasta; tarkista että nuolet jäävät kaikkiin objekteihin.
+- Extra 2 tarkennus: muurin osuma tarkaksi (kaaren mukaan) + hieman leveämmät portaat, askel 0,3 m ennallaan.
 1. Kyykyssä eläin ei huomaa; kun nousee kyykystä, 0,1 s viive ja eläin säikähtää.
 2. Lumisade ei saa näkyvästi seurata pelaajaa/kameraa (kevyt korjaus).
 3. Ylämäkeen kävely/juoksu kuluttaa kestävyyttä 30 % enemmän.

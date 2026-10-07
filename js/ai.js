@@ -16,7 +16,7 @@ function nearestOpening(m){let best=null,bd=1e9;for(const p of pieces){const b=b
   const d=dist2(p.x,p.z,m.pos.x,m.pos.z);if(d<bd&&d<35*35&&dist2(p.x,p.z,P.pos.x,P.pos.z)<28*28){bd=d;best=p;}}return best;}
 function updateMobs(dt){
   refreshFire(dt);
-  for(let i=mobs.length-1;i>=0;i--){const m=mobs[i];
+  for(let i=mobs.length-1;i>=0;i--){const m=mobs[i];HURT_K=m.def.ai==='boss'||m.def.ai==='rboss'?1.2:m.guard?1.8:1;
     if(m.dead){if(m.fireFx)stopBurn(m);m.deadT+=dt;if(mobDeathAnim(m,dt))mobRemove(m);continue;}   // v1.37 (kohta 23b): lössähtäminen / tuhka, < 10 s
     const d=m.def,dx=P.pos.x-m.pos.x,dz=P.pos.z-m.pos.z,dist=Math.hypot(dx,dz);
     if(!m.dun&&m!==boss&&dist>120){mobRemove(m);continue;}
@@ -31,7 +31,8 @@ function updateMobs(dt){
     if(d.ai!=='boss'&&d.ai!=='rboss'&&Math.hypot(m.vel.x,m.vel.z)>.5){m.wind=0;moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
     let tx=0,tz=0,spd=0;
     // v1.33 (lista 3, kohta 7): pomo, johon ei ole osuttu minuuttiin, paranee täyteen noin 10 sekunnissa.
-    if((d.ai==='boss'||d.ai==='rboss')&&playTime-m.lastHit>60&&m.hp<m.maxHp)m.hp=Math.min(m.maxHp,m.hp+m.maxHp*.1*dt);
+    // v1.39 (lista 4, kohta 19): Aarnihirviö 1,7 min jälkeen hitaasti (1 %/s)
+    if((d.ai==='boss'||d.ai==='rboss')&&m.hp<m.maxHp){const ar=m.type==='aarnihirvio';if(playTime-m.lastHit>(ar?102:60))m.hp=Math.min(m.maxHp,m.hp+m.maxHp*(ar?.01:.1)*dt);}
     if(d.ai==='boss'){bossAI(m,dt,dx,dz,dist);continue;}
     if(d.ai==='rboss'){realmBossAI(m,dt,dx,dz,dist);continue;}
     const night=isNight()&&!P.inDun;
@@ -41,7 +42,8 @@ function updateMobs(dt){
     m.losT=(m.losT||0)-dt;if(m.losT<=0){m.losT=.2+Math.random()*.1;m.los=dist<45&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z);}
     m.noLos=m.state==='chase'&&!m.los?(m.noLos||0)+dt:0;
     // Pelko: tuli ja soihtu ajavat kaikki viholliset ja eläimet pois päin (myös vihaiset). Vartija ja ylimys eivät pelkää.
-    if(m.type!=='ylimys'){let fs=null,fd=1e9;for(const s of fireSrc){if(s.torch&&m.dun)continue;const dd=dist2(s.x,s.z,m.pos.x,m.pos.z);if(dd<s.r*s.r&&dd<fd){fd=dd;fs=s;}}
+    if(m.type!=='ylimys'&&!m.guard){let fs=null,fd=1e9;   // v1.39: vartijat eivät pelkää tulta (pomot käsitellään ennen tätä)
+     for(const s of fireSrc){if(s.torch&&m.dun)continue;const dd=dist2(s.x,s.z,m.pos.x,m.pos.z);if(dd<s.r*s.r&&dd<fd){fd=dd;fs=s;}}
       if(fs){m.fearT=1;m.siege=null;}}
     if(m.fearT>0){m.fearT-=dt;m.wind=0;m.state='flee';let fx=m.pos.x,fz=m.pos.z,fd=1e9;for(const s of fireSrc){const dd=dist2(s.x,s.z,m.pos.x,m.pos.z);if(dd<fd){fd=dd;fx=s.x;fz=s.z;}}
       moveMob(m,m.pos.x-fx,m.pos.z-fz,d.run,dt);animMob(m,dt);if(m.fearT<=0)m.state='idle';continue;}
@@ -70,13 +72,13 @@ function updateMobs(dt){
       // Kyykyssä (v0.70): paikallaan ei huomata lainkaan; hiipiessä vain 1,5 m (eläin katsoo pelaajaa kohti) tai 0,9 m (selin), jotta
       // hiiviskelyisku ylettyy (aseen ulottuma ~2,3 m). Ennen kyykky = 3,5 m ja alle 4 m aina → eläin pakeni ennen kuin ylettyi lyömään.
       const w=curWeapon(),armed=(w.cat==='weapon'||w.cat==='bow')&&!P.crouch,mv=Math.hypot(P.vel.x,P.vel.z)>.3,face=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1)>0;
-      const pr=d.per||{};let sr=P.crouch?(mv?(face?1.5:.9):0):P.running?16:7;if(armed)sr*=1.4;sr*=pr.scare||1;
+      const pr=d.per||{};const hid=P.crouch||playTime-(P.uncrouchT||-9)<.1;let sr=hid?0:P.running?16:7;   /* v1.39 (lista 4, kohta 1): kyykyssä ei huomata lainkaan; noustessa 0,1 s viive */if(armed)sr*=1.4;sr*=pr.scare||1;
       // v0.85 luonteet: jänis jähmettyy ensin (ellei pelaaja ole aivan vieressä), kettu jää katsomaan matkan päästä, poro-lauma pakenee yhdessä
       const scared=hurt||(!P.dead&&dist<sr&&(m.los||P.crouch||dist<4));
       if(scared){if(m.state!=='flee'&&m.state!=='freeze'){if(pr.freeze&&!hurt&&dist>sr*.45){m.state='freeze';m.frzT=pr.freeze*(.7+Math.random()*.6);}else startFlee(m,dx,dz);}
         else if(m.state==='freeze'&&(hurt||dist<sr*.45))startFlee(m,dx,dz);}
       else if(m.state==='flee'&&dist>(pr.safe||28)&&!m.fly)m.state='idle';
-      else if(pr.curious&&m.state!=='flee'&&!P.dead&&dist<26&&m.los)m.state='watch';
+      else if(pr.curious&&m.state!=='flee'&&!P.dead&&!hid&&dist<26&&m.los)m.state='watch';
       else if(m.state==='watch')m.state='idle';
       if(m.state==='freeze'){m.frzT-=dt;m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*3));if(m.frzT<=0)startFlee(m,dx,dz);moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
       if(m.state==='watch'){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*2.5));moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
@@ -106,6 +108,7 @@ function updateMobs(dt){
     moveMob(m,tx,tz,spd,dt);
     animMob(m,dt);
   }
+  HURT_K=1;
   // separation
   for(let i=0;i<mobs.length;i++)for(let j=i+1;j<mobs.length;j++){const a=mobs[i],b=mobs[j];if(a.dead||b.dead)continue;const dx=b.pos.x-a.pos.x,dz=b.pos.z-a.pos.z,d=Math.hypot(dx,dz),r=a.def.r+b.def.r;if(d<r&&d>.001){const k=(r-d)/2/d;a.pos.x-=dx*k;a.pos.z-=dz*k;b.pos.x+=dx*k;b.pos.z+=dz*k;}}
 }
@@ -115,6 +118,7 @@ function temperAI(m,dt,dx,dz,dist,hurt,night){const d=m.def,t=d.temper;
   if(m.angry&&!hurt&&playTime-m.lastHit>12&&dist>(d.aggro||12)*1.3){m.angry=false;m.rolled=0;if(m.state==='chase')m.state='idle';}
   if(m.state==='flee'){if(dist>(d.per&&d.per.safe||28)&&!hurt)m.state='idle';else if(!m.angry)return false;}
   if(m.angry||P.dead||P.inDun!==!!m.dun)return false;
+  if(P.crouch||playTime-(P.uncrouchT||-9)<.1)return false;   // v1.39: kyykyssä eläin ei huomaa
   const see=m.los&&dist<(d.aggro||12);
   const anger=(txt)=>{m.angry=true;m.lastHit=playTime-6;m.state='chase';sfx('roar',t==='elk'?.7:t==='sow'?1.1:1.6,.5);if(txt&&playTime-(m.growlT||-99)>20){m.growlT=playTime;msg(txt,'warn');}};
   if(t==='elk'){if(dist>15)m.rolled=0;if(dist<6&&!m.rolled&&m.los){m.rolled=1;if(Math.random()<.35)anger('Hirvi suuttuu ja ryntää päin!');else startFlee(m,dx,dz);}}

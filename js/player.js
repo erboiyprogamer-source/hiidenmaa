@@ -16,11 +16,15 @@ function updatePlayer(dt){
   let mx=0,mz=0;if(state==='play'&&P.stagger<=0){if(kd('fwd'))mx+=1;if(kd('back'))mx-=1;if(kd('right'))mz+=1;if(kd('left'))mz-=1;}
   let dx=fwd.x*mx+right.x*mz,dz=fwd.z*mx+right.z*mz;const dl=Math.hypot(dx,dz);if(dl>0){dx/=dl;dz/=dl;}
   P.blocking=state==='play'&&mouseR&&w.cat!=='hammer'&&w.cat!=='bow'&&w.cat!=='shovel'&&P.stam>0&&!P.atk;
+  // v1.39 (lista 4, kohta 18): rikkinäisellä kilvellä ei voi torjua (kilpi on selässä kunnes ehjä)
+  {const sh0=equipped('shield');if(P.blocking&&sh0&&sh0.shBrk!=null&&!shieldOk(sh0)){P.blocking=false;if(playTime-(P.shMsgT||-9)>1.5){P.shMsgT=playTime;const r=Math.max(0,SHIELD_FIX-(playTime-sh0.shBrk));msg(`Kilpi on rikki (${Math.floor(r/60)}:${String(Math.floor(r%60)).padStart(2,'0')})`,'warn');}}}
   const armor=equipped('armor');
-  P.crouch=state==='play'&&kd('crouch')&&P.onGround&&!P.swim;
+  {const c0=P.crouch;P.crouch=state==='play'&&kd('crouch')&&P.onGround&&!P.swim;if(c0&&!P.crouch)P.uncrouchT=playTime;}   // v1.39: kyykystä nousun hetki (eläimet säikähtävät 0,1 s viiveellä)
   let speed=4.6;const wantRun=kd('run')&&!P.crouch;
   P.running=false;
-  if(wantRun&&dl>0&&!over&&P.stam>0&&!P.blocking&&!P.drawing){speed=8;P.running=true;P.stam-=13*dt;P.stamDelay=.8;}
+  // v1.39 (lista 4, kohta 3): ylämäkeen juoksu ja hyppy kuluttavat kestävyyttä +30 % (rinne > ~6°, jyrkemmässä enintään +60 %)
+  let upK=1;if(dl>0&&!P.inDun){const sl=(terrainH(P.pos.x+dx*.6,P.pos.z+dz*.6)-terrainH(P.pos.x,P.pos.z))/.6;if(sl>.1)upK=1.3+clamp((sl-.35)*.6,0,.3);}P.upK=upK;
+  if(wantRun&&dl>0&&!over&&P.stam>0&&!P.blocking&&!P.drawing){speed=8;P.running=true;P.stam-=13*dt*upK;P.stamDelay=.8;}
   if(P.blocking||P.drawing)speed=2.4;if(over)speed*=.55;if(armor&&ITEMS[armor.id].slow)speed*=1-ITEMS[armor.id].slow;if(P.atk)speed*=.45;if(P.crouch)speed=Math.min(speed,2.3);if(P.zone==='suo'&&!P.inDun&&!P.swim)speed*=.85;speed*=P.fx.speed;if(DEV&&keys.KeyV)speed*=10;// DEV: V pohjassa 10× nopeampi
   P.inWater=P.pos.y<-.9&&!P.inDun;P.swim=P.pos.y<-1.3&&!P.inDun;
   if(P.swim){speed=2.6;P.stam-=(dl>0?6:2)*dt;P.stamDelay=.6;if(P.stam<=0){P.hp-=4*dt;if(P.hp<=0)playerDie();}}
@@ -34,7 +38,7 @@ function updatePlayer(dt){
   // Lennossa välilyönti nousee, Shift laskee, Ctrl nopeampi; ei painovoimaa eikä putoamisvahinkoa.
   {const jd=state==='play'&&kd('jump');if(jd&&!P.jumpHeld){if(devOn('fly')&&playTime-(P.jumpTap||-9)<.35){P.flying=!P.flying;P.vy=0;msg(P.flying?'Lento päällä (välilyönti ylös, Shift alas).':'Lento pois.');P.jumpTap=-9;}else P.jumpTap=playTime;}P.jumpHeld=jd;if(!devOn('fly'))P.flying=false;}
   if(P.flying){const fs=keys.ControlLeft||keys.ControlRight?32:16;P.vel.x=lerp(P.vel.x,dx*fs,Math.min(1,dt*6));P.vel.z=lerp(P.vel.z,dz*fs,Math.min(1,dt*6));}
-  if(state==='play'&&kd('jump')&&P.onGround&&!P.swim&&P.stam>=8&&!over&&!P.flying){P.vy=7.2;P.onGround=false;P.stam-=8;P.stamDelay=.8;}
+  if(state==='play'&&kd('jump')&&P.onGround&&!P.swim&&P.stam>=8&&!over&&!P.flying){P.vy=7.2;P.onGround=false;P.stam-=8*(P.upK||1);P.stamDelay=.8;}
   const lad=!P.swim&&!P.dead&&ladderAt(P.pos);P.onLadder=!!lad;
   if(P.flying){P.vy=lerp(P.vy,(kd('jump')?9:0)-(keys.ShiftLeft||keys.ShiftRight?9:0),Math.min(1,dt*6));P.onGround=false;}
   else if(P.swim){P.vy=lerp(P.vy,(-1.25-P.pos.y)*3,dt*4);}

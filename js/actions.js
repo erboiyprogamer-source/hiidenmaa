@@ -97,7 +97,7 @@ function damageMob(m,dmg,dt,kx,kz,kb=4){
   m.hp-=dmg;m.flash=.15;m.lastHit=playTime;m.angry=true;m.hurtT=playTime;
   if(m.def.ai!=='boss'&&m.def.ai!=='rboss'){const l=Math.hypot(kx,kz)||1,k=kb*(m.def.r>.8?.4:m.def.r>.6?.7:1);m.vel.x+=kx/l*k;m.vel.z+=kz/l*k;m.wind=0;}
   floatText(Math.round(dmg)+'',m.pos.x,m.pos.y+(m.type==='vartija'?6:(m.def.fh||1.8)),mult>1.2?'#ffd36a':mult<.9?'#a99d89':'#eee5d3');
-  sfx('hit');bleed(m.pos.x,m.pos.y+Math.min(3,(m.barH||m.def.r*2.4)*.55),m.pos.z,bleedKind(m.type),m.def.r,dmg,m.dun);if(Math.random()<.6)addWound(m);   // v1.37 (kohta 24): veri ja haavat
+  sfx('hit');bleed(m.pos.x,m.pos.y+Math.min(3,(m.barH||m.def.r*2.4)*.55),m.pos.z,bleedKind(m.type),m.def.r,dmg,m.dun,kx,kz,kb);if(dt==='slash'&&SET.bloodFx)addSlash(m);else if(Math.random()<.6)addWound(m);   // v1.37 (kohta 24): veri ja haavat
   if(m.hp<=0)killMob(m);
 }
 // Tuli (v0.75): soihdulla lyöty tai tulinuolella osuttu mobi/eläin palaa 5–10 s, 5 hp/s. Sade tai vesi sammuttaa heti.
@@ -145,8 +145,8 @@ const SHIELD_COST={kilpi:.9,kuparikilpi:.75,rautakilpi:.6};
 // v1.33 (lista 3, kohta 4): kilpi kuluu torjunnoista. Kestävyys (osumia): puu 20, kupari 15, rauta 15. Rikki (s.shBrk = playTime) → ei torju
 // 60 s, sitten taas ehjä. s.shHit = käytetyt osumat. Torjunta: puu 60 %, kupari 80 %, rauta 90 % (★-taso +10 %/taso).
 const SHIELD_HITS={kilpi:20,kuparikilpi:15,rautakilpi:15},SHIELD_FIX=60;
-function shieldOk(s){if(s.shBrk!=null&&playTime-s.shBrk>=SHIELD_FIX){s.shBrk=null;s.shHit=0;msg(`${ITEMS[s.id].n} on taas ehjä.`,'loot');invDirty=true;}return s.shBrk==null;}
-function shieldWear(s){s.shHit=(s.shHit||0)+1;invDirty=true;if(s.shHit>=(SHIELD_HITS[s.id]||15)){s.shBrk=playTime;sfx('crumble',1.2,.7);burst(P.pos.x,P.pos.y+1.2,P.pos.z,0x8a5a32,14,4);msg(`${ITEMS[s.id].n} hajosi! Se korjautuu itsestään minuutissa.`,'warn');}}
+function shieldOk(s){if(s.shBrk!=null&&playTime-s.shBrk>=SHIELD_FIX){s.shBrk=null;s.shHit=0;msg(`${ITEMS[s.id].n} on taas ehjä.`,'loot');invDirty=true;updateGear();}return s.shBrk==null;}
+function shieldWear(s){s.shHit=(s.shHit||0)+1;invDirty=true;if(s.shHit>=(SHIELD_HITS[s.id]||15)){s.shBrk=playTime;sfx('crumble',1.2,.7);burst(P.pos.x,P.pos.y+1.2,P.pos.z,0x8a5a32,14,4);msg(`${ITEMS[s.id].n} hajosi! Se korjautuu itsestään minuutissa.`,'warn');updateGear();}}
 function fireBow(){
   const w=curWeapon();const k=Math.min(1,P.bowDraw),am=ammoId();if(!am)return;invRemove(am,1);bump('shots');
   const from=new V3(P.pos.x,P.pos.y+1.5,P.pos.z);
@@ -157,13 +157,15 @@ function fireBow(){
   const q=w.q||1,a=AMMO_STATS[am]||AMMO_STATS.nuolet,b=bowStats(w);shootArrow(from,dir,(14+36*k)*(1+.1*(q-1))*b.spd*a.spd,weaponDmg(w)*(.2+.8*k)*a.dmg,'player',7/(1+.3*(q-1))*a.grav,!!a.fire);
   if(a.wind<1)projs[projs.length-1].steady=1;sfx('bow');P.yaw=camYaw+Math.PI;
 }
-function hurtPlayer(dmg,fx,fz){
+// v1.39 (lista 4, kohdat 8–9): vahinkokerroin sille, joka parhaillaan päivittyy (ai.js asettaa): pomot ×1,2, vartijat ×1,8.
+let HURT_K=1;
+function hurtPlayer(dmg,fx,fz){dmg*=HURT_K;
   if(P.dead||P.invul>0||P.spawnProt>0||devOn('god'))return;
   let d=dmg;const dx=fx-P.pos.x,dz=fz-P.pos.z,l=Math.hypot(dx,dz)||1;
   if(P.blocking){const facing=(Math.sin(P.yaw)*dx+Math.cos(P.yaw)*dz)/l;let sh=equipped('shield');if(sh&&!shieldOk(sh))sh=null;const blk=sh?ITEMS[sh.id].block*(1+.1*((sh.q||1)-1)):.3;
     if(facing>.2){const cost=d*(sh?SHIELD_COST[sh.id]||.9:.9);if(P.stam>=cost){P.stam-=cost;P.stamDelay=1;d*=1-Math.min(.95,blk);sfx('block');if(sh)shieldWear(sh);burst(P.pos.x+dx/l*.7,P.pos.y+1.2,P.pos.z+dz/l*.7,0xffe08a,6,3);}else{P.stam=0;P.stagger=1.2;msg('Torjunta murtui!','warn');}}}
   const a=equipped('armor');if(a)d*=20/(20+ITEMS[a.id].arm*(1+.2*((a.q||1)-1)));
-  if(d>=1){bleed(P.pos.x,P.pos.y+1.2,P.pos.z,'blood',.45,d,P.inDun);P.hp-=d;P.hurtFlash=.6;sfx('hurt');shake(.25);floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,'#e0614f');P.vel.x-=dx/l*5;P.vel.z-=dz/l*5;}
+  if(d>=1){bleed(P.pos.x,P.pos.y+1.2,P.pos.z,'blood',.45,d,P.inDun,-dx,-dz,8);P.hp-=d;P.hurtFlash=.6;sfx('hurt');shake(.25);floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,'#e0614f');P.vel.x-=dx/l*5;P.vel.z-=dz/l*5;}
   P.invul=.25;
   if(P.hp<=0)playerDie();
 }

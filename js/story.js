@@ -29,7 +29,9 @@ function buildPoiRock(k){const L=LOC[k],y=terrainH(L.x,L.z),r=mulberry32(k.charC
   const stoneM=()=>mat(rockC(0x6f6c66,r())),P2=(rr,a)=>[L.x+Math.cos(a)*rr,L.z+Math.sin(a)*rr];
   // muuri: 18 lohkoa renkaana (alaosa maan alle rinteen varalta), sammalta harjalla
   for(let i=0;i<18;i++){const a=i/18*TAU,[x,z]=P2(WR,a),gy=Math.min(y,terrainH(x,z)),h=WH+(y-gy)+1,len=WR*TAU/18+.35;
-    const m=stoneBox(WT,h,len,x,gy-1+h/2,z,-a,stoneM());m.add(bx(WT*1.02,.15,len*.95,mossM,0,h/2,0,false));}
+    const m=stoneBox(WT,h,len,x,gy-1+h/2,z,-a,stoneM(),false);m.add(bx(WT*1.02,.15,len*.95,mossM,0,h/2,0,false));}
+  // v1.39 (lista 4, extra 2): muurin osuma kaaren mukaan ympyröinä (ennen kierretyn lohkon AABB, joka ulottui jopa ~0,9 m sisään portaille)
+  for(let i=0,n=Math.ceil(WR*TAU/.42);i<n;i++){const a=i/n*TAU,[x,z]=P2(WR,a),gy=Math.min(y,terrainH(x,z));addCircle(x,z,WT/2+.04,gy-1,y+WH,'static');}
   // v1.03 vaikeammat hypyt: 5 kapeaa pilaria (0,75–0,85 m) siksakissa (säde vuorotellen 8,2 / 10,2 m), nousu 0,8 m (huippu 4,0 m),
   // välit reunasta reunaan 2,0–2,4 m → vaatii juoksuhypyn (kävellen ~2,4 m, juosten ~4 m). Viimeiseltä pudotaan 0,5 m muurin harjalle (väli 1,6 m).
   const PH=[.8,1.6,2.4,3.2,4.0];let a=a0,prevP=null;
@@ -39,8 +41,8 @@ function buildPoiRock(k){const L=LOC[k],y=terrainH(L.x,L.z),r=mulberry32(k.charC
     f.pillars.push({x,z,top,w});prevP={x,z,w};});
   // v1.03 kierreportaat: muurin sisäpintaa kiertävä portaikko harjalta (3,5 m) alas 0,3 m askelin (askelma 1,2 m leveä, ~0,75 m syvä),
   // kiertää ~300° ja päättyy maahan; samaa tietä takaisin ylös. Alkaa pilarireitin kohdalta (viimeisen pilarin kulma).
-  {const aw=Math.atan2(f.pillars[4].z-L.z,f.pillars[4].x-L.x),rs=WR-WT/2-.62,n=Math.round(WH/.3);let a2=aw;
-   for(let s=1;s<n;s++){const top=y+WH-s*.3;a2+=.78/rs;const [x,z]=P2(rs,a2),h=top-y+1;stoneBox(.82,h,1.24,x,top-h/2,z,-a2+Math.PI/2,stoneM()).add(bx(.84,.06,1.26,mossM,0,h/2,0,false));f.steps.push({x,z,top});}}
+  {const aw=Math.atan2(f.pillars[4].z-L.z,f.pillars[4].x-L.x),rs=WR-WT/2-.56,n=Math.round(WH/.3);let a2=aw;
+   for(let s=1;s<n;s++){const top=y+WH-s*.3;a2+=.78/rs;const [x,z]=P2(rs,a2),h=top-y+1;stoneBox(1.05,h,1.24,x,top-h/2,z,-a2+Math.PI/2,stoneM()).add(bx(1.07,.06,1.26,mossM,0,h/2,0,false));   /* v1.39: leveämmät askelmat (0,82 → 1,05 m) */f.steps.push({x,z,top});}}
   stoneBox(2.2,.5,2.2,L.x,y,L.z,.4,mat(0x5b5853),false);
   const g=bx(.5,1.2,.04,MAT.glow,0,0,0,false);{const [gx,gz]=P2(WR-WT/2-.03,a0+Math.PI);g.position.set(gx,y+2.2,gz);g.rotation.y=-(a0+Math.PI)+Math.PI/2;statics.add(g);}   // hehkuva riimu muurin sisäpinnalla
   const ch=bx(.9,.6,.6,MAT.wood,L.x,y+.55,L.z);ch.add(bx(.94,.1,.64,mat(0x4a4a4a),0,.16,0));statics.add(ch);

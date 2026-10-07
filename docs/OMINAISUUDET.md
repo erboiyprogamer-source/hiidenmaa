@@ -345,3 +345,10 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Selkäesineet viistoon (pitkä osa/terä sivulle), jousi ja työkalu ristiin; vyön takana nahkapussi.
 - Ulottuvuusportit koristeltu (riimut, kulhot, paadet, teemakoristeet).
 - DEV: lento tuplahypyllä (välilyönti ylös, Shift alas).
+
+## Lista 4, erä A (v1.39)
+- Kyykyssä eläimet eivät huomaa; ylämäkeen juoksu ja hyppy kuluttavat +30 % kestävyyttä.
+- Pomojen iskut +20 %, porttien ja kohteiden vartijat +80 % eivätkä pelkää tulta. Vihollisten hp vaihtelee 100–160 %.
+- Rikkinäinen kilpi ei torju ja on selässä. Aarnihirviö paranee vasta 1,7 min jälkeen hitaasti.
+- Veren fysiikka (asetus, High+/Ultra): pisarat lentävät iskun suuntaan ja jäävät pintoihin, viillot ja tippuminen.
+- Nuolet osuvat puihin ja kiviin. Linnakkeen portaat leveämmät ja muuri ei estä niitä.
