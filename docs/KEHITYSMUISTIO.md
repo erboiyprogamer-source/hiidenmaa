@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.82)
+## Nykytila (päivitetty v1.83)
 
-- **Versio 1.82**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.82, julkaisupäivitys, yhteenveto alla) odottaa yhdistämistä;
+- **Versio 1.83**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.83, julkaisupäivitys, yhteenveto alla) odottaa yhdistämistä;
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -31,7 +31,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   ohitetaan automaatiossa (`navigator.webdriver`; `?perf=1` ja `?splash=1` pakottavat; testinäkymän kuva: `preserveDrawingBuffer` + toDataURL, ruutukaappaus on liian hidas). Uusi maailma alkaa tilassa `intro`. Jousen
   narua mitatessa katso pätkien päätepisteet (KORJAUKSET 30). Testipalvelin: käynnistä taustakomentona pitkällä aikarajalla.
 
-## PR #25 – yhteenveto (v1.38–v1.82, valmis yhdistettäväksi)
+## PR #25 – yhteenveto (v1.38–v1.83, valmis yhdistettäväksi)
 
 #### Korjaukset ja perusta
 - **v1.38** – "Script error" vuorilla porttien lähellä korjattu (ruohon piirto).
@@ -96,6 +96,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - **v1.76** – Tulinuolen valo High+:lla ja Ultralla. Erittäin tarkat varjot omana valintana: Terävä 8192 / pehmeät reunat / laaja alue (punainen = raskain, "!" kun päällä).
 - **v1.79** – High–Ultra kytkevät kaikki automaattisäädön alavalinnat pois (myös varjojen laadun).
 - **v1.80** – Erittäin tarkat varjot ohittavat tavalliset varjoasetukset (harmaana): 8192 px, päivitys joka ruudussa, 90 / 110 / 160 m.
+- **v1.83** – Veren fysiikka päällä Mediumista ylöspäin.
 
 #### Testaus
 - `tools/tarkistus.mjs`: KAIKKI OK jokaisen version jälkeen (oma tarkistusrivi jokaiselle uudelle ominaisuudelle).
@@ -161,6 +162,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.83 (veren fysiikka Mediumista ylöspäin)
+- `bloodFx` (pisarat lentävät lyönnin suuntaan ja jäävät maahan, lammikko kasvaa) päällä esiasetuksissa Medium–Ultra (ennen vain High+/Ultra)
+  ja oletuksena (`SET_DEF`, Medium). Kertasiirto `SET._v` 4: esiasetusta vastaava vanha tallenne saa uuden arvon (ei Customiksi).
 
 ### v1.82 (DEV-työkalut oletuksena pois)
 - `DEV` (core.js) ei ole enää kiinteä `true`: luetaan `localStorage.hiidenmaa_devon` ('1' = päällä) sivun latauksessa; `?dev=1` kytkee
@@ -2000,7 +2005,7 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 6 (v1.53–) – julkaisupäivitys
-**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.82 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
+**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.83 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
 - A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
   eteenpäin, piikivikirves.
 - B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.
