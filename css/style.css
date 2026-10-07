@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.62';
+:root{--css-v:'1.63';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -635,3 +635,10 @@ button:focus,select:focus{outline:none}
 @keyframes ppT{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 #splash .ppPanel .pRow{display:flex;justify-content:space-between;font:700 13px var(--font-b);color:#b8a888}#splash .ppPanel #ppF{color:#ffb35a}
 #splash .ppPanel .pRec{font:700 18px var(--font-b);color:#f2e6cc}
+/* v1.63: HIIDENMAA-otsikko: vain häivytys sisään (1,6 s) ja ulos (1,3 s) – ei pyyhkäisyvarjoa, skaalausta eikä vaiheen omaa häivytystä
+   (ennen otsikko "paljastui monta kertaa"). Kesto --td asetetaan boot.js:ssä (7,2 s ensikäynnillä, 4,6 s palaavalla). */
+#splash .spTitle{transition:none}
+#splash .spShade{display:none}
+#splash #spLogo{transform:none;transition:none;opacity:0}
+#splash .spTitle.on #spLogo{opacity:0;transform:none;animation:spLogoIn 1.6s ease .15s forwards,spLogoOut 1.3s ease calc(var(--td,7200ms) - 1.45s) forwards}
+@keyframes spLogoIn{from{opacity:0}to{opacity:1}}@keyframes spLogoOut{from{opacity:1}to{opacity:0}}

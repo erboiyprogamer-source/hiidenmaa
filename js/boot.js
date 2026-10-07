@@ -3,7 +3,7 @@
    vasta sitten latausnäyttö ja pelin skriptit. Ennen jakso pyöri pelin latauksen päällä, jolloin häivytykset pätkivät. Pelin skriptit
    esiladataan taustalla (<link rel=preload>) ja ajetaan yksi kerrallaan pienellä tauolla, jotta riimut ehtivät syttyä näkyvästi.
    Välilyönti, Enter tai napsautus ohittaa koko jakson (ja testin) ja vie suoraan latausnäyttöön. */
-window.__BJV='1.62';
+window.__BJV='1.63';
 (function(){
   var Q=location.search,wd=!!navigator.webdriver;
   function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
@@ -15,6 +15,9 @@ window.__BJV='1.62';
   var needSplash=!pend&&(/[?&]splash=1/.test(Q)||(!wd&&!ls('hiidenmaa_intro')));
   var needPerf=!pend&&(/[?&]perf=1/.test(Q)||needSplash);
   if(needSplash)lsSet('hiidenmaa_intro','1');
+  /* v1.63: palaava kävijä näkee käynnistäessään HIIDENMAA-otsikon (pelkkä häivytys sisään/ulos, 4,6 s) ja sitten latausnäytön.
+     Ei maailman käynnistyksessä (pend) eikä automaatiossa; ?title=1 pakottaa. */
+  var needTitle=!pend&&!needSplash&&(/[?&]title=1/.test(Q)||!wd);
   var JS=window.__GJS||[],PERF_T=5,RES_T=9,LV=['Low','Low+','Medium-','Medium'];
   window.__ldT=JS.length;
 
@@ -31,14 +34,14 @@ window.__BJV='1.62';
     function nx(){if(i>=JS.length){if(window.__verCheck)window.__verCheck();return;}addScript(JS[i++],function(){setTimeout(nx,16);});}}   // tauko = riimu ehtii piirtyä
 
   var S=document.getElementById('splash');
-  if(!needSplash&&!needPerf){startGame();window.__boot={needSplash:false,needPerf:false,PERF_T:PERF_T};return;}
+  if(!needSplash&&!needPerf&&!needTitle){startGame();window.__boot={needSplash:false,needPerf:false,needTitle:false,PERF_T:PERF_T};return;}
   loadThree(function(){});
   window.__splashOn=true;S.hidden=false;S.classList.toggle('noIntro',!needSplash);
   var spV=function(){var e=document.getElementById('spVer');if(e)e.textContent='Versio '+(window.HV||'');};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',spV);else spV();
 
   /* ---------- HIIDENMAA-logo: kivi, satunnaiset halkeamat, viistovalo ---------- */
-  if(needSplash){var L=document.getElementById('spLogo'),TX='<text x="500" y="176" text-anchor="middle" font-family="\'Cinzel Decorative\',\'Uncial Antiqua\',serif" font-weight="900" font-size="172" textLength="968" lengthAdjust="spacingAndGlyphs">HIIDENMAA</text>',ck='';
+  if(needSplash||needTitle){var L=document.getElementById('spLogo'),TX='<text x="500" y="176" text-anchor="middle" font-family="\'Cinzel Decorative\',\'Uncial Antiqua\',serif" font-weight="900" font-size="172" textLength="968" lengthAdjust="spacingAndGlyphs">HIIDENMAA</text>',ck='';
     for(var c=0;c<16;c++){var x=40+Math.random()*920,y=Math.random()<.5?30:200,d='M'+x.toFixed(0)+','+y;for(var k=0;k<8;k++){x+=(Math.random()-.5)*34;y+=(y<120?1:-1)*(10+Math.random()*14);d+=' L'+x.toFixed(0)+','+y.toFixed(0);}
       ck+='<path d="'+d+'" transform="translate(1.4,1.6)" stroke="rgba(255,235,200,.3)" stroke-width="1.5" fill="none"/><path d="'+d+'" stroke="#0e0804" stroke-width="'+(1.8+Math.random()*1.6).toFixed(1)+'" fill="none"/>';}
     L.innerHTML='<defs><linearGradient id="spSt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8c2b6"/><stop offset=".5" stop-color="#8e887d"/><stop offset="1" stop-color="#4a463f"/></linearGradient><clipPath id="spClip">'+TX+'</clipPath>'+
@@ -99,9 +102,9 @@ window.__BJV='1.62';
       pf.finish=perfFinish;});}
 
   /* ---------- jakson ohjaus ---------- */
-  var ST=[];if(needSplash)ST.push(['spStudio',6500],['spTitle',7200],['spWarn',11000]);if(needPerf)ST.push(['spPerf',0]);ST.push(['spTrans',1300]);
+  var ST=[];if(needSplash)ST.push(['spStudio',6500],['spTitle',7200],['spWarn',11000]);if(needPerf)ST.push(['spPerf',0]);if(needSplash||needPerf)ST.push(['spTrans',1300]);else ST.push(['spTitle',4600]);
   var i=-1,tm=0,st=performance.now(),over=false;
-  function show(n){var all=S.querySelectorAll('.spStage');for(var j=0;j<all.length;j++)all[j].classList.remove('on');var el=S.querySelector('.'+n);void el.offsetWidth;el.classList.add('on');S.classList.toggle('trans',n==='spTrans');}
+  function show(n){var all=S.querySelectorAll('.spStage');for(var j=0;j<all.length;j++)all[j].classList.remove('on');var el=S.querySelector('.'+n);if(n==='spTitle')el.style.setProperty('--td',ST[i][1]+'ms');void el.offsetWidth;el.classList.add('on');S.classList.toggle('trans',n==='spTrans');}
   function next(){clearTimeout(tm);if(over)return;i++;if(i>=ST.length){end();return;}var n=ST[i][0];show(n);
     if(n==='spPerf')setTimeout(function(){if(!over)perfRun(function(){next();});},700);else tm=setTimeout(next,ST[i][1]);}
   function end(){if(over)return;over=true;clearTimeout(tm);S.classList.add('out');if(needSplash)lsSet('hiidenmaa_intro','1');
@@ -109,7 +112,7 @@ window.__BJV='1.62';
     if(pf&&pf.tm)clearTimeout(pf.tm);
     var ld=document.getElementById('loadScr');if(ld)ld.classList.add('enter');
     setTimeout(function(){window.__splashOn=false;if(S.parentNode)S.parentNode.removeChild(S);},750);
-    setTimeout(startGame,needSplash||needPerf?1250:0);}   // latausnäytön sisääntulo ehtii valmiiksi ennen raskasta latausta
+    setTimeout(startGame,1250);}   // latausnäytön sisääntulo ehtii valmiiksi ennen raskasta latausta
   /* Ohitus (v1.61): mikä tahansa näppäin (ei pelkät Shift/Ctrl/Alt/Meta eikä F-näppäimet, jottei Shift+F5 ohita heti) tai napsautus → suoraan latausnäyttöön. Kesken jäänyt testi: tulos, jos mitattu ≥ 1,5 s, muuten testi tulee
      uudelleen seuraavalla kerralla (oletusasetukset). */
   function skip(e){if(e.type==='keydown'&&(e.repeat||/^(Shift|Control|Alt|Meta|OS|F\d+)/.test(e.key||'')))return;e.stopPropagation();if(e.cancelable)e.preventDefault();
@@ -119,5 +122,5 @@ window.__BJV='1.62';
     end();}
   addEventListener('keydown',skip,true);addEventListener('mousedown',skip,true);addEventListener('touchstart',skip,{capture:true,passive:false});
   setTimeout(next,700);
-  window.__boot={needSplash:needSplash,needPerf:needPerf,PERF_T:PERF_T,RES_T:RES_T,perfLevel:perfLevel,perfRun:perfRun,skip:function(){skip({type:'mousedown',stopPropagation:function(){}});}};
+  window.__boot={needSplash:needSplash,needPerf:needPerf,needTitle:needTitle,PERF_T:PERF_T,RES_T:RES_T,perfLevel:perfLevel,perfRun:perfRun,skip:function(){skip({type:'mousedown',stopPropagation:function(){}});}};
 })();

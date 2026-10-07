@@ -374,6 +374,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## Lista 4, erä E (v1.43)
 - Latausnäyttö: riimukiven riimut syttyvät latauksen edetessä, sumu, kipinät ja säe.
+- Palaava kävijä näkee käynnistyksessä HIIDENMAA-otsikon (häivytys sisään/ulos, 4,6 s) ja sitten latausnäytön. Otsikossa vain häivytys.
 - Vain ensimmäisellä käynnillä (merkintä localStorage hiidenmaa_intro; F5 ei tyhjennä) 5 s suorituskykytesti ENNEN latausnäyttöä omassa metsänäkymässään (palkki, laskuri, eläva FPS; tulos 9 s:
   FPS, taso, valittu esiasetus + ohje Asetukset › Grafiikka) säätää grafiikan automaattisesti (suositus: ≥50 Medium, 35–50 Medium-, 22–35 Low+, <22 Low).
   Palaavalla pelaajalla ei introa eikä testiä (suoraan latausnäyttöön), eikä grafiikkaa säädetä.

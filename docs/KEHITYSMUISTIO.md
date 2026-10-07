@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.62)
+## Nykytila (päivitetty v1.63)
 
-- **Versio 1.62**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
+- **Versio 1.63**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -91,6 +91,12 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.63 (HIIDENMAA-otsikko: pelkkä häivytys; palaavalle kävijälle otsikko)
+- Otsikko "paljastui monta kertaa": vaiheen oma opacity-siirtymä + logon opacity 2,6 s + skaalaus 1,06→1 + alhaalta nouseva pyyhkäisyvarjo
+  (`spShade`). Nyt vain logon häivytys sisään 1,6 s ja ulos 1,3 s (animaatiot `spLogoIn`/`spLogoOut`, kesto `--td`), muut pois.
+- **Palaava kävijä** (merkintä löytyy, ei maailman käynnistys): HIIDENMAA-otsikko 4,6 s → latausnäyttö → valikko (`needTitle`; ?title=1 pakottaa
+  testissä). Ohitettavissa millä tahansa näppäimellä/napsautuksella. Maailman luonnin intro ennallaan (käyttäjä: täydellinen).
 
 ### v1.62 (intro vain kerran, uusi pilviverho)
 - **Intro tuli maailman käynnistyksessä:** syy oli testilinkin `?splash=1`, joka säilyy karttavaihdon/uuden maailman sivun uudelleenlatauksessa.
@@ -1766,7 +1772,7 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 6 (v1.53–) – julkaisupäivitys
-**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.62 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
+**JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.63 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.
 - A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
   eteenpäin, piikivikirves.
 - B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.
