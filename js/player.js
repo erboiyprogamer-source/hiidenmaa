@@ -92,7 +92,8 @@ function updatePlayer(dt){
    const drop=.3*K+.09*land+.05*lunge-bobC-Math.abs(Math.cos(P.walkPh))*.05*runK;fig.rig.position.y=-drop;fig.rig.rotation.x=.1*K+.07*lunge+.05*land+.13*runK;fig.head.rotation.x=-.12*K-.04*lunge;
    // v1.12 (välilisäys 3): sivukeinunta – runko kallistuu sen jalan puolelle, joka on edessä (oikea edessä kun sin(walkPh) > 0, +z = oikealle);
    // kävely ±2°, juoksu ±5°; voimakkuus seuraa nopeutta ja pehmennettyä runK:ta, joten paluu suoraan on pehmeä
-   {const tz=(P.onGround&&!P.swim?Math.sin(P.walkPh)*Math.min(1,hv/4)*lerp(.0175,.0765,runK)*(1-K):0);fig.rig.rotation.z=tz;}}   // v1.32 (kohta 32): kävely puolet (±1°), juoksu −10 %
+   // v1.53: kävelyssä ei sivukeinuntaa, juoksussa ±2,6° (ennen ±4,4°); osa juoksun kallistuksesta eteenpäin askeltahdissa (|sin| · 2°)
+   {const on=P.onGround&&!P.swim?Math.min(1,hv/4)*(1-K):0,tz=Math.sin(P.walkPh)*on*.045*runK;fig.rig.rotation.z=tz;fig.rig.rotation.x+=Math.abs(Math.sin(P.walkPh))*on*.035*runK;}}
   // Kädet: lasketaan tavoitekulmat ja siirrytään niihin pehmeästi (ei äkillisiä hyppyjä).
   let tRx=sw*(.63+.315*runK),tRz=0,tLx=-sw*(.63+.315*runK),tLz=0,tSh=.35,rate=14,grip=false,eRo=null,eLo=null;
   if(runK>.3&&!P.atk&&!P.blocking&&!P.drawing){eRo=-1.15*runK;eLo=-1.15*runK;}   // juostessa kyynärpäät koukussa

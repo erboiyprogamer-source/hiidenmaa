@@ -83,6 +83,14 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.53 (lista 6, erä A: liikkeen keinunta, jousen tarkistus, piikivikirves)
+- Jousen veto kuvattu edestä, takaa, molemmilta sivuilta ja ylhäältä seisten ja kyykyssä: jousi ojennetussa kädessä, nuoli jänteellä,
+  vetokäsi kasvojen vieressä – ei korjattavaa.
+- Keinunta (player.js): kävelyssä ei sivukallistusta (ennen ±1°), juoksussa ±2,6° (ennen ±4,4°) ja askeltahtinen eteenpäin
+  nyökkäys |sin|·2° (osa kallistuksesta eteenpäin).
+- **Piikivikirves** `piikivikirves`: työpenkki, 3 puuta + 3 piikiveä + 1 nahka, taso 2. chop 1,5 (puuhun 11 / isku, kivikirves 9,
+  kuparikirves 13; ei kovia puita), vahinko 10, nopeus .49. Malli: tumma lohkottu piikiviterä, nahkasidokset ristiin.
+
 ### v1.52 (lista 5, erä D: uuden maailman latausnäyttö ja aukeavat pilvet)
 - `startNewGame` → `worldLoad(build)`: riimukivi-latausnäyttö uudelleen (`__ldShow`, index.html; latausnäytön funktiot hakevat elementit
   joka kutsulla ja pohja `__ldHTML` talteen), maailma rakennetaan, intro alkaa pidossa (`startIntro(true)`, `intro.hold`: korkea kamera
@@ -1644,6 +1652,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ## Ideajono
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+### Päivityslista 6 (v1.53–) – julkaisupäivitys
+**JATKA TÄSTÄ (lista 6):** erät A (v1.53), B (v1.54), C (v1.55) + koko pelin tarkistus; PR #25 auki.
+- A: jousen veto kuvattu 5 kulmasta seisten ja kyykyssä (asento kunnossa), kävelyn sivukeinunta pois, juoksussa vähemmän + osin
+  eteenpäin, piikivikirves.
+- B: Ohjaus: kääntymisen herkkyys ja valikko-osoittimen herkkyys; virtuaaliosoittimen viive pois.
+- C: ensikäynnin aloitusjakso: musta → "EricStudios" + "KSPK-tech" + tekijänoikeusrivi → HIIDENMAA (kivi, halkeamat) pitkä fade in,
+  katoaa varjoon → varoitus "toimii parhaiten tietokoneella, hiirellä ja näppäimistöllä" (ei enää valikossa) → siirtymäanimaatio
+  latausnäyttöön.
 
 ### Päivityslista 5 (v1.49–) – vastaukset ja erät
 **JATKA TÄSTÄ (lista 5):** KAIKKI erät A–D tehty (v1.49–v1.52); PR #25 auki odottaa yhdistämistä.

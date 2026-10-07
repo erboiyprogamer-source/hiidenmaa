@@ -34,6 +34,7 @@ const ITEMS={
   sulkanuolet:{n:'Sulitetut nuolet',w:.1,s:100,c:'#4a4f58',d:'Metson sulilla sulitetut nuolet: 25 % nopeampi lento, kaari putoaa 40 % vähemmän (kantaa kauemmas), 15 % enemmän vahinkoa ja tuuli kallistaa rataa vain puolet.'},
   tulinuolet:{n:'Tulinuolet',w:.12,s:100,c:'#e8893b',d:'Pihkaan kastetut nuolet syttyvät lennossa: osuma sytyttää kohteen tuleen 5–10 sekunniksi (5 terveyttä sekunnissa). Sade ja vesi sammuttavat.'},
   kirves:{n:'Kivikirves',w:2,s:1,c:'#9a8a70',cat:'weapon',kb:2,dmg:8,dt:'slash',chop:1,range:2.3,st:6,spd:.5,d:'Kaataa puita. Kelpaa hätätilassa aseeksi.'},
+  piikivikirves:{n:'Piikivikirves',w:2.2,s:1,c:'#4d535c',cat:'weapon',kb:2.2,dmg:10,dt:'slash',chop:1.5,range:2.35,st:6,spd:.49,d:'Lohkottu piikiviterä nahkasitein. Kaataa puut kivikirvestä nopeammin, mutta ei vielä kovimpia.'},   // v1.53
   kuparikirves:{n:'Kuparikirves',w:2.5,s:1,c:'#d98a4e',cat:'weapon',kb:2.5,dmg:13,dt:'slash',chop:2,range:2.4,st:6,spd:.48,d:'Kaataa puut puolet nopeammin.'},
   nuija:{n:'Puunuija',w:3,s:1,c:'#7b5434',cat:'weapon',kb:6,dmg:12,dt:'blunt',range:2.3,st:9,spd:.62,d:'Paksu, mailamainen murskaava ase. Puree hyvin luuhun ja kiveen ja tönäisee vihollisia kauimmas.'},
   hakku:{n:'Piikivihakku',w:3,s:1,c:'#58606b',cat:'weapon',kb:1.5,dmg:6,dt:'pierce',pick:1,range:2.4,st:7,spd:.6,d:'Louhii lohkareita ja kupariesiintymiä.'},
@@ -78,6 +79,7 @@ const RECIPES=[
   {id:'nahkavaatteet',st:'tyopenkki',req:{nahka:8},lvl:2},
   {id:'varras',st:'nuotio',req:{paisti:1,sieni:2,marjat:3},lvl:2},
   {id:'miekka',st:'ahjo',req:{kupari:6,puu:2,nahka:2},lvl:4},
+  {id:'piikivikirves',st:'tyopenkki',req:{puu:3,piikivi:3,nahka:1},lvl:2},   // v1.53
   {id:'kuparikirves',st:'ahjo',req:{kupari:4,puu:3},lvl:4},
   {id:'kuparikilpi',st:'ahjo',req:{kupari:6,puu:6},lvl:4},
   {id:'karhuhaarniska',st:'tyopenkki',req:{karhuntalja:2,nahka:4},lvl:4},

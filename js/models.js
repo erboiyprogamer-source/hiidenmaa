@@ -278,6 +278,10 @@ function shaft(g,len,m,r=.032,z0=-.1){const me=new THREE.Mesh(new THREE.Cylinder
 function makeHeld(id){
   const g=new THREE.Group(),W=smat(0x7b4f2b),metalOf=(c,o)=>mat(c,Object.assign({metalness:.2,roughness:.55},o||{}));
   switch(id){
+    case 'piikivikirves':{shaft(g,.85,W);const fm=mat(0x3e444c,{roughness:.35,metalness:.1});   // v1.53 lohkottu piikiviterä, nahkasidos ristiin
+      g.add(poly([[.55,.06],[.58,-.05],[.63,-.26],[.74,-.31],[.86,-.25],[.9,-.12],[.88,.0],[.8,.07]],.05,fm));
+      for(const [y,r] of [[-.14,.4],[-.06,-.4]]){const b=new THREE.Mesh(new THREE.BoxGeometry(.02,.06,.075),mat(0x6a4a2a));b.position.set(.57,y+.04,0);b.rotation.z=r;g.add(b);}
+      const bind=new THREE.Mesh(new THREE.CylinderGeometry(.047,.047,.08,8),mat(0x6a4a2a));bind.rotation.x=Math.PI/2;bind.position.z=.58;g.add(bind);break;}
     case 'kirves':case 'kuparikirves':case 'rautakirves':{shaft(g,.85,W);const mm=id==='kirves'?mat(0x8f8d86):metalOf(id==='rautakirves'?0x9aa6b3:0xd98a4e);
       g.add(poly([[.56,.05],[.57,-.04],[.6,-.27],[.82,-.3],[.9,-.14],[.9,.02],[.8,.06]],.05,mm));
       const bind=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.06,8),mat(0x4a2f18));bind.rotation.x=Math.PI/2;bind.position.z=.58;g.add(bind);break;}
