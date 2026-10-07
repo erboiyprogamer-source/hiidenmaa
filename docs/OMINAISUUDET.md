@@ -459,3 +459,4 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Pääosuma jousella: +10 % vahinko, punainen osumamerkki ja "Pääosuma!".
 - Pikapaikan valinnassa esineen nimi ruudun yläpuolella ~1 s, väri harvinaisuuden mukaan (kulta, sininen, vihreä, vaalea).
 - Herätessä (uudelleensyntyminen) viholliset 35 m säteellä katoavat savuna (ei pomot, vartijat eikä rauhalliset eläimet).
+- Esiasetukset Low–Medium+ kytkevät automaattisäädöt (myös osa-alueet ja varjojen laadun) päälle, High–Ultra pois.
