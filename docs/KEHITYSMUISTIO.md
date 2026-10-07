@@ -1454,6 +1454,41 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
+### Päivityslista 4: 32 kohtaa (v1.39–) – tarkentavat kysymykset kysytään ensin, vastaukset kirjataan tähän
+**JATKA TÄSTÄ (lista 4):** PR #25 (v1.38 korjaus) auki. Lista kirjattu, kysymykset kesken/vastaukset alla.
+1. Kyykyssä eläin ei huomaa; kun nousee kyykystä, 0,1 s viive ja eläin säikähtää.
+2. Lumisade ei saa näkyvästi seurata pelaajaa/kameraa (kevyt korjaus).
+3. Ylämäkeen kävely/juoksu kuluttaa kestävyyttä 30 % enemmän.
+4. Liukusäätimet (myös DEV), hakukentät (ei muista hakua – aina tyhjä), valintaruudut: ei jää fokukseen/siniseksi; omat valintaruudut.
+5. Miekka selässä: kierto 90° oman pituusakselinsa ympäri (lappeen tasainen puoli selkää vasten).
+6. Maassa olevat esineet ylemmäs (eivät uppoa maahan) tai parempi maaston osuma.
+7. Esc pois käytöstä (näyttää oikean kursorin); valikko toisella näppäimellä (H?), valikoista poistutaan samalla näppäimellä.
+8. Pomojen iskut +20 % vahinkoa.
+9. Porttien vartijat eivät pelkää valoa, +80 % vahinkoa; pomot ja vartijat eivät pelkää valoa.
+10. Latausnäyttö sivua avattaessa (teeman mukainen, yllätä).
+11. Uusi maailma: korkea kamera-ajo pilvien yläpuolella, hidas kierto, "Hiidenmaa" + kartan nimi hienoin animaatioin, sitten nopeasti pelaajaan.
+12. Kalmankammion arkkuihin enemmän saalista.
+13. Kahden viimeisen ulottuvuuden arkkuihin harvinaisia esineitä (kuten metson saalis).
+14. Kalmaherra: ei lyö ilmaa jatkuvasti, ryntää useammin, ladattu isku 3 putkeen → tulijanat maassa ~5 s, sytyttää pelaajan.
+15. Kalmaherran loppuvaihe: hehkuu punaisena, pelkkää ryntäystä, 5 kalmoa ympärille 20 s välein.
+16. Kalmankammiossa ~10 % kalmoista ampuu jousella.
+17. Ulottuvuuteen astuessa viiveellä teksti: kukista (pomo) ja ota siltä (esine).
+18. Rikki oleva kilpi: ei voi torjua, menee selkään vaikka valittu; ehjänä takaisin käteen.
+19. Aarnihirviö: hp palautuu, jos siihen ei ole osuttu 1,7 min.
+20. Aarnihaudan seinäsoihdut kiinni kivissä; vasaralla rakennettava seinäsoihtu.
+21. Ulottuvuuksien soihdut ja nuotiot sytyttävät pelaajan soihdun (ei tarvitse olla kiinni); nuotiot sytyttävät pelaajan ja mobit tuleen.
+22. Uudelleensytytys 1–1,5 s, viesti "pysy paikallasi hetki" heti tulen vieressä.
+23. Tynnyri/arkku avautuu vain suoraan katsottaessa.
+24. Kiviarkku ja luonnon arkut paremmalla tekstuurilla; avattuna ontto, lukonreikä.
+25. Vihollisten hp vaihtelee 100–160 %.
+26. Puolitus: oikea → vasen tai vasen → oikea napsautus siirtää puolet haluttuun paikkaan.
+27. Valikossa ilman valintaa napsautus valikon ulkopuolelle sulkee sen.
+28. Pieniä näppäinvihjeitä (esim. "Poistu: H").
+29. Valittu esine pudotetaan, kun napsautetaan repun/ruutujen ulkopuolelle.
+30. Kysymys: optimointi – rasittavatko ulottuvuudet maailmassa ollessa, toimiiko piirtoetäisyys kuten oikeissa peleissä. Suunnitellaan yhdessä.
+31. Ensimmäisellä käynnillä 3 s suorituskykytesti → esiasetus; resurssien kevyt lataus valikossa.
+32. Pelissä grafiikka-asetusten muutokset näkyvät heti (esim. varjot).
+
 ### Päivityslista 3: 33 kohtaa + lisät (v1.32–) – kaikki kysymykset kysytty etukäteen, vastaukset alla
 **JATKA TÄSTÄ (lista 3, nykytila v1.38 – korjaus KORJAUKSET 28):** KAIKKI kohdat 1–41 TEHTY v1.32–v1.37. Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #24 auki
 (main = v1.07). Seuraavaksi: odotetaan käyttäjän testiä ja Mergeä. Testaa aina commit-linkillä (välimuisti).
