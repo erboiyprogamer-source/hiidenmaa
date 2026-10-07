@@ -73,6 +73,17 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.32 (lista 3: reppu kiinteäksi, käyttöönotto napsautuksella, syönti vain numerolla, pudotus eteen, keinunta)
+- **Reppu (kohdat 1–2):** kolme kiinteää saraketta (ruudukko 451 px | tiedot 300 px | valmistus 320 px), koko 1089×690, pienellä näytöllä
+  skaalataan (`fitInv`, `--invK`). Ruudukon korkeus varattu 6 riville, joten mikään ei liiku valittaessa tai päivittäessä. Tiedot, päivitys
+  ja repun kehityksen esikatselu näkyvät keskisarakkeessa (`upBtn(...,prevEl)`), ei vieritystä. Haamukuva vain raahatessa (`updGhost`).
+- **Syöminen (kohta 3):** vain pikapaikan numerolla (`useSlot`). Syö-nappi ja kaksoisnapsautussyönti poistettu.
+- **Käyttöönotto (kohdat 29–30):** napsautus valitsee siirtoon ja ottaa haarniskan/vaatteen, kilven, soihdun tai nuolet käyttöön
+  (`clickEquips`, `clickEquip`). Jos seuraava napsautus osuu toiseen ruutuun, esine siirtyy ja käyttöönotto perutaan (`selEq.undo`).
+  Käytössä olevat nuolet näkyvät keltaisella reunuksella. Nuolet otetaan käyttöön myös pikapaikan numerolla (pysyvät valittuina).
+- **Pudotus (kohta 26):** `playerDrop` heittää aina kameran suuntaan eteenpäin, ~3 m (ennen ~1,2 m satunnaiseen suuntaan).
+- **Keinunta (kohta 32):** käsien heilunta −10 % (.7 → .63, juoksulisä .35 → .315), sivukeinunta kävely puolet (.035 → .0175), juoksu −10 % (.085 → .0765).
+
 ### v1.31 (Q hiiren alla, tönäisyarvot ja kyvyttömyys, kivivartija, valikon kuva arvottu)
 - **Q / Shift+Q** pudottaa hiiren alla olevan esineen repussa ja arkussa ilman valintaa (`hoverSlot`, `dropAt`). Itse pudotettu esine
   ei imeydy heti takaisin (`drop.noPick`, poimitaan vasta kun pelaaja on käynyt yli 2,5 m päässä) – ennen se palasi reppuun 0,5 s:ssa.
@@ -1357,9 +1368,9 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 3: 33 kohtaa + lisät (v1.32–) – kaikki kysymykset kysytty etukäteen, vastaukset alla
 **JATKA TÄSTÄ (lista 3):** kaikki tarkennukset saatu. Tehdään erissä; merkitse kohta TEHTY + versio.
-1. Haamukuva pois kursorilta esineitä siirrettäessä (valittu ruutu korostuu yhä).
-2. Reppu ei liiku eikä veny: kiinteä koko. Tietoalue (tiedot, päivitys, ota käyttöön) kiinteässä paikassa, ei vieritystä tietoalueessa.
-3. Syöminen VAIN pikapaikan numerolla (ruoka käteen = syö kerran). Syö-nappi ja tuplaklikkaussyönti pois.
+1. TEHTY v1.32. Haamukuva pois kursorilta (näkyy vain raahatessa).
+2. TEHTY v1.32. Reppu ei liiku eikä veny: kiinteä koko. Tietoalue (tiedot, päivitys, ota käyttöön) kiinteässä paikassa, ei vieritystä tietoalueessa.
+3. TEHTY v1.32. Syöminen VAIN pikapaikan numerolla (ruoka käteen = syö kerran). Syö-nappi ja tuplaklikkaussyönti pois.
 4. Kilpi kuluu: Puukilpi 20 osumaa (torjuu vähiten), Kuparikilpi 15, Rautakilpi 15 (torjuu eniten). Rikki → ~60 s jäähy → ehjä. Ei uutta kilpeä.
 5/6/11. Kaikki eläimet ja hirviöt: terveys ja vahinko +25 %. Ulottuvuuksien pomot: Jäätär ×1,5, Kalmaherra ×2, Aarnihirviö ×2,6;
    Kalmanvartija ×2,5 (2250 hp).
@@ -1393,13 +1404,13 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 24. Osuma: veripisaroita (tummanpunainen, maltillinen; isoilla eläimillä enemmän) ja läntti maahan, häipyy 10 s. Haavoittuneen mobin
    pintaan punaisia läikkiä. Kivihahmot: kivisiruja/pölyä, kalmot: luupölyä, usvaolennot: usvaa. Asetus Veri: Normaali / Vähän / Pois.
 25. Maassa olevat esineet näyttävät ikonilta, jolla on syvyyttä (3D). Medium ja ylöspäin + oma asetus.
-26. Pelaajan pudotus heittää 2× kauemmas ja aina eteenpäin.
+26. TEHTY v1.32. Pelaajan pudotus heittää 2× kauemmas ja aina eteenpäin.
 27. Lumisade kulkee tuulen suuntaan, kulma tuulen nopeuden mukaan.
 28. Pelaajan taistelu −10 % kaikessa (vahinko, ampumanopeus/lyöntinopeus, tönäisy).
-29. Nuolet otetaan käyttöön painamalla niiden pikapaikan numeroa; käytössä pysyy (kuten kilpi).
-30. Haarniska, vaate, nuolet (ja kilpi): yksi klikkaus repussa ottaa käyttöön (keltainen). Jos seuraava klikkaus on toiseen ruutuun,
+29. TEHTY v1.32. Nuolet otetaan käyttöön painamalla niiden pikapaikan numeroa; käytössä pysyy (kuten kilpi).
+30. TEHTY v1.32. Haarniska, vaate, nuolet (ja kilpi): yksi klikkaus repussa ottaa käyttöön (keltainen). Jos seuraava klikkaus on toiseen ruutuun,
    esine siirtyy ja käyttöönotto perutaan.
-32. Käsien heilunta kävellessä/juostessa −10 %. Sivuttaiskeinunta: kävely puolet, juoksu −10 %.
+32. TEHTY v1.32. Käsien heilunta kävellessä/juostessa −10 %. Sivuttaiskeinunta: kävely puolet, juoksu −10 %.
 33. DEV-valikko: lento. Tuplahyppy aloittaa/lopettaa lennon, välilyönti ylös, Shift alas.
 34. (lisä) Sateessa tulinuolen valo hiipuu 2× nopeammin. Osuessa kohteeseen tai maahan nuolen valo sammuu 2 s:ssa (palavan mobin valo ei).
 35. (lisä) Usva/sumu: oletus kevyemmäksi. Tasot: Ultra (= vanha Korkea), Korkea (= vanha Normaali), Normaali (uusi, kevyempi, oletus),
@@ -1414,6 +1425,9 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 38. (lisä) Jääavain arvotaan maailman luonnissa satunnaiseen pääsaaren arkkuun (rauniot, linnakkeet, kiviröykkiöt) tai Hautakummun
    hautakirstuun. Myös muiden kohdearkkujen tavalliset tavarat arvotaan maailmakohtaisesti. Portti antaa epämääräisen vihjeen (suunta).
 39. (lisä) Arvoesineet hehkuvat maassa (esineen värinen sykkivä valo + kipinät, näkyy yöllä kauas).
+
+40. (lisä) Riimukivien vihjeet päivitetään nykyiseen etenemiseen (ulottuvuudet → sirpaleet → vartija). Kartalle 2 kylttiä, joiden
+   teksti (luetaan läheltä) antaa hyvin kryptisen vihjeen jonkin asian sijainnista (esim. jääavain, kiviröykkiö).
 
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (nykytila v1.31):** Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #24 auki (ei vielä yhdistetty; main = v1.07).

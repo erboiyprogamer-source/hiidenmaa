@@ -133,6 +133,10 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Nuolet (v1.23):** piikivi = perus; sulitettu +25 % nopeus, −40 % pudotus, +15 % vahinko, tuuli puolet; tulinuoli = perus + sytyttää. Asetus: tulinuolten valo (oletus pois).
 - **Kestävyys / isku (v1.23):** kupari −10 %, rauta −20 %, hiiden −30 %; kilven torjunta kuluttaa puu 90 %, kupari 75 %, rauta 60 % iskusta.
 - **Palava mob (v1.23):** isommat liekit, kipinöitä ja savua, oranssi valo maahan.
+- **Repun käyttö (v1.32):** kiinteä kolmen sarakkeen näkymä (ruudukko | tiedot | valmistus), mikään ei liiku. Napsautus valitsee,
+  toinen napsautus siirtää. Haarniska/vaate, kilpi, soihtu ja nuolet otetaan käyttöön jo valintanapsautuksella (keltainen); jos seuraava
+  napsautus siirtää esineen, käyttöönotto perutaan. Ruoka syödään VAIN pikapaikan numerolla. Pudotus (Q, Pudota-nappi, raahaus ulos) heittää
+  esineen ~3 m eteenpäin kameran suuntaan.
 - **Reppu:** 32 paikkaa, kehitys +8 paikkaa / +40 painoa (2 tasoa). Arkku 16→24→32, tynnyri 10→16→22.
 - **Avaimet:** Jääavain, Luuavain, Aarniavain (ulottuvuuksien portit).
 
