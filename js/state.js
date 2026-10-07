@@ -79,7 +79,25 @@ let invDirty=true;
 
 /* ---------------- DROPS ---------------- */
 const dropGeo=new THREE.BoxGeometry(.32,.32,.32);
-function spawnDrop(id,n,x,y,z,q=1,silent,byPlayer){const me=new THREE.Mesh(dropGeo,mat(new THREE.Color(ITEMS[id].c).getHex()));me.castShadow=true;me.position.set(x,y,z);scene.add(me);drops.push({id,n,q,mesh:me,vx:(Math.random()-.5)*3,vy:3+Math.random()*2,vz:(Math.random()-.5)*3,t:0,rest:false,dim:curDim(),noPick:!!byPlayer});}
+// v1.34 (lista 3, kohdat 9, 25, 39): maassa oleva esine. Arvoesine (isValuable) ei koskaan katoa, hehkuu (valo + kipinät) ja siirtyy
+// satunnaiseen maailman arkkuun, jos se on ollut maassa 2 min pelaajan ollessa yli 10 m päässä tai toisessa tilassa, tai putoaa kartalta.
+// Grafiikka: SET.drop3d → kuvake syvyydellä (kerrostetut tasot), muuten entinen värikuutio.
+const VALUABLE=['jaaavain','luuavain','aarniavain','sydan','kruunusirpale','hiidenkivi'];
+const isValuable=id=>VALUABLE.includes(id)||!!(ITEMS[id]&&ITEMS[id].rare);
+const VAL_LOST=120,VAL_FAR=10;
+const _icoMat={},_icoGeo=new THREE.PlaneGeometry(.5,.5);
+function dropMesh(id){if(!(typeof SET!=='undefined'&&SET.drop3d!==false)||typeof THREE.CanvasTexture!=='function'){const me=new THREE.Mesh(dropGeo,mat(new THREE.Color(ITEMS[id].c).getHex()));me.castShadow=true;return me;}
+  icon(id);let M=_icoMat[id];if(!M){const tx=new THREE.CanvasTexture(ICONC[id]);tx.anisotropy=2;
+    M=_icoMat[id]=[new THREE.MeshStandardMaterial({map:tx,alphaTest:.45,side:THREE.DoubleSide,roughness:.7}),new THREE.MeshStandardMaterial({map:tx,alphaTest:.45,side:THREE.DoubleSide,color:0x5a5248,roughness:.9})];}
+  const g=new THREE.Group();for(let k=-3;k<=3;k++){const pl=new THREE.Mesh(_icoGeo,Math.abs(k)===3?M[0]:M[1]);pl.position.z=k*.011;g.add(pl);}
+  g.userData.ico=1;return g;}
+function spawnDrop(id,n,x,y,z,q=1,silent,byPlayer){const me=dropMesh(id);me.position.set(x,y,z);scene.add(me);
+  const d={id,n,q,mesh:me,vx:(Math.random()-.5)*3,vy:3+Math.random()*2,vz:(Math.random()-.5)*3,t:0,rest:false,dim:curDim(),noPick:!!byPlayer};drops.push(d);
+  if(isValuable(id))valGlow(d);return d;}
+function valGlow(d){const c=new THREE.Color(ITEMS[d.id].c||'#ffd36a');
+  const h=new THREE.Mesh(new THREE.SphereGeometry(.42,12,8),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.28,blending:THREE.AdditiveBlending,depthWrite:false}));d.mesh.add(h);d.halo=h;
+  d.light={x:d.mesh.position.x,y:d.mesh.position.y+.4,z:d.mesh.position.z,c:c.getHex(),i:.9,move:true,dun:d.dim!=='world',on:()=>drops.includes(d)&&(d.dim||'world')===curDim()};lightSources.push(d.light);}
+function removeDrop(d){scene.remove(d.mesh);const i=drops.indexOf(d);if(i>=0)drops.splice(i,1);if(d.light){const j=lightSources.indexOf(d.light);if(j>=0)lightSources.splice(j,1);d.light=null;}}
 // v1.32 (lista 3, kohta 26): pelaajan pudottama esine lentää aina kameran suuntaan eteenpäin, noin kaksi kertaa entistä kauemmas (~2,5–3 m).
 function playerDrop(id,n,q){const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw);spawnDrop(id,n,P.pos.x+fx*.6,P.pos.y+1.1,P.pos.z+fz*.6,q,false,true);
   const d=drops[drops.length-1],j=(Math.random()-.5)*.6;d.vx=fx*4.2-fz*j;d.vz=fz*4.2+fx*j;d.vy=3.4+Math.random()*.6;}
@@ -89,13 +107,18 @@ let dropFullT=0;
 const DROP_LIFE=300; // maassa olevat esineet katoavat 5 min jälkeen
 function updateDrops(dt){
   const dim=curDim();dropFullT-=dt;
-  for(let i=drops.length-1;i>=0;i--){const d=drops[i],m=d.mesh;if((d.dim||'world')!==dim)continue;d.t+=dt;
-    if(d.t>DROP_LIFE){scene.remove(m);drops.splice(i,1);continue;}m.visible=d.t<DROP_LIFE-15||((d.t*5)|0)%2===0;
-    if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=groundAt(m.position.x,m.position.z,.2,m.position.y+.5)+.18;if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
+  for(let i=drops.length-1;i>=0;i--){const d=drops[i],m=d.mesh,val=isValuable(d.id);
+    if(val){const away=(d.dim||'world')!==dim||P.dead||Math.hypot(m.position.x-P.pos.x,m.position.z-P.pos.z)>VAL_FAR;d.lost=away?(d.lost||0)+dt:0;
+      if(d.lost>VAL_LOST||m.position.y<-20){removeDrop(d);relocateValuable(d.id,d.n,d.q);continue;}}
+    if((d.dim||'world')!==dim)continue;d.t+=dt;
+    if(!val){if(d.t>DROP_LIFE){removeDrop(d);continue;}m.visible=d.t<DROP_LIFE-15||((d.t*5)|0)%2===0;}
+    if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=groundAt(m.position.x,m.position.z,.2,m.position.y+.5)+(m.userData.ico?.3:.18);if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
     else{m.position.y=d.baseY+.12+Math.sin(d.t*3)*.06;m.rotation.y+=dt*1.5;}
+    if(d.light){d.light.x=m.position.x;d.light.y=m.position.y+.4;d.light.z=m.position.z;d.light.i=.75+Math.sin(d.t*3.2)*.25;}
+    if(d.halo){d.halo.material.opacity=.2+Math.sin(d.t*3.2)*.1;if(Math.random()<dt*5&&typeof emitEmber==='function')emitEmber(m.position.x+(Math.random()-.5)*.5,m.position.y+.1,m.position.z+(Math.random()-.5)*.5,'spark');}
     if(d.noPick&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))>2.5*2.5)d.noPick=false;   // v1.31: itse pudotettu poimitaan vasta, kun on käyty kauempana
-    if(d.t>.5&&!d.noPick&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');}else if(dropFullT<=0){dropFullT=4;msg('Reppu on täynnä – et voi poimia.','warn');}d.n=left;if(left<=0){scene.remove(m);drops.splice(i,1);}}
-    if(m.position.y<-20){scene.remove(m);drops.splice(i,1);}
+    if(d.t>.5&&!d.noPick&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');}else if(dropFullT<=0){dropFullT=4;msg('Reppu on täynnä – et voi poimia.','warn');}d.n=left;if(left<=0){removeDrop(d);continue;}}
+    if(m.position.y<-20)removeDrop(d);
   }
 }
 const _tmpV=new V3(),_tmpV2=new V3();

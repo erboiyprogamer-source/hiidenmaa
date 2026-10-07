@@ -4,9 +4,9 @@
 
 const fo=k=>flags[k]||(flags[k]={});
 const REALMS={
-  portal1:{n:'Routaluola',gen:'maze',W:31,H:31,wall:0x9fb4c6,floor:0x6a7c8c,tc:0x8fd0ff,fog:0x08121a,glow:0x7fd0ff,mist:0xb8d8f0,boss:'jaajattari',mobs:['routasusi','routasusi','kalmo'],dens:.04,spw:'routasusi',lock:'jaaavain',key:'luuavain',alt:()=>!!fo('poi').poiR1,hint:()=>`Jääavain on kätketty rauniotaloon (${LOC.poiR1.name}).`,reveal:'poiR1'},
+  portal1:{n:'Routaluola',gen:'maze',W:31,H:31,wall:0x9fb4c6,floor:0x6a7c8c,tc:0x8fd0ff,fog:0x08121a,glow:0x7fd0ff,mist:0xb8d8f0,boss:'jaajattari',mobs:['routasusi','routasusi','kalmo'],dens:.04,spw:'routasusi',lock:'jaaavain',key:'luuavain',alt:()=>!!(flags.wl&&flags.wl._key&&fo('fc')[flags.wl._key])||!!fo('poi').poiR1&&!(flags.wl&&flags.wl._key),hint:()=>keyHint(),reveal:null},
   portal2:{n:'Kalmankammio',gen:'rooms',W:43,H:35,wall:0x9a8f7e,floor:0x5c554a,tc:0xff8a36,fog:0x0d0806,glow:0xe6e0cf,mist:0xcfc4b0,boss:'kalmaherra',mobs:['kalmo','kalmo','kalmo','ylimys'],dens:.035,spw:'kalmo',lock:'luuavain',key:'aarniavain',alt:()=>!!fo('rb').portal1,hint:()=>'Luuavain on Jäättärellä Routaluolan perimmäisessä kammiossa.',reveal:'portal1'},
-  portal3:{n:'Aarnihauta',gen:'cave',W:47,H:47,wall:0x6f8a5a,floor:0x4a5a3a,tc:0x9aff7a,fog:0x050c06,glow:0x7aff9a,mist:0x9fd8a0,boss:'aarnihirvio',mobs:['hiisi','hiisi','susi','kivivartija'],dens:.03,spw:'hiisi',lock:'aarniavain',key:null,alt:()=>!!fo('rb').portal2,hint:()=>'Aarniavain on Kalmaherralla Kalmankammiossa.',reveal:'portal2'},
+  portal3:{n:'Aarnihauta',gen:'cave',W:47,H:47,wall:0x6f8a5a,floor:0x4a5a3a,tc:0x9aff7a,fog:0x050c06,glow:0x7aff9a,mist:0x9fd8a0,boss:'aarnihirvio',mobs:['hiisi','hiisi','susi','kivivartija'],dens:.03,spw:'hiisi',lock:'aarniavain',key:'kruunusirpale',alt:()=>!!fo('rb').portal2,hint:()=>'Aarniavain on Kalmaherralla Kalmankammiossa.',reveal:'portal2'},
 };
 const SPW_T=20; // spawnerin tauko (s) sen jälkeen, kun sen kaikki viholliset ovat kuolleet
 const SPW_HP=240; // Kalmanpesän kestävyys: murskataan hakulla (louhintateho per isku), tuhottu pesä tallentuu (flags.sd[ulottuvuus])
@@ -180,6 +180,7 @@ function ensureRealm(id){
       R.spw={x:p.x,z:p.z,y:y0+2.6,y0,cr,t:SPW_T-2,list:[],hp:SPW_HP,g:sg,cols:sc,light:lit(p.x,y0+2.8,p.z,D.glow,2)};}}
   R.entry=cell(L.ent.ix,L.ent.iz);R.boss=cell(L.boss.ix,L.boss.iz);
   R.mobs=L.mobs.map(m=>({...cell(m.ix,m.iz),type:m.type}));
+  if(id==='portal3'&&!flags.sirpC&&L.chests.length){const a=[...L.chests.keys()].sort(()=>Math.random()-.5);flags.sirpC=a.slice(0,Math.min(2,a.length));}   // v1.34: 2 sirpaletta satunnaisiin arkkuihin
   L.chests.forEach((c,i)=>{const p=cell(c.ix,c.iz),key=id+':'+i,sarc=D.gen==='rooms';
     const b=bx(sarc?1.1:1,sarc?.8:.7,sarc?2.2:.65,sarc?MAT.stone:MAT.wood,p.x,y0+(sarc?.4:.35),p.z);b.add(bx(sarc?1.2:1.04,.18,sarc?2.3:.7,sarc?mat(0x6f6a62):mat(0x4a4a4a),0,sarc?.5:.38,0));add(b);
     R.cols.push(addBox(p.x-.5,y0,p.z-(sarc?1.1:.33),p.x+.5,y0+.7,p.z+(sarc?1.1:.33),'static'));

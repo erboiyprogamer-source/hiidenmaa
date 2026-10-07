@@ -311,3 +311,13 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Yöhirviö: kerran yössä 20 % vuorilla / 10 % muualla, varmasti jos edellinen yö jäi nukkumatta; 6,6 m/s, hyökkää heti.
 - Haudan majakka näkyy myös ulottuvuuksissa ja Hautakummussa (vain siinä tilassa, jossa kuoli).
 - Tulinuolen valo hiipuu lennossa, sateessa kaksi kertaa nopeammin; osumasta sammuu 2 s:ssa.
+
+## Eteneminen ja arvoesineet v1.34
+- Järjestys: Jääavain (satunnainen vanha arkku, portti kertoo suunnan) → Routaportti → Jäätär (luuavain) → Kalmankammio → Kalmaherra
+  (aarniavain) → Aarnihauta → Aarnihirviö (Kalmankruunun sirpale) + 2 sirpaletta Aarnihaudan arkuissa → Kalmankehän alttari (3 sirpaletta)
+  → Kalmanvartija (viimeinen pomo).
+- Pääsaaren arkkujen tavalliset tavarat arvotaan maailman luonnissa.
+- Arvoesineet (avaimet, Vartijan sydän, sirpaleet, hiidenkivet, harvinaiset ★) eivät katoa maasta, hehkuvat ja siirtyvät 2 min jälkeen
+  (pelaaja > 10 m tai muualla) satunnaiseen pääsaaren arkkuun. Kadonneet uniikit palautetaan automaattisesti.
+- Kaksi kylttiä antaa kryptiset vihjeet (E lukee).
+- Maassa olevat esineet näkyvät kuvakkeina, joilla on paksuutta (asetus).

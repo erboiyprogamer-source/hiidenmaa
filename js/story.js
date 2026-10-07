@@ -74,11 +74,11 @@ const DIRS=['pohjoiseen','koilliseen','itään','kaakkoon','etelään','lounaase
 function dirText(from,k){const L=LOC[k],dx=L.x-from.x,dz=L.z-from.z,a=Math.atan2(dx,-dz),i=((Math.round(a/(Math.PI/4))%8)+8)%8;return `${DIRS[i]}, noin ${Math.round(Math.hypot(dx,dz)/10)*10} m`;}
 const XRUNES={
   runeA:{t:'Riimukivi – Tunturin huurre',reveal:['portal1'],txt:f=>`”Tunturin kylmyydessä seisoo Routaportti, ${dirText(f,'portal1')}. Sen takana on Routaluola, ja siellä Jäätär vartioi talvea. Portti on lukittu – sen avain on kätketty tänne, meidän maailmaamme.”`},
-  runeB:{t:'Riimukivi – Avaimen kätkijä',reveal:['poiR1','portal1'],txt:f=>`”Jääavain lepää rauniotalon arkussa, ${dirText(f,'poiR1')}. Kivinen vartija vahtii sitä. Avain aukaisee Routaportin, ${dirText(f,'portal1')}.”`},
+  runeB:{t:'Riimukivi – Avaimen kätkijä',reveal:['portal1'],txt:f=>{const k=(flags.vloc&&flags.vloc.jaaavain)||(flags.wl&&flags.wl._key),L=k&&chestLoc(k);return `”Jääavain lepää vanhassa arkussa${L?`, jossain ${vagueDir(f,L)} täältä`:''}. Avain aukaisee Routaportin, ${dirText(f,'portal1')}.”`;}},
   runeC:{t:'Riimukivi – Kivien kirstut',reveal:['poiK1'],txt:f=>`”Vanhat kansat kätkivät aarteensa suuriin kiviin. Yksi arkkukivi on ${dirText(f,'poiK1')}. Muista: vartijat ovat sidottuja paikkaansa – juokse karkuun, jos hupenet.”`},
-  runeD:{t:'Riimukivi – Kolme sisarta',reveal:['portal2'],txt:f=>`”Kolme sisarta vartioivat jäätä, kuolemaa ja metsää, ja kukin kantaa seuraavan avainta. Jäätär kantaa luuavainta, joka aukaisee Kalmankammion portin, ${dirText(f,'portal2')}. Kun kaikki kaatuvat, Hiidenmaan vartija jää yksin.”`},
+  runeD:{t:'Riimukivi – Kolme sisarta',reveal:['portal2'],txt:f=>`”Kolme sisarta vartioivat jäätä, kuolemaa ja metsää, ja kukin kantaa seuraavan avainta. Jäätär kantaa luuavainta, joka aukaisee Kalmankammion portin, ${dirText(f,'portal2')}. Viimeinen sisar kantaa kruunun sirpaletta. Kun kaikki kaatuvat, Hiidenmaan vartija jää yksin.”`},
   runeE:{t:'Riimukivi – Vihreä avain',reveal:['portal3'],txt:f=>`”Kun Kalmaherra kaatuu, hänen vyöltään putoaa vihreä aarniavain. Se aukaisee Aarnihaudan portin, ${dirText(f,'portal3')}, metsän pimeimmässä kohdassa.”`},
-  runeF:{t:'Riimukivi – Vanha varoitus',reveal:['circle'],txt:f=>`”Portit eivät ole vain pakoreittejä. Niiden takana lepää voima, jota Kalmankehän alttari kaipaa: ${dirText(f,'circle')}. Hiidenkivet ovat kylmiä mutta rehellisiä.”`},
+  runeF:{t:'Riimukivi – Vanha varoitus',reveal:['circle'],txt:f=>`”Portit eivät ole vain pakoreittejä. Niiden takana lepää Kalmankruunu, jonka kolme sirpaletta Kalmankehän alttari kaipaa: ${dirText(f,'circle')}. Sirpaleet ovat Aarnihaudan syvyydessä – yksi hirviön hallussa, kaksi kätkettynä arkkuihin.”`},
 };
 for(const k in XRUNES){const R=XRUNES[k],L=LOC[k],y=terrainH(L.x,L.z),v=k.charCodeAt(4)%4,r=mulberry32(k.charCodeAt(4)*131);
   let me;
@@ -97,19 +97,20 @@ const QUESTS=[
   {t:'Löydä Hautakumpu',get d(){return `Kalmanummella ${dirIn('barrow')} lepäävät vanhat päälliköt.`;},at:'barrow',done:()=>!!flags.disc.barrow},
   {t:'Avaa Hautakummun kolme kirstua',d:'Kumpu on pimeä – ota tuli mukaan.',at:'barrow',done:()=>flags.sarc.every(Boolean)},
   {t:'Etsi Routaportti',d:'Riimukivet tietävät sen sijainnin. Se on tuntureiden kylmyydessä.',at:'portal1',done:()=>!!flags.disc.portal1},
-  {t:'Löydä Jääavain',d:'Rauniotalon arkku, kivivartijan vahtimana.',at:'poiR1',done:()=>invCount('jaaavain')>0||!!fo('poi').poiR1||!portalLocked('portal1')},
+  {t:'Löydä Jääavain',get d(){return keyHint()+' Kyltit ja riimukivet voivat auttaa.';},done:()=>invCount('jaaavain')>0||!portalLocked('portal1')},
   {t:'Avaa Routaportti',d:'Jääavain sopii Routaportin lukkoon.',at:'portal1',done:()=>!portalLocked('portal1')},
   {t:'Kukista Jäätär Routaluolassa',d:'Sokkelon perimmäisessä kammiossa. Hän kantaa luuavainta.',at:'portal1',done:()=>!!fo('rb').portal1},
   {t:'Avaa Kalmankammion portti',d:'Lukko aukeaa Jäättären luuavaimella.',at:'portal2',done:()=>!portalLocked('portal2')},
   {t:'Kukista Kalmaherra',d:'Hän pitää vihreää aarniavainta vyöllään.',at:'portal2',done:()=>!!fo('rb').portal2},
   {t:'Avaa Aarnihaudan portti',d:'Aarniavain sopii metsän portin lukkoon.',at:'portal3',done:()=>!portalLocked('portal3')},
-  {t:'Kukista Aarnihirviö',d:'Luolan pimeimmässä sopessa.',at:'portal3',done:()=>!!fo('rb').portal3},
-  {t:'Herätä Kalmanvartija',d:'Aseta kolme hiidenkiveä Kalmankehän alttarille.',at:'circle',done:()=>!!(flags.boss||boss)},
+  {t:'Kukista Aarnihirviö',d:'Luolan pimeimmässä sopessa. Hän kantaa Kalmankruunun sirpaletta.',at:'portal3',done:()=>!!fo('rb').portal3},
+  {t:'Kerää kolme Kalmankruunun sirpaletta',d:'Kaksi muuta sirpaletta on kätketty Aarnihaudan arkkuihin.',at:'portal3',done:()=>invCount('kruunusirpale')>=3||!!flags.altarSt||!!(flags.boss||boss)},
+  {t:'Herätä Kalmanvartija',d:'Aseta kolme Kalmankruunun sirpaletta Kalmankehän alttarille.',at:'circle',done:()=>!!(flags.boss||boss)},
   {t:'Kukista Kalmanvartija',d:'Saari vapautuu otteesta.',at:'circle',done:()=>!!flags.boss},
 ];
 let questKey='',questT=0;
 function updateStory(dt){
-  updateSites(dt);
+  updateSites(dt);valuableCensus(dt);
   questT-=dt;if(questT>0)return;questT=1;
   const quiet=flags.qi===undefined;let qi=flags.qi|0;
   while(qi<QUESTS.length&&QUESTS[qi].done()){if(!quiet){msg(`Tehtävä suoritettu: ${QUESTS[qi].t}`,'loot');addXp(60,'Tehtävä');sfx('craft');}qi++;}
@@ -169,4 +170,70 @@ const STASHES=(function(){const r=mulberry32(24680+MAP_ID*104729),out=[],tmp=[];
     stoneBox(2,.45,2,c.x,y,c.z,.3,mat(0x5b5853),false);const ch=bx(.9,.6,.6,MAT.wood,c.x,y+.52,c.z);ch.add(bx(.94,.1,.64,mat(0x4a4a4a),0,.16,0));statics.add(ch);
     const key='stash:'+c.k,loot=[[['kupari',2],['nuolet',10],['liha',2]],[['pihka',3],['kivi',8],['luu',3]]][out.indexOf(c)%2];
     interactables.push({x:c.x,y:y+.6,z:c.z,r:2.6,label:()=>foundEmpty(key)?'Arkku (tyhjä)':'Avaa arkku',use:()=>{const first=!fo('fc')[key];openFound(key,'Kiviröykkiön arkku',loot);if(first)addXp(20,'Kiviröykkiö tutkittu');}});}
+  return out;})();
+
+/* ---------------- MAAILMAN SAALIS JA ARVOESINEET (v1.34, lista 3 kohdat 8, 9, 38, 40) ---------------- */
+// Maailman arkut (pääsaari + Hautakummun kirstut). Uuden maailman luonnissa (planLoot) arkkujen tavalliset tavarat sekoitetaan
+// arkkujen kesken ja Jääavain arvotaan yhteen arkkuun (myös Hautakummun kirstu käy). Suunnitelma: flags.wl = {avain: [[id,n],…]},
+// avaimen paikka flags.wl._key. openFound käyttää suunnitelmaa ensimmäisellä avauksella (wlLoot).
+const SARC_LOOT=[[['hiidenkivi',1],['kupari',2]],[['hiidenkivi',1],['nuolet',12]],[['hiidenkivi',1],['luu',3]]];
+function worldChests(){const out=[];
+  for(const k of ['ruinF','ruinM','ruinC'])out.push({key:'ruin:'+k,L:LOC[k],loot:Object.entries(RUIN_LOOT[k])});
+  for(const k of SITE_KEYS)if(LOC[k].kind==='ruin'||LOC[k].kind==='rock')out.push({key:'poi:'+k,L:LOC[k],loot:POI_LOOT[k]||[['kupari',3]]});
+  STASHES.forEach((c,i)=>out.push({key:'stash:'+c.k,L:LOC[c.k],loot:[[['kupari',2],['nuolet',10],['liha',2]],[['pihka',3],['kivi',8],['luu',3]]][i%2]}));
+  for(let i=0;i<3;i++)out.push({key:'sarc:'+i,L:LOC.barrow,loot:SARC_LOOT[i],barrow:1});
+  return out;}
+function planLoot(old){const fc=fo('fc'),W=worldChests().filter(c=>!fc[c.key]),pool=[];let key=false;
+  for(const c of W)for(const [id,n] of c.loot){if(id==='jaaavain'){key=true;continue;}pool.push([id,+n]);}
+  if(!old)key=true;else if(fc['poi:poiR1']||!portalLocked('portal1')||invCount('jaaavain')>0)key=false;
+  for(let i=pool.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[pool[i],pool[j]]=[pool[j],pool[i]];}
+  const wl={};for(const c of W)wl[c.key]=[];pool.forEach((e,i)=>{const c=W[i%W.length];const ex=wl[c.key].find(x=>x[0]===e[0]);if(ex)ex[1]+=e[1];else wl[c.key].push(e);});
+  if(key&&W.length){const c=W[Math.random()*W.length|0];wl[c.key].unshift(['jaaavain',1]);wl._key=c.key;}
+  flags.wl=wl;}
+function wlLoot(key,def){const wl=flags.wl;return wl&&wl[key]?wl[key]:def;}
+const chestLoc=key=>{const c=worldChests().find(c=>c.key===key);return c?c.L:null;};
+// Epämääräinen suunta (vain ilmansuunta, ei matkaa)
+function vagueDir(from,to){const a=Math.atan2(to.x-from.x,-(to.z-from.z));return DIRS[((Math.round(a/(Math.PI/4))%8)+8)%8];}
+function keyHint(){const k=(flags.vloc&&flags.vloc.jaaavain)||(flags.wl&&flags.wl._key),L=k&&chestLoc(k),from=LOC.portal1;
+  if(!L)return 'Jääavain on kätketty jonnekin saaren vanhaan arkkuun.';return `Jääavain on kätketty vanhaan arkkuun jonnekin ${vagueDir(from,L)} täältä${k.startsWith('sarc')?' – kuolleiden lepopaikkaan':''}.`;}
+
+// Arvoesineen siirto satunnaiseen pääsaaren arkkuun (ei Hautakummun kirstuihin). Avattuun arkkuun lisätään vapaaseen paikkaan,
+// avaamattomaan suunnitelmaan. Avaimen uusi paikka muistetaan vihjettä varten (flags.vloc).
+function relocateValuable(id,n,q){if(!flags.wl)planLoot(true);const fc=fo('fc'),C=worldChests().filter(c=>!c.barrow);
+  for(let t=0;t<40&&n>0;t++){const c=C[Math.random()*C.length|0];
+    if(fc[c.key]){const it=fc[c.key];for(let i=0;i<it.length&&n>0;i++)if(!it[i]){it[i]={id,n,q:q||1};n=0;}if(n>0&&it.length<16){it.push({id,n,q:q||1});n=0;}}
+    else{(flags.wl[c.key]=flags.wl[c.key]||[]).push([id,n,q||1]);n=0;}
+    if(n===0){fo('vloc')[id]=c.key;msg(`${ITEMS[id].n} katosi näkyvistä… kerrotaan sen ilmestyneen jonnekin saaren vanhaan arkkuun.`,'warn');}}}
+// Kaikkialla olevien kappaleiden määrä (reppu, arkut, rakennetut säiliöt, haudat, maassa, avaamattomien arkkujen suunnitelma).
+function countAll(id){let n=0;const add=a=>{for(const s of a||[])if(s&&s.id===id)n+=s.n;};add(inv);for(const k in fo('fc'))add(fo('fc')[k]);
+  for(const p of pieces)if(p.data&&p.data.items)add(p.data.items);for(const g of graves)add(g.items);for(const d of drops)if(d.id===id)n+=d.n;
+  if(flags.wl)for(const k in flags.wl){if(k==='_key'||fo('fc')[k])continue;for(const e of flags.wl[k])if(e[0]===id)n+=+e[1];}return n;}
+// Uniikkien esineiden laskenta: jos jokin on kadonnut (esim. virheen takia), puuttuvat palautetaan arkkuun. Odotettu määrä pelin tilasta.
+function expectedUnique(id){const rb=fo('rb'),rl=fo('rl'),rs=fo('rs');
+  if(id==='jaaavain')return rl.portal1||rs.portal1?0:1;
+  if(id==='luuavain')return rb.portal1&&!rl.portal2&&!rs.portal2?1:0;
+  if(id==='aarniavain')return rb.portal2&&!rl.portal3&&!rs.portal3?1:0;
+  if(id==='kruunusirpale'){if(flags.boss||boss||flags.altarSt)return 0;let pend=rb.portal3?0:1;const sc=flags.sirpC;pend+=sc?sc.filter(i=>!fo('rc')['portal3:'+i]).length:2;return Math.max(0,3-pend);}
+  if(id==='sydan')return Math.max(0,(flags.boss?1:0)-countAll('hiidenmiekka'));
+  return 0;}
+let censusT=20;
+function valuableCensus(dt){censusT-=dt;if(censusT>0||state!=='play')return;censusT=15;
+  for(const id of ['jaaavain','luuavain','aarniavain','kruunusirpale','sydan']){const miss=expectedUnique(id)-countAll(id);if(miss>0)relocateValuable(id,miss,1);}}
+
+/* ---------------- KYLTIT (v1.34, kohta 40) ---------------- */
+// Kaksi puukylttiä tienvarressa; teksti luetaan läheltä (E). Kryptinen vihje: 1) Jääavaimen arkun suunta, 2) kiviröykkiön suunta.
+const SUNDIR=['pohjantähden alle','aamuruskon ja pohjan väliin','auringon nousuun','aamupäivän aurinkoon','keskipäivän aurinkoon','iltapäivän varjoihin','auringon laskuun','illan ja pohjan väliin'];
+function poeticDir(from,to){const a=Math.atan2(to.x-from.x,-(to.z-from.z));return SUNDIR[((Math.round(a/(Math.PI/4))%8)+8)%8];}
+const SIGNS=(function(){const r=mulberry32(4242+MAP_ID*7717),out=[];
+  for(let t=0;t<6000&&out.length<2;t++){const a=r()*TAU,d=50+r()*(out.length?170:90),x=LOC.spawn.x+Math.sin(a)*d,z=LOC.spawn.z+Math.cos(a)*d,h=terrainH(x,z);
+    if(h<1.5||h>26||Math.abs(x)>HALF*.9||Math.abs(z)>HALF*.9)continue;let far=true;for(const k in LOC)if(dist2(x,z,LOC[k].x,LOC[k].z)<25*25){far=false;break;}
+    for(const s of out)if(dist2(x,z,s.x,s.z)<80*80)far=false;if(!far)continue;out.push({x,z,y:h,i:out.length});}
+  const TXT=[s=>{const k=(flags.vloc&&flags.vloc.jaaavain)||(flags.wl&&flags.wl._key),L=k&&chestLoc(k);
+      return L?`”Kylmä hammas nukkuu puisessa suussa. Kulje ${poeticDir(s,L)}, kunnes kivet muistavat vanhat nimensä${k.startsWith('sarc')?' ja kuolleet hengittävät hiljaa ympärilläsi':''}. Älä herätä vartijaa, joka ei nuku.”`:'”Kylmä hammas on jo löytänyt suunsa. Tämä polku on kuljettu.”';},
+    s=>{const c=STASHES[0];return c?`”Seitsemän kiveä seisoo piirissä, kaksi ovea auki tuulelle. Ne vartioivat vaatimatonta aarretta ${poeticDir(s,c)}. Suurempi aarre ei ole kultaa vaan kylmää vihreää valoa syvällä metsän alla.”`:'”Tuuli tietää tien.”';}];
+  for(const s of out){const wood=mat(0x6e4a28),dark=mat(0x4a2e18),a=r()*TAU,g=new THREE.Group();
+    g.add(bx(.12,1.6,.12,dark,0,.8,0),bx(.95,.5,.06,wood,0,1.35,.06),bx(1.01,.06,.08,dark,0,1.62,.06),bx(1.01,.06,.08,dark,0,1.08,.06));
+    for(let j=0;j<4;j++)g.add(bx(.08+j%2*.06,.035,.01,mat(0x2a1a0c),-.28+j*.18,1.38+(j%2?.06:-.04),.1,false));   // kaiverretut merkit
+    g.position.set(s.x,s.y,s.z);g.rotation.y=a;statics.add(g);addCircle(s.x,s.z,.12,s.y,s.y+1.6,'static');
+    interactables.push({x:s.x,y:s.y+1.2,z:s.z,r:2.6,label:()=>'Lue kyltti',use:()=>showLore('Vanha kyltti',TXT[s.i](s))});}
   return out;})();

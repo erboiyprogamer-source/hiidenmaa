@@ -312,7 +312,9 @@ function openChest(p){togglePanel('chest');curChest=p;renderChest();}
 // Löydetyt arkut, kirstut ja tynnyrit avautuvat arkkuikkunaan kuten omat arkut. Sisältö luodaan ensimmäisellä avauksella saalistaulukosta
 // ja tallentuu flags.fc[avain] (myös pelaajan sinne jättämät esineet). Jos paikka on avattu vanhassa tallennuksessa (saalis jo annettu), se on tyhjä.
 function foundItems(key,loot,slots=8){const fc=fo('fc');if(!fc[key]){const it=[];for(const [id,n,q] of loot||[])if(ITEMS[id])it.push({id,n,q:q||1});while(it.length<slots)it.push(null);fc[key]=it;}return fc[key];}
-function openFound(key,title,loot){const items=foundItems(key,loot);if(openPanel)closePanels(true);togglePanel('chest');curChest={found:true,title,data:{items}};sfx('pickup');renderChest();}
+// v1.34: ensimmäisellä avauksella maailman saalissuunnitelma (wlLoot) ja Aarnihaudan sirpalearkut (flags.sirpC).
+function openFound(key,title,loot){if(loot&&!fo('fc')[key]){loot=wlLoot(key,loot).slice();const m=/^portal3:(\d+)$/.exec(key);if(m&&(flags.sirpC||[]).includes(+m[1]))loot.unshift(['kruunusirpale',1]);}
+  const items=foundItems(key,loot);if(openPanel)closePanels(true);togglePanel('chest');curChest={found:true,title,data:{items}};sfx('pickup');renderChest();}
 const foundEmpty=key=>{const it=fo('fc')[key];return !!it&&!it.some(Boolean);};
 function renderChest(){if(!curChest)return;const items=curChest.data.items;$('#chestTitle').textContent=curChest.found?curChest.title:PIECES[curChest.t].n+(curChest.data.lv?` (taso ${curChest.data.lv+1})`:'');
   if(curChest.found)$('#chestUp').innerHTML='';else

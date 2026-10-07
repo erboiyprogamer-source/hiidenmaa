@@ -73,21 +73,29 @@ const GOALS=[
   {id:'kivirak',t:'Rakenna kivestä',d:'Kiviseinät, kivilattiat ja kivikatot kestävät paljon. Kivikatot ovat omassa välilehdessään.',xp:15,ok:()=>anyP(isStone)},
   {id:'grilli',t:'Rakenna grillinuotio',d:'Grillitelineessä on neljä paikkaa ruoalle. Ota ruoka ajoissa – ylipaistettu muuttuu hiileksi.',xp:20,ok:()=>anyP(p=>p.t==='grilli')},
   {id:'rauta',t:'Löydä rautaa',d:'Rautasuonet ovat vuoristossa. Tarvitset kuparihakun.',xp:30,ok:()=>flags.seen&&(flags.seen.rautamalmi||flags.seen.rauta)},
-  {id:'kivet',t:'Hae kolme hiidenkiveä',get d(){return `Hautakumpu on ${dirIn('barrow')} kalmanummella. Ota soihtu mukaan.`;},xp:40,ok:()=>invCount('hiidenkivi')>=3||boss||flags.boss},
-  {id:'vartija',t:'Herätä Kalmanvartija',get d(){return `Kalmankehä on ${dirIn('circle')} Hautakummun lähellä. Aseta kivet alttarille ja voita vartija.`;},xp:100,ok:()=>flags.boss},
+  // v1.34 (lista 3, kohta 8): ulottuvuudet ennen Kalmanvartijaa; alttari vaatii kolme Kalmankruunun sirpaletta (ei enää hiidenkiviä).
+  {id:'routa',t:'Avaa Routaportti',get d(){return `Routaportti on ${dirIn('portal1')} tuntureilla. Etsi Jääavain saaren vanhoista arkuista – portti antaa vihjeen.`;},xp:40,ok:()=>!portalLocked('portal1')||!!fo('rb').portal1},
+  {id:'jaatar',t:'Kukista Jäätär',d:'Routaluolan perimmäisessä kammiossa. Hän kantaa luuavainta.',xp:50,ok:()=>!!fo('rb').portal1},
+  {id:'kalmaherra',t:'Kukista Kalmaherra',get d(){return `Kalmankammion portti on ${dirIn('portal2')}. Luuavain avaa sen.`;},xp:60,ok:()=>!!fo('rb').portal2},
+  {id:'aarnihirvio',t:'Kukista Aarnihirviö',get d(){return `Aarnihaudan portti on ${dirIn('portal3')}. Aarniavain avaa sen.`;},xp:70,ok:()=>!!fo('rb').portal3},
+  {id:'sirpaleet',t:'Kerää kolme Kalmankruunun sirpaletta',d:'Aarnihirviö kantoi yhtä, kaksi muuta on kätketty Aarnihaudan arkkuihin.',xp:50,ok:()=>invCount('kruunusirpale')>=3||!!flags.altarSt||!!boss||!!flags.boss},
+  {id:'vartija',t:'Herätä Kalmanvartija',get d(){return `Kalmankehä on ${dirIn('circle')} Hautakummun lähellä. Aseta sirpaleet alttarille ja voita vartija.`;},xp:100,ok:()=>flags.boss},
   {id:'vapaa',t:'Hiidenmaa on vapaa',d:'Jatka rakentamista ja tutkimista omaan tahtiisi.',xp:0,ok:()=>false},
 ];
 // Vanhat tallennukset (flags.gv puuttuu) käyttivät 11 tavoitteen listaa: muunnetaan indeksi ja annetaan jo ansaittu XP.
+const GOALS_V2=['poimi','kirves','puu1','puu10','vasara','penkki','lattia','seinat','ovi','katto','nuotio','lepo','marjat','paista','sanky','arkku','kupari','sulata','varusta','vihut','jousi','laajenna','kivirak','grilli','rauta','kivet','vartija','vapaa'];
 const OLD_GOALS=['poimi','kirves','vasara','lattia','paista','kupari','sulata','varusta','kivet','vartija','vapaa'];
 function migrateProgress(){fixFlags();
   if(!flags.gv){const id=OLD_GOALS[Math.min(flags.goal||0,OLD_GOALS.length-1)],ni=Math.max(0,GOALS.findIndex(g=>g.id===id));
-    if(!flags.xp)for(let i=0;i<ni;i++)flags.xp+=GOALS[i].xp;flags.goal=ni;flags.gv=2;if(flags.boss)flags.xp+=60;}
+    if(!flags.xp)for(let i=0;i<ni;i++)flags.xp+=GOALS[i].xp;flags.goal=ni;flags.gv=3;if(flags.boss)flags.xp+=60;}
+  // v1.34: versio 2 → 3 (kivet-tavoite korvattu ulottuvuustavoitteilla); läpäistyt ohitetaan updateGoals-silmukassa.
+  else if(flags.gv===2){const id=GOALS_V2[Math.min(flags.goal||0,GOALS_V2.length-1)],nid=id==='kivet'?'routa':id;flags.goal=Math.max(0,GOALS.findIndex(g=>g.id===nid));flags.gv=3;}
   recalcBon();}
 let goalShown=-1;
 function updateGoals(){fixFlags();
   while(flags.goal<GOALS.length-1&&GOALS[flags.goal].ok()){const g=GOALS[flags.goal];flags.goal++;msg('Tavoite saavutettu!','loot');sfx('craft');addXp(g.xp,g.t);}
   checkAch();
-  if(goalShown!==flags.goal){goalShown=flags.goal;const g=GOALS[flags.goal];$('#goalT').textContent=g.t;$('#goalD').textContent=g.d;if(g.id==='kivet')flags.disc.barrow=1;if(g.id==='vartija')flags.disc.circle=1;}}
+  if(goalShown!==flags.goal){goalShown=flags.goal;const g=GOALS[flags.goal];$('#goalT').textContent=g.t;$('#goalD').textContent=g.d;if(g.id==='routa')flags.disc.portal1=1;if(g.id==='vartija')flags.disc.circle=1;}}
 
 /* ---------------- EDISTYMISPANEELI (J) ---------------- */
 function renderProg(){const li=lvlInfo(),el=$('#progP');

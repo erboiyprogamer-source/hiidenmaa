@@ -251,14 +251,14 @@ function useAltar(){
   if(flags.boss){msg('Kehä on hiljainen. Vartija on poissa.');return;}
   if(boss)return;
   // v0.75: jos vartija on vajonnut takaisin maahan, kivet ovat yhä alttarilla (flags.altarSt) – herätys ei vaadi uusia kiviä
-  if(!flags.altarSt){if(invCount('hiidenkivi')<3){msg('Alttarin kolme koloa ovat tyhjiä. Tarvitset kolme hiidenkiveä.','warn');return;}invRemove('hiidenkivi',3);}
-  flags.altarSt=0;syncAltar();msg('Kivet hehkuvat… maa vapisee!','warn');sfx('roar');shake(.6);
+  if(!flags.altarSt){if(invCount('kruunusirpale')<3){msg('Alttarin kolme koloa ovat tyhjiä. Tarvitset kolme Kalmankruunun sirpaletta – ne ovat Aarnihaudan syvyyksissä.','warn');return;}invRemove('kruunusirpale',3);}   // v1.34 (kohta 8)
+  flags.altarSt=0;syncAltar();msg('Sirpaleet hehkuvat… maa vapisee!','warn');sfx('roar');shake(.6);
   circleStones.forEach(r=>r.material=MAT.glow);
   const L=LOC.circle;setTimeout(()=>{boss=spawnMob('vartija',L.x,L.z-4);if(flags.bossHp){boss.hp=Math.min(boss.maxHp,flags.bossHp);delete flags.bossHp;}boss.state='rise';boss.t=0;boss.sinking=1;boss.pos.y-=7.5;$('#bossbar').hidden=false;shockwave(L.x,6,L.z-4,10);},1600);
 }
 function openSarc(i){
   const first=!flags.sarc[i],s=sarcs[i];
-  openFound('sarc:'+i,'Hautakirstu',first?[['hiidenkivi',1],[['kupari',2],['nuolet',12],['luu',3]][i]]:null);
+  openFound('sarc:'+i,'Hautakirstu',first?SARC_LOOT[i]:null);
   if(first){flags.sarc[i]=1;s.lid.position.x=.7;s.lid.rotation.z=.3;burst(s.p.x,DUN.y+1,s.p.z,0x7fd6cc,14,3);}
 }
 function showLore(t,txt){const el=$('#msgs');const d=document.createElement('div');d.innerHTML=`<b style="color:var(--frost)">${t}</b><br><span style="font-weight:500">${txt}</span>`;d.style.maxWidth='440px';d.style.whiteSpace='normal';el.appendChild(d);d._life=14;msgEls.push(d);}

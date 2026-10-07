@@ -73,6 +73,25 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.34 (lista 3: Kalmankruunun sirpaleet, uusi etenemisjärjestys, arvottu saalis, arvoesineet eivät katoa, hehku, kyltit, 3D-kuvakkeet)
+- **Kalmankruunun sirpale (kohta 8):** `kruunusirpale`. Aarnihirviö antaa 1 (`REALMS.portal3.key`), 2 on Aarnihaudan satunnaisissa arkuissa
+  (`flags.sirpC`, arvotaan kun ulottuvuus rakennetaan; lisätään `openFound`issa). Kalmankehän alttari vaatii 3 sirpaletta (ei hiidenkiviä).
+  Tallennuksen `bossPending` palauttaa sirpaleet (v ≥ 10).
+- **Tavoitteet (gv 3):** `kivet` korvattu: routa → jaatar → kalmaherra → aarnihirvio → sirpaleet → vartija → vapaa. Siirto gv 2 → 3
+  (`GOALS_V2`, kivet → routa). Tehtäviin lisätty "Kerää kolme Kalmankruunun sirpaletta"; Jääavaimen tehtävä käyttää epämääräistä vihjettä.
+- **Maailman saalis (kohta 38):** `planLoot` (uusi peli; vanhaan tallennukseen latauksessa avaamattomille arkuille) sekoittaa raunioiden,
+  rauniotalojen, linnakkeiden, kiviröykkiöiden ja Hautakummun kirstujen tavarat keskenään ja arpoo Jääavaimen yhteen niistä (`flags.wl`,
+  paikka `flags.wl._key`). Portti antaa vain suunnan (`keyHint`). Portin varmistus: avaimen arkku avattu.
+- **Arvoesineet (kohta 9):** `VALUABLE` (avaimet, sydän, sirpale, hiidenkivi) + kaikki `rare`. Maassa eivät katoa; jos pelaaja on yli 10 m
+  päässä tai toisessa tilassa 2 min, tai esine putoaa kartalta, se siirtyy satunnaiseen pääsaaren arkkuun (`relocateValuable`, avattuun vapaaseen
+  paikkaan tai avaamattoman suunnitelmaan, `flags.vloc`). Tallennettaessa maassa olevat arvoesineet (`vdrops`) siirtyvät latauksessa arkkuun.
+  `valuableCensus` 15 s välein: avaimet, sirpaleet ja sydän lasketaan kaikkialta (`countAll`) ja puuttuvat palautetaan (`expectedUnique`).
+- **Hehku (kohta 39):** maassa oleva arvoesine: esineen värinen sykkivä halo, pistevalo (`lightSources`) ja kipinät.
+- **Kyltit ja riimut (kohta 40):** 2 puukylttiä (`SIGNS`, 50–260 m aloituspaikasta) kryptisillä vihjeillä (Jääavaimen arkun suunta, kiviröykkiö).
+  Riimukivet päivitetty: kolme porttia, sirpaleet alttarille, Jääavain vanhassa arkussa (suunta).
+- **3D-kuvakkeet (kohta 25, osa):** maassa oleva esine = kuvake 7 kerroksena (paksuus), `dropMesh`, asetus `SET.drop3d` (erä 4).
+- Tallennusmuoto v 10 (`vdrops`).
+
 ### v1.33 (lista 3: kilpien kuluminen, vaikeampi taistelu, pomojen paraneminen, lyönti liikkeestä, yöhirviö, hautamajakka, tulinuoli)
 - **Kilvet (kohta 4):** `SHIELD_HITS` puu 20, kupari 15, rauta 15 torjuttua osumaa; torjunta 60/80/90 % ennallaan. Rikki (`s.shBrk`) → ei
   torju 60 s (`SHIELD_FIX`), sitten ehjä (`shieldOk`, tarkistus HUD:ssa 1 s välein). Kunto näkyy tiedoissa ja palkkina ruudussa.
@@ -1390,10 +1409,10 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 5/6/11. TEHTY v1.33. Kaikki eläimet ja hirviöt: terveys ja vahinko +25 %. Ulottuvuuksien pomot: Jäätär ×1,5, Kalmaherra ×2, Aarnihirviö ×2,6;
    Kalmanvartija ×2,5 (2250 hp).
 7. TEHTY v1.33. Pomot paranevat täyteen ~10 s:ssa, jos niihin ei osuta 1 min, tai pelaaja poistuu ulottuvuudesta.
-8. Uusi esine **Kalmankruunun sirpale** (vain Aarnihaudasta: Aarnihirviö 1 + 2 satunnaisessa Aarnihaudan arkussa). Kalmankehän alttari vaatii
+8. TEHTY v1.34. Uusi esine **Kalmankruunun sirpale** (vain Aarnihaudasta: Aarnihirviö 1 + 2 satunnaisessa Aarnihaudan arkussa). Kalmankehän alttari vaatii
    3 sirpaletta (ei enää hiidenkiviä). Kalmanvartija = viimeinen pomo Aarnihirviön jälkeen. Tavoitteet ja tehtävät järjestetään uudelleen
    (ulottuvuudet ennen vartijaa). Hiidenkivet jäävät valmistusaineiksi.
-9. Arvoesineet (avaimet, Vartijan sydän, sirpaleet, hiidenkivet, harvinaiset ★-varusteet) eivät koskaan katoa. Jos esine ei ole ollut
+9. TEHTY v1.34. Arvoesineet (avaimet, Vartijan sydän, sirpaleet, hiidenkivet, harvinaiset ★-varusteet) eivät koskaan katoa. Jos esine ei ole ollut
    pelaajan repussa tai missään arkussa/säilytyksessä 2 min ja pelaaja on yli 10 m päässä, se siirtyy satunnaiseen maailman kohdearkkuun.
    Kartalta pudonnut sama. Myös bugin takia kadonneet uniikit (avaimet, sirpaleet, sydän) palautetaan.
 10. Vastattu: Vartijan sydän = Kalmanvartijan pudotus, tarvitaan Hiidenmiekkaan.
@@ -1437,11 +1456,11 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
    Vyötärön takana oleva pallomainen osa kiinni vyötäröön ja paremman näköiseksi (pussi/laukku).
    Ei enää kysymyksiä – tehdään loppuun.
 
-38. (lisä) Jääavain arvotaan maailman luonnissa satunnaiseen pääsaaren arkkuun (rauniot, linnakkeet, kiviröykkiöt) tai Hautakummun
+38. TEHTY v1.34. Jääavain arvotaan maailman luonnissa satunnaiseen pääsaaren arkkuun (rauniot, linnakkeet, kiviröykkiöt) tai Hautakummun
    hautakirstuun. Myös muiden kohdearkkujen tavalliset tavarat arvotaan maailmakohtaisesti. Portti antaa epämääräisen vihjeen (suunta).
-39. (lisä) Arvoesineet hehkuvat maassa (esineen värinen sykkivä valo + kipinät, näkyy yöllä kauas).
+39. TEHTY v1.34. Arvoesineet hehkuvat maassa (esineen värinen sykkivä valo + kipinät, näkyy yöllä kauas).
 
-40. (lisä) Riimukivien vihjeet päivitetään nykyiseen etenemiseen (ulottuvuudet → sirpaleet → vartija). Kartalle 2 kylttiä, joiden
+40. TEHTY v1.34. Riimukivien vihjeet päivitetään nykyiseen etenemiseen (ulottuvuudet → sirpaleet → vartija). Kartalle 2 kylttiä, joiden
    teksti (luetaan läheltä) antaa hyvin kryptisen vihjeen jonkin asian sijainnista (esim. jääavain, kiviröykkiö).
 
 41. (lisä) Ulottuvuusportteja koristellaan enemmän (riimut, soihtukulhot, kivipaasit, hehku).
