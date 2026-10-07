@@ -331,6 +331,7 @@ function spawner(dt){
 }
 function respawnNodes(){for(const n of nodes)if(!n.alive&&n.def.kind!=='tree'&&n.respawnAt<=playTime&&dist2(n.x,n.z,P.pos.x,P.pos.z)>40*40&&!nearBase(n.x,n.z))respawnNode(n);}
 const LIGHT_CAP=3.0;let shFrame=0,shNearPrev=false;const ALL_LIGHTS=[...LIGHTS,torchLight,torchFill];
+let shYaw0=null;
 function updateStations(dt){
   for(const p of pieces){
     // piirtoetäisyys: kaukana (sumun takana) olevia rakennuksia ei piirretä
@@ -354,8 +355,10 @@ function updateStations(dt){
    // kartta päivitetään vielä kerran, jottei pelaajan vanha varjo jää maahan (aiemmin säde oli 9 m ja varjo jäi näkyviin harvan päivityksen ajaksi).
    const nearL=dist2(LIGHTS[0].position.x,LIGHTS[0].position.z,P.pos.x,P.pos.z)<17*17,left=shNearPrev&&!nearL;shNearPrev=nearL;
    // kaukana tulesta: pimeällä 12, päivällä 30 kehyksen välein (ennen 60/120 → tulen lähellä liikkuvien varjot näyttivät jähmettyvän)
-   const fF=Math.max(1,Math.round((nearL?(dark?2:4):(dark?12:30))*(q>=1?2:1)*rate));
+   const fF=Math.max(1,Math.round((nearL?(dark?2:4):(dark?12:30)*(SET.shFar?2:1))*(q>=1?2:1)*rate));
    if(SET.shRate==='slow'&&shFrame%3===0)sun.shadow.needsUpdate=true;
+   // v1.44 (lista 4, kohta 30) shFar: paikallaan (ei liikettä, hyökkäystä eikä kameran kääntöä) auringon varjot joka 4. kuva, muuten joka kuva
+   else if(SET.shFar&&SET.shRate!=='slow'){const mv=Math.hypot(P.vel.x,P.vel.z)>.2||P.atk||Math.abs(camYaw-(shYaw0??camYaw))>.002;shYaw0=camYaw;if(mv||shFrame%4===0)sun.shadow.needsUpdate=true;}
    if(QUAL.pointShadow){if(torchLight.intensity>0&&shFrame%fT===0)torchLight.shadow.needsUpdate=true;if(LIGHTS[0].intensity>0){if(shFrame%fF===0||shDirty||left)LIGHTS[0].shadow.needsUpdate=true;shDirty=false;}}}
   // Valokatto: pelaajan kohdalle osuva yhteisvalo (summa etäisyyden mukaan vaimennettuna) ei ylitä LIGHT_CAP:ia – päällekkäiset valot eivät kirkastu loputtomiin.
   {let W=0;const ls=ALL_LIGHTS;for(const l of ls)if(l.intensity>0){const d=Math.hypot(l.position.x-P.pos.x,l.position.y-(P.pos.y+1),l.position.z-P.pos.z);W+=l.intensity*Math.pow(Math.max(0,1-d/l.distance),1.5);}

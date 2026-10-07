@@ -73,6 +73,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.44 (lista 4, erä F: optimoinnit asetuksiin)
+- **Kaukainen maasto (terrLod):** sama kärkipuskuri, uusi indeksipuskuri: kameran 100 m säteellä täysi 2 m ruudukko, kauempana
+  8 m lohkot viuhkana; tarkan naapurin puolelle kaikki reunakärjet → ei rakoja. Uudelleen kun kamera liikkuu 24 m (`terrLodTick`,
+  `updateChunkVis`). Maaston kolmiot ~245 000 → ~35 000 (kokonaisuus 797k → 586k kolmiota). Lapion muokkaukset toimivat (kärjet samat).
+- **Staattisten yhdistäminen (mergeSt):** `mergeStatics` 64 m ruuduittain + materiaali + varjoliput; alkuperäiset piiloon (`userData.mg`,
+  `MG_HID`), ei luolastoa/instansseja/arkun kansia/liekkejä/läpinäkyviä; uudet kohteet → yhdistetään uudelleen (`mergeTick`).
+  Alussa 553 meshiä → 112. Ulkoasu sama (sama materiaaliolio).
+- **Auringon varjot harvemmin (shFar):** `sun.shadow.autoUpdate=false`; paikallaan joka 4. kuva, liikkeessä/hyökätessä/kameraa
+  kääntäessä joka kuva; kaukaisen tulen varjokartta 2× harvemmin.
+- **Esiasetukset:** Low, Low+, Medium-: kaikki päällä; Medium–Ultra: vain yhdistäminen. Vanhaan tallenteeseen puuttuvat avaimet otetaan
+  sen esiasetuksesta (nimi ei muutu Customiksi). Asetussivulla uusi väliotsikko "Suorituskyky".
+
 ### v1.43 (lista 4, erä E: latausnäyttö, suorituskykytesti, maailman intro, tauko/käynnissä + aluebannerit)
 - **Latausnäyttö (10):** `#loadScr` heti `<body>`:n alussa: riimukivi (SVG, 24 riimua kahdessa nauhassa) jonka riimut syttyvät sitä
   mukaa kuin 29 skriptiä latautuu (dokumentin `load`-tapahtuma kaapataan, `__ldSet`), sumukerrokset, nousevat kipinät (CSS, toimivat
@@ -1533,7 +1545,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Päivityslista 4: 32 kohtaa (v1.39–) – tarkentavat kysymykset kysytään ensin, vastaukset kirjataan tähän
-**JATKA TÄSTÄ (lista 4):** PR #25 auki. Erät A–E tehty (v1.39–v1.43) + aluebannerien jono/syvyys; seuraavaksi F (v1.44).
+**JATKA TÄSTÄ (lista 4):** PR #25 auki. KAIKKI erät A–F tehty (v1.39–v1.44) + aluebannerien jono/syvyys. PR #25 odottaa yhdistämistä.
 **Erät (lista 4):**
 - A (v1.39): 1 kyykky, 3 ylämäki, 5 selkäterät, 6 esineet maassa, 8–9 pomot/vartijat, 18 rikki kilpi, 19 Aarnihirviö, 25 hp-vaihtelu,
   extra 1 veren fysiikka, extra 2 linnakkeen portaat.

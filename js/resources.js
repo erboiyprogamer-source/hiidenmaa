@@ -154,10 +154,58 @@ function makeChunkIM(type,k,cap){const cx=k%CHN,cz=(k/CHN)|0,x0=-HALF+cx*CHS,z0=
 let statT=0;const _sb=new THREE.Box3(),_sv=new THREE.Vector3();
 function cullStatics(){const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far+30;
   for(const o of statics.children){let c=o.userData.cs;if(!c){if(o.isInstancedMesh){_sb.makeEmpty();for(let i=0;i<o.count;i++){o.getMatrixAt(i,_m4);_sb.expandByPoint(_sv.setFromMatrixPosition(_m4));}}else _sb.setFromObject(o);if(_sb.isEmpty()){o.userData.cs=c={x:o.position.x,z:o.position.z,r:1,dun:false};}else{_sb.getCenter(_sv);c=o.userData.cs={x:_sv.x,z:_sv.z,r:Math.min(400,_sb.getSize(_sv).length()/2),dun:_sb.min.y>DUN.y-5&&_sb.max.y<DUN.y+20&&Math.abs(_sb.min.x)>HALF+50};}}
-    const vis=c.dun?P.inDun:(!P.inDun&&dist2(cx,cz,c.x,c.z)<(f+c.r)*(f+c.r));if(o.visible!==vis)o.visible=vis;}}
-function updateChunkVis(){statT-=1/30;if(statT<=0){statT=.5;cullStatics();}
+    const vis=o.userData.mg?false:c.dun?P.inDun:(!P.inDun&&dist2(cx,cz,c.x,c.z)<(f+c.r)*(f+c.r));if(o.visible!==vis)o.visible=vis;}}
+function updateChunkVis(){statT-=1/30;if(statT<=0){statT=.5;cullStatics();mergeTick();}terrLodTick();
   const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far;
   for(const im of CHUNK_IMS){const R=Math.min(f,im.userData.vis*RDK*(im.userData.vis<80?DETK:1))+CHS*.72;im.visible=im.count>0&&!P.inDun&&dist2(cx,cz,im.userData.cx,im.userData.cz)<R*R;}}
+/* v1.44 (lista 4, kohta 30): KAUKAISEN MAASTON LOD (asetus terrLod). Kärjet pysyvät samoina (lapion muokkaukset toimivat), vain
+   indeksipuskuri vaihtuu: kameran 100 m säteellä täysi 2 m ruudukko, kauempana 8 m lohkot (4×4 ruutua). Karkea lohko piirretään
+   viuhkana kulmasta, ja tarkan naapurin puoleiselle sivulle otetaan kaikki reunakärjet → ei rakoja. Rakennetaan uudelleen, kun kamera
+   liikkuu 24 m. */
+const TL_FULL=terrainMesh.geometry.index,TL_B=4,TL_R=100;let tlOn=false,tlCx=1e9,tlCz=1e9,tlAttr=null;
+function terrLodTick(){const g=terrainMesh.geometry;
+  if(!SET.terrLod){if(tlOn){g.setIndex(TL_FULL);g.setDrawRange(0,Infinity);tlOn=false;}return;}
+  const cx=camera.position.x,cz=camera.position.z;if(tlOn&&dist2(cx,cz,tlCx,tlCz)<24*24)return;tlCx=cx;tlCz=cz;
+  if(!tlAttr)tlAttr=new THREE.BufferAttribute(new Uint32Array(GN*GN*6),1);const I=tlAttr.array,NB=Math.ceil(GN/TL_B);let k=0;
+  const near=(bx,bz)=>{if(bx<0||bz<0||bx>=NB||bz>=NB)return false;const x=-HALF+(bx+.5)*TL_B*GS,z=-HALF+(bz+.5)*TL_B*GS;return dist2(x,z,cx,cz)<TL_R*TL_R;};
+  const V=(ix,iz)=>iz*HN+ix;
+  for(let bz=0;bz<NB;bz++)for(let bx=0;bx<NB;bx++){const x0=bx*TL_B,z0=bz*TL_B,x1=Math.min(GN,x0+TL_B),z1=Math.min(GN,z0+TL_B);
+    if(near(bx,bz)){for(let iz=z0;iz<z1;iz++)for(let ix=x0;ix<x1;ix++){const a=V(ix,iz),b=a+HN,c=a+1,d=b+1;I[k++]=a;I[k++]=b;I[k++]=c;I[k++]=c;I[k++]=b;I[k++]=d;}continue;}
+    // reuna kulmasta (x0,z0): +z (x=x0) → +x (z=z1) → −z (x=x1) → −x (z=z0)
+    const pr=[];const W=near(bx-1,bz),N=near(bx,bz+1),E=near(bx+1,bz),S=near(bx,bz-1);
+    for(let iz=z0;iz<z1;iz+=(W?1:z1-z0))pr.push([x0,iz]);
+    for(let ix=x0;ix<x1;ix+=(N?1:x1-x0))pr.push([ix,z1]);
+    for(let iz=z1;iz>z0;iz-=(E?1:z1-z0))pr.push([x1,iz]);
+    for(let ix=x1;ix>x0;ix-=(S?1:x1-x0))pr.push([ix,z0]);
+    const a=V(x0,z0);for(let i=1;i<pr.length-1;i++){const p=pr[i],q=pr[i+1];if((p[0]===x0&&q[0]===x0)||(p[1]===z0&&q[1]===z0))continue;I[k++]=a;I[k++]=V(p[0],p[1]);I[k++]=V(q[0],q[1]);}
+    }
+  tlAttr.needsUpdate=true;tlAttr.updateRange.offset=0;tlAttr.updateRange.count=k;if(!tlOn){g.setIndex(tlAttr);tlOn=true;}g.setDrawRange(0,k);}
+/* v1.44 (kohta 30): STAATTISTEN KOHTEIDEN YHDISTÄMINEN (asetus mergeSt). Pinnan kohteet (riimukivet, rauniot, linnakkeet…) yhdistetään
+   64 m ruuduittain ja materiaaleittain yhdeksi meshiksi → paljon vähemmän piirtokutsuja. Materiaali on sama olio, joten sen muutokset
+   (hehku, läpinäkyvyys) näkyvät edelleen. Ei yhdistetä: luolaston sisätiloja, instanssimeshejä, liikkuvia osia (arkun kansi, liekit),
+   läpinäkyviä. Alkuperäiset piilotetaan (ylin taso `userData.mg` → cullStatics). Uusia kohteita tultua yhdistetään uudelleen. */
+let MERGED=[],MG_HID=[],mergeN=-1;
+function unmergeStatics(){for(const m of MERGED){statics.remove(m);m.geometry.dispose();}MERGED=[];for(const o of MG_HID){if(o.parent===statics)o.userData.mg=false;else o.visible=true;}MG_HID=[];mergeN=-1;}
+function mergeStatics(){unmergeStatics();cullStatics();statics.updateMatrixWorld(true);const G=new Map(),_n3=new THREE.Matrix3(),_v=new THREE.Vector3();
+  for(const top of statics.children){if(top.isInstancedMesh||top.userData.noMerge)continue;const c=top.userData.cs;if(!c||c.dun)continue;
+    let skip=false;top.traverse(o=>{if(o.userData.lid||o.userData.flame)skip=true;});if(skip)continue;
+    top.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||Array.isArray(o.material)||o.material.transparent||!o.geometry.attributes.position)return;
+      for(let q=o;q&&q!==top;q=q.parent)if(!q.visible)return;
+      const m=o.material,uv=!!(m.map&&o.geometry.attributes.uv),col=!!(m.vertexColors&&o.geometry.attributes.color);
+      const key=[Math.floor(c.x/64),Math.floor(c.z/64),m.uuid,o.castShadow?1:0,o.receiveShadow?1:0,uv?1:0,col?1:0].join('|');
+      let e=G.get(key);if(!e){e={m,cast:o.castShadow,recv:o.receiveShadow,uv,col,list:[]};G.set(key,e);}e.list.push({o,top});});}
+  for(const e of G.values()){if(e.list.length<2)continue;let n=0;const gs=e.list.map(({o})=>{const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry;n+=g.attributes.position.count;return g;});
+    const P3=new Float32Array(n*3),N3=new Float32Array(n*3),U2=e.uv?new Float32Array(n*2):null,C3=e.col?new Float32Array(n*3):null;let off=0;
+    e.list.forEach(({o},i)=>{const g=gs[i],pa=g.attributes.position,na=g.attributes.normal,ua=g.attributes.uv,ca=g.attributes.color;_n3.getNormalMatrix(o.matrixWorld);
+      for(let j=0;j<pa.count;j++){_v.fromBufferAttribute(pa,j).applyMatrix4(o.matrixWorld);P3.set([_v.x,_v.y,_v.z],(off+j)*3);
+        if(na){_v.fromBufferAttribute(na,j).applyMatrix3(_n3).normalize();N3.set([_v.x,_v.y,_v.z],(off+j)*3);}
+        if(U2&&ua){U2[(off+j)*2]=ua.getX(j);U2[(off+j)*2+1]=ua.getY(j);}if(C3&&ca){C3[(off+j)*3]=ca.getX(j);C3[(off+j)*3+1]=ca.getY(j);C3[(off+j)*3+2]=ca.getZ(j);}}
+      off+=pa.count;if(g!==o.geometry)g.dispose();});
+    const bg=new THREE.BufferGeometry();bg.setAttribute('position',new THREE.BufferAttribute(P3,3));bg.setAttribute('normal',new THREE.BufferAttribute(N3,3));if(U2)bg.setAttribute('uv',new THREE.BufferAttribute(U2,2));if(C3)bg.setAttribute('color',new THREE.BufferAttribute(C3,3));
+    bg.computeBoundingSphere();const mm=new THREE.Mesh(bg,e.m);mm.castShadow=e.cast;mm.receiveShadow=e.recv;mm.matrixAutoUpdate=false;mm.userData.merged=1;statics.add(mm);MERGED.push(mm);
+    for(const {o,top} of e.list){if(o===top){o.userData.mg=true;MG_HID.push(o);}else{o.visible=false;MG_HID.push(o);}}}
+  cullStatics();mergeN=statics.children.length;}
+function mergeTick(){if(!SET.mergeSt){if(MERGED.length)unmergeStatics();return;}if(statics.children.length!==mergeN)mergeStatics();}
 function initNode(n){n.ox=n.x;n.oz=n.z;n.s0=n.s;n.id=nodeIdN++;n.def=NODE[n.type];n.maxHp=(n.def.hp||1)*(n.def.kind==='tree'?n.s*n.s*1.2:1);n.hp=n.maxHp;n.alive=true;n.respawnAt=0;
   setNodeMatrix(n,true);
   if(n.def.kind==='tree')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+6*n.s,n);

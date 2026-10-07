@@ -378,3 +378,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Uusi maailma alkaa 6 s introlla pilvien yläpuolelta (ohitettavissa millä tahansa näppäimellä).
 - Taukovalikossa "Tila: Tauko / Käynnissä": Käynnissä-tilassa maailma jatkuu valikon takana (et ota vahinkoa).
 - Uusi alue löytyy vasta hieman syvemmällä (~6 m); löytöotsikot häivyttyvät hitaasti eivätkä tule päällekkäin (jono).
+
+## Lista 4, erä F (v1.44)
+- Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
+  Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
