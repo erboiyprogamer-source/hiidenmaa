@@ -13,14 +13,23 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.44)
+## Nykytila (päivitetty v1.57)
 
-- **Päivityslista 4 (32 kohtaa + extrat 1–2 + aluebannerit) on KOKONAAN TEHTY** v1.39–v1.44 (+ v1.45 latausnäytön leimahdus ja sivupartikkelit, v1.46 valikon uudistus, v1.47 säädinteemat ja logo, v1.48 7 logoteemaa satunnaisesti), haara
-  `claude/hiidenmaa-survival-game-fmxt0m`, PR #25 odottaa yhdistämistä (main = v1.37). Päivityslista 5 tehty v1.49–v1.52. Seuraava työ: uusi lista käyttäjältä.
-- Erät: A v1.39, B v1.40, C v1.41, D v1.42, E v1.43 (+ aluebannerit), F v1.44 – yksityiskohdat versiolokissa ja kohdassa "Päivityslista 4".
-- Testauksen huomiot: headless-testissä CSS-animaatiot eivät etene raskaan 3D:n aikana (tarkista ulkoasu animaatiot pois), ulottuvuuden
-  rakennus kestää testikoneella sekunteja (odota `waitForFunction`illa), suorituskykytesti ohitetaan automaatiossa (`navigator.webdriver`),
-  `?perf=1` pakottaa sen. Uusi maailma alkaa tilassa `intro` (ei `play`).
+- **Versio 1.57**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.57, julkaisupäivitys) odottaa yhdistämistä;
+  `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
+  logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
+- **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
+  8 grafiikkatasoa): 0 virhettä, 0 NaN; `tools/tarkistus.mjs` KAIKKI OK.
+- **Avoimet huomiot (eivät bugeja):** (1) ensimmäinen yö on kova – paikallaan seisova pelaaja kuolee aloituspaikalla ~30 s:ssa;
+  (2) Ultra jopa ~830 piirtokutsua (heikoille koneille suorituskykytesti valitsee kevyemmän). Aiempi huomio "isojen taisteluiden jälkeen
+  +100 objektia" selvitetty: se oli pudonnutta saalista, joka katoaa 5 min:ssa (ks. katoamisajat OMINAISUUDET.md) – ei vuoto.
+- **Katoamisajat:** osumaläiskät ja pisaraläiskät 10 s, vihollisen lammikko ja ruumis 9,4 s (tavallinen ja tuhka), pelaajan lammikko
+  60 s, valumanoro 40 s, läiskiä enintään 140, ilmassa oleva pisara 3 s, juuttunut nuoli 6 s, maassa oleva esine 5 min (vilkkuu
+  viimeiset 15 s; arvoesineet siirtyvät arkkuun), pelaajan ruumis/tuhkakasa uudelleensyntymässä.
+- Testauksen huomiot: headless-testissä CSS-animaatiot eivät etene raskaan 3D:n aikana (tarkista ulkoasu animaatiot pois tai ilman
+  pelin skriptejä), ulottuvuuden rakennus kestää testikoneella sekunteja (`waitForFunction`), suorituskykytesti ja aloitusjakso
+  ohitetaan automaatiossa (`navigator.webdriver`; `?perf=1` ja `?splash=1` pakottavat). Uusi maailma alkaa tilassa `intro`. Jousen
+  narua mitatessa katso pätkien päätepisteet (KORJAUKSET 30). Testipalvelin: käynnistä taustakomentona pitkällä aikarajalla.
 
 ## Pysyvät päätökset
 

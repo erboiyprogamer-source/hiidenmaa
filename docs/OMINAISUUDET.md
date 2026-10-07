@@ -420,3 +420,14 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Jousi: naru vedetään oikein taaksepäin, ote kahvasta, osumamerkki (X) osumasta. Kyykkyristikko 40/80/120 m.
 - Q pudottaa pelissä valitusta pikapaikasta yhden, Shift+Q koko pinon (reppu auki: hiiren alla oleva/valittu kuten ennen).
 - Kirveellä/hakulla hakatessa kädet hieman ylempänä ja edempänä, eikä iskujen välissä tai lopussa ole pyörähdystä.
+
+## Katoamisajat (v1.57)
+| Mikä | Katoaa |
+| --- | --- |
+| Osuman veriläiskä, pisaran läiskä (maa/seinä) | 10 s (häivytys viimeiset 2,5 s) |
+| Vihollisen kuoleman lammikko ja ruumis | 9,4 s (ruumis vajoaa 7 s jälkeen; tuhkakasa samoin) |
+| Pelaajan kuoleman lammikko | 60 s; ruumis/tuhkakasa uudelleensyntymässä |
+| Rinteessä valuvan noron läiskät | 40 s |
+| Läiskien enimmäismäärä | 140 (vanhin poistuu) |
+| Juuttunut nuoli | 6 s |
+| Maassa oleva esine | 5 min (vilkkuu viimeiset 15 s); arvoesineet siirtyvät arkkuun |

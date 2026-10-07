@@ -50,17 +50,17 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/mobs.js` | `MOBDEF`, mallit (`figGolem`, `figYlimys`, `figKalmo`, `figHiisi`, ulottuvuuksien pomot), `spawnMob`, `mobs`, `boss` |
 | `js/dungeons.js` | `REALMS` (3 ulottuvuutta, avainketju `lock`/`key`/`alt`), generaattorit, `ensureRealm`, koristeet (`dressFloor`, tynnyrit, spawneri), portaalit, `realmBossAI`, Kalmanpesän murskaus `hitSpawner`, usva/höyry/pisarat, `P.spawnProt`, `fo(k)` |
 | `js/story.js` | löytöpaikat (`SITE_KEYS`, rauniot, arkkukivilinnakkeet `FORT`), vartijat (`GUARDS`), lisäriimukivet (`XRUNES`), tehtävät (`QUESTS`), leirit `CAMPS`/`ensureCamps`, kiviröykkiöt `STASHES`, maailman saalis `planLoot`/`wlLoot`, arvoesineiden palautus `relocateValuable`/`valuableCensus`, kyltit `SIGNS` |
-| `js/state.js` | `P` (pelaaja), `inv`, `flags`, pelaajahahmo, reppu, selkäesineet (`backPose`), maahan pudonneet esineet (arvoesineet `isValuable`, 3D-kuvakkeet `dropMesh`), partikkelit, ammukset |
-| `js/effects.js` | veri (`bleed`, `splat`, `addWound`), savupilvet (`smokePuff`), kuolema-animaatiot (`mobDeathAnim`, tuhka), pelaajan palaminen ja kuolema |
+| `js/state.js` | `P` (pelaaja), `inv`, `flags`, pelaajahahmo, reppu, selkäesineet (`backPose`), maahan pudonneet esineet (arvoesineet `isValuable`, 3D-kuvakkeet `dropMesh`), partikkelit, ammukset; jousen osumamerkki `hitMarker`, selän nuolet `hasArrows` |
+| `js/effects.js` | veri (`bleed`, `splat`, `addWound`, rinne `slopeN`, valuminen `poolFlow`, Ultra `bloodUltra`), savupilvet (`smokePuff`), kuolema-animaatiot (`mobDeathAnim`, tuhka), pelaajan palaminen ja kuolema |
 | `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET`/`SET_DEF` (oletus = yleisin taso), `SET_PAGES`, `applyGfx()`, asetusvalikko (Grafiikka, Varjot, …); automaattisäätö `AUTO`/`autoOn`, väliotsikot; esiasetussäätimen teemat `pvTheme`/`PV_FX`. |
-| `js/input.js` | näppäimet, hiiri, hiiren lukitus; virtuaalinen osoitin `VC`/`vcSync` (lukitus pysyy paneelien ajan) |
-| `js/actions.js` | hyökkäys, vahinko, syöminen, `interact()`, alttari, luolastoon meno |
+| `js/input.js` | näppäimet, hiiri, hiiren lukitus; virtuaalinen osoitin `VC`/`vcSync`/`vcFlush` (lukitus pysyy paneelien ajan; herkkyys `SET.sens`/`SET.curSens`) |
+| `js/actions.js` | hyökkäys, vahinko, syöminen, `interact()`, alttari, luolastoon meno; jousi `bowSpread`/`bowShot`/`bowCrouch` |
 | `js/building.js` | rakennushaamu, ruudukkoon kohdistus, reunakohdistus `smartSnap`, `validPlace`, purku |
 | `js/environment.js` | päivä/yö (`DAY_LEN`), sää, tuuli (`WIND`, `updateWind`), valot, selviytyminen (nälkä, kylmä, lepo) |
 | `js/player.js` | liike, fysiikka, animaatio (lyönnit `swingPose`, kirves/hakku `chopIK`/`CHOP_K`, käsien IK `armIK`, läpäisyn esto `armClear`), DEV-lento, kuolema, uudelleensyntyminen, nukkuminen |
-| `js/ai.js` | vihollisten tekoäly (luonteet `per`, `temperAI`, `stalkAI`), pomon hyökkäykset, `SPAWN`-taulukot, `spawnScary`, työpisteiden päivitys |
+| `js/ai.js` | vihollisten tekoäly (luonteet `per`, `temperAI`, `stalkAI`), pomon hyökkäykset, `SPAWN`-taulukot, `spawnScary`, jousikalmot `archerAI`, auringossa palaminen `sunBurnAI`, työpisteiden päivitys |
 | `js/camera.js` | kolmannen persoonan kamera |
-| `js/ui.js` | HUD, viestit, paneelit, kartta; esineiden siirto/raahaus (`slotUX`, `#ghostIt`), tehtävän/tavoitteen piilotus (`applyHudMode`), terveyspalkkirivit (`HP_ROW`). |
+| `js/ui.js` | HUD, viestit, paneelit, kartta; esineiden siirto/raahaus (`slotUX`, `#ghostIt`), tehtävän/tavoitteen piilotus (`applyHudMode`), terveyspalkkirivit (`HP_ROW`); tiputusristikko `updDropRet`, pikapaikan pudotus `dropHot`, aluebannerien jono `zoneQ`. |
 | `js/progress.js` | `bump`, XP ja taso (`lvlInfo`), saavutukset (`ACH`, `BON`), `GOALS`, edistymispaneeli (J) |
 | `js/save.js` | `serialize`, `loadData`, `saveGame`, `SKEY`, tallennuspaikat (`SLOTS`, `slotKey`, `slotMeta`, `curSlot`) |
 | `js/menubg.js` | valikon animoidut taustakuvat (`MBG_SCENES` 21 kpl, `mbgFrame`, `mbgShow`); valikossa ei piirretä 3D:tä; valikon partikkelit `MFX`/`mfxFrame` (laji taustan mukaan), SVG-logo `buildLogo`, 7 teemaa `LOGO_T`, arvonta `logoRandom` |
