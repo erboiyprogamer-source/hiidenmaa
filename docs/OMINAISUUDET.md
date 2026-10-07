@@ -352,3 +352,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Rikkinäinen kilpi ei torju ja on selässä. Aarnihirviö paranee vasta 1,7 min jälkeen hitaasti.
 - Veren fysiikka (asetus, High+/Ultra): pisarat lentävät iskun suuntaan ja jäävät pintoihin, viillot ja tippuminen.
 - Nuolet osuvat puihin ja kiviin. Linnakkeen portaat leveämmät ja muuri ei estä niitä.
+
+## Lista 4, erä B (v1.40)
+- P avaa päävalikon ja sulkee kaikki paneelit; Esc ei tee pelissä mitään. Näppäinopasteet (asetus).
+- Napsautus paneelin ulkopuolelle sulkee sen, tai pudottaa valitun esineen. Puolitus oikealla napsautuksella kumpaankin suuntaan.
+- Omat liukusäätimet ja kytkimet; paneelissa kirjoittaminen menee hakuun.
+- Arkut ja tynnyrit avautuvat vain, kun niitä katsoo.

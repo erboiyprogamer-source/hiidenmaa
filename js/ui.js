@@ -77,20 +77,20 @@ let panelOpenedAt=0;
 // DEV-valikko (Ä): sää, kellonaika, terveys ja kylläisyys – muutokset heti. Sää pysyy valittuna 10 min.
 function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=dayT*24;return `${Math.floor(h)}:${String(Math.floor(h%1*60)).padStart(2,'0')}`;};
   B.innerHTML=`<div class="devRow"><b>Sää</b><div class="devBtns">${Object.entries(WEATHERS).map(([k,w])=>`<button class="btn${weather.cur===k?' on':''}" data-w="${k}">${w.n}</button>`).join('')}</div></div>
-  <div class="devRow"><b>Aika <span id="devClk">${clk()}</span></b><input id="devT" type="range" min="0" max="1" step="0.005" value="${dayT}"><div class="devBtns">${[['Aamu',.28],['Päivä',.5],['Ilta',.74],['Yö',.95]].map(([n,v])=>`<button class="btn" data-t="${v}">${n}</button>`).join('')}</div></div>
-  <div class="devRow"><b>Terveys <span id="devHpV">${Math.round(P.hp)} / ${maxHp()}</span></b><input id="devHp" type="range" min="1" max="${maxHp()}" step="1" value="${P.hp}"></div>
-  <div class="devRow"><b>Kylläisyys <span id="devHuV">${Math.round(P.hunger)}</span></b><input id="devHu" type="range" min="0" max="100" step="1" value="${P.hunger}"></div>
-  <div class="devRow"><b>Jumalvoimat</b><div class="devChk">${[['god','Ei voi kuolla'],['food','Ei nälkää'],['stam','Rajaton kestävyys'],['lvl','Korkein taso'],['weight','Ei painorajaa'],['fly','Lento (tuplahyppy)']].map(([k,n])=>`<label><input type="checkbox" data-dv="${k}"${DEVF[k]?' checked':''}> ${n}</label>`).join('')}</div>
+  <div class="devRow"><b>Aika <span id="devClk">${clk()}</span></b>${sldHTML('devT',0,1,.005,dayT)}<div class="devBtns">${[['Aamu',.28],['Päivä',.5],['Ilta',.74],['Yö',.95]].map(([n,v])=>`<button class="btn" data-t="${v}">${n}</button>`).join('')}</div></div>
+  <div class="devRow"><b>Terveys <span id="devHpV">${Math.round(P.hp)} / ${maxHp()}</span></b>${sldHTML('devHp',1,maxHp(),1,Math.round(P.hp))}</div>
+  <div class="devRow"><b>Kylläisyys <span id="devHuV">${Math.round(P.hunger)}</span></b>${sldHTML('devHu',0,100,1,Math.round(P.hunger))}</div>
+  <div class="devRow"><b>Jumalvoimat</b><div class="devChk">${[['god','Ei voi kuolla'],['food','Ei nälkää'],['stam','Rajaton kestävyys'],['lvl','Korkein taso'],['weight','Ei painorajaa'],['fly','Lento (tuplahyppy)']].map(([k,n])=>`<label class="tglRow">${tglHTML('dv_'+k,!!DEVF[k],`data-dv="${k}"`)} ${n}</label>`).join('')}</div>
     <div class="devBtns"><button class="btn" data-dvall="1">Kaikki päälle</button><button class="btn" data-dvall="0">Kaikki pois</button></div></div>
   <div class="devRow"><b>Hae esine (DEV)</b><div class="devGive"><input id="devQ" class="search" type="search" placeholder="Hae esinettä nimellä…" autocomplete="off" spellcheck="false" value="${esc(devQ)}">
-    <input id="devN" type="number" min="1" max="999" value="${devN}" title="Määrä"><button class="btn" id="devGo">Hae</button></div><div id="devList" class="devList"></div></div>
+    <input id="devN" type="text" inputmode="numeric" maxlength="3" placeholder="1" value="${devN>1?devN:''}" title="Määrä (tyhjä = 1)"><button class="btn" id="devGo">Hae</button></div><div id="devList" class="devList"></div></div>
   <div class="devRow"><b>Kartta</b><div class="devBtns"><button class="btn" id="devMap">Paljasta kartta ja kohteet</button></div></div>`;
   B.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{weather.cur=b.dataset.w;weather.until=playTime+600;renderDev();});
   B.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{dayT=+b.dataset.t;renderDev();});
-  $('#devT').oninput=e=>{dayT=+e.target.value;$('#devClk').textContent=clk();};
-  $('#devHp').oninput=e=>{P.hp=+e.target.value;$('#devHpV').textContent=`${P.hp} / ${maxHp()}`;};
-  $('#devHu').oninput=e=>{P.hunger=+e.target.value;$('#devHuV').textContent=P.hunger;};
-  B.querySelectorAll('[data-dv]').forEach(c=>c.onchange=()=>{DEVF[c.dataset.dv]=c.checked?1:0;saveDevF();invDirty=true;});
+  bindSld('devT',v=>{dayT=v;$('#devClk').textContent=clk();});
+  bindSld('devHp',v=>{P.hp=v;$('#devHpV').textContent=`${P.hp} / ${maxHp()}`;});
+  bindSld('devHu',v=>{P.hunger=v;$('#devHuV').textContent=P.hunger;});
+  B.querySelectorAll('[data-dv]').forEach(c=>c.onclick=()=>{DEVF[c.dataset.dv]=DEVF[c.dataset.dv]?0:1;saveDevF();invDirty=true;renderDev();});
   B.querySelectorAll('[data-dvall]').forEach(b=>b.onclick=()=>{for(const k in DEVF)DEVF[k]=+b.dataset.dvall;saveDevF();invDirty=true;renderDev();});
   // v1.05 DEV-esinehaku: hakusana + määrä hakunapin vieressä, osumalista "Anna"-napeilla (lähtee pois DEV-tilan mukana)
   const listGive=()=>{const q=fold($('#devQ').value.trim()),L=$('#devList');devQ=$('#devQ').value;devN=Math.max(1,Math.min(999,Math.round(+$('#devN').value||1)));
@@ -133,8 +133,13 @@ function renderLog(){const fm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60))
 // v1.32: kiinteän kokoinen reppu skaalataan pienelle näytölle sopivaksi.
 function fitInv(){const el=$('#inv');if(el)el.style.setProperty('--invK',Math.min(1,(innerWidth-16)/1131,(innerHeight-16)/732).toFixed(3));}
 addEventListener('resize',fitInv);
+// v1.40 (lista 4, kohta 28): näppäinopasteet – paneelin oikeaan yläkulmaan "Sulje: P / Tab", pelinäkymän vasempaan alakulmaan "Päävalikko: P".
+const PANEL_KEY={inv:['#inv','inv'],build:['#build','build'],chest:['#chest','interact'],prog:['#progP','prog'],log:['#logP','log'],map:['#mapP','map'],dev:['#devP',null]};
+function refreshKeyHints(){const on=SET.keyHints!==false;for(const k in PANEL_KEY){const [sel,a]=PANEL_KEY[k],el=$(sel);if(!el)continue;let h=el.querySelector(':scope>.pHint');
+    if(!h){h=document.createElement('span');h.className='pHint';el.appendChild(h);}h.hidden=!on;h.textContent=`Sulje: ${keyLabel(BIND.menu)}${a?' / '+keyLabel(BIND[a]):k==='dev'?' / Ä':''}`;}
+  let g=$('#gameHint');if(!g){g=document.createElement('div');g.id='gameHint';$('#hud').appendChild(g);}g.hidden=!on;g.textContent=`Päävalikko: ${keyLabel(BIND.menu)}`;}
 function togglePanel(name){if(openPanel===name){closePanels();return;}if(P.dead)return;panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';if(!locked)releaseLock();else{VC.x=innerWidth/2;VC.y=innerHeight/2;}mouseL=false;mouseR=false;P.drawing=false;
-  if(name==='inv'){$('#inv').hidden=false;fitInv();renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){$('#devP').hidden=false;renderDev();}vcSync();}
+  if(name==='inv'){$('#inv').hidden=false;fitInv();{const cs=$('#craftSearch');if(cs)cs.value='';}renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;{const bs=$('#buildSearch');if(bs)bs.value='';}renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){devQ='';devN=1;$('#devP').hidden=false;renderDev();}refreshKeyHints();vcSync();}
 function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;selHalf=false;selEq=null;slotDrag=null;hoverSlot=null;if(typeof updGhost==='function')updGhost();if(!keep){state='play';if(!skipLock&&!locked)requestLock();}vcSync();}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
 function nearStations(){const s={};for(const p of pieces){const k=isFirePiece(p.t)?'nuotio':p.t;if(['tyopenkki','nuotio','ahjo'].includes(k)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(k==='nuotio'?4:8)**2&&!P.inDun){if(k==='nuotio'&&p.data.fuel<=0)continue;s[k]=1;}}return s;}
@@ -152,7 +157,7 @@ function renderInv(){initSearch();renderEffects();
       if(selSlot>=0&&selSlot!==i&&inv[selSlot]){if(selEq&&selEq.i===selSlot)selEq.undo();selEq=null;(selHalf?moveHalf:moveSlot)(inv,selSlot,inv,i);selSlot=-1;selHalf=false;upPrev=null;invDirty=true;updateGear();renderInv();return;}
       upPrev=null;selHalf=false;selEq=null;if(selSlot===i){selSlot=-1;renderInv();return;}selSlot=inv[i]?i:-1;
       if(inv[i]&&clickEquips(inv[i]))selEq={i,undo:clickEquip(inv[i])};renderInv();};
-    el.ondblclick=()=>{const s=inv[i];if(s&&!ITEMS[s.id].food&&!clickEquips(s))useSlot(i);selSlot=-1;renderInv();};el.oncontextmenu=e=>{e.preventDefault();if(dragEat)return;if(selSlot>=0&&selSlot!==i&&inv[selSlot]){selEq=null;moveHalf(inv,selSlot,inv,i);invDirty=true;updateGear();renderInv();}
+    el.ondblclick=()=>{const s=inv[i];if(s&&!ITEMS[s.id].food&&!clickEquips(s))useSlot(i);selSlot=-1;renderInv();};el.oncontextmenu=e=>{e.preventDefault();if(dragEat)return;if(selSlot>=0&&selSlot!==i&&inv[selSlot]){if(selEq&&selEq.i===selSlot)selEq.undo();selEq=null;moveHalf(inv,selSlot,inv,i);   /* v1.40 (kohta 26): vasen tai oikea valinta → oikea toiseen ruutuun = puolet */invDirty=true;updateGear();renderInv();}
       else{const h=pickHalf(inv[i]);upPrev=null;selEq=null;if(selSlot===i&&selHalf===h){selSlot=-1;selHalf=false;}else{selSlot=inv[i]?i:-1;selHalf=h;}renderInv();}};   // v1.30: oikea = ota puolet valituksi
     slotUX(el,'i',i);});
   $('#invW').textContent=`Paino ${invWeight().toFixed(0)} / ${MAXW}`;updGhost();
@@ -394,6 +399,14 @@ addEventListener('mouseup',e=>{const d=slotDrag;slotDrag=null;if(!d||!d.on)retur
 addEventListener('click',e=>{if(dragEat){dragEat=false;e.stopPropagation();e.preventDefault();}},true);
 addEventListener('contextmenu',e=>{if(dragEat){e.stopPropagation();e.preventDefault();}},true);   // v1.30: oikealla raahauksen jälkeinen contextmenu
 // v1.31: Q pudottaa hiiren alla olevan esineen (repussa ja arkussa) ilman valintaa: Q yksi, Shift+Q koko pino.
+// v1.40 (lista 4, kohdat 27 ja 29): napsautus paneelin reunojen ulkopuolelle – valittu esine pudotetaan (puolet jos puolikas valittu),
+// muuten paneeli sulkeutuu.
+addEventListener('mousedown',e=>{if(!openPanel||state!=='ui'||performance.now()-panelOpenedAt<250||dragEat)return;const t=e.target;
+  if(t.closest&&t.closest('.panel,#keyDlg,#hotbar,.dlg,#settings'))return;
+  const cs=chestSel||(selSlot>=0&&inv[selSlot]?{g:'i',i:selSlot,half:selHalf}:null);
+  if(cs){const arr=uxArr(cs.g),s=arr[cs.i];if(s){const n=cs.half?Math.max(1,Math.floor(s.n/2)):s.n;if(s.eq&&n>=s.n){s.eq=false;}playerDrop(s.id,n,s.q);s.n-=n;if(s.n<=0)arr[cs.i]=null;sfx('pickup',.8,.5);msg(`Pudotit: ${ITEMS[s.id].n}${n>1?' ×'+n:''}`);}
+    selSlot=-1;selHalf=false;selEq=null;chestSel=null;invDirty=true;updateGear();uxRerender();updGhost();return;}
+  closePanels(false);});
 function dropAt(g,i,all){const arr=uxArr(g),s=arr[i];if(!s)return false;const n=all?s.n:1;if(s.eq&&(all||s.n<=1)){s.eq=false;updateGear();}
   playerDrop(s.id,n,s.q);s.n-=n;if(s.n<=0){arr[i]=null;if(g==='i'&&selSlot===i)selSlot=-1;if(chestSel&&chestSel.g===g&&chestSel.i===i)chestSel=null;}
   sfx('pickup',.8,.5);invDirty=true;uxRerender();updGhost();return true;}

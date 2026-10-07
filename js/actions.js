@@ -187,12 +187,13 @@ function maxStam(){return 100+(P.buffs.voima?25:0)+BON.stam;}
 let lookTarget=null;
 function findInteract(){
   const ray=camRay();let best=null,bs=1e9;
-  const consider=(x,y,z,obj,maxD=3.2)=>{const pd=dist2(x,z,P.pos.x,P.pos.z);if(pd>maxD*maxD)return;if(Math.abs(y-P.pos.y)>3)return;
-    _tmpV.set(x-ray.o.x,y-ray.o.y,z-ray.o.z);const t=_tmpV.dot(ray.d);if(t<0)return;const perp=_tmpV.lengthSq()-t*t;const sc=perp+pd*.08;if(sc<bs&&perp<2.2){bs=sc;best=obj;}};
+  // v1.40 (lista 4, kohta 23): arkut, tynnyrit, kirstut ja säkit vain kun tähtäin osuu tai on 15° sisällä (look)
+  const consider=(x,y,z,obj,maxD=3.2,look)=>{const pd=dist2(x,z,P.pos.x,P.pos.z);if(pd>maxD*maxD)return;if(Math.abs(y-P.pos.y)>3)return;
+    _tmpV.set(x-ray.o.x,y-ray.o.y,z-ray.o.z);const t=_tmpV.dot(ray.d);if(t<0)return;const perp=_tmpV.lengthSq()-t*t;if(look&&Math.sqrt(Math.max(0,perp))>t*.27+.35)return;const sc=perp+pd*.08;if(sc<bs&&perp<2.2){bs=sc;best=obj;}};
   for(const n of nodesNear(P.pos.x,P.pos.z,3.4,_nl))if(n.def.kind==='pick')consider(n.x,n.y+.3,n.z,{kind:'node',n,label:'Poimi '+n.def.label});
-  for(const it of interactables)if(dist2(it.x,it.z,P.pos.x,P.pos.z)<it.r*it.r*1.6)consider(it.x,it.y,it.z,{kind:'it',it},it.r);
-  for(const p of pieces){const l=pieceLabel(p);if(l&&dist2(p.x,p.z,P.pos.x,P.pos.z)<12)consider(p.x,p.y+.7,p.z,{kind:'piece',p,label:l},3);}
-  for(const g of graves)if((g.dim||'world')===curDim())consider(g.x,g.y+.5,g.z,{kind:'grave',g,label:fitsAll(g.items)?'Kerää tavarasi hautakasasta':'Reppuun ei mahdu kaikkea – tee tilaa'});
+  for(const it of interactables)if(dist2(it.x,it.z,P.pos.x,P.pos.z)<it.r*it.r*1.6){if(it.look===undefined){const l=String(typeof it.label==='function'?it.label():it.label||'');it.look=/arkku|tynnyri|kirstu|säkki/i.test(l);}consider(it.x,it.y,it.z,{kind:'it',it},it.r,it.look);}
+  for(const p of pieces){const l=pieceLabel(p);if(l&&dist2(p.x,p.z,P.pos.x,P.pos.z)<12)consider(p.x,p.y+.7,p.z,{kind:'piece',p,label:l},3,!!PIECES[p.t].store);}
+  for(const g of graves)if((g.dim||'world')===curDim())consider(g.x,g.y+.5,g.z,{kind:'grave',g,label:fitsAll(g.items)?'Kerää tavarasi hautakasasta':'Reppuun ei mahdu kaikkea – tee tilaa'},3.2,true);
   return best;
 }
 function pieceLabel(p){if(PIECES[p.t].store)return 'Avaa '+PIECES[p.t].n.toLowerCase();if(bt(p.t)==='ovi')return p.data.open?'Sulje ovi':'Avaa ovi';switch(p.t){

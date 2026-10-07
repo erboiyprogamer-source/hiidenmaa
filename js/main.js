@@ -157,6 +157,6 @@ function frame(now){
   // v1.38: piirtovirhe näkyy tarkkana (ennen try-lohkon ulkopuolella → selain näytti vain "Script error.", KORJAUKSET 28)
   if(!skip3d){try{renderer.render(scene,camera);}catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe piirrossa: '+(err&&err.message||err));}}}
 }
-updateLights();applyGfx();
+updateLights();applyGfx();refreshKeyHints();
 requestAnimationFrame(frame);
 window.__game={renderer,keys,G,WH,get ghost(){return{sel:buildSel,ok:ghostOk,pos:ghostPos,why:lastInvalid}},placeBuild,openChest,scene,camera,P,get mobs(){return mobs},inv:()=>inv,pieces:()=>pieces,invAdd,addPiece,spawnMob,newGame,startPlay,flags:()=>flags,saveGame,serialize,loadData,setState:s=>state=s,get state(){return state},update,interact,togglePanel,useSlot,craft,RECIPE_BY,setBuildSel,enterDungeon,exitDungeon,camYaw:v=>camYaw=v,doMeleeHit,startAttack,nodes,setDay:v=>dayT=v};

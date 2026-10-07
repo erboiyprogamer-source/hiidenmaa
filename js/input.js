@@ -6,11 +6,17 @@
 const keys={};let mouseL=false,mouseR=false,locked=false,lockFailed=false,invertY=false;
 const canvas=renderer.domElement;
 addEventListener('keydown',e=>{
-  if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+  // v1.40 (kohta 4): tekstikentässä Enter lopettaa kirjoittamisen, Tab sulkee repun kuten ennen; muut näppäimet menevät tekstiin
+  if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT'||e.target.tagName==='SELECT'){if(e.code==='Enter'&&e.target.classList.contains('search')){e.target.blur();return;}if(e.code!=='Tab'||e.target.tagName==='TEXTAREA')return;e.target.blur();}
+  // Paneelissa kirjoittaminen menee suoraan hakukenttään (ei tarvitse napsauttaa sitä ensin); toimintonäppäimet toimivat kuten ennen.
+  if(state==='ui'&&openPanel&&e.key.length===1&&e.key!==' '&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat){const sf={inv:'#craftSearch',build:'#buildSearch',dev:'#devQ'}[openPanel],el=sf&&$(sf);
+    const skip=[BIND.interact,BIND.inv,'KeyI',BIND.menu,BIND.build,BIND.map,BIND.prog,BIND.log,BIND.full,BIND.hud,'KeyQ','Quote'];
+    if(el&&!skip.includes(e.code)){e.preventDefault();el.focus();el.value+=e.key;el.dispatchEvent(new Event('input'));setTimeout(()=>{const n=el.value.length;try{el.setSelectionRange(n,n);}catch(err){}},5);return;}}
   keys[e.code]=true;
   if(e.code==='Tab'){e.preventDefault();}
   if(e.code===BIND.full&&!e.repeat&&(state==='play'||state==='ui'||state==='paused'))toggleFullscreen();
-  if(state==='paused'&&e.code==='Escape'&&!e.repeat&&performance.now()-pausedAt>400){if(!$('#settings').hidden)$('#settings').hidden=true;else $('#bResume').click();return;}
+  // v1.40 (lista 4, kohta 7): Esc ei tee pelissä mitään (selain vapauttaa silti hiiren lukituksen). P = päävalikko ja yleinen sulkunäppäin.
+  if(state==='paused'&&e.code===BIND.menu&&!e.repeat&&performance.now()-pausedAt>250){e.preventDefault();if(!$('#keyDlg').hidden)return;if(!$('#settings').hidden)$('#settings').hidden=true;else $('#bResume').click();return;}
   // v0.80: kuoleman ruudulla Enter herättää (hiiren lisäksi); kuollessa muut näppäimet eivät avaa valikoita
   if(state==='dead'){if((e.code==='Enter'||e.code==='NumpadEnter')&&!e.repeat){e.preventDefault();respawn();}return;}
   if(P.dead)return;
@@ -29,7 +35,7 @@ addEventListener('keydown',e=>{
   else if(c===BIND.log)togglePanel('log');
   else if(c===BIND.hud){SET.hudMode=((SET.hudMode|0)+1)%4;saveSet();applyHudMode();}   // v1.18 (lista 2, kohta 8)
   else if(c===BIND.build){const w=equipped('weapon');if(w&&w.id==='vasara')togglePanel('build');else msg('Ota vasara käteen rakentaaksesi.','warn');}
-  else if(c==='Escape'){if(openPanel){e.preventDefault();closePanels(false,true);}else if(state==='play'&&locked){pauseGame();releaseLock();}}
+  else if(c===BIND.menu){e.preventDefault();if(openPanel)closePanels(false);else if(state==='play'){pauseGame();releaseLock();}}
   else if(state==='play'){
     if(c===BIND.interact)interact();
     else if(c===BIND.rot){if(isBuilding()){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}}

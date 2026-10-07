@@ -73,6 +73,20 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.40 (lista 4, erä B: P-näppäin, Esc pois, opasteet, reppunapsautukset, omat säätimet, arkku katseella)
+- **P (7):** uusi toiminto `menu` (KeyP, vaihdettavissa): avaa ja sulkee päävalikon, sulkee minkä tahansa paneelin. Esc ei tee pelissä
+  mitään (selain vapauttaa silti hiiren → taukovalikko näkyy). Kiinteiden näppäinten listaan selitys.
+- **Opasteet (28):** paneelin oikeaan yläkulmaan "Sulje: P / Tab" jne. (`refreshKeyHints`, `.pHint`), pelinäkymän vasempaan alakulmaan
+  "Päävalikko: P" (`#gameHint`); asetus Ohjaus › Näppäinopasteet (`SET.keyHints`).
+- **Reppu (26, 27, 29):** puolitus: oikea valitsee puolet ja vasen tai oikea toiseen ruutuun siirtää; vasen valinta + oikea toiseen = puolet
+  (testattu). Napsautus paneelin reunojen ulkopuolelle: ilman valintaa sulkee paneelin, valittuna pudottaa esineen (puolikkaan jos valittu).
+- **Omat säätimet (4):** liukusäätimet `sldHTML`/`bindSld` (esiasetus, zoom, DEV aika/terveys/kylläisyys) ja kytkimet `tglHTML`
+  (asetukset, DEV-jumalvoimat) korvaavat selaimen omat; napit ja valikot eivät jää fokukseen; tekstikenttään palatessa vanha teksti
+  valitaan (kirjoitus korvaa). Hakukentät tyhjenevät paneelia avattaessa, DEV-määrä tyhjä (= 1). Paneelissa kirjoittaminen menee suoraan
+  hakuun (paitsi toimintonäppäimet E, Tab, I, P, B, M, J, L, K, T, Q, Ä); Enter lopettaa kirjoittamisen, Tab sulkee repun.
+  Huom: kun hakukenttä on aktiivinen, P kirjoittaa tekstiä – Enter ensin, sitten P.
+- **Arkku katseella (23):** arkut, tynnyrit, kirstut, säkit, rakennetut säiliöt ja hautakasa vain kun tähtäin on päällä tai 15° sisällä.
+
 ### v1.39 (lista 4, erä A: kyykky, ylämäki, selkäterät, esineet maassa, pomot/vartijat, kilpi, hp-vaihtelu, veren fysiikka, portaat)
 - **Kyykky (1):** eläimet (pakenevat ja luonteelliset) eivät huomaa kyykyssä lainkaan; noustessa 0,1 s viive (`P.uncrouchT`).
 - **Ylämäki (3):** juoksu ja hyppy ylämäkeen (rinne > 0,1) kestävyys ×1,3 (jyrkkä enint. ×1,6), `P.upK`.

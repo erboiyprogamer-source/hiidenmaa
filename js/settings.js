@@ -10,7 +10,7 @@ const ACTIONS=[
   ['interact','Poimi, avaa, käytä','Toiminnot','KeyE'],
   ['build','Rakennusvalikko (vasara)','Rakentaminen','KeyB'],['rot','Käännä rakennetta (Shift = asento)','Rakentaminen','KeyR'],['snap','Sivuttaiskohdistus','Rakentaminen','KeyG'],['vsnap','Pystykohdistus','Rakentaminen','KeyH'],
   ['up','Nosta haamua','Rakentaminen','KeyQ'],['down','Laske haamua','Rakentaminen','KeyZ'],['remove','Pura','Rakentaminen','KeyX'],['repair','Korjaa','Rakentaminen','KeyF'],
-  ['inv','Reppu ja valmistus','Valikot ja paneelit','Tab'],['map','Kartta','Valikot ja paneelit','KeyM'],['prog','Taso, saavutukset, tavoitteet','Valikot ja paneelit','KeyJ'],['log','Viimeiset ilmoitukset','Valikot ja paneelit','KeyL'],['hud','Tehtävä ja tavoite näkyviin / piiloon','Valikot ja paneelit','KeyT'],
+  ['menu','Päävalikko / sulje valikot','Valikot ja paneelit','KeyP'],['inv','Reppu ja valmistus','Valikot ja paneelit','Tab'],['map','Kartta','Valikot ja paneelit','KeyM'],['prog','Taso, saavutukset, tavoitteet','Valikot ja paneelit','KeyJ'],['log','Viimeiset ilmoitukset','Valikot ja paneelit','KeyL'],['hud','Tehtävä ja tavoite näkyviin / piiloon','Valikot ja paneelit','KeyT'],
   ['full','Koko näyttö','Näkymä','KeyK'],['minizoom','Minikartan zoom','Näkymä','KeyN'],
 ];
 const BIND_DEF={};for(const a of ACTIONS)BIND_DEF[a[0]]=a[3];
@@ -37,11 +37,11 @@ function validateKey(action,code){
 // Oletukset = taso, jolla suurin osa pelaa. Varjot: sunRes = auringon varjokartta (px), shDist = auringon varjoalueen säde (m),
 // shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
 const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,grass:1,particles:1,detail:'high',bldDetail:true,
-  renderDist:165,lights:6,mist:.6,clouds:1,drop3d:true,blood:1,bloodFx:false,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
+  renderDist:165,lights:6,mist:.6,clouds:1,drop3d:true,blood:1,bloodFx:false,keyHints:true,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
   autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',hudMode:0,arrowLight:false,menuBg:'img'};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
 // Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
 // v1.35 (lista 3, kohta 16): varjot ovat Grafiikka-sivun väliotsikko (ei omaa sivua).
-const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes'],ctl:['wheelHotbar','zoom','sound','invY']};
+const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes'],ctl:['wheelHotbar','zoom','sound','invY','keyHints']};
 /* v1.35 (lista 3, kohta 17): esiasetukset Low … Ultra (8 tasoa, oletus Medium = SET_DEF:n grafiikka). Esiasetus muuttaa kaikki alla
    luetellut asetukset; Low–Medium kytkee automaattisäädön päälle, High–Ultra pois. Ultra ylittää aiemmat maksimit (piirtoetäisyys 520 m,
    ruoho Ultra, varjoalue 140 m, tulien varjot 1024). Jos jotain säädetään käsin, nimi on "Custom". */
@@ -81,12 +81,28 @@ function applyGfx(){
   if(typeof setQuality==='function')setQuality(QUAL.lvl);
   soundOn=!!SET.sound;invertY=!!SET.invY;
   RDK=SET.renderDist/165*AUTO_K.dist[AUTO.dist];DETK=SET.detail==='low'?.6:1;PF=SET.particles*AUTO_K.fx[AUTO.fx];
-  {const f=$('#fps');if(f){f.hidden=SET.fps==='off';f.className='num fps_'+SET.fps;}}
+  {const f=$('#fps');if(f){f.hidden=SET.fps==='off';f.className='num fps_'+SET.fps;}}if(typeof refreshKeyHints==='function')refreshKeyHints();
   rain.geometry.setDrawRange(0,Math.floor(900*PF)*2);snow.geometry.setDrawRange(0,Math.floor(700*PF));
   for(const p of pieces)applyPieceDetail(p.mesh);
   if(SET.wheelHotbar)camDist=clamp(SET.zoom,2.2,10);
 }
 function applyPieceDetail(mesh){const v=!!SET.bldDetail;mesh.traverse(o=>{if(o.userData&&o.userData.detail)o.visible=v;});}
+
+/* ---------------- OMAT SÄÄTIMET (v1.40, lista 4 kohta 4) ---------------- */
+// Selaimen omat valintaruudut ja liukusäätimet korvattu omilla: eivät jää fokukseen (sininen kehys), toimivat myös pelin omalla
+// osoittimella (keinotekoiset hiiritapahtumat). Liukusäädin: sldHTML + bindSld(id, syötteessä, muutoksen lopussa).
+const sldHTML=(id,min,max,step,v)=>`<div class="sld" id="${id}" data-min="${min}" data-max="${max}" data-step="${step}" data-v="${v}"><i class="sldT"><b style="width:${(v-min)/(max-min)*100}%"></b></i><s style="left:${(v-min)/(max-min)*100}%"></s></div>`;
+let sldDrag=null;
+function sldSet(el,v){const mn=+el.dataset.min,mx=+el.dataset.max,st=+el.dataset.step||1;v=clamp(Math.round((v-mn)/st)*st+mn,mn,mx);el.dataset.v=v;const k=(v-mn)/(mx-mn)*100;el.querySelector('b').style.width=k+'%';el.querySelector('s').style.left=k+'%';return v;}
+function sldFromX(el,x){const r=el.getBoundingClientRect(),mn=+el.dataset.min,mx=+el.dataset.max;return sldSet(el,mn+clamp((x-r.left)/r.width,0,1)*(mx-mn));}
+function bindSld(id,onInput,onChange){const el=document.getElementById(id);if(!el)return;el.onmousedown=e=>{e.preventDefault();e.stopPropagation();sldDrag={el,onInput,onChange};onInput&&onInput(sldFromX(el,e.clientX));};}
+addEventListener('mousemove',e=>{if(sldDrag){const v=sldFromX(sldDrag.el,e.clientX);sldDrag.onInput&&sldDrag.onInput(v);}});
+addEventListener('mouseup',()=>{if(sldDrag){const d=sldDrag;sldDrag=null;d.onChange&&d.onChange(+d.el.dataset.v);}});
+const tglHTML=(id,on,extra='')=>`<button type="button" class="tgl${on?' on':''}" id="${id}" ${extra}><i></i><span>${on?'Päällä':'Pois'}</span></button>`;
+// Napsautuksen jälkeen nappi tai valikko ei jää fokukseen (näppäimet menevät peliin); tekstikenttään palatessa vanha teksti valitaan.
+addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('button,.tgl');if(b)setTimeout(()=>b.blur(),0);});
+addEventListener('change',e=>{if(e.target&&e.target.tagName==='SELECT')setTimeout(()=>e.target.blur(),0);});
+addEventListener('focusin',e=>{const t=e.target;if(t&&t.tagName==='INPUT'&&/^(text|search|number)$/.test(t.type))setTimeout(()=>{try{t.select();}catch(err){}},0);});
 
 /* ---------------- ASETUSVALIKKO ---------------- */
 let setTab='keys',capture=null;
@@ -95,8 +111,8 @@ const row=(l,c,n='')=>`<div class="setRow"><label>${l}</label>${c}<span class="n
 const optSel=(id,opts,cur,def)=>`<select id="${id}"${String(cur)===String(def)?' class="isdef"':''}>${opts.map(([v,t])=>{const d=def!==undefined&&String(v)===String(def);return `<option value="${v}"${d?' class="def"':''}${String(v)===String(cur)?' selected':''}>${t}${d?' · oletus':''}</option>`;}).join('')}</select>`;
 // Asetusrivi asetusavaimelle: valikko (opts) tai valintaruutu. Oletusarvo näkyy vaaleana ja merkinnällä "oletus".
 const isDef=k=>String(SET[k])===String(SET_DEF[k]);
-const setRow=(label,key,opts,note='')=>row(label+(isDef(key)?' <span class="defTag">oletus</span>':''),opts?optSel('s_'+key,opts,SET[key],SET_DEF[key]):`<input type="checkbox" id="s_${key}"${SET[key]?' checked':''}${isDef(key)?' class="isdef"':''}>`,note);
-function bindSet(keys){for(const k of keys){const el=$('#s_'+k);if(!el||el.type==='range')continue;el.onchange=()=>{const d=SET_DEF[k];SET[k]=el.type==='checkbox'?el.checked:typeof d==='boolean'?el.value==='true':(typeof d==='number'&&el.value!=='native'?+el.value:el.value);saveSet();applyGfx();renderSettings();};}}
+const setRow=(label,key,opts,note='')=>row(label+(isDef(key)?' <span class="defTag">oletus</span>':''),opts?optSel('s_'+key,opts,SET[key],SET_DEF[key]):tglHTML('s_'+key,!!SET[key]),note);
+function bindSet(keys){for(const k of keys){const el=$('#s_'+k);if(!el||el.type==='range')continue;if(el.classList.contains('tgl')){el.onclick=()=>{SET[k]=!SET[k];saveSet();applyGfx();renderSettings();};continue;}el.onchange=()=>{const d=SET_DEF[k];SET[k]=el.type==='checkbox'?el.checked:typeof d==='boolean'?el.value==='true':(typeof d==='number'&&el.value!=='native'?+el.value:el.value);saveSet();applyGfx();renderSettings();};}}
 function resetPage(page){keyDialog('Palautetaanko tämän sivun asetukset oletuksiin?',[['Palauta',()=>{for(const k of SET_PAGES[page])SET[k]=SET_DEF[k];saveSet();applyGfx();renderSettings();}],['Peruuta',null]]);}
 const resetBtn=`<div class="row" style="margin-top:10px"><button class="btn" id="bPageReset">Palauta sivun oletusasetukset</button></div>`;
 // v1.35 (kohta 19): asetusprofiilit localStorage-avaimessa hiidenmaa_profiles = {nimi: {set, bind, at}}.
@@ -111,14 +127,14 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
     const cats=[...new Set(ACTIONS.map(a=>a[2]))];
     body.innerHTML='<p class="note">Napsauta näppäintä vaihtaaksesi sen. Vaihto kysyy vahvistuksen, eikä varattua tai jo käytössä olevaa näppäintä voi valita.</p><div class="keysGrid">'+
       cats.map(c=>`<div class="keyCat"><h3>${c}</h3>${ACTIONS.filter(a=>a[2]===c).map(a=>`<div class="keyRow"><span class="kn">${a[1]}</span><button class="kb kbtn${BIND[a[0]]!==BIND_DEF[a[0]]?' chg':''}" data-a="${a[0]}">${keyLabel(BIND[a[0]])}</button></div>`).join('')}</div>`).join('')+
-      `<div class="keyCat"><h3>Kiinteät</h3>${[['Hiiren vasen','isku / jousi / rakenna / työkalu'],['Hiiren oikea','torju kilvellä / rakennusvalikko'],['1–8','pikapaikat'],['Shift + R','rakennuksen asento / kaltevuus'],['Esc','sulje paneeli / pelitauko'],['Hiiren rulla','zoom tai pikapaikat (Ohjaus)']].map(([k,d])=>`<div class="keyRow"><span class="kb fixed">${k}</span><span>${d}</span></div>`).join('')}</div></div>
+      `<div class="keyCat"><h3>Kiinteät</h3>${[['Hiiren vasen','isku / jousi / rakenna / työkalu'],['Hiiren oikea','torju kilvellä / rakennusvalikko'],['1–8','pikapaikat'],['Shift + R','rakennuksen asento / kaltevuus'],['Esc','vapauttaa hiiren (selain); valikko: P'],['Hiiren rulla','zoom tai pikapaikat (Ohjaus)']].map(([k,d])=>`<div class="keyRow"><span class="kb fixed">${k}</span><span>${d}</span></div>`).join('')}</div></div>
       <div class="row" style="margin-top:10px"><button class="btn" id="bKeysReset">Palauta oletusnäppäimet</button></div>`;
     body.querySelectorAll('.kbtn').forEach(b=>b.onclick=()=>startCapture(b.dataset.a));
     $('#bKeysReset').onclick=()=>keyDialog('Palautetaanko kaikki näppäimet oletuksiin?',[['Palauta',()=>{Object.assign(BIND,BIND_DEF);saveBinds();renderSettings();}],['Peruuta',null]]);
   }else if(setTab==='gfx'){
     const sub=t=>`<h4 class="setSub">${t}</h4>`,autoN=k=>SET.autoAll?'':' (vaatii yleisen automaattisäädön)',pi=presetIdx();   // v1.12 väliotsikot
     body.innerHTML=`<div class="presetBox"><div class="presetHead"><b>Esiasetus</b><span id="presetName" class="${pi<0?'custom':''}">${pi<0?'Custom':PRESET_N[pi]}</span></div>
-      <input type="range" id="sPreset" min="0" max="7" step="1" value="${pi<0?3:pi}"><div class="presetTicks">${PRESET_N.map((n,i)=>`<span class="${i===pi?'on':''}${i===3?' def':''}">${n}</span>`).join('')}</div>
+      ${sldHTML('sPreset',0,7,1,pi<0?3:pi)}<div class="presetTicks">${PRESET_N.map((n,i)=>`<span class="${i===pi?'on':''}${i===3?' def':''}">${n}</span>`).join('')}</div>
       <div class="note">Muuttaa kaikki grafiikka- ja varjoasetukset kerralla. Low–Medium: automaattinen säätö päällä, High–Ultra: pois. Muutokset näkyvät heti.</div></div>
     <div class="setGrid">${
       sub('Yleiset')+
@@ -157,8 +173,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       setRow('Tulien varjojen tarkkuus','ptRes',[[256,'Matala (256)'],[384,'Normaali (384)'],[768,'Korkea (768)'],[1024,'Ultra (1024)']])
     }</div><p class="note">Vaaleana näkyvä valinta on oletus. Asetukset tulevat voimaan heti ja tallentuvat selaimeen.</p>`+resetBtn;
     bindSet(SET_PAGES.gfx);$('#bPageReset').onclick=()=>resetPage('gfx');
-    $('#sPreset').oninput=e=>{const i=+e.target.value;$('#presetName').textContent=PRESET_N[i];$('#presetName').className='';};
-    $('#sPreset').onchange=e=>{applyPreset(+e.target.value);renderSettings();};
+    bindSld('sPreset',i=>{$('#presetName').textContent=PRESET_N[i];$('#presetName').className='';},i=>{applyPreset(i);renderSettings();});
   }else if(setTab==='prof'){
     const P0=loadProfiles(),names=Object.keys(P0);
     body.innerHTML=`<p class="note">Profiili tallentaa kaikki asetukset: grafiikan, varjot, ohjauksen, äänet ja näppäimet. Valitse nimi ja tallenna – profiiliin voi palata myöhemmin.</p>
@@ -171,12 +186,13 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
   }else if(setTab==='ctl'){
     body.innerHTML=`<div class="setGrid">${
       setRow('Hiiren rulla vaihtaa pikapaikkaa','wheelHotbar',null,'rulla vaihtaa pikapaikkaa zoomin sijaan; zoom säädetään alta')+
-      row('Kameran etäisyys'+(isDef('zoom')?' <span class="defTag">oletus</span>':''),`<input type="range" id="sZoom" min="2.2" max="10" step=".1" value="${SET.zoom}">`,`<span id="sZoomV">${(+SET.zoom).toFixed(1)} m</span>`)+
+      row('Kameran etäisyys'+(isDef('zoom')?' <span class="defTag">oletus</span>':''),sldHTML('sZoom',2.2,10,.1,SET.zoom),`<span id="sZoomV">${(+SET.zoom).toFixed(1)} m</span>`)+
       setRow('Äänet','sound')+
-      setRow('Käännä pystyhiiri','invY')
+      setRow('Käännä pystyhiiri','invY')+
+      setRow('Näppäinopasteet','keyHints',null,'pienet vihjeet paneeleissa ja ruudun nurkassa (esim. Päävalikko: P)')
     }</div>`+resetBtn;
     bindSet(SET_PAGES.ctl);$('#bPageReset').onclick=()=>resetPage('ctl');
-    $('#sZoom').oninput=e=>{SET.zoom=+e.target.value;$('#sZoomV').textContent=SET.zoom.toFixed(1)+' m';camDist=SET.zoom;saveSet();};
+    bindSld('sZoom',v=>{SET.zoom=+v;$('#sZoomV').textContent=SET.zoom.toFixed(1)+' m';camDist=SET.zoom;},()=>saveSet());
   }else{
     body.innerHTML=`<p class="note">Tallennuskoodi on pakattu: sen voi kopioida, tallentaa .txt-tiedostoksi ja ladata takaisin toisella koneella.</p>
       <textarea id="saveCode" spellcheck="false" placeholder="Tallennuskoodi tulee tähän"></textarea>
