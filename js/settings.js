@@ -135,7 +135,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
     $('#bKeysReset').onclick=()=>keyDialog('Palautetaanko kaikki näppäimet oletuksiin?',[['Palauta',()=>{Object.assign(BIND,BIND_DEF);saveBinds();renderSettings();}],['Peruuta',null]]);
   }else if(setTab==='gfx'){
     const sub=t=>`<h4 class="setSub">${t}</h4>`,autoN=k=>SET.autoAll?'':' (vaatii yleisen automaattisäädön)',pi=presetIdx();   // v1.12 väliotsikot
-    body.innerHTML=`<div class="presetBox"><div class="presetHead"><b>Esiasetus</b><span id="presetName" class="${pi<0?'custom':''}">${pi<0?'Custom':PRESET_N[pi]}</span></div>
+    body.innerHTML=`<div class="presetBox pv${pi<0?'c':pi}" id="presetBox"><canvas class="pvFx"></canvas><div class="presetHead"><b>Esiasetus</b><span id="presetName" class="${pi<0?'custom':''}">${pi<0?'Custom':PRESET_N[pi]}</span></div>
       ${sldHTML('sPreset',0,7,1,pi<0?3:pi)}<div class="presetTicks">${PRESET_N.map((n,i)=>`<span class="${i===pi?'on':''}${i===3?' def':''}">${n}</span>`).join('')}</div>
       <div class="note">Muuttaa kaikki grafiikka- ja varjoasetukset kerralla. Low–Medium: automaattinen säätö päällä, High–Ultra: pois. Muutokset näkyvät heti.</div></div>
     <div class="setGrid">${
@@ -179,7 +179,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       setRow('Auringon varjot harvemmin paikallaan','shFar',null,'kun et liiku, auringon varjot päivittyvät joka 4. kuva (liikkeessä joka kuva)')
     }</div><p class="note">Vaaleana näkyvä valinta on oletus. Asetukset tulevat voimaan heti ja tallentuvat selaimeen.</p>`+resetBtn;
     bindSet(SET_PAGES.gfx);$('#bPageReset').onclick=()=>resetPage('gfx');
-    bindSld('sPreset',i=>{$('#presetName').textContent=PRESET_N[i];$('#presetName').className='';},i=>{applyPreset(i);renderSettings();});
+    bindSld('sPreset',i=>{$('#presetName').textContent=PRESET_N[i];$('#presetName').className='';pvTheme(i);},i=>{applyPreset(i);renderSettings();});pvFxStart();
   }else if(setTab==='prof'){
     const P0=loadProfiles(),names=Object.keys(P0);
     body.innerHTML=`<p class="note">Profiili tallentaa kaikki asetukset: grafiikan, varjot, ohjauksen, äänet ja näppäimet. Valitse nimi ja tallenna – profiiliin voi palata myöhemmin.</p>
@@ -217,3 +217,29 @@ addEventListener('keydown',e=>{if(!capture||capture.code)return;e.preventDefault
   const a=capture.a,v=validateKey(a,e.code),nm=ACTIONS.find(x=>x[0]===a)[1];
   if(!v.ok){$('#keyDlgN').textContent=v.msg;return;}
   capture.code=e.code;keyDialog(`Vaihdetaanko «${nm}»: ${keyLabel(BIND[a])} → ${keyLabel(e.code)}?`,[['Vahvista',()=>{BIND[a]=e.code;saveBinds();renderSettings();}],['Peruuta',null]]);},true);
+
+/* v1.47: esiasetusliukusäätimen teema tason mukaan (pv0…pv7, pvc = Custom). Medium = alkuperäinen ulkoasu.
+   Low kivi + pöly, Low+ vaskipatina + itiöt, Medium- metsä + tulikärpäset, Medium+ kulta + kimallus, High routa + jääkiteet,
+   High+ palava punainen + liekit ja kipinät, Ultra violetti taika + kiertävät ja nousevat hiukkaset. Partikkelit omalla canvasilla. */
+function pvTheme(i){const b=document.getElementById('presetBox');if(!b)return;b.className='presetBox pv'+i;b.querySelectorAll('.presetTicks span').forEach((e,j)=>e.classList.toggle('on',j===i));}
+const PV_FX={0:{c:'rgba(170,165,155,1)',n:.25,up:-1},1:{c:'rgba(120,220,170,1)',n:.35,up:.35},2:{c:'rgba(200,255,120,1)',n:.45,ff:1},3:null,
+  4:{c:'rgba(255,220,120,1)',n:.7,up:.5},5:{c:'rgba(190,240,255,1)',n:.8,up:-.4,ice:1},6:{c:'rgba(255,120,40,1)',n:1.6,up:1.6,fire:1},7:{c:'rgba(200,120,255,1)',n:1.8,up:1.1,arc:1}};
+let pvRun=false;
+function pvFxStart(){if(pvRun)return;pvRun=true;const P=[];let last=performance.now();const spr={};
+  const sp=c=>spr[c]||(spr[c]=(()=>{const v=document.createElement('canvas');v.width=v.height=24;const g=v.getContext('2d'),gr=g.createRadialGradient(12,12,0,12,12,12);gr.addColorStop(0,'#fff');gr.addColorStop(.25,c);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(0,0,24,24);return v;})());
+  const loop=now=>{const box=document.getElementById('presetBox'),cv=box&&box.querySelector('.pvFx');if(!cv||!document.body.contains(cv)||box.offsetParent===null){pvRun=false;return;}
+    requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;
+    const W=box.clientWidth,H=box.clientHeight;if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+    const lv=(box.className.match(/pv(\d)/)||[])[1],F=PV_FX[lv],sl=document.getElementById('sPreset');const g=cv.getContext('2d');g.clearRect(0,0,W,H);
+    if(F&&sl&&(+SET.particles||0)>0){const br=box.getBoundingClientRect(),r=sl.getBoundingClientRect(),x0=r.left-br.left,fw=r.width*(+sl.dataset.v)/7,ty=r.top-br.top+11;
+      let n=F.n*dt*60;while(n>0){if(Math.random()<n){const x=x0+Math.random()*Math.max(8,fw);
+        const p={x,y:ty+(Math.random()-.5)*4,vx:(Math.random()-.5)*18,vy:-(F.up||0)*(20+Math.random()*30),life:0,max:.8+Math.random()*1.2,s:2+Math.random()*2.5,ph:Math.random()*6};
+        if(F.up<0){p.y=ty-14-Math.random()*16;p.vy=10+Math.random()*12;}if(F.ff){p.y=ty-6-Math.random()*22;p.vy=(Math.random()-.5)*8;p.max=1.5+Math.random();}
+        if(F.arc&&Math.random()<.35){p.orb=1;p.a=Math.random()*6.28;p.R=10+Math.random()*10;p.max=1.2;}
+        if(F.ice){p.s=1.5+Math.random()*2;}P.push(p);}n-=1;}
+      for(let i=P.length-1;i>=0;i--){const p=P[i];p.life+=dt;if(p.life>p.max){P.splice(i,1);continue;}
+        if(p.orb){p.a+=dt*5;const tx=x0+fw;p.x=tx+Math.cos(p.a)*p.R;p.y=ty+Math.sin(p.a)*p.R*.6;}else{p.x+=p.vx*dt;p.y+=p.vy*dt;if(F.fire)p.vx+=Math.sin(now/200+p.ph)*30*dt;}
+        const a=Math.min(1,p.life/.15,(p.max-p.life)/.4)*(F.ff?.4+.6*Math.abs(Math.sin(now/180+p.ph)):1);g.globalCompositeOperation=F.up<0&&!F.ice?'source-over':'lighter';g.globalAlpha=Math.max(0,a);
+        if(F.up<0&&!F.ice){g.fillStyle=F.c;g.fillRect(p.x,p.y,1.5,1.5);}else{const z=p.s*4;g.drawImage(sp(F.c),p.x-z/2,p.y-z/2,z,z);}}
+      g.globalAlpha=1;g.globalCompositeOperation='source-over';}else P.length=0;};
+  requestAnimationFrame(loop);}

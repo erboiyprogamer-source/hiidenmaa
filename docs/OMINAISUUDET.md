@@ -391,3 +391,6 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Maailmat, Näppäimet, Asetukset (pelissä myös Tila ja Tallenna).
 - Maailmat, Näppäimet ja Asetukset avautuvat leveäksi näkymäksi; takaisin Takaisin-painikkeella tai P:llä (Esc valikossa).
 - Partikkelit vaihtuvat taustakuvan mukaan; painikkeet kipinöivät hiiren alla ja painettaessa.
+- (v1.47) Esiasetussäätimen ulkoasu vaihtuu tason mukaan: Low kivi, Low+ vaskipatina, Medium- metsä, Medium ennallaan, Medium+ kulta,
+  High routa, High+ palava punainen, Ultra violetti taika (partikkelit). Logo on halkeillut, sammaloitunut, malmeja ja riimuja sisältävä
+  kivikaiverrus rautareunuksella ja hehkuvilla hiidenkivikristalleilla.

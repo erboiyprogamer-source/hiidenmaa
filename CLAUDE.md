@@ -52,7 +52,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/story.js` | löytöpaikat (`SITE_KEYS`, rauniot, arkkukivilinnakkeet `FORT`), vartijat (`GUARDS`), lisäriimukivet (`XRUNES`), tehtävät (`QUESTS`), leirit `CAMPS`/`ensureCamps`, kiviröykkiöt `STASHES`, maailman saalis `planLoot`/`wlLoot`, arvoesineiden palautus `relocateValuable`/`valuableCensus`, kyltit `SIGNS` |
 | `js/state.js` | `P` (pelaaja), `inv`, `flags`, pelaajahahmo, reppu, selkäesineet (`backPose`), maahan pudonneet esineet (arvoesineet `isValuable`, 3D-kuvakkeet `dropMesh`), partikkelit, ammukset |
 | `js/effects.js` | veri (`bleed`, `splat`, `addWound`), savupilvet (`smokePuff`), kuolema-animaatiot (`mobDeathAnim`, tuhka), pelaajan palaminen ja kuolema |
-| `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET`/`SET_DEF` (oletus = yleisin taso), `SET_PAGES`, `applyGfx()`, asetusvalikko (Grafiikka, Varjot, …); automaattisäätö `AUTO`/`autoOn`, väliotsikot. |
+| `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET`/`SET_DEF` (oletus = yleisin taso), `SET_PAGES`, `applyGfx()`, asetusvalikko (Grafiikka, Varjot, …); automaattisäätö `AUTO`/`autoOn`, väliotsikot; esiasetussäätimen teemat `pvTheme`/`PV_FX`. |
 | `js/input.js` | näppäimet, hiiri, hiiren lukitus; virtuaalinen osoitin `VC`/`vcSync` (lukitus pysyy paneelien ajan) |
 | `js/actions.js` | hyökkäys, vahinko, syöminen, `interact()`, alttari, luolastoon meno |
 | `js/building.js` | rakennushaamu, ruudukkoon kohdistus, reunakohdistus `smartSnap`, `validPlace`, purku |
@@ -63,7 +63,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/ui.js` | HUD, viestit, paneelit, kartta; esineiden siirto/raahaus (`slotUX`, `#ghostIt`), tehtävän/tavoitteen piilotus (`applyHudMode`), terveyspalkkirivit (`HP_ROW`). |
 | `js/progress.js` | `bump`, XP ja taso (`lvlInfo`), saavutukset (`ACH`, `BON`), `GOALS`, edistymispaneeli (J) |
 | `js/save.js` | `serialize`, `loadData`, `saveGame`, `SKEY`, tallennuspaikat (`SLOTS`, `slotKey`, `slotMeta`, `curSlot`) |
-| `js/menubg.js` | valikon animoidut taustakuvat (`MBG_SCENES` 10 kpl, `mbgFrame`, `mbgShow`); valikossa ei piirretä 3D:tä; valikon partikkelit `MFX`/`mfxFrame` (laji taustan mukaan) |
+| `js/menubg.js` | valikon animoidut taustakuvat (`MBG_SCENES` 10 kpl, `mbgFrame`, `mbgShow`); valikossa ei piirretä 3D:tä; valikon partikkelit `MFX`/`mfxFrame` (laji taustan mukaan), SVG-logo `buildLogo` |
 | `js/main.js` | valikko, pääsilmukka `frame()`, mukautuva laatu, testirajapinta `window.__game`; valikon taustakameran kierros (`menuCam`, `buildMenuSpots`), automaattisäätö (`autoQuality`), FPS (`updateFps`); valikon näkymät `setMenuView`/`menuBack` (`#menu[data-view]`), intro `startIntro`/`introCam`, suorituskykytesti `perf*`, taukotila `pauseRun`. Latausnäyttö on `index.html`:ssä (`__ldSet`/`__ldDone`). |
 
 ## Mittayksiköt ja sopimukset

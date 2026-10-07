@@ -15,7 +15,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Nykytila (päivitetty v1.44)
 
-- **Päivityslista 4 (32 kohtaa + extrat 1–2 + aluebannerit) on KOKONAAN TEHTY** v1.39–v1.44 (+ v1.45 latausnäytön leimahdus ja sivupartikkelit, v1.46 valikon uudistus), haara
+- **Päivityslista 4 (32 kohtaa + extrat 1–2 + aluebannerit) on KOKONAAN TEHTY** v1.39–v1.44 (+ v1.45 latausnäytön leimahdus ja sivupartikkelit, v1.46 valikon uudistus, v1.47 säädinteemat ja logo), haara
   `claude/hiidenmaa-survival-game-fmxt0m`, PR #25 odottaa yhdistämistä (main = v1.37). Seuraava työ: uusi lista käyttäjältä.
 - Erät: A v1.39, B v1.40, C v1.41, D v1.42, E v1.43 (+ aluebannerit), F v1.44 – yksityiskohdat versiolokissa ja kohdassa "Päivityslista 4".
 - Testauksen huomiot: headless-testissä CSS-animaatiot eivät etene raskaan 3D:n aikana (tarkista ulkoasu animaatiot pois), ulottuvuuden
@@ -82,6 +82,19 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.47 (esiasetussäätimen teemat ja uusi logo, käyttäjän pyyntö)
+- **Esiasetussäädin (`pvTheme`, `PV_FX`, `pvFxStart`):** `#presetBox` saa luokan pv0…pv7 (pvc = Custom). Low kivi (karhea harmaa täyttö,
+  pyöreä kivinuppi, putoavaa pölyä), Low+ vaskipatina (turkoosi, nousevia itiöitä), Medium- metsä (vihreä, tulikärpäset), Medium
+  ennallaan, Medium+ kulta (liukuva kimallus, kultapöly), High routa (jäänsininen, vinoneliönuppi, jääkiteitä), High+ punainen ja palava
+  (liikkuva tuligradientti, lepattava nuppi ja nimi, nousevat kipinät), Ultra violetti taika (kimalteleva gradientti, sykkivä nuppi,
+  nupin ympäri kiertävät ja nousevat violetit hiukkaset). Partikkelit omalla canvasilla täytön kohdalta, määrä × Hiukkaset-asetus.
+  Vedettäessä teema, nimi ja asteikon korostus vaihtuvat heti.
+- **Logo (`buildLogo`, menubg.js):** SVG, kirjaimet leikkausmaskina (Cinzel Decorative, `textLength` 968). Sisällä kivi (liukuväri +
+  läikät + rae), malmisuonet ja -kokkareet (kulta, kupari, rauta), halkeamat haaroineen, sammal yläreunoilla (rosoistettu), kaiverretut
+  riimut (syttyvät oransseiksi hiiren alla), kolmessa kirjaimessa hehkuvat hiidenkivikristallit (sykkivät). Ulkona taottu rautareunus
+  vasarajäljin. Kivi viistetään valolla (feSpecularLighting) ja reunat rosoistetaan (feDisplacementMap). Valojuova 8 s välein.
+  Kirjainten paikat `getExtentOfChar`; rakennetaan uudelleen fonttien latauduttua; kiinteä siemen. Vanha teksti jää varalle (`.hasLogo`).
 
 ### v1.46 (valikon uudistus, käyttäjän pyyntö)
 - **Päätökset (käyttäjän vastaukset):** tyyli "yllätä, käytä kaikkia" → kivi + taottu metalli + riimut yhdessä; valikot eivät vieritä vaan
