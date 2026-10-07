@@ -83,6 +83,21 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### v1.51 (lista 5, erä C: kymmenen uutta valikkotaustaa, myrskyn sade, eeppinen portaali)
+- **Uudet kuvat (`MBG_SCENES.push`, menubg.js):** Myrskytuuli (puut taipuvat puuskissa, yksi kaatuu 9 s välein pölypilveen, salamat,
+  lentävät oksat), Karhun raivo (karhu nousee takajaloilleen karjuen, iskee koivuun → puu tärisee, linnut pakenevat, lehtiä putoaa),
+  Routaluolan suu (jääpuikot, sininen huuru hengittää ulos, sisällä himmeä sykkivä valo), Kalmankammion käytävä (perspektiivikäytävä,
+  kynttilät lepattavat, kaukana hahmo kulkee ohi hehkuvin silmin), Aarnihaudan juurakko (jättipuun juuret kaartuvat kuopan yli, vihreä
+  hohde ja itiöt), Susilauma kuutamossa (kolme sutta kalliolla ulvoo vuorotellen, usva), Hirvi aamujärvellä (hirvi juo, väreet,
+  heijastus, sumuvyöt), Kalmanvartijan varjo (jättisiluetti näkyy salamoiden välähdyksissä, hehkuvat silmät aina), Hautakummun usva
+  (kalmot nousevat kummuista ja vajoavat), Ahjo yöllä (seppä takoo, kipinäryöppy ja välähdys iskussa, savu). Ulottuvuuksien kuvat
+  eivät paljasta pomoja. Apurit: `mbgBear`, `mbgWolf`, `mbgElk`, `mbgFigure`, `mbgFlash`, `mbgBolt`, `mbgRain`.
+- **Myrsky:** sade viistää nyt oikealle alas, samaan suuntaan kuin puut kallistuvat.
+- **Portaali (`mbgPortalBg`/`mbgPortalFx`):** riimuin kaiverrettu kivikaari lohkoista (riimut syttyvät aaltona), lakikivi, raunioituneet
+  pylväät, portaat, kerroksellinen pyörre aukossa (leikattu kaaren ja portaiden väliin), hehkuvat maan halkeamat, leijuvat kivet,
+  energiakipinät. Kaksi versiota: "Portaalin hehku" ja "Portaalin vartija" (viittapäinen hahmo sauvoineen portaiden juurella).
+- **Partikkelit:** `MFX_KIND` 21 kpl; uudet lajit `frost` (Routaluola) ja `spores` (Aarnihauta).
+
 ### v1.50 (lista 5, erä B: yöolennot palavat auringossa)
 - `sunBurnAI` / `sunExposed` (ai.js), tarkistus 0,5 s välein: `SUN_BURN` = kalmo, ylimys, hiidenkarhu, hiidenhirvi, kalmasusi, suonakki
   (+ `stalk`-tyypit), ei pomoja eikä vartijoita (`m.guard`). Altistus: `lightK` ≥ .55, `wDark` ≤ .35, `wRain` ≤ .25, biomi ei
