@@ -71,13 +71,20 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 .panel h2{font-family:var(--font-d);font-weight:400;font-size:24px;margin:0 0 10px;color:var(--bone)}
 .panel h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ember);margin:0 0 8px}
 .close{position:absolute;right:10px;top:10px;background:none;border:1px solid var(--line);color:var(--dim);width:28px;height:28px;border-radius:3px}
-#inv{display:grid;grid-template-columns:auto minmax(260px,320px);gap:20px;width:max-content}
+/* v1.32 (lista 3, kohta 2): reppu on kiinteän kokoinen – mikään ei liiku tai veny valittaessa/siirrettäessä. Tiedot näkyvät keskisarakkeessa.
+   Pienemmällä näytöllä koko paneeli skaalataan (fitInv), ei rivitetä. */
+#inv{display:grid;grid-template-columns:451px 300px 320px;gap:18px;width:1089px;height:690px;overflow:hidden;box-sizing:content-box;max-width:none;max-height:none;transform:translate(-50%,-50%) scale(var(--invK,1))}
+#inv .invCol{display:flex;flex-direction:column;min-height:0}
+#invGrid{height:337px;align-content:start}
+#invUp{height:34px;flex:none}
+#invSide{flex:1;min-height:0;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+#invSide #effects,#invSide #biomeBox{margin-top:0;max-width:none}
 .grid{display:grid;grid-template-columns:repeat(8,52px);gap:5px}
 .grid .slot{cursor:pointer}
 .grid .slot:hover{border-color:var(--dim)}
 .grid .slot.sel{border-color:var(--frost)}
 #invHead{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
-#detail{margin-top:12px;min-height:96px;padding:10px 12px;border:1px solid var(--line);background:rgba(0,0,0,.2);max-width:440px}
+#detail{padding:10px 12px;border:1px solid var(--line);background:rgba(0,0,0,.2);height:100%;box-sizing:border-box;overflow:hidden;margin-top:44px;height:calc(100% - 44px)}
 #detail .t{font-family:'Uncial Antiqua',serif;font-size:26px;line-height:1.15;color:#f3e6c4;margin-bottom:2px}
 #detail .t .qs{color:var(--frost);font-size:18px}
 .props{border-collapse:collapse;font-size:13px;margin:2px 0 8px;width:100%}
@@ -91,7 +98,7 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 .btn:hover{border-color:var(--ember)}
 .btn.pri{background:#5a3417;border-color:var(--ember)}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-#craftList{display:flex;flex-direction:column;gap:6px;max-height:min(460px,60vh);overflow:auto;padding-right:4px}
+#craftList{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0;overflow:auto;padding-right:4px}
 .rec{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;padding:6px 8px;border:1px solid var(--line);background:rgba(0,0,0,.18)}
 .rec.na{opacity:.5}
 .rec .ic{width:40px;height:40px;background-size:36px;background-repeat:no-repeat;background-position:center}
@@ -130,7 +137,6 @@ textarea{width:100%;min-height:70px;background:rgba(0,0,0,.35);color:var(--bone)
 #deadS,#winS{justify-content:center;background:rgba(10,9,7,.72);text-align:center}
 #deadS .inner,#winS .inner{align-items:center}
 @media (max-width:760px){
-  #inv{grid-template-columns:1fr;width:auto}
   .grid{grid-template-columns:repeat(6,46px)} .grid .slot{width:46px;height:46px}
   #hotbar .slot{width:40px;height:40px;background-size:30px}
   #bars{width:150px} #mini{width:100px;height:100px} #goal{max-width:200px}

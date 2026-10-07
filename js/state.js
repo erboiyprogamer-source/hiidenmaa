@@ -72,13 +72,17 @@ function toggleEquip(s){const cat=ITEMS[s.id].cat;if(!cat)return;
   if(cat==='bow'&&s.eq){for(const o of inv)if(o&&o.eq&&equipGroup(ITEMS[o.id].cat)==='offhand')o.eq=false;}
   if(equipGroup(cat)==='offhand'&&s.eq){const w=equipped('weapon');if(w&&ITEMS[w.id].cat==='bow')w.eq=false;}
   invDirty=true;updateGear();if(cat!=='hammer'||!s.eq)setBuildSel(null);sfx('pickup');}
-function useSlot(i){const s=inv[i];if(!s)return;const d=ITEMS[s.id];if(d.food)eat(s);else if(d.cat)toggleEquip(s);}
+// v1.32 (lista 3, kohdat 3 ja 29): pikapaikan numero syö ruoan (ainoa tapa syödä), ottaa nuolet käyttöön (pysyvät valittuina) tai varustaa.
+function useSlot(i){const s=inv[i];if(!s)return;const d=ITEMS[s.id];if(d.food)eat(s);else if(AMMO.includes(s.id)){if(flags.ammo!==s.id){flags.ammo=s.id;msg(`Ammus: ${d.n}`);sfx('pickup',1.2,.4);}invDirty=true;}else if(d.cat)toggleEquip(s);}
 function giveOrDrop(id,n,x,y,z,q=1){const left=invAdd(id,n,q);if(left>0){spawnDrop(id,left,x,y,z,q);msg('Reppu on täynnä.','warn');}if(n-left>0){msg(`+${n-left} ${ITEMS[id].n}`,'loot');}}
 let invDirty=true;
 
 /* ---------------- DROPS ---------------- */
 const dropGeo=new THREE.BoxGeometry(.32,.32,.32);
 function spawnDrop(id,n,x,y,z,q=1,silent,byPlayer){const me=new THREE.Mesh(dropGeo,mat(new THREE.Color(ITEMS[id].c).getHex()));me.castShadow=true;me.position.set(x,y,z);scene.add(me);drops.push({id,n,q,mesh:me,vx:(Math.random()-.5)*3,vy:3+Math.random()*2,vz:(Math.random()-.5)*3,t:0,rest:false,dim:curDim(),noPick:!!byPlayer});}
+// v1.32 (lista 3, kohta 26): pelaajan pudottama esine lentää aina kameran suuntaan eteenpäin, noin kaksi kertaa entistä kauemmas (~2,5–3 m).
+function playerDrop(id,n,q){const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw);spawnDrop(id,n,P.pos.x+fx*.6,P.pos.y+1.1,P.pos.z+fz*.6,q,false,true);
+  const d=drops[drops.length-1],j=(Math.random()-.5)*.6;d.vx=fx*4.2-fz*j;d.vz=fz*4.2+fx*j;d.vy=3.4+Math.random()*.6;}
 // v1.17: ulottuvuus, jossa pelaaja on ('world', 'barrow' = Hautakumpu tai ulottuvuuden id). Maassa olevan esineen katoamisajastin käy vain samassa ulottuvuudessa.
 function curDim(){return P.inDun?(P.realm||'barrow'):'world';}
 let dropFullT=0;

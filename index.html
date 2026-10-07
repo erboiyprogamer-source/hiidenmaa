@@ -40,15 +40,14 @@
 
 <div id="inv" class="panel" hidden>
   <button class="close" data-close="1" aria-label="Sulje">✕</button>
-  <div>
+  <div class="invCol">
     <div id="invHead"><h2>Reppu</h2><span id="invW" class="num note"></span></div>
     <div id="invUp"></div>
     <div id="invGrid" class="grid"></div>
-    <div id="detail"></div>
-    <div id="effects"></div>
-    <div id="biomeBox"></div>
+    <div id="invSide"><div id="effects"></div><div id="biomeBox"></div></div>
   </div>
-  <div>
+  <div id="detail"></div>
+  <div class="invCol">
     <h2>Valmistus</h2>
     <input id="craftSearch" class="search" type="search" placeholder="Hae tavaraa…" autocomplete="off" spellcheck="false">
     <div id="craftTabs"></div>

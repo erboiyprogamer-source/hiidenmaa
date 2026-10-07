@@ -1355,6 +1355,66 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
+### Päivityslista 3: 33 kohtaa + lisät (v1.32–) – kaikki kysymykset kysytty etukäteen, vastaukset alla
+**JATKA TÄSTÄ (lista 3):** kaikki tarkennukset saatu. Tehdään erissä; merkitse kohta TEHTY + versio.
+1. Haamukuva pois kursorilta esineitä siirrettäessä (valittu ruutu korostuu yhä).
+2. Reppu ei liiku eikä veny: kiinteä koko. Tietoalue (tiedot, päivitys, ota käyttöön) kiinteässä paikassa, ei vieritystä tietoalueessa.
+3. Syöminen VAIN pikapaikan numerolla (ruoka käteen = syö kerran). Syö-nappi ja tuplaklikkaussyönti pois.
+4. Kilpi kuluu: Puukilpi 20 osumaa (torjuu vähiten), Kuparikilpi 15, Rautakilpi 15 (torjuu eniten). Rikki → ~60 s jäähy → ehjä. Ei uutta kilpeä.
+5/6/11. Kaikki eläimet ja hirviöt: terveys ja vahinko +25 %. Ulottuvuuksien pomot: Jäätär ×1,5, Kalmaherra ×2, Aarnihirviö ×2,6;
+   Kalmanvartija ×2,5 (2250 hp).
+7. Pomot paranevat täyteen ~10 s:ssa, jos niihin ei osuta 1 min, tai pelaaja poistuu ulottuvuudesta.
+8. Uusi esine **Kalmankruunun sirpale** (vain Aarnihaudasta: Aarnihirviö 1 + 2 satunnaisessa Aarnihaudan arkussa). Kalmankehän alttari vaatii
+   3 sirpaletta (ei enää hiidenkiviä). Kalmanvartija = viimeinen pomo Aarnihirviön jälkeen. Tavoitteet ja tehtävät järjestetään uudelleen
+   (ulottuvuudet ennen vartijaa). Hiidenkivet jäävät valmistusaineiksi.
+9. Arvoesineet (avaimet, Vartijan sydän, sirpaleet, hiidenkivet, harvinaiset ★-varusteet) eivät koskaan katoa. Jos esine ei ole ollut
+   pelaajan repussa tai missään arkussa/säilytyksessä 2 min ja pelaaja on yli 10 m päässä, se siirtyy satunnaiseen maailman kohdearkkuun.
+   Kartalta pudonnut sama. Myös bugin takia kadonneet uniikit (avaimet, sirpaleet, sydän) palautetaan.
+10. Vastattu: Vartijan sydän = Kalmanvartijan pudotus, tarvitaan Hiidenmiekkaan.
+12. Pelottava yömob kerran yössä: vuorella 20 %, muualla 10 %, syntyy lähelle ja hyökkää. Nukkuessa ei synny. Jos pelaaja ei nuku yöllä,
+   seuraavana yönä 100 % varmasti yksi. Nopeus (4,6+8)/2 × 1,05 ≈ 6,6 m/s. Tavallisia yömobeja enemmän.
+13. Hautakiven majakka toimii myös ulottuvuuksissa/luolissa.
+14. Mobit lyövät kävellessä (ei pysähdystä, ei latausviivettä; 0,1 s viive), lyöntien välillä jäähy. Tavallisten mobien ulottuma ~20 %
+   pelaajaa lyhyempi (~1,9 m). Karhu, kivivartija, pelottavat ja pomot pitävät oman ulottumansa.
+15. Jousen veto: oikea käsi vetää enemmän oikealle, kyynärpää taittuu, olkavarsi pysyy oikealla hieman edessä samalla korkeudella.
+16. Varjot = Grafiikka-sivun väliotsikko (ei erillistä sivua).
+17. Esiasetukset liukusäätimellä: Low, Low+, Medium-, Medium, Medium+, High, High+, Ultra (oletus Medium). Säätö käsin → "Custom".
+   Ultra ylittää nykyiset maksimit (varjot 4096, piirtoetäisyys +30 %, tiheämpi ruoho). Low–Medium: autosäätö päälle, High–Ultra: pois.
+18. Asetukset tulevat voimaan heti valittaessa.
+19. Asetusprofiilit omalla nimellä – tallentaa KAIKKI asetukset (myös ohjaus, äänet, näppäimet).
+20. Päävalikko: tallennuslista, enintään 5 paikkaa. Uusi maailma (nimi + kartta) tai jatka valittua. Näkyy viimeksi pelattu, päivät, taso,
+   nimi. Uudelleennimeä, poista vahvistuksella. Vanha tallennus → "Maailma 1".
+21. Automaattitallennus 2 min välein, valikosta voi tallentaa itse.
+22. Hiiren lukitus pysyy päällä paneelien ajan, peli piirtää oman osoittimen (ei välikliksua). Esc-taukovalikko vaatii yhä klikkauksen (selain).
+23/31. Kirves- ja hakkuanimaatio uusiksi: kädet koukistuvat noustessa, kirves olkapäiden yli, vuorotellen kumpaankin viistoon, kädet kiinni
+   varressa ja olkapäissä, ei mene pään tai kehon läpi, kädet eivät mene päällekkäin.
+23b. Kuolema: ruumis kaatuu, raajat valahtavat, makaa ~7 s, vajoaa ja häipyy (alle 10 s); veriläntti. Pelaajan läntti jää 1 min.
+   Palokuolema (palaa, soihtu-isku, nuotion päällä, tulinuoli) mobille, pelaajalle ja pomoille: mustuu → tuhkakasa vajoaa maahan.
+24. Osuma: veripisaroita (tummanpunainen, maltillinen; isoilla eläimillä enemmän) ja läntti maahan, häipyy 10 s. Haavoittuneen mobin
+   pintaan punaisia läikkiä. Kivihahmot: kivisiruja/pölyä, kalmot: luupölyä, usvaolennot: usvaa. Asetus Veri: Normaali / Vähän / Pois.
+25. Maassa olevat esineet näyttävät ikonilta, jolla on syvyyttä (3D). Medium ja ylöspäin + oma asetus.
+26. Pelaajan pudotus heittää 2× kauemmas ja aina eteenpäin.
+27. Lumisade kulkee tuulen suuntaan, kulma tuulen nopeuden mukaan.
+28. Pelaajan taistelu −10 % kaikessa (vahinko, ampumanopeus/lyöntinopeus, tönäisy).
+29. Nuolet otetaan käyttöön painamalla niiden pikapaikan numeroa; käytössä pysyy (kuten kilpi).
+30. Haarniska, vaate, nuolet (ja kilpi): yksi klikkaus repussa ottaa käyttöön (keltainen). Jos seuraava klikkaus on toiseen ruutuun,
+   esine siirtyy ja käyttöönotto perutaan.
+32. Käsien heilunta kävellessä/juostessa −10 %. Sivuttaiskeinunta: kävely puolet, juoksu −10 %.
+33. DEV-valikko: lento. Tuplahyppy aloittaa/lopettaa lennon, välilyönti ylös, Shift alas.
+34. (lisä) Sateessa tulinuolen valo hiipuu 2× nopeammin. Osuessa kohteeseen tai maahan nuolen valo sammuu 2 s:ssa (palavan mobin valo ei).
+35. (lisä) Usva/sumu: oletus kevyemmäksi. Tasot: Ultra (= vanha Korkea), Korkea (= vanha Normaali), Normaali (uusi, kevyempi, oletus),
+   Matala, Pois.
+
+36. (lisä) Palavan mobin tuli näyttävämmäksi, savua paljon enemmän (isoja partikkeleita, kohtuudella).
+37. (lisä) Selässä olevat esineet asettuvat hyvin: pitkä osa sivuille (hakun piikit sivuille). Kirves/nuija viistossa, terä/pää ylös olan
+   taakse. Jousi ja keihäs ristiin viistoon. Miekka ja lapio viistossa terä alaspäin. Vasara vyötärötasolla kuten ennen.
+   Vyötärön takana oleva pallomainen osa kiinni vyötäröön ja paremman näköiseksi (pussi/laukku).
+   Ei enää kysymyksiä – tehdään loppuun.
+
+38. (lisä) Jääavain arvotaan maailman luonnissa satunnaiseen pääsaaren arkkuun (rauniot, linnakkeet, kiviröykkiöt) tai Hautakummun
+   hautakirstuun. Myös muiden kohdearkkujen tavalliset tavarat arvotaan maailmakohtaisesti. Portti antaa epämääräisen vihjeen (suunta).
+39. (lisä) Arvoesineet hehkuvat maassa (esineen värinen sykkivä valo + kipinät, näkyy yöllä kauas).
+
 ### Päivityslista 2: 17 kohtaa (v1.08–) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
 **JATKA TÄSTÄ (nykytila v1.31):** Haara `claude/hiidenmaa-survival-game-fmxt0m`, PR #24 auki (ei vielä yhdistetty; main = v1.07).
 Lista 2 (17 kohtaa) + välilisäykset TEHTY v1.08–v1.23. Sen jälkeen: v1.24 korjaus (karttavaihdon käynnistys, KORJAUKSET 22),
