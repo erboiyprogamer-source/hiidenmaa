@@ -1,7 +1,7 @@
 /* Hiidenmaa – main.js
    Valikko, pääsilmukka ja testirajapinta window.__game */
 'use strict';
-window.__JSV2='1.59';   // v1.58: versiotarkistus (viimeinen skripti)
+window.__JSV2='1.60';   // v1.58: versiotarkistus (viimeinen skripti)
 // v1.24 KORJAUS (KORJAUKSET 22): valikkokameran tila esitellään ennen kuin startPlay voidaan kutsua (karttavaihdon jälkeinen automaattinen
 // aloitus tapahtuu jo tiedoston alussa; ennen let-muuttujat olivat vielä alustamatta → ReferenceError → peli jäi mustaksi).
 let frameErrShown=false;
@@ -16,7 +16,7 @@ function hasSave(){return slotMeta().some(Boolean);}
 // v1.36 (lista 3, kohta 20): päävalikon maailmalista (enint. 5): nimi, viimeksi pelattu, päivä, taso ja kartta; Pelaa, Nimeä, Poista (vahvistus)
 // ja Uusi maailma omalla nimellä. Pelin aikana toiseen maailmaan siirtyminen tallentaa nykyisen ensin.
 // v1.43 (lista 4, kohta 32): taukovalikon tila – Tauko (maailma pysähtyy) tai Käynnissä (maailma päivittyy valikon takana)
-let pauseRun=false,intro=null,perf=null;   // intro ja perf ennen karttavaihdon jatkoa (KORJAUKSET 22)
+let pauseRun=false,intro=null;   // intro ennen karttavaihdon jatkoa (KORJAUKSET 22)
 try{pauseRun=localStorage.getItem('hiidenmaa_prun')==='1';}catch(e){}
 function refreshMenu(){const inGame=started;$('#bResume').hidden=!inGame;$('#bSave').hidden=!inGame;{const b=$('#bRun');if(b){b.hidden=!inGame;$('#bRunT').textContent='Tila: '+(pauseRun?'Käynnissä':'Tauko');b.classList.toggle('on',pauseRun);}}
   const m=slotMeta();$('#mapName').textContent=inGame?`Kartta: ${MAP.name}`:'';$('#curWorld').textContent=inGame&&curSlot>=0&&m[curSlot]?`Maailma: ${m[curSlot].name}`:'';renderWorlds();
@@ -149,23 +149,9 @@ function introCloudsClear(){if(!IC)return;for(const c of IC.L){scene.remove(c.m)
 addEventListener('keydown',e=>{if(state==='intro'&&!(intro&&intro.hold)){e.stopPropagation();e.preventDefault();endIntro();}},true);
 addEventListener('mousedown',e=>{if(state==='intro'&&!(intro&&intro.hold)){e.stopPropagation();endIntro();}},true);
 addEventListener('touchstart',()=>{if(state==='intro'&&!(intro&&intro.hold))endIntro();},{capture:true,passive:true});
-/* v1.43 (lista 4, kohta 31): ensimmäisellä käynnillä 3 s suorituskykytesti latausnäytön aikana (3D-valikkokamera oletusasetuksilla;
-   0,6 s lämmittely, sitten FPS). ≥ 50 → oletus (Medium), 35–50 → Medium-, 22–35 → Low+, < 22 → Low. Tulos: localStorage hiidenmaa_perf.
-   Ohitetaan, jos asetuksia on jo tallennettu tai selain on automaation ohjaama (testit); ?perf=1 pakottaa testin. */
-function perfNeeded(){try{if(/[?&]perf=1/.test(location.search))return true;if(navigator.webdriver)return false;return !localStorage.getItem('hiidenmaa_perf')&&!localStorage.getItem('hiidenmaa_set');}catch(e){return false;}}
-/* v1.59: testi näkyy latausnäytöllä (#lsPerf): 5 s mittaus palkilla ja sekuntilaskurilla, sitten selvä tulos ~5 s ja ohje asetuksiin. */
-const PERF_T=5;
-function perfPanel(h){const e=document.getElementById('lsPerf');if(e){e.hidden=false;e.innerHTML=h;}}
-function perfStart(){perf={t:0,n:0,ft:0};if(window.__ldNote)window.__ldNote('Suorituskykytesti käynnissä…');
-  perfPanel('<b>Suorituskykytesti</b><p>Mitataan, kuinka sujuvasti Hiidenmaa pyörii koneellasi, jotta grafiikka voidaan säätää sopivaksi.</p><div class="pBar"><i id="lsPerfB"></i></div><span id="lsPerfT">'+PERF_T+' s</span>');}
-function perfStep(raw){perf.t+=raw;if(perf.t>.6){perf.n++;perf.ft+=Math.min(raw,.5);}menuCam(Math.min(.25,raw));if(window.__ldSet)window.__ldSet(.94+.06*Math.min(1,perf.t/PERF_T));
-  {const b=document.getElementById('lsPerfB'),c=document.getElementById('lsPerfT');if(b)b.style.width=Math.min(100,perf.t/PERF_T*100)+'%';if(c)c.textContent=Math.max(0,Math.ceil(PERF_T-perf.t))+' s';}if(perf.t>=PERF_T)perfEnd();}
-function perfEnd(){if(!perf)return;const fps=perf.ft>0?perf.n/perf.ft:0,i=fps>=50?3:fps>=35?2:fps>=22?1:0;perf=null;
-  try{menuClear();menuShot=null;}catch(e){}applyPreset(i);try{localStorage.setItem('hiidenmaa_perf',JSON.stringify({fps:Math.round(fps),preset:PRESET_N[i],at:Date.now()}));}catch(e){}
-  const f=Math.round(fps),lvl=f>=50?'Sujuva':f>=35?'Hyvä':f>=22?'Kohtalainen':'Raskas';
-  if(window.__ldNote)window.__ldNote('Suorituskykytesti valmis');
-  perfPanel(`<b>Tulos: ${f} FPS <small>(${lvl})</small></b><p>Grafiikaksi valittiin <em>${PRESET_N[i]}</em>.</p><p class="pTip">Voit muuttaa grafiikkaa milloin tahansa itse: <em>Asetukset › Grafiikka</em> (esiasetus-liukusäädin tai yksittäiset asetukset).</p>`);
-  setTimeout(()=>{if(window.__ldDone)window.__ldDone();},5000);}
+/* v1.43/v1.60: suorituskykytesti tehdään ennen pelin latausta (js/boot.js, oma kevyt 3D-näkymä). Tulos on localStorage hiidenmaa_perf;
+   pend:1 = esiasetusta ei ole vielä otettu käyttöön → otetaan tässä (perfApply) ja merkitään tehdyksi. */
+function perfApply(){try{const r=JSON.parse(localStorage.getItem('hiidenmaa_perf')||'null');if(!r||!r.pend)return;applyPreset(clamp(r.idx|0,0,3));r.pend=0;localStorage.setItem('hiidenmaa_perf',JSON.stringify(r));}catch(e){}}
 /* ---------------- MAIN LOOP ---------------- */
 let last=performance.now(),slowT=0,saveT=0,lightT=0,menuA=0;
 function update(dt){
@@ -239,7 +225,6 @@ function frame(now){
   requestAnimationFrame(frame);
   const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;let skip3d=false;
   if(state==='play'&&SET.autoAll)autoQuality(raw);updateFps(raw);
-  if(perf){try{perfStep(raw);renderer.render(scene,camera);}catch(err){console.error(err);perfEnd();}return;}
   try{
     if(state==='play'||state==='ui')update(dt);
     else if(state==='menu'&&MENU_V2_OFF)menuCamOld(dt);
@@ -254,6 +239,6 @@ function frame(now){
   if(!skip3d){try{renderer.render(scene,camera);}catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe piirrossa: '+(err&&err.message||err));}}}
 }
 updateLights();applyGfx();refreshKeyHints();
-if(perfNeeded()&&!started){const go=()=>{if(window.__splashOn){setTimeout(go,250);return;}perfStart();};go();}else if(window.__ldDone)window.__ldDone();   // v1.59: testi vasta aloitusjakson jälkeen (näkyvissä)
+perfApply();if(window.__ldDone)window.__ldDone();   // v1.60: testi tehty jo ennen latausta (boot.js)
 requestAnimationFrame(frame);
 window.__game={renderer,keys,G,WH,get ghost(){return{sel:buildSel,ok:ghostOk,pos:ghostPos,why:lastInvalid}},placeBuild,openChest,scene,camera,P,get mobs(){return mobs},inv:()=>inv,pieces:()=>pieces,invAdd,addPiece,spawnMob,newGame,startPlay,flags:()=>flags,saveGame,serialize,loadData,setState:s=>state=s,get state(){return state},update,interact,togglePanel,useSlot,craft,RECIPE_BY,setBuildSel,enterDungeon,exitDungeon,camYaw:v=>camYaw=v,doMeleeHit,startAttack,nodes,setDay:v=>dayT=v};

@@ -27,7 +27,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 - Ei build-vaihetta eikä npm-riippuvuuksia. three.js **r128** ladataan cdnjs:stä `index.html`:ssä.
 - Skriptit ovat tavallisia `<script src>`-tiedostoja (ei ES-moduuleja). Ne jakavat saman globaalin
   näkyvyysalueen, joten `index.html` aukeaa myös tuplaklikkaamalla ilman palvelinta.
-- **Latausjärjestys on tärkeä.** Tiedoston ylimmän tason koodi saa käyttää vain aiemmin ladattujen
+- **Latausjärjestys on tärkeä.** Pelin skriptit luetellaan `index.html`:n `window.__GJS`-listassa (boot.js lataa ne järjestyksessä). Tiedoston ylimmän tason koodi saa käyttää vain aiemmin ladattujen
   tiedostojen muuttujia. Funktioiden sisällä saa viitata mihin tahansa. Uusi tiedosto lisätään
   `index.html`:n skriptilistaan oikeaan kohtaan.
 - Jokainen JS-tiedosto alkaa `'use strict';`. Samaa ylimmän tason nimeä ei saa määritellä kahdesti.
@@ -37,6 +37,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 
 | Tiedosto | Sisältö |
 | --- | --- |
+| `js/boot.js` | (ladataan `index.html`:ssä ennen muita) aloitusjakso, suorituskykytesti omassa näkymässä (`__boot`), pelin skriptien lataus listasta `window.__GJS` (uusi tiedosto lisätään SINNE) |
 | `js/core.js` | `$`, `clamp`, `lerp`, `sstep`, kohina (`fbm`, `ridge`), `mulberry32` |
 | `js/world.js` | `WS` (skaala), `MAPS`/`MAP`/`MAP_ID` (6 karttaa), `dirIn`, `HALF`, `LOC` (+ arvotut `SITE_DEFS`-paikat), `AARNI`, `DUN`, `heightFn`, `biomeAt`, `zoneAt`, `BIOMES` (nimet + ominaisuudet), `terrainH` |
 | `js/render.js` | renderer, scene, camera, valot, tekstuurit, `MAT`, `mat()`, `bx()`, maasto, vesi, taivas, sade |
@@ -123,7 +124,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
   pull request `main`-haaraan. Kerro käyttäjälle lyhyesti mitä muuttui ja muistuta yhdistämään PR
   (Merge), jos et voi tehdä sitä itse.
 - Päivitä valikon versionumero (`index.html`, "Selviytymispeli · versio X"), `window.HV` (käynnistysvahti), versiotarkistuksen merkit
-  (`window.__JSV` core.js, `window.__JSV2` main.js, `--css-v` style.css; KORJAUKSET 31) ja versioloki samalla.
+  (`window.__JSV` core.js, `window.__JSV2` main.js, `--css-v` style.css, `window.__BJV` boot.js; KORJAUKSET 31) ja versioloki samalla.
 - **Välimuisti:** nosta samalla `index.html`:n kaikkien `<script src>`- ja `css`-linkkien `?v=X`, muuten
   raw.githack/selain voi näyttää vanhoja JS-tiedostoja. Anna testilinkki myös commit-SHA:lla.
 - **Linkit:** haaralinkki näyttää aina haaran uusimman version (välimuistin takia voi viivästyä); commit-SHA-linkki näyttää täsmälleen

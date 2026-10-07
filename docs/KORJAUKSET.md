@@ -238,6 +238,15 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   ero → ilmoitus "Välimuisti antoi vanhentuneita tiedostoja … avaa commit-linkillä". `bump.sh` päivittää kaikki merkit.
   Suosittele käyttäjälle aina commit-SHA-linkkiä heti päivityksen jälkeen (kaikki tiedostot samasta versiosta).
 
+## 32. Aloitusjakso ja latausnäytön animaatiot pätkivät (v1.60)
+- **Oire:** studio-/logo-/varoitusruudun häivytykset ja latausnäytön leimahdus nykivät; suorituskykytesti tehtiin latauksen sekaan.
+- **Syy:** aloitusjakso pyöri pelin skriptien latauksen ja maailman rakennuksen päällä (pääsäie varattu sekunteja). Lisäksi latausnäytön
+  riimuissa oli ikuinen opacity-animaatio ja leimahdus animoi SVG-tekstien `filter: drop-shadow`-ketjua → koko SVG piirrettiin joka ruudussa.
+- **Korjaus:** `js/boot.js`: jakso + testi (oma kevyt three.js-näkymä) ENSIN, pelin skriptit vasta niiden jälkeen (`window.__GJS`,
+  yksi kerrallaan 16 ms tauoin, esiladattu `<link rel=preload>`). Latauksen aikana `#loadScr.loading` (koristeet levossa, vain riimujen
+  täyttyminen), valmis → kaksi rAF:ia → `.done`: vaalea hehku `.lsGlow` pelkillä opacity/transform-animaatioilla. Älä animoi suotimia
+  (filter) latausnäytössä äläkä aja raskasta työtä animaatioiden aikana. Käynnistysvahdin 20 s ajastin alkaa vasta latauksen alkaessa.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

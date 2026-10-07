@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.59';
+:root{--css-v:'1.60';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -349,7 +349,7 @@ button:focus,select:focus{outline:none}
 #loadScr .lsCenter{position:relative;width:200px;height:290px}
 #loadScr .lsStone{width:200px;height:290px;filter:drop-shadow(0 18px 24px rgba(0,0,0,.8));animation:lsBreath 6s ease-in-out infinite}
 #loadScr .lsR{font:700 15px serif;fill:#26241f;text-anchor:middle;transition:fill .5s ease,filter .5s ease}
-#loadScr .lsR.on{fill:#ffb35a;filter:drop-shadow(0 0 3px #ff8a2a) drop-shadow(0 0 7px #ff6a1a);animation:lsRune 2.4s ease-in-out infinite;animation-delay:calc(var(--d)*-.17s)}
+#loadScr .lsR.on{fill:#ffb35a;filter:drop-shadow(0 0 3px #ff8a2a) drop-shadow(0 0 7px #ff6a1a)}
 #loadScr .lsMist{position:absolute;left:-30%;right:-30%;height:46%;bottom:-6%;background:radial-gradient(ellipse at 30% 60%,rgba(190,200,210,.16),transparent 60%),radial-gradient(ellipse at 75% 40%,rgba(170,180,190,.12),transparent 55%);filter:blur(8px);pointer-events:none}
 #loadScr .lsMist.m1{animation:lsMist 16s ease-in-out infinite alternate}
 #loadScr .lsMist.m2{bottom:8%;opacity:.7;animation:lsMist 23s ease-in-out infinite alternate-reverse}
@@ -380,14 +380,9 @@ button:focus,select:focus{outline:none}
 @keyframes inLine{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media (max-width:700px){#introT b{font-size:56px}}
 /* v1.45: latauksen loppuleimahdus (0,8 s) ja sivujen partikkelit */
-#loadScr.done .lsR{fill:#fff4e0;animation:lsFlare .8s ease-out forwards;animation-delay:calc(var(--d)*.012s)}
-#loadScr.done .lsStone{animation:lsStoneFlare .8s ease-out forwards}
+#loadScr.done .lsR{fill:#fff4e0;transition:fill .6s ease}
 #loadScr.done .lsBar i{background:linear-gradient(90deg,#ffd9a0,#fff6e6);box-shadow:0 0 14px #ffd28a,0 0 30px #ffb35a}
 #loadScr.done .lsTitle{text-shadow:0 0 28px rgba(255,220,170,.85),0 0 60px rgba(255,170,80,.6),0 4px 14px #000;transition:text-shadow .8s ease}
-@keyframes lsFlare{0%{fill:#ffb35a;filter:drop-shadow(0 0 3px #ff8a2a) drop-shadow(0 0 7px #ff6a1a)}
-  45%{fill:#ffffff;filter:drop-shadow(0 0 8px #fff6e6) drop-shadow(0 0 22px #ffd08a) drop-shadow(0 0 44px #ffa040) brightness(2)}
-  100%{fill:#fff4e0;filter:drop-shadow(0 0 5px #ffe8c2) drop-shadow(0 0 14px #ffb35a) drop-shadow(0 0 26px #ff8a2a) brightness(1.5)}}
-@keyframes lsStoneFlare{0%{filter:drop-shadow(0 18px 24px rgba(0,0,0,.8))}50%{filter:drop-shadow(0 0 60px rgba(255,200,130,.9)) brightness(1.5)}100%{filter:drop-shadow(0 0 26px rgba(255,170,80,.5)) brightness(1.15)}}
 #loadScr .lsSide{position:absolute;top:0;bottom:0;width:24%;pointer-events:none;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 25%,#000 85%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 25%,#000 85%,transparent)}
 #loadScr .lsSide.l{left:0}#loadScr .lsSide.r{right:0}
 #loadScr .lsSide i{position:absolute;left:var(--x);bottom:-10px;width:var(--s);height:var(--s);border-radius:50%;background:#ffb860;box-shadow:0 0 6px #ff8a2a,0 0 14px #ff6a1a;opacity:0;animation:lsSide var(--t) linear var(--dl) infinite}
@@ -600,10 +595,33 @@ button:focus,select:focus{outline:none}
 #splash .spStudioN.n2{transition-delay:.7s}#splash .spAmp{font:500 clamp(20px,2.4vw,30px) 'Cinzel',serif;color:#b8a888;margin:6px 0;opacity:0;transition:opacity 1.2s ease .45s}
 #splash .spStudio.on .spAmp{opacity:1}
 #splash .spEsc{max-width:620px;margin-top:18px !important;padding:10px 14px;border:1px solid rgba(232,164,74,.35);border-radius:6px;background:rgba(232,164,74,.06);font-size:15px !important}
-#splash kbd,#loadScr kbd{font:700 12px var(--font-b);padding:1px 7px;border:1px solid #8a6a44;border-radius:3px;color:#ffb35a;margin:0 2px}
-#loadScr .lsPerf{margin-top:16px;max-width:min(520px,90vw);padding:14px 18px;border:1px solid rgba(232,164,74,.45);border-radius:8px;background:rgba(20,14,9,.75);text-align:center;box-shadow:0 0 24px rgba(255,140,50,.15)}
-#loadScr .lsPerf b{display:block;font:800 22px 'Cinzel',serif;color:#f2e6cc}#loadScr .lsPerf b small{font:600 15px var(--font-b);color:#ffb35a}
-#loadScr .lsPerf p{font:500 15px/1.5 var(--font-b);color:#d8cdb4;margin:8px 0 0}#loadScr .lsPerf em{font-style:normal;color:#ffb35a;font-weight:700}
-#loadScr .lsPerf .pTip{font-size:14px;color:#b8a888}
-#loadScr .lsPerf .pBar{height:6px;margin:12px 0 6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}#loadScr .lsPerf .pBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8a4a1a,#ffb35a)}
-#loadScr .lsPerf span{font:700 13px var(--font-b);color:#b8a888}
+#splash kbd{font:700 12px var(--font-b);padding:1px 7px;border:1px solid #8a6a44;border-radius:3px;color:#ffb35a;margin:0 2px}
+
+/* v1.60: latauksen aikana (.loading) vain riimujen oranssi täyttyminen ja palkki – koristeet levossa. Valmis (.done): vaalea leimahdus
+   pelkillä opacity/transform-animaatioilla (ei suodinanimaatioita, jotka pätkivät), partikkelit häivyttyvät esiin. */
+#loadScr .lsSparks,#loadScr .lsSide,#loadScr .lsMist{transition:opacity 1s ease}
+#loadScr.loading .lsSparks,#loadScr.loading .lsSide,#loadScr.loading .lsMist{opacity:0}
+#loadScr.loading .lsSparks i,#loadScr.loading .lsSide i,#loadScr.loading .lsMist,#loadScr.loading .lsStone{animation:none}
+#loadScr .lsGlow{position:absolute;left:50%;top:44%;width:420px;height:420px;margin:-210px 0 0 -210px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,246,226,.75) 0%,rgba(255,200,130,.4) 22%,rgba(255,150,60,.14) 45%,transparent 68%);opacity:0;transform:scale(.6);will-change:opacity,transform}
+#loadScr.done .lsGlow{animation:lsGlow 1.7s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes lsGlow{0%{opacity:0;transform:scale(.6)}35%{opacity:1;transform:scale(1.05)}100%{opacity:.55;transform:scale(1.2)}}
+#loadScr .lsStone{will-change:transform}
+#splash .spStage,#splash #spLogo,#splash .spStudioN,#splash .spCopy{will-change:opacity,transform}
+#splash.noIntro{background:#050404}
+#splash .spSkip kbd{font-size:11px}
+#splash .spPerf canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#splash .spPerf .ppShade{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,transparent 30%,rgba(0,0,0,.55) 100%),linear-gradient(0deg,rgba(0,0,0,.75),transparent 45%);transition:background .8s ease}
+#splash .spPerf.res .ppShade{background:rgba(5,4,4,.82)}
+#splash .ppPanel{position:absolute;left:50%;bottom:9vh;transform:translateX(-50%);width:min(560px,calc(100vw - 32px));box-sizing:border-box;padding:18px 22px;text-align:center;
+  border:1px solid rgba(232,164,74,.45);border-radius:8px;background:rgba(20,14,9,.82);box-shadow:0 0 30px rgba(255,140,50,.15);transition:bottom .8s ease}
+#splash .spPerf.res .ppPanel{bottom:calc(50% - 110px)}
+#splash .ppPanel b{display:block;font:800 24px 'Cinzel',serif;color:#f2e6cc}#splash .ppPanel b small{font:600 16px var(--font-b);color:#ffb35a}
+#splash .ppPanel .pHead{display:block;font:700 12px var(--font-b);letter-spacing:.25em;text-transform:uppercase;color:#8f846e;margin-bottom:6px}
+#splash .ppPanel p{font:500 16px/1.55 var(--font-b);color:#d8cdb4;margin:8px 0 0}#splash .ppPanel em{font-style:normal;color:#ffb35a;font-weight:700}
+#splash .ppPanel .pTip{font-size:15px;color:#c8bba0}
+#splash .ppPanel .pBar{height:6px;margin:14px 0 6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+#splash .ppPanel .pBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8a4a1a,#ffb35a)}
+#splash .ppPanel .pBar.t i{width:100%;transform-origin:left;animation:ppT 9s linear forwards;background:rgba(255,179,90,.5)}
+@keyframes ppT{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+#splash .ppPanel .pRow{display:flex;justify-content:space-between;font:700 13px var(--font-b);color:#b8a888}#splash .ppPanel #ppF{color:#ffb35a}
