@@ -44,3 +44,55 @@ function sfx(type,pitch=1,vol=1){
     case 'woodBreak':noise(.25,800,200,.45,2);noise(.35,350,80,.3,1,.05);break;
   }
 }
+
+/* ---------------- OLENTOJEN ÄÄNET (v1.84, äänierä A – ks. KEHITYSMUISTIO "Äänisuunnitelma", sounds/AANILISTA.md) ----------------
+   Tiedostoäänet sounds/<id>_<laji>_<n>.mp3 (käsitelty tools/process_sounds.py:llä; peli lukee vain manifest.json:ssa olevat).
+   Lajit: idle (1–2), hurt, death, aggro (hyökkäävät). Laiska lataus kun olento ilmestyy, 3D-ääni (PannerNode), sävel ±6 %.
+   VARAANI: väliaikainen varaääniketju, jos olennolla ei ole omaa ääntä (to = mistä, p = sävelkerroin). Ketju seurataan useampi
+   askel (kerroin kertautuu). Jos idle_2 puuttuu → idle_1. Jos mitään ei löydy → tehty ääni (sfx) tai hiljaisuus.
+   Lohko VARAANI-ALKU…LOPPU on tiukkaa JSONia: tools/process_sounds.py lukee sen taulukkoa varten – pidä muoto. */
+const VARAANI=/*VARAANI-ALKU*/{
+  "kalmasusi":{"to":"susi","p":0.88},"routasusi":{"to":"susi","p":1.06},"kettu":{"to":"susi","p":1.35},"janis":{"to":"kettu","p":1.2},
+  "ilves":{"to":"susi","p":1.15},"ahma":{"to":"ilves","p":1.1},
+  "emakko":{"to":"karju","p":1.08},"porsas":{"to":"karju","p":1.5},
+  "hiidenkarhu":{"to":"karhu","p":0.85},
+  "hiidenhirvi":{"to":"hirvi","p":0.82},"aarnihirvio":{"to":"hiidenhirvi","p":0.8},"poro":{"to":"peura","p":0.9},"peura":{"to":"hirvi","p":1.3},
+  "ylimys":{"to":"kalmo","p":0.85},"vartija":{"to":"kalmo","p":0.6},"kivivartija":{"to":"vartija","p":1.15},
+  "jaajattari":{"to":"ylimys","p":1.25},"kalmaherra":{"to":"ylimys","p":0.8},"suonakki":{"to":"hiisi","p":0.7}
+}/*VARAANI-LOPPU*/;
+const CRE_AGGRO=['neutral','hostile','boss','rboss'];
+const CRE={man:null,ok:false,buf:{},load:{},want:{},gain:null,voices:[],max:14};
+// manifest kerran (tiiviste osoitteessa → välimuisti ei anna vanhaa ääntä). Ilman palvelinta (file://) epäonnistuu hiljaa.
+function creInit(){if(CRE.man)return;CRE.man={};
+  try{fetch('sounds/manifest.json?v='+(window.HV||'')).then(r=>r.ok?r.json():null).then(j=>{CRE.man=(j&&j.sounds)||{};CRE.ok=true;for(const t in CRE.want)creLoad(t);}).catch(()=>{});}catch(e){}}
+// ratkaisee äänen: oma → (idle_2 puuttuu → idle_1) → varaääniketju. Palauttaa {name, p} tai null.
+function creRes(id,kind,n){const M=CRE.man;if(!M)return null;let cur=id,p=1;
+  for(let d=0;d<6&&cur;d++){const a=`${cur}_${kind}_${n}`;if(M[a])return{name:a,p};if(n>1&&M[`${cur}_${kind}_1`])return{name:`${cur}_${kind}_1`,p};const v=VARAANI[cur];if(!v)break;p*=v.p;cur=v.to;}
+  return null;}
+function creBuf(name){if(CRE.buf[name]||CRE.load[name])return;const a=audio(),e=CRE.man&&CRE.man[name];if(!a||!e)return;
+  CRE.load[name]=fetch(`sounds/${name}.mp3?h=${e.h}`).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(b=>a.decodeAudioData(b)).then(B=>{CRE.buf[name]=B;}).catch(()=>{});}
+// laiska lataus: olennon kaikki äänet (myös varaäänet) haetaan kun se ilmestyy ensimmäisen kerran
+function creLoad(type){creInit();CRE.want[type]=1;if(!CRE.ok)return;const ag=typeof MOBDEF!=='undefined'&&MOBDEF[type]&&CRE_AGGRO.includes(MOBDEF[type].ai);
+  for(const [k,n] of [['idle',1],['idle',2],['hurt',1],['death',1],...(ag?[['aggro',1]]:[])]){const r=creRes(type,k,n);if(r)creBuf(r.name);}}
+function crePos(pn,x,y,z){if(pn.positionX){pn.positionX.value=x;pn.positionY.value=y;pn.positionZ.value=z;}else pn.setPosition(x,y,z);}
+// soittaa olennon äänen 3D:nä. Palauttaa true, jos olennolla on tiedostoääni (silloin tehtyä ääntä ei soiteta).
+function creSnd(m,kind){if(!m)return false;const r=creRes(m.type,kind,kind==='idle'&&Math.random()<.5?2:1);if(!r)return false;
+  const B=CRE.buf[r.name];if(!B){creBuf(r.name);return false;}
+  const a=actx;if(!a||a.state!=='running'||!soundOn)return true;const vol=typeof SET!=='undefined'?+SET.creVol:1;if(!(vol>0))return true;
+  if(!CRE.gain){CRE.gain=a.createGain();CRE.gain.connect(a.destination);}CRE.gain.gain.value=vol;
+  if(CRE.voices.length>=CRE.max){const o=CRE.voices.shift();try{o.src.stop();}catch(e){}}
+  const src=a.createBufferSource(),g=a.createGain(),pn=a.createPanner();src.buffer=B;src.playbackRate.value=r.p*(1+(Math.random()*2-1)*.06);
+  pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=m.def.ai==='boss'||m.def.ai==='rboss'?8:3;pn.maxDistance=90;pn.rolloffFactor=1.1;
+  g.gain.value=kind==='idle'?.75:1;src.connect(g);g.connect(pn);pn.connect(CRE.gain);crePos(pn,m.pos.x,m.pos.y+(m.def.r||.5)*1.6,m.pos.z);
+  const v={src,pn,m};CRE.voices.push(v);src.onended=()=>{const i=CRE.voices.indexOf(v);if(i>=0)CRE.voices.splice(i,1);try{pn.disconnect();}catch(e){}};src.start();return true;}
+// joka ruutu: kuuntelija = kamera, soivat äänet seuraavat olentoa; idle 6–15 s välein alle 25 m päässä, aggro kerran jahdin alkaessa
+const _creF=new THREE.Vector3();
+function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='undefined')return;const L=a.listener,c=camera.position;camera.getWorldDirection(_creF);
+  if(L.positionX){L.positionX.value=c.x;L.positionY.value=c.y;L.positionZ.value=c.z;L.forwardX.value=_creF.x;L.forwardY.value=_creF.y;L.forwardZ.value=_creF.z;L.upX.value=0;L.upY.value=1;L.upZ.value=0;}
+  else{L.setPosition(c.x,c.y,c.z);L.setOrientation(_creF.x,_creF.y,_creF.z,0,1,0);}
+  for(const v of CRE.voices)if(!v.m.dead)crePos(v.pn,v.m.pos.x,v.m.pos.y+(v.m.def.r||.5)*1.6,v.m.pos.z);
+  if(state!=='play'||!soundOn)return;
+  for(const m of mobs){if(m.dead)continue;const d2=dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z);
+    if(m.sndT===undefined)m.sndT=2+Math.random()*13;m.sndT-=dt;if(m.sndT<=0){m.sndT=6+Math.random()*9;if(d2<25*25&&m.state!=='sleep')creSnd(m,'idle');}
+    const ag=(m.state==='chase'||m.state==='intro')&&CRE_AGGRO.includes(m.def.ai);
+    if(ag){m.sndOff=0;if(!m.sndAg){m.sndAg=1;if(d2<70*70)creSnd(m,'aggro');}}else if(m.sndAg){m.sndOff=(m.sndOff||0)+dt;if(m.sndOff>5)m.sndAg=0;}}}   // uusi aggro vasta 5 s jahdin päättymisen jälkeen
