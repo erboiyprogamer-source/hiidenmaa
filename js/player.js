@@ -272,15 +272,18 @@ const _ikV=new V3(),_ikS=new V3(),_ikH=new V3(),_ikT=new V3(),_poleR=new V3(-.7,
    (oikea käsi IK:lla). Ennen jänne ja oikea käsi menivät hahmon vasemmalle puolelle (jousen asento seurasi vasemman käden kiertoa).
    Pisteet hahmon suunnassa: F = eteen, Lv = vasemmalle (+x), y = posken korkeus. Jousen paikallinen +z = tähtäyssuunta (jänteeltä kahvaan). */
 const _bwN=new V3(),_bwG=new V3(),_bwH=new V3(),_bwX=new V3(),_bwY=new V3(),_bwZ=new V3(),_bwM=new THREE.Matrix4(),_bwQ=new THREE.Quaternion(),_bwP=new THREE.Quaternion(),_bwO=new V3();
-function bowAim(hm,k){const b=hm.userData.bow;fig.g.updateMatrixWorld(true);fig.head.getWorldPosition(_bwH);
-  const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),lx=Math.cos(P.yaw),lz=-Math.sin(P.yaw),o=fig.g.position,y=_bwH.y+.22,full=.12-(b.tipZ-(.1+.32));
+/* v1.88: yleistetty hahmolle F (pelaaja `fig` tai mobi `m.f`), katsesuunta yaw ja hahmon sijainti o – jousikalmo käyttää samaa asentoa kuin pelaaja. */
+function bowAimFig(F,hm,k,yaw,o){const b=hm.userData.bow;F.g.updateMatrixWorld(true);F.head.getWorldPosition(_bwH);
+  const fx=Math.sin(yaw),fz=Math.cos(yaw),lx=Math.cos(yaw),lz=-Math.sin(yaw),y=_bwH.y+.22,full=.12-(b.tipZ-(.1+.32));
   _bwN.set(o.x+fx*.04-lx*.2,y-.09,o.z+fz*.04-lz*.2);   // v1.37 (lista 3, kohta 15): jänne vedetään enemmän oikealle (posken oikealle puolelle, olan suuntaan)
   _bwG.set(_bwN.x+fx*full+lx*.08,y-.02,_bwN.z+fz*full+lz*.08);   // kahva keskellä edessä (n. 4 cm vasemmalla keskilinjasta)
-  armIK(fig.armL,fig.elbowL,_bwG,k,_poleBowL);fig.g.updateMatrixWorld(true);
+  armIK(F.armL,F.elbowL,_bwG,k,_poleBowL);F.g.updateMatrixWorld(true);
   _bwZ.subVectors(_bwG,_bwN).normalize();_bwY.set(0,1,0).addScaledVector(_bwZ,-_bwZ.y).normalize();_bwX.crossVectors(_bwY,_bwZ);_bwM.makeBasis(_bwX,_bwY,_bwZ);
   _bwQ.setFromRotationMatrix(_bwM);hm.parent.getWorldQuaternion(_bwP);_bwQ.premultiply(_bwP.invert());hm.quaternion.slerp(_bwQ,k);
   _bwO.set(0,0,.12).applyQuaternion(hm.quaternion).negate();hm.position.lerp(_bwO,k);hm.updateMatrixWorld(true);
-  _gp.set(0,0,b.ar.position.z+.02);hm.localToWorld(_gp);armIK(fig.armR,fig.elbowR,_gp,k,_poleBow);}
+  _gp.set(0,0,b.ar.position.z+.02);hm.localToWorld(_gp);armIK(F.armR,F.elbowR,_gp,k,_poleBow);}
+function bowAim(hm,k){bowAimFig(fig,hm,k,P.yaw,fig.g.position);}
+
 function lerpAngle(a,b,t){let d=((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;return a+d*t;}
 function playerDie(){if(state==='paused'||state==='intro'){P.hp=Math.max(P.hp,1);return;}
   if(devOn('god')){P.hp=Math.max(1,P.hp);return;}   // DEV: kuolemattomuus

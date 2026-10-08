@@ -62,7 +62,8 @@ const VARAANI=/*VARAANI-ALKU*/{
 }/*VARAANI-LOPPU*/;
 const CRE_AGGRO=['neutral','hostile','boss','rboss'];   // niillä on suuttumisääni (aggro)
 const CRE_CHASE=['hostile','boss','rboss'];             // niillä on lisäksi toistuva jahtiääni (chase) ja suuttumisääni vain kerran
-const CRE_KINDS=['idle','hurt','death','aggro','chase'];  // jokaisella lajilla 1–3 versiota (_1.._3), arvonta niistä jotka ovat olemassa
+const CRE_ECHO=['rboss'];                                // v1.88: ulottuvuuksien pomoilla lisäksi kaikuääni (echo, 1–2 versiota): kuuluu kaukaa kunnes pelaaja kohtaa pomon
+const CRE_KINDS=['idle','hurt','death','aggro','chase','echo'];  // jokaisella lajilla 1–3 versiota (_1.._3), arvonta niistä jotka ovat olemassa
 const CRE={man:null,ok:false,buf:{},load:{},want:{},gain:null,voices:[],max:10,last:{},lastAmb:-9,rev:null};
 // manifest kerran (tiiviste osoitteessa → välimuisti ei anna vanhaa ääntä). Ilman palvelinta (file://) epäonnistuu hiljaa.
 function creInit(){if(CRE.man)return;CRE.man={};
@@ -70,12 +71,14 @@ function creInit(){if(CRE.man)return;CRE.man={};
 // ratkaisee lajin äänet: omat versiot (_1.._3, vain olemassa olevat) → muuten varaääniketju. Palauttaa {names:[…], p} tai null.
 function creRes(id,kind){const M=CRE.man;if(!M)return null;let cur=id,p=1;
   for(let d=0;d<6&&cur;d++){const L=[1,2,3].map(n=>`${cur}_${kind}_${n}`).filter(a=>M[a]);if(L.length)return{names:L,p};const v=VARAANI[cur];if(!v)break;p*=v.p;cur=v.to;}
+  // v1.88: kaikuäänen pääääni on Aarnihirviö (💎): pomo ilman omaa kaikuääntä lainaa sen, vaikka VARAANI-ketju ei johtaisi sinne
+  if(kind==='echo'&&id!=='aarnihirvio'&&MOBDEF[id]&&CRE_ECHO.includes(MOBDEF[id].ai)){const L=[1,2,3].map(n=>`aarnihirvio_echo_${n}`).filter(a=>M[a]);if(L.length)return{names:L,p:1};}
   return null;}
 function creBuf(name){if(CRE.buf[name]||CRE.load[name])return;const a=audio(),e=CRE.man&&CRE.man[name];if(!a||!e)return;
   CRE.load[name]=fetch(`sounds/${name}.mp3?h=${e.h}`).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(b=>a.decodeAudioData(b)).then(B=>{CRE.buf[name]=B;}).catch(()=>{});}
 // laiska lataus: olennon kaikki äänet (myös varaäänet) haetaan kun se ilmestyy ensimmäisen kerran
 function creLoad(type){creInit();CRE.want[type]=1;if(!CRE.ok)return;const ai=typeof MOBDEF!=='undefined'&&MOBDEF[type]&&MOBDEF[type].ai;
-  for(const k of CRE_KINDS){if(k==='aggro'&&!CRE_AGGRO.includes(ai))continue;if(k==='chase'&&!CRE_CHASE.includes(ai))continue;const r=creRes(type,k);if(r)for(const n of r.names)creBuf(n);}}
+  for(const k of CRE_KINDS){if(k==='aggro'&&!CRE_AGGRO.includes(ai))continue;if(k==='chase'&&!CRE_CHASE.includes(ai))continue;if(k==='echo'&&!CRE_ECHO.includes(ai))continue;const r=creRes(type,k);if(r)for(const n of r.names)creBuf(n);}}
 function crePos(pn,x,y,z){if(pn.positionX){pn.positionX.value=x;pn.positionY.value=y;pn.positionZ.value=z;}else pn.setPosition(x,y,z);}
 // ---- toistosäännöt (v1.86) ----
 // Tärkeys: kuolema 5 > osuma 4 > suuttuminen 3 > jahti 2 > rauhallinen 1. Yhdellä olennolla soi kerrallaan vain yksi ääni
@@ -94,6 +97,8 @@ function creRevMake(a){if(CRE.rev)return CRE.rev;const sr=a.sampleRate,len=Math.
 function creRevOn(a){const R=creRevMake(a);R.t=3;if(!R.on){R.out.connect(CRE.gain);R.on=true;}return R;}
 function creRevTick(dt){const R=CRE.rev;if(!R||!R.on)return;if(CRE.voices.some(v=>v.sd)){R.t=3;return;}R.t-=dt;if(R.t<=0){try{R.out.disconnect();}catch(e){}R.on=false;}}
 function creStop(v,t){try{v.g.gain.setTargetAtTime(0,actx.currentTime,.03);v.src.stop(actx.currentTime+(t||.12));}catch(e){}}
+// v1.88 kaikuääni: pomon paikasta, mutta enintään 38 m pelaajasta (kaukainen pomo kuuluu vaimeana kaikuna luolastossa, ei hiljaisuutena)
+function creEchoPos(m,pn){let x=m.pos.x,z=m.pos.z;const dx=x-P.pos.x,dz=z-P.pos.z,d=Math.hypot(dx,dz);if(d>38){x=P.pos.x+dx/d*38;z=P.pos.z+dz/d*38;}crePos(pn,x,P.pos.y+1.6,z);}
 // o (valinnainen): {p: sävelkerroin, v: voimakkuuskerroin, pri: tärkeys, key: oma laskuriavain} – esim. palavan pomon kipuääni.
 // soittaa olennon äänen 3D:nä (arpoo ladatuista versioista). Palauttaa äänen keston sekunteina, jos olennolla on tiedostoääni
 // (silloin tehtyä ääntä ei soiteta), muuten false (ei ääntä tai vielä latautumassa).
@@ -111,22 +116,27 @@ function creSnd(m,kind,o){if(!m)return false;const r=creRes(m.type,kind);if(!r)r
   if(CRE.voices.length>=CRE.max){let w=null,wd=-1;for(const v of CRE.voices){const d=dist2(v.m.pos.x,v.m.pos.z,P.pos.x,P.pos.z);if(!w||v.pri<w.pri||(v.pri===w.pri&&d>wd)){w=v;wd=d;}}
     if(!w||w.pri>pri)return dur;creStop(w,.08);CRE.voices.splice(CRE.voices.indexOf(w),1);}
   if(amb)CRE.lastAmb=now;CRE.last[key]=name;
+  const ec=!!(o&&o.echo);
   const src=a.createBufferSource(),g=a.createGain(),pn=a.createPanner();src.buffer=B;src.playbackRate.value=rate;
-  pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=boss?8:3;pn.maxDistance=90;pn.rolloffFactor=1.1;
-  g.gain.value=(CRE_G[kind]||1)*(o&&o.v||1);src.connect(g);g.connect(pn);pn.connect(CRE.gain);crePos(pn,m.pos.x,m.pos.y+(m.def.r||.5)*1.6,m.pos.z);
-  let sd=null;if(m.dun){const R=creRevOn(a);sd=a.createGain();sd.gain.value=m.def.ai==='rboss'?.75:boss?.6:.45;pn.connect(sd);sd.connect(R.inp);}
-  const v={src,pn,g,sd,m,pri,t0:now,key};CRE.voices.push(v);src.onended=()=>{const i=CRE.voices.indexOf(v);if(i>=0)CRE.voices.splice(i,1);try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return dur;}
+  pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=boss?8:3;pn.maxDistance=90;pn.rolloffFactor=ec?.7:1.1;
+  g.gain.value=(CRE_G[kind]||1)*(o&&o.v||1);src.connect(g);
+  if(ec){const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1500;g.connect(lp);lp.connect(pn);}else g.connect(pn);   // kaikuääni: tumma, kaukainen
+  pn.connect(CRE.gain);if(ec)creEchoPos(m,pn);else crePos(pn,m.pos.x,m.pos.y+(m.def.r||.5)*1.6,m.pos.z);
+  let sd=null;if(m.dun){const R=creRevOn(a);sd=a.createGain();sd.gain.value=ec?1.3:m.def.ai==='rboss'?.75:boss?.6:.45;pn.connect(sd);sd.connect(R.inp);}
+  const v={src,pn,g,sd,m,pri,t0:now,key,ec};CRE.voices.push(v);src.onended=()=>{const i=CRE.voices.indexOf(v);if(i>=0)CRE.voices.splice(i,1);try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return dur;}
 // joka ruutu: kuuntelija = kamera, soivat äänet seuraavat olentoa; idle 6–15 s välein alle 25 m päässä, aggro kerran jahdin alkaessa
 const _creF=new THREE.Vector3();
 function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='undefined')return;const L=a.listener,c=camera.position;camera.getWorldDirection(_creF);
   if(L.positionX){L.positionX.value=c.x;L.positionY.value=c.y;L.positionZ.value=c.z;L.forwardX.value=_creF.x;L.forwardY.value=_creF.y;L.forwardZ.value=_creF.z;L.upX.value=0;L.upY.value=1;L.upZ.value=0;}
   else{L.setPosition(c.x,c.y,c.z);L.setOrientation(_creF.x,_creF.y,_creF.z,0,1,0);}
   creRevTick(dt);
-  for(const v of CRE.voices)if(!v.m.dead)crePos(v.pn,v.m.pos.x,v.m.pos.y+(v.m.def.r||.5)*1.6,v.m.pos.z);
+  for(const v of CRE.voices){if(v.ec)creEchoPos(v.m,v.pn);else if(!v.m.dead)crePos(v.pn,v.m.pos.x,v.m.pos.y+(v.m.def.r||.5)*1.6,v.m.pos.z);}
   if(state!=='play'||!soundOn)return;
   for(const m of mobs){if(m.dead)continue;const d2=dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z),ai=m.def.ai,hs=CRE_CHASE.includes(ai),chasing=m.state==='chase',hasChase=hs&&chasing&&creRes(m.type,'chase');
     // rauhallinen ääntely 6–15 s välein alle 25 m päässä (ei jahdin aikana, jos olennolla on jahtiääni)
     if(m.sndT===undefined)m.sndT=2+Math.random()*13;m.sndT-=dt;if(m.sndT<=0){m.sndT=6+Math.random()*9;if(d2<25*25&&m.state!=='sleep'&&!hasChase)creSnd(m,'idle');}
+    // v1.88: nukkuvan ulottuvuuspomon kaikuääni: kuuluu satunnaisesti (24–48 s välein, ensimmäinen 5–14 s sisääntulosta) vain tässä ulottuvuudessa kunnes pomo herää
+    if(ai==='rboss'&&m.dun&&m.state==='sleep'&&P.inDun&&m.realm===P.realm&&!P.dead){m.echoT=(m.echoT??(5+Math.random()*9))-dt;if(m.echoT<=0){m.echoT=24+Math.random()*24;if(creRes(m.type,'echo'))creSnd(m,'echo',{echo:1,v:.6,pri:1,key:'echo'});}}
     if(hs){
       // vihamielinen / pomo: suuttumisääni VAIN KERRAN olennon elinaikana (kun huomaa sinut ensimmäistä kertaa); jos sitä ei ole, ei erillistä ääntä
       // vaan jahtiääni alkaa heti. Sen jälkeen jahtiääni toistuu 4–9 s välein kun olento jahtaa sinua.

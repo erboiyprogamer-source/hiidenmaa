@@ -14,16 +14,16 @@
 4. Commit ja push GitHub Desktopilla ja pyydä Claudea ajamaan `python3 tools/process_sounds.py`: hiljaisuus leikataan alusta ja lopusta,
    ääni katkaistaan lajin ylärajaan (häivytys), voimakkuus tasataan lajin tavoitteeseen ja se siirtyy peliin (`sounds/<nimi>.mp3`).
    Raakatiedostot jäävät `sounds/raw/`-kansioon. **Älä itse trimmaa tai normalisoi** – työkalu tekee sen; anna raaka mieluummin pitkänä ja puhtaana.
-   Kuolemaäänelle on **1 paikka** ulottuvuuksien hirviöillä (Jäätär, Kalmaherra, Aarnihirviö) ja **2 paikkaa** kaikilla muilla.
+   Kaikuääni (`<pomo>_echo_1/2`) on vain ulottuvuuspomoilla; **Aarnihirviön kaikuäänet ovat kaikkien pomojen varaääni**. Kuolemaäänelle on **1 paikka** ulottuvuuksien hirviöillä (Jäätär, Kalmaherra, Aarnihirviö) ja **2 paikkaa** kaikilla muilla.
 
-**Käsittelyn rajat (lajeittain):** idle ≤ 3 s (pomo 4), hurt ≤ 1,2 s (1,6), death ≤ 3,5 s (6), aggro ≤ 2,5 s (3,5), chase ≤ 2,5 s (4).
-Tavoiteäänekkyys (LUFS): idle −22, hurt −17, death −16, aggro −16, chase −18; pomot +1…1,5 dB. Ulottuvuuksissa (luolasto, ulottuvuudet)
+**Käsittelyn rajat (lajeittain):** idle ≤ 3 s (pomo 4), hurt ≤ 1,2 s (1,6), death ≤ 3,5 s (6), aggro ≤ 2,5 s (3,5), chase ≤ 2,5 s (4), echo ≤ 5 s (6).
+Tavoiteäänekkyys (LUFS): idle −22, hurt −17, death −16, aggro −16, chase −18, echo −26; pomot +1…1,5 dB. Ulottuvuuksissa (luolasto, ulottuvuudet)
 olennot saavat pelissä kaiun (ei tiedostoon), joten anna raakaääni kuivana, ilman omaa kaikua.
 
 **Tilat (Tila-sarake):** ✅ oma ääni · 🔁 väliaikainen varaääni toiselta olennolta (sävelkorkeutta muutettu) · ⬜ puuttuu (peli käyttää
 tehtyä ääntä tai on hiljaa). Varaäänet ovat vain väliaikaisia: jokaiselle olennolle kannattaa lopulta lisätä omat äänet.
 
-## Äänierä A: olennot (5/112 äänilajia omilla äänillä)
+## Äänierä A: olennot (5/115 äänilajia omilla äänillä)
 
 **Selite (Olento-sarake, varaääniketju):**
 - 💎 = **pääääni**: muut lainaavat tältä, se ei lainaa itse. Lisää nämä ensin – yksi ääni täyttää monta olentoa.
@@ -36,7 +36,7 @@ tehtyä ääntä tai on hiljaa). Varaäänet ovat vain väliaikaisia: jokaiselle
 
 ### Eläimet
 
-| Olento | Ääni | Tiedostot (1–3 versiota, kuolema 1–2) | Tila | Millainen ääni | Hakusanat (englanniksi) |
+| Olento | Ääni | Tiedostot (1–3 versiota, kuolema ja kaiku 1–2) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- | --- |
 | **Peura** (`peura`) ⭐ (1)<br>lainaavat: poro | idle | `peura_idle_1`, `peura_idle_2`, `peura_idle_3` | ⬜ puuttuu (varalla: hirvi) | rauhallinen ääntely, satunnaisesti 6–15 s välein (0,5–2 s) – metsäkauris, arka | deer snort, deer bleat soft |
 |  | hurt | `peura_hurt_1`, `peura_hurt_2`, `peura_hurt_3` | ⬜ puuttuu (varalla: hirvi) | lyhyt kivun ääni, kun olentoon osuu (0,2–0,8 s) – metsäkauris, arka | deer distress call |
@@ -83,7 +83,7 @@ tehtyä ääntä tai on hiljaa). Varaäänet ovat vain väliaikaisia: jokaiselle
 
 ### Viholliset
 
-| Olento | Ääni | Tiedostot (1–3 versiota, kuolema 1–2) | Tila | Millainen ääni | Hakusanat (englanniksi) |
+| Olento | Ääni | Tiedostot (1–3 versiota, kuolema ja kaiku 1–2) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- | --- |
 | **Hiidenkarhu** (`hiidenkarhu`) | idle | `hiidenkarhu_idle_1`, `hiidenkarhu_idle_2`, `hiidenkarhu_idle_3` | ⬜ puuttuu (varalla: karhu) | rauhallinen ääntely, satunnaisesti 6–15 s välein (0,5–2 s) – hiiden turmelema karhu, synkkä ja matala | monster bear growl low |
 |  | hurt | `hiidenkarhu_hurt_1`, `hiidenkarhu_hurt_2`, `hiidenkarhu_hurt_3` | ⬜ puuttuu (varalla: karhu) | lyhyt kivun ääni, kun olentoon osuu (0,2–0,8 s) – hiiden turmelema karhu, synkkä ja matala | beast roar pain |
@@ -138,7 +138,7 @@ tehtyä ääntä tai on hiljaa). Varaäänet ovat vain väliaikaisia: jokaiselle
 
 ### Pomot
 
-| Olento | Ääni | Tiedostot (1–3 versiota, kuolema 1–2) | Tila | Millainen ääni | Hakusanat (englanniksi) |
+| Olento | Ääni | Tiedostot (1–3 versiota, kuolema ja kaiku 1–2) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- | --- |
 | **Kalmanvartija** (`vartija`) ⭐ (1)<br>lainaavat: kivivartija | idle | `vartija_idle_1`, `vartija_idle_2`, `vartija_idle_3` | ⬜ puuttuu (varalla: kalmo) | rauhallinen ääntely, satunnaisesti 6–15 s välein (0,5–2 s) – Kalmanvartija, valtava pomo | giant breathing, deep monster breath |
 |  | hurt | `vartija_hurt_1`, `vartija_hurt_2`, `vartija_hurt_3` | ⬜ puuttuu (varalla: kalmo) | lyhyt kivun ääni, kun olentoon osuu (0,2–0,8 s) – Kalmanvartija, valtava pomo | giant hurt roar |
@@ -150,16 +150,19 @@ tehtyä ääntä tai on hiljaa). Varaäänet ovat vain väliaikaisia: jokaiselle
 |  | death | `jaajattari_death_1` | 🔁 varaääni: aarnihirvio_death_1 (sävel ×1.20) | kuoleman ääni (0,8–3,5 s, pomoilla jopa 6 s; paikkoja: ulottuvuuksien hirviöt 1, muut 2) – Jäätär, jäinen noita (pomo) | witch death scream, ice shatter |
 |  | aggro | `jaajattari_aggro_1`, `jaajattari_aggro_2`, `jaajattari_aggro_3` | 🔁 varaääni: aarnihirvio_aggro_1, aarnihirvio_aggro_2 (sävel ×1.20) | SUUTTUMISÄÄNI: huomaa sinut ensimmäistä kertaa – vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat (0,5–2 s) – Jäätär, jäinen noita (pomo) | evil witch laugh |
 |  | chase | `jaajattari_chase_1`, `jaajattari_chase_2`, `jaajattari_chase_3` | 🔁 varaääni: aarnihirvio_chase_1, aarnihirvio_chase_2 (sävel ×1.20) | JAHTIÄÄNI: toistuu 4–9 s välein kun olento jahtaa sinua suuttumisäänen jälkeen – murina, huohotus tai huuto (0,5–1,5 s) – Jäätär, jäinen noita (pomo) | evil witch laugh |
+|  | echo | `jaajattari_echo_1`, `jaajattari_echo_2` | ⬜ puuttuu (varalla: aarnihirvio) | KAIKUÄÄNI (vain ulottuvuuspomot): kuuluu kaukaa, 24–48 s välein, kunnes pelaaja kohtaa pomon – matala, pitkä, kuiva raaka (kaiku ja tumma sointi lisätään pelissä; 1–2 versiota) – Jäätär, jäinen noita (pomo) | distant ghostly wail, ice cave wind voice |
 | **Kalmaherra** (`kalmaherra`) | idle | `kalmaherra_idle_1`, `kalmaherra_idle_2`, `kalmaherra_idle_3` | 🔁 varaääni: aarnihirvio_idle_1 (sävel ×0.85) | rauhallinen ääntely, satunnaisesti 6–15 s välein (0,5–2 s) – Kalmaherra, kalmojen valtias (pomo) | deep demon whisper |
 |  | hurt | `kalmaherra_hurt_1`, `kalmaherra_hurt_2`, `kalmaherra_hurt_3` | 🔁 varaääni: aarnihirvio_hurt_1 (sävel ×0.85) | lyhyt kivun ääni, kun olentoon osuu (0,2–0,8 s) – Kalmaherra, kalmojen valtias (pomo) | demon hurt roar |
 |  | death | `kalmaherra_death_1` | 🔁 varaääni: aarnihirvio_death_1 (sävel ×0.85) | kuoleman ääni (0,8–3,5 s, pomoilla jopa 6 s; paikkoja: ulottuvuuksien hirviöt 1, muut 2) – Kalmaherra, kalmojen valtias (pomo) | demon death roar |
 |  | aggro | `kalmaherra_aggro_1`, `kalmaherra_aggro_2`, `kalmaherra_aggro_3` | 🔁 varaääni: aarnihirvio_aggro_1, aarnihirvio_aggro_2 (sävel ×0.85) | SUUTTUMISÄÄNI: huomaa sinut ensimmäistä kertaa – vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat (0,5–2 s) – Kalmaherra, kalmojen valtias (pomo) | demon lord roar |
 |  | chase | `kalmaherra_chase_1`, `kalmaherra_chase_2`, `kalmaherra_chase_3` | 🔁 varaääni: aarnihirvio_chase_1, aarnihirvio_chase_2 (sävel ×0.85) | JAHTIÄÄNI: toistuu 4–9 s välein kun olento jahtaa sinua suuttumisäänen jälkeen – murina, huohotus tai huuto (0,5–1,5 s) – Kalmaherra, kalmojen valtias (pomo) | demon lord roar |
+|  | echo | `kalmaherra_echo_1`, `kalmaherra_echo_2` | ⬜ puuttuu (varalla: aarnihirvio) | KAIKUÄÄNI (vain ulottuvuuspomot): kuuluu kaukaa, 24–48 s välein, kunnes pelaaja kohtaa pomon – matala, pitkä, kuiva raaka (kaiku ja tumma sointi lisätään pelissä; 1–2 versiota) – Kalmaherra, kalmojen valtias (pomo) | distant demon growl dungeon, deep rumble voice |
 | **Aarnihirviö** (`aarnihirvio`) 💎 (2)<br>lainaavat: jäätär, kalmaherra | idle | `aarnihirvio_idle_1`, `aarnihirvio_idle_2`, `aarnihirvio_idle_3` | ✅ oma: _1 (1/3) | rauhallinen ääntely, satunnaisesti 6–15 s välein (0,5–2 s) – Aarnihirviö, metsän hirviö (pomo) | forest monster creak, tree creature groan |
 |  | hurt | `aarnihirvio_hurt_1`, `aarnihirvio_hurt_2`, `aarnihirvio_hurt_3` | ✅ oma: _1 (1/3) | lyhyt kivun ääni, kun olentoon osuu (0,2–0,8 s) – Aarnihirviö, metsän hirviö (pomo) | monster roar wood creak |
 |  | death | `aarnihirvio_death_1` | ✅ oma: _1 (1/1) | kuoleman ääni (0,8–3,5 s, pomoilla jopa 6 s; paikkoja: ulottuvuuksien hirviöt 1, muut 2) – Aarnihirviö, metsän hirviö (pomo) | giant tree creature death |
 |  | aggro | `aarnihirvio_aggro_1`, `aarnihirvio_aggro_2`, `aarnihirvio_aggro_3` | ✅ oma: _1, _2 (2/3) | SUUTTUMISÄÄNI: huomaa sinut ensimmäistä kertaa – vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat (0,5–2 s) – Aarnihirviö, metsän hirviö (pomo) | forest monster roar |
 |  | chase | `aarnihirvio_chase_1`, `aarnihirvio_chase_2`, `aarnihirvio_chase_3` | ✅ oma: _1, _2 (2/3) | JAHTIÄÄNI: toistuu 4–9 s välein kun olento jahtaa sinua suuttumisäänen jälkeen – murina, huohotus tai huuto (0,5–1,5 s) – Aarnihirviö, metsän hirviö (pomo) | forest monster roar |
+|  | echo | `aarnihirvio_echo_1`, `aarnihirvio_echo_2` | ⬜ puuttuu – **kaikuäänien pääääni 💎** | KAIKUÄÄNI (vain ulottuvuuspomot): kuuluu kaukaa, 24–48 s välein, kunnes pelaaja kohtaa pomon – matala, pitkä, kuiva raaka (kaiku ja tumma sointi lisätään pelissä; 1–2 versiota) – Aarnihirviö, metsän hirviö (pomo) | distant monster growl cave, deep creature roar far away |
 
 ## Tulevat äänierät
 

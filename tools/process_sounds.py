@@ -24,6 +24,7 @@ LISTA = os.path.join(OUT, 'AANILISTA.md')
 PLACEHOLDER_MAX = 3072          # tavua: tätä pienempi/yhtä suuri = paikkamerkki
 AGGRO_AI = ('neutral', 'hostile', 'boss', 'rboss')   # suuttumisääni (aggro)
 CHASE_AI = ('hostile', 'boss', 'rboss')               # + toistuva jahtiääni (chase)
+ECHO_AI = ('rboss',)                                  # v1.88: kaikuääni (echo): nukkuva ulottuvuuspomo kaikuu luolastossa kunnes pelaaja kohtaa sen
 VARIANTS = (1, 2, 3)                                  # jokaisella lajilla enintään 3 versiota; peli arpoo olemassa olevista
 PV = 2                                                # käsittelyn versio: vaihtuessa kaikki äänet käsitellään uudestaan
 
@@ -32,6 +33,8 @@ def variants_of(ai, kind):
     """Montako versiota lajista on: kuolema = 1 ulottuvuuksien hirviöillä (rboss), 2 kaikilla muilla; muut lajit 3."""
     if kind == 'death':
         return (1,) if ai == 'rboss' else (1, 2)
+    if kind == 'echo':
+        return (1, 2)
     return VARIANTS
 
 
@@ -43,6 +46,7 @@ PROFIILI = {
     'death': (3.5, 6.0, 0.50, -16),
     'aggro': (2.5, 3.5, 0.30, -16),
     'chase': (2.5, 4.0, 0.30, -18),
+    'echo':  (5.0, 6.0, 0.80, -26),   # kaukainen kaiku: hiljainen, pitkä pehmeä häivytys (kaiku lisätään pelissä)
 }
 BOSS_DB = {'boss': 1.0, 'rboss': 1.5}
 
@@ -72,15 +76,16 @@ CRE_INFO = {
     'vartija': ('Kalmanvartija, valtava pomo', {'idle': 'giant breathing, deep monster breath', 'hurt': 'giant hurt roar', 'death': 'boss death roar', 'aggro': 'boss monster roar'}),
     'kivivartija': ('kivivartija, kivinen golem', {'idle': 'stone grind, rock golem rumble', 'hurt': 'rock impact crack', 'death': 'rock crumble collapse', 'aggro': 'golem roar stone'}),
     'routasusi': ('routasusi, jäinen susi', {'idle': 'wolf growl cold breath', 'hurt': 'wolf yelp', 'death': 'wolf whimper death', 'aggro': 'wolf howl'}),
-    'jaajattari': ('Jäätär, jäinen noita (pomo)', {'idle': 'ice witch whisper, cold wind voice', 'hurt': 'female monster scream', 'death': 'witch death scream, ice shatter', 'aggro': 'evil witch laugh'}),
-    'kalmaherra': ('Kalmaherra, kalmojen valtias (pomo)', {'idle': 'deep demon whisper', 'hurt': 'demon hurt roar', 'death': 'demon death roar', 'aggro': 'demon lord roar'}),
-    'aarnihirvio': ('Aarnihirviö, metsän hirviö (pomo)', {'idle': 'forest monster creak, tree creature groan', 'hurt': 'monster roar wood creak', 'death': 'giant tree creature death', 'aggro': 'forest monster roar'}),
+    'jaajattari': ('Jäätär, jäinen noita (pomo)', {'idle': 'ice witch whisper, cold wind voice', 'hurt': 'female monster scream', 'death': 'witch death scream, ice shatter', 'aggro': 'evil witch laugh', 'echo': 'distant ghostly wail, ice cave wind voice'}),
+    'kalmaherra': ('Kalmaherra, kalmojen valtias (pomo)', {'idle': 'deep demon whisper', 'hurt': 'demon hurt roar', 'death': 'demon death roar', 'aggro': 'demon lord roar', 'echo': 'distant demon growl dungeon, deep rumble voice'}),
+    'aarnihirvio': ('Aarnihirviö, metsän hirviö (pomo)', {'idle': 'forest monster creak, tree creature groan', 'hurt': 'monster roar wood creak', 'death': 'giant tree creature death', 'aggro': 'forest monster roar', 'echo': 'distant monster growl cave, deep creature roar far away'}),
 }
 KIND_FI = {
     'idle': 'rauhallinen ääntely, satunnaisesti 6–15 s välein (0,5–2 s)',
     'hurt': 'lyhyt kivun ääni, kun olentoon osuu (0,2–0,8 s)',
     'death': 'kuoleman ääni (0,8–3,5 s, pomoilla jopa 6 s; paikkoja: ulottuvuuksien hirviöt 1, muut 2)',
     'aggro': 'SUUTTUMISÄÄNI: huomaa sinut ensimmäistä kertaa – vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat (0,5–2 s)',
+    'echo': 'KAIKUÄÄNI (vain ulottuvuuspomot): kuuluu kaukaa, 24–48 s välein, kunnes pelaaja kohtaa pomon – matala, pitkä, kuiva raaka (kaiku ja tumma sointi lisätään pelissä; 1–2 versiota)',
     'chase': 'JAHTIÄÄNI: toistuu 4–9 s välein kun olento jahtaa sinua suuttumisäänen jälkeen – murina, huohotus tai huuto (0,5–1,5 s)',
 }
 
@@ -108,7 +113,7 @@ def varaani():
 
 
 def kinds_of(ai):
-    return ['idle', 'hurt', 'death'] + (['aggro'] if ai in AGGRO_AI else []) + (['chase'] if ai in CHASE_AI else [])
+    return ['idle', 'hurt', 'death'] + (['aggro'] if ai in AGGRO_AI else []) + (['chase'] if ai in CHASE_AI else []) + (['echo'] if ai in ECHO_AI else [])
 
 
 def expected():
@@ -240,7 +245,7 @@ def main():
         creset = {c for c, _, _ in creatures()}
         for f in sorted(os.listdir(RAW)):
             n, p = os.path.splitext(f)[0], os.path.join(RAW, f)
-            mm = re.match(r'^([a-z_0-9]+?)_(idle|hurt|death|aggro|chase)_[123]$', n)
+            mm = re.match(r'^([a-z_0-9]+?)_(idle|hurt|death|aggro|chase|echo)_[123]$', n)
             if mm and mm.group(1) in creset and n not in expset and os.path.getsize(p) <= PLACEHOLDER_MAX:
                 os.remove(p)
                 gone += 1
@@ -270,7 +275,7 @@ def main():
                 removed += 1
             continue
         src_h = sha(p)
-        mm = re.match(r'^([a-z_0-9]+?)_(idle|hurt|death|aggro|chase)_[123]$', n)
+        mm = re.match(r'^([a-z_0-9]+?)_(idle|hurt|death|aggro|chase|echo)_[123]$', n)
         cid, kind = (mm.group(1), mm.group(2)) if mm else (None, 'idle')
         ai = next((a for c, _, a in creatures() if c == cid), 'hostile')
         if n in old and old[n].get('src') == src_h and old[n].get('pv') == PV and os.path.exists(dst):
@@ -364,7 +369,7 @@ def write_list(sounds, raws):
     rows = []
     for title, ais in cats:
         rows.append(f'\n### {title}\n')
-        rows.append('| Olento | Ääni | Tiedostot (1–3 versiota, kuolema 1–2) | Tila | Millainen ääni | Hakusanat (englanniksi) |')
+        rows.append('| Olento | Ääni | Tiedostot (1–3 versiota, kuolema ja kaiku 1–2) | Tila | Millainen ääni | Hakusanat (englanniksi) |')
         rows.append('| --- | --- | --- | --- | --- | --- |')
         for cid, name, ai in cre:
             if ai not in ais:
@@ -390,6 +395,8 @@ def write_list(sounds, raws):
                     src, p = resolve(cid, kind, sounds, vara)
                     if src:
                         st = f'🔁 varaääni: {", ".join(src)}' + (f' (sävel ×{p:.2f})' if abs(p - 1) > .001 else '')
+                    elif kind == 'echo':
+                        st = '⬜ puuttuu' + ('' if cid == 'aarnihirvio' else ' (varalla: aarnihirvio)') + (' – **kaikuäänien pääääni 💎**' if cid == 'aarnihirvio' else '')
                     elif kind == 'chase' and cid in vara:
                         st = f'⬜ puuttuu (varalla: {vara[cid]["to"]})'
                     elif kind == 'aggro' and ai in CHASE_AI:
@@ -414,10 +421,10 @@ def write_list(sounds, raws):
 4. Commit ja push GitHub Desktopilla ja pyydä Claudea ajamaan `python3 tools/process_sounds.py`: hiljaisuus leikataan alusta ja lopusta,
    ääni katkaistaan lajin ylärajaan (häivytys), voimakkuus tasataan lajin tavoitteeseen ja se siirtyy peliin (`sounds/<nimi>.mp3`).
    Raakatiedostot jäävät `sounds/raw/`-kansioon. **Älä itse trimmaa tai normalisoi** – työkalu tekee sen; anna raaka mieluummin pitkänä ja puhtaana.
-   Kuolemaäänelle on **1 paikka** ulottuvuuksien hirviöillä (Jäätär, Kalmaherra, Aarnihirviö) ja **2 paikkaa** kaikilla muilla.
+   Kaikuääni (`<pomo>_echo_1/2`) on vain ulottuvuuspomoilla; **Aarnihirviön kaikuäänet ovat kaikkien pomojen varaääni**. Kuolemaäänelle on **1 paikka** ulottuvuuksien hirviöillä (Jäätär, Kalmaherra, Aarnihirviö) ja **2 paikkaa** kaikilla muilla.
 
-**Käsittelyn rajat (lajeittain):** idle ≤ 3 s (pomo 4), hurt ≤ 1,2 s (1,6), death ≤ 3,5 s (6), aggro ≤ 2,5 s (3,5), chase ≤ 2,5 s (4).
-Tavoiteäänekkyys (LUFS): idle −22, hurt −17, death −16, aggro −16, chase −18; pomot +1…1,5 dB. Ulottuvuuksissa (luolasto, ulottuvuudet)
+**Käsittelyn rajat (lajeittain):** idle ≤ 3 s (pomo 4), hurt ≤ 1,2 s (1,6), death ≤ 3,5 s (6), aggro ≤ 2,5 s (3,5), chase ≤ 2,5 s (4), echo ≤ 5 s (6).
+Tavoiteäänekkyys (LUFS): idle −22, hurt −17, death −16, aggro −16, chase −18, echo −26; pomot +1…1,5 dB. Ulottuvuuksissa (luolasto, ulottuvuudet)
 olennot saavat pelissä kaiun (ei tiedostoon), joten anna raakaääni kuivana, ilman omaa kaikua.
 
 **Tilat (Tila-sarake):** ✅ oma ääni · 🔁 väliaikainen varaääni toiselta olennolta (sävelkorkeutta muutettu) · ⬜ puuttuu (peli käyttää

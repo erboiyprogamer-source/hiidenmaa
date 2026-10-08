@@ -92,7 +92,7 @@ function updateMobs(dt){
       tx=Math.sin(m.fleeA);tz=Math.cos(m.fleeA);spd=d.run;}
     else if(m.state==='chase'){
       const ar=m.archer&&dist>2.4&&dist<22&&m.wind<=0?archerAI(m,dt,dx,dz,dist):null;   // v1.42 jousikalmo
-      if(ar){tx=dx;tz=dz;spd=ar.spd;}else{
+      if(ar){if(ar.aim){tx=0;tz=0;}else{tx=dx;tz=dz;}spd=ar.spd;}else{
       if(m.wind>0){m.wind-=dt;if(m.wind<=0){if(mobReach(m,dist)<d.range+.25&&!P.dead&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){const f=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(f>.5){hurtPlayer(d.dmg,m.pos.x,m.pos.z);if(d.kb&&!P.dead){P.kbx=dx/(dist||1)*d.kb;P.kbz=dz/(dist||1)*d.kb;P.vy=Math.max(P.vy,d.kb*.25);}}}m.atkCd=d.cd;}}
       else if(mobReach(m,dist)<d.range+.2&&m.atkCd<=0&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){m.wind=MOB_WIND;}
       else if(!m.siege&&m.atkCd<=0&&mobReach(m,dist)<d.range+1&&!losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true))m.siege=nearestOpening(m);
@@ -111,7 +111,7 @@ function updateMobs(dt){
     if(atBorder&&spd>0){const ox=m.pos.x-m.guard.x,oz=m.pos.z-m.guard.z;if(tx*ox+tz*oz>0){spd=0;m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*6));}}   // rajalla: ei ulospäin
     moveMob(m,tx,tz,spd,dt);
     animMob(m,dt);
-    if(m.archer&&m.aimT>0){m.f.armR.rotation.x=-1.45;m.f.armR.rotation.z=0;}   // jousi tähtäyksessä
+    if(m.archer)archerPose(m,dt);   // v1.88: jousen asento kuten pelaajalla
   }
   HURT_K=1;
   // separation
@@ -182,16 +182,35 @@ function mobReach(m,dist){const sy=m.pos.y+(m.f.biped?1:.6)*(m.f.s||1),gap=Math.
 const MOB_SPD=.85;
 // v1.42 (lista 4, kohta 16): jousikalmo ampuu 3–20 m päästä 1 nuolen / 2,5 s (0,6 s tähtäys), vahinko kuin lähi-iskussa; pitää 6–14 m
 // etäisyyden (peruuttaa kasvot pelaajaan päin), lähestyy jos ei näe. Alle 2,4 m lyö tavalliseen tapaan.
-const _arF=new V3(),_arD=new V3();
+/* v1.88: jousikalmo ampuu kuten pelaaja. Veto kestää ARCH_DRAW s; sen aikana tähtäys seuraa pelaajan paikkaa VIIVEELLÄ (aikavakio ~0,25 s) ja
+   kalmo kääntyy hitaasti (ARCH_TURN rad/s, ylös/alas ARCH_PITCH rad/s). Nuoli lähtee täsmälleen siihen suuntaan, johon jousi osoittaa vapautushetkellä
+   (+ pieni hajonta), ei ennakoi liikettä → sivulle väistävä/häilyvä pelaaja jää nuolen ohi. Nuolen fysiikka sama kuin pelaajalla (shootArrow, painovoima
+   ARCH_G, tuuli). Jousen asento (kahva edessä, jänne poskella, nuoli) tulee pelaajan bowAimFig-funktiosta (player.js), ks. archerPose. */
+const _arF=new V3(),_arD=new V3(),_arX=new V3(),ARCH_DRAW=.9,ARCH_SPD=32,ARCH_G=7,ARCH_TURN=1.0,ARCH_PITCH=.9;
 function archerAI(m,dt,dx,dz,dist){const d=m.def,los=losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true);
-  if(m.aimT>0){m.aimT-=dt;if(m.aimT<=0&&!P.dead&&los){const fx=Math.sin(m.yaw),fz=Math.cos(m.yaw);_arF.set(m.pos.x+fx*.55,m.pos.y+1.35,m.pos.z+fz*.55);
-      const sp=30,t=dist/sp,sc=(Math.random()-.5)*.9*dist/20;_arD.set(P.pos.x+P.vel.x*t*.6+sc-_arF.x,P.pos.y+1.15-_arF.y,P.pos.z+P.vel.z*t*.6-sc*.5-_arF.z);
-      _arD.y+=.5*7*t*t;const L=_arD.length();_arD.multiplyScalar(1/L);shootArrow(_arF,_arD,L/t,d.dmg,'mob',7);sfx('bow');m.atkCd=1.9;}
-    return {spd:0};}
-  if(!P.dead&&los&&dist>=3&&dist<=20&&m.atkCd<=0){m.aimT=.6;return {spd:0};}
+  if(m.aimT>0){
+    const k=Math.min(1,dt*4);m.aimX+=(P.pos.x-m.aimX)*k;m.aimY+=(P.pos.y+1.15-m.aimY)*k;m.aimZ+=(P.pos.z-m.aimZ)*k;   // viive: tähtäyspiste seuraa pelaajaa hitaasti
+    const ax=m.aimX-m.pos.x,az=m.aimZ-m.pos.z,hd=Math.hypot(ax,az)||1e-4,t=hd/ARCH_SPD,ty=m.aimY-(m.pos.y+1.35)+.5*ARCH_G*t*t;   // painovoimakorjaus nuolen lentoajalle
+    const wy=Math.atan2(ax,az),wp=Math.atan2(ty,hd),dy=((wy-m.yaw+Math.PI)%TAU+TAU)%TAU-Math.PI;
+    m.yaw+=clamp(dy,-ARCH_TURN*dt,ARCH_TURN*dt);m.aimPitch+=clamp(wp-m.aimPitch,-ARCH_PITCH*dt,ARCH_PITCH*dt);
+    m.aimT-=dt;
+    if(m.aimT<=0){m.atkCd=1.9;
+      if(!P.dead&&los){const cp=Math.cos(m.aimPitch),fx=Math.sin(m.yaw)*cp,fz=Math.cos(m.yaw)*cp;
+        _arF.set(m.pos.x+Math.sin(m.yaw)*.55,m.pos.y+1.35,m.pos.z+Math.cos(m.yaw)*.55);_arD.set(fx,Math.sin(m.aimPitch),fz);
+        {const sp=2*Math.PI/180,r=Math.sqrt(Math.random())*Math.tan(sp),ph=Math.random()*TAU,ux=_arX.set(-_arD.z,0,_arD.x).normalize(),vy=_tmpV2.crossVectors(_arD,ux);
+          _arD.addScaledVector(ux,Math.cos(ph)*r).addScaledVector(vy,Math.sin(ph)*r).normalize();}   // pieni hajonta kuten pelaajan jousessa
+        shootArrow(_arF,_arD,ARCH_SPD,d.dmg,'mob',ARCH_G);sfx('bow');}}
+    return {spd:0,aim:1};}
+  if(!P.dead&&los&&dist>=3&&dist<=20&&m.atkCd<=0){m.aimT=ARCH_DRAW;m.aimX=P.pos.x;m.aimY=P.pos.y+1.15;m.aimZ=P.pos.z;m.aimPitch=0;return {spd:0,aim:1};}
   if(!los||dist>14)return {spd:d.run};
   if(dist<6){m.vel.x-=dx/dist*10*dt;m.vel.z-=dz/dist*10*dt;}
   return {spd:0};}
+// jousikalmon asento joka ruutu (animMobin jälkeen): sama kuin pelaajalla – kahva edessä, jänne posken luona, nuoli jänteellä; sulava sisään/ulos
+function archerPose(m,dt){const f=m.f,b=m.bow;if(!b)return;if(m.aimT>0&&m.state!=='chase')m.aimT=0;
+  const aiming=m.aimT>0;m.aimK=clamp((m.aimK||0)+(aiming?dt/.2:-dt/.3),0,1);
+  if(m.aimK>.001){f.armL.rotation.set(0,0,0);f.armR.rotation.set(0,0,0);f.elbowL.rotation.x=0;f.elbowR.rotation.x=0;b.rotation.set(-.15,0,0);b.position.set(0,0,0);
+    bowAimFig(f,b,m.aimK,m.yaw,f.g.position);updateBowMesh(b,aiming?1-Math.max(0,m.aimT)/ARCH_DRAW:0,aiming);m.bowPosed=1;}
+  else if(m.bowPosed){f.armL.rotation.set(0,0,0);f.armR.rotation.set(0,0,0);f.elbowL.rotation.x=f.elbowR.rotation.x=0;b.rotation.set(-.15,0,0);b.position.set(0,0,0);updateBowMesh(b,0,false);m.bowPosed=0;}}
 /* v1.50 (lista 5, kohta 2): kalmot ja pelottavat yöolennot (SCARY-tyypit, stalk) palavat auringossa avoimella alueella.
    Suojaa: katos (rakennus yläpuolella), sää (pilvisyys wDark > .35 tai sade), metsäbiomit (korpi, koivikko, aarnimetsä), yö (lightK < .55).
    Kulku ~6 s: 0–3 s paniikkiryntäily (suunta vaihtuu 0,35–0,6 s välein, 1,3× juoksu), 3–5,2 s hidastuu ja horjuu, sitten kaatuu tuhkaksi

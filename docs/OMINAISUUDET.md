@@ -370,6 +370,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Kalmaherra ryntää 5 s välein eikä huitaise ilmaa. Alle 50 %: 20 s välein 1–3 tulilinjaa (8 m, 20 vahinkoa + palaminen 4 s, kestää 5 s).
   Alle 30 %: hehkuu punaisena, vain ryntäyksiä 1,5 s välein, 5 kalmoa 20 s välein.
 - Kalmankammion kalmoista 10 % on jousikalmoja: ampuvat 3–20 m päästä 2,5 s välein, pitävät etäisyyttä, pudottavat joskus nuolia.
+  v1.88: veto 0,9 s, tähtäys seuraa pelaajaa viiveellä (~0,25 s) ja kalmo kääntyy hitaasti (1 rad/s); nuoli lähtee jousen suuntaan vapautushetkellä (2° hajonta, 32 m/s,
+  painovoima 7, ei ennakointia) → sivulle väistävä jää nuolen ohi. Jousi pelaajan asennossa (kahva edessä, jänne poskella, nuoli jänteellä).
 - Ensimmäinen käynti ulottuvuudessa: iso animoitu otsikko ja tavoite; myöhemmin sivuviesti.
 
 ## Lista 4, erä E (v1.43)
@@ -478,6 +480,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Toisto: tärkeys kuolema > osuma > suuttuminen > jahti > rauhallinen; olennolla soi yksi ääni kerrallaan (tärkeämpi katkaisee); enintään 10
   ääntä kerrallaan (heikoin syrjäytyy); rauhallisia/jahtiääniä samaa lajia enintään 3 ja 0,3 s väli; sama versio ei heti uudestaan.
 - Palava pomo (boss/rboss): hurt-ääni silmukkana 1,4–2,2 s välein, sävel ×0,78 ja voimakkuus ×0,55, tärkeys 1,5 (jahti katkaisee). Muut olennot eivät ähki palaessaan.
+- Kaikuääni (echo, ulottuvuuspomot, 1–2 versiota): nukkuva pomo kuuluu 24–48 s välein vain omassa ulottuvuudessaan (≤38 m päästä, tumma, kaiulla) kunnes pelaaja kohtaa sen. Aarnihirviön kaikuäänet ovat kaikkien varaääni.
 - Kaiku: luolaston ja ulottuvuuksien olennoille (lähetys 0,45 / boss 0,6 / rboss 0,75), yksi yhteinen ConvolverNode (1,2 s), kytkeytyy vain tarvittaessa.
 - Työkalu tulostaa erän lopuksi HUOM-varoitukset (tuplatiedosto, vahvistus yli ±12 dB, liian lyhyt, ylimääräinen paikka).
 - Työkalun trimmaus/voimakkuus: pituuden rajat (idle 3 s … death 3,5 s, pomot enemmän) ja tavoite-LUFS lajeittain (idle −22 … death/aggro −16, pomo +1,5 dB).

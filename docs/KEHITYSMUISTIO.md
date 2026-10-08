@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.87)
+## Nykytila (päivitetty v1.88)
 
-- **Versio 1.87**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 1.88**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -123,7 +123,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   "lainaavat: …" (myös ketjun kautta, "via X").
 - Raakaäänet: lyhyet saa olla wav, pitkät (musiikki, loopit) mp3, alle 25 Mt / tiedosto. **Vaihda ääni vasta kuuntelun jälkeen** –
   git-historia muistaa vanhat versiot (repo kasvaa). Arvio: noin 300 ääntä on ok (repo alle 1 Gt).
-- Nimet: `<id>_<laji>_<n>`, id = MOBDEF-avain (olennot), n = 1–3 (arpoo olemassa olevista, yksi riittää; **kuolemaäänelle 1 paikka ulottuvuuksien hirviöillä (rboss) ja 2 muilla**). Lajit: idle, hurt, death,
+- Nimet: `<id>_<laji>_<n>` (lajit nyt myös `echo`, vain ulottuvuuspomot, 1–2 versiota), id = MOBDEF-avain (olennot), n = 1–3 (arpoo olemassa olevista, yksi riittää; **kuolemaäänelle 1 paikka ulottuvuuksien hirviöillä (rboss) ja 2 muilla**). Lajit: idle, hurt, death,
   aggro = suuttumisääni (ai neutral/hostile/boss/rboss; vihamielisillä ja pomoilla vain kerran), chase = toistuva jahtiääni (hostile/boss/rboss).
 - Jokainen äänierä (A–E, ks. ideajono) tehdään samalla paikkamerkkitavalla ja saa oman osion AANILISTA.md:hen.
 
@@ -226,6 +226,23 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.86): 💎 susi (6), kalmo (3),
   hirvi (3), aarnihirviö (2), karju (2), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v1.88 (jousikalmo ampuu kuin pelaaja, ulottuvuuspomojen kaikuääni)
+- **Jousikalmo (`archerAI`, ai.js):** veto 0,9 s (`ARCH_DRAW`). Tähtäyspiste seuraa pelaajaa **viiveellä** (aikavakio ~0,25 s) ja kalmo **kääntyy hitaasti**
+  (`ARCH_TURN` 1,0 rad/s, ylös/alas `ARCH_PITCH` 0,9 rad/s; painovoimakorjaus lentoajalle). **Nuoli lähtee vapautushetkellä täsmälleen siihen suuntaan, johon
+  jousi osoittaa** (+ 2° hajonta kuten pelaajan jousessa); ei ennakointia (vanha `P.vel`-ennakointi poistettu). Nuolen fysiikka sama kuin pelaajalla
+  (`shootArrow`, nopeus 32 m/s, painovoima 7, tuuli). Testi (12 m, yö): paikallaan seisova osuu 14/14, sinimuotoisesti sivulle liikkuva 3/14,
+  0,67 s välein puolta vaihtava 0/14 → väistäminen ja häilyminen toimii.
+- **Jousen asento:** `bowAim` (player.js) yleistettiin `bowAimFig(F, jousi, k, yaw, sijainti)`; pelaaja käyttää sitä `bowAim`-kääreen kautta, jousikalmo `archerPose`:lla
+  (ai.js, animMobin jälkeen): vasen käsi kahvaan edessä, jänne poskelle oikealle, nuoli jänteellä (`updateBowMesh`), sulava sisään 0,2 s / ulos 0,3 s.
+  Kalmon keho ei käänny kylkeä kuten pelaajan `rig` (mobeilla ei rigiä) – vain kädet ja jousi.
+- **Kaikuääni (`echo`, uusi äänilaji, vain `ai:'rboss'`: Jäätär, Kalmaherra, Aarnihirviö):** 1–2 versiota (`<pomo>_echo_1/2`). Kuuluu **vain kun pomo nukkuu
+  (`state==='sleep'`) ja pelaaja on samassa ulottuvuudessa** (`m.realm===P.realm`), 24–48 s välein (ensimmäinen 5–14 s sisääntulosta); loppuu kun pomo herää
+  (`intro`) tai pelaaja poistuu. Soi pomon suunnasta, mutta **enintään 38 m päästä** (`creEchoPos`) → kaukainen pomo kuuluu vaimeana kaikuna. Sointi:
+  alipäästö 1,5 kHz, voimakkuus ×0,6, kaiun lähetys 1,3 (kuiva jää hiljaiseksi), tärkeys 1 (ei syrjäytä muita). **Aarnihirviön kaikuäänet ovat kaikkien
+  pomojen varaääni 💎** (Jäätär ×1,2, Kalmaherra ×0,85 VARAANI-ketjun kautta). Kalmanvartijalla (`boss`, maailman rituaalipiiri) ei ole kaikuääntä, koska se
+  ei nuku ulottuvuudessa. Työkalu: `ECHO_AI`, raja 5 s (pomo 6), tavoite −26 LUFS, pitkä häivytys 0,8 s; 6 uutta paikkamerkkiä (`aarnihirvio/jaajattari/kalmaherra_echo_1/2`).
+- Testattu: keinoäänillä (voice `ec`, etäisyys 38 m, send 1,3, gain 0,6, sävel ×0,85), herääminen ja toinen ulottuvuus → ei kaikua.
 
 ### v1.87 (palavan pomon kipuääni)
 - **Palava pomo (`ai` boss tai rboss) ähkii:** kun pomo on tulessa (`burnT>0`, `updateBurn` actions.js), se toistaa oman **hurt-äänensä silmukkana**
