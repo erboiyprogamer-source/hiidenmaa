@@ -20,7 +20,9 @@ OUT = os.path.join(ROOT, 'sounds')
 MANIFEST = os.path.join(OUT, 'manifest.json')
 LISTA = os.path.join(OUT, 'AANILISTA.md')
 PLACEHOLDER_MAX = 3072          # tavua: tätä pienempi/yhtä suuri = paikkamerkki
-AGGRO_AI = ('neutral', 'hostile', 'boss', 'rboss')
+AGGRO_AI = ('neutral', 'hostile', 'boss', 'rboss')   # suuttumisääni (aggro)
+CHASE_AI = ('hostile', 'boss', 'rboss')               # + toistuva jahtiääni (chase)
+VARIANTS = (1, 2, 3)                                  # jokaisella lajilla enintään 3 versiota; peli arpoo olemassa olevista
 
 # ---------------------------------------------------------------- olennot (äänierä A)
 # Kuvaus (millainen ääni) ja hakusanat englanniksi lajeittain. Nimet ja ai luetaan js/mobs.js:n MOBDEFistä, varaäänet js/audio.js:n VARAANIsta.
@@ -53,8 +55,11 @@ CRE_INFO = {
     'aarnihirvio': ('Aarnihirviö, metsän hirviö (pomo)', {'idle': 'forest monster creak, tree creature groan', 'hurt': 'monster roar wood creak', 'death': 'giant tree creature death', 'aggro': 'forest monster roar'}),
 }
 KIND_FI = {
-    'idle_1': 'rauhallinen ääntely (0,5–2 s)', 'idle_2': 'toinen ääntely, eri kuin idle_1 (0,5–2 s)',
-    'hurt_1': 'lyhyt kivun ääni (0,2–0,8 s)', 'death_1': 'kuoleman ääni (0,8–2,5 s)', 'aggro_1': 'hyökkäyshuuto tai uhkaava murina (0,5–2 s)',
+    'idle': 'rauhallinen ääntely, satunnaisesti 6–15 s välein (0,5–2 s)',
+    'hurt': 'lyhyt kivun ääni, kun olentoon osuu (0,2–0,8 s)',
+    'death': 'kuoleman ääni (0,8–2,5 s)',
+    'aggro': 'SUUTTUMISÄÄNI: huomaa sinut ensimmäistä kertaa – vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat (0,5–2 s)',
+    'chase': 'JAHTIÄÄNI: toistuu 4–9 s välein kun olento jahtaa sinua suuttumisäänen jälkeen – murina, huohotus tai huuto (0,5–1,5 s)',
 }
 
 
@@ -80,11 +85,14 @@ def varaani():
     return json.loads(m.group(1)) if m else {}
 
 
+def kinds_of(ai):
+    return ['idle', 'hurt', 'death'] + (['aggro'] if ai in AGGRO_AI else []) + (['chase'] if ai in CHASE_AI else [])
+
+
 def expected():
     names = []
     for cid, _, ai in creatures():
-        kinds = ['idle_1', 'idle_2', 'hurt_1', 'death_1'] + (['aggro_1'] if ai in AGGRO_AI else [])
-        names += [f'{cid}_{k}' for k in kinds]
+        names += [f'{cid}_{k}_{n}' for k in kinds_of(ai) for n in VARIANTS]
     return names
 
 
@@ -220,23 +228,21 @@ def main():
     return 1 if errors else 0
 
 
-def resolve(cid, kind, n, have, vara):
-    """Sama logiikka kuin pelissä (audio.js creRes): oma → idle_2→idle_1 → varaääniketju."""
+def resolve(cid, kind, have, vara):
+    """Sama logiikka kuin pelissä (audio.js creRes): omat versiot _1.._3 → varaääniketju. Palauttaa (nimet, sävelkerroin)."""
     cur, p = cid, 1.0
     for _ in range(6):
         if not cur:
             break
-        a = f'{cur}_{kind}_{n}'
-        if a in have:
-            return a, p
-        if n > 1 and f'{cur}_{kind}_1' in have:
-            return f'{cur}_{kind}_1', p
+        L = [f'{cur}_{kind}_{n}' for n in VARIANTS if f'{cur}_{kind}_{n}' in have]
+        if L:
+            return L, p
         v = vara.get(cur)
         if not v:
             break
         p *= v['p']
         cur = v['to']
-    return None, p
+    return [], p
 
 
 def write_list(sounds, raws):
@@ -246,34 +252,36 @@ def write_list(sounds, raws):
     for cid, (to) in ((k, v['to']) for k, v in vara.items()):
         users.setdefault(to, []).append(cid)
     cats = [('Eläimet', ('flee', 'neutral')), ('Viholliset', ('hostile',)), ('Pomot', ('boss', 'rboss'))]
-    own = mine = 0
+    own = tot = 0
     rows = []
     for title, ais in cats:
         rows.append(f'\n### {title}\n')
-        rows.append('| Olento | Ääni | Tiedosto | Tila | Kuvaus | Hakusanat (englanniksi) |')
+        rows.append('| Olento | Ääni | Tiedostot (1–3 versiota) | Tila | Millainen ääni | Hakusanat (englanniksi) |')
         rows.append('| --- | --- | --- | --- | --- | --- |')
         for cid, name, ai in cre:
             if ai not in ais:
                 continue
             info = CRE_INFO.get(cid, (name, {}))
-            kinds = ['idle_1', 'idle_2', 'hurt_1', 'death_1'] + (['aggro_1'] if ai in AGGRO_AI else [])
             star = f' ⭐ varaääni: {", ".join(sorted(users[cid]))}' if cid in users else ''
-            for j, k in enumerate(kinds):
-                fn = f'{cid}_{k}'
-                kind, n = k.rsplit('_', 1)
-                mine += 1
-                if fn in sounds:
-                    st = '✅ oma'
+            for j, kind in enumerate(kinds_of(ai)):
+                tot += 1
+                mine = [n for n in VARIANTS if f'{cid}_{kind}_{n}' in sounds]
+                files = ', '.join(f'`{cid}_{kind}_{n}`' for n in VARIANTS)
+                if mine:
+                    st = f'✅ oma: {", ".join(f"_{n}" for n in mine)} ({len(mine)}/3)'
                     own += 1
                 else:
-                    src, p = resolve(cid, kind, int(n), sounds, vara)
+                    src, p = resolve(cid, kind, sounds, vara)
                     if src:
-                        st = f'🔁 varaääni: {src}' + (f' (sävel ×{p:.2f})' if abs(p - 1) > .001 else '')
+                        st = f'🔁 varaääni: {", ".join(src)}' + (f' (sävel ×{p:.2f})' if abs(p - 1) > .001 else '')
+                    elif kind == 'chase' and cid in vara:
+                        st = f'⬜ puuttuu (varalla: {vara[cid]["to"]})'
+                    elif kind == 'aggro' and ai in CHASE_AI:
+                        st = '⬜ puuttuu → ei erillistä suuttumisääntä, jahtiääni alkaa heti'
                     else:
                         st = '⬜ puuttuu' + (f' (varalla: {vara[cid]["to"]})' if cid in vara else '')
-                ext = os.path.splitext(raws[fn])[1] if fn in raws else '.mp3'
                 who = f'**{name}** (`{cid}`){star}' if j == 0 else ''
-                rows.append(f'| {who} | {k} | `sounds/raw/{fn}{ext}` | {st} | {KIND_FI[k]} – {info[0]} | {info[1].get(kind, "")} |')
+                rows.append(f'| {who} | {kind} | {files} | {st} | {KIND_FI[kind]} – {info[0]} | {info[1].get(kind, info[1].get("aggro", "") if kind == "chase" else "")} |')
     head = f'''# Hiidenmaan äänilista
 
 Äänisuunnitelma: `docs/KEHITYSMUISTIO.md` → "Äänisuunnitelma". Tämä taulukko päivittyy automaattisesti
@@ -284,7 +292,8 @@ def write_list(sounds, raws):
 1. Etsi ääni (CC0 / vapaa käyttö): **Kenney** (kenney.nl), **Pixabay** (pixabay.com/sound-effects), **Freesound** (CC0-suodatin),
    **OpenGameArt**. Käytä alla olevia hakusanoja.
 2. **Kuuntele ääni omalla koneellasi** ennen lisäämistä – git-historia muistaa jokaisen version, joten vaihda vain harkiten.
-3. Korvaa paikkamerkki `sounds/raw/`-kansiossa **täsmälleen samalla nimellä** (esim. `susi_aggro_1.mp3`). Lyhyet äänet saa olla wav
+3. Korvaa paikkamerkki `sounds/raw/`-kansiossa **täsmälleen samalla nimellä** (esim. `susi_aggro_1.mp3`). Jokaisella äänellä on kolme paikkaa
+   `_1`, `_2`, `_3`: täytä vain ne jotka haluat – peli arpoo olemassa olevista (yksi riittää, tyhjät paikat ohitetaan). Lyhyet äänet saa olla wav
    (pääte voi jäädä .mp3 – muoto tunnistetaan sisällöstä), pitkät (musiikki, loopit) mp3, alle 25 Mt.
 4. Commit ja push GitHub Desktopilla ja pyydä Claudea ajamaan `python3 tools/process_sounds.py`: ääni normalisoidaan,
    hiljaisuus leikataan ja se siirtyy peliin (`sounds/<nimi>.mp3`). Raakatiedostot jäävät `sounds/raw/`-kansioon.
@@ -293,7 +302,7 @@ def write_list(sounds, raws):
 ääntä tai on hiljaa). ⭐ = tämän olennon äänet toimivat varaäänenä luetelluille – lisää nämä ensin, niin moni olento saa äänen.
 Varaäänet ovat vain väliaikaisia: jokaiselle olennolle kannattaa lopulta lisätä omat äänet.
 
-## Äänierä A: olennot ({own}/{mine} omaa ääntä)
+## Äänierä A: olennot ({own}/{tot} äänilajia omilla äänillä)
 '''
     with open(LISTA, 'w', encoding='utf-8') as f:
         f.write(head + '\n'.join(rows) + '\n\n## Tulevat äänierät\n\nB pelaajan ja toimintojen äänet · C taustaäänet ja sää · D musiikki · '

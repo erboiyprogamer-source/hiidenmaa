@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.84)
+## Nykytila (päivitetty v1.85)
 
-- **Versio 1.84**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR: äänierä A (v1.84). Aiempi:
+- **Versio 1.85**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR: äänierä A (v1.84). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -121,7 +121,8 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Ääni, jota muut käyttävät varaäänenä, merkitään taulukossa ⭐ ja luetellaan mille.
 - Raakaäänet: lyhyet saa olla wav, pitkät (musiikki, loopit) mp3, alle 25 Mt / tiedosto. **Vaihda ääni vasta kuuntelun jälkeen** –
   git-historia muistaa vanhat versiot (repo kasvaa). Arvio: noin 300 ääntä on ok (repo alle 1 Gt).
-- Nimet: `<id>_<laji>_<n>`, id = MOBDEF-avain (olennot). Lajit: idle (1–2), hurt, death, aggro (vain hyökkäävät: ai neutral/hostile/boss/rboss).
+- Nimet: `<id>_<laji>_<n>`, id = MOBDEF-avain (olennot), n = 1–3 (arpoo olemassa olevista, yksi riittää). Lajit: idle, hurt, death,
+  aggro = suuttumisääni (ai neutral/hostile/boss/rboss; vihamielisillä ja pomoilla vain kerran), chase = toistuva jahtiääni (hostile/boss/rboss).
 - Jokainen äänierä (A–E, ks. ideajono) tehdään samalla paikkamerkkitavalla ja saa oman osion AANILISTA.md:hen.
 
 ## Pysyvät päätökset
@@ -184,6 +185,19 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.85 (äänet: 3 versiota, suuttumisääni kerran, jahtiääni)
+- **Versiot:** jokaisella äänilajilla paikat `_1`, `_2`, `_3`; peli arpoo vain olemassa olevista (yksi riittää, tyhjät ohitetaan). Varaääniketju
+  tuo myös toisen olennon kaikki versiot. Paikkamerkit kaikille paikoille (336 kpl, 288 t). `creRes(id, laji)` palauttaa `{names, p}`.
+- **Suuttumisääni (`aggro`):** vihamieliset ja pomot **vain kerran koko elinaikanaan** (kun huomaavat sinut ensimmäistä kertaa); jos sitä ei
+  ole (ei omaa eikä varaääntä), erillistä ääntä ei soiteta vaan jahtiääni alkaa heti. Neutraalit (karhu, hirvi, karju, ilves, ahma, emakko)
+  pitävät vanhan käytöksen: suuttumisääni aina kun suuttuvat (uusi vasta 5 s jahdin päättymisen jälkeen), ei jahtiääntä.
+- **Jahtiääni (`chase`, uusi, vihamieliset ja pomot):** toistuu 4–9 s välein kun olento jahtaa sinua (alle 55 m), ensimmäinen suuttumisäänen
+  keston + 1–3 s jälkeen; kun jahti alkaa uudelleen ensimmäinen 1–3 s kuluttua. Jahdin aikana rauhallinen ääntely (idle) vaihtuu jahtiääneen,
+  jos sellainen on. Pomon herääminen (`intro`) laukaisee suuttumisäänen.
+- **Taulukko:** AANILISTA.md rivi per (olento, laji) ja 3 versiota samalla rivillä, tila `✅ oma: _1, _3 (2/3)`.
+- Testattu keinoäänillä (kalmo/susi/karju/ylimys): suuttumisääni kerran, jahtiäänen ensimmäinen suuttumisäänen jälkeen, väli 4–9 s, paluu
+  jahtiin ei uutta suuttumisääntä, susi (ei aggro) alkaa heti, ylimys käyttää kalmon ääniä. Testiäänet palautettu paikkamerkeiksi.
 
 ### v1.84 (äänierä A: olentojen äänijärjestelmä ja äänipohja)
 - **Äänisuunnitelma** kirjattu pysyväksi päätökseksi (oma osio) ja äänierät A–E ideajonoon.
