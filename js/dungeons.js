@@ -285,7 +285,7 @@ function spawnRealmMobs(id){const R=BUILT[id],dk=fo('rm')[id]||(fo('rm')[id]={})
 // Kutsutaan, kun mobi kuolee: tallentaa vartijoiden, sisätilojen vihollisten ja pomojen kaatumisen.
 function onMobKilled(m){
   if(m.siteK)fo('gk')[m.siteK+':'+m.gi]=1;
-  if(m.realm&&m.rmIdx!==undefined){if(m.rmIdx==='B'){fo('rb')[m.realm]=1;msg(`${m.def.n} on kaatunut!`,'loot');sfx('roar');shake(.4);const k=REALMS[m.realm].key;if(k){giveOrDrop(k,1,m.pos.x,m.pos.y+1.2,m.pos.z);msg(`${ITEMS[k].n} – se avaa seuraavan portin.`,'loot');}}else(fo('rm')[m.realm]||(fo('rm')[m.realm]={}))[m.rmIdx]=1;}
+  if(m.realm&&m.rmIdx!==undefined){if(m.rmIdx==='B'){fo('rb')[m.realm]=1;msg(`${m.def.n} on kaatunut!`,'loot');bossVictory(m.type);   /* v1.94: viimeinen pomo → rauha */sfx('roar');shake(.4);const k=REALMS[m.realm].key;if(k){giveOrDrop(k,1,m.pos.x,m.pos.y+1.2,m.pos.z);msg(`${ITEMS[k].n} – se avaa seuraavan portin.`,'loot');}}else(fo('rm')[m.realm]||(fo('rm')[m.realm]={}))[m.rmIdx]=1;}
 }
 
 /* ---------------- ULOTTUVUUSVERSIOT (v0.91, kohta 8) ---------------- */
@@ -422,7 +422,6 @@ function hitSpawner(w){if(!P.inDun||!P.realm)return false;const R=BUILT[P.realm]
 // Murskatun pesän rauniot: matalia kiviä ja luita (ei törmäystä)
 function spwRubble(R,x,y0,z){const r=mulberry32(((x*73)^(z*37))|0);for(let k=0;k<9;k++){const a=r()*TAU,d=r()*1.1,s=.25+r()*.35;const m=bx(s,.12+r()*.25,s*(.7+r()*.6),mat(k%3?0x3a3632:0x2a2622),x+Math.cos(a)*d,y0+.08,z+Math.sin(a)*d,false);m.rotation.y=r()*3;R.g.add(m);}
   for(let k=0;k<5;k++){const a=r()*TAU,d=.6+r()*.9;const m=bx(.22,.2,.25,BONE_M,x+Math.cos(a)*d,y0+.1,z+Math.sin(a)*d,false);m.rotation.set(r(),r()*3,r());R.g.add(m);}}
-let bbOwn=false;
 function updateDungeons(dt){
   if(P.spawnProt>0)P.spawnProt-=dt;
   updateMist(dt);updateDrips(dt);updateFireLines(dt);
@@ -434,9 +433,7 @@ function updateDungeons(dt){
       shockwave(S.x,DUN.y+.2,S.z,5,D.glow);burst(S.x,S.y,S.z,D.glow,16,5);sfx('roar');if(!S.seen){S.seen=1;msg('Kalmanpesä herää – se nostattaa vihollisia aina kun edelliset kaatuvat.','warn');}}}}
   for(const p of PORTALS){const lk=portalLocked(p.id);if(p.lk!==lk){p.lk=lk;setPortalLook(p.id);}p.plane.material.opacity=lk?.28:.5+.2*Math.sin(playTime*2.2+p.ph);}
   if(DEV){devRoomOutline();devRouteLine(dt);}
-  const rb=mobs.find(m=>m.def.ai==='rboss'&&!m.dead&&m.state!=='sleep'&&!!m.dun===P.inDun&&(P.inDun||m.devSpawn)&&dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<70*70),bar=$('#bossbar');   // v1.91: myös DEV-luotu pomo maailmassa
-  if(rb){bbOwn=true;bar.hidden=false;bar.querySelector('.name').textContent=rb.def.n+(rb.phase>1?` · vaihe ${rb.phase}`:'');bar.querySelector('i').style.width=(rb.hp/rb.maxHp*100)+'%';}
-  else if(bbOwn){bbOwn=false;bar.querySelector('.name').textContent='Kalmanvartija';if(!(boss&&!boss.dead))bar.hidden=true;}
+  // v1.94: pomopalkki hoidetaan yhdessä paikassa (ui.js bossBarTick) kaikille pomoille
 }
 /* ---------------- DEV (v1.91): pomohuoneen ääriviiva ja siirrot (Ö-valikko, ui.js renderDevM) ---------------- */
 // Ääriviiva näkyy seinien läpi, kun DEV-täppä bossLine on päällä ja olet ulottuvuudessa: huoneen reuna lattialla ja 2,5 m korkeudella,

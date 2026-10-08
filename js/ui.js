@@ -64,6 +64,7 @@ function updateHUD(dt){
     else if(c.className){c.className='';c.style.width=c.style.height=c.style.margin=c.style.borderColor='';}}
   // Ruudun ilmoitukset piilotetaan kun jokin valikko/paneeli on auki (tai peli tauolla); ne säilyvät T-lokissa ja palaavat valikon sulkeuduttua.
   {const hide=!!openPanel||state!=='play';if(hide!==msgHidden){msgHidden=hide;$('#msgs').style.visibility=hide?'hidden':'';}}
+  bossBarTick(dt);peaceTick();   // v1.94 eeppinen pomopalkki (joka ruudunpäivitys: sulava viivepalkki); rauhan ilmoitus 2 s voittoruudun sulkemisesta
   if(hudT>0)return;hudT=.1;
   if(((playTime*10)|0)%10===0)for(const x of inv)if(x&&x.shBrk!=null){shieldOk(x);invDirty=true;}   // v1.33: rikkinäisen kilven korjautuminen ja palkki
   const w=curWeapon();
@@ -83,7 +84,6 @@ function updateHUD(dt){
   // clock
   const hh=Math.floor(dayT*24),mm=Math.floor((dayT*24-hh)*60/10)*10;$('#clock').innerHTML=`Päivä ${dayN} · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')} <span>· ${P.inDun?(P.realm?REALMS[P.realm].n:'Hautakumpu'):WEATHERS[weather.cur].n}${!P.inDun&&P.zone&&BIOMES[P.zone]?' · '+BIOMES[P.zone].n:''}</span>`;
   if(invDirty){invDirty=false;updateBack();$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1).replace('class="slot','class="slot'+(i===hotSel?' hsel':''))).join('');if(openPanel==='inv')renderInv();if(openPanel==='chest')renderChest();if(openPanel==='build')renderBuild();}
-  if(boss&&!boss.dead){$('#bossbar i').style.width=(boss.hp/boss.maxHp*100)+'%';}
   drawMinimap();
 }
 let openPanel=null,selSlot=-1,curChest=null;
@@ -124,6 +124,37 @@ function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=d
   $('#devGo').onclick=listGive;$('#devQ').oninput=listGive;$('#devN').oninput=listGive;$('#devQ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();const f=$('#devList [data-give]');if(f)devGive(f.dataset.give);}};listGive();
   $('#devMap').onclick=()=>{devRevealMap();msg('Kartta ja kaikki kohteet paljastettu.','loot');};}
 let devQ='',devN=1;
+/* v1.94 EEPPINEN POMOPALKKI (kaikki pomot, ainoa paikka joka ohjaa #bossbar-elementtiä): lähin herännyt pomo samassa ulottuvuudessa (< 70 m).
+   Teema pomon mukaan (väri, riimu, alaotsikko, koriste palkin alla: kivisärö / jääpuikot / veripisarat / köynnös), vaihemerkit palkissa,
+   viivepalkki (vaalea osa jää hetkeksi ja valuu alas osumien jälkeen), virtaava kuvio ja kiiltojuova. VAIHE VAIHTUU → palkki tärähtää ja
+   välähtää, iso teksti "VAIHE II" / "VAIHE III" / "VIIMEINEN RAIVO", halkeamat ja syke voimistuvat, ruudun vinjetti välähtää teeman värissä.
+   Pelottava vinjetti taistelun ajan, sydämenlyönti alle 25 %:ssa. Kuollessa "KUKISTETTU" ja palkki haalistuu 3,5 s:ssa. */
+const BB_T={vartija:{t:'kivi',sub:'Kalmankehän muinainen vartija',rune:'ᛟ',marks:[.5]},jaajattari:{t:'jaa',sub:'Routaluolan valtiatar',rune:'ᛁ',marks:[2/3,1/3]},
+  kalmaherra:{t:'kalma',sub:'Kalmankammion kuningas',rune:'ᛞ',marks:[2/3,1/3]},aarnihirvio:{t:'aarni',sub:'Aarnihaudan muinainen',rune:'ᛉ',marks:[2/3,1/3]}};
+const BB_PH=['','','VAIHE II','VAIHE III','VIIMEINEN RAIVO'],BB_ROM=['','','II','III','IV'];
+const BB={m:null,lag:1,lagT:0,lastK:1,ph:1,deadT:0,lowOn:false};
+function bbPhaseOf(m){if(m.def.ai==='boss')return m.phase2?2:1;if(m.fin)return 4;return m.phase||1;}
+function bbHit(bar,txt){bar.querySelector('.bbPhase').textContent=txt;bar.classList.remove('bbHit');void bar.offsetWidth;bar.classList.add('bbHit');
+  const v=$('#bbVig');if(v){v.classList.remove('flash');void v.offsetWidth;v.classList.add('flash');}}
+function bossBarTick(dt){const bar=$('#bossbar'),vig=$('#bbVig');if(!bar)return;
+  let best=null,bd=70*70;for(const m of mobs){if((m.def.ai!=='boss'&&m.def.ai!=='rboss')||m.dead||m.state==='sleep'||m.state==='sink'||!!m.dun!==P.inDun)continue;const d=dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z);if(d<bd){bd=d;best=m;}}
+  const cur=BB.m;
+  if(cur&&cur.dead&&BB.deadT<3.5){BB.deadT+=dt;if(!bar.classList.contains('bbDead')){bar.classList.add('bbDead');bar.querySelector('i').style.width='0%';bar.querySelector('.bbPhase').textContent='KUKISTETTU';if(vig)vig.hidden=true;}
+    if(BB.deadT>2.3)bar.classList.add('bbOut');if(BB.deadT>=3.5){bar.hidden=true;BB.m=null;}return;}
+  if(!best){if(!bar.hidden){bar.hidden=true;if(vig)vig.hidden=true;}BB.m=null;return;}
+  if(best!==cur){const T=BB_T[best.type]||BB_T.vartija;BB.m=best;BB.deadT=0;BB.ph=bbPhaseOf(best);BB.lag=BB.lastK=best.hp/best.maxHp;BB.lagT=0;BB.lowOn=false;
+    bar.className='bbT-'+T.t+' bbIn';bar.querySelector('.name').textContent=best.def.n;bar.querySelectorAll('.bbRune').forEach(r=>r.textContent=T.rune);
+    bar.querySelector('.bbMarks').innerHTML=T.marks.map(k=>`<span class="mk" data-k="${k}" style="left:${k*100}%"></span>`).join('');bar.querySelector('.bbPhase').textContent='';
+    bar.hidden=false;if(vig){vig.className='bbT-'+T.t;vig.hidden=false;}}
+  const T=BB_T[best.type]||BB_T.vartija,k=clamp(best.hp/best.maxHp,0,1);
+  bar.querySelector('i').style.width=(k*100)+'%';
+  if(k<BB.lastK-1e-4)BB.lagT=0;BB.lastK=k;if(BB.lag>k){BB.lagT+=dt;if(BB.lagT>.45)BB.lag=Math.max(k,BB.lag-dt*.32);}else BB.lag=k;
+  bar.querySelector('.bbLag').style.width=(BB.lag*100)+'%';
+  bar.querySelectorAll('.bbMarks .mk').forEach(e=>e.classList.toggle('past',k<+e.dataset.k));
+  const ph=bbPhaseOf(best);if(ph>BB.ph){BB.ph=ph;bbHit(bar,BB_PH[ph]);}
+  bar.classList.toggle('ph2',ph===2);bar.classList.toggle('ph3',ph===3);bar.classList.toggle('fin',ph===4);
+  bar.querySelector('.bbSub').textContent=T.sub+(ph>1?` · vaihe ${BB_ROM[Math.min(ph,4)]}`:'')+(best.sinking?' · herää':'');
+  const low=k<.25;if(vig&&low!==BB.lowOn){BB.lowOn=low;vig.classList.toggle('low',low);}}
 /* v1.91 DEV-valikko Ö: olennon luonti 3 m eteen (katsesuuntaan), pomojen pikasiirrot (pomohuone, portin eteen, elvytys) ja pomohuoneen
    ääriviiva. Pomot syntyvät herätysanimaatiolla (nousevat maasta 3 m päähän); DEV-luotu pomo ei kirjaa voittoa eikä vajoa pois. */
 function renderDevM(){const B=$('#devMBody');if(!B)return;
@@ -147,7 +178,7 @@ function renderDevM(){const B=$('#devMBody');if(!B)return;
 function devSpawnMob(type){const d=MOBDEF[type];if(!d)return;const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw),x=P.pos.x+fx*3,z=P.pos.z+fz*3;
   const m=P.inDun?spawnMob(type,x,z,{y:DUN.y,dun:true}):spawnMob(type,x,z);m.devSpawn=1;m.yaw=Math.atan2(-fx,-fz);m.home={x,z};
   if(d.ai==='rboss'){m.realm=P.realm||REALM_IDS.find(id=>REALMS[id].boss===type)||REALM_IDS[0];m.riseY=m.pos.y;bossHide(m,(d.fh||4)+1.5);m.state='rise';m.t=0;m.woke=0;}
-  else if(d.ai==='boss'){m.riseY=m.pos.y;bossHide(m,7.5);m.state='rise';m.t=0;m.woke=0;if(!boss||boss.dead){boss=m;$('#bossbar').hidden=false;}}
+  else if(d.ai==='boss'){m.riseY=m.pos.y;bossHide(m,7.5);m.state='rise';m.t=0;m.woke=0;if(!boss||boss.dead)boss=m;}
   else{if(P.inDun&&P.realm&&typeof realmize==='function')realmize(m,P.realm);if(d.ai==='hostile')m.state='chase';}
   sfx('build',.8,.5);msg(`DEV: ${d.n} 3 m eteen${d.ai==='boss'||d.ai==='rboss'?' (herää 8 s)':''}.`,'loot');}
 // DEV: antaa esinettä määrän verran (ei mahtuvat putoavat maahan); ilmoitus kertoo paljonko saatiin

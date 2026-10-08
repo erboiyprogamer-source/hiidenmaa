@@ -224,6 +224,19 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.93 pomon saaliin majakkasäde (beaconAdd) ja siivous poimittaessa; kuolemassa piilotetut palat eivät ole osia',()=>{const d=spawnDrop('rauta',1,P.pos.x+3,P.pos.y+1,P.pos.z);beaconAdd(d,0xffffff);
     const ok=!!d.beacon&&d.beacon.g.parent===scene;const g=d.beacon.g;removeDrop(d);
     return ok&&!g.parent&&/beaconAdd\(d,/.test(bossDeathAnim.toString())&&/if\(!o\.visible\)g\.remove\(o\)/.test(bossDeathAnim.toString())||'virhe';});
+  t('v1.94 eeppinen pomopalkki: teema pomon mukaan, vaihemerkit, viivepalkki, vaiheen vaihdon efekti, KUKISTETTU',()=>{let bad=null;
+    for(const [type,th] of [['vartija','kivi'],['jaajattari','jaa'],['kalmaherra','kalma'],['aarnihirvio','aarni']]){const m=spawnMob(type,P.pos.x+9,P.pos.z+9);m.state=type==='vartija'?'idle':'chase';m.sinking=0;m.devSpawn=1;
+      if(type!=='vartija')m.realm=REALM_IDS.find(id=>REALMS[id].boss===type);bossBarTick(1/30);const bar=$('#bossbar');
+      const ok1=!bar.hidden&&bar.classList.contains('bbT-'+th)&&bar.querySelectorAll('.mk').length===(type==='vartija'?1:2)&&getComputedStyle(bar).getPropertyValue('--bc').trim().length>4;
+      m.hp=m.maxHp*.6;if(type==='vartija')m.phase2=true;else m.phase=2;bossBarTick(1/30);const ok2=bar.classList.contains('bbHit')&&/VAIHE II/.test(bar.querySelector('.bbPhase').textContent)&&parseFloat(bar.querySelector('.bbLag').style.width)>parseFloat(bar.querySelector('i').style.width);
+      m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
+      if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
+    return bad||true;});
+  t('v1.94 viimeinen pomo: rauharuutu, 2 s sulkemisesta ilmoitus ja tyhjennetyt maailman arkut täyttyvät 8 esineellä',()=>{const fc=fo('fc'),W=worldChests(),sv=JSON.stringify(fc),pp=flags.peacePend;
+    fc[W[0].key]=Array(8).fill(null);fc[W[1].key]=[{id:'kivi',n:1,q:1},...Array(7).fill(null)];delete fc[W[2].key];flags.peacePend=1;peaceRefill();
+    const a=fc[W[0].key].filter(Boolean),ok=a.length===8&&new Set(a.map(x=>x.id)).size===8&&fc[W[1].key].filter(Boolean).length===1&&!fc[W[2].key]&&!flags.peacePend;
+    const src=bossVictory.toString()+peaceTick.toString();const ok2=/allBossesDown\(\)/.test(src)&&/setTimeout\(peaceRefill,2000\)/.test(src)&&/winS'\)\.hidden/.test(src)&&/rauhallinen/.test(src);
+    const fc2=JSON.parse(sv);for(const k in fc)delete fc[k];Object.assign(fc,fc2);flags.peacePend=pp;return ok&&ok2||`virhe ${ok}${ok2}`;});
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua

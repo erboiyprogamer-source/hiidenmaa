@@ -62,7 +62,7 @@ function resetWorld(){endPlayerDeath();for(const s of [...splats]){scene.remove(
   clearLogs();unplantAll();resetTerra();for(const n of nodes)restoreNode(n);for(const k in dunKilled)delete dunKilled[k];resetRealms();for(const m of [...mobs])mobRemove(m);explored.fill(0);
   for(const p of projs)scene.remove(p.m);projs.length=0;
   circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));sarcs.forEach(s=>{s.lid.position.x=0;s.lid.rotation.z=0;});
-  $('#bossbar').hidden=true;
+  $('#bossbar').hidden=true;$('#bbVig').hidden=true;BB.m=null;
 }
 function newGame(){
   resetWorld();playTime=0;dayT=.28;dayN=1;weather={cur:'selkea',until:240};flags={disc:{},runes:{},ruins:{},sarc:[0,0,0],boss:0,goal:0,won:0,seen:{},xp:0,cnt:{},ach:{},first:{},gv:3,bio:{meadow:1}};zoneQuiet=true;

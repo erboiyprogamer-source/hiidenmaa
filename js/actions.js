@@ -130,7 +130,7 @@ function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;
   P.kills++;bump('kills');bump('k_'+m.type);addXp(Math.round(m.def.hp/(m.type==='vartija'?2:5))+3,m.def.n);
   for(const [id,lo,hi] of [...m.def.drops,...(m.rv&&REALM_LOOT[m.realm]||[])]){const c=rint(rng,lo,hi);if(c>0){if(m.def.ai==='boss'||m.def.ai==='rboss')(m.bossLoot||(m.bossLoot=[])).push([id,c]);else spawnDrop(id,c,m.pos.x,m.pos.y+1,m.pos.z);}}   // v0.91: ulottuvuusversioilla lisäsaalis; v1.90 pomon saalis ilmestyy kuolema-animaatiossa
   if(m.archer&&Math.random()<.5)spawnDrop('nuolet',2+(Math.random()*4|0),m.pos.x,m.pos.y+1,m.pos.z);   // v1.42 jousikalmo pudottaa joskus nuolia
-  if(m.type==='vartija'&&!m.devSpawn){flags.boss=1;$('#bossbar').hidden=true;bossDefeated();}else if(m.type==='vartija'&&m===boss)$('#bossbar').hidden=true;   // v1.91: DEV-luotu vartija ei kirjaa voittoa
+  if(m.type==='vartija'&&!m.devSpawn){flags.boss=1;bossDefeated();}   /* v1.94: palkin piilotus/KUKISTETTU hoitaa bossBarTick */   // v1.91: DEV-luotu vartija ei kirjaa voittoa
   if(m.dunIdx!==undefined)dunKilled[m.dunIdx]=1;
   onMobKilled(m);
 }
@@ -273,7 +273,7 @@ function useAltar(){
   if(!flags.altarSt){if(invCount('kruunusirpale')<3){msg('Alttarin kolme koloa ovat tyhjiä. Tarvitset kolme Kalmankruunun sirpaletta – ne ovat Aarnihaudan syvyyksissä.','warn');return;}invRemove('kruunusirpale',3);}   // v1.34 (kohta 8)
   flags.altarSt=0;syncAltar();msg('Sirpaleet hehkuvat… maa vapisee!','warn');sfx('roar');shake(.6);
   circleStones.forEach(r=>r.material=MAT.glow);
-  const L=LOC.circle;setTimeout(()=>{boss=spawnMob('vartija',L.x,L.z-4);if(flags.bossHp){boss.hp=Math.min(boss.maxHp,flags.bossHp);delete flags.bossHp;}boss.state='rise';boss.t=0;boss.sinking=1;boss.pos.y-=7.5;$('#bossbar').hidden=false;shockwave(L.x,6,L.z-4,10);},1600);
+  const L=LOC.circle;setTimeout(()=>{boss=spawnMob('vartija',L.x,L.z-4);if(flags.bossHp){boss.hp=Math.min(boss.maxHp,flags.bossHp);delete flags.bossHp;}boss.state='rise';boss.t=0;boss.sinking=1;boss.pos.y-=7.5;shockwave(L.x,6,L.z-4,10);},1600);
 }
 function openSarc(i){
   const first=!flags.sarc[i],s=sarcs[i];

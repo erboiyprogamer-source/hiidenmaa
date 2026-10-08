@@ -491,6 +491,12 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Pomojen mallit (v1.93, js/bossmodels.js): korkealaatuiset, pyöristetyt ja yksityiskohtaiset (sarvet, kristallit, viitat, ketjut, miekka, sienet).
   Ultra-tasolla silmissä liekit ja pomon ympärillä leijuvat sen teeman palat (riimukivet, jääkristallit, aavekallot ja sieluliekki, lehdet ja
   tulikärpäset); ne irtoavat ja putoavat kuollessa muiden osien mukana.
+- Pomopalkki (v1.94): teeman mukainen (kivi/jää/kalma/aarni: väri, riimut, koriste palkin alla), vaihemerkit, viivepalkki, virtaava kuvio.
+  Vaiheen vaihtuessa tärähdys, välähdys ja iso teksti (VAIHE II / III / VIIMEINEN RAIVO), halkeamat ja syke voimistuvat; ruudun reunojen
+  vinjetti teeman värissä, sydämenlyönti alle 25 %:ssa; kuollessa "KUKISTETTU". Näkyy lähimmästä herännestä pomosta alle 70 m päässä.
+- Rauha (v1.94): kun kaikki neljä pomoa on kaatunut, voittoruutu "Hiidenmaa on rauhallinen" (13 s kuoleman jälkeen). Kun ruutu suljetaan,
+  2 s kuluttua ilmoitus, ja jokainen tyhjennetty maailman arkku (rauniot, arkkukivet, kiviröykkiöt, säkit, hautakirstut) täyttyy 8 satunnaisella
+  esineellä. Kerran per maailma.
 - Pomon saaliilla on majakkasäde: hehkuva valopylväs ja maarengas pomon värissä, kunnes esine poimitaan.
 - Palava pomo (boss/rboss): hurt-ääni silmukkana 1,4–2,2 s välein, sävel ×0,78 ja voimakkuus ×0,55, tärkeys 1,5 (jahti katkaisee). Muut olennot eivät ähki palaessaan.
 - Kaikuääni (echo, ulottuvuuspomot, 1–2 versiota): nukkuva pomo kuuluu 24–48 s välein vain omassa ulottuvuudessaan (≤38 m päästä, tumma, kaiulla) kunnes pelaaja kohtaa sen. Aarnihirviön kaikuäänet ovat kaikkien varaääni.

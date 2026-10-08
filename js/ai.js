@@ -318,9 +318,32 @@ function bossAI(m,dt,dx,dz,dist){
 }
 function bossDefeated(){
   circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));
-  msg('Kalmanvartija on kaatunut!','loot');sfx('roar');
-  setTimeout(()=>{if(flags.won)return;flags.won=1;state='win';releaseLock();$('#hud').hidden=true;const mm=Math.round(playTime/60);$('#winStats').textContent=`Selvisit ${dayN} päivää (${mm} min). Kaatoit ${P.kills} vihollista ja kaaduit itse ${P.deaths} kertaa. Saari on nyt sinun – jatka rakentamista ja tutkimista.`;$('#winS').hidden=false;saveGame(true);},3500);
-}
+  msg('Kalmanvartija on kaatunut!','loot');sfx('roar');bossVictory('vartija');}
+/* v1.94 VOITTO JA RAUHA: Kalmanvartijan kaatuessa voittoruutu kuten ennen ("Hiidenmaa on vapaa"). Kun VIIMEINEN pomo kaatuu (Kalmanvartija ja kaikki
+   kolme ulottuvuuspomoa, missä järjestyksessä tahansa) tulee rauharuutu "Hiidenmaa on rauhallinen". Ruutu näytetään vasta kun pomon kuolema-animaatio
+   on edennyt (13 s) ja pelaaja on elossa. Kun rauharuutu suljetaan, 2 s myöhemmin ilmoitus ja maailman tyhjennetyt arkut täyttyvät (peaceRefill). */
+function allBossesDown(){const rb=fo('rb');return !!flags.boss&&REALM_IDS.every(id=>rb[id]);}
+function bossVictory(kind){const peace=allBossesDown()&&!flags.peace;if(peace){flags.peace=1;flags.peacePend=1;}
+  if(!peace&&(kind!=='vartija'||flags.won))return;
+  const show=()=>{if(P.dead||state==='dead'||state==='menu'||state==='intro'){setTimeout(show,1000);return;}flags.won=1;if(openPanel)closePanels(true);state='win';releaseLock();$('#hud').hidden=true;const mm=Math.round(playTime/60);
+    $('#winT').innerHTML=peace?'<small>Viimeinen mahti on kukistettu</small>Hiidenmaa on rauhallinen':'<small>Kalmanvartija on kaatunut</small>Hiidenmaa on vapaa';
+    $('#winStats').textContent=peace?`Kalmanvartija, Jäätär, Kalmaherra ja Aarnihirviö ovat kaatuneet. Selvisit ${dayN} päivää (${mm} min), kaatoit ${P.kills} vihollista ja kaaduit itse ${P.deaths} kertaa. Maa lepää nyt – mutta saaren vanhat arkut eivät pysy tyhjinä kauaa.`:
+      `Selvisit ${dayN} päivää (${mm} min). Kaatoit ${P.kills} vihollista ja kaaduit itse ${P.deaths} kertaa. Saari on nyt sinun – jatka rakentamista ja tutkimista.`;
+    $('#winS').hidden=false;saveGame(true);};
+  setTimeout(show,13000);}
+// rauhan ilmoitus: 2 s sen jälkeen, kun rauharuutu on suljettu (myös latauksen jälkeen, jos ruutu jäi sulkematta)
+let peaceTimer=0;
+function peaceTick(){if(flags.peacePend&&!peaceTimer&&state==='play'&&$('#winS').hidden)peaceTimer=setTimeout(peaceRefill,2000);}
+// maailman tyhjennetyt arkut (avattu ja kaikki otettu) täyttyvät: 8 eri tavaraa satunnaisin määrin, harvinaisia pienellä todennäköisyydellä
+const PEACE_LOOT=[['kupari',3,8],['rauta',2,5],['nuolet',10,25],['sulkanuolet',6,14],['tulinuolet',4,10],['liha',2,5],['nahka',2,5],['luu',3,8],['pihka',2,6],
+  ['hiili',3,8],['rautamalmi',2,6],['kivi',5,12],['piikivi',2,6],['sulka',2,6],['hiidenkivi',1,1,.25],['karhuntalja',1,1,.3]];
+function peaceRefill(){peaceTimer=0;if(!flags.peacePend)return;flags.peacePend=0;const fc=fo('fc');let n=0;
+  for(const c of worldChests()){const it=fc[c.key];if(!it||it.some(Boolean))continue;
+    const pool=PEACE_LOOT.filter(e=>ITEMS[e[0]]&&(e[3]==null||Math.random()<e[3])).sort(()=>Math.random()-.5).slice(0,8);
+    fc[c.key]=pool.map(([id,lo,hi])=>({id,n:lo+Math.floor(Math.random()*(hi-lo+1)),q:1}));while(fc[c.key].length<8)fc[c.key].push(null);n++;}
+  sfx('pickup',.7,.9);
+  msg(n?`Hiidenmaa on rauhoittunut. ${n} tyhjennettyä arkkua on täyttynyt uusilla tarvikkeilla – tutki saaren vanhat arkut.`:'Hiidenmaa on rauhoittunut. Maa lepää.','loot');
+  if(n)setTimeout(()=>msg('Vanhoissa arkuissa on nyt kahdeksan tavaraa kussakin.','loot'),1600);saveGame(true);}
 
 /* ---------------- SPAWNER ---------------- */
 let spawnT=0;
