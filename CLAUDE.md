@@ -92,6 +92,8 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 - Työtapa ja säännöt: `docs/KEHITYSMUISTIO.md` → "Äänisuunnitelma". Tila ja hakusanat: `sounds/AANILISTA.md`.
 - Käyttäjä korvaa paikkamerkin `sounds/raw/`-kansiossa samalla nimellä → aja `python3 tools/process_sounds.py` (uudet nimet: `--init`).
   Peli lukee vain `sounds/manifest.json`:n käsitellyt äänet. Uusi olento → aja `--init` (tekee sen paikkamerkit).
+- **Äänierä (uudet äänet):** noudata kehitysmuistion "Äänierän rutiini" (pull → `process_sounds.py` → lue HUOM-rivit → muistio, versio, `tarkistus.mjs` → PR). Pelkkä äänidata ei vaadi
+  `full157`-ajoa. Rutiiniin riittää Sonnet/medium; uusi äänikoodi vaatii enemmän ajattelua.
 - Työkalu trimmaa ja tasaa äänekkyyden lajeittain (`PROFIILI`); kuolemaääniä 1 paikka (rboss) / 2 muilla. Aarnihirviö on varaäänien 💎 (`VARAANI`).
   Pelin toisto (`creSnd`, audio.js): tärkeys, yksi ääni/olento, 10 äänen raja, kaiku vain `m.dun`-olennoille (ConvolverNode, näytetaajuus = AudioContextin).
 

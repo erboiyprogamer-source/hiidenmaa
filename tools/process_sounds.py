@@ -284,6 +284,23 @@ def main():
         sounds[n] = {'h': sha(dst, 10), 'src': src_h, 'dur': duration(ff, dst), 'pv': PV, 'gain': gain}
         print(f'  {n}: {sounds[n]["dur"]} s, vahvistus {gain:+.1f} dB')
         done += 1
+    # tarkistusraportti erästä: samat tiedostot eri paikoissa, ylimääräiset oikeat äänet, lyhyet ja kovat vahvistukset
+    warn = []
+    byh = {}
+    for n in sounds:
+        byh.setdefault(sounds[n]['src'], []).append(n)
+    for h, ns in byh.items():
+        if len(ns) > 1:
+            warn.append('SAMA TIEDOSTO useassa paikassa: ' + ', '.join(ns))
+    expset = set(exp)
+    for n in sounds:
+        if n not in expset:
+            warn.append(f'{n}: ei odotettu paikka (lajin versioita on vähemmän, peli käyttää silti jos _1.._3)')
+        g = sounds[n].get('gain')
+        if g is not None and abs(g) > 12:
+            warn.append(f'{n}: iso vahvistus {g:+.1f} dB (raaka erittäin hiljainen tai kova – tarkista kuuntelemalla)')
+        if sounds[n].get('dur', 1) < 0.15:
+            warn.append(f'{n}: erittäin lyhyt ({sounds[n]["dur"]} s)')
     # käsitellyt äänet, joiden raaka on kadonnut, poistetaan
     for f in os.listdir(OUT):
         if f.endswith('.mp3') and os.path.splitext(f)[0] not in raws:
@@ -294,6 +311,8 @@ def main():
         f.write('\n')
     write_list(sounds, raws)
     print(f'Käsitelty: {done}, ennallaan: {skipped}, poistettu: {removed}, oikeita ääniä yhteensä: {len(sounds)}')
+    for w in warn:
+        print('HUOM', w)
     for e in errors:
         print('VIRHE', e)
     return 1 if errors else 0

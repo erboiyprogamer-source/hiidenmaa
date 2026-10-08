@@ -15,7 +15,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Nykytila (päivitetty v1.86)
 
-- **Versio 1.86**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). Aiempi:
+- **Versio 1.86**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -147,6 +147,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   tai jää pois jos on heikompi kuin kaikki. Rauhallista/jahtiääntä enintään 3 samaa lajia+tyyppiä kerrallaan ja uusi aikaisintaan 0,3 s edellisen
   jälkeen (ei kuoroa). Sama versio ei toistu heti perään. Äänekkyys: idle ×0,75, chase ×0,9 muut ×1; pomoilla 3D-viite 8 m (muilla 3 m).
 
+**Äänierän rutiini (kun käyttäjä lisää uusia ääniä; v1.86, jotta isotkin erät sujuvat nopeasti):**
+1. `git pull`/fetch: katso mitä uusia tiedostoja `sounds/raw/` sai (`git diff --stat HEAD origin/main`). Älä lue ääniä itse – työkalu mittaa.
+2. `python3 tools/process_sounds.py` (tarvittaessa `--init` uusille olennoille). Lue **HUOM**-rivit: sama tiedosto kahdessa paikassa, vahvistus yli ±12 dB
+   (raaka hyvin hiljainen/kova → kerro käyttäjälle), ylimääräiset paikat. Tuplatiedosto tai kova vahvistus ei estä erää; ilmoita ne ja jatka.
+3. Tarkista AANILISTA.md:n tilarivit ja VARAANI: jos olento sai omat äänet, varaääniketju voi jäädä; uusi 💎/⭐-rooli päivittyy itse.
+   Jos uusi olento ei ole VARAANI-ketjussa eikä saa ääntä, älä lisää varaääntä ilman syytä.
+4. Muutokset koodiin vain jos sääntö muuttuu (toisto, kaiku, profiilit). Muuten pelkkä dataerä: `sounds/`, manifest, AANILISTA, muistio, versio.
+5. Versio + muistion versioloki + `tarkistus.mjs` → KAIKKI OK (sisältää VARAANI-eheyden). `full157` vain kun koodi muuttui (pelkkä äänidata ei vaadi sitä).
+6. Commit, push, PR, linkit (commit-SHA, haara, PR) ja muistutus Mergestä.
+- Mallisuositus: rutiiniäänierä = Sonnet, medium. Opus/korkea ajattelu vain uudelle koodille (äänierät B–E: askeleet, sää, musiikki, äänifysiikka).
+  Anna äänet isoina erinä (10–20 oliota kerralla), niin konteksti ja testit ajetaan vain kerran.
+
 ## Pysyvät päätökset
 
 - **Pelin teksteissä ei mainita muita pelejä** (esim. Minecraft, Valheim) – v1.11, käyttäjän toive.
@@ -224,6 +236,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   huiput −1,3…−7,7 dBFS (ei leikkaa), tiedostot 20–73 kt.
 - **Kaiku:** yhteinen ConvolverNode vain `m.dun`-olennoille, kytkeytyy tarvittaessa (ei kuormaa ulkona). **Toistosäännöt:** tärkeys, yksi ääni per
   olento, 10 äänen raja, ei kuoroa, ei saman version toistoa (ks. Äänisuunnitelma).
+- Työkalu varoittaa nyt erästä (HUOM-rivit: tuplatiedostot, iso vahvistus, lyhyt, ylimääräinen paikka). Koko pelin tarkistus (6 karttaa) 0 virhettä.
 - Testattu selaimessa (oikea AudioContext, autoplay sallittu): ketju (jaajattari ×1,2, kalmaherra ×0,85), tärkeys (osuma katkaisee jahdin, jahti ei
   osumaa), 1 ääni/olento, kaiun lähetys vain dun-olennoilla, kaiku irtoaa 3 s jälkeen kun mikään kaiullinen ääni ei soi; `tarkistus.mjs` KAIKKI OK.
 

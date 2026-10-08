@@ -478,4 +478,5 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Toisto: tärkeys kuolema > osuma > suuttuminen > jahti > rauhallinen; olennolla soi yksi ääni kerrallaan (tärkeämpi katkaisee); enintään 10
   ääntä kerrallaan (heikoin syrjäytyy); rauhallisia/jahtiääniä samaa lajia enintään 3 ja 0,3 s väli; sama versio ei heti uudestaan.
 - Kaiku: luolaston ja ulottuvuuksien olennoille (lähetys 0,45 / boss 0,6 / rboss 0,75), yksi yhteinen ConvolverNode (1,2 s), kytkeytyy vain tarvittaessa.
+- Työkalu tulostaa erän lopuksi HUOM-varoitukset (tuplatiedosto, vahvistus yli ±12 dB, liian lyhyt, ylimääräinen paikka).
 - Työkalun trimmaus/voimakkuus: pituuden rajat (idle 3 s … death 3,5 s, pomot enemmän) ja tavoite-LUFS lajeittain (idle −22 … death/aggro −16, pomo +1,5 dB).
