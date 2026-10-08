@@ -159,6 +159,13 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.84–85 olentojen äänet: VARAANI-ketju eheä, 1–3 versiota (creRes), varaääni, suuttumis- ja jahtiääni, kytkennät, voimakkuusasetus',()=>{const ids=Object.keys(MOBDEF);for(const [k,v] of Object.entries(VARAANI)){if(!ids.includes(k)||!ids.includes(v.to)||!(v.p>0))return 'huono '+k;let c=k,n=0;while(VARAANI[c]&&n<8){c=VARAANI[c].to;n++;}if(n>=8)return 'silmukka '+k;}
     const o=CRE.man;CRE.man={susi_aggro_1:{h:'x'},kalmo_idle_1:{h:'y'},kalmo_idle_3:{h:'z'},susi_chase_2:{h:'w'}};const a=creRes('kalmasusi','aggro'),b=creRes('kalmo','idle'),c=creRes('peura','idle'),d=creRes('kalmasusi','chase');CRE.man=o;
     return a&&a.names[0]==='susi_aggro_1'&&Math.abs(a.p-.88)<1e-9&&b&&b.names.join()==='kalmo_idle_1,kalmo_idle_3'&&c===null&&d&&d.names[0]==='susi_chase_2'&&/creSnd\(m,'death'\)/.test(killMob.toString())&&/creSnd\(m,'hurt'\)/.test(damageMob.toString())&&/creLoad/.test(spawnMob.toString())&&/creTick/.test(update.toString())&&/angerDone/.test(creTick.toString())&&'creVol' in SET_DEF||'virhe';});
+  t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
+    if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
+    const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;
+    if(!a||a.names[0]!=='aarnihirvio_death_1'||Math.abs(a.p-1.2)>1e-9||!b||b.names[0]!=='hirvi_death_1')return 'lainaus';
+    if(!(CRE_PRI.death>CRE_PRI.hurt&&CRE_PRI.hurt>CRE_PRI.aggro&&CRE_PRI.aggro>CRE_PRI.chase&&CRE_PRI.chase>CRE_PRI.idle)||CRE.max!==10)return 'tärkeys';
+    const f=creSnd.toString();if(!/m\.dun/.test(f)||!/creRevOn/.test(f)||!/CRE\.lastAmb/.test(f)||typeof creRevTick!=='function')return 'kaiku/toisto';
+    return true;});
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua

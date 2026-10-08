@@ -56,14 +56,14 @@ const VARAANI=/*VARAANI-ALKU*/{
   "ilves":{"to":"susi","p":1.15},"ahma":{"to":"ilves","p":1.1},
   "emakko":{"to":"karju","p":1.08},"porsas":{"to":"karju","p":1.5},
   "hiidenkarhu":{"to":"karhu","p":0.85},
-  "hiidenhirvi":{"to":"hirvi","p":0.82},"aarnihirvio":{"to":"hiidenhirvi","p":0.8},"poro":{"to":"peura","p":0.9},"peura":{"to":"hirvi","p":1.3},
+  "hiidenhirvi":{"to":"hirvi","p":0.82},"poro":{"to":"peura","p":0.9},"peura":{"to":"hirvi","p":1.3},
   "ylimys":{"to":"kalmo","p":0.85},"vartija":{"to":"kalmo","p":0.6},"kivivartija":{"to":"vartija","p":1.15},
-  "jaajattari":{"to":"ylimys","p":1.25},"kalmaherra":{"to":"ylimys","p":0.8},"suonakki":{"to":"hiisi","p":0.7}
+  "jaajattari":{"to":"aarnihirvio","p":1.2},"kalmaherra":{"to":"aarnihirvio","p":0.85},"suonakki":{"to":"hiisi","p":0.7}
 }/*VARAANI-LOPPU*/;
 const CRE_AGGRO=['neutral','hostile','boss','rboss'];   // niillä on suuttumisääni (aggro)
 const CRE_CHASE=['hostile','boss','rboss'];             // niillä on lisäksi toistuva jahtiääni (chase) ja suuttumisääni vain kerran
 const CRE_KINDS=['idle','hurt','death','aggro','chase'];  // jokaisella lajilla 1–3 versiota (_1.._3), arvonta niistä jotka ovat olemassa
-const CRE={man:null,ok:false,buf:{},load:{},want:{},gain:null,voices:[],max:14};
+const CRE={man:null,ok:false,buf:{},load:{},want:{},gain:null,voices:[],max:10,last:{},lastAmb:-9,rev:null};
 // manifest kerran (tiiviste osoitteessa → välimuisti ei anna vanhaa ääntä). Ilman palvelinta (file://) epäonnistuu hiljaa.
 function creInit(){if(CRE.man)return;CRE.man={};
   try{fetch('sounds/manifest.json?v='+(window.HV||'')).then(r=>r.ok?r.json():null).then(j=>{CRE.man=(j&&j.sounds)||{};CRE.ok=true;for(const t in CRE.want)creLoad(t);}).catch(()=>{});}catch(e){}}
@@ -77,23 +77,50 @@ function creBuf(name){if(CRE.buf[name]||CRE.load[name])return;const a=audio(),e=
 function creLoad(type){creInit();CRE.want[type]=1;if(!CRE.ok)return;const ai=typeof MOBDEF!=='undefined'&&MOBDEF[type]&&MOBDEF[type].ai;
   for(const k of CRE_KINDS){if(k==='aggro'&&!CRE_AGGRO.includes(ai))continue;if(k==='chase'&&!CRE_CHASE.includes(ai))continue;const r=creRes(type,k);if(r)for(const n of r.names)creBuf(n);}}
 function crePos(pn,x,y,z){if(pn.positionX){pn.positionX.value=x;pn.positionY.value=y;pn.positionZ.value=z;}else pn.setPosition(x,y,z);}
+// ---- toistosäännöt (v1.86) ----
+// Tärkeys: kuolema 5 > osuma 4 > suuttuminen 3 > jahti 2 > rauhallinen 1. Yhdellä olennolla soi kerrallaan vain yksi ääni
+// (tärkeämpi katkaisee heikomman nopealla häivytyksellä, heikompi ei katkaise vahvempaa). Kuolema vaientaa olennon muut äänet.
+// Kaikkiaan enintään CRE.max ääntä: täyden ollessa uusi syrjäyttää heikoimman (tasatilanteessa kaukaisimman), tai jää pois jos on heikompi kuin kaikki.
+// Rauhallisia ja jahtiääniä saa samaa lajia soida enintään 3, ja uusi alkaa aikaisintaan 0,3 s edellisen jälkeen (ei kuoroa).
+// Sama versio ei toistu heti perään (jos versioita on useita).
+const CRE_PRI={idle:1,chase:2,aggro:3,hurt:4,death:5},CRE_G={idle:.75,chase:.9,aggro:1,hurt:1,death:1};
+// Kaiku (vain ulottuvuuksien ja luolaston olennoille m.dun): yksi yhteinen ConvolverNode + proseduraalinen vastaus (1,2 s; ConvolverNode vaatii saman näytetaajuuden kuin ääni-AudioContext),
+// pimeä (alipäästö 3,2 kHz). Kytkeytyy vain kun jokin kaiullinen ääni soi ja irtoaa 3 s sen jälkeen → ei kuormaa maailmassa.
+function creRevMake(a){if(CRE.rev)return CRE.rev;const sr=a.sampleRate,len=Math.floor(sr*1.2),buf=a.createBuffer(2,len,sr);
+  for(let c=0;c<2;c++){const d=buf.getChannelData(c);let lp=0,seed=1234+c*777;for(let i=0;i<len;i++){seed=(seed*1664525+1013904223)>>>0;const n=seed/2147483648-1,t=i/len;
+    lp+=(n-lp)*(.85-.6*t);d[i]=lp*Math.pow(1-t,2.6)*(i<sr*.012?i/(sr*.012):1);}}
+  const cv=a.createConvolver();cv.normalize=true;cv.buffer=buf;const inp=a.createGain(),lp=a.createBiquadFilter(),out=a.createGain();lp.type='lowpass';lp.frequency.value=3200;out.gain.value=.9;
+  inp.connect(lp);lp.connect(cv);cv.connect(out);CRE.rev={inp,cv,out,on:false,t:0};return CRE.rev;}
+function creRevOn(a){const R=creRevMake(a);R.t=3;if(!R.on){R.out.connect(CRE.gain);R.on=true;}return R;}
+function creRevTick(dt){const R=CRE.rev;if(!R||!R.on)return;if(CRE.voices.some(v=>v.sd)){R.t=3;return;}R.t-=dt;if(R.t<=0){try{R.out.disconnect();}catch(e){}R.on=false;}}
+function creStop(v,t){try{v.g.gain.setTargetAtTime(0,actx.currentTime,.03);v.src.stop(actx.currentTime+(t||.12));}catch(e){}}
 // soittaa olennon äänen 3D:nä (arpoo ladatuista versioista). Palauttaa äänen keston sekunteina, jos olennolla on tiedostoääni
 // (silloin tehtyä ääntä ei soiteta), muuten false (ei ääntä tai vielä latautumassa).
 function creSnd(m,kind){if(!m)return false;const r=creRes(m.type,kind);if(!r)return false;
   const L=r.names.filter(n=>CRE.buf[n]);if(!L.length){for(const n of r.names)creBuf(n);return false;}
-  const name=L[Math.random()*L.length|0],B=CRE.buf[name],rate=r.p*(1+(Math.random()*2-1)*.06),dur=B.duration/rate;
+  const key=m.type+'_'+kind;let pick=L;if(L.length>1&&CRE.last[key])pick=L.filter(n=>n!==CRE.last[key]);
+  const name=pick[Math.random()*pick.length|0],B=CRE.buf[name],rate=r.p*(1+(Math.random()*2-1)*.06),dur=B.duration/rate;
   const a=actx;if(!a||a.state!=='running'||!soundOn)return dur;const vol=typeof SET!=='undefined'?+SET.creVol:1;if(!(vol>0))return dur;
+  const pri=CRE_PRI[kind]||1,now=a.currentTime,amb=pri<=2,boss=m.def.ai==='boss'||m.def.ai==='rboss';
   if(!CRE.gain){CRE.gain=a.createGain();CRE.gain.connect(a.destination);}CRE.gain.gain.value=vol;
-  if(CRE.voices.length>=CRE.max){const o=CRE.voices.shift();try{o.src.stop();}catch(e){}}
+  // olennon oma ääni: heikompi ei katkaise, samanarvoinen vasta kun edellinen on soinut hetken
+  for(const v of CRE.voices)if(v.m===m){if(v.pri>pri||(v.pri===pri&&now-v.t0<.35))return dur;}
+  if(amb){if(now-CRE.lastAmb<.3)return dur;let n=0;for(const v of CRE.voices)if(v.key===key)n++;if(n>=3)return dur;}
+  for(const v of CRE.voices.slice())if(v.m===m){creStop(v);CRE.voices.splice(CRE.voices.indexOf(v),1);}
+  if(CRE.voices.length>=CRE.max){let w=null,wd=-1;for(const v of CRE.voices){const d=dist2(v.m.pos.x,v.m.pos.z,P.pos.x,P.pos.z);if(!w||v.pri<w.pri||(v.pri===w.pri&&d>wd)){w=v;wd=d;}}
+    if(!w||w.pri>pri)return dur;creStop(w,.08);CRE.voices.splice(CRE.voices.indexOf(w),1);}
+  if(amb)CRE.lastAmb=now;CRE.last[key]=name;
   const src=a.createBufferSource(),g=a.createGain(),pn=a.createPanner();src.buffer=B;src.playbackRate.value=rate;
-  pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=m.def.ai==='boss'||m.def.ai==='rboss'?8:3;pn.maxDistance=90;pn.rolloffFactor=1.1;
-  g.gain.value=kind==='idle'?.75:1;src.connect(g);g.connect(pn);pn.connect(CRE.gain);crePos(pn,m.pos.x,m.pos.y+(m.def.r||.5)*1.6,m.pos.z);
-  const v={src,pn,m};CRE.voices.push(v);src.onended=()=>{const i=CRE.voices.indexOf(v);if(i>=0)CRE.voices.splice(i,1);try{pn.disconnect();}catch(e){}};src.start();return dur;}
+  pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=boss?8:3;pn.maxDistance=90;pn.rolloffFactor=1.1;
+  g.gain.value=CRE_G[kind]||1;src.connect(g);g.connect(pn);pn.connect(CRE.gain);crePos(pn,m.pos.x,m.pos.y+(m.def.r||.5)*1.6,m.pos.z);
+  let sd=null;if(m.dun){const R=creRevOn(a);sd=a.createGain();sd.gain.value=m.def.ai==='rboss'?.75:boss?.6:.45;pn.connect(sd);sd.connect(R.inp);}
+  const v={src,pn,g,sd,m,pri,t0:now,key};CRE.voices.push(v);src.onended=()=>{const i=CRE.voices.indexOf(v);if(i>=0)CRE.voices.splice(i,1);try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return dur;}
 // joka ruutu: kuuntelija = kamera, soivat äänet seuraavat olentoa; idle 6–15 s välein alle 25 m päässä, aggro kerran jahdin alkaessa
 const _creF=new THREE.Vector3();
 function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='undefined')return;const L=a.listener,c=camera.position;camera.getWorldDirection(_creF);
   if(L.positionX){L.positionX.value=c.x;L.positionY.value=c.y;L.positionZ.value=c.z;L.forwardX.value=_creF.x;L.forwardY.value=_creF.y;L.forwardZ.value=_creF.z;L.upX.value=0;L.upY.value=1;L.upZ.value=0;}
   else{L.setPosition(c.x,c.y,c.z);L.setOrientation(_creF.x,_creF.y,_creF.z,0,1,0);}
+  creRevTick(dt);
   for(const v of CRE.voices)if(!v.m.dead)crePos(v.pn,v.m.pos.x,v.m.pos.y+(v.m.def.r||.5)*1.6,v.m.pos.z);
   if(state!=='play'||!soundOn)return;
   for(const m of mobs){if(m.dead)continue;const d2=dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z),ai=m.def.ai,hs=CRE_CHASE.includes(ai),chasing=m.state==='chase',hasChase=hs&&chasing&&creRes(m.type,'chase');

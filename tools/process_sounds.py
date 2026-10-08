@@ -7,7 +7,9 @@ Käyttö (repon juuressa):
 
 Työnjako: Claude tekee paikkamerkit (hiljainen mp3 alle 3 kt) oikeilla nimillä. Käyttäjä kuuntelee ja korvaa paikkamerkin
 TÄSMÄLLEEN samalla nimellä (GitHub Desktop). Tämä työkalu tunnistaa oikeat äänet (yli 3 kt, muoto sisällöstä eikä päätteestä),
-ajaa ffmpeg → sounds/<nimi>.mp3 (mono 96 kbps, hiljaisuus pois alusta ja lopusta, loudnorm). Raakatiedostoja ei poisteta.
+ajaa ffmpeg → sounds/<nimi>.mp3 (mono 96 kbps). Käsittely (v1.86): matalat rumpuäänet pois (40 Hz), hiljaisuus pois alusta ja lopusta,
+pituus katkaistaan lajin ylärajaan ja häivytetään (PROFIILI), voimakkuus mitataan (LUFS) ja nostetaan lajin tavoitteeseen + alimiter
+(ei leikkaa). Raakatiedostoja ei poisteta. Käsittelyn tapa vaihtuessa (PV) kaikki ajetaan uudestaan.
 Jos raaka palautetaan paikkamerkiksi, käsitelty ääni poistetaan. Peli lukee vain manifestissa olevat käsitellyt äänet.
 
 ffmpeg: järjestelmän ffmpeg, tai `pip install imageio-ffmpeg`.
@@ -23,6 +25,26 @@ PLACEHOLDER_MAX = 3072          # tavua: tätä pienempi/yhtä suuri = paikkamer
 AGGRO_AI = ('neutral', 'hostile', 'boss', 'rboss')   # suuttumisääni (aggro)
 CHASE_AI = ('hostile', 'boss', 'rboss')               # + toistuva jahtiääni (chase)
 VARIANTS = (1, 2, 3)                                  # jokaisella lajilla enintään 3 versiota; peli arpoo olemassa olevista
+PV = 2                                                # käsittelyn versio: vaihtuessa kaikki äänet käsitellään uudestaan
+
+
+def variants_of(ai, kind):
+    """Montako versiota lajista on: kuolema = 1 ulottuvuuksien hirviöillä (rboss), 2 kaikilla muilla; muut lajit 3."""
+    if kind == 'death':
+        return (1,) if ai == 'rboss' else (1, 2)
+    return VARIANTS
+
+
+# käsittelyprofiili lajeittain: (pituuden yläraja s: tavallinen, pomo; häivytys s; tavoite-LUFS). Pomoille lisätään BOSS_DB.
+# Tavoitteet: kuolema ja suuttuminen kovimpia, osuma ja jahti keskitasoa, rauhallinen ääntely hiljaisin (soi usein).
+PROFIILI = {
+    'idle':  (3.0, 4.0, 0.30, -22),
+    'hurt':  (1.2, 1.6, 0.12, -17),
+    'death': (3.5, 6.0, 0.50, -16),
+    'aggro': (2.5, 3.5, 0.30, -16),
+    'chase': (2.5, 4.0, 0.30, -18),
+}
+BOSS_DB = {'boss': 1.0, 'rboss': 1.5}
 
 # ---------------------------------------------------------------- olennot (äänierä A)
 # Kuvaus (millainen ääni) ja hakusanat englanniksi lajeittain. Nimet ja ai luetaan js/mobs.js:n MOBDEFistä, varaäänet js/audio.js:n VARAANIsta.
@@ -57,7 +79,7 @@ CRE_INFO = {
 KIND_FI = {
     'idle': 'rauhallinen ääntely, satunnaisesti 6–15 s välein (0,5–2 s)',
     'hurt': 'lyhyt kivun ääni, kun olentoon osuu (0,2–0,8 s)',
-    'death': 'kuoleman ääni (0,8–2,5 s)',
+    'death': 'kuoleman ääni (0,8–3,5 s, pomoilla jopa 6 s; paikkoja: ulottuvuuksien hirviöt 1, muut 2)',
     'aggro': 'SUUTTUMISÄÄNI: huomaa sinut ensimmäistä kertaa – vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat (0,5–2 s)',
     'chase': 'JAHTIÄÄNI: toistuu 4–9 s välein kun olento jahtaa sinua suuttumisäänen jälkeen – murina, huohotus tai huuto (0,5–1,5 s)',
 }
@@ -92,7 +114,7 @@ def kinds_of(ai):
 def expected():
     names = []
     for cid, _, ai in creatures():
-        names += [f'{cid}_{k}_{n}' for k in kinds_of(ai) for n in VARIANTS]
+        names += [f'{cid}_{k}_{n}' for k in kinds_of(ai) for n in variants_of(ai, k)]
     return names
 
 
@@ -146,20 +168,55 @@ def make_placeholder(ff, path):
     assert os.path.getsize(path) <= PLACEHOLDER_MAX
 
 
-def process(ff, src, dst, fmt):
-    trim = 'silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.01'
-    af = f'{trim},areverse,{trim},areverse,loudnorm=I=-16:TP=-1.5:LRA=11'
-    cmd = [ff, '-hide_banner', '-loglevel', 'error', '-y'] + (['-f', fmt] if fmt and fmt != 'mp4' else []) + \
-          ['-i', src, '-af', af, '-ac', '1', '-ar', '44100', '-c:a', 'libmp3lame', '-b:a', '96k', '-id3v2_version', '0', dst]
-    tmp = dst + '.tmp.mp3'
-    cmd[-1] = tmp
-    r = subprocess.run(cmd, capture_output=True, text=True)
-    if r.returncode != 0 or not os.path.exists(tmp) or os.path.getsize(tmp) < 200:
-        if os.path.exists(tmp):
-            os.remove(tmp)
-        return r.stderr.strip()[-300:] or 'tuntematon virhe'
-    os.replace(tmp, dst)
-    return None
+def run(cmd):
+    return subprocess.run(cmd, capture_output=True, text=True)
+
+
+def loudness(ff, wav):
+    """Integroitu äänekkyys (LUFS); alle 0,4 s äänillä ebur128 ei anna lukua → arvio keskitasosta."""
+    r = run([ff, '-hide_banner', '-nostats', '-i', wav, '-af', 'ebur128=peak=true', '-f', 'null', '-'])
+    m = re.findall(r'I:\s+(-?[\d.]+) LUFS', r.stderr.split('Summary')[-1])
+    if m and float(m[-1]) > -69:
+        return float(m[-1])
+    r = run([ff, '-hide_banner', '-nostats', '-i', wav, '-af', 'volumedetect', '-f', 'null', '-'])
+    m = re.search(r'mean_volume:\s+(-?[\d.]+) dB', r.stderr)
+    return float(m.group(1)) - 1.0 if m else None
+
+
+def process(ff, src, dst, fmt, ai='hostile', kind='idle'):
+    cap_n, cap_b, fade, target = PROFIILI.get(kind, PROFIILI['idle'])
+    boss = ai in BOSS_DB
+    cap = cap_b if boss else cap_n
+    target += BOSS_DB.get(ai, 0)
+    trim = 'silenceremove=start_periods=1:start_threshold=-48dB:start_silence=0.02'
+    inp = (['-f', fmt] if fmt and fmt != 'mp4' else []) + ['-i', src]
+    with tempfile.TemporaryDirectory() as td:
+        w1, w2, tmp = os.path.join(td, 'a.wav'), os.path.join(td, 'b.wav'), os.path.join(td, 'o.mp3')
+        # 1) mono, rumina pois, hiljaisuus pois alusta ja lopusta
+        r = run([ff, '-hide_banner', '-loglevel', 'error', '-y'] + inp + ['-af', f'highpass=f=40,{trim},areverse,{trim},areverse',
+                '-ac', '1', '-ar', '44100', '-c:a', 'pcm_s16le', w1])
+        if r.returncode != 0 or not os.path.exists(w1):
+            return r.stderr.strip()[-300:] or 'tuntematon virhe', None
+        d = duration(ff, w1)
+        if d < 0.05:
+            return 'ääni on käytännössä hiljaa', None
+        # 2) pituuden yläraja + häivytykset (ei klikkausta alussa, pehmeä loppu)
+        L = min(d, cap)
+        f = min(fade, L * 0.5)
+        r = run([ff, '-hide_banner', '-loglevel', 'error', '-y', '-i', w1, '-af',
+                 f'atrim=duration={L:.3f},afade=t=in:d=0.006,afade=t=out:st={max(L - f, 0):.3f}:d={f:.3f}', '-c:a', 'pcm_s16le', w2])
+        if r.returncode != 0:
+            return r.stderr.strip()[-300:], None
+        # 3) äänekkyyden mittaus → vahvistus tavoitteeseen (−24…+24 dB) + alimiter (katto −1 dBFS)
+        lu = loudness(ff, w2)
+        gain = 0.0 if lu is None else max(-24.0, min(24.0, target - lu))
+        r = run([ff, '-hide_banner', '-loglevel', 'error', '-y', '-i', w2, '-af', f'volume={gain:.2f}dB,alimiter=limit=0.89:attack=2:release=60:level=disabled',
+                 '-ac', '1', '-ar', '44100', '-c:a', 'libmp3lame', '-b:a', '96k', '-id3v2_version', '0', tmp])
+        if r.returncode != 0 or not os.path.exists(tmp) or os.path.getsize(tmp) < 200:
+            return r.stderr.strip()[-300:] or 'tuntematon virhe', None
+        shutil.copyfile(tmp, dst + '.tmp.mp3')
+    os.replace(dst + '.tmp.mp3', dst)
+    return None, round(gain, 1)
 
 
 def main():
@@ -177,7 +234,17 @@ def main():
                 if n not in have:
                     shutil.copyfile(ph, os.path.join(RAW, n + '.mp3'))
                     made += 1
-        print(f'Paikkamerkkejä luotu: {made}')
+        # ylimääräiset paikkamerkit (esim. death_3, kun kuolemaäänille on 1–2 paikkaa) pois; oikeaan ääneen ei koskaan kosketa
+        gone = 0
+        expset = set(exp)
+        creset = {c for c, _, _ in creatures()}
+        for f in sorted(os.listdir(RAW)):
+            n, p = os.path.splitext(f)[0], os.path.join(RAW, f)
+            mm = re.match(r'^([a-z_0-9]+?)_(idle|hurt|death|aggro|chase)_[123]$', n)
+            if mm and mm.group(1) in creset and n not in expset and os.path.getsize(p) <= PLACEHOLDER_MAX:
+                os.remove(p)
+                gone += 1
+        print(f'Paikkamerkkejä luotu: {made}, ylimääräisiä poistettu: {gone}')
 
     old = {}
     if os.path.exists(MANIFEST):
@@ -203,15 +270,19 @@ def main():
                 removed += 1
             continue
         src_h = sha(p)
-        if n in old and old[n].get('src') == src_h and os.path.exists(dst):
+        mm = re.match(r'^([a-z_0-9]+?)_(idle|hurt|death|aggro|chase)_[123]$', n)
+        cid, kind = (mm.group(1), mm.group(2)) if mm else (None, 'idle')
+        ai = next((a for c, _, a in creatures() if c == cid), 'hostile')
+        if n in old and old[n].get('src') == src_h and old[n].get('pv') == PV and os.path.exists(dst):
             sounds[n] = old[n]
             skipped += 1
             continue
-        err = process(ff, p, dst, sniff(p))
+        err, gain = process(ff, p, dst, sniff(p), ai, kind)
         if err:
             errors.append(f'{os.path.basename(p)}: {err}')
             continue
-        sounds[n] = {'h': sha(dst, 10), 'src': src_h, 'dur': duration(ff, dst)}
+        sounds[n] = {'h': sha(dst, 10), 'src': src_h, 'dur': duration(ff, dst), 'pv': PV, 'gain': gain}
+        print(f'  {n}: {sounds[n]["dur"]} s, vahvistus {gain:+.1f} dB')
         done += 1
     # käsitellyt äänet, joiden raaka on kadonnut, poistetaan
     for f in os.listdir(OUT):
@@ -219,7 +290,7 @@ def main():
             os.remove(os.path.join(OUT, f))
             removed += 1
     with open(MANIFEST, 'w', encoding='utf-8') as f:
-        json.dump({'v': 1, 'sounds': dict(sorted(sounds.items()))}, f, ensure_ascii=False, indent=1)
+        json.dump({'v': 2, 'sounds': dict(sorted(sounds.items()))}, f, ensure_ascii=False, indent=1)
         f.write('\n')
     write_list(sounds, raws)
     print(f'Käsitelty: {done}, ennallaan: {skipped}, poistettu: {removed}, oikeita ääniä yhteensä: {len(sounds)}')
@@ -274,7 +345,7 @@ def write_list(sounds, raws):
     rows = []
     for title, ais in cats:
         rows.append(f'\n### {title}\n')
-        rows.append('| Olento | Ääni | Tiedostot (1–3 versiota) | Tila | Millainen ääni | Hakusanat (englanniksi) |')
+        rows.append('| Olento | Ääni | Tiedostot (1–3 versiota, kuolema 1–2) | Tila | Millainen ääni | Hakusanat (englanniksi) |')
         rows.append('| --- | --- | --- | --- | --- | --- |')
         for cid, name, ai in cre:
             if ai not in ais:
@@ -290,10 +361,11 @@ def write_list(sounds, raws):
                 star = ''
             for j, kind in enumerate(kinds_of(ai)):
                 tot += 1
-                mine = [n for n in VARIANTS if f'{cid}_{kind}_{n}' in sounds]
-                files = ', '.join(f'`{cid}_{kind}_{n}`' for n in VARIANTS)
+                mine = [n for n in variants_of(ai, kind) if f'{cid}_{kind}_{n}' in sounds]
+                vs = variants_of(ai, kind)
+                files = ', '.join(f'`{cid}_{kind}_{n}`' for n in vs)
                 if mine:
-                    st = f'✅ oma: {", ".join(f"_{n}" for n in mine)} ({len(mine)}/3)'
+                    st = f'✅ oma: {", ".join(f"_{n}" for n in mine)} ({len(mine)}/{len(vs)})'
                     own += 1
                 else:
                     src, p = resolve(cid, kind, sounds, vara)
@@ -320,8 +392,14 @@ def write_list(sounds, raws):
 3. Korvaa paikkamerkki `sounds/raw/`-kansiossa **täsmälleen samalla nimellä** (esim. `susi_aggro_1.mp3`). Jokaisella äänellä on kolme paikkaa
    `_1`, `_2`, `_3`: täytä vain ne jotka haluat – peli arpoo olemassa olevista (yksi riittää, tyhjät paikat ohitetaan). Lyhyet äänet saa olla wav
    (pääte voi jäädä .mp3 – muoto tunnistetaan sisällöstä), pitkät (musiikki, loopit) mp3, alle 25 Mt.
-4. Commit ja push GitHub Desktopilla ja pyydä Claudea ajamaan `python3 tools/process_sounds.py`: ääni normalisoidaan,
-   hiljaisuus leikataan ja se siirtyy peliin (`sounds/<nimi>.mp3`). Raakatiedostot jäävät `sounds/raw/`-kansioon.
+4. Commit ja push GitHub Desktopilla ja pyydä Claudea ajamaan `python3 tools/process_sounds.py`: hiljaisuus leikataan alusta ja lopusta,
+   ääni katkaistaan lajin ylärajaan (häivytys), voimakkuus tasataan lajin tavoitteeseen ja se siirtyy peliin (`sounds/<nimi>.mp3`).
+   Raakatiedostot jäävät `sounds/raw/`-kansioon. **Älä itse trimmaa tai normalisoi** – työkalu tekee sen; anna raaka mieluummin pitkänä ja puhtaana.
+   Kuolemaäänelle on **1 paikka** ulottuvuuksien hirviöillä (Jäätär, Kalmaherra, Aarnihirviö) ja **2 paikkaa** kaikilla muilla.
+
+**Käsittelyn rajat (lajeittain):** idle ≤ 3 s (pomo 4), hurt ≤ 1,2 s (1,6), death ≤ 3,5 s (6), aggro ≤ 2,5 s (3,5), chase ≤ 2,5 s (4).
+Tavoiteäänekkyys (LUFS): idle −22, hurt −17, death −16, aggro −16, chase −18; pomot +1…1,5 dB. Ulottuvuuksissa (luolasto, ulottuvuudet)
+olennot saavat pelissä kaiun (ei tiedostoon), joten anna raakaääni kuivana, ilman omaa kaikua.
 
 **Tilat (Tila-sarake):** ✅ oma ääni · 🔁 väliaikainen varaääni toiselta olennolta (sävelkorkeutta muutettu) · ⬜ puuttuu (peli käyttää
 tehtyä ääntä tai on hiljaa). Varaäänet ovat vain väliaikaisia: jokaiselle olennolle kannattaa lopulta lisätä omat äänet.
@@ -332,6 +410,8 @@ tehtyä ääntä tai on hiljaa). Varaäänet ovat vain väliaikaisia: jokaiselle
 - 💎 = **pääääni**: muut lainaavat tältä, se ei lainaa itse. Lisää nämä ensin – yksi ääni täyttää monta olentoa.
 - ⭐ = **väliääni**: lainaa itse toiselta ja muut lainaavat siltä.
 - ei merkkiä = **vain lainaa** (esim. Poro). Metsolla ei ole varaääntä lainkaan, joten se ei lainaa eikä lainata.
+- Ulottuvuuksien hirviöt (Aarnihirviö 💎, Jäätär ja Kalmaherra) lainaavat Aarnihirviöltä, kunnes saavat omat äänet. Aarnihirviön äänet ovat siis
+  tärkeimmät: ne täyttävät kolmen pomon puuttuvat äänet (sävelkorkeus muutettu).
 - Merkin perässä oleva luku, esim. 💎 (3) = montako olentoa lainaa tältä (myös ketjun kautta). `lainaavat:` listaa ne; "via X" = lainaa
   ketjun kautta X:n välityksellä (kun X:llä on oma ääni, se lainaa X:ltä).
 '''

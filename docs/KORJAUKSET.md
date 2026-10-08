@@ -253,6 +253,12 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   joka ruudussa ja lerp vetää takaisin → värinä. Mittaa: nivelkulmien suunnanvaihdot ruutujen välillä (> 0,003 rad).
 - **Korjaus:** vasen käsi ulospäin = +z, oikea = −z; seisoessa kädet hieman irti reisistä. Älä aseta käsien lepokohdetta vartalon sisään.
 
+## 34. ConvolverNode heittää virheen kaiun luonnissa (v1.86)
+- **Oire:** `NotSupportedError: The buffer sample rate of 22050 does not match the context rate of 44100 Hz` ensimmäisellä ulottuvuuden äänellä.
+- **Syy:** ConvolverNodeen asetettavan AudioBufferin näytetaajuuden pitää olla sama kuin AudioContextin.
+- **Korjaus:** `a.createBuffer(2, len, a.sampleRate)`. Älä yritä "halpaa" matalaa näytetaajuutta; pidä vastaus lyhyt (1,2 s) ja irrota kaiku kun ei käytössä.
+- Kaiku irrotetaan 3 s kuluttua – mutta EI niin kauan kuin jokin kaiullinen ääni (`v.sd`) vielä soi (muuten kuolema- ja jahtiäänet katkeavat kuivaksi).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

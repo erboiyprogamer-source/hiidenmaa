@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.85)
+## Nykytila (päivitetty v1.86)
 
-- **Versio 1.85**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR: äänierä A (v1.84). Aiempi:
+- **Versio 1.86**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -110,7 +110,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - Käyttäjä etsii äänet netistä (Kenney, Pixabay, Freesound CC0, OpenGameArt), **kuuntelee ne koneellaan** ja korvaa paikkamerkin
   **täsmälleen samalla nimellä** GitHub Desktopilla (commit + push).
 - Claude ajaa käsittelytyökalun `python3 tools/process_sounds.py`: tunnistaa oikeat äänet (yli 3 kt, muoto tiedoston sisällöstä eikä
-  päätteestä) → ffmpeg → `sounds/<nimi>.mp3` (mono, 96 kbps, hiljaisuus pois alusta ja lopusta, loudnorm −16 LUFS). Kirjoittaa
+  päätteestä) → ffmpeg → `sounds/<nimi>.mp3` (mono, 96 kbps; käsittely ks. "Käsittely ja toisto (v1.86)" alla). Kirjoittaa
   `sounds/manifest.json` (nimi → sisältötiiviste, kesto) ja päivittää tilataulukon `sounds/AANILISTA.md`. Raakatiedostoja ei poisteta.
   Jos raaka palautetaan paikkamerkiksi, käsitelty ääni poistuu.
 - **Peli lukee vain käsitellyt äänet** `sounds/`-kansiosta (manifestin kautta, tiiviste osoitteessa → välimuisti ei näytä vanhaa ääntä).
@@ -123,9 +123,29 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   "lainaavat: …" (myös ketjun kautta, "via X").
 - Raakaäänet: lyhyet saa olla wav, pitkät (musiikki, loopit) mp3, alle 25 Mt / tiedosto. **Vaihda ääni vasta kuuntelun jälkeen** –
   git-historia muistaa vanhat versiot (repo kasvaa). Arvio: noin 300 ääntä on ok (repo alle 1 Gt).
-- Nimet: `<id>_<laji>_<n>`, id = MOBDEF-avain (olennot), n = 1–3 (arpoo olemassa olevista, yksi riittää). Lajit: idle, hurt, death,
+- Nimet: `<id>_<laji>_<n>`, id = MOBDEF-avain (olennot), n = 1–3 (arpoo olemassa olevista, yksi riittää; **kuolemaäänelle 1 paikka ulottuvuuksien hirviöillä (rboss) ja 2 muilla**). Lajit: idle, hurt, death,
   aggro = suuttumisääni (ai neutral/hostile/boss/rboss; vihamielisillä ja pomoilla vain kerran), chase = toistuva jahtiääni (hostile/boss/rboss).
 - Jokainen äänierä (A–E, ks. ideajono) tehdään samalla paikkamerkkitavalla ja saa oman osion AANILISTA.md:hen.
+
+**Käsittely ja toisto (v1.86, käyttäjän päätökset):**
+- **Aarnihirviö = pääääni 💎.** Se on isoin varaääni: Jäätär ja Kalmaherra lainaavat siltä (`jaajattari` ×1,20, `kalmaherra` ×0,85) kunnes saavat
+  omat. Hiidenhirvi lainaa taas suoraan hirveltä. "Ulottuvuuksien hirviöt" = `ai:'rboss'` (3 kpl).
+- **Kuolemaäänet:** ulottuvuuksien hirviöillä 1 paikka (`_1`), kaikilla muilla olennoilla 2 (`_1`, `_2`); `variants_of(ai, laji)` työkalussa,
+  ylimääräiset paikkamerkit poistuvat `--init`:llä (oikeaan ääneen ei koskaan kosketa).
+- **Trimmaus (työkalu):** ylipäästö 40 Hz, hiljaisuus (−48 dB) pois alusta ja lopusta, pituus katkaistaan lajin ylärajaan ja häivytetään
+  (6 ms sisään, laji-kohtainen ulos). Rajat (tavallinen / pomo): idle 3 / 4 s, hurt 1,2 / 1,6 s, death 3,5 / 6 s, aggro 2,5 / 3,5 s, chase 2,5 / 4 s.
+- **Voimakkuus (työkalu):** mitataan LUFS ja nostetaan lajin tavoitteeseen: idle −22, hurt −17, death −16, aggro −16, chase −18 (pomot +1,5 dB,
+  boss +1) ja `alimiter` (katto −1 dBFS, ei leikkaa). Samat äänet siis suunnilleen samalla tasolla ja idle hiljaisin. Manifestin `pv` = käsittelyn
+  versio (`PV`): vaihtuessa kaikki ajetaan uudestaan; `gain` = käytetty vahvistus (dB). Anna raaka puhtaana ja kuivana (ei omaa kaikua).
+- **Kaiku (peli):** vain olennoille joilla `m.dun` (luolasto ja ulottuvuudet, tiheitä tiloja). Yksi yhteinen `ConvolverNode` (proseduraalinen
+  vastaus 1,2 s, stereo, alipäästö 3,2 kHz; sama näytetaajuus kuin AudioContextilla, muuten Chrome heittää virheen). Lähetysmäärä: tavallinen
+  0,45, boss 0,6, rboss 0,75. Kaiku kytketään vain kun kaiullinen ääni soi ja irrotetaan 3 s viimeisen jälkeen → maailmassa ei kuormaa. Ei
+  oman tiedoston kaikua → sama ääni toimii sekä ulkona (kuiva) että luolassa.
+- **Toistosäännöt (`creSnd`):** tärkeys kuolema 5 > osuma 4 > suuttuminen 3 > jahti 2 > rauhallinen 1. Yhdellä olennolla soi yksi ääni
+  kerrallaan: tärkeämpi katkaisee (nopea häivytys 30 ms), heikompi jää pois, samanarvoinen vasta 0,35 s jälkeen. Kuolema vaientaa olennon
+  muut äänet. Koko peliin enintään 10 samanaikaista ääntä (`CRE.max`); täyden ollessa uusi syrjäyttää heikoimman (tasatilanteessa kaukaisimman)
+  tai jää pois jos on heikompi kuin kaikki. Rauhallista/jahtiääntä enintään 3 samaa lajia+tyyppiä kerrallaan ja uusi aikaisintaan 0,3 s edellisen
+  jälkeen (ei kuoroa). Sama versio ei toistu heti perään. Äänekkyys: idle ×0,75, chase ×0,9 muut ×1; pomoilla 3D-viite 8 m (muilla 3 m).
 
 ## Pysyvät päätökset
 
@@ -191,9 +211,21 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ### Äänilistan merkinnät (vain työkalu ja dokumentit, ei versionostoa)
 - `tools/process_sounds.py` tuottaa AANILISTA.md:hen roolit varaääniketjusta (`VARAANI`): 💎 = juuri (lainaajia, ei lainaa itse), ⭐ = väli
   (lainaa itse ja muut lainaavat siltä), ei merkkiä = vain lainaa. Luku merkin perässä = kaikki lainaajat ketju mukaan lukien; vasemman
-  sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset: 💎 susi (6), kalmo (5),
-  hirvi (4), karju (2), karhu (1), sammalhiisi (1); ⭐ kalmon ylimys (2), peura, kettu, ilves, hiidenhirvi, kalmanvartija (1 kukin).
+  sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.86): 💎 susi (6), kalmo (3),
+  hirvi (3), aarnihirviö (2), karju (2), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v1.86 (Aarnihirviön äänet pääääneksi, kuolemapaikat 1/2, trimmaus ja voimakkuus, kaiku, toistosäännöt)
+- Käyttäjä lisäsi Aarnihirviön 7 ääntä (aggro 1–2, chase 1–2, death 1, hurt 1, idle 1). **Aarnihirviö on nyt 💎**: Jäätär ja Kalmaherra lainaavat
+  siltä (ei enää Kalmon ylimykseltä). Havainto: `aarnihirvio_idle_1` ja `aarnihirvio_chase_2` ovat sama tiedosto (sama md5) – korvaa toinen eri äänellä.
+- **Kuolemaäänet:** 1 paikka ulottuvuuksien hirviöille, 2 muille (aiemmin 3). 29 ylimääräistä paikkamerkkiä poistettu (`sounds/raw/*_death_3`,
+  `_death_2` rboss). Työkalu, taulukko ja pelin haku mukautettu (creRes toimii mille tahansa versioille 1–3).
+- **Trimmaus ja voimakkuus:** uusi työkalun käsittely (ks. Äänisuunnitelma). Aarnihirviön tulokset: kesto 1,6–6,0 s, äänekkyys −21…−15 LUFS,
+  huiput −1,3…−7,7 dBFS (ei leikkaa), tiedostot 20–73 kt.
+- **Kaiku:** yhteinen ConvolverNode vain `m.dun`-olennoille, kytkeytyy tarvittaessa (ei kuormaa ulkona). **Toistosäännöt:** tärkeys, yksi ääni per
+  olento, 10 äänen raja, ei kuoroa, ei saman version toistoa (ks. Äänisuunnitelma).
+- Testattu selaimessa (oikea AudioContext, autoplay sallittu): ketju (jaajattari ×1,2, kalmaherra ×0,85), tärkeys (osuma katkaisee jahdin, jahti ei
+  osumaa), 1 ääni/olento, kaiun lähetys vain dun-olennoilla, kaiku irtoaa 3 s jälkeen kun mikään kaiullinen ääni ei soi; `tarkistus.mjs` KAIKKI OK.
 
 ### v1.85 (äänet: 3 versiota, suuttumisääni kerran, jahtiääni)
 - **Versiot:** jokaisella äänilajilla paikat `_1`, `_2`, `_3`; peli arpoo vain olemassa olevista (yksi riittää, tyhjät ohitetaan). Varaääniketju
@@ -2077,7 +2109,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
   käyttöliittymä.
 - [ ] **C taustaäänet ja sää:** metsä päivä/yö, Aarnimetsä, luolasto, sade, tuuli, myrsky, tuli.
 - [ ] **D musiikki:** päivä, yö, Aarnimetsä, luolasto, taistelu, pomo, voitto; pehmeä ristiinhäivytys.
-- [ ] **E äänifysiikka:** vaimennus seinän takana (lowpass + losClear), luolan kaiku (ConvolverNode), veden alla vaimea, askeleet
+- [ ] **E äänifysiikka:** vaimennus seinän takana (lowpass + losClear), luolan kaiku (olennoille tehty v1.86; jäljellä pelaajan askeleet ym.), veden alla vaimea, askeleet
   hiljaisempia kyykyssä.
 - Jokainen erä samalla paikkamerkkitavalla ja oma osio AANILISTA.md:hen.
 
