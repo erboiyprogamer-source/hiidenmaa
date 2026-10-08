@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.89)
+## Nykytila (päivitetty v1.90)
 
-- **Versio 1.89**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 1.90**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,33 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.86): 💎 susi (6), kalmo (3),
   hirvi (3), aarnihirviö (2), karju (2), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v1.90 (pomojen 8 s herätys ja 12 s kuolema + maatuminen, ryntäyksen etukeno, jousikalmon miekkaan vaihto)
+- **Jousikalmo:** kun pelaaja tulee alle 3,2 m päähän kesken vedon, kalmo **keskeyttää vedon heti** (`aimT=0`) ja hakkaa miekalla; jousiasento
+  rentoutuu. Uusi veto alkaa vasta yli 3,6 m päässä (ei edestakaista vaihtelua). Testi: veto alkoi, pelaaja tuli viereen → 0 nuolta, 3 miekaniskua.
+- **Bugi korjattu – pomo vilahti näkyviin ennen herätystä:** nukkuva ulottuvuuspomo luodaan heti **näkymättömänä maan alle** (`bossHide`,
+  syvyys `fh`+1,5 m, `m.riseY` = lattia, haavoittumaton). Herätys alkaa vasta kun **pelaaja astuu huoneeseen**: etäisyys < `aggro` **ja näköyhteys**
+  pomon paikalta (`losClear`, seinät estävät) ja korkeusero < 4 m. Pelaajan kuollessa pomo vajoaa piiloon kotipaikalleen ja herää uudelleen.
+- **Herätys 8 s (`BOSS_RISE`, `bossRisePose`):** 0–1,2 s lattia halkeaa (hehkuva rengas + 9 säröä pomon värissä, halkeamasta nousee oikeaa valoa,
+  maa tärisee) · 1,2–5,6 s nousee maan alta pää alhaalla ja kädet sivuilla, multaa varisee maasta ja vartalosta · 5,6–6,6 s pää nousee ja
+  **5,9 s pomo huomaa pelaajan** (`bossWakeRoar`: suuttumisääni, silmät leimahtavat, halkeama välähtää, "X herää!", alkaa kääntyä pelaajaan –
+  ennen sitä se ei seuraa pelaajaa) · 6,6–7,6 s suoristuu ja levittää kätensä, 7,5 s paineaalto, pöly ja jysähdys · 8 s jahti. Sama Kalmanvartijalla.
+- **Kuolema ~12 s + maatuminen ~10 s (`bossDeathAnim`):** kalpenee **heti** noustessaan · kolme **todellista pistevaloa pinoutuu** 0,4 / 1,6 / 2,8 s
+  (kukin 0 → 9 pehmeästi, kiertävät pomon ympäri) ja `BOSS_GLOW` kirkastaa koko huoneen (hemi +1,2 ja amb +0,5 luolassa) · 2,6–5,2 s kädet
+  levälleen, pää taakse · **5,6 s kuolinääni kaiulla** ja ruumis **repeää: vartalo jää keskelle**, muut osat liukuvat 1,8 s:ssa omiin suuntiinsa
+  hieman irti (0,45–0,9 m + koon mukaan), valosäikeet vartalon ja osien välissä; jälkikaiku 0,45 s · saalis ilmestyy leijumaan vartalon korkeudelle ·
+  8,4–9,1 s valo, hehku ja vaaleus katoavat · 8,9 s → **osat putoavat yksitellen** (enintään 0,22 s välein, vartalo viimeisenä), pieni pomppu,
+  pöly · **saalis leijuu ja putoaa nätisti 12,6 s** (`d.hold`, ei poimittavissa leijuessa) · **maatuminen** (yllätys): osat tummuvat mullaksi,
+  painuvat kokoon ja vajoavat; alle kasvaa multakumpu, jolle nousee pomon värissä **hehkuvia sieniä** ja itiöitä leijuu (tulikuolemassa tuhkakasa,
+  hiillos ja savu); kaikki häipyy ~10 s laskeutumisesta. Pomo poistetaan ~21 s kohdalla. Jos pomo poistetaan ennen repeämistä, saalis tulee pelaajan luo.
+- **Valot:** `updateLights` lajittelee nyt ensin etusijan (`pri`) mukaan → pomon valot saavat aina valopaikan, vaikka soihtuja olisi lähempänä
+  (aiemmin kuolemavalo saattoi jäädä kokonaan pois). Herätyksen halkeamavalo `pri:2`, kuolemavalot `pri:4`.
+- **Ryntäys (`bossChargePose`):** kierrosjärjestys **YXZ** → kallistus hahmon omaan eteen (XYZ:llä kallistus tapahtui maailman X-akselin ympäri, joten
+  se näkyi sivukenona). 0–0,6 s kyyristyy, kädet taakse ja **silmät kirkastuvat**; ryntäyksessä etukeno 0,45 rad, polvet koukussa, jalat juoksevat.
+  Asento nollataan myös keskeytyksessä (`bossChargeReset`). Testi: pää 1,1–2,1 m eteenpäin, 0,00 sivulle kaikilla pomoilla kaikissa suunnissa.
+- **Silmät:** `makeHumanoid` palauttaa `f.eyes`; `bossEyes(m,k)` kirkastaa, suurentaa ja lisää hehkupallon (omat materiaalit, ei vaikuta muihin).
+- Testattu pelissä (Kalmaherra, Aarnihirviö, Kalmanvartija ulkona): piilossa 5,9 m maan alla, palkki ei näy ennen huonetta; huomaaminen 5,93 s, aggro 1 kerta;
+  kuoleman kuvasarja; saalis 3,7 m ilmassa leijumassa ja maassa lopuksi; ei jääneitä valoja. `tarkistus.mjs` KAIKKI OK (5 uutta/päivitettyä riviä).
 
 ### v1.89 (jousikalmon kädet ja miekka, pomojen herätys- ja kuolema-animaatiot)
 - **Jousikalmo:** jousi on nyt **vasemmassa** kädessä ja **miekka oikeassa**, täsmälleen kuten pelaajalla (`state.js`: `cat==='bow'` → `fig.handL`).

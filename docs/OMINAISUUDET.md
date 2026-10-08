@@ -371,6 +371,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Alle 30 %: hehkuu punaisena, vain ryntäyksiä 1,5 s välein, 5 kalmoa 20 s välein.
 - Kalmankammion kalmoista 10 % on jousikalmoja: ampuvat 3–20 m päästä 2,5 s välein, pitävät etäisyyttä, pudottavat joskus nuolia.
   v1.89: jousi vasemmassa kädessä ja miekka oikeassa kuten pelaajalla; alle 2,4 m lyö miekalla, kauempana ampuu. Veto 1,9 s.
+  v1.90: alle 3,2 m päässä veto keskeytyy heti ja kalmo vaihtaa miekkaan; uusi veto vasta yli 3,6 m päässä.
   v1.88: veto 0,9 s, tähtäys seuraa pelaajaa viiveellä (~0,25 s) ja kalmo kääntyy hitaasti (1 rad/s); nuoli lähtee jousen suuntaan vapautushetkellä (2° hajonta, 32 m/s,
   painovoima 7, ei ennakointia) → sivulle väistävä jää nuolen ohi. Jousi pelaajan asennossa (kahva edessä, jänne poskella, nuoli jänteellä).
 - Ensimmäinen käynti ulottuvuudessa: iso animoitu otsikko ja tavoite; myöhemmin sivuviesti.
@@ -480,11 +481,13 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   1 paikka ulottuvuuksien hirviöillä (rboss) ja 2 muilla.
 - Toisto: tärkeys kuolema > osuma > suuttuminen > jahti > rauhallinen; olennolla soi yksi ääni kerrallaan (tärkeämpi katkaisee); enintään 10
   ääntä kerrallaan (heikoin syrjäytyy); rauhallisia/jahtiääniä samaa lajia enintään 3 ja 0,3 s väli; sama versio ei heti uudestaan.
-- Pomon herätys (kaikki pomot): nousee maasta 5 s pää alhaalla ja kädet sivuilla, on haavoittumaton nousun ajan, terveyspalkki näkyy heti ja
-  suuttumisääni kuuluu vasta kun pomo on pystyssä ja huomannut pelaajan.
-- Pomon kuolema (kaikki pomot, 9,4 s): kohoaa irti maasta 3 s → kalpenee valkoiseksi → sokaiseva valo valaisee huoneen → kuolinääni kaiulla ja
-  ruumis hajoaa osiin ilmassa → osat putoavat painovoimalla (valo katoaa ennen maahantuloa) → osat maatuvat kuten muutkin ruumiit. Tulikuolemassa
-  osat tummuvat tuhkaksi ja kipinöivät.
+- Pomon herätys (kaikki pomot, 8 s): nukkuva ulottuvuuspomo odottaa näkymättömänä maan alla ja herää vasta kun pelaaja astuu huoneeseen
+  (etäisyys + näköyhteys). Lattia halkeaa hehkuen, pomo nousee pää alhaalla ja kädet sivuilla, nostaa päänsä ja huomaa pelaajan (5,9 s: silmät
+  leimahtavat, suuttumisääni), suoristuu ja lyö paineaallon. Haavoittumaton koko ajan, terveyspalkki näkyy heti.
+- Pomon kuolema (kaikki pomot, ~12 s + maatuminen ~10 s): kalpenee heti noustessaan, kolme todellista valoa pinoutuu ja huone kirkastuu pehmeästi,
+  kädet levälleen, kuolinääni kaiulla ja ruumis repeää (vartalo keskellä, osat irti omiin suuntiinsa valosäikein), valo katoaa, osat putoavat
+  yksitellen. Saalis leijuu ilmassa ja putoaa nätisti 12,6 s. Osat maatuvat multakummuiksi, joille nousee hehkuvia sieniä (tulikuolemassa tuhkaa).
+- Pomon ryntäys: kyyristyy ja silmät kirkastuvat 0,6 s, sitten etukenossa polvet koukussa.
 - Palava pomo (boss/rboss): hurt-ääni silmukkana 1,4–2,2 s välein, sävel ×0,78 ja voimakkuus ×0,55, tärkeys 1,5 (jahti katkaisee). Muut olennot eivät ähki palaessaan.
 - Kaikuääni (echo, ulottuvuuspomot, 1–2 versiota): nukkuva pomo kuuluu 24–48 s välein vain omassa ulottuvuudessaan (≤38 m päästä, tumma, kaiulla) kunnes pelaaja kohtaa sen. Aarnihirviön kaikuäänet ovat kaikkien varaääni.
 - Kaiku: luolaston ja ulottuvuuksien olennoille (lähetys 0,45 / boss 0,6 / rboss 0,75), yksi yhteinen ConvolverNode (1,2 s), kytkeytyy vain tarvittaessa.

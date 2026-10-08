@@ -135,12 +135,14 @@ function updateDrops(dt){
       if(d.lost>VAL_LOST||m.position.y<-20){removeDrop(d);relocateValuable(d.id,d.n,d.q);continue;}}
     if((d.dim||'world')!==dim)continue;d.t+=dt;
     if(!val){if(d.t>DROP_LIFE){removeDrop(d);continue;}m.visible=d.t<DROP_LIFE-15||((d.t*5)|0)%2===0;}
-    if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=dropGround(m.position.x,m.position.z,m.position.y)+(m.userData.ico?.38:.25);if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
+    if(d.hold>0){d.hold-=dt;m.position.x+=d.vx*dt;m.position.z+=d.vz*dt;const fr=Math.max(0,1-dt*1.6);d.vx*=fr;d.vz*=fr;   // v1.90: pomon saalis leijuu ja putoaa sitten nätisti
+      m.position.y=(d.hy??m.position.y)+Math.sin(d.t*2.4+(d.ph||0))*.08;m.rotation.y+=dt*1.2;if(d.hold<=0){d.vy=.8;d.vx*=.3;d.vz*=.3;}}
+    else if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=dropGround(m.position.x,m.position.z,m.position.y)+(m.userData.ico?.38:.25);if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
     else{m.position.y=d.baseY+.12+Math.sin(d.t*3)*.06;m.rotation.y+=dt*1.5;}
     if(d.light){d.light.x=m.position.x;d.light.y=m.position.y+.4;d.light.z=m.position.z;d.light.i=.75+Math.sin(d.t*3.2)*.25;}
     if(d.halo){d.halo.material.opacity=.2+Math.sin(d.t*3.2)*.1;if(Math.random()<dt*5&&typeof emitEmber==='function')emitEmber(m.position.x+(Math.random()-.5)*.5,m.position.y+.1,m.position.z+(Math.random()-.5)*.5,'spark');}
     if(d.noPick&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))>2.5*2.5)d.noPick=false;   // v1.31: itse pudotettu poimitaan vasta, kun on käyty kauempana
-    if(d.t>.5&&!d.noPick&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');}else if(dropFullT<=0){dropFullT=4;msg('Reppu on täynnä – et voi poimia.','warn');}d.n=left;if(left<=0){removeDrop(d);continue;}}
+    if(d.t>.5&&!(d.hold>0)&&!d.noPick&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');}else if(dropFullT<=0){dropFullT=4;msg('Reppu on täynnä – et voi poimia.','warn');}d.n=left;if(left<=0){removeDrop(d);continue;}}
     if(m.position.y<-20)removeDrop(d);
   }
 }

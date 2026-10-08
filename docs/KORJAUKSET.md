@@ -265,6 +265,15 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - **Korjaus:** uudet `const`-apumuuttujat funktion alkuun, ennen ensimmäistä käyttöä. Tarkista aina `node --check` JA kertaalleen ajamalla.
 - **Muista myös (KORJAUKSET 18):** rivin keskelle lisätty `//`-kommentti syö loppurivin – käytä `/* */`, kun rivi jatkuu.
 
+## 36. Pomo vilahti näkyviin ennen herätystä / kuolemavalo jäi näkymättä / ryntäys sivukenossa (v1.90)
+- **Vilahdus:** nukkuva pomo seisoi lattialla näkyvänä ja vajosi vasta herätyksen alussa. **Korjaus:** `bossHide` heti luonnissa (näkymätön,
+  maan alla, `m.sinking=1`, `m.riseY` = lattia); herätys alkaa vasta näköyhteydestä. Älä palauta `f.g.position.copy(m.pos)` nukkuvalle pomolle.
+- **Valo:** `updateLights` antaa vain `SET.lights` lähintä valoa; luolassa soihdut veivät paikat. **Korjaus:** `pri`-kenttä lajitellaan ensin.
+  Valon kirkkaus seuraa `s.i`:tä vain jos aloitusarvo > 0 (`userData.base`), siksi `i` alkaa 0,05:stä.
+- **Sivukeno:** `f.g.rotation.x` oletusjärjestyksellä XYZ kallistaa maailman X-akselin ympäri (näkyy sivukenona suunnasta riippuen).
+  **Korjaus:** `rotation.order='YXZ'` ennen kallistusta (kuten harppovilla hirviöillä animMobissa).
+- **Testin sudenkuoppa:** `page.evaluate` ja `tools/tarkistus.mjs`: nuolifunktion runko ilman aaltosulkeita ei saa päättyä `;` ennen `)` (SyntaxError).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

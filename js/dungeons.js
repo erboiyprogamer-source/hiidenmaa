@@ -275,7 +275,7 @@ function exitRealm(){fadeTo(()=>{for(const f of FIRELINES)f.t=0;
   for(const m of [...mobs])if(m.dun){if(m.def.ai==='rboss'&&!m.dead)delete fo('rbHp')[m.realm];mobRemove(m);}});}// v1.33 (kohta 7): poistuminen parantaa pomon täyteen
 function spawnRealmMobs(id){const R=BUILT[id],dk=fo('rm')[id]||(fo('rm')[id]={});
   R.mobs.forEach((s,i)=>{if(dk[i])return;const m=realmize(spawnMob(s.type,s.x,s.z,{y:DUN.y,dun:true}),id);m.rmIdx=i;});
-  if(!fo('rb')[id]){const b=spawnMob(REALMS[id].boss,R.boss.x,R.boss.z,{y:DUN.y,dun:true});b.realm=id;b.rmIdx='B';b.state='sleep';const hp=fo('rbHp')[id];if(hp)b.hp=Math.min(b.maxHp,hp);}}
+  if(!fo('rb')[id]){const b=spawnMob(REALMS[id].boss,R.boss.x,R.boss.z,{y:DUN.y,dun:true});b.realm=id;b.rmIdx='B';b.state='sleep';bossHide(b,(b.def.fh||4)+1.5);const hp=fo('rbHp')[id];if(hp)b.hp=Math.min(b.maxHp,hp);}}
 // Kutsutaan, kun mobi kuolee: tallentaa vartijoiden, sisätilojen vihollisten ja pomojen kaatumisen.
 function onMobKilled(m){
   if(m.siteK)fo('gk')[m.siteK+':'+m.gi]=1;
@@ -349,21 +349,25 @@ function bossFinalGlow(m){m.f.g.traverse(o=>{if(o.isMesh&&o.material&&o.material
 function realmBossAI(m,dt,dx,dz,dist){
   const d=m.def,f=m.f;
   if(f.sway)for(const w of f.sway){w.m.rotation.z=w.bz+Math.sin(playTime*w.f+w.p)*w.a;w.m.rotation.x=w.bxr+Math.cos(playTime*w.f*.8+w.p)*w.a*.6;}
-  if(m.state==='sleep'){if(!P.dead&&dist<d.aggro&&(P.spawnProt||0)<=0){m.state='rise';m.t=0;m.sinking=1;m.riseY=m.pos.y;sfx('slam',.5,.5);shake(.3);}f.g.position.copy(m.pos);return;}
-  // v1.89: 5 s herätys – nousee lattiasta pää alhaalla ja kädet sivuilla, haavoittumaton; terveyspalkki näkyy heti, suuttumisääni vasta pystyssä
-  if(m.state==='rise'||m.state==='intro'){m.t+=dt;m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*1.5));
-    if(bossRisePose(m,dt,m.riseY??m.pos.y,(d.fh||4)+1.5))return;
-    m.pos.y=m.riseY??m.pos.y;m.sinking=0;m.state='chase';m.phase=1;m.t=0;bossWakeRoar(m);msg(`${d.n} herää!`,'warn');return;}
+  if(m.chPose&&!(m.act&&m.act.k==='charge'))bossChargeReset(m);   // v1.90: keskeytynyt ryntäys ei jätä etukenoa
+  /* v1.90: nukkuva pomo odottaa NÄKYMÄTTÖMÄNÄ maan alla (bossHide) eikä vilahda näkyviin. Herää vasta kun pelaaja astuu huoneeseen:
+     etäisyys + näköyhteys pomon paikalta (seinät estävät). 8 s herätys (effects.js bossRisePose); pomo huomaa pelaajan nostaessaan päänsä. */
+  if(m.state==='sleep'){const gy=m.riseY??DUN.y;f.g.visible=false;m.sinking=1;
+    if(!P.dead&&dist<d.aggro&&(P.spawnProt||0)<=0&&Math.abs(P.pos.y-gy)<4&&losClear(m.pos.x,gy+1.6,m.pos.z,P.pos.x,P.pos.y+1.5,P.pos.z,true)){m.state='rise';m.t=0;m.woke=0;sfx('slam',.45,.6);}
+    return;}
+  if(m.state==='rise'||m.state==='intro'){m.t+=dt;if(m.t>5.9)m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*3));   // nukkuu kunnes nostaa päänsä
+    if(bossRisePose(m,dt,m.riseY??DUN.y,(d.fh||4)+1.5))return;
+    m.pos.y=m.riseY??DUN.y;m.sinking=0;m.state='chase';m.phase=1;m.t=0;bossWakeRoar(m);return;}
   const ph=m.hp>m.maxHp*.66?1:m.hp>m.maxHp*.33?2:3;
   if(ph>(m.phase||1)){m.phase=ph;m.act=null;sfx('roar');shake(.6);shockwave(m.pos.x,m.pos.y,m.pos.z,10,REALMS[m.realm].glow);msg(`${d.n} raivostuu!`,'warn');if(d.sum.includes(ph))summonMinions(m,ph===2?2:3);}
-  if(P.dead){moveMob(m,m.home.x-m.pos.x,m.home.z-m.pos.z,d.walk,dt);m.state='sleep';animMob(m,dt);return;}// v0.75: ei parane
+  if(P.dead){m.state='sleep';m.woke=0;m.act=null;bossChargeReset(m);m.pos.x=m.home.x;m.pos.z=m.home.z;bossHide(m,(d.fh||4)+1.5);return;}// v0.75: ei parane; v1.90: vajoaa piiloon kotipaikalleen ja herää uudelleen kun pelaaja palaa
   const sp=ph===3?1.25:ph===2?1.1:1,pr=P.spawnProt>0;
   const slow=d.kit.includes('throw')?BOSS_SLOW:1;   // v0.89: kiviä heittävä ulottuvuuspomo +10 % viive
   if(d.fireLine&&m.hp<=m.maxHp*.5&&!m.fin)m.flT=(m.flT??4)-dt;   // tulilinjan ajastin kulkee myös hyökkäysten aikana
   if(m.act){const a=m.act;a.t+=dt/slow;
     if(a.k==='swipe'){f.armR.rotation.x=a.t<.8?-2.6*a.t/.8:lerp(-2.6,-.2,Math.min(1,(a.t-.8)/.2));if(a.t>=.8&&!a.hit){a.hit=1;sfx('swing');if(dist<d.range+.8&&(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1)>.1)hurtPlayer(d.dmg,m.pos.x,m.pos.z);}if(a.t>1.4)m.act=null;}
     else if(a.k==='slam'){slamArms(f,a.t,1.1);if(a.t>=1.1&&!a.hit){a.hit=1;sfx('slam');shake(.6);const fx=m.pos.x+Math.sin(m.yaw)*2.5,fz=m.pos.z+Math.cos(m.yaw)*2.5;shockwave(fx,m.pos.y,fz,7,REALMS[m.realm].glow);burst(fx,m.pos.y+.3,fz,REALMS[m.realm].wall,16,7);if(dist2(fx,fz,P.pos.x,P.pos.z)<49&&P.pos.y-m.pos.y<1.5)hurtPlayer(d.dmg*1.2,fx,fz);}if(a.t>1.9)m.act=null;}
-    else if(a.k==='charge'){if(a.t<.6){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*6);f.g.rotation.x=-.2;}else{moveMob(m,Math.sin(m.yaw),Math.cos(m.yaw),14*sp,dt);if(!a.hit&&dist<2.8){a.hit=1;hurtPlayer(d.dmg*1.1,m.pos.x,m.pos.z);P.vel.x+=Math.sin(m.yaw)*10;P.vel.z+=Math.cos(m.yaw)*10;}}if(a.t>1.6){m.act=null;f.g.rotation.x=0;}}
+    else if(a.k==='charge'){bossChargePose(m,a);if(a.t<.6){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*6);}else{moveMob(m,Math.sin(m.yaw),Math.cos(m.yaw),14*sp,dt);if(!a.hit&&dist<2.8){a.hit=1;hurtPlayer(d.dmg*1.1,m.pos.x,m.pos.z);P.vel.x+=Math.sin(m.yaw)*10;P.vel.z+=Math.cos(m.yaw)*10;}}if(a.t>1.6){m.act=null;bossChargeReset(m);}}
     else if(a.k==='throw'){f.armR.rotation.x=-2.8*Math.min(1,a.t/.8);if(a.t>=.8&&!a.hit){a.hit=1;const hp=new V3();f.hand.getWorldPosition(hp);throwRock(hp,new V3(P.pos.x+P.vel.x*.6,P.pos.y,P.pos.z+P.vel.z*.6),22);}if(a.t>1.3)m.act=null;}
     else if(a.k==='nova'){f.armR.rotation.x=f.armL.rotation.x=-2.9*Math.min(1,a.t/1.2);if(a.t>=1.2&&!a.hit){a.hit=1;sfx('slam');shake(.7);shockwave(m.pos.x,m.pos.y,m.pos.z,11,REALMS[m.realm].glow);burst(m.pos.x,m.pos.y+.4,m.pos.z,REALMS[m.realm].glow,22,8);if(dist<11&&P.pos.y-m.pos.y<.9)hurtPlayer(d.dmg*1.1,m.pos.x,m.pos.z);}if(a.t>1.8)m.act=null;}
     else if(a.k==='fireline'){const st=a.t%1.05;f.armR.rotation.x=f.armL.rotation.x=st<.7?-2.8*st/.7:lerp(-2.8,-.3,Math.min(1,(st-.7)/.15));if(st<.7)m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*5);

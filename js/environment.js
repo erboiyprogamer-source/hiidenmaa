@@ -100,7 +100,7 @@ function updateEnvironment(dt){
   // joten valon suunta vaihtuu vasta kun voimakkuus on nolla.
   const light=sstep(-.4,.45,el);lightK=light;const sunK=sstep(-.12,.08,el),moonK=sstep(-.12,-.32,el);
   const sd=_tmpV.set(Math.sin(ang)*.9,el,.35).normalize();
-  if(P.inDun){const rf=P.realm?REALMS[P.realm].fog:0x050403;scene.background.setHex(rf);scene.fog.color.setHex(rf);scene.fog.near=3;scene.fog.far=28;hemi.intensity=.06;sun.intensity=0;amb.intensity=.05;stars.visible=false;sunDisc.visible=false;moon.visible=false;rain.visible=false;snow.visible=false;water.visible=false;return;}
+  if(P.inDun){const rf=P.realm?REALMS[P.realm].fog:0x050403;scene.background.setHex(rf);scene.fog.color.setHex(rf);scene.fog.near=3;scene.fog.far=28;hemi.intensity=.06+BOSS_GLOW*1.2;sun.intensity=0;amb.intensity=.05+BOSS_GLOW*.5;stars.visible=false;sunDisc.visible=false;moon.visible=false;rain.visible=false;snow.visible=false;water.visible=false;return;}
   water.visible=true;stars.visible=true;
   // Aarnimetsässä tiheä sumu ja hämärä valo.
   aarniK=lerp(aarniK,biomeHere(P.pos.x,P.pos.z)==='aarni'?1:0,Math.min(1,dt*.8));
@@ -117,7 +117,7 @@ function updateEnvironment(dt){
   sun.intensity=sun.intensity*(1-.45*aarniK)*(1-.7*indoorK)+flash*.45*(1-indoorK);
   sun.target.position.copy(P.pos);
   if(SET.shUltra==='wide'){const o=160*.45,fx=-Math.sin(camYaw)*o,fz=-Math.cos(camYaw)*o;sun.target.position.x+=fx;sun.target.position.z+=fz;sun.position.x+=fx;sun.position.z+=fz;}   // v1.76: laaja alue sovitetaan näkymän suuntaan
-  hemi.intensity=((.07+.2*light*(1-wDark*.4))*(1-.45*aarniK)+flash*.55)*(1-.6*indoorK);amb.intensity=(.03+.025*light+flash*.22)*(1-.5*indoorK);
+  hemi.intensity=((.07+.2*light*(1-wDark*.4))*(1-.45*aarniK)+flash*.55)*(1-.6*indoorK)+BOSS_GLOW*.8;amb.intensity=(.03+.025*light+flash*.22)*(1-.5*indoorK)+BOSS_GLOW*.3;
   hemi.color.setHex(light>.3?0xcfe4ff:0x6a7fa8);hemi.color.lerp(cIndoor,indoorK);
   stars.material.opacity=(1-light)*(1-wDark);stars.position.copy(camera.position);
   sunDisc.position.set(camera.position.x+sd.x*380,camera.position.y+sd.y*380,camera.position.z+sd.z*380);sunDisc.visible=el>-.1&&wDark<.3;
@@ -165,7 +165,7 @@ function updateRain(dt){const a=rain.geometry.attributes.position.array,sp=26*(w
   precipTint(rain.geometry,a,6,.67,.77,.85);   // v1.41: sade yöllä hyvin tumma, valot värjäävät
   rainInit=true;rain.geometry.attributes.position.needsUpdate=true;}
 function updateLights(){
-  const src=lightSources.filter(s=>s.on()&&(!!s.dun===P.inDun)).sort((a,b)=>dist2(a.x,a.z,P.pos.x,P.pos.z)-dist2(b.x,b.z,P.pos.x,P.pos.z));
+  const src=lightSources.filter(s=>s.on()&&(!!s.dun===P.inDun)).sort((a,b)=>((b.pri||0)-(a.pri||0))||dist2(a.x,a.z,P.pos.x,P.pos.z)-dist2(b.x,b.z,P.pos.x,P.pos.z));   // v1.90: etusija (pri) ensin – pomon valot saavat aina valopaikan
   const nL=Math.min(LIGHTS.length,+SET.lights||6);
   for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=i<nL?src[i]:null;if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){if(i===0&&(l.position.x!==s.x||l.position.z!==s.z))l.shadow.needsUpdate=true;l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;l.userData.src=s;}else{l.intensity=0;l.userData.base=0;l.userData.src=null;}}
 }

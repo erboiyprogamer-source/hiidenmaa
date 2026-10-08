@@ -172,23 +172,34 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     return a&&a.names[0]==='aarnihirvio_echo_1'&&Math.abs(a.p-1.2)<1e-9&&b===null&&c===null&&CRE_ECHO.join()==='rboss'&&/echo/.test(creTick.toString())&&/'sleep'/.test(creTick.toString())&&typeof creEchoPos==='function'||'virhe';});
   t('v1.89 jousikalmo: jousi vasemmassa kädessä ja miekka oikeassa (kuten pelaajalla), veto 1,9 s',()=>{const m=spawnMob('kalmo',P.pos.x+18,P.pos.z+18);makeArcher(m);
     const ok=m.f.handL.children.includes(m.bow)&&m.f.hand.children.includes(m.sword)&&ARCH_DRAW>1.85&&/bowAimFig/.test(archerPose.toString());mobRemove(m);return ok||'virhe';});
-  t('v1.89 pomon herätys 5 s: nousee maasta pää alhaalla ja kädet sivuilla, haavoittumaton, suoristuu lopuksi',()=>{const m=spawnMob('vartija',P.pos.x+22,P.pos.z+22);
-    m.state='rise';m.t=0;m.sinking=1;const g=terrainH(m.pos.x,m.pos.z);let ok=true;
-    for(let i=0;i<60;i++){m.t+=1/30;bossRisePose(m,1/30,g,7.5);}
-    if(!(m.pos.y<g-.5))ok='ei nouse maasta';else if(!(m.f.head.rotation.x>.5))ok='pää ei ole alhaalla';
+  t('v1.89–90 pomon herätys 8 s: piilossa maan alla, nousee pää alhaalla, huomaa pelaajan pään noustessa (5,9 s), haavoittumaton, suoristuu',()=>{const m=spawnMob('vartija',P.pos.x+22,P.pos.z+22);
+    m.state='rise';m.t=0;m.sinking=1;const g=terrainH(m.pos.x,m.pos.z);let ok=true;const oc=window.creSnd;let roar=0;window.creSnd=(mm,k)=>{if(mm===m&&k==='aggro')roar++;return oc(mm,k);};
+    for(let i=0;i<30*3;i++){m.t+=1/30;bossRisePose(m,1/30,g,7.5);}
+    if(!(m.pos.y<g-.5))ok='ei nouse maasta';else if(!(m.f.head.rotation.x>.5))ok='pää ei ole alhaalla';else if(m.woke)ok='huomasi liian aikaisin';
     const hp=m.hp;damageMob(m,100,'blunt',0,1);if(m.hp!==hp)ok='ei haavoittumaton';
+    for(let i=0;i<30*3.2;i++){m.t+=1/30;bossRisePose(m,1/30,g,7.5);}if(ok===true&&(!m.woke||roar>1))ok='ei huomannut pään noustessa';
     m.t=BOSS_RISE;if(bossRisePose(m,1/30,g,7.5))ok='nousu ei pääty';else if(Math.abs(m.f.head.rotation.x)>.02)ok='pää ei nouse lopuksi';
-    if(BOSS_RISE!==5)ok='kesto ei 5 s';mobRemove(m);return ok;});
-  t('v1.89 pomon kuolema: kohoaa, kalpenee, kirkas valo, hajoaa osiin ilmassa ja osat putoavat; valo ja osat siivotaan',()=>{const m=spawnMob('vartija',P.pos.x+26,P.pos.z+26);
-    m.dead=true;m.deadT=0;let ok=true,lmax=0;
-    for(let i=0;i<Math.floor(30*6);i++){m.deadT+=1/30;mobDeathAnim(m,1/30);if(m.da&&m.da.light)lmax=Math.max(lmax,m.da.light.i);}
-    if(!m.da||!m.da.parts||m.da.parts.length<3)ok='ruumis ei hajonnut osiin';
-    else if(!(lmax>5))ok='ei kirkasta valoa';
-    else if(m.da.parts[0].o.parent!==scene)ok='osat eivät irronneet';
-    else if(!(m.da.parts.some(q=>!q.rest)))ok='osat eivät putoa';
-    m.deadT=DEATH_END+.1;if(!mobDeathAnim(m,1/30))ok='animaatio ei pääty';
-    if(lightSources.some(s=>s.c===0xfff0cf))ok='valo jäi jäljelle';
-    mobRemove(m);return ok;});
+    if(m.rz||lightSources.some(s=>s.pri===2))ok='halkeama/valo jäi';if(BOSS_RISE!==8)ok='kesto ei 8 s';window.creSnd=oc;mobRemove(m);return ok;});
+  t('v1.90 nukkuva ulottuvuuspomo piilossa maan alla eikä näy ennen herätystä',()=>{ensureRealm('portal1');const was=[P.inDun,P.realm];
+    const b=spawnMob('jaajattari',0,0,{y:DUN.y,dun:true});b.realm='portal1';b.state='sleep';bossHide(b,(b.def.fh||4)+1.5);
+    const ok=!b.f.g.visible&&b.pos.y<DUN.y-3&&b.sinking===1&&b.riseY===DUN.y;mobRemove(b);return ok||'virhe';});
+  t('v1.90 pomon kuolema ~12 s: kalpenee heti, 3 pinoutuvaa etusijavaloa + huoneen kirkastus, repeää (vartalo keskellä), osat putoavat yksitellen, saalis leijuu, maatuu',()=>{
+    const m=spawnMob('vartija',P.pos.x+26,P.pos.z+26);m.bossLoot=[['rauta',2]];m.dead=true;m.deadT=0;let ok=true,lmax=0,gmax=0,paleAt1=0,nl=0;const d0=drops.length;
+    const st=()=>{m.deadT+=1/30;return mobDeathAnim(m,1/30);};
+    for(let i=0;i<30;i++)st();paleAt1=m.mats[0].emissive.r;
+    for(let i=0;i<30*5.2;i++){st();if(m.da.lights)nl=Math.max(nl,m.da.lights.length);let s=0;for(const L of m.da.lights)s+=L.i;lmax=Math.max(lmax,s);gmax=Math.max(gmax,BOSS_GLOW);}
+    const D=m.da;if(!(paleAt1>.05))ok='ei kalpene heti';else if(nl<3||!(lmax>20)||!(gmax>.9))ok='valot eivät pinoudu';else if(!D.parts||D.parts.length<3)ok='ei repeä osiin';
+    else{const T=D.parts.find(q=>q.tor),o=D.parts.find(q=>!q.tor);if(!T||T.off.length()>0||!(o.off.length()>.3))ok='vartalo ei keskellä / osat eivät irtoa';}
+    const ld=drops.slice(d0).find(d=>d.id==='rauta');if(ok===true&&(!ld||!(ld.hold>2)))ok='saalis ei leiju';
+    for(let i=0;i<30*4;i++)st();if(ok===true&&(D.lights.length||BOSS_GLOW>0))ok='valo ei katoa';
+    if(ok===true&&!(D.landed>0&&D.landed<D.parts.length+1))ok='osat eivät putoa yksitellen';
+    let done=false;for(let i=0;i<30*30&&!done;i++)done=st();if(ok===true&&!done)ok='ei pääty';
+    if(ok===true&&!(m.deadT>18))ok='maatuminen liian lyhyt';if(lightSources.some(s=>s.pri===4)||BOSS_GLOW)ok='valo jäi';
+    if(ld)removeDrop(ld);mobRemove(m);return ok;});
+  t('v1.90 pomon ryntäys: etukeno YXZ-järjestyksellä (ei sivukenoa), polvet koukussa, silmät kirkastuvat ennen ryntäystä, nollaus',()=>{const m=spawnMob('vartija',P.pos.x+30,P.pos.z+30);
+    const a={k:'charge',t:.4};bossChargePose(m,a);const e0=m.f.eyes[0].scale.x/m.eyeB[0].s.x;a.t=1;bossChargePose(m,a);
+    const ok=m.f.g.rotation.order==='YXZ'&&m.f.g.rotation.x>.35&&m.f.kneeL.rotation.x>.3&&e0>1.3;bossChargeReset(m);const r=m.f.g.rotation.x===0&&!m.chPose&&m.f.eyes[0].scale.x===m.eyeB[0].s.x;mobRemove(m);return ok&&r||'virhe';});
+  t('v1.90 jousikalmo keskeyttää vedon ja vaihtaa miekkaan, kun pelaaja tulee ihan lähelle',()=>/dist<=3\.2&&m\.aimT>0\)\{m\.aimT=0/.test(updateMobs.toString())||'puuttuu');
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua
