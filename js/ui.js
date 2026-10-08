@@ -91,11 +91,15 @@ let panelOpenedAt=0;
 // Viimeiset 10 ilmoitusta (L, v1.18; ennen T): uusin ylimpänä, kellonaika pelin ajassa.
 // DEV-valikko (Ä): sää, kellonaika, terveys ja kylläisyys – muutokset heti. Sää pysyy valittuna 10 min.
 function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=dayT*24;return `${Math.floor(h)}:${String(Math.floor(h%1*60)).padStart(2,'0')}`;};
-  B.innerHTML=`<div class="devRow"><b>Sää</b><div class="devBtns">${Object.entries(WEATHERS).map(([k,w])=>`<button class="btn${weather.cur===k?' on':''}" data-w="${k}">${w.n}</button>`).join('')}</div></div>
+  const big=[['god','Kuolemattomuus','Ei kuole eikä ota vahinkoa'],['fly','Lento','V pohjassa 6× nopeampi'],['noclip','Seinien läpi','Seinät ja esineet eivät estä'],
+    ['lockTW','Lukitse aika ja sää','Kello ja sää pysyvät'],['freeze','Pysäytä maailma','Olennot, ammukset, aika ja nälkä seis']];
+  B.innerHTML=`<div class="devBig">${big.map(([k,n,d])=>`<button class="btn devBigB${DEVF[k]?' on':''}" data-big="${k}"><b>${n}</b><span>${DEVF[k]?'PÄÄLLÄ':'pois'} · ${d}</span></button>`).join('')}
+    <button class="btn devBigB act" data-heal="1"><b>Terveys täyteen</b><span>Terveys, kestävyys ja kylläisyys täyteen, palaminen pois</span></button></div>
+  <div class="devRow"><b>Sää</b><div class="devBtns">${Object.entries(WEATHERS).map(([k,w])=>`<button class="btn${weather.cur===k?' on':''}" data-w="${k}">${w.n}</button>`).join('')}</div></div>
   <div class="devRow"><b>Aika <span id="devClk">${clk()}</span></b>${sldHTML('devT',0,1,.005,dayT)}<div class="devBtns">${[['Aamu',.28],['Päivä',.5],['Ilta',.74],['Yö',.95]].map(([n,v])=>`<button class="btn" data-t="${v}">${n}</button>`).join('')}</div></div>
   <div class="devRow"><b>Terveys <span id="devHpV">${Math.round(P.hp)} / ${maxHp()}</span></b>${sldHTML('devHp',1,maxHp(),1,Math.round(P.hp))}</div>
   <div class="devRow"><b>Kylläisyys <span id="devHuV">${Math.round(P.hunger)}</span></b>${sldHTML('devHu',0,100,1,Math.round(P.hunger))}</div>
-  <div class="devRow"><b>Jumalvoimat</b><div class="devChk">${[['god','Ei voi kuolla'],['food','Ei nälkää'],['stam','Rajaton kestävyys'],['lvl','Korkein taso'],['weight','Ei painorajaa'],['fly','Lento (tuplahyppy)']].map(([k,n])=>`<label class="tglRow">${tglHTML('dv_'+k,!!DEVF[k],`data-dv="${k}"`)} ${n}</label>`).join('')}</div>
+  <div class="devRow"><b>Jumalvoimat</b><div class="devChk">${[['food','Ei nälkää'],['stam','Rajaton kestävyys'],['lvl','Korkein taso'],['weight','Ei painorajaa']].map(([k,n])=>`<label class="tglRow">${tglHTML('dv_'+k,!!DEVF[k],`data-dv="${k}"`)} ${n}</label>`).join('')}</div>
     <div class="devBtns"><button class="btn" data-dvall="1">Kaikki päälle</button><button class="btn" data-dvall="0">Kaikki pois</button></div></div>
   <div class="devRow"><b>Hae esine (DEV)</b><div class="devGive"><input id="devQ" class="search" type="search" placeholder="Hae esinettä nimellä…" autocomplete="off" spellcheck="false" value="${esc(devQ)}">
     <input id="devN" type="text" inputmode="numeric" maxlength="3" placeholder="1" value="${devN>1?devN:''}" title="Määrä (tyhjä = 1)"><button class="btn" id="devGo">Hae</button></div><div id="devList" class="devList"></div></div>
@@ -106,7 +110,11 @@ function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=d
   bindSld('devHp',v=>{P.hp=v;$('#devHpV').textContent=`${P.hp} / ${maxHp()}`;});
   bindSld('devHu',v=>{P.hunger=v;$('#devHuV').textContent=P.hunger;});
   B.querySelectorAll('[data-dv]').forEach(c=>c.onclick=()=>{DEVF[c.dataset.dv]=DEVF[c.dataset.dv]?0:1;saveDevF();invDirty=true;renderDev();});
-  B.querySelectorAll('[data-dvall]').forEach(b=>b.onclick=()=>{for(const k in DEVF)DEVF[k]=+b.dataset.dvall;saveDevF();invDirty=true;renderDev();});
+  B.querySelectorAll('[data-dvall]').forEach(b=>b.onclick=()=>{for(const k of ['food','stam','lvl','weight'])DEVF[k]=+b.dataset.dvall;saveDevF();invDirty=true;renderDev();});
+  // v1.92: isot napit – lento alkaa heti päälle kytkettäessä (ei tarvitse tuplahypätä)
+  B.querySelectorAll('[data-big]').forEach(b=>b.onclick=()=>{const k=b.dataset.big;DEVF[k]=DEVF[k]?0:1;saveDevF();if(k==='fly'){P.flying=!!DEVF.fly;P.vy=0;}
+    if(k==='noclip'&&!DEVF.noclip&&!P.flying)P.vy=0;msg(`DEV: ${b.querySelector('b').textContent} ${DEVF[k]?'päällä':'pois'}.`,'loot');invDirty=true;renderDev();});
+  B.querySelectorAll('[data-heal]').forEach(b=>b.onclick=()=>{P.hp=maxHp();P.stam=100;P.hunger=100;P.burnT=0;P.dead=false;msg('DEV: terveys, kestävyys ja kylläisyys täynnä.','loot');renderDev();});
   // v1.05 DEV-esinehaku: hakusana + määrä hakunapin vieressä, osumalista "Anna"-napeilla (lähtee pois DEV-tilan mukana)
   const listGive=()=>{const q=fold($('#devQ').value.trim()),L=$('#devList');devQ=$('#devQ').value;devN=Math.max(1,Math.min(999,Math.round(+$('#devN').value||1)));
     const rank=id=>{const n=fold(ITEMS[id].n);return n===q||id===q?0:n.startsWith(q)||id.startsWith(q)?1:2;};
@@ -126,7 +134,9 @@ function renderDevM(){const B=$('#devMBody');if(!B)return;
   <div class="devRow"><b>Ulottuvuuksien pomot</b>${REALM_IDS.map(bossRow).join('')}
     <div class="devBoss"><b>${esc(MOBDEF.vartija.n)}</b> <span class="note">Kalmankehä</span><div class="devBtns"><button class="btn" data-circle="1">Kalmankehään</button></div></div></div>
   <div class="devRow"><b>Apuvälineet</b><div class="devChk"><label class="tglRow">${tglHTML('dv_bossLine',!!DEVF.bossLine,'data-dvm="bossLine"')}<span>Näytä pomohuoneen ääriviiva (ulottuvuudessa, seinien läpi)</span></label></div>
-    <div class="note">Herätys alkaa, kun astut ääriviivan sisään tai olet keltaisen ympyrän sisällä (keskimääräinen matka keskeltä seinään).</div></div>`;
+    <div class="note">Herätys alkaa, kun astut ääriviivan sisään tai olet keltaisen ympyrän sisällä (keskimääräinen matka keskeltä seinään).</div>
+    <div class="devChk"><label class="tglRow">${tglHTML('dv_route',!!DEVF.route,'data-dvm="route"')}<span>Näytä reitti pomohuoneeseen (valkoinen viiva lattialla, lyhin reitti)</span></label></div>
+    <div class="note">Reittiviiva toimii ulottuvuudessa. Maailmassa siirry ensin portin eteen ja astu portista sisään.</div></div>`;
   B.querySelectorAll('[data-mob]').forEach(b=>b.onclick=()=>devSpawnMob(b.dataset.mob));
   B.querySelectorAll('[data-room]').forEach(b=>b.onclick=()=>{devTpBossRoom(b.dataset.room);closePanels();});
   B.querySelectorAll('[data-port]').forEach(b=>b.onclick=()=>{devTpPortal(b.dataset.port);closePanels();});

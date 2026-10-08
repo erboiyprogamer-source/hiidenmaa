@@ -209,6 +209,11 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=mobs.find(o=>o.def.ai==='rboss'&&o.realm==='portal1'&&!o.dead),ok3=rb||(b&&b.state==='rise');
     devTpPortal('portal1');const F=portalFront('portal1'),ok4=!P.inDun&&Math.hypot(P.pos.x-F.x,P.pos.z-F.z)<.01&&!mobs.some(o=>o.dun);
     P.pos.copy(p0);P.vy=0;return ok1&&ok2&&ok3&&ok4||`virhe ${ok1}${ok2}${ok3}${ok4}`;});
+  t('v1.92 DEV reittiviiva: lyhin reitti sisäänkäynniltä pomohuoneeseen, suoristettu, ei seinien läpi',()=>{const R=ensureRealm('portal3'),pts=bossRoute(R,R.entry.x+.6,R.entry.z);
+    if(!pts||pts.length<2)return 'ei reittiä';for(let i=0;i<pts.length-1;i++)if(!rClear(R.grid,pts[i],pts[i+1]))return 'seinän läpi';
+    return inBossRoom(R,pts[pts.length-1].x,pts[pts.length-1].z)&&typeof devRouteLine==='function'||'ei pääty huoneeseen';});
+  t('v1.92 DEV: seinien läpi (noclip), lukitse aika ja sää, pysäytä maailma, V nopeuttaa lentoa',()=>{const u=update.toString(),pl=updatePlayer.toString();
+    return /devOn\('freeze'\)/.test(u)&&/devOn\('lockTW'\)/.test(u)&&/devOn\('noclip'\)/.test(pl)&&/vK=DEV&&keys\.KeyV\?6:1/.test(pl)&&'noclip' in DEVF&&'freeze' in DEVF&&'lockTW' in DEVF&&'route' in DEVF||'puuttuu';});
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua

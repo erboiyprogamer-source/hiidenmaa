@@ -495,7 +495,10 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Työkalun trimmaus/voimakkuus: pituuden rajat (idle 3 s … death 3,5 s, pomot enemmän) ja tavoite-LUFS lajeittain (idle −22 … death/aggro −16, pomo +1,5 dB).
 
 ## DEV-työkalut (vain DEV-tilassa)
-- Ä = DEV-valikko (sää, aika, terveys, kylläisyys, jumalvoimat, esinehaku, kartta). V pohjassa = 10× nopeus.
+- Ä = DEV-valikko. Isot napit alussa (v1.92): Kuolemattomuus, Lento (alkaa heti), Seinien läpi, Lukitse aika ja sää, Pysäytä maailma
+  (vain pelaaja liikkuu), Terveys täyteen. Lisäksi sää, aika, terveys, kylläisyys, pienet täpät, esinehaku, kartta.
+- V pohjassa = 10× kävelynopeus, lennossa 6× lentonopeus (vaaka ja pysty).
 - Ö = olennot ja pomot (v1.91): luo minkä tahansa olennon 3 m eteen (pomot nousevat herätysanimaatiolla), siirry ulottuvuuspomon huoneeseen tai
   ulottuvuuden portin eteen, elvytä kukistettu pomo, Kalmankehään. Apuväline: pomohuoneen ääriviiva seinien läpi (huoneen reuna, varaetäisyyden
-  ympyrä, pomon paikka). DEV-luodut pomot eivät kirjaa voittoa eivätkä merkitse ulottuvuutta kukistetuksi.
+  ympyrä, pomon paikka) ja reittiviiva (v1.92: valkoinen nauha lattialla lyhintä reittiä pomohuoneeseen, seinien läpi). DEV-luodut pomot eivät
+  kirjaa voittoa eivätkä merkitse ulottuvuutta kukistetuksi.

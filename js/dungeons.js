@@ -192,6 +192,7 @@ function ensureRealm(id){
   {const isWc=(x,z)=>isW(Math.round((x-D.cx)/DC+W/2-.5),Math.round((z-D.cz)/DC+H/2-.5)),N=48,cap=5.5*DC,rays=[];
     for(let i=0;i<N;i++){const a=i/N*TAU,c=Math.cos(a),s=Math.sin(a);let d=0;while(d<cap&&!isWc(R.boss.x+c*(d+.25),R.boss.z+s*(d+.25)))d+=.25;rays.push(d);}
     R.room={x:R.boss.x,z:R.boss.z,rays,avg:rays.reduce((a,b)=>a+b,0)/N};}
+  R.grid={g,W,H,cx:D.cx,cz:D.cz};   // v1.92: ruudukko talteen (DEV-reittiviiva bossRoute)
   R.mobs=L.mobs.map(m=>({...cell(m.ix,m.iz),type:m.type}));
   if(id==='portal3'&&!flags.sirpC&&L.chests.length){const a=[...L.chests.keys()].sort(()=>Math.random()-.5);flags.sirpC=a.slice(0,Math.min(2,a.length));}   // v1.34: 2 sirpaletta satunnaisiin arkkuihin
   L.chests.forEach((c,i)=>{const p=cell(c.ix,c.iz),key=id+':'+i,sarc=D.gen==='rooms';
@@ -428,11 +429,11 @@ function updateDungeons(dt){
   for(const id in BUILT)BUILT[id].g.visible=P.inDun&&P.realm===id;
   const RR=P.inDun&&P.realm?BUILT[P.realm]:null,S=RR&&RR.spw;
   if(S){S.cr.rotation.y+=dt*1.5;S.cr.position.y=S.y+Math.sin(playTime*2)*.15;S.list=S.list.filter(m=>!m.dead&&mobs.includes(m));S.cr.scale.setScalar(S.list.length?.8:1+S.t/SPW_T*.6);
-    if(!S.list.length&&!P.dead&&!(P.spawnProt>0)&&dist2(S.x,S.z,P.pos.x,P.pos.z)<26*26){S.t+=dt;if(S.t>=SPW_T){S.t=0;const D=REALMS[P.realm];
+    if(!S.list.length&&!P.dead&&!(P.spawnProt>0)&&!devOn('freeze')&&dist2(S.x,S.z,P.pos.x,P.pos.z)<26*26){S.t+=dt;if(S.t>=SPW_T){S.t=0;const D=REALMS[P.realm];
       for(let i=0;i<3;i++){const a=i/3*TAU+Math.random(),m=realmize(spawnMob(D.spw,S.x+Math.cos(a)*3.2,S.z+Math.sin(a)*3.2,{y:DUN.y,dun:true}),P.realm);m.state='chase';S.list.push(m);}
       shockwave(S.x,DUN.y+.2,S.z,5,D.glow);burst(S.x,S.y,S.z,D.glow,16,5);sfx('roar');if(!S.seen){S.seen=1;msg('Kalmanpesä herää – se nostattaa vihollisia aina kun edelliset kaatuvat.','warn');}}}}
   for(const p of PORTALS){const lk=portalLocked(p.id);if(p.lk!==lk){p.lk=lk;setPortalLook(p.id);}p.plane.material.opacity=lk?.28:.5+.2*Math.sin(playTime*2.2+p.ph);}
-  if(DEV)devRoomOutline();
+  if(DEV){devRoomOutline();devRouteLine(dt);}
   const rb=mobs.find(m=>m.def.ai==='rboss'&&!m.dead&&m.state!=='sleep'&&!!m.dun===P.inDun&&(P.inDun||m.devSpawn)&&dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<70*70),bar=$('#bossbar');   // v1.91: myös DEV-luotu pomo maailmassa
   if(rb){bbOwn=true;bar.hidden=false;bar.querySelector('.name').textContent=rb.def.n+(rb.phase>1?` · vaihe ${rb.phase}`:'');bar.querySelector('i').style.width=(rb.hp/rb.maxHp*100)+'%';}
   else if(bbOwn){bbOwn=false;bar.querySelector('.name').textContent='Kalmanvartija';if(!(boss&&!boss.dead))bar.hidden=true;}
@@ -453,6 +454,34 @@ function devRoomOutline(){const on=devOn('bossLine')&&P.inDun&&P.realm&&BUILT[P.
     ln([new THREE.Vector3(Q.x,y,Q.z),new THREE.Vector3(Q.x,y+RCH,Q.z)],mk(0xff5a4a,.9),0);
     scene.add(g);ROOMLINE={g,id:P.realm,edge};}
   ROOMLINE.g.visible=true;ROOMLINE.edge.opacity=inBossRoom(BUILT[P.realm],P.pos.x,P.pos.z)?1:.55+.25*Math.sin(playTime*4);}
+/* v1.92 DEV: valkoinen reittiviiva lyhintä reittiä pomohuoneeseen (täppä route, Ö-valikko). Leveyshaku ulottuvuuden ruudukossa pelaajan ruudusta
+   ensimmäiseen pomohuoneen ruutuun (inBossRoom), sitten suoristus: hypätään niin pitkälle kuin suora mahtuu (0,6 m väli seiniin).
+   Viiva on lattialla, näkyy seinien läpi, päivittyy kun ruutu vaihtuu (ensimmäinen pätkä seuraa pelaajaa joka ruudussa); huoneessa se katoaa. */
+let ROUTE=null;
+function rCell(G,x,z){return [Math.round((x-G.cx)/DC+G.W/2-.5),Math.round((z-G.cz)/DC+G.H/2-.5)];}
+function rPos(G,ix,iz){return {x:G.cx+(ix-G.W/2+.5)*DC,z:G.cz+(iz-G.H/2+.5)*DC};}
+function rWall(G,ix,iz){return ix<0||iz<0||ix>=G.W||iz>=G.H||G.g[iz][ix]==='#';}
+function rClear(G,a,b){const d=Math.hypot(b.x-a.x,b.z-a.z),n=Math.max(1,Math.ceil(d/.4));
+  for(let i=0;i<=n;i++){const t=i/n,x=a.x+(b.x-a.x)*t,z=a.z+(b.z-a.z)*t;for(const [ox,oz] of [[0,0],[.6,0],[-.6,0],[0,.6],[0,-.6]]){const c=rCell(G,x+ox,z+oz);if(rWall(G,c[0],c[1]))return false;}}return true;}
+function bossRoute(R,x,z){const G=R&&R.grid;if(!G)return null;const [sx,sz]=rCell(G,x,z);if(rWall(G,sx,sz))return null;
+  const W=G.W,H=G.H,prev=new Int32Array(W*H).fill(-1),s0=sz*W+sx,q=[s0];prev[s0]=s0;let goal=-1;
+  for(let i=0;i<q.length;i++){const c=q[i],cx=c%W,cz=(c-cx)/W,p=rPos(G,cx,cz);if(inBossRoom(R,p.x,p.z)){goal=c;break;}
+    for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=cx+a,nz=cz+b;if(rWall(G,nx,nz))continue;const k=nz*W+nx;if(prev[k]>=0)continue;prev[k]=c;q.push(k);}}
+  if(goal<0)return null;const cells=[];for(let c=goal;;c=prev[c]){cells.push(rPos(G,c%W,(c-c%W)/W));if(c===prev[c])break;}cells.reverse();
+  const all=[{x,z},...cells.slice(1)],pts=[all[0]];let i=0;
+  while(i<all.length-1){let j=all.length-1;while(j>i+1&&!rClear(G,all[i],all[j]))j--;pts.push(all[j]);i=j;}
+  return pts;}
+function devRouteSeg(me,a,b,y){const dx=b.x-a.x,dz=b.z-a.z,L=Math.hypot(dx,dz)||.01;me.position.set((a.x+b.x)/2,y,(a.z+b.z)/2);me.rotation.set(-Math.PI/2,Math.atan2(dx,dz),0,'YXZ');me.scale.set(.24,L,1);}
+function devRouteLine(dt){const on=devOn('route')&&P.inDun&&P.realm&&BUILT[P.realm]&&BUILT[P.realm].grid;
+  if(!on){if(ROUTE)ROUTE.g.visible=false;return;}
+  if(!ROUTE){const mt=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.85,depthTest:false,depthWrite:false,fog:false,side:THREE.DoubleSide});
+    ROUTE={g:new THREE.Group(),mt,geo:new THREE.PlaneGeometry(1,1),key:'',pts:null,segs:[]};ROUTE.g.renderOrder=998;scene.add(ROUTE.g);}
+  const R=BUILT[P.realm],c=rCell(R.grid,P.pos.x,P.pos.z),key=P.realm+':'+c[0]+':'+c[1],y=DUN.y+.12;
+  if(ROUTE.key!==key){ROUTE.key=key;ROUTE.pts=inBossRoom(R,P.pos.x,P.pos.z)?null:bossRoute(R,P.pos.x,P.pos.z);
+    for(const s of ROUTE.segs)ROUTE.g.remove(s);ROUTE.segs=[];
+    if(ROUTE.pts)for(let i=0;i<ROUTE.pts.length-1;i++){const me=new THREE.Mesh(ROUTE.geo,ROUTE.mt);me.renderOrder=998;me.frustumCulled=false;devRouteSeg(me,ROUTE.pts[i],ROUTE.pts[i+1],y);ROUTE.g.add(me);ROUTE.segs.push(me);}}
+  if(ROUTE.pts&&ROUTE.segs.length){ROUTE.pts[0]={x:P.pos.x,z:P.pos.z};devRouteSeg(ROUTE.segs[0],ROUTE.pts[0],ROUTE.pts[1],y);}
+  ROUTE.g.visible=!!ROUTE.pts;ROUTE.mt.opacity=.72+.2*Math.sin(playTime*5);}
 // poistuu luolastosta / ulottuvuudesta ilman häivytystä (sama siivous kuin exitRealm/exitDungeon)
 function devLeaveDun(){if(!P.inDun)return;for(const f of FIRELINES)f.t=0;for(const m of [...mobs])if(m.dun){if(m.def.ai==='rboss'&&!m.dead)delete fo('rbHp')[m.realm];mobRemove(m);}P.inDun=false;P.realm=null;}
 // siirtyy ulottuvuuteen heti (kuten enterRealm ilman häivytystä ja otsikkoa); pomo luodaan nukkumaan maan alle, jos sitä ei ole kukistettu

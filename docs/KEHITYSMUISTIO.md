@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.91)
+## Nykytila (päivitetty v1.92)
 
-- **Versio 1.91**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 1.92**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,22 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.86): 💎 susi (6), kalmo (3),
   hirvi (3), aarnihirviö (2), karju (2), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v1.92 (DEV: reittiviiva pomohuoneeseen, Ä-valikon isot napit, seinien läpi, aika/sää-lukko, maailman pysäytys, V lennossa)
+- **Ö: reittiviiva** (täppä `route`, `devRouteLine`/`bossRoute`, dungeons.js): valkoinen nauha lattialla **lyhintä reittiä pomohuoneeseen**, näkyy
+  seinien läpi. Leveyshaku ulottuvuuden ruudukossa (`R.grid`, tallennetaan `ensureRealm`issa) pelaajan ruudusta ensimmäiseen pomohuoneen ruutuun,
+  sitten suoristus (hypätään niin pitkälle kuin suora mahtuu 0,6 m välillä seiniin, `rClear`). Lasketaan uudelleen kun pelaajan ruutu vaihtuu,
+  ensimmäinen pätkä seuraa pelaajaa joka ruudussa; huoneessa viiva katoaa. Testi: Aarnihauta sisäänkäynniltä 5 pistettä / 135 m, kaikki pätkät
+  seinättömiä, reittiä kävelemällä (ei noclipiä) päästiin huoneeseen ilman jumitusta ja pomo heräsi.
+- **Ä-valikko käytännöllisemmäksi:** **isot napit alkuun** (vihreä = päällä): *Kuolemattomuus*, *Lento* (alkaa heti, ei tarvitse tuplahypätä),
+  *Seinien läpi*, *Lukitse aika ja sää*, *Pysäytä maailma* ja punainen toimintonappi *Terveys täyteen* (terveys, kestävyys, kylläisyys, palaminen pois).
+  Pienet täpät jäivät: ei nälkää, rajaton kestävyys, korkein taso, ei painorajaa (Kaikki päälle/pois koskee vain niitä).
+- **Seinien läpi** (`noclip`, player.js): ei törmäyksiä eikä kattoa; maa = maasto tai luolan lattia (esineiden päälle ei nousta). Testi: seinä pysäytti
+  1,22 m:ssä, noclipillä läpi 6,67 m.
+- **Lukitse aika ja sää** (`lockTW`, main.js): kello ei etene eikä sää vaihdu. **Pysäytä maailma** (`freeze`): olennot, ammukset, pudotukset,
+  hiukkaset, työpisteet, syntyminen, nälkä/kylmä, aika, sää ja Kalmanpesä seis – vain pelaaja, kamera ja käyttöliittymä päivittyvät.
+- **V nopeuttaa lentoa:** lennossa V pohjassa vaaka- ja pystynopeus ×6 (Ctrl ×2 lisäksi). Testi: 8,8× matka sekunnissa (kiihtyminen mukana).
+- `tarkistus.mjs` KAIKKI OK (2 uutta riviä).
 
 ### v1.91 (DEV Ö-valikko: olennot ja pomot; pomon herätys pomohuoneeseen astuessa)
 - **DEV-valikko Ö** (`renderDevM`, ui.js; vain DEV-tilassa, näppäin `Semicolon` / `e.key` ö): **Luo olento 3 m eteen** – kaikki 26 lajia
