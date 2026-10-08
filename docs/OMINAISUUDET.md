@@ -465,3 +465,11 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Kehittäjätyökalut (DEV) ovat oletuksena pois; päälle Asetukset › Ohjaus ja ääni › alin rivi (sivu latautuu uudelleen).
 - Päävalikossa versionumeron perässä "Early Access 1.0". DEV-viitteet näkyvät vain DEV-tilassa.
 - Veren fysiikka (pisarat lentävät ja jäävät maahan) on päällä Medium-esiasetuksesta ylöspäin.
+
+## Äänet (v1.84, äänierä A: olennot)
+- Olennoilla voi olla omat äänet (`sounds/<id>_<idle|hurt|death|aggro|chase>_<1–3>.mp3`, arpoo olemassa olevista versioista): rauhallinen
+  ääntely 6–15 s välein alle 25 m päässä, suuttumisääni (vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat), jahtiääni 4–9 s
+  välein jahdin aikana (vihamieliset ja pomot), osumaääni (enintään 0,4 s välein), kuolinääni. 3D-ääni (suunta ja etäisyys), sävel ±6 %.
+- Jos olennolla ei ole omaa ääntä, käytetään väliaikaista varaääntä toiselta olennolta muutetulla sävelellä (ketju `VARAANI`), muuten
+  tehtyä ääntä tai hiljaisuutta. Tila: `sounds/AANILISTA.md`.
+- Asetukset › Ohjaus ja ääni › Olentojen äänet (voimakkuus, oletus 80 %).

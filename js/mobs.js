@@ -198,7 +198,7 @@ let mobs=[], boss=null;
 function mobEyeY(m){return m.pos.y+(m.type==='vartija'?4:(m.def.eye||1.2));}
 function spawnMob(type,x,z,opts={}){
   const def=MOBDEF[type],f=def.fig();const y=opts.y??terrainH(x,z);
-  f.g.position.set(x,y,z);scene.add(f.g);
+  f.g.position.set(x,y,z);scene.add(f.g);if(typeof creLoad==='function')creLoad(type);   // v1.84 olentojen äänet ladataan laiskasti
   const mats=[],cl=new Map();f.g.traverse(m=>{if(m.isMesh&&m.material.isMeshStandardMaterial){let c=cl.get(m.material);if(!c){c=m.material.clone();cl.set(m.material,c);mats.push(c);}m.material=c;}});
   const m={type,def,f,mats,pos:new V3(x,y,z),vel:new V3(),yaw:rng()*TAU,hp:def.hp,maxHp:def.hp,state:'idle',t:0,wander:null,atkCd:1,wind:0,angry:false,flash:0,walkPh:0,lastHit:-99,stuck:0,home:{x,z},dun:!!opts.dun,anim:0,dead:false,deadT:0,hurtT:-99};
   // v1.39 (lista 4, kohta 25): vihollisten ja eläinten hp 100–160 %, vahvemmat hieman isompia (+0–10 %). Ei pomoille.

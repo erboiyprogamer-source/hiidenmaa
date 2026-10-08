@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.83)
+## Nykytila (päivitetty v1.85)
 
-- **Versio 1.83**, haara `claude/hiidenmaa-survival-game-fmxt0m`. **PR #25** (v1.38–v1.83, julkaisupäivitys, yhteenveto alla) odottaa yhdistämistä;
+- **Versio 1.85**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR: äänierä A (v1.84). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -102,6 +102,29 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - `tools/tarkistus.mjs`: KAIKKI OK jokaisen version jälkeen (oma tarkistusrivi jokaiselle uudelle ominaisuudelle).
 - Koko pelin tarkistus kaikilla 6 kartalla (päivä ja yö, 22 vihollistyyppiä, 3 ulottuvuutta pomoineen, Hautakumpu, tallennus ja lataus, 8 grafiikkatasoa), myös DEV pois päältä: 0 virhettä.
 
+## Äänisuunnitelma (pysyvä päätös, v1.84)
+
+**Työnjako (käyttäjän idea):**
+- Claude tekee jokaiselle tarvittavalle äänelle **paikkamerkin** (hiljainen, kelvollinen mp3 alle 3 kt) oikealla nimellä kansioon
+  `sounds/raw/` (`python3 tools/process_sounds.py --init`; olemassa olevia ei koskaan ylikirjoiteta).
+- Käyttäjä etsii äänet netistä (Kenney, Pixabay, Freesound CC0, OpenGameArt), **kuuntelee ne koneellaan** ja korvaa paikkamerkin
+  **täsmälleen samalla nimellä** GitHub Desktopilla (commit + push).
+- Claude ajaa käsittelytyökalun `python3 tools/process_sounds.py`: tunnistaa oikeat äänet (yli 3 kt, muoto tiedoston sisällöstä eikä
+  päätteestä) → ffmpeg → `sounds/<nimi>.mp3` (mono, 96 kbps, hiljaisuus pois alusta ja lopusta, loudnorm −16 LUFS). Kirjoittaa
+  `sounds/manifest.json` (nimi → sisältötiiviste, kesto) ja päivittää tilataulukon `sounds/AANILISTA.md`. Raakatiedostoja ei poisteta.
+  Jos raaka palautetaan paikkamerkiksi, käsitelty ääni poistuu.
+- **Peli lukee vain käsitellyt äänet** `sounds/`-kansiosta (manifestin kautta, tiiviste osoitteessa → välimuisti ei näytä vanhaa ääntä).
+  Ilman palvelinta (tuplaklikkaus, file://) tiedostoäänet eivät lataudu → peli käyttää tehtyjä ääniä / hiljaisuutta.
+
+**Säännöt:**
+- Jokaisella olennolla voi olla omat äänet. **Varaäänet ovat vain väliaikaisia** (ketju `VARAANI`, audio.js, sävelkorkeutta muutetaan).
+  Ääni, jota muut käyttävät varaäänenä, merkitään taulukossa ⭐ ja luetellaan mille.
+- Raakaäänet: lyhyet saa olla wav, pitkät (musiikki, loopit) mp3, alle 25 Mt / tiedosto. **Vaihda ääni vasta kuuntelun jälkeen** –
+  git-historia muistaa vanhat versiot (repo kasvaa). Arvio: noin 300 ääntä on ok (repo alle 1 Gt).
+- Nimet: `<id>_<laji>_<n>`, id = MOBDEF-avain (olennot), n = 1–3 (arpoo olemassa olevista, yksi riittää). Lajit: idle, hurt, death,
+  aggro = suuttumisääni (ai neutral/hostile/boss/rboss; vihamielisillä ja pomoilla vain kerran), chase = toistuva jahtiääni (hostile/boss/rboss).
+- Jokainen äänierä (A–E, ks. ideajono) tehdään samalla paikkamerkkitavalla ja saa oman osion AANILISTA.md:hen.
+
 ## Pysyvät päätökset
 
 - **Pelin teksteissä ei mainita muita pelejä** (esim. Minecraft, Valheim) – v1.11, käyttäjän toive.
@@ -162,6 +185,41 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 | Kalmanvartija | 900 | 3,6 | 22–28 | 4 hyökkäystä, kutsuu kalmoja 50 %:ssa; v0.89 ryntäys 25 %/8 s, ennakko +40 %, kivi 30 % hitaampi |
 
 ## Versioloki
+
+### v1.85 (äänet: 3 versiota, suuttumisääni kerran, jahtiääni)
+- **Versiot:** jokaisella äänilajilla paikat `_1`, `_2`, `_3`; peli arpoo vain olemassa olevista (yksi riittää, tyhjät ohitetaan). Varaääniketju
+  tuo myös toisen olennon kaikki versiot. Paikkamerkit kaikille paikoille (336 kpl, 288 t). `creRes(id, laji)` palauttaa `{names, p}`.
+- **Suuttumisääni (`aggro`):** vihamieliset ja pomot **vain kerran koko elinaikanaan** (kun huomaavat sinut ensimmäistä kertaa); jos sitä ei
+  ole (ei omaa eikä varaääntä), erillistä ääntä ei soiteta vaan jahtiääni alkaa heti. Neutraalit (karhu, hirvi, karju, ilves, ahma, emakko)
+  pitävät vanhan käytöksen: suuttumisääni aina kun suuttuvat (uusi vasta 5 s jahdin päättymisen jälkeen), ei jahtiääntä.
+- **Jahtiääni (`chase`, uusi, vihamieliset ja pomot):** toistuu 4–9 s välein kun olento jahtaa sinua (alle 55 m), ensimmäinen suuttumisäänen
+  keston + 1–3 s jälkeen; kun jahti alkaa uudelleen ensimmäinen 1–3 s kuluttua. Jahdin aikana rauhallinen ääntely (idle) vaihtuu jahtiääneen,
+  jos sellainen on. Pomon herääminen (`intro`) laukaisee suuttumisäänen.
+- **Taulukko:** AANILISTA.md rivi per (olento, laji) ja 3 versiota samalla rivillä, tila `✅ oma: _1, _3 (2/3)`.
+- Testattu keinoäänillä (kalmo/susi/karju/ylimys): suuttumisääni kerran, jahtiäänen ensimmäinen suuttumisäänen jälkeen, väli 4–9 s, paluu
+  jahtiin ei uutta suuttumisääntä, susi (ei aggro) alkaa heti, ylimys käyttää kalmon ääniä. Testiäänet palautettu paikkamerkeiksi.
+
+### v1.84 (äänierä A: olentojen äänijärjestelmä ja äänipohja)
+- **Äänisuunnitelma** kirjattu pysyväksi päätökseksi (oma osio) ja äänierät A–E ideajonoon.
+- **Paikkamerkit:** 124 hiljaista mp3:ta (288 t) `sounds/raw/`: jokaiselle 26 olennolle `<id>_idle_1/_idle_2/_hurt_1/_death_1`, hyökkääville
+  (ai neutral/hostile/boss/rboss) lisäksi `_aggro_1`.
+- **`tools/process_sounds.py`:** `--init` luo puuttuvat paikkamerkit (ei ylikirjoita). Käsittely: oikea ääni = yli 3 kt, muoto sisällöstä
+  (RIFF/WAVE, ID3/kehystahdistus, OggS, fLaC, ftyp, FORM) → ffmpeg: hiljaisuus pois alusta ja lopusta (−50 dB), loudnorm I −16 /
+  TP −1,5, mono 44,1 kHz 96 kbps → `sounds/<nimi>.mp3`. Ohittaa muuttumattomat (raakatiedoston tiiviste `src`), poistaa käsitellyn, jos
+  raaka palautetaan paikkamerkiksi tai poistetaan. Jos samalla nimellä on useampi raakatiedosto (esim. .wav ja paikkamerkki .mp3), isompi
+  voittaa. Kirjoittaa `sounds/manifest.json` {nimi: {h, src, dur}} ja `sounds/AANILISTA.md` (ohje + taulukko eläimet / viholliset /
+  pomot: tila ✅/🔁 mistä ja sävelkerroin/⬜ + "varalla", kuvaus, hakusanat englanniksi, ⭐ mille varaääni). Kuvaukset ja hakusanat
+  ovat työkalun `CRE_INFO`:ssa, nimet ja ai luetaan mobs.js:stä, varaäänet audio.js:n VARAANI-lohkosta (tiukkaa JSONia merkkien välissä).
+- **Peli (`audio.js`):** `VARAANI` (19 olentoa, ketju seurataan, kertoimet kertautuvat), `CRE`, `creInit` (manifest kerran, `?v=HV`),
+  `creRes` (oma → idle_2→idle_1 → ketju), `creLoad` (laiska, spawnMob), `creBuf` (`?h=tiiviste`), `creSnd` (PannerNode equalpower/inverse,
+  ref 3 m – pomot 8 m, max 90 m, sävel ×ketju ±6 %, enintään 14 ääntä), `creTick` (kuuntelija = kamera, äänet seuraavat olentoa, idle
+  6–15 s välein alle 25 m, aggro kerran jahdin/pomon heräämisen alkaessa alle 70 m, uusi aggro vasta 5 s jahdin jälkeen). Osuma
+  `damageMob` (tauko 0,4 s, ei jos kuolee), kuolema `killMob` (tehty 'die' jos ei tiedostoa). Asetus Ohjaus ja ääni › "Olentojen äänet"
+  (`SET.creVol`, oletus 80 %).
+- Testattu: testiäänet (wav .mp3-päätteellä + erillinen .wav) läpi putkesta, hiljaisuus leikattu 2,4 → 1,2 s, −16 dB; pelissä lataus,
+  idle, aggro, osuma (1 / 2 iskua), kuolinääni, 3D-paikka seuraa olentoa, kalmasusi → susi ×0,88, voimakkuus 0 = hiljaa. Testiäänet
+  poistettu (työkalu siivosi käsitellyt).
+- Huom: ilman palvelinta (index.html tuplaklikkaamalla) tiedostoäänet eivät lataudu (selaimen rajoitus) → tehdyt äänet.
 
 ### v1.83 (veren fysiikka Mediumista ylöspäin)
 - `bloodFx` (pisarat lentävät lyönnin suuntaan ja jäävät maahan, lammikko kasvaa) päällä esiasetuksissa Medium–Ultra (ennen vain High+/Ultra)
@@ -2003,6 +2061,16 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 ## Ideajono
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+### Äänierät (äänisuunnitelma, ks. "Äänisuunnitelma")
+- [x] **A olennot** (v1.84): paikkamerkit kaikille 26 olennolle, varaääniketju, 3D-ääni, idle/aggro/hurt/death, voimakkuusasetus.
+- [ ] **B pelaajan ja toimintojen äänet:** askeleet pinnan mukaan, hyppy, uinti, taistelu, keräily, työkalut, rakentaminen, työpisteet,
+  käyttöliittymä.
+- [ ] **C taustaäänet ja sää:** metsä päivä/yö, Aarnimetsä, luolasto, sade, tuuli, myrsky, tuli.
+- [ ] **D musiikki:** päivä, yö, Aarnimetsä, luolasto, taistelu, pomo, voitto; pehmeä ristiinhäivytys.
+- [ ] **E äänifysiikka:** vaimennus seinän takana (lowpass + losClear), luolan kaiku (ConvolverNode), veden alla vaimea, askeleet
+  hiljaisempia kyykyssä.
+- Jokainen erä samalla paikkamerkkitavalla ja oma osio AANILISTA.md:hen.
 
 ### Päivityslista 6 (v1.53–) – julkaisupäivitys
 **JATKA TÄSTÄ (lista 6):** KAIKKI tehty v1.53–v1.83 + koko pelin tarkistus (6 karttaa, 0 virhettä); PR #25 odottaa yhdistämistä.

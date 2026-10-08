@@ -98,7 +98,7 @@ function damageMob(m,dmg,dt,kx,kz,kb=4){
   if(m.def.ai!=='boss'&&m.def.ai!=='rboss'){const l=Math.hypot(kx,kz)||1,k=kb*(m.def.r>.8?.4:m.def.r>.6?.7:1);m.vel.x+=kx/l*k;m.vel.z+=kz/l*k;m.wind=0;}
   floatText(Math.round(dmg)+'',m.pos.x,m.pos.y+(m.type==='vartija'?6:(m.def.fh||1.8)),mult>1.2?'#ffd36a':mult<.9?'#a99d89':'#eee5d3');
   sfx('hit');bleed(m.pos.x,m.pos.y+Math.min(3,(m.barH||m.def.r*2.4)*.55),m.pos.z,bleedKind(m.type),m.def.r,dmg,m.dun,kx,kz,kb);if(dt==='slash'&&SET.bloodFx)addSlash(m);else if(Math.random()<.6)addWound(m);   // v1.37 (kohta 24): veri ja haavat
-  if(m.hp<=0)killMob(m);
+  if(m.hp<=0)killMob(m);else if(playTime-(m.sndHurt??-9)>.4){m.sndHurt=playTime;creSnd(m,'hurt');}   // v1.84 osumaääni, tauko 0,4 s
 }
 // Tuli (v0.75): soihdulla lyöty tai tulinuolella osuttu mobi/eläin palaa 5–10 s, 5 hp/s. Sade tai vesi sammuttaa heti.
 function igniteMob(m){if(m.dead)return;if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9))return;const fresh=!(m.burnT>0);m.burnT=5+Math.random()*5;
@@ -122,7 +122,7 @@ function updateBurn(m,dt){if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9)){stopBurn
 // ensin ja sen loputtua taas heikoimmasta alkaen. Uusi ammus lisätään listaan oikeaan kohtaan (esim. tulevat rautanuolet).
 const AMMO=['nuolet','sulkanuolet','tulinuolet'];
 function ammoId(){if(flags.ammo&&invCount(flags.ammo)>0)return flags.ammo;return AMMO.find(id=>invCount(id)>0)||null;}
-function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;sfx('die');
+function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;if(!creSnd(m,'death'))sfx('die');   // v1.84: oma kuolinääni, muuten tehty
   if(m.sunKill){onMobKilled(m);return;}   // v1.50: auringossa tuhkaksi palanut – ei saalista, XP:tä eikä tappotilastoa
   P.kills++;bump('kills');bump('k_'+m.type);addXp(Math.round(m.def.hp/(m.type==='vartija'?2:5))+3,m.def.n);
   for(const [id,lo,hi] of [...m.def.drops,...(m.rv&&REALM_LOOT[m.realm]||[])]){const c=rint(rng,lo,hi);if(c>0)spawnDrop(id,c,m.pos.x,m.pos.y+1,m.pos.z);}   // v0.91: ulottuvuusversioilla lisäsaalis
