@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.88)
+## Nykytila (päivitetty v1.89)
 
-- **Versio 1.88**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 1.89**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,27 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.86): 💎 susi (6), kalmo (3),
   hirvi (3), aarnihirviö (2), karju (2), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v1.89 (jousikalmon kädet ja miekka, pomojen herätys- ja kuolema-animaatiot)
+- **Jousikalmo:** jousi on nyt **vasemmassa** kädessä ja **miekka oikeassa**, täsmälleen kuten pelaajalla (`state.js`: `cat==='bow'` → `fig.handL`).
+  Alle 2,4 m päässä kalmo lyö miekalla (tavallinen lähihyökkäys), kauempana ampuu. Vetoon lisätty sekunti: `ARCH_DRAW` 0,9 → **1,9 s**
+  (mitattu testissä: ensimmäisestä tähtäyksestä laukaukseen 1,9 s).
+- **Pomon herätys (`bossRisePose`, effects.js; `BOSS_RISE`=5 s):** pomo nousee maasta **5 sekunnissa** pää alhaalla ja kädet sivuilla (nukkuu yhä);
+  viimeisen viidenneksen aikana pää nousee ja hahmo suoristuu. **Haavoittumaton** koko nousun ajan (`m.sinking=1` → `damageMob` ei tee vahinkoa).
+  **Terveyspalkki tulee heti** animaation alkaessa (tila ei ole enää `sleep`; ulottuvuuksissa yhden ruudun viive, koska `updateDungeons` ajetaan ennen
+  `updateMobs`-kutsua). **Suuttumisääni vasta kun pomo seisoo** ja on huomannut pelaajan (`bossWakeRoar`: oma aggro-ääni tai tehty karjaisu;
+  asettaa `angerDone`, joten `creTick` ei soita sitä toiseen kertaan). Tilan nimi on nyt molemmilla **`rise`** (ennen ulottuvuuspomoilla `intro`,
+  Kalmanvartijalla 2,5 s `rise` + 2,2 s `intro`). Nousun aikana ei soi rauhallista ääntelyä eikä kaikuääntä.
+- **Pomon kuolema (`bossDeathAnim`, effects.js; muilla olennoilla ennallaan):** 0–3 s irtoaa maasta ja kohoaa hitaasti raajat veltoiksi · 3–4,9 s kalpenee
+  valkoiseksi · 4,9–6,2 s sokaiseva valo valaisee huoneen (`lightSources`, kirkkaus 26, + additiivinen hehkupallo) · **5,3 s kuolinääni** `creSnd`illa
+  (`rev:1.8`) ja **ruumis hajoaa osiin ilmassa** (hahmon ylimmän tason osat irrotetaan `scene.attach`illa, saavat sinkoamisnopeuden ja pyörimisen) ·
+  jälkikaiku 0,45 s myöhemmin (`rev:2.4`, `v:.4`, `p:.92`, `add:1`) · 5,3–6,8 s osat putoavat painovoimalla (15 m/s²) ja jäävät maahan · **6,2–6,55 s valo
+  ja vaaleus katoavat nopeasti**, ennen kuin osat osuvat maahan · 7,4–9,4 s osat maatuvat (läpinäkyvyys häivyttää, `DEATH_END` 9,4 s kuten muillakin).
+  Tulikuolemassa osat tummuvat tuhkan värisiksi ja kipinöivät. Kuolinääni ei enää soi `killMob`issa pomoilla (vain tärähdys), vaan animaatiossa.
+  Siivous `bossDeathEnd`: osat, valo ja hehku poistetaan myös jos pomo poistetaan kesken (esim. ulottuvuudesta poistuminen, `mobRemove`).
+- **`creSnd(m, laji, o)` uudet valinnat:** `rev` = pakotettu kaiun määrä (myös maailmassa), `add` = lisä-ääni joka ei katkaise olennon muita ääniä eikä katkea niistä.
+- Testattu: jousi vasemmassa / miekka oikeassa ja kuva vedosta; lähellä 6 miekaniskua eikä yhtään nuolta; herätys 5 s (0,7 s kohdalla 4,4 m maan alla, pää 0,85 rad),
+  vahinko 0 nousun aikana, lopussa pystyssä ja `angerDone`; kuolema: 19 osaa irtosi, valo 26 → 0,05 ennen maahantuloa, molemmat äänet, poisto 9,4 s, ei jääneitä valoja.
 
 ### v1.88 (jousikalmo ampuu kuin pelaaja, ulottuvuuspomojen kaikuääni)
 - **Jousikalmo (`archerAI`, ai.js):** veto 0,9 s (`ARCH_DRAW`). Tähtäyspiste seuraa pelaajaa **viiveellä** (aikavakio ~0,25 s) ja kalmo **kääntyy hitaasti**

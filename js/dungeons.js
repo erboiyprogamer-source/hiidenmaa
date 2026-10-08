@@ -287,9 +287,11 @@ function onMobKilled(m){
 // jahdatessa) ja satunnaiset räpäytykset, +10 % terveyttä ja lisäsaaliin (REALM_LOOT). Ulkomaailman saman lajin mobit ennallaan.
 const REALM_LOOT={portal1:[['luu',1,2],['rauta',0,1]],portal2:[['kupari',1,2],['luu',1,2]],portal3:[['pihka',1,2],['kupari',0,1]]};
 const REALM_EYE={portal1:0x8fe6ff,portal2:0xff8a36,portal3:0x9aff7a};
-// v1.42 (lista 4, kohta 16): Kalmankammion kalmoista 10 % on jousikalmoja: kirves pois, jousi oikeaan käteen (ai.js: archerAI)
+/* v1.42 (lista 4, kohta 16): Kalmankammion kalmoista 10 % on jousikalmoja. v1.89: kirves pois, jousi VASEMPAAN käteen ja miekka oikeaan
+   täsmälleen kuten pelaajalla (state.js: cat==='bow' → fig.handL). Lähellä se lyö miekalla, kauempana ampuu (ai.js: archerAI). */
 function makeArcher(m){if(m.archer||m.type!=='kalmo')return m;m.archer=true;const h=m.f.hand,ch=h.children;for(let i=ch.length-2;i<ch.length;i++)if(ch[i])ch[i].visible=false;
-  const b=makeHeld('jousi');b.rotation.set(-.15,0,0);h.add(b);m.bow=b;return m;}
+  const b=makeHeld('jousi');b.rotation.set(-.15,0,0);m.f.handL.add(b);m.bow=b;
+  const sw=makeHeld('miekka');sw.rotation.set(-.15,0,0);h.add(sw);m.sword=sw;return m;}
 function realmize(m,id){m.realm=id;if(m.def.ai==='rboss'||m.rv)return m;m.rv=1;if(id==='portal2'&&m.type==='kalmo'&&Math.random()<.1)makeArcher(m);m.maxHp=Math.round(m.maxHp*1.1);m.hp=m.maxHp;
   const f=m.f,base=f.biped?f.torso:f.body,H=f.head,s=f.s||1,col=REALM_EYE[id];
   const add=(par,me)=>{me.castShadow=true;par.add(me);return me;};
@@ -347,9 +349,11 @@ function bossFinalGlow(m){m.f.g.traverse(o=>{if(o.isMesh&&o.material&&o.material
 function realmBossAI(m,dt,dx,dz,dist){
   const d=m.def,f=m.f;
   if(f.sway)for(const w of f.sway){w.m.rotation.z=w.bz+Math.sin(playTime*w.f+w.p)*w.a;w.m.rotation.x=w.bxr+Math.cos(playTime*w.f*.8+w.p)*w.a*.6;}
-  if(m.state==='sleep'){if(!P.dead&&dist<d.aggro&&(P.spawnProt||0)<=0){m.state='intro';m.t=0;sfx('roar');}f.g.position.copy(m.pos);return;}
-  if(m.state==='intro'){m.t+=dt;m.yaw=Math.atan2(dx,dz);f.g.position.copy(m.pos);f.g.rotation.y=m.yaw;f.armL.rotation.x=f.armR.rotation.x=-2.8*Math.min(1,m.t);
-    if(m.t>2){m.state='chase';m.phase=1;sfx('roar');shake(.5);msg(`${d.n} herää!`,'warn');}return;}
+  if(m.state==='sleep'){if(!P.dead&&dist<d.aggro&&(P.spawnProt||0)<=0){m.state='rise';m.t=0;m.sinking=1;m.riseY=m.pos.y;sfx('slam',.5,.5);shake(.3);}f.g.position.copy(m.pos);return;}
+  // v1.89: 5 s herätys – nousee lattiasta pää alhaalla ja kädet sivuilla, haavoittumaton; terveyspalkki näkyy heti, suuttumisääni vasta pystyssä
+  if(m.state==='rise'||m.state==='intro'){m.t+=dt;m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*1.5));
+    if(bossRisePose(m,dt,m.riseY??m.pos.y,(d.fh||4)+1.5))return;
+    m.pos.y=m.riseY??m.pos.y;m.sinking=0;m.state='chase';m.phase=1;m.t=0;bossWakeRoar(m);msg(`${d.n} herää!`,'warn');return;}
   const ph=m.hp>m.maxHp*.66?1:m.hp>m.maxHp*.33?2:3;
   if(ph>(m.phase||1)){m.phase=ph;m.act=null;sfx('roar');shake(.6);shockwave(m.pos.x,m.pos.y,m.pos.z,10,REALMS[m.realm].glow);msg(`${d.n} raivostuu!`,'warn');if(d.sum.includes(ph))summonMinions(m,ph===2?2:3);}
   if(P.dead){moveMob(m,m.home.x-m.pos.x,m.home.z-m.pos.z,d.walk,dt);m.state='sleep';animMob(m,dt);return;}// v0.75: ei parane

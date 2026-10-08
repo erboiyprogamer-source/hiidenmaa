@@ -70,7 +70,75 @@ function updatePuffs(dt){for(let i=puffs.length-1;i>=0;i--){const p=puffs[i];p.t
 // Tavallinen: ruumis kaatuu kyljelleen (0,6 s), raajat valahtavat, veriläntti alle; makaa ~7 s, vajoaa ja häipyy 2 s (yht. < 10 s).
 // Palokuolema (palaa kuollessa tai lyöty soihdulla / tulinuolella / kuoli nuotiossa): mustuu 1,5 s liekeissä → tuhkakasa, joka vajoaa 8 s.
 const DEATH_END=9.4;
+/* v1.89 POMON HERÄTYS (5 s): pomo nousee maasta pää alhaalla ja kädet sivuilla (nukkuu yhä), haavoittumaton (m.sinking=1).
+   Terveyspalkki näkyy heti animaation alkaessa (tila ei ole enää 'sleep'). Suuttumisääni soi vasta kun pomo on pystyssä
+   ja on huomannut pelaajan (bossWakeRoar). Palauttaa true niin kauan kuin nousu on kesken. */
+const BOSS_RISE=5;
+function bossRisePose(m,dt,gy,H){const f=m.f,k=Math.min(1,m.t/BOSS_RISE),w=sstep(.8,1,k);   // w = viimeinen viidennes: pää nousee ja hahmo suoristuu
+  m.pos.y=gy-(1-k)*(1-k)*H;
+  if(f.head)f.head.rotation.x=.85*(1-w);
+  if(f.armL){f.armL.rotation.set(0,0,.14*(1-w));f.armR.rotation.set(0,0,-.14*(1-w));}
+  if(f.elbowL){f.elbowL.rotation.x=-.15*(1-w);f.elbowR.rotation.x=-.15*(1-w);}
+  if(f.legL){f.legL.rotation.x=0;f.legR.rotation.x=0;if(f.kneeL){f.kneeL.rotation.x=0;f.kneeR.rotation.x=0;}}
+  f.g.position.copy(m.pos);f.g.rotation.y=m.yaw;
+  const r=Math.max(.6,m.def.r);
+  if(Math.random()<dt*30)burst(m.pos.x+(Math.random()-.5)*r*3,gy+.2,m.pos.z+(Math.random()-.5)*r*3,Math.random()<.5?0x5d5a54:0x6a5a44,4,5);
+  if(Math.random()<dt*5)shake(.15);
+  return k<1;}
+// pomo on pystyssä ja huomannut pelaajan: oma suuttumisääni (tai tehty karjaisu). Estää creTickiä soittamasta samaa uudestaan.
+function bossWakeRoar(m){if(!creSnd(m,'aggro'))sfx('roar');m.angerDone=1;m.angerTry=99;m.inChase=1;m.chT=1.5+Math.random()*2;shake(.5);}
+
+/* v1.89 POMON KUOLEMA (9,4 s, kaikki pomot – tavallinen lössähdys on muilla olennoilla):
+   0–3 s      irtoaa maasta ja kohoaa hitaasti, raajat retkahtavat
+   3–4,9 s    kalpenee valkoiseksi (väri ja hehku) ja valo kirkastuu
+   4,9–6,2 s  sokaiseva valo valaisee huoneen (lightSources + hehkupallo)
+   5,3 s      kuolinääni kaiulla + jälkikaiku 0,45 s myöhemmin; ruumis hajoaa osiin ilmassa
+   5,3–6,8 s  osat sinkoavat ja putoavat painovoimalla (tulikuolemassa tuhkan väriset, kipinöitä)
+   6,2–6,55 s valo ja vaaleus katoavat nopeasti, ennen kuin osat osuvat maahan
+   7,4–9,4 s  osat maatuvat maassa (läpinäkyvyys häivyttää, kuten muillakin ruumiilla) */
+const BD={up:3,pale:4.9,brk:5.3,dim:6.2},_whC=new THREE.Color(0xffffff);
+function bossDeathAnim(m,dt){const f=m.f,g=f.g,t=m.deadT,r=Math.max(.8,m.def.r);
+  if(!m.da){m.da={y0:g.position.y,ash:!!m.ashDeath,parts:null,col:m.mats.map(mt=>mt.color.clone()),emi:m.mats.map(mt=>mt.emissive.clone()),
+      light:{x:m.pos.x,y:m.pos.y+r*2,z:m.pos.z,c:0xfff0cf,i:.05,on:()=>true,move:true,dun:!!m.dun}};
+    lightSources.push(m.da.light);updateLights();
+    const gl=new THREE.Mesh(new THREE.SphereGeometry(r*1.6,12,10),new THREE.MeshBasicMaterial({color:0xfff6e0,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
+    gl.position.set(m.pos.x,m.pos.y+r*1.6,m.pos.z);scene.add(gl);m.da.glow=gl;}
+  const D=m.da;
+  // kohoaa irti maasta ja retkahtaa veltoksi
+  if(t<BD.brk){const k=sstep(0,BD.up,t),lk=Math.min(1,dt*2.2);g.position.set(m.pos.x,D.y0+k*(1.2+r*.6),m.pos.z);g.rotation.y+=dt*.3;
+    if(f.head)f.head.rotation.x=lerp(f.head.rotation.x,.5,lk);
+    if(f.armL){f.armL.rotation.x=lerp(f.armL.rotation.x,.2,lk);f.armR.rotation.x=lerp(f.armR.rotation.x,.2,lk);f.armL.rotation.z=lerp(f.armL.rotation.z,.65,lk);f.armR.rotation.z=lerp(f.armR.rotation.z,-.65,lk);}
+    if(f.legL){f.legL.rotation.x=lerp(f.legL.rotation.x,.25,lk);f.legR.rotation.x=lerp(f.legR.rotation.x,-.2,lk);if(f.kneeL){f.kneeL.rotation.x=lerp(f.kneeL.rotation.x,.3,lk);f.kneeR.rotation.x=lerp(f.kneeR.rotation.x,.2,lk);}}
+    if(Math.random()<dt*7)burst(m.pos.x+(Math.random()-.5)*r*2,D.y0+.2,m.pos.z+(Math.random()-.5)*r*2,0x6a5a44,3,3);}
+  // vaaleus ja valo: nousee kalpenemisesta, katoaa nopeasti kohdassa BD.dim (ennen kuin osat osuvat maahan)
+  const pk=sstep(BD.up,BD.pale,t),fk=t<BD.dim?pk:Math.max(0,1-(t-BD.dim)/.35),ac=D.ash?clamp((t-BD.dim)/1.2,0,1):0;
+  for(let i=0;i<m.mats.length;i++){const mt=m.mats[i];mt.color.copy(D.col[i]).lerp(_ashC,ac).lerp(_whC,fk);mt.emissive.copy(D.emi[i]).lerp(_whC,fk*.9);}
+  const cy=(D.parts?D.cy:g.position.y)+r*1.4;
+  D.light.i=.05+26*fk*fk;D.light.x=m.pos.x;D.light.y=cy;D.light.z=m.pos.z;
+  if(D.glow){D.glow.material.opacity=.85*fk*fk;D.glow.scale.setScalar(1+2.2*fk);D.glow.position.set(m.pos.x,cy,m.pos.z);}
+  // hajoaminen osiin ilmassa: raajat irtoavat omiksi kappaleikseen ja putoavat painovoimalla
+  if(!D.parts&&t>=BD.brk){D.cy=g.position.y;g.updateMatrixWorld(true);
+    if(!creSnd(m,'death',{rev:1.8}))sfx('die',.7,1);
+    D.parts=g.children.slice().map(o=>{const c=new V3();o.getWorldPosition(c);scene.attach(o);
+      const dx=c.x-m.pos.x,dz=c.z-m.pos.z,l=Math.hypot(dx,dz)||1;
+      return {o,v:new V3(dx/l*(1.2+Math.random()*2.4),2.2+Math.random()*3.4,dz/l*(1.2+Math.random()*2.4)),
+        w:new V3((Math.random()-.5)*7,(Math.random()-.5)*7,(Math.random()-.5)*7),rest:0};});
+    burst(m.pos.x,D.cy+r,m.pos.z,0xffffff,26,9);shake(.5);}
+  if(t>=BD.brk+.45&&!D.ech){D.ech=1;creSnd(m,'death',{rev:2.4,v:.4,p:.92,pri:1.4,add:1,key:'kaiku'});}   // jälkikaiku
+  if(D.parts){for(const q of D.parts){if(q.rest)continue;
+      q.v.y-=15*dt;q.o.position.addScaledVector(q.v,dt);q.o.rotation.x+=q.w.x*dt;q.o.rotation.y+=q.w.y*dt;q.o.rotation.z+=q.w.z*dt;
+      const gy=groundY(q.o.position.x,q.o.position.z,q.o.position.y,m.dun);
+      if(q.o.position.y<=gy+.12){q.o.position.y=gy+.12;q.rest=1;burst(q.o.position.x,gy+.15,q.o.position.z,D.ash?0x3a3633:0x6a5a44,5,2);}}
+    if(D.ash&&Math.random()<dt*14){const q=D.parts[Math.random()*D.parts.length|0];emitEmber(q.o.position.x,q.o.position.y+.2,q.o.position.z,'spark');}}
+  if(t>7.4){const o=Math.max(0,1-(t-7.4)/2);for(const mt of m.mats){if(!mt.transparent){mt.transparent=true;mt.needsUpdate=true;}mt.opacity=o;}}
+  if(t>DEATH_END){bossDeathEnd(m);return true;}
+  return false;}
+function bossDeathEnd(m){const D=m.da;if(!D)return;
+  if(D.parts){for(const q of D.parts)scene.remove(q.o);D.parts=null;}
+  if(D.glow){scene.remove(D.glow);D.glow.material.dispose();D.glow=null;}
+  if(D.light){const i=lightSources.indexOf(D.light);if(i>=0)lightSources.splice(i,1);D.light=null;updateLights();}}
 function mobDeathAnim(m,dt){const f=m.f,g=f.g,t=m.deadT;
+  if((m.def.ai==='boss'||m.def.ai==='rboss')&&!m.sunKill)return bossDeathAnim(m,dt);   // v1.89: pomoilla oma kuolema-animaatio
   if(!m.da){m.da={dir:Math.random()<.5?-1:1,ash:!!m.ashDeath,pool:false,y0:m.pos.y,legs:(f.legs||[]).map(()=>(Math.random()-.5)*.8)};if(m.da.ash)m.da.flames=ashFlames(m);}
   const D=m.da,big=m.def.r>1;
   if(D.ash)return ashAnim(m,dt);

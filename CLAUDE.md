@@ -95,6 +95,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 - **Äänierä (uudet äänet):** noudata kehitysmuistion "Äänierän rutiini" (pull → `process_sounds.py` → lue HUOM-rivit → muistio, versio, `tarkistus.mjs` → PR). Pelkkä äänidata ei vaadi
   `full157`-ajoa. Rutiiniin riittää Sonnet/medium; uusi äänikoodi vaatii enemmän ajattelua.
 - Työkalu trimmaa ja tasaa äänekkyyden lajeittain (`PROFIILI`); kuolemaääniä 1 paikka (rboss) / 2 muilla. Aarnihirviö on varaäänien 💎 (`VARAANI`).
+  Pomot: herätys `bossRisePose`/`bossWakeRoar` ja kuolema `bossDeathAnim`/`bossDeathEnd` (effects.js), tila `rise`.
   Äänilajit: idle, hurt, death, aggro, chase, echo (echo = nukkuva ulottuvuuspomo kaikuu kaukaa; pääääni Aarnihirviö). Jousikalmo: `archerAI`/`archerPose` (ai.js), jousen asento `bowAimFig` (player.js).
   Pelin toisto (`creSnd`, audio.js): tärkeys, yksi ääni/olento, 10 äänen raja, kaiku vain `m.dun`-olennoille (ConvolverNode, näytetaajuus = AudioContextin).
 

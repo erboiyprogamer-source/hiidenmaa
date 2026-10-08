@@ -259,6 +259,12 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - **Korjaus:** `a.createBuffer(2, len, a.sampleRate)`. Älä yritä "halpaa" matalaa näytetaajuutta; pidä vastaus lyhyt (1,2 s) ja irrota kaiku kun ei käytössä.
 - Kaiku irrotetaan 3 s kuluttua – mutta EI niin kauan kuin jokin kaiullinen ääni (`v.sd`) vielä soi (muuten kuolema- ja jahtiäänet katkeavat kuivaksi).
 
+## 35. Muuttuja käytössä ennen määrittelyä samassa funktiossa (v1.89)
+- **Oire:** `ReferenceError: Cannot access 'addv' before initialization` heti kun uutta ääntä yritetään soittaa.
+- **Syy:** `const` lisättiin funktion keskelle, mutta sitä käytettiin jo ylempänä (TDZ).
+- **Korjaus:** uudet `const`-apumuuttujat funktion alkuun, ennen ensimmäistä käyttöä. Tarkista aina `node --check` JA kertaalleen ajamalla.
+- **Muista myös (KORJAUKSET 18):** rivin keskelle lisätty `//`-kommentti syö loppurivin – käytä `/* */`, kun rivi jatkuu.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

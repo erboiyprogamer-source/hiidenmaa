@@ -170,6 +170,25 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.88 jousikalmo ampuu kuin pelaaja: viiveellä seuraava hidas tähtäys, nuoli lähtee jousen suuntaan (ei ennakointia), jousi pelaajan asennossa (bowAimFig)',()=>{const f=archerAI.toString();return typeof bowAimFig==='function'&&/bowAimFig/.test(archerPose.toString())&&/aimX/.test(f)&&/ARCH_TURN/.test(f)&&!/P\.vel/.test(f)&&ARCH_TURN<2&&/archerPose/.test(animMob.toString()+update.toString()+updateMobs.toString())||'puuttuu';});
   t('v1.88 ulottuvuuspomojen kaikuääni (echo): Aarnihirviö = pääääni, kuuluu vain nukkuvasta pomosta samassa ulottuvuudessa, kaukaa (≤38 m) kaiulla',()=>{const o=CRE.man;CRE.man={aarnihirvio_echo_1:{h:'x'}};const a=creRes('jaajattari','echo'),b=creRes('vartija','echo'),c=creRes('susi','echo');CRE.man=o;
     return a&&a.names[0]==='aarnihirvio_echo_1'&&Math.abs(a.p-1.2)<1e-9&&b===null&&c===null&&CRE_ECHO.join()==='rboss'&&/echo/.test(creTick.toString())&&/'sleep'/.test(creTick.toString())&&typeof creEchoPos==='function'||'virhe';});
+  t('v1.89 jousikalmo: jousi vasemmassa kädessä ja miekka oikeassa (kuten pelaajalla), veto 1,9 s',()=>{const m=spawnMob('kalmo',P.pos.x+18,P.pos.z+18);makeArcher(m);
+    const ok=m.f.handL.children.includes(m.bow)&&m.f.hand.children.includes(m.sword)&&ARCH_DRAW>1.85&&/bowAimFig/.test(archerPose.toString());mobRemove(m);return ok||'virhe';});
+  t('v1.89 pomon herätys 5 s: nousee maasta pää alhaalla ja kädet sivuilla, haavoittumaton, suoristuu lopuksi',()=>{const m=spawnMob('vartija',P.pos.x+22,P.pos.z+22);
+    m.state='rise';m.t=0;m.sinking=1;const g=terrainH(m.pos.x,m.pos.z);let ok=true;
+    for(let i=0;i<60;i++){m.t+=1/30;bossRisePose(m,1/30,g,7.5);}
+    if(!(m.pos.y<g-.5))ok='ei nouse maasta';else if(!(m.f.head.rotation.x>.5))ok='pää ei ole alhaalla';
+    const hp=m.hp;damageMob(m,100,'blunt',0,1);if(m.hp!==hp)ok='ei haavoittumaton';
+    m.t=BOSS_RISE;if(bossRisePose(m,1/30,g,7.5))ok='nousu ei pääty';else if(Math.abs(m.f.head.rotation.x)>.02)ok='pää ei nouse lopuksi';
+    if(BOSS_RISE!==5)ok='kesto ei 5 s';mobRemove(m);return ok;});
+  t('v1.89 pomon kuolema: kohoaa, kalpenee, kirkas valo, hajoaa osiin ilmassa ja osat putoavat; valo ja osat siivotaan',()=>{const m=spawnMob('vartija',P.pos.x+26,P.pos.z+26);
+    m.dead=true;m.deadT=0;let ok=true,lmax=0;
+    for(let i=0;i<Math.floor(30*6);i++){m.deadT+=1/30;mobDeathAnim(m,1/30);if(m.da&&m.da.light)lmax=Math.max(lmax,m.da.light.i);}
+    if(!m.da||!m.da.parts||m.da.parts.length<3)ok='ruumis ei hajonnut osiin';
+    else if(!(lmax>5))ok='ei kirkasta valoa';
+    else if(m.da.parts[0].o.parent!==scene)ok='osat eivät irronneet';
+    else if(!(m.da.parts.some(q=>!q.rest)))ok='osat eivät putoa';
+    m.deadT=DEATH_END+.1;if(!mobDeathAnim(m,1/30))ok='animaatio ei pääty';
+    if(lightSources.some(s=>s.c===0xfff0cf))ok='valo jäi jäljelle';
+    mobRemove(m);return ok;});
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua

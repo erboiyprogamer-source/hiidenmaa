@@ -206,4 +206,4 @@ function spawnMob(type,x,z,opts={}){
   mobs.push(m);return m;
 }
 function bossTired(type){return ((flags.bossDeaths||{})[type]||0)>=3;}   // v1.81
-function mobRemove(m){scene.remove(m.f.g);if(m.da){if(m.da.flames)scene.remove(m.da.flames);if(m.da.pile)scene.remove(m.da.pile);}mobs.splice(mobs.indexOf(m),1);if(m===boss)boss=null;}
+function mobRemove(m){scene.remove(m.f.g);if(m.da){if(m.da.flames)scene.remove(m.da.flames);if(m.da.pile)scene.remove(m.da.pile);if(m.da.parts||m.da.light||m.da.glow)bossDeathEnd(m);}   /* v1.89: pomon irronneet osat, valo ja hehku pois */mobs.splice(mobs.indexOf(m),1);if(m===boss)boss=null;}

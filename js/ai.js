@@ -185,8 +185,8 @@ const MOB_SPD=.85;
 /* v1.88: jousikalmo ampuu kuten pelaaja. Veto kestää ARCH_DRAW s; sen aikana tähtäys seuraa pelaajan paikkaa VIIVEELLÄ (aikavakio ~0,25 s) ja
    kalmo kääntyy hitaasti (ARCH_TURN rad/s, ylös/alas ARCH_PITCH rad/s). Nuoli lähtee täsmälleen siihen suuntaan, johon jousi osoittaa vapautushetkellä
    (+ pieni hajonta), ei ennakoi liikettä → sivulle väistävä/häilyvä pelaaja jää nuolen ohi. Nuolen fysiikka sama kuin pelaajalla (shootArrow, painovoima
-   ARCH_G, tuuli). Jousen asento (kahva edessä, jänne poskella, nuoli) tulee pelaajan bowAimFig-funktiosta (player.js), ks. archerPose. */
-const _arF=new V3(),_arD=new V3(),_arX=new V3(),ARCH_DRAW=.9,ARCH_SPD=32,ARCH_G=7,ARCH_TURN=1.0,ARCH_PITCH=.9;
+   ARCH_G, tuuli). v1.89: veto 1,9 s (sekunti lisää) ja jousi vasemmassa kädessä, miekka oikeassa – alle 2,4 m kalmo lyö miekalla. Jousen asento (kahva edessä, jänne poskella, nuoli) tulee pelaajan bowAimFig-funktiosta (player.js), ks. archerPose. */
+const _arF=new V3(),_arD=new V3(),_arX=new V3(),ARCH_DRAW=1.9,ARCH_SPD=32,ARCH_G=7,ARCH_TURN=1.0,ARCH_PITCH=.9;
 function archerAI(m,dt,dx,dz,dist){const d=m.def,los=losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true);
   if(m.aimT>0){
     const k=Math.min(1,dt*4);m.aimX+=(P.pos.x-m.aimX)*k;m.aimY+=(P.pos.y+1.15-m.aimY)*k;m.aimZ+=(P.pos.z-m.aimZ)*k;   // viive: tähtäyspiste seuraa pelaajaa hitaasti
@@ -301,9 +301,10 @@ function bossAI(m,dt,dx,dz,dist){
     if(dist2(P.pos.x,P.pos.z,m.pos.x,m.pos.z)<40*40&&Math.random()<dt*4)shake(.12);m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;
     if(m.t>=3){mobRemove(m);flags.altarSt=1;flags.bossHp=m.hp;syncAltar();/* v0.75: kivet jäävät alttarille pysyvästi (ei maahan katoavina esineinä), hp säilyy */circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));$('#bossbar').hidden=true;}return;}
   // v0.95: herätettäessä vartija nousee maasta 2,5 s:ssa (haavoittumaton), sitten nykyinen karjaisu (intro)
-  if(m.state==='rise'){m.t+=dt;const k=Math.min(1,m.t/2.5),g=terrainH(m.pos.x,m.pos.z);m.pos.y=g-(1-k)*(1-k)*7.5;m.yaw=Math.atan2(dx,dz);
-    if(Math.random()<dt*30)burst(m.pos.x+(Math.random()-.5)*4,g+.2,m.pos.z+(Math.random()-.5)*4,Math.random()<.5?0x5d5a54:0x6a5a44,4,5);if(Math.random()<dt*5)shake(.15);
-    m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;if(m.t>=2.5){m.pos.y=g;m.state='intro';m.t=0;m.sinking=0;}return;}
+  // v1.89: nousu kestää 5 s (ennen 2,5 s + karjaisu): pää alhaalla ja kädet sivuilla, haavoittumaton; karjaisu vasta pystyssä
+  if(m.state==='rise'){m.t+=dt;const g=terrainH(m.pos.x,m.pos.z);m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*1.5));
+    if(bossRisePose(m,dt,g,7.5))return;
+    m.pos.y=g;m.sinking=0;m.state='chase';m.t=0;bossWakeRoar(m);return;}
   if(P.dead){moveMob(m,L.x-m.pos.x,L.z-m.pos.z,m.def.walk,dt);animMob(m,dt);return;}// v0.75: iso pomo ei parane
   if(m.atkCd<=0){
     if(dist<5){m.act={k:Math.random()<.55?'swipe':'slam',t:0};m.atkCd=(m.phase2?1.1:1.6)*1.2*BOSS_SLOW;}
