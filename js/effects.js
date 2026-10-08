@@ -158,7 +158,9 @@ const BD={brk:5.6,dim:8.4,dimLen:.7,drop0:8.9,loot:12.6,decay:10};
 function bossDeathAnim(m,dt){const f=m.f,g=f.g,t=m.deadT,r=Math.max(.9,m.def.r),col=bossCol(m);
   if(!m.da){bossChargeReset(m);bossEyes(m,0);if(m.rz)bossRiseFxEnd(m);
     g.position.copy(m.pos);g.visible=true;
-    m.da={boss:1,y0:m.pos.y,ash:!!m.ashDeath,col:m.mats.map(mt=>mt.color.clone()),emi:m.mats.map(mt=>mt.emissive.clone()),
+    const basic=[];g.traverse(o=>{if(o.isMesh&&o.material&&o.material.isMeshBasicMaterial&&!basic.includes(o.material))basic.push(o.material);});   // v1.93: hehkut (silmät, riimut, sienet)
+    for(const b of basic){b.transparent=true;b.userData.op0=b.opacity;}
+    m.da={boss:1,y0:m.pos.y,ash:!!m.ashDeath,basic,col:m.mats.map(mt=>mt.color.clone()),emi:m.mats.map(mt=>mt.emissive.clone()),
       lights:[],lightsOff:0,parts:null,beams:null,loot:m.bossLoot||null,lootDone:!m.bossLoot,firstLand:0,lastLand:0,landed:0,mounds:[]};
     const gl=new THREE.Mesh(new THREE.SphereGeometry(r*1.5,14,10),new THREE.MeshBasicMaterial({color:0xfff6e0,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
     gl.position.set(m.pos.x,m.pos.y+r*1.6,m.pos.z);scene.add(gl);m.da.glow=gl;}
@@ -175,6 +177,7 @@ function bossDeathAnim(m,dt){const f=m.f,g=f.g,t=m.deadT,r=Math.max(.9,m.def.r),
   const cy=D.cy??(g.position.y+r*1.4);
   // 2) vaaleus ja väri: kalpenee heti, tulikuolemassa tuhka, maassa multa
   const ac=D.ash?sstep(BD.dim,BD.dim+1.5,t):0,dkc=D.firstLand?sstep(D.firstLand+.5,D.firstLand+5,t):0;
+  if(D.basic){const bo=(1-sstep(BD.dim,BD.dim+1.2,t))*(D.landed>=(D.parts?D.parts.length:1e9)?1-sstep(D.lastLand+BD.decay-2,D.lastLand+BD.decay,t):1);for(const b of D.basic)b.opacity=(b.userData.op0??1)*Math.max(.0,bo);}
   for(let i=0;i<m.mats.length;i++){const mt=m.mats[i];mt.color.copy(D.col[i]).lerp(_ashC,ac).lerp(D.ash?_ashC:_soilC,dkc*.85).lerp(_whC,pale);mt.emissive.copy(D.emi[i]).multiplyScalar(1-dkc).lerp(_whC,pale*.9);}
   // 3) pinoutuvat todelliset valot + huoneen kirkastus; katoavat himmennyksessä
   if(!D.lightsOff){
@@ -188,6 +191,7 @@ function bossDeathAnim(m,dt){const f=m.f,g=f.g,t=m.deadT,r=Math.max(.9,m.def.r),
   // 4) repeäminen: vartalo jää keskelle, muut osat liukuvat omiin suuntiinsa; kuolinääni; saalis leijumaan
   if(!D.parts&&t>=BD.brk){g.updateMatrixWorld(true);D.cx=m.pos.x;D.cz=m.pos.z;let ty=g.position.y+r*1.4;if(f.torso){_bb.setFromObject(f.torso);_bb.getCenter(_bv);ty=_bv.y;}D.cy=ty;
     if(!creSnd(m,'death',{rev:1.9}))sfx('die',.7,1);
+    for(const o of g.children.slice())if(!o.visible)g.remove(o);   // v1.93: piilotetut (esim. Ultra-palat muulla tasolla) eivät ole osia
     D.parts=g.children.slice().map(o=>{_bb.setFromObject(o);const c=_bb.getCenter(new V3()),sz=_bb.getSize(new V3()),tor=o===f.torso;scene.attach(o);
       let dx=c.x-D.cx,dy=c.y-ty,dz=c.z-D.cz,l=Math.hypot(dx,dy,dz);if(l<.15){const a=Math.random()*TAU;dx=Math.cos(a);dz=Math.sin(a);dy=.2;l=Math.hypot(dx,dy,dz);}
       const dd=tor?0:.45+Math.random()*.45+Math.max(sz.x,sz.y,sz.z)*.15;
@@ -198,7 +202,7 @@ function bossDeathAnim(m,dt){const f=m.f,g=f.g,t=m.deadT,r=Math.max(.9,m.def.r),
     D.bm=new THREE.MeshBasicMaterial({color:0xfffaf0,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     D.beams=ord.slice().sort((a,b)=>b.size-a.size).slice(0,10).map(q=>{const b=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,1,6,1,true),D.bm);scene.add(b);return {b,q};});
     if(D.loot&&!D.lootDone){D.lootDone=1;D.loot.forEach(([id,c],i)=>{const a=i/D.loot.length*TAU+Math.random()*.4,d=spawnDrop(id,c,D.cx,ty,D.cz);
-      d.hold=BD.loot-t+i*.12;d.hy=ty+.1+Math.random()*.5;d.vx=Math.cos(a)*.9;d.vz=Math.sin(a)*.9;d.vy=0;d.ph=Math.random()*TAU;});}
+      d.hold=BD.loot-t+i*.12;d.hy=ty+.1+Math.random()*.5;d.vx=Math.cos(a)*.9;d.vz=Math.sin(a)*.9;d.vy=0;d.ph=Math.random()*TAU;beaconAdd(d,new THREE.Color(col).lerp(_whC,.35).getHex());});}   // v1.93 majakkasäde
     burst(D.cx,ty,D.cz,0xffffff,30,8);shake(.55);}
   if(t>=BD.brk+.45&&!D.ech&&D.parts){D.ech=1;creSnd(m,'death',{rev:2.6,v:.4,p:.9,pri:1.4,add:1,key:'kaiku'});}   // jälkikaiku
   // valosäikeet vartalon ja irtoavien osien välissä
@@ -255,7 +259,7 @@ function bossDeathEnd(m){const D=m.da;if(!D||!D.boss)return;
   for(const L of D.lights||[])dropLightSrc(L);D.lights=[];D.lightsOff=1;
   for(const M of D.mounds){scene.remove(M.gr);M.gr.traverse(o=>{if(o.geometry)o.geometry.dispose();});}D.mounds=[];
   if(D.mm){for(const k in D.mm)D.mm[k].dispose();D.mm=null;}
-  if(D.loot&&!D.lootDone){D.lootDone=1;for(const [id,c] of D.loot)spawnDrop(id,c,P.pos.x,P.pos.y+1,P.pos.z);}   // pomo poistui ennen repeämistä → saalis pelaajan luo
+  if(D.loot&&!D.lootDone){D.lootDone=1;for(const [id,c] of D.loot)beaconAdd(spawnDrop(id,c,P.pos.x,P.pos.y+1,P.pos.z),bossCol(m));}   // pomo poistui ennen repeämistä → saalis pelaajan luo
   BOSS_GLOW=0;updateLights();}
 function mobDeathAnim(m,dt){const f=m.f,g=f.g,t=m.deadT;
   if((m.def.ai==='boss'||m.def.ai==='rboss')&&!m.sunKill)return bossDeathAnim(m,dt);   // v1.89: pomoilla oma kuolema-animaatio

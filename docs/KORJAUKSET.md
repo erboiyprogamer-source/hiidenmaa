@@ -274,6 +274,14 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   **Korjaus:** `rotation.order='YXZ'` ennen kallistusta (kuten harppovilla hirviöillä animMobissa).
 - **Testin sudenkuoppa:** `page.evaluate` ja `tools/tarkistus.mjs`: nuolifunktion runko ilman aaltosulkeita ei saa päättyä `;` ennen `)` (SyntaxError).
 
+## 37. Pomomallit ja kuolema (v1.93)
+- Pomon mallin osat irtoavat kuollessa **`f.g`:n suorina lapsina**. Ultra-palat lisätään siksi suoraan `f.g`:hen; näkymättömät lapset poistetaan
+  ennen repeämistä (muuten niistä tulee näkymättömiä osia ja multakumpuja).
+- Älä käytä pomomallissa jaettuja materiaaleja (`MAT.glow` tms.): kuolema muuttaa MeshBasic-materiaalien läpinäkyvyyttä (`D.basic`) ja
+  MeshStandard-materiaalien väriä (`m.mats` kloonataan spawnMobissa). bossmodels.js luo materiaalit joka kutsulla (`bqMat`, `bqGlow`, `bqAdd`).
+- Saman nimisiä ylimmän tason funktioita ei saa olla kahdessa tiedostossa: myöhemmin ladattu korvaa aiemman hiljaa. Vanhat pomomallit poistettiin
+  mobs.js:stä, kun uudet tulivat bossmodels.js:ään.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

@@ -214,6 +214,16 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     return inBossRoom(R,pts[pts.length-1].x,pts[pts.length-1].z)&&typeof devRouteLine==='function'||'ei pääty huoneeseen';});
   t('v1.92 DEV: seinien läpi (noclip), lukitse aika ja sää, pysäytä maailma, V nopeuttaa lentoa',()=>{const u=update.toString(),pl=updatePlayer.toString();
     return /devOn\('freeze'\)/.test(u)&&/devOn\('lockTW'\)/.test(u)&&/devOn\('noclip'\)/.test(pl)&&/vK=DEV&&keys\.KeyV\?6:1/.test(pl)&&'noclip' in DEVF&&'freeze' in DEVF&&'lockTW' in DEVF&&'route' in DEVF||'puuttuu';});
+  t('v1.93 pomojen korkealaatuiset mallit (bossmodels.js): ei palikoita, silmät, elävät osat f.fx; Ultralla silmäliekit ja leijuvat palat',()=>{const o=Object.assign({},SET);let bad=null;
+    for(const type of ['vartija','jaajattari','kalmaherra','aarnihirvio']){const m=spawnMob(type,P.pos.x+30,P.pos.z+30);let tri=0,box=0;
+      m.f.g.traverse(q=>{if(q.isMesh){const g=q.geometry;tri+=(g.index?g.index.count:g.attributes.position.count)/3;if(g.type==='BoxGeometry')box++;}});
+      applyPreset(7);_bqUT=-99;m.f.fx(1/30,m);const orbU=m.f.g.children.filter(c=>c.userData&&c.userData.a0!==undefined&&c.visible).length;
+      applyPreset(3);_bqUT=-99;m.f.fx(1/30,m);const orbL=m.f.g.children.filter(c=>c.userData&&c.userData.a0!==undefined&&c.visible).length;
+      if(!(tri>8000)||box>2||!m.f.eyes||m.f.eyes.length!==2||!(orbU>=3)||orbL!==0)bad=`${type} tri ${Math.round(tri)} box ${box} orbU ${orbU} orbL ${orbL}`;mobRemove(m);if(bad)break;}
+    Object.assign(SET,o);applyGfx();_bqUT=-99;return bad||true;});
+  t('v1.93 pomon saaliin majakkasäde (beaconAdd) ja siivous poimittaessa; kuolemassa piilotetut palat eivät ole osia',()=>{const d=spawnDrop('rauta',1,P.pos.x+3,P.pos.y+1,P.pos.z);beaconAdd(d,0xffffff);
+    const ok=!!d.beacon&&d.beacon.g.parent===scene;const g=d.beacon.g;removeDrop(d);
+    return ok&&!g.parent&&/beaconAdd\(d,/.test(bossDeathAnim.toString())&&/if\(!o\.visible\)g\.remove\(o\)/.test(bossDeathAnim.toString())||'virhe';});
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua

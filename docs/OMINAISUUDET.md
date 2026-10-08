@@ -488,6 +488,10 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kädet levälleen, kuolinääni kaiulla ja ruumis repeää (vartalo keskellä, osat irti omiin suuntiinsa valosäikein), valo katoaa, osat putoavat
   yksitellen. Saalis leijuu ilmassa ja putoaa nätisti 12,6 s. Osat maatuvat multakummuiksi, joille nousee hehkuvia sieniä (tulikuolemassa tuhkaa).
 - Pomon ryntäys: kyyristyy ja silmät kirkastuvat 0,6 s, sitten etukenossa polvet koukussa.
+- Pomojen mallit (v1.93, js/bossmodels.js): korkealaatuiset, pyöristetyt ja yksityiskohtaiset (sarvet, kristallit, viitat, ketjut, miekka, sienet).
+  Ultra-tasolla silmissä liekit ja pomon ympärillä leijuvat sen teeman palat (riimukivet, jääkristallit, aavekallot ja sieluliekki, lehdet ja
+  tulikärpäset); ne irtoavat ja putoavat kuollessa muiden osien mukana.
+- Pomon saaliilla on majakkasäde: hehkuva valopylväs ja maarengas pomon värissä, kunnes esine poimitaan.
 - Palava pomo (boss/rboss): hurt-ääni silmukkana 1,4–2,2 s välein, sävel ×0,78 ja voimakkuus ×0,55, tärkeys 1,5 (jahti katkaisee). Muut olennot eivät ähki palaessaan.
 - Kaikuääni (echo, ulottuvuuspomot, 1–2 versiota): nukkuva pomo kuuluu 24–48 s välein vain omassa ulottuvuudessaan (≤38 m päästä, tumma, kaiulla) kunnes pelaaja kohtaa sen. Aarnihirviön kaikuäänet ovat kaikkien varaääni.
 - Kaiku: luolaston ja ulottuvuuksien olennoille (lähetys 0,45 / boss 0,6 / rboss 0,75), yksi yhteinen ConvolverNode (1,2 s), kytkeytyy vain tarvittaessa.
