@@ -166,6 +166,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     if(!(CRE_PRI.death>CRE_PRI.hurt&&CRE_PRI.hurt>CRE_PRI.aggro&&CRE_PRI.aggro>CRE_PRI.chase&&CRE_PRI.chase>CRE_PRI.idle)||CRE.max!==10)return 'tärkeys';
     const f=creSnd.toString();if(!/m\.dun/.test(f)||!/creRevOn/.test(f)||!/CRE\.lastAmb/.test(f)||typeof creRevTick!=='function')return 'kaiku/toisto';
     return true;});
+  t('v1.87 palava pomo ähkii: kipuääni silmukkana matalampana (×0,78) ja hiljaisempana (×0,55), vain boss/rboss',()=>{const f=updateBurn.toString();return /boss/.test(f)&&/burnSnd/.test(f)&&/creSnd\(m,'hurt',\{p:\.78,v:\.55/.test(f)&&/o&&o\.p/.test(creSnd.toString())&&/o&&o\.v/.test(creSnd.toString())||'puuttuu';});
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua

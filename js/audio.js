@@ -94,14 +94,15 @@ function creRevMake(a){if(CRE.rev)return CRE.rev;const sr=a.sampleRate,len=Math.
 function creRevOn(a){const R=creRevMake(a);R.t=3;if(!R.on){R.out.connect(CRE.gain);R.on=true;}return R;}
 function creRevTick(dt){const R=CRE.rev;if(!R||!R.on)return;if(CRE.voices.some(v=>v.sd)){R.t=3;return;}R.t-=dt;if(R.t<=0){try{R.out.disconnect();}catch(e){}R.on=false;}}
 function creStop(v,t){try{v.g.gain.setTargetAtTime(0,actx.currentTime,.03);v.src.stop(actx.currentTime+(t||.12));}catch(e){}}
+// o (valinnainen): {p: sävelkerroin, v: voimakkuuskerroin, pri: tärkeys, key: oma laskuriavain} – esim. palavan pomon kipuääni.
 // soittaa olennon äänen 3D:nä (arpoo ladatuista versioista). Palauttaa äänen keston sekunteina, jos olennolla on tiedostoääni
 // (silloin tehtyä ääntä ei soiteta), muuten false (ei ääntä tai vielä latautumassa).
-function creSnd(m,kind){if(!m)return false;const r=creRes(m.type,kind);if(!r)return false;
+function creSnd(m,kind,o){if(!m)return false;const r=creRes(m.type,kind);if(!r)return false;
   const L=r.names.filter(n=>CRE.buf[n]);if(!L.length){for(const n of r.names)creBuf(n);return false;}
-  const key=m.type+'_'+kind;let pick=L;if(L.length>1&&CRE.last[key])pick=L.filter(n=>n!==CRE.last[key]);
-  const name=pick[Math.random()*pick.length|0],B=CRE.buf[name],rate=r.p*(1+(Math.random()*2-1)*.06),dur=B.duration/rate;
+  const key=m.type+'_'+(o&&o.key||kind);let pick=L;if(L.length>1&&CRE.last[key])pick=L.filter(n=>n!==CRE.last[key]);
+  const name=pick[Math.random()*pick.length|0],B=CRE.buf[name],rate=r.p*(o&&o.p||1)*(1+(Math.random()*2-1)*.06),dur=B.duration/rate;
   const a=actx;if(!a||a.state!=='running'||!soundOn)return dur;const vol=typeof SET!=='undefined'?+SET.creVol:1;if(!(vol>0))return dur;
-  const pri=CRE_PRI[kind]||1,now=a.currentTime,amb=pri<=2,boss=m.def.ai==='boss'||m.def.ai==='rboss';
+  const pri=o&&o.pri||CRE_PRI[kind]||1,now=a.currentTime,amb=pri<=2,boss=m.def.ai==='boss'||m.def.ai==='rboss';
   if(!CRE.gain){CRE.gain=a.createGain();CRE.gain.connect(a.destination);}CRE.gain.gain.value=vol;
   // olennon oma ääni: heikompi ei katkaise, samanarvoinen vasta kun edellinen on soinut hetken
   for(const v of CRE.voices)if(v.m===m){if(v.pri>pri||(v.pri===pri&&now-v.t0<.35))return dur;}
@@ -112,7 +113,7 @@ function creSnd(m,kind){if(!m)return false;const r=creRes(m.type,kind);if(!r)ret
   if(amb)CRE.lastAmb=now;CRE.last[key]=name;
   const src=a.createBufferSource(),g=a.createGain(),pn=a.createPanner();src.buffer=B;src.playbackRate.value=rate;
   pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=boss?8:3;pn.maxDistance=90;pn.rolloffFactor=1.1;
-  g.gain.value=CRE_G[kind]||1;src.connect(g);g.connect(pn);pn.connect(CRE.gain);crePos(pn,m.pos.x,m.pos.y+(m.def.r||.5)*1.6,m.pos.z);
+  g.gain.value=(CRE_G[kind]||1)*(o&&o.v||1);src.connect(g);g.connect(pn);pn.connect(CRE.gain);crePos(pn,m.pos.x,m.pos.y+(m.def.r||.5)*1.6,m.pos.z);
   let sd=null;if(m.dun){const R=creRevOn(a);sd=a.createGain();sd.gain.value=m.def.ai==='rboss'?.75:boss?.6:.45;pn.connect(sd);sd.connect(R.inp);}
   const v={src,pn,g,sd,m,pri,t0:now,key};CRE.voices.push(v);src.onended=()=>{const i=CRE.voices.indexOf(v);if(i>=0)CRE.voices.splice(i,1);try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return dur;}
 // joka ruutu: kuuntelija = kamera, soivat äänet seuraavat olentoa; idle 6–15 s välein alle 25 m päässä, aggro kerran jahdin alkaessa

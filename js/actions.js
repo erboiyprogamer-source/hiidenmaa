@@ -114,6 +114,8 @@ function stopBurn(m){m.burnT=0;if(m.fireFx){m.f.g.remove(m.fireFx);m.fireFx=null
 // Palavan mobin päivitys: palauttaa true, jos mobi kuoli tulessa.
 function updateBurn(m,dt){if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9)){stopBurn(m);burst(m.pos.x,m.pos.y+1,m.pos.z,0x9a9a9a,6,2);return false;}
   m.burnT-=dt;if(!m.sunBurn)m.hp-=5*dt;m.hurtT=playTime;m.lastHit=playTime;
+  // v1.87: palava pomo (boss/rboss) ähkii silmukkana: oma kipuääni (hurt) matalampana (×0,78) ja hiljaisempana (×0,55), 1,4–2,2 s välein, alle 60 m päässä
+  if(m.def.ai==='boss'||m.def.ai==='rboss'){m.burnSnd=(m.burnSnd??.3)-dt;if(m.burnSnd<=0){m.burnSnd=1.4+Math.random()*.8;if(dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<60*60)creSnd(m,'hurt',{p:.78,v:.55,pri:1.5,key:'burn'});}}
   if(m.fireFx){const t=playTime*9;m.fireFx.children.forEach((c,i)=>{if(c.userData.glow){c.material.opacity=.14+.08*Math.abs(Math.sin(t*.7+i));return;}c.scale.y=.8+.35*Math.abs(Math.sin(t+i*1.7));});if(Math.random()<dt*24)emitEmber(m.pos.x+(Math.random()-.5)*.7,m.pos.y+(m.barH||1.5)*(.3+Math.random()*.6),m.pos.z+(Math.random()-.5)*.7,'spark');if(Math.random()<dt*3)emitEmber(m.pos.x,m.pos.y+(m.barH||1.5),m.pos.z,'smoke');if(Math.random()<dt*5)smokePuff(m.pos.x+(Math.random()-.5)*m.def.r,m.pos.y+(m.barH||1.5)*.9,m.pos.z+(Math.random()-.5)*m.def.r,1.1+m.def.r,.2);}   // v1.37 (kohta 36): isoja savupilviä
   if(m.fireLight){m.fireLight.x=m.pos.x;m.fireLight.y=m.pos.y+.4;m.fireLight.z=m.pos.z;}
   if(m.hp<=0){stopBurn(m);killMob(m);return true;}
