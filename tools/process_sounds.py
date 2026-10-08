@@ -251,6 +251,24 @@ def write_list(sounds, raws):
     users = {}
     for cid, (to) in ((k, v['to']) for k, v in vara.items()):
         users.setdefault(to, []).append(cid)
+    names = {cid: name for cid, name, _ in cre}
+    order = {cid: i for i, (cid, _, _) in enumerate(cre)}
+
+    def borrowers(cid):
+        """Kaikki jotka lainaavat tältä (myös ketjun kautta): [(id, ketjun_väli_id tai None)], suorat ensin."""
+        out, seen = [], {cid}
+        for u in sorted(users.get(cid, []), key=order.get):
+            out.append((u, None))
+            seen.add(u)
+        todo = [u for u, _ in out]
+        while todo:
+            cur = todo.pop(0)
+            for u in sorted(users.get(cur, []), key=order.get):
+                if u not in seen:
+                    seen.add(u)
+                    out.append((u, cur))
+                    todo.append(u)
+        return out
     cats = [('Eläimet', ('flee', 'neutral')), ('Viholliset', ('hostile',)), ('Pomot', ('boss', 'rboss'))]
     own = tot = 0
     rows = []
@@ -262,7 +280,14 @@ def write_list(sounds, raws):
             if ai not in ais:
                 continue
             info = CRE_INFO.get(cid, (name, {}))
-            star = f' ⭐ varaääni: {", ".join(sorted(users[cid]))}' if cid in users else ''
+            # roolit: 💎 pääääni (muut lainaavat, ei lainaa itse) · ⭐ väliääni (lainaa itse ja muut lainaavat siltä) · ei merkkiä = vain lainaa
+            deps = borrowers(cid)
+            if deps:
+                mark = '⭐' if cid in vara else '💎'
+                lst = ', '.join(names[u].lower() + (f' (via {names[v].lower()})' if v else '') for u, v in deps)
+                star = f' {mark} ({len(deps)})<br>lainaavat: {lst}'
+            else:
+                star = ''
             for j, kind in enumerate(kinds_of(ai)):
                 tot += 1
                 mine = [n for n in VARIANTS if f'{cid}_{kind}_{n}' in sounds]
@@ -298,11 +323,17 @@ def write_list(sounds, raws):
 4. Commit ja push GitHub Desktopilla ja pyydä Claudea ajamaan `python3 tools/process_sounds.py`: ääni normalisoidaan,
    hiljaisuus leikataan ja se siirtyy peliin (`sounds/<nimi>.mp3`). Raakatiedostot jäävät `sounds/raw/`-kansioon.
 
-**Tilat:** ✅ oma ääni · 🔁 väliaikainen varaääni toiselta olennolta (sävelkorkeutta muutettu) · ⬜ puuttuu (peli käyttää tehtyä
-ääntä tai on hiljaa). ⭐ = tämän olennon äänet toimivat varaäänenä luetelluille – lisää nämä ensin, niin moni olento saa äänen.
-Varaäänet ovat vain väliaikaisia: jokaiselle olennolle kannattaa lopulta lisätä omat äänet.
+**Tilat (Tila-sarake):** ✅ oma ääni · 🔁 väliaikainen varaääni toiselta olennolta (sävelkorkeutta muutettu) · ⬜ puuttuu (peli käyttää
+tehtyä ääntä tai on hiljaa). Varaäänet ovat vain väliaikaisia: jokaiselle olennolle kannattaa lopulta lisätä omat äänet.
 
 ## Äänierä A: olennot ({own}/{tot} äänilajia omilla äänillä)
+
+**Selite (Olento-sarake, varaääniketju):**
+- 💎 = **pääääni**: muut lainaavat tältä, se ei lainaa itse. Lisää nämä ensin – yksi ääni täyttää monta olentoa.
+- ⭐ = **väliääni**: lainaa itse toiselta ja muut lainaavat siltä.
+- ei merkkiä = **vain lainaa** (esim. Poro). Metsolla ei ole varaääntä lainkaan, joten se ei lainaa eikä lainata.
+- Merkin perässä oleva luku, esim. 💎 (3) = montako olentoa lainaa tältä (myös ketjun kautta). `lainaavat:` listaa ne; "via X" = lainaa
+  ketjun kautta X:n välityksellä (kun X:llä on oma ääni, se lainaa X:ltä).
 '''
     with open(LISTA, 'w', encoding='utf-8') as f:
         f.write(head + '\n'.join(rows) + '\n\n## Tulevat äänierät\n\nB pelaajan ja toimintojen äänet · C taustaäänet ja sää · D musiikki · '

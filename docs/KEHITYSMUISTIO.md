@@ -118,7 +118,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 **Säännöt:**
 - Jokaisella olennolla voi olla omat äänet. **Varaäänet ovat vain väliaikaisia** (ketju `VARAANI`, audio.js, sävelkorkeutta muutetaan).
-  Ääni, jota muut käyttävät varaäänenä, merkitään taulukossa ⭐ ja luetellaan mille.
+  Äänilistan merkinnät (`sounds/AANILISTA.md`, selite taulukon alussa): 💎 pääääni (muut lainaavat, ei lainaa itse), ⭐ väliääni
+  (lainaa itse ja muut lainaavat siltä), ei merkkiä = vain lainaa. Merkin perässä käyttäjien määrä, esim. 💎 (3), ja sarake
+  "lainaavat: …" (myös ketjun kautta, "via X").
 - Raakaäänet: lyhyet saa olla wav, pitkät (musiikki, loopit) mp3, alle 25 Mt / tiedosto. **Vaihda ääni vasta kuuntelun jälkeen** –
   git-historia muistaa vanhat versiot (repo kasvaa). Arvio: noin 300 ääntä on ok (repo alle 1 Gt).
 - Nimet: `<id>_<laji>_<n>`, id = MOBDEF-avain (olennot), n = 1–3 (arpoo olemassa olevista, yksi riittää). Lajit: idle, hurt, death,
@@ -186,6 +188,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Versioloki
 
+### Äänilistan merkinnät (vain työkalu ja dokumentit, ei versionostoa)
+- `tools/process_sounds.py` tuottaa AANILISTA.md:hen roolit varaääniketjusta (`VARAANI`): 💎 = juuri (lainaajia, ei lainaa itse), ⭐ = väli
+  (lainaa itse ja muut lainaavat siltä), ei merkkiä = vain lainaa. Luku merkin perässä = kaikki lainaajat ketju mukaan lukien; vasemman
+  sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset: 💎 susi (6), kalmo (5),
+  hirvi (4), karju (2), karhu (1), sammalhiisi (1); ⭐ kalmon ylimys (2), peura, kettu, ilves, hiidenhirvi, kalmanvartija (1 kukin).
+  Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
 ### v1.85 (äänet: 3 versiota, suuttumisääni kerran, jahtiääni)
 - **Versiot:** jokaisella äänilajilla paikat `_1`, `_2`, `_3`; peli arpoo vain olemassa olevista (yksi riittää, tyhjät ohitetaan). Varaääniketju
   tuo myös toisen olennon kaikki versiot. Paikkamerkit kaikille paikoille (336 kpl, 288 t). `creRes(id, laji)` palauttaa `{names, p}`.
@@ -208,7 +217,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   TP −1,5, mono 44,1 kHz 96 kbps → `sounds/<nimi>.mp3`. Ohittaa muuttumattomat (raakatiedoston tiiviste `src`), poistaa käsitellyn, jos
   raaka palautetaan paikkamerkiksi tai poistetaan. Jos samalla nimellä on useampi raakatiedosto (esim. .wav ja paikkamerkki .mp3), isompi
   voittaa. Kirjoittaa `sounds/manifest.json` {nimi: {h, src, dur}} ja `sounds/AANILISTA.md` (ohje + taulukko eläimet / viholliset /
-  pomot: tila ✅/🔁 mistä ja sävelkerroin/⬜ + "varalla", kuvaus, hakusanat englanniksi, ⭐ mille varaääni). Kuvaukset ja hakusanat
+  pomot: tila ✅/🔁 mistä ja sävelkerroin/⬜ + "varalla", kuvaus, hakusanat englanniksi, 💎/⭐ + lainaajat). Kuvaukset ja hakusanat
   ovat työkalun `CRE_INFO`:ssa, nimet ja ai luetaan mobs.js:stä, varaäänet audio.js:n VARAANI-lohkosta (tiukkaa JSONia merkkien välissä).
 - **Peli (`audio.js`):** `VARAANI` (19 olentoa, ketju seurataan, kertoimet kertautuvat), `CRE`, `creInit` (manifest kerran, `?v=HV`),
   `creRes` (oma → idle_2→idle_1 → ketju), `creLoad` (laiska, spawnMob), `creBuf` (`?h=tiiviste`), `creSnd` (PannerNode equalpower/inverse,
