@@ -187,6 +187,11 @@ function ensureRealm(id){
       const cr=new THREE.Mesh(new THREE.OctahedronGeometry(.45,0),gm);cr.position.set(p.x,y0+2.6,p.z);sg.add(cr);
       R.spw={x:p.x,z:p.z,y:y0+2.6,y0,cr,t:SPW_T-2,list:[],hp:SPW_HP,g:sg,cols:sc,light:lit(p.x,y0+2.8,p.z,D.glow,2)};}}
   R.entry=cell(L.ent.ix,L.ent.iz);R.boss=cell(L.boss.ix,L.boss.iz);
+  /* v1.91: POMOHUONE – 48 sädettä pomon paikalta lähimpään seinään (enintään 5,5 ruutua = 17,6 m, ettei käytävä venytä huonetta).
+     R.room.rays = huoneen ääriviiva, R.room.avg = keskimääräinen etäisyys keskeltä seinään (herätyksen varaetäisyys). Ks. inBossRoom. */
+  {const isWc=(x,z)=>isW(Math.round((x-D.cx)/DC+W/2-.5),Math.round((z-D.cz)/DC+H/2-.5)),N=48,cap=5.5*DC,rays=[];
+    for(let i=0;i<N;i++){const a=i/N*TAU,c=Math.cos(a),s=Math.sin(a);let d=0;while(d<cap&&!isWc(R.boss.x+c*(d+.25),R.boss.z+s*(d+.25)))d+=.25;rays.push(d);}
+    R.room={x:R.boss.x,z:R.boss.z,rays,avg:rays.reduce((a,b)=>a+b,0)/N};}
   R.mobs=L.mobs.map(m=>({...cell(m.ix,m.iz),type:m.type}));
   if(id==='portal3'&&!flags.sirpC&&L.chests.length){const a=[...L.chests.keys()].sort(()=>Math.random()-.5);flags.sirpC=a.slice(0,Math.min(2,a.length));}   // v1.34: 2 sirpaletta satunnaisiin arkkuihin
   L.chests.forEach((c,i)=>{const p=cell(c.ix,c.iz),key=id+':'+i,sarc=D.gen==='rooms';
@@ -346,6 +351,9 @@ function updateFireLines(dt){for(let i=FIRELINES.length-1;i>=0;i--){const f=FIRE
     if(f.t<=0){f.R.g.remove(f.g);const j=lightSources.indexOf(f.L);if(j>=0)lightSources.splice(j,1);updateLights();FIRELINES.splice(i,1);}}}
 // v1.42 (kohta 15): loppuvaihe alle 30 %: pomo hehkuu punaisena (materiaalit kopioidaan), vain ryntäyksiä ~1,5 s välein, 5 kalmoa 20 s välein.
 function bossFinalGlow(m){m.f.g.traverse(o=>{if(o.isMesh&&o.material&&o.material.emissive){o.material=o.material.clone();o.material.userData.fin=1;}});m.finMats=[];m.f.g.traverse(o=>{if(o.isMesh&&o.material&&o.material.userData&&o.material.userData.fin)m.finMats.push(o.material);});}
+// v1.91: onko piste pomohuoneessa? Säteiden väliin interpoloitu ääriviiva tai varaetäisyys (keskim. keskeltä seinään).
+function inBossRoom(R,x,z){const Q=R&&R.room;if(!Q)return false;const dx=x-Q.x,dz=z-Q.z,d=Math.hypot(dx,dz);
+  if(d<Q.avg)return true;const N=Q.rays.length,f=((Math.atan2(dz,dx)/TAU)%1+1)%1*N,i=Math.floor(f)%N,j=(i+1)%N;return d<=lerp(Q.rays[i],Q.rays[j],f-Math.floor(f));}
 function realmBossAI(m,dt,dx,dz,dist){
   const d=m.def,f=m.f;
   if(f.sway)for(const w of f.sway){w.m.rotation.z=w.bz+Math.sin(playTime*w.f+w.p)*w.a;w.m.rotation.x=w.bxr+Math.cos(playTime*w.f*.8+w.p)*w.a*.6;}
@@ -353,7 +361,8 @@ function realmBossAI(m,dt,dx,dz,dist){
   /* v1.90: nukkuva pomo odottaa NÄKYMÄTTÖMÄNÄ maan alla (bossHide) eikä vilahda näkyviin. Herää vasta kun pelaaja astuu huoneeseen:
      etäisyys + näköyhteys pomon paikalta (seinät estävät). 8 s herätys (effects.js bossRisePose); pomo huomaa pelaajan nostaessaan päänsä. */
   if(m.state==='sleep'){const gy=m.riseY??DUN.y;f.g.visible=false;m.sinking=1;
-    if(!P.dead&&dist<d.aggro&&(P.spawnProt||0)<=0&&Math.abs(P.pos.y-gy)<4&&losClear(m.pos.x,gy+1.6,m.pos.z,P.pos.x,P.pos.y+1.5,P.pos.z,true)){m.state='rise';m.t=0;m.woke=0;sfx('slam',.45,.6);}
+    // v1.91: herätys kun pelaaja astuu pomohuoneeseen (inBossRoom: huoneen ääriviiva tai varaetäisyys = keskim. matka keskeltä seinään)
+    if(!P.dead&&(P.spawnProt||0)<=0&&Math.abs(P.pos.y-gy)<4&&P.inDun===!!m.dun&&(m.devSpawn?dist<10:P.realm===m.realm&&inBossRoom(BUILT[m.realm],P.pos.x,P.pos.z))){m.state='rise';m.t=0;m.woke=0;sfx('slam',.45,.6);}
     return;}
   if(m.state==='rise'||m.state==='intro'){m.t+=dt;if(m.t>5.9)m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*3));   // nukkuu kunnes nostaa päänsä
     if(bossRisePose(m,dt,m.riseY??DUN.y,(d.fh||4)+1.5))return;
@@ -423,10 +432,42 @@ function updateDungeons(dt){
       for(let i=0;i<3;i++){const a=i/3*TAU+Math.random(),m=realmize(spawnMob(D.spw,S.x+Math.cos(a)*3.2,S.z+Math.sin(a)*3.2,{y:DUN.y,dun:true}),P.realm);m.state='chase';S.list.push(m);}
       shockwave(S.x,DUN.y+.2,S.z,5,D.glow);burst(S.x,S.y,S.z,D.glow,16,5);sfx('roar');if(!S.seen){S.seen=1;msg('Kalmanpesä herää – se nostattaa vihollisia aina kun edelliset kaatuvat.','warn');}}}}
   for(const p of PORTALS){const lk=portalLocked(p.id);if(p.lk!==lk){p.lk=lk;setPortalLook(p.id);}p.plane.material.opacity=lk?.28:.5+.2*Math.sin(playTime*2.2+p.ph);}
-  const rb=P.inDun?mobs.find(m=>m.def.ai==='rboss'&&m.dun&&!m.dead&&m.state!=='sleep'):null,bar=$('#bossbar');
+  if(DEV)devRoomOutline();
+  const rb=mobs.find(m=>m.def.ai==='rboss'&&!m.dead&&m.state!=='sleep'&&!!m.dun===P.inDun&&(P.inDun||m.devSpawn)&&dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<70*70),bar=$('#bossbar');   // v1.91: myös DEV-luotu pomo maailmassa
   if(rb){bbOwn=true;bar.hidden=false;bar.querySelector('.name').textContent=rb.def.n+(rb.phase>1?` · vaihe ${rb.phase}`:'');bar.querySelector('i').style.width=(rb.hp/rb.maxHp*100)+'%';}
   else if(bbOwn){bbOwn=false;bar.querySelector('.name').textContent='Kalmanvartija';if(!(boss&&!boss.dead))bar.hidden=true;}
 }
+/* ---------------- DEV (v1.91): pomohuoneen ääriviiva ja siirrot (Ö-valikko, ui.js renderDevM) ---------------- */
+// Ääriviiva näkyy seinien läpi, kun DEV-täppä bossLine on päällä ja olet ulottuvuudessa: huoneen reuna lattialla ja 2,5 m korkeudella,
+// pystytolpat, pomon paikka (pylväs) ja varaetäisyyden ympyrä (himmeämpi). Pelaajan ollessa huoneessa viiva kirkastuu.
+let ROOMLINE=null;
+function devRoomOutline(){const on=devOn('bossLine')&&P.inDun&&P.realm&&BUILT[P.realm]&&BUILT[P.realm].room;
+  if(!on){if(ROOMLINE)ROOMLINE.g.visible=false;return;}
+  if(!ROOMLINE||ROOMLINE.id!==P.realm){if(ROOMLINE){scene.remove(ROOMLINE.g);ROOMLINE.g.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();});}
+    const Q=BUILT[P.realm].room,col=REALMS[P.realm].glow,g=new THREE.Group(),y=DUN.y,N=Q.rays.length,mk=(c,o)=>new THREE.LineBasicMaterial({color:c,transparent:true,opacity:o,depthTest:false,depthWrite:false,fog:false});
+    const ln=(pts,m,loop)=>{const L=new (loop?THREE.LineLoop:THREE.LineSegments)(new THREE.BufferGeometry().setFromPoints(pts),m);L.renderOrder=999;L.frustumCulled=false;g.add(L);return L;};
+    const edge=mk(col,.95),post=mk(0xffffff,.6),fb=mk(0xffd36a,.45),P2=(i,h)=>new THREE.Vector3(Q.x+Math.cos(i/N*TAU)*Q.rays[i],y+h,Q.z+Math.sin(i/N*TAU)*Q.rays[i]);
+    const lo=[],hi=[],ps=[];for(let i=0;i<N;i++){lo.push(P2(i,.12));hi.push(P2(i,2.5));if(i%4===0)ps.push(P2(i,.12),P2(i,2.5));}
+    ln(lo,edge,1);ln(hi,edge,1);ln(ps,post,0);
+    const cc=[];for(let i=0;i<64;i++){const a=i/64*TAU;cc.push(new THREE.Vector3(Q.x+Math.cos(a)*Q.avg,y+.2,Q.z+Math.sin(a)*Q.avg));}ln(cc,fb,1);
+    ln([new THREE.Vector3(Q.x,y,Q.z),new THREE.Vector3(Q.x,y+RCH,Q.z)],mk(0xff5a4a,.9),0);
+    scene.add(g);ROOMLINE={g,id:P.realm,edge};}
+  ROOMLINE.g.visible=true;ROOMLINE.edge.opacity=inBossRoom(BUILT[P.realm],P.pos.x,P.pos.z)?1:.55+.25*Math.sin(playTime*4);}
+// poistuu luolastosta / ulottuvuudesta ilman häivytystä (sama siivous kuin exitRealm/exitDungeon)
+function devLeaveDun(){if(!P.inDun)return;for(const f of FIRELINES)f.t=0;for(const m of [...mobs])if(m.dun){if(m.def.ai==='rboss'&&!m.dead)delete fo('rbHp')[m.realm];mobRemove(m);}P.inDun=false;P.realm=null;}
+// siirtyy ulottuvuuteen heti (kuten enterRealm ilman häivytystä ja otsikkoa); pomo luodaan nukkumaan maan alle, jos sitä ei ole kukistettu
+function devEnterRealm(id){if(P.inDun&&P.realm===id)return BUILT[id];if(P.inDun)devLeaveDun();const R=ensureRealm(id);P.inDun=true;P.realm=id;
+  for(const m of [...mobs])if(m.dun)mobRemove(m);if(R.spw){R.spw.t=SPW_T-2;R.spw.list=[];}spawnRealmMobs(id);return R;}
+// pomohuoneeseen: pisin vapaa suunta pomon paikalta, 75 % seinään → olet huoneessa ja herätys alkaa heti (pomo katsoo sinua)
+function devTpBossRoom(id){const R=devEnterRealm(id),Q=R.room;let bi=0;for(let i=1;i<Q.rays.length;i++)if(Q.rays[i]>Q.rays[bi])bi=i;
+  const a=bi/Q.rays.length*TAU,d=Math.max(2.5,Q.rays[bi]*.75),x=Q.x+Math.cos(a)*d,z=Q.z+Math.sin(a)*d;
+  P.pos.set(x,DUN.y+.05,z);P.vy=0;P.vel.set(0,0,0);P.spawnProt=0;camYaw=Math.atan2(x-Q.x,z-Q.z);P.yaw=camYaw+Math.PI;
+  msg(fo('rb')[id]?`DEV: ${MOBDEF[REALMS[id].boss].n} on jo kukistettu – elvytä se Ö-valikosta.`:`DEV: ${REALMS[id].n}, pomohuone.`,'loot');}
+// ulottuvuuden portin eteen maailmassa
+function devTpPortal(id){devLeaveDun();const F=portalFront(id);P.pos.set(F.x,terrainH(F.x,F.z),F.z);P.vy=0;P.vel.set(0,0,0);camYaw=Math.atan2(F.fx,F.fz);P.yaw=camYaw+Math.PI;msg(`DEV: ${REALMS[id].n} – portin edessä.`,'loot');}
+// pomo takaisin henkiin (kukistus- ja terveysmerkintä pois); jos olet sen ulottuvuudessa, se luodaan heti nukkumaan
+function devReviveBoss(id){delete fo('rb')[id];delete fo('rbHp')[id];if(P.inDun&&P.realm===id&&!mobs.some(m=>m.def.ai==='rboss'&&m.realm===id&&!m.dead)){const R=BUILT[id],b=spawnMob(REALMS[id].boss,R.boss.x,R.boss.z,{y:DUN.y,dun:true});b.realm=id;b.rmIdx='B';b.state='sleep';bossHide(b,(b.def.fh||4)+1.5);}
+  msg(`DEV: ${MOBDEF[REALMS[id].boss].n} elvytetty.`,'loot');}
 function nearSite(x,z,r){for(const k in LOC){const L=LOC[k];if((L.kind==='portal'||L.kind==='ruin'||L.kind==='rock')&&dist2(x,z,L.x,L.z)<r*r)return true;}return false;}
 
 /* ---------------- USVA JA HÖYRY ---------------- */

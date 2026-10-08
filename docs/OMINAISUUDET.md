@@ -481,8 +481,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   1 paikka ulottuvuuksien hirviöillä (rboss) ja 2 muilla.
 - Toisto: tärkeys kuolema > osuma > suuttuminen > jahti > rauhallinen; olennolla soi yksi ääni kerrallaan (tärkeämpi katkaisee); enintään 10
   ääntä kerrallaan (heikoin syrjäytyy); rauhallisia/jahtiääniä samaa lajia enintään 3 ja 0,3 s väli; sama versio ei heti uudestaan.
-- Pomon herätys (kaikki pomot, 8 s): nukkuva ulottuvuuspomo odottaa näkymättömänä maan alla ja herää vasta kun pelaaja astuu huoneeseen
-  (etäisyys + näköyhteys). Lattia halkeaa hehkuen, pomo nousee pää alhaalla ja kädet sivuilla, nostaa päänsä ja huomaa pelaajan (5,9 s: silmät
+- Pomon herätys (kaikki pomot, 8 s): nukkuva ulottuvuuspomo odottaa näkymättömänä maan alla ja herää vasta kun pelaaja astuu pomohuoneeseen
+  (v1.91: huoneen ääriviiva = 48 sädettä seinään, tai varaetäisyys = keskimääräinen matka keskeltä seinään). Lattia halkeaa hehkuen, pomo nousee pää alhaalla ja kädet sivuilla, nostaa päänsä ja huomaa pelaajan (5,9 s: silmät
   leimahtavat, suuttumisääni), suoristuu ja lyö paineaallon. Haavoittumaton koko ajan, terveyspalkki näkyy heti.
 - Pomon kuolema (kaikki pomot, ~12 s + maatuminen ~10 s): kalpenee heti noustessaan, kolme todellista valoa pinoutuu ja huone kirkastuu pehmeästi,
   kädet levälleen, kuolinääni kaiulla ja ruumis repeää (vartalo keskellä, osat irti omiin suuntiinsa valosäikein), valo katoaa, osat putoavat
@@ -493,3 +493,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Kaiku: luolaston ja ulottuvuuksien olennoille (lähetys 0,45 / boss 0,6 / rboss 0,75), yksi yhteinen ConvolverNode (1,2 s), kytkeytyy vain tarvittaessa.
 - Työkalu tulostaa erän lopuksi HUOM-varoitukset (tuplatiedosto, vahvistus yli ±12 dB, liian lyhyt, ylimääräinen paikka).
 - Työkalun trimmaus/voimakkuus: pituuden rajat (idle 3 s … death 3,5 s, pomot enemmän) ja tavoite-LUFS lajeittain (idle −22 … death/aggro −16, pomo +1,5 dB).
+
+## DEV-työkalut (vain DEV-tilassa)
+- Ä = DEV-valikko (sää, aika, terveys, kylläisyys, jumalvoimat, esinehaku, kartta). V pohjassa = 10× nopeus.
+- Ö = olennot ja pomot (v1.91): luo minkä tahansa olennon 3 m eteen (pomot nousevat herätysanimaatiolla), siirry ulottuvuuspomon huoneeseen tai
+  ulottuvuuden portin eteen, elvytä kukistettu pomo, Kalmankehään. Apuväline: pomohuoneen ääriviiva seinien läpi (huoneen reuna, varaetäisyyden
+  ympyrä, pomon paikka). DEV-luodut pomot eivät kirjaa voittoa eivätkä merkitse ulottuvuutta kukistetuksi.

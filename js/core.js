@@ -1,13 +1,14 @@
 /* Hiidenmaa – core.js
    Apuvälineet: matematiikka, kohina, satunnaisluvut */
 'use strict';
-window.__JSV='1.90';   // v1.58: versiotarkistus (index.html vertaa window.HV:hen; eroaa → välimuisti antoi vanhoja tiedostoja)
+window.__JSV='1.91';   // v1.58: versiotarkistus (index.html vertaa window.HV:hen; eroaa → välimuisti antoi vanhoja tiedostoja)
 // KEHITYSTILA (v0.74; v1.82: oletus POIS, päälle Asetukset › Ohjaus ja ääni › alin rivi, localStorage hiidenmaa_devon, ?dev=1): DEV → kestävyys ei kulu, korkein taso (kaikki ohjeet auki), ei painorajaa,
 // V pohjassa liikkuu 10× nopeammin (v0.77; ennen Alt/Ö), Ä avaa DEV-valikon (sää, aika, terveys, kylläisyys), vasemmassa alakulmassa merkki "DEV-tila". Poista käytöstä: DEV=false.
 const DEV=(()=>{try{if(/[?&]dev=1/.test(location.search))localStorage.setItem('hiidenmaa_devon','1');return localStorage.getItem('hiidenmaa_devon')==='1';}catch(e){return false;}})();
 // v0.93 DEV-täpät (DEV-valikko Ä, muistetaan selaimessa): god = ei voi kuolla eikä ota vahinkoa, food = ei nälkää, stam = rajaton kestävyys,
 // lvl = korkein taso, weight = ei painorajaa. Oletus: aiemmat DEV-edut päällä, uudet pois.
-const DEVF=(()=>{const d={god:0,food:0,stam:1,lvl:1,weight:1,fly:0};if(!DEV)return d;try{Object.assign(d,JSON.parse(localStorage.getItem('hiidenmaa_dev')||'{}'));}catch(e){}return d;})();
+// v1.91: bossLine = pomohuoneen ääriviiva ulottuvuudessa (Ö-valikko)
+const DEVF=(()=>{const d={god:0,food:0,stam:1,lvl:1,weight:1,fly:0,bossLine:0};if(!DEV)return d;try{Object.assign(d,JSON.parse(localStorage.getItem('hiidenmaa_dev')||'{}'));}catch(e){}return d;})();
 function devOn(k){return DEV&&!!DEVF[k];}
 function saveDevF(){try{localStorage.setItem('hiidenmaa_dev',JSON.stringify(DEVF));}catch(e){}}
 

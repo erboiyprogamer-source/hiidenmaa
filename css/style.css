@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.90';
+:root{--css-v:'1.91';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -758,3 +758,5 @@ button:focus,select:focus{outline:none}
 /* v1.82: Early Access -merkintä version perässä (kiinteä "1.0" – ei muutu versionoston mukana) */
 .mTitle small .eaTag{display:inline-block;margin-left:8px;padding:1px 9px 2px;border:1px solid rgba(127,233,221,.55);border-radius:10px;background:rgba(20,60,64,.35);
   font:600 11px 'Cinzel',serif;letter-spacing:.06em;text-transform:none;color:#8ff0e4;text-shadow:0 0 8px rgba(95,230,217,.45);vertical-align:1px}
+/* v1.91 DEV Ö-valikko: pomorivit */
+.devBoss{padding:5px 7px;background:rgba(0,0,0,.18);border-radius:4px;margin:3px 0}.devBoss .devBtns{margin-top:4px}.devBoss .note{font-size:12px;opacity:.8}

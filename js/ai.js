@@ -296,7 +296,7 @@ function bossAI(m,dt,dx,dz,dist){
     else if(a.k==='throw'){f.armR.rotation.x=-2.8*Math.min(1,a.t/.8);if(a.t>=.8&&!a.hit){a.hit=1;const hp=new V3();f.hand.getWorldPosition(hp);throwRock(hp,new V3(P.pos.x+P.vel.x*.6,P.pos.y,P.pos.z+P.vel.z*.6),20);}if(a.t>1.3)m.act=null;}
     m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;return;}
   // v0.95 (kohta 10): yli 90 m:n päässä vartija pysähtyy ja vajoaa 3 s:ssa maahan (multaa, jyrinä), vajoamisen ajan haavoittumaton.
-  if(m.state!=='sink'&&(dist2(P.pos.x,P.pos.z,L.x,L.z)>90*90||P.inDun)){m.state='sink';m.t=0;m.act=null;m.sinking=1;m.y0=m.pos.y;sfx('slam',.5,.6);sfx('roar',.6,.5);
+  if(m.state!=='sink'&&!m.devSpawn&&(dist2(P.pos.x,P.pos.z,L.x,L.z)>90*90||P.inDun)){   /* v1.91: DEV-luotu vartija ei vajoa */m.state='sink';m.t=0;m.act=null;m.sinking=1;m.y0=m.pos.y;sfx('slam',.5,.6);sfx('roar',.6,.5);
     msg('Vartija vajoaa takaisin maahan. Hiidenkivet jäävät alttarille – herätä se uudelleen alttarilta (terveys säilyy).','warn');}
   if(m.state==='sink'){m.t+=dt;const k=Math.min(1,m.t/3);m.pos.y=m.y0-k*k*7.5;m.f.armL.rotation.x=m.f.armR.rotation.x=-2.6*Math.min(1,m.t*1.5);
     if(Math.random()<dt*30)burst(m.pos.x+(Math.random()-.5)*4,m.y0+.2,m.pos.z+(Math.random()-.5)*4,Math.random()<.5?0x5d5a54:0x6a5a44,4,5);

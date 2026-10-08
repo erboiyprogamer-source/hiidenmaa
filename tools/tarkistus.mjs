@@ -200,6 +200,15 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const a={k:'charge',t:.4};bossChargePose(m,a);const e0=m.f.eyes[0].scale.x/m.eyeB[0].s.x;a.t=1;bossChargePose(m,a);
     const ok=m.f.g.rotation.order==='YXZ'&&m.f.g.rotation.x>.35&&m.f.kneeL.rotation.x>.3&&e0>1.3;bossChargeReset(m);const r=m.f.g.rotation.x===0&&!m.chPose&&m.f.eyes[0].scale.x===m.eyeB[0].s.x;mobRemove(m);return ok&&r||'virhe';});
   t('v1.90 jousikalmo keskeyttää vedon ja vaihtaa miekkaan, kun pelaaja tulee ihan lähelle',()=>/dist<=3\.2&&m\.aimT>0\)\{m\.aimT=0/.test(updateMobs.toString())||'puuttuu');
+  t('v1.91 pomohuone: säteet seinään, varaetäisyys = keskim. keskeltä seinään, herätys huoneeseen astuessa (inBossRoom)',()=>{const R=ensureRealm('portal2'),Q=R.room;
+    if(!Q||Q.rays.length!==48||!(Q.avg>3))return 'huone puuttuu';if(!inBossRoom(R,Q.x+.5,Q.z+.5)||inBossRoom(R,Q.x+40,Q.z+40))return 'sisällä-testi';
+    return /inBossRoom\(BUILT\[m\.realm\]/.test(realmBossAI.toString())||'herätys ei käytä huonetta';});
+  t('v1.91 DEV Ö: olento 3 m eteen, siirto pomohuoneeseen (herätys alkaa) ja portin eteen',()=>{const p0=P.pos.clone(),n=mobs.length;devSpawnMob('susi');const m=mobs[mobs.length-1];
+    const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw),ok1=mobs.length===n+1&&Math.abs(Math.hypot(m.pos.x-P.pos.x,m.pos.z-P.pos.z)-3)<.05&&(m.pos.x-P.pos.x)*fx+(m.pos.z-P.pos.z)*fz>2.9&&m.devSpawn;mobRemove(m);
+    const rb=!!fo('rb').portal1;devTpBossRoom('portal1');const ok2=P.inDun&&P.realm==='portal1'&&inBossRoom(BUILT.portal1,P.pos.x,P.pos.z);update(1/30);
+    const b=mobs.find(o=>o.def.ai==='rboss'&&o.realm==='portal1'&&!o.dead),ok3=rb||(b&&b.state==='rise');
+    devTpPortal('portal1');const F=portalFront('portal1'),ok4=!P.inDun&&Math.hypot(P.pos.x-F.x,P.pos.z-F.z)<.01&&!mobs.some(o=>o.dun);
+    P.pos.copy(p0);P.vy=0;return ok1&&ok2&&ok3&&ok4||`virhe ${ok1}${ok2}${ok3}${ok4}`;});
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua

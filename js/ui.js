@@ -2,7 +2,8 @@
    HUD, viestit, paneelit (reppu, valmistus, rakennus, arkku), kartta, tavoitteet */
 'use strict';
 if(DEV){const p=document.createElement('div');p.id='devP';p.className='panel';p.hidden=true;p.innerHTML='<button class="close" data-close="1" aria-label="Sulje">✕</button><h2>DEV-valikko</h2><div id="devBody"></div>';document.body.appendChild(p);p.querySelector('.close').addEventListener('click',()=>closePanels());}
-if(DEV){const d=document.createElement('div');d.textContent='DEV-tila · V = 10× nopeus · Ä = DEV-valikko';d.style.cssText='position:fixed;left:50%;top:4px;transform:translateX(-50%);z-index:50;font:700 12px sans-serif;color:#ffd36a;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:3px;pointer-events:none';document.body.appendChild(d);}
+if(DEV){const p=document.createElement('div');p.id='devMP';p.className='panel';p.hidden=true;p.innerHTML='<button class="close" data-close="1" aria-label="Sulje">✕</button><h2>Olennot ja pomot (DEV)</h2><div id="devMBody"></div>';document.body.appendChild(p);p.querySelector('.close').addEventListener('click',()=>closePanels());}   // v1.91: Ö-valikko
+if(DEV){const d=document.createElement('div');d.textContent='DEV-tila · V = 10× nopeus · Ä = DEV-valikko · Ö = olennot ja pomot';d.style.cssText='position:fixed;left:50%;top:4px;transform:translateX(-50%);z-index:50;font:700 12px sans-serif;color:#ffd36a;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:3px;pointer-events:none';document.body.appendChild(d);}
 
 /* ---------------- UI ---------------- */
 // Viestin näkyvyysaika riippuu pituudesta: 3 s + 70 ms / merkki, rajattuna 4–13 s.
@@ -115,6 +116,30 @@ function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=d
   $('#devGo').onclick=listGive;$('#devQ').oninput=listGive;$('#devN').oninput=listGive;$('#devQ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();const f=$('#devList [data-give]');if(f)devGive(f.dataset.give);}};listGive();
   $('#devMap').onclick=()=>{devRevealMap();msg('Kartta ja kaikki kohteet paljastettu.','loot');};}
 let devQ='',devN=1;
+/* v1.91 DEV-valikko Ö: olennon luonti 3 m eteen (katsesuuntaan), pomojen pikasiirrot (pomohuone, portin eteen, elvytys) ja pomohuoneen
+   ääriviiva. Pomot syntyvät herätysanimaatiolla (nousevat maasta 3 m päähän); DEV-luotu pomo ei kirjaa voittoa eikä vajoa pois. */
+function renderDevM(){const B=$('#devMBody');if(!B)return;
+  const grp=[['Eläimet',['flee','neutral']],['Viholliset',['hostile']],['Pomot',['boss','rboss']]],ids=Object.keys(MOBDEF);
+  const bossRow=id=>{const D=REALMS[id],b=MOBDEF[D.boss],dead=!!fo('rb')[id];return `<div class="devBoss"><b>${esc(b.n)}</b> <span class="note">${esc(D.n)}${dead?' · kukistettu':''}</span><div class="devBtns">
+      <button class="btn" data-room="${id}">Pomohuoneeseen</button><button class="btn" data-port="${id}">Portin eteen</button>${dead?`<button class="btn" data-rev="${id}">Elvytä pomo</button>`:''}</div></div>`;};
+  B.innerHTML=`<div class="devRow"><b>Luo olento 3 m eteen</b>${grp.map(([n,ais])=>`<div class="note">${n}</div><div class="devBtns">${ids.filter(k=>ais.includes(MOBDEF[k].ai)).map(k=>`<button class="btn" data-mob="${k}">${esc(MOBDEF[k].n)}</button>`).join('')}</div>`).join('')}</div>
+  <div class="devRow"><b>Ulottuvuuksien pomot</b>${REALM_IDS.map(bossRow).join('')}
+    <div class="devBoss"><b>${esc(MOBDEF.vartija.n)}</b> <span class="note">Kalmankehä</span><div class="devBtns"><button class="btn" data-circle="1">Kalmankehään</button></div></div></div>
+  <div class="devRow"><b>Apuvälineet</b><div class="devChk"><label class="tglRow">${tglHTML('dv_bossLine',!!DEVF.bossLine,'data-dvm="bossLine"')}<span>Näytä pomohuoneen ääriviiva (ulottuvuudessa, seinien läpi)</span></label></div>
+    <div class="note">Herätys alkaa, kun astut ääriviivan sisään tai olet keltaisen ympyrän sisällä (keskimääräinen matka keskeltä seinään).</div></div>`;
+  B.querySelectorAll('[data-mob]').forEach(b=>b.onclick=()=>devSpawnMob(b.dataset.mob));
+  B.querySelectorAll('[data-room]').forEach(b=>b.onclick=()=>{devTpBossRoom(b.dataset.room);closePanels();});
+  B.querySelectorAll('[data-port]').forEach(b=>b.onclick=()=>{devTpPortal(b.dataset.port);closePanels();});
+  B.querySelectorAll('[data-rev]').forEach(b=>b.onclick=()=>{devReviveBoss(b.dataset.rev);renderDevM();});
+  B.querySelectorAll('[data-circle]').forEach(b=>b.onclick=()=>{devLeaveDun();const L=LOC.circle;P.pos.set(L.x+10,terrainH(L.x+10,L.z),L.z);P.vy=0;P.vel.set(0,0,0);camYaw=Math.atan2(10,0);P.yaw=camYaw+Math.PI;msg('DEV: Kalmankehä.','loot');closePanels();});
+  B.querySelectorAll('[data-dvm]').forEach(c=>c.onclick=()=>{DEVF[c.dataset.dvm]=DEVF[c.dataset.dvm]?0:1;saveDevF();renderDevM();});}
+// luo olennon 3 m pelaajan eteen (kameran katsesuunta). Ulottuvuudessa ulottuvuusversio; pomot nousevat maasta herätysanimaatiolla.
+function devSpawnMob(type){const d=MOBDEF[type];if(!d)return;const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw),x=P.pos.x+fx*3,z=P.pos.z+fz*3;
+  const m=P.inDun?spawnMob(type,x,z,{y:DUN.y,dun:true}):spawnMob(type,x,z);m.devSpawn=1;m.yaw=Math.atan2(-fx,-fz);m.home={x,z};
+  if(d.ai==='rboss'){m.realm=P.realm||REALM_IDS.find(id=>REALMS[id].boss===type)||REALM_IDS[0];m.riseY=m.pos.y;bossHide(m,(d.fh||4)+1.5);m.state='rise';m.t=0;m.woke=0;}
+  else if(d.ai==='boss'){m.riseY=m.pos.y;bossHide(m,7.5);m.state='rise';m.t=0;m.woke=0;if(!boss||boss.dead){boss=m;$('#bossbar').hidden=false;}}
+  else{if(P.inDun&&P.realm&&typeof realmize==='function')realmize(m,P.realm);if(d.ai==='hostile')m.state='chase';}
+  sfx('build',.8,.5);msg(`DEV: ${d.n} 3 m eteen${d.ai==='boss'||d.ai==='rboss'?' (herää 8 s)':''}.`,'loot');}
 // DEV: antaa esinettä määrän verran (ei mahtuvat putoavat maahan); ilmoitus kertoo paljonko saatiin
 function devGive(id){const n=devN||1,left=invAdd(id,n);if(left>0)spawnDrop(id,left,P.pos.x,P.pos.y+1,P.pos.z);invDirty=true;updateGear();sfx('pickup');msg(`DEV: +${n} ${ITEMS[id].n}${left>0?` (${left} maahan, reppu täynnä)`:''}`,'loot');}
 // DEV: poistaa karttapilvet kokonaan ja merkitsee kaikki nimetyt paikat (rauniot, portaalit, riimukivet…) löydetyiksi.
@@ -154,13 +179,13 @@ function renderLog(){const fm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60))
 function fitInv(){const el=$('#inv');if(el)el.style.setProperty('--invK',Math.min(1,(innerWidth-16)/1131,(innerHeight-16)/732).toFixed(3));}
 addEventListener('resize',fitInv);
 // v1.40 (lista 4, kohta 28): näppäinopasteet – paneelin oikeaan yläkulmaan "Sulje: P / Tab", pelinäkymän vasempaan alakulmaan "Päävalikko: P".
-const PANEL_KEY={inv:['#inv','inv'],build:['#build','build'],chest:['#chest','interact'],prog:['#progP','prog'],log:['#logP','log'],map:['#mapP','map'],dev:['#devP',null]};
+const PANEL_KEY={inv:['#inv','inv'],build:['#build','build'],chest:['#chest','interact'],prog:['#progP','prog'],log:['#logP','log'],map:['#mapP','map'],dev:['#devP',null],devm:['#devMP',null]};
 function refreshKeyHints(){const on=SET.keyHints!==false;for(const k in PANEL_KEY){const [sel,a]=PANEL_KEY[k],el=$(sel);if(!el)continue;let h=el.querySelector(':scope>.pHint');
-    if(!h){h=document.createElement('span');h.className='pHint';el.appendChild(h);}h.hidden=!on;h.textContent=`Sulje: ${keyLabel(BIND.menu)}${a?' / '+keyLabel(BIND[a]):k==='dev'?' / Ä':''}`;}
+    if(!h){h=document.createElement('span');h.className='pHint';el.appendChild(h);}h.hidden=!on;h.textContent=`Sulje: ${keyLabel(BIND.menu)}${a?' / '+keyLabel(BIND[a]):k==='dev'?' / Ä':k==='devm'?' / Ö':''}`;}
   let g=$('#gameHint');if(!g){g=document.createElement('div');g.id='gameHint';$('#hud').appendChild(g);}g.hidden=!on;g.textContent=`Päävalikko: ${keyLabel(BIND.menu)}`;}
 function togglePanel(name){if(openPanel===name){closePanels();return;}if(P.dead)return;panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';if(!locked)releaseLock();else{VC.x=innerWidth/2;VC.y=innerHeight/2;}mouseL=false;mouseR=false;P.drawing=false;
-  if(name==='inv'){$('#inv').hidden=false;fitInv();{const cs=$('#craftSearch');if(cs)cs.value='';}renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;{const bs=$('#buildSearch');if(bs)bs.value='';}renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){devQ='';devN=1;$('#devP').hidden=false;renderDev();}refreshKeyHints();vcSync();}
-function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;selHalf=false;selEq=null;slotDrag=null;hoverSlot=null;if(typeof updGhost==='function')updGhost();if(!keep){state='play';if(!skipLock&&!locked)requestLock();}vcSync();}
+  if(name==='inv'){$('#inv').hidden=false;fitInv();{const cs=$('#craftSearch');if(cs)cs.value='';}renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;{const bs=$('#buildSearch');if(bs)bs.value='';}renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){devQ='';devN=1;$('#devP').hidden=false;renderDev();}if(name==='devm'&&$('#devMP')){$('#devMP').hidden=false;renderDevM();}refreshKeyHints();vcSync();}
+function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP','#devMP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;selHalf=false;selEq=null;slotDrag=null;hoverSlot=null;if(typeof updGhost==='function')updGhost();if(!keep){state='play';if(!skipLock&&!locked)requestLock();}vcSync();}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
 function nearStations(){const s={};for(const p of pieces){const k=isFirePiece(p.t)?'nuotio':p.t;if(['tyopenkki','nuotio','ahjo'].includes(k)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(k==='nuotio'?4:8)**2&&!P.inDun){if(k==='nuotio'&&p.data.fuel<=0)continue;s[k]=1;}}return s;}
 let fxAt=0;

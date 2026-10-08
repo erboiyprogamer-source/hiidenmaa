@@ -10,7 +10,7 @@ addEventListener('keydown',e=>{
   if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT'||e.target.tagName==='SELECT'){if(e.code==='Enter'&&e.target.classList.contains('search')){e.target.blur();return;}if(e.code!=='Tab'||e.target.tagName==='TEXTAREA')return;e.target.blur();}
   // Paneelissa kirjoittaminen menee suoraan hakukenttään (ei tarvitse napsauttaa sitä ensin); toimintonäppäimet toimivat kuten ennen.
   if(state==='ui'&&openPanel&&e.key.length===1&&e.key!==' '&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat){const sf={inv:'#craftSearch',build:'#buildSearch',dev:'#devQ'}[openPanel],el=sf&&$(sf);
-    const skip=[BIND.interact,BIND.inv,'KeyI',BIND.menu,BIND.build,BIND.map,BIND.prog,BIND.log,BIND.full,BIND.hud,'KeyQ','Quote'];
+    const skip=[BIND.interact,BIND.inv,'KeyI',BIND.menu,BIND.build,BIND.map,BIND.prog,BIND.log,BIND.full,BIND.hud,'KeyQ','Quote','Semicolon'];
     if(el&&!skip.includes(e.code)){e.preventDefault();el.focus();el.value+=e.key;el.dispatchEvent(new Event('input'));setTimeout(()=>{const n=el.value.length;try{el.setSelectionRange(n,n);}catch(err){}},5);return;}}
   keys[e.code]=true;
   if(e.code==='Tab'){e.preventDefault();}
@@ -25,6 +25,7 @@ addEventListener('keydown',e=>{
   if(e.repeat)return;
   const c=e.code;
   if(DEV&&c==='Quote'){togglePanel('dev');return;}// DEV: Ä avaa/sulkee kehitysvalikon
+  if(DEV&&(c==='Semicolon'||e.key==='ö'||e.key==='Ö')){togglePanel('devm');return;}   // v1.91 DEV: Ö avaa olento- ja pomovalikon
   // v0.75: E sulkee avoimen valikon; repussa Q pudottaa valitusta yhden, Shift+Q kaikki
   if(openPanel&&c===BIND.interact){e.preventDefault();closePanels(false,true);return;}
   if((openPanel==='inv'||openPanel==='chest')&&c==='KeyQ'&&hoverSlot&&dropAt(hoverSlot.g,hoverSlot.i,e.shiftKey))return;   // v1.31 hiiren alla

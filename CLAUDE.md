@@ -38,7 +38,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | Tiedosto | Sisältö |
 | --- | --- |
 | `js/boot.js` | (ladataan `index.html`:ssä ennen muita) aloitusjakso, suorituskykytesti omassa näkymässä (`__boot`), pelin skriptien lataus listasta `window.__GJS` (uusi tiedosto lisätään SINNE) |
-| `js/core.js` | `DEV` (oletus pois, `localStorage.hiidenmaa_devon` / `?dev=1`, kytkin Asetukset › Ohjaus ja ääni), `$`, `clamp`, `lerp`, `sstep`, kohina (`fbm`, `ridge`), `mulberry32` |
+| `js/core.js` | `DEV` (oletus pois, `localStorage.hiidenmaa_devon` / `?dev=1`, kytkin Asetukset › Ohjaus ja ääni; Ä = DEV-valikko, Ö = olennot ja pomot `renderDevM`, täpät `DEVF`), `$`, `clamp`, `lerp`, `sstep`, kohina (`fbm`, `ridge`), `mulberry32` |
 | `js/world.js` | `WS` (skaala), `MAPS`/`MAP`/`MAP_ID` (6 karttaa), `dirIn`, `HALF`, `LOC` (+ arvotut `SITE_DEFS`-paikat), `AARNI`, `DUN`, `heightFn`, `biomeAt`, `zoneAt`, `BIOMES` (nimet + ominaisuudet), `terrainH` |
 | `js/render.js` | renderer, scene, camera, valot, tekstuurit, `MAT`, `mat()`, `bx()`, maasto, vesi, taivas, sade |
 | `js/collision.js` | törmäysruudukko: `addBox`, `addCircle`, `groundAt`, `collideXZ`, `pointBlocked`, `STEPUP` |
@@ -97,6 +97,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 - Työkalu trimmaa ja tasaa äänekkyyden lajeittain (`PROFIILI`); kuolemaääniä 1 paikka (rboss) / 2 muilla. Aarnihirviö on varaäänien 💎 (`VARAANI`).
   Pomot (effects.js): nukkuva piilossa `bossHide`, herätys 8 s `bossRisePose`/`bossWakeRoar` (tila `rise`), ryntäys `bossChargePose`,
   kuolema 12 s + maatuminen `bossDeathAnim`/`bossDeathEnd`, silmät `bossEyes`, etusijavalot `pri` + `BOSS_GLOW`.
+  Pomohuone `R.room` + `inBossRoom` (dungeons.js) laukaisee herätyksen; DEV-siirrot `devTpBossRoom`/`devTpPortal`, ääriviiva `devRoomOutline`.
   Äänilajit: idle, hurt, death, aggro, chase, echo (echo = nukkuva ulottuvuuspomo kaikuu kaukaa; pääääni Aarnihirviö). Jousikalmo: `archerAI`/`archerPose` (ai.js), jousen asento `bowAimFig` (player.js).
   Pelin toisto (`creSnd`, audio.js): tärkeys, yksi ääni/olento, 10 äänen raja, kaiku vain `m.dun`-olennoille (ConvolverNode, näytetaajuus = AudioContextin).
 

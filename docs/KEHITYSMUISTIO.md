@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.90)
+## Nykytila (päivitetty v1.91)
 
-- **Versio 1.90**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 1.91**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,24 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.86): 💎 susi (6), kalmo (3),
   hirvi (3), aarnihirviö (2), karju (2), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v1.91 (DEV Ö-valikko: olennot ja pomot; pomon herätys pomohuoneeseen astuessa)
+- **DEV-valikko Ö** (`renderDevM`, ui.js; vain DEV-tilassa, näppäin `Semicolon` / `e.key` ö): **Luo olento 3 m eteen** – kaikki 26 lajia
+  ryhmissä Eläimet / Viholliset / Pomot, kameran katsesuuntaan (`devSpawnMob`). Ulottuvuudessa olento saa ulottuvuusversion; vihamielinen aloittaa
+  jahdin. **Pomot syntyvät herätysanimaatiolla** (nousevat 8 s maasta). DEV-luotu olento `m.devSpawn`: vartija ei vajoa pois kehästä kaukana eikä
+  kirjaa voittoa, ulottuvuuspomo ilman `rmIdx`:ää ei merkitse ulottuvuutta kukistetuksi; terveyspalkki näkyy myös maailmassa.
+- **Ulottuvuuksien pomot:** *Pomohuoneeseen* (`devTpBossRoom`: siirtyy heti ulottuvuuteen ilman häivytystä, pisimpään vapaaseen suuntaan 75 %
+  seinään, katse pomoon → herätys alkaa heti), *Portin eteen* (`devTpPortal`: maailman puolen portin eteen, katse porttiin; poistuu luolasta
+  `devLeaveDun`), *Elvytä pomo* kukistetulle (`devReviveBoss`: `fo('rb')`/`fo('rbHp')` pois, luodaan nukkumaan). Kalmanvartija: *Kalmankehään*.
+- **Apuväline: pomohuoneen ääriviiva** (DEV-täppä `bossLine`, `devRoomOutline`): näkyy seinien läpi ulottuvuudessa – huoneen reuna lattialla ja 2,5 m
+  korkeudella, pystytolpat, keltainen varaetäisyyden ympyrä ja punainen pylväs pomon paikalla; kirkastuu kun olet huoneessa. Viivoilla `fog:false`
+  (muuten luolan tiheä sumu himmensi ne).
+- **Herätys pomohuoneeseen astuessa:** `ensureRealm` laskee **pomohuoneen** (`R.room`): 48 sädettä pomon paikalta lähimpään seinään (enintään 5,5 ruutua
+  = 17,6 m, ettei käytävä venytä huonetta) ja keskiarvon `avg` = keskimääräinen matka keskeltä seinään. `inBossRoom(R,x,z)`: pelaaja säteiden
+  ääriviivan sisällä **tai** varaetäisyyden (`avg`) sisällä → herätys. Korvaa v1.90:n etäisyys + näköyhteys -ehdon. Mitattu: Routaluola avg 10,1 m
+  (säteet 1,5–17,8 m, pomo reunan lähellä), Kalmankammiossa sisään kävellessä herätys juuri ääriviivan kohdalla.
+- Testattu `?dev=1`: Ö avaa valikon (26 olentoa, 3 pomoriviä), susi täsmälleen 3,00 m eteen, pomohuoneeseen → herätys + ääriviiva, portin eteen
+  0 m, elvytys luo pomon, DEV-Aarnihirviö maailmassa nousee ja jahtaa, DEV-vartija ei vajoa eikä kirjaa voittoa. `tarkistus.mjs` KAIKKI OK (2 uutta riviä).
 
 ### v1.90 (pomojen 8 s herätys ja 12 s kuolema + maatuminen, ryntäyksen etukeno, jousikalmon miekkaan vaihto)
 - **Jousikalmo:** kun pelaaja tulee alle 3,2 m päähän kesken vedon, kalmo **keskeyttää vedon heti** (`aimT=0`) ja hakkaa miekalla; jousiasento
