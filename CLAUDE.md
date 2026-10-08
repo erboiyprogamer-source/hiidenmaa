@@ -100,7 +100,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
   kuolema 12 s + maatuminen `bossDeathAnim`/`bossDeathEnd`, silmät `bossEyes`, etusijavalot `pri` + `BOSS_GLOW`.
   Pomohuone `R.room` + `inBossRoom` (dungeons.js) laukaisee herätyksen; DEV-siirrot `devTpBossRoom`/`devTpPortal`, ääriviiva `devRoomOutline`,
   reittiviiva `devRouteLine`/`bossRoute` (`R.grid`). DEV-täpät `DEVF`: noclip (player.js), lockTW ja freeze (main.js update).
-  Äänilajit: idle, hurt, death, aggro, chase, echo (echo = nukkuva ulottuvuuspomo kaikuu kaukaa; pääääni Aarnihirviö). Jousikalmo: `archerAI`/`archerPose` (ai.js), jousen asento `bowAimFig` (player.js).
+  Äänilajit: idle, hurt, death, aggro, chase, echo (echo = nukkuva ulottuvuuspomo kaikuu kaukaa, Kalmanvartija maan alta `vartijaEcho`; pääääni Aarnihirviö). Jousikalmo: `archerAI`/`archerPose` (ai.js), jousen asento `bowAimFig` (player.js).
   Pelin toisto (`creSnd`, audio.js): tärkeys, yksi ääni/olento, 10 äänen raja, kaiku vain `m.dun`-olennoille (ConvolverNode, näytetaajuus = AudioContextin).
 
 ## Grafiikka-asetukset

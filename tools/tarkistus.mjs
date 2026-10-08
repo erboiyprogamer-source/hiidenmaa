@@ -232,6 +232,12 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v1.95 Kalmanvartijan äänet: varaääni Aarnihirviö (ei mykkä), kaikuääni maan alta Kalmankehän lähellä ennen herättämistä',()=>{
+    const ok1=VARAANI.vartija&&VARAANI.vartija.to==='aarnihirvio'&&CRE_ECHO.includes('boss')&&typeof vartijaEcho==='function';
+    const L=LOC.circle,p0=P.pos.clone(),fb=flags.boss;P.pos.set(L.x+20,terrainH(L.x+20,L.z),L.z);delete flags.boss;VEC.t=-1;VEC.m=null;vartijaEcho(.1);
+    const ok2=!!VEC.m&&VEC.m.type==='vartija'&&VEC.t>0;flags.boss=1;vartijaEcho(.1);const ok3=VEC.t===-1;
+    P.pos.set(L.x+200,P.pos.y,L.z);delete flags.boss;vartijaEcho(.1);const ok4=VEC.t===-1;if(fb)flags.boss=fb;else delete flags.boss;P.pos.copy(p0);
+    return ok1&&ok2&&ok3&&ok4||`virhe ${ok1}${ok2}${ok3}${ok4}`;});
   t('v1.94 viimeinen pomo: rauharuutu, 2 s sulkemisesta ilmoitus ja tyhjennetyt maailman arkut täyttyvät 8 esineellä',()=>{const fc=fo('fc'),W=worldChests(),sv=JSON.stringify(fc),pp=flags.peacePend;
     fc[W[0].key]=Array(8).fill(null);fc[W[1].key]=[{id:'kivi',n:1,q:1},...Array(7).fill(null)];delete fc[W[2].key];flags.peacePend=1;peaceRefill();
     const a=fc[W[0].key].filter(Boolean),ok=a.length===8&&new Set(a.map(x=>x.id)).size===8&&fc[W[1].key].filter(Boolean).length===1&&!fc[W[2].key]&&!flags.peacePend;

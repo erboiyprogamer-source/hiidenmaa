@@ -24,7 +24,7 @@ LISTA = os.path.join(OUT, 'AANILISTA.md')
 PLACEHOLDER_MAX = 3072          # tavua: tätä pienempi/yhtä suuri = paikkamerkki
 AGGRO_AI = ('neutral', 'hostile', 'boss', 'rboss')   # suuttumisääni (aggro)
 CHASE_AI = ('hostile', 'boss', 'rboss')               # + toistuva jahtiääni (chase)
-ECHO_AI = ('rboss',)                                  # v1.88: kaikuääni (echo): nukkuva ulottuvuuspomo kaikuu luolastossa kunnes pelaaja kohtaa sen
+ECHO_AI = ('rboss', 'boss')                           # v1.88: kaikuääni (echo): nukkuva ulottuvuuspomo kaikuu luolastossa kunnes pelaaja kohtaa sen; v1.95 myös Kalmanvartija maan alta
 VARIANTS = (1, 2, 3)                                  # jokaisella lajilla enintään 3 versiota; peli arpoo olemassa olevista
 PV = 2                                                # käsittelyn versio: vaihtuessa kaikki äänet käsitellään uudestaan
 
@@ -73,7 +73,7 @@ CRE_INFO = {
     'susi': ('harmaasusi', {'idle': 'wolf growl, wolf panting', 'hurt': 'wolf yelp', 'death': 'wolf death whimper', 'aggro': 'wolf snarl bark'}),
     'kalmo': ('kalmo, epäkuollut soturi', {'idle': 'zombie groan, skeleton rattle', 'hurt': 'zombie hurt', 'death': 'zombie death, bones collapse', 'aggro': 'zombie scream attack'}),
     'ylimys': ('kalmon ylimys, kuiskiva epäkuollut', {'idle': 'undead whisper groan, lich breath', 'hurt': 'ghoul hurt', 'death': 'undead death scream', 'aggro': 'lich shout'}),
-    'vartija': ('Kalmanvartija, valtava pomo', {'idle': 'giant breathing, deep monster breath', 'hurt': 'giant hurt roar', 'death': 'boss death roar', 'aggro': 'boss monster roar'}),
+    'vartija': ('Kalmanvartija, valtava pomo', {'idle': 'giant breathing, deep monster breath', 'hurt': 'giant hurt roar', 'death': 'boss death roar', 'aggro': 'boss monster roar', 'echo': 'distant underground rumble, giant groan from below, earth tremor voice'}),
     'kivivartija': ('kivivartija, kivinen golem', {'idle': 'stone grind, rock golem rumble', 'hurt': 'rock impact crack', 'death': 'rock crumble collapse', 'aggro': 'golem roar stone'}),
     'routasusi': ('routasusi, jäinen susi', {'idle': 'wolf growl cold breath', 'hurt': 'wolf yelp', 'death': 'wolf whimper death', 'aggro': 'wolf howl'}),
     'jaajattari': ('Jäätär, jäinen noita (pomo)', {'idle': 'ice witch whisper, cold wind voice', 'hurt': 'female monster scream', 'death': 'witch death scream, ice shatter', 'aggro': 'evil witch laugh', 'echo': 'distant ghostly wail, ice cave wind voice'}),
@@ -85,7 +85,7 @@ KIND_FI = {
     'hurt': 'lyhyt kivun ääni, kun olentoon osuu (0,2–0,8 s)',
     'death': 'kuoleman ääni (0,8–3,5 s, pomoilla jopa 6 s; paikkoja: ulottuvuuksien hirviöt 1, muut 2)',
     'aggro': 'SUUTTUMISÄÄNI: huomaa sinut ensimmäistä kertaa – vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat (0,5–2 s)',
-    'echo': 'KAIKUÄÄNI (vain ulottuvuuspomot): kuuluu kaukaa, 24–48 s välein, kunnes pelaaja kohtaa pomon – matala, pitkä, kuiva raaka (kaiku ja tumma sointi lisätään pelissä; 1–2 versiota)',
+    'echo': 'KAIKUÄÄNI (pomot): kuuluu kaukaa, 24–48 s välein, kunnes pelaaja kohtaa pomon (Kalmanvartija: maan alta Kalmankehän lähellä, kunnes se herätetään) – matala, pitkä, kuiva raaka (kaiku ja tumma sointi lisätään pelissä; 1–2 versiota)',
     'chase': 'JAHTIÄÄNI: toistuu 4–9 s välein kun olento jahtaa sinua suuttumisäänen jälkeen – murina, huohotus tai huuto (0,5–1,5 s)',
 }
 
@@ -421,7 +421,7 @@ def write_list(sounds, raws):
 4. Commit ja push GitHub Desktopilla ja pyydä Claudea ajamaan `python3 tools/process_sounds.py`: hiljaisuus leikataan alusta ja lopusta,
    ääni katkaistaan lajin ylärajaan (häivytys), voimakkuus tasataan lajin tavoitteeseen ja se siirtyy peliin (`sounds/<nimi>.mp3`).
    Raakatiedostot jäävät `sounds/raw/`-kansioon. **Älä itse trimmaa tai normalisoi** – työkalu tekee sen; anna raaka mieluummin pitkänä ja puhtaana.
-   Kaikuääni (`<pomo>_echo_1/2`) on vain ulottuvuuspomoilla; **Aarnihirviön kaikuäänet ovat kaikkien pomojen varaääni**. Kuolemaäänelle on **1 paikka** ulottuvuuksien hirviöillä (Jäätär, Kalmaherra, Aarnihirviö) ja **2 paikkaa** kaikilla muilla.
+   Kaikuääni (`<pomo>_echo_1/2`) on ulottuvuuspomoilla ja Kalmanvartijalla (maan alta Kalmankehän lähellä); **Aarnihirviön kaikuäänet ovat kaikkien pomojen varaääni**. Kuolemaäänelle on **1 paikka** ulottuvuuksien hirviöillä (Jäätär, Kalmaherra, Aarnihirviö) ja **2 paikkaa** kaikilla muilla.
 
 **Käsittelyn rajat (lajeittain):** idle ≤ 3 s (pomo 4), hurt ≤ 1,2 s (1,6), death ≤ 3,5 s (6), aggro ≤ 2,5 s (3,5), chase ≤ 2,5 s (4), echo ≤ 5 s (6).
 Tavoiteäänekkyys (LUFS): idle −22, hurt −17, death −16, aggro −16, chase −18, echo −26; pomot +1…1,5 dB. Ulottuvuuksissa (luolasto, ulottuvuudet)

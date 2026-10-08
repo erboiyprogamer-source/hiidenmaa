@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.94)
+## Nykytila (päivitetty v1.95)
 
-- **Versio 1.94**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 1.95**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -128,7 +128,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - Jokainen äänierä (A–E, ks. ideajono) tehdään samalla paikkamerkkitavalla ja saa oman osion AANILISTA.md:hen.
 
 **Käsittely ja toisto (v1.86, käyttäjän päätökset):**
-- **Aarnihirviö = pääääni 💎.** Se on isoin varaääni: Jäätär ja Kalmaherra lainaavat siltä (`jaajattari` ×1,20, `kalmaherra` ×0,85) kunnes saavat
+- **Aarnihirviö = pääääni 💎.** Se on isoin varaääni: Jäätär, Kalmaherra ja v1.95 alkaen Kalmanvartija lainaavat siltä (`jaajattari` ×1,20, `kalmaherra` ×0,85, `vartija` ×0,70; kivivartija vartijan kautta ×0,805) kunnes saavat
   omat. Hiidenhirvi lainaa taas suoraan hirveltä. "Ulottuvuuksien hirviöt" = `ai:'rboss'` (3 kpl).
 - **Kuolemaäänet:** ulottuvuuksien hirviöillä 1 paikka (`_1`), kaikilla muilla olennoilla 2 (`_1`, `_2`); `variants_of(ai, laji)` työkalussa,
   ylimääräiset paikkamerkit poistuvat `--init`:llä (oikeaan ääneen ei koskaan kosketa).
@@ -223,9 +223,19 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ### Äänilistan merkinnät (vain työkalu ja dokumentit, ei versionostoa)
 - `tools/process_sounds.py` tuottaa AANILISTA.md:hen roolit varaääniketjusta (`VARAANI`): 💎 = juuri (lainaajia, ei lainaa itse), ⭐ = väli
   (lainaa itse ja muut lainaavat siltä), ei merkkiä = vain lainaa. Luku merkin perässä = kaikki lainaajat ketju mukaan lukien; vasemman
-  sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.86): 💎 susi (6), kalmo (3),
-  hirvi (3), aarnihirviö (2), karju (2), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
+  sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
+  hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v1.95 (Kalmanvartijan äänet)
+- **Ongelma:** Kalmanvartijalla oli kaikki äänipaikat (idle, hurt, death ×2, aggro, chase), mutta varaääni oli `kalmo`, jolla ei ole yhtään
+  ääntä → vartija (ja kivivartija sen kautta) oli mykkä. **Korjaus:** `VARAANI.vartija` → `aarnihirvio` sävelellä ×0,70 (matala kivijättiläinen),
+  kivivartija → vartija ×1,15 (yht. ×0,805). Kun käyttäjä lisää `vartija_*`-äänet, ne korvaavat lainan automaattisesti.
+- **Uusi kaikuääni Kalmanvartijalle** (`vartija_echo_1/2`, paikkamerkit luotu, `ECHO_AI`/`CRE_ECHO` = rboss + boss). Soi `vartijaEcho` (audio.js,
+  `creTick`): maailmassa alle 80 m Kalmankehästä, kunnes vartija on kukistettu ensimmäisen kerran (`flags.boss`) ja vain kun vartija ei ole hereillä.
+  24–48 s välein (ensimmäinen 4–10 s), maan alta (piilo-olento `VEC.m` 3 m maan alla kehän keskellä), tumma (alipäästö), kaiku 0,9, voimakkuus ×0,6.
+  Ilman omaa ääntä lainaa Aarnihirviön kaikuäänen; jos sitäkään ei ole, hiljaa (tarkistus 10 s välein).
+- Äänilista (AANILISTA.md) ja työkalun ohjeteksti päivitetty (`python3 tools/process_sounds.py --init`). Tarkistukseen 1 rivi.
 
 ### v1.94 (eeppinen pomopalkki, vaihe-efektit, rauha ja arkkujen täyttyminen)
 - **Pomopalkki uusittu** (`bossBarTick`, ui.js; ainoa paikka joka ohjaa `#bossbar`:ia – muualta piilotus/näyttö poistettu). Ajetaan joka
@@ -365,8 +375,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   (`state==='sleep'`) ja pelaaja on samassa ulottuvuudessa** (`m.realm===P.realm`), 24–48 s välein (ensimmäinen 5–14 s sisääntulosta); loppuu kun pomo herää
   (`intro`) tai pelaaja poistuu. Soi pomon suunnasta, mutta **enintään 38 m päästä** (`creEchoPos`) → kaukainen pomo kuuluu vaimeana kaikuna. Sointi:
   alipäästö 1,5 kHz, voimakkuus ×0,6, kaiun lähetys 1,3 (kuiva jää hiljaiseksi), tärkeys 1 (ei syrjäytä muita). **Aarnihirviön kaikuäänet ovat kaikkien
-  pomojen varaääni 💎** (Jäätär ×1,2, Kalmaherra ×0,85 VARAANI-ketjun kautta). Kalmanvartijalla (`boss`, maailman rituaalipiiri) ei ole kaikuääntä, koska se
-  ei nuku ulottuvuudessa. Työkalu: `ECHO_AI`, raja 5 s (pomo 6), tavoite −26 LUFS, pitkä häivytys 0,8 s; 6 uutta paikkamerkkiä (`aarnihirvio/jaajattari/kalmaherra_echo_1/2`).
+  pomojen varaääni 💎** (Jäätär ×1,2, Kalmaherra ×0,85 VARAANI-ketjun kautta). **v1.95: myös Kalmanvartijalla on kaikuääni** (`vartija_echo_1/2`, ks. v1.95). Työkalu: `ECHO_AI`, raja 5 s (pomo 6), tavoite −26 LUFS, pitkä häivytys 0,8 s; 6 uutta paikkamerkkiä (`aarnihirvio/jaajattari/kalmaherra_echo_1/2`).
 - Testattu: keinoäänillä (voice `ec`, etäisyys 38 m, send 1,3, gain 0,6, sävel ×0,85), herääminen ja toinen ulottuvuus → ei kaikua.
 
 ### v1.87 (palavan pomon kipuääni)

@@ -499,6 +499,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   esineellä. Kerran per maailma.
 - Pomon saaliilla on majakkasäde: hehkuva valopylväs ja maarengas pomon värissä, kunnes esine poimitaan.
 - Palava pomo (boss/rboss): hurt-ääni silmukkana 1,4–2,2 s välein, sävel ×0,78 ja voimakkuus ×0,55, tärkeys 1,5 (jahti katkaisee). Muut olennot eivät ähki palaessaan.
+- Kalmanvartijan kaikuääni (v1.95, `vartija_echo_1/2`): maan alta Kalmankehän lähellä (< 80 m) 24–48 s välein, kunnes vartija on kukistettu kerran; ei kun se on hereillä.
+  Kalmanvartija lainaa Aarnihirviön äänet sävelellä ×0,7 (kivivartija ×0,805), kunnes saa omat.
 - Kaikuääni (echo, ulottuvuuspomot, 1–2 versiota): nukkuva pomo kuuluu 24–48 s välein vain omassa ulottuvuudessaan (≤38 m päästä, tumma, kaiulla) kunnes pelaaja kohtaa sen. Aarnihirviön kaikuäänet ovat kaikkien varaääni.
 - Kaiku: luolaston ja ulottuvuuksien olennoille (lähetys 0,45 / boss 0,6 / rboss 0,75), yksi yhteinen ConvolverNode (1,2 s), kytkeytyy vain tarvittaessa.
 - Työkalu tulostaa erän lopuksi HUOM-varoitukset (tuplatiedosto, vahvistus yli ±12 dB, liian lyhyt, ylimääräinen paikka).

@@ -57,12 +57,12 @@ const VARAANI=/*VARAANI-ALKU*/{
   "emakko":{"to":"karju","p":1.08},"porsas":{"to":"karju","p":1.5},
   "hiidenkarhu":{"to":"karhu","p":0.85},
   "hiidenhirvi":{"to":"hirvi","p":0.82},"poro":{"to":"peura","p":0.9},"peura":{"to":"hirvi","p":1.3},
-  "ylimys":{"to":"kalmo","p":0.85},"vartija":{"to":"kalmo","p":0.6},"kivivartija":{"to":"vartija","p":1.15},
+  "ylimys":{"to":"kalmo","p":0.85},"vartija":{"to":"aarnihirvio","p":0.7},"kivivartija":{"to":"vartija","p":1.15},
   "jaajattari":{"to":"aarnihirvio","p":1.2},"kalmaherra":{"to":"aarnihirvio","p":0.85},"suonakki":{"to":"hiisi","p":0.7}
 }/*VARAANI-LOPPU*/;
 const CRE_AGGRO=['neutral','hostile','boss','rboss'];   // niillä on suuttumisääni (aggro)
 const CRE_CHASE=['hostile','boss','rboss'];             // niillä on lisäksi toistuva jahtiääni (chase) ja suuttumisääni vain kerran
-const CRE_ECHO=['rboss'];                                // v1.88: ulottuvuuksien pomoilla lisäksi kaikuääni (echo, 1–2 versiota): kuuluu kaukaa kunnes pelaaja kohtaa pomon
+const CRE_ECHO=['rboss','boss'];                         // v1.88: pomoilla lisäksi kaikuääni (echo, 1–2 versiota): kuuluu kaukaa kunnes pelaaja kohtaa pomon (v1.95: myös Kalmanvartija maan alta)
 const CRE_KINDS=['idle','hurt','death','aggro','chase','echo'];  // jokaisella lajilla 1–3 versiota (_1.._3), arvonta niistä jotka ovat olemassa
 const CRE={man:null,ok:false,buf:{},load:{},want:{},gain:null,voices:[],max:10,last:{},lastAmb:-9,rev:null};
 // manifest kerran (tiiviste osoitteessa → välimuisti ei anna vanhaa ääntä). Ilman palvelinta (file://) epäonnistuu hiljaa.
@@ -125,6 +125,15 @@ function creSnd(m,kind,o){if(!m)return false;const r=creRes(m.type,kind);if(!r)r
   pn.connect(CRE.gain);if(ec)creEchoPos(m,pn);else crePos(pn,m.pos.x,m.pos.y+(m.def.r||.5)*1.6,m.pos.z);
   let sd=null;if(m.dun||rv){const R=creRevOn(a);sd=a.createGain();sd.gain.value=rv||(ec?1.3:m.def.ai==='rboss'?.75:boss?.6:.45);pn.connect(sd);sd.connect(R.inp);}
   const v={src,pn,g,sd,m,pri,t0:now,key,ec};CRE.voices.push(v);src.onended=()=>{const i=CRE.voices.indexOf(v);if(i>=0)CRE.voices.splice(i,1);try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return dur;}
+// v1.95: Kalmanvartijan kaikuääni maan alta: ennen ensimmäistä voittoa, kun vartija ei ole hereillä ja pelaaja on alle 80 m Kalmankehästä
+// (maailmassa). Soi 24–48 s välein (ensimmäinen 4–10 s), tumma ja kaiullinen; jos ääni latautuu vielä, uusi yritys 3 s päästä.
+// Ilman omaa kaikuääntä lainaa Aarnihirviön (💎) kaikuäänen; jos sitäkään ei ole, on hiljaa.
+const VEC={t:-1,m:null};
+function vartijaEcho(dt){const L=typeof LOC!=='undefined'&&LOC.circle;if(!L||P.inDun||P.dead||flags.boss||mobs.some(m=>m.type==='vartija'&&!m.dead)){VEC.t=-1;return;}
+  if(dist2(L.x,L.z,P.pos.x,P.pos.z)>80*80){VEC.t=-1;return;}
+  if(!VEC.m){VEC.m={type:'vartija',def:MOBDEF.vartija,pos:{x:L.x,y:terrainH(L.x,L.z)-3,z:L.z},dun:false};}
+  if(VEC.t<0){VEC.t=4+Math.random()*6;creLoad('vartija');}VEC.t-=dt;if(VEC.t>0)return;
+  VEC.t=creSnd(VEC.m,'echo',{echo:1,v:.6,pri:1,key:'echo',rev:.9})?24+Math.random()*24:creRes('vartija','echo')?3:10;}   // ei kaikuääntä vielä → tarkistus 10 s välein
 // joka ruutu: kuuntelija = kamera, soivat äänet seuraavat olentoa; idle 6–15 s välein alle 25 m päässä, aggro kerran jahdin alkaessa
 const _creF=new THREE.Vector3();
 function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='undefined')return;const L=a.listener,c=camera.position;camera.getWorldDirection(_creF);
@@ -133,6 +142,7 @@ function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='u
   creRevTick(dt);
   for(const v of CRE.voices){if(v.ec)creEchoPos(v.m,v.pn);else if(!v.m.dead)crePos(v.pn,v.m.pos.x,v.m.pos.y+(v.m.def.r||.5)*1.6,v.m.pos.z);}
   if(state!=='play'||!soundOn)return;
+  vartijaEcho(dt);
   for(const m of mobs){if(m.dead)continue;const d2=dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z),ai=m.def.ai,hs=CRE_CHASE.includes(ai),chasing=m.state==='chase',hasChase=hs&&chasing&&creRes(m.type,'chase');
     // rauhallinen ääntely 6–15 s välein alle 25 m päässä (ei jahdin aikana, jos olennolla on jahtiääni)
     if(m.sndT===undefined)m.sndT=2+Math.random()*13;m.sndT-=dt;if(m.sndT<=0){m.sndT=6+Math.random()*9;if(d2<25*25&&m.state!=='sleep'&&m.state!=='rise'&&!hasChase)creSnd(m,'idle');}
