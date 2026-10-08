@@ -2,7 +2,8 @@
    HUD, viestit, paneelit (reppu, valmistus, rakennus, arkku), kartta, tavoitteet */
 'use strict';
 if(DEV){const p=document.createElement('div');p.id='devP';p.className='panel';p.hidden=true;p.innerHTML='<button class="close" data-close="1" aria-label="Sulje">✕</button><h2>DEV-valikko</h2><div id="devBody"></div>';document.body.appendChild(p);p.querySelector('.close').addEventListener('click',()=>closePanels());}
-if(DEV){const d=document.createElement('div');d.textContent='DEV-tila · V = 10× nopeus · Ä = DEV-valikko';d.style.cssText='position:fixed;left:50%;top:4px;transform:translateX(-50%);z-index:50;font:700 12px sans-serif;color:#ffd36a;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:3px;pointer-events:none';document.body.appendChild(d);}
+if(DEV){const p=document.createElement('div');p.id='devMP';p.className='panel';p.hidden=true;p.innerHTML='<button class="close" data-close="1" aria-label="Sulje">✕</button><h2>Olennot ja pomot (DEV)</h2><div id="devMBody"></div>';document.body.appendChild(p);p.querySelector('.close').addEventListener('click',()=>closePanels());}   // v1.91: Ö-valikko
+if(DEV){const d=document.createElement('div');d.textContent='DEV-tila · V = 10× nopeus · Ä = DEV-valikko · Ö = olennot ja pomot';d.style.cssText='position:fixed;left:50%;top:4px;transform:translateX(-50%);z-index:50;font:700 12px sans-serif;color:#ffd36a;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:3px;pointer-events:none';document.body.appendChild(d);}
 
 /* ---------------- UI ---------------- */
 // Viestin näkyvyysaika riippuu pituudesta: 3 s + 70 ms / merkki, rajattuna 4–13 s.
@@ -63,6 +64,7 @@ function updateHUD(dt){
     else if(c.className){c.className='';c.style.width=c.style.height=c.style.margin=c.style.borderColor='';}}
   // Ruudun ilmoitukset piilotetaan kun jokin valikko/paneeli on auki (tai peli tauolla); ne säilyvät T-lokissa ja palaavat valikon sulkeuduttua.
   {const hide=!!openPanel||state!=='play';if(hide!==msgHidden){msgHidden=hide;$('#msgs').style.visibility=hide?'hidden':'';}}
+  bossBarTick(dt);peaceTick();   // v1.94 eeppinen pomopalkki (joka ruudunpäivitys: sulava viivepalkki); rauhan ilmoitus 2 s voittoruudun sulkemisesta
   if(hudT>0)return;hudT=.1;
   if(((playTime*10)|0)%10===0)for(const x of inv)if(x&&x.shBrk!=null){shieldOk(x);invDirty=true;}   // v1.33: rikkinäisen kilven korjautuminen ja palkki
   const w=curWeapon();
@@ -82,7 +84,6 @@ function updateHUD(dt){
   // clock
   const hh=Math.floor(dayT*24),mm=Math.floor((dayT*24-hh)*60/10)*10;$('#clock').innerHTML=`Päivä ${dayN} · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')} <span>· ${P.inDun?(P.realm?REALMS[P.realm].n:'Hautakumpu'):WEATHERS[weather.cur].n}${!P.inDun&&P.zone&&BIOMES[P.zone]?' · '+BIOMES[P.zone].n:''}</span>`;
   if(invDirty){invDirty=false;updateBack();$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1).replace('class="slot','class="slot'+(i===hotSel?' hsel':''))).join('');if(openPanel==='inv')renderInv();if(openPanel==='chest')renderChest();if(openPanel==='build')renderBuild();}
-  if(boss&&!boss.dead){$('#bossbar i').style.width=(boss.hp/boss.maxHp*100)+'%';}
   drawMinimap();
 }
 let openPanel=null,selSlot=-1,curChest=null;
@@ -90,11 +91,15 @@ let panelOpenedAt=0;
 // Viimeiset 10 ilmoitusta (L, v1.18; ennen T): uusin ylimpänä, kellonaika pelin ajassa.
 // DEV-valikko (Ä): sää, kellonaika, terveys ja kylläisyys – muutokset heti. Sää pysyy valittuna 10 min.
 function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=dayT*24;return `${Math.floor(h)}:${String(Math.floor(h%1*60)).padStart(2,'0')}`;};
-  B.innerHTML=`<div class="devRow"><b>Sää</b><div class="devBtns">${Object.entries(WEATHERS).map(([k,w])=>`<button class="btn${weather.cur===k?' on':''}" data-w="${k}">${w.n}</button>`).join('')}</div></div>
+  const big=[['god','Kuolemattomuus','Ei kuole eikä ota vahinkoa'],['fly','Lento','V pohjassa 6× nopeampi'],['noclip','Seinien läpi','Seinät ja esineet eivät estä'],
+    ['lockTW','Lukitse aika ja sää','Kello ja sää pysyvät'],['freeze','Pysäytä maailma','Olennot, ammukset, aika ja nälkä seis']];
+  B.innerHTML=`<div class="devBig">${big.map(([k,n,d])=>`<button class="btn devBigB${DEVF[k]?' on':''}" data-big="${k}"><b>${n}</b><span>${DEVF[k]?'PÄÄLLÄ':'pois'} · ${d}</span></button>`).join('')}
+    <button class="btn devBigB act" data-heal="1"><b>Terveys täyteen</b><span>Terveys, kestävyys ja kylläisyys täyteen, palaminen pois</span></button></div>
+  <div class="devRow"><b>Sää</b><div class="devBtns">${Object.entries(WEATHERS).map(([k,w])=>`<button class="btn${weather.cur===k?' on':''}" data-w="${k}">${w.n}</button>`).join('')}</div></div>
   <div class="devRow"><b>Aika <span id="devClk">${clk()}</span></b>${sldHTML('devT',0,1,.005,dayT)}<div class="devBtns">${[['Aamu',.28],['Päivä',.5],['Ilta',.74],['Yö',.95]].map(([n,v])=>`<button class="btn" data-t="${v}">${n}</button>`).join('')}</div></div>
   <div class="devRow"><b>Terveys <span id="devHpV">${Math.round(P.hp)} / ${maxHp()}</span></b>${sldHTML('devHp',1,maxHp(),1,Math.round(P.hp))}</div>
   <div class="devRow"><b>Kylläisyys <span id="devHuV">${Math.round(P.hunger)}</span></b>${sldHTML('devHu',0,100,1,Math.round(P.hunger))}</div>
-  <div class="devRow"><b>Jumalvoimat</b><div class="devChk">${[['god','Ei voi kuolla'],['food','Ei nälkää'],['stam','Rajaton kestävyys'],['lvl','Korkein taso'],['weight','Ei painorajaa'],['fly','Lento (tuplahyppy)']].map(([k,n])=>`<label class="tglRow">${tglHTML('dv_'+k,!!DEVF[k],`data-dv="${k}"`)} ${n}</label>`).join('')}</div>
+  <div class="devRow"><b>Jumalvoimat</b><div class="devChk">${[['food','Ei nälkää'],['stam','Rajaton kestävyys'],['lvl','Korkein taso'],['weight','Ei painorajaa']].map(([k,n])=>`<label class="tglRow">${tglHTML('dv_'+k,!!DEVF[k],`data-dv="${k}"`)} ${n}</label>`).join('')}</div>
     <div class="devBtns"><button class="btn" data-dvall="1">Kaikki päälle</button><button class="btn" data-dvall="0">Kaikki pois</button></div></div>
   <div class="devRow"><b>Hae esine (DEV)</b><div class="devGive"><input id="devQ" class="search" type="search" placeholder="Hae esinettä nimellä…" autocomplete="off" spellcheck="false" value="${esc(devQ)}">
     <input id="devN" type="text" inputmode="numeric" maxlength="3" placeholder="1" value="${devN>1?devN:''}" title="Määrä (tyhjä = 1)"><button class="btn" id="devGo">Hae</button></div><div id="devList" class="devList"></div></div>
@@ -105,7 +110,11 @@ function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=d
   bindSld('devHp',v=>{P.hp=v;$('#devHpV').textContent=`${P.hp} / ${maxHp()}`;});
   bindSld('devHu',v=>{P.hunger=v;$('#devHuV').textContent=P.hunger;});
   B.querySelectorAll('[data-dv]').forEach(c=>c.onclick=()=>{DEVF[c.dataset.dv]=DEVF[c.dataset.dv]?0:1;saveDevF();invDirty=true;renderDev();});
-  B.querySelectorAll('[data-dvall]').forEach(b=>b.onclick=()=>{for(const k in DEVF)DEVF[k]=+b.dataset.dvall;saveDevF();invDirty=true;renderDev();});
+  B.querySelectorAll('[data-dvall]').forEach(b=>b.onclick=()=>{for(const k of ['food','stam','lvl','weight'])DEVF[k]=+b.dataset.dvall;saveDevF();invDirty=true;renderDev();});
+  // v1.92: isot napit – lento alkaa heti päälle kytkettäessä (ei tarvitse tuplahypätä)
+  B.querySelectorAll('[data-big]').forEach(b=>b.onclick=()=>{const k=b.dataset.big;DEVF[k]=DEVF[k]?0:1;saveDevF();if(k==='fly'){P.flying=!!DEVF.fly;P.vy=0;}
+    if(k==='noclip'&&!DEVF.noclip&&!P.flying)P.vy=0;msg(`DEV: ${b.querySelector('b').textContent} ${DEVF[k]?'päällä':'pois'}.`,'loot');invDirty=true;renderDev();});
+  B.querySelectorAll('[data-heal]').forEach(b=>b.onclick=()=>{P.hp=maxHp();P.stam=100;P.hunger=100;P.burnT=0;P.dead=false;msg('DEV: terveys, kestävyys ja kylläisyys täynnä.','loot');renderDev();});
   // v1.05 DEV-esinehaku: hakusana + määrä hakunapin vieressä, osumalista "Anna"-napeilla (lähtee pois DEV-tilan mukana)
   const listGive=()=>{const q=fold($('#devQ').value.trim()),L=$('#devList');devQ=$('#devQ').value;devN=Math.max(1,Math.min(999,Math.round(+$('#devN').value||1)));
     const rank=id=>{const n=fold(ITEMS[id].n);return n===q||id===q?0:n.startsWith(q)||id.startsWith(q)?1:2;};
@@ -115,6 +124,63 @@ function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=d
   $('#devGo').onclick=listGive;$('#devQ').oninput=listGive;$('#devN').oninput=listGive;$('#devQ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();const f=$('#devList [data-give]');if(f)devGive(f.dataset.give);}};listGive();
   $('#devMap').onclick=()=>{devRevealMap();msg('Kartta ja kaikki kohteet paljastettu.','loot');};}
 let devQ='',devN=1;
+/* v1.94 EEPPINEN POMOPALKKI (kaikki pomot, ainoa paikka joka ohjaa #bossbar-elementtiä): lähin herännyt pomo samassa ulottuvuudessa (< 70 m).
+   Teema pomon mukaan (väri, riimu, alaotsikko, koriste palkin alla: kivisärö / jääpuikot / veripisarat / köynnös), vaihemerkit palkissa,
+   viivepalkki (vaalea osa jää hetkeksi ja valuu alas osumien jälkeen), virtaava kuvio ja kiiltojuova. VAIHE VAIHTUU → palkki tärähtää ja
+   välähtää, iso teksti "VAIHE II" / "VAIHE III" / "VIIMEINEN RAIVO", halkeamat ja syke voimistuvat, ruudun vinjetti välähtää teeman värissä.
+   Pelottava vinjetti taistelun ajan, sydämenlyönti alle 25 %:ssa. Kuollessa "KUKISTETTU" ja palkki haalistuu 3,5 s:ssa. */
+const BB_T={vartija:{t:'kivi',sub:'Kalmankehän muinainen vartija',rune:'ᛟ',marks:[.5]},jaajattari:{t:'jaa',sub:'Routaluolan valtiatar',rune:'ᛁ',marks:[2/3,1/3]},
+  kalmaherra:{t:'kalma',sub:'Kalmankammion kuningas',rune:'ᛞ',marks:[2/3,1/3]},aarnihirvio:{t:'aarni',sub:'Aarnihaudan muinainen',rune:'ᛉ',marks:[2/3,1/3]}};
+const BB_PH=['','','VAIHE II','VAIHE III','VIIMEINEN RAIVO'],BB_ROM=['','','II','III','IV'];
+const BB={m:null,lag:1,lagT:0,lastK:1,ph:1,deadT:0,lowOn:false};
+function bbPhaseOf(m){if(m.def.ai==='boss')return m.phase2?2:1;if(m.fin)return 4;return m.phase||1;}
+function bbHit(bar,txt){bar.querySelector('.bbPhase').textContent=txt;bar.classList.remove('bbHit');void bar.offsetWidth;bar.classList.add('bbHit');
+  const v=$('#bbVig');if(v){v.classList.remove('flash');void v.offsetWidth;v.classList.add('flash');}}
+function bossBarTick(dt){const bar=$('#bossbar'),vig=$('#bbVig');if(!bar)return;
+  let best=null,bd=70*70;for(const m of mobs){if((m.def.ai!=='boss'&&m.def.ai!=='rboss')||m.dead||m.state==='sleep'||m.state==='sink'||!!m.dun!==P.inDun)continue;const d=dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z);if(d<bd){bd=d;best=m;}}
+  const cur=BB.m;
+  if(cur&&cur.dead&&BB.deadT<3.5){BB.deadT+=dt;if(!bar.classList.contains('bbDead')){bar.classList.add('bbDead');bar.querySelector('i').style.width='0%';bar.querySelector('.bbPhase').textContent='KUKISTETTU';if(vig)vig.hidden=true;}
+    if(BB.deadT>2.3)bar.classList.add('bbOut');if(BB.deadT>=3.5){bar.hidden=true;BB.m=null;}return;}
+  if(!best){if(!bar.hidden){bar.hidden=true;if(vig)vig.hidden=true;}BB.m=null;return;}
+  if(best!==cur){const T=BB_T[best.type]||BB_T.vartija;BB.m=best;BB.deadT=0;BB.ph=bbPhaseOf(best);BB.lag=BB.lastK=best.hp/best.maxHp;BB.lagT=0;BB.lowOn=false;
+    bar.className='bbT-'+T.t+' bbIn';bar.querySelector('.name').textContent=best.def.n;bar.querySelectorAll('.bbRune').forEach(r=>r.textContent=T.rune);
+    bar.querySelector('.bbMarks').innerHTML=T.marks.map(k=>`<span class="mk" data-k="${k}" style="left:${k*100}%"></span>`).join('');bar.querySelector('.bbPhase').textContent='';
+    bar.hidden=false;if(vig){vig.className='bbT-'+T.t;vig.hidden=false;}}
+  const T=BB_T[best.type]||BB_T.vartija,k=clamp(best.hp/best.maxHp,0,1);
+  bar.querySelector('i').style.width=(k*100)+'%';
+  if(k<BB.lastK-1e-4)BB.lagT=0;BB.lastK=k;if(BB.lag>k){BB.lagT+=dt;if(BB.lagT>.45)BB.lag=Math.max(k,BB.lag-dt*.32);}else BB.lag=k;
+  bar.querySelector('.bbLag').style.width=(BB.lag*100)+'%';
+  bar.querySelectorAll('.bbMarks .mk').forEach(e=>e.classList.toggle('past',k<+e.dataset.k));
+  const ph=bbPhaseOf(best);if(ph>BB.ph){BB.ph=ph;bbHit(bar,BB_PH[ph]);}
+  bar.classList.toggle('ph2',ph===2);bar.classList.toggle('ph3',ph===3);bar.classList.toggle('fin',ph===4);
+  bar.querySelector('.bbSub').textContent=T.sub+(ph>1?` · vaihe ${BB_ROM[Math.min(ph,4)]}`:'')+(best.sinking?' · herää':'');
+  const low=k<.25;if(vig&&low!==BB.lowOn){BB.lowOn=low;vig.classList.toggle('low',low);}}
+/* v1.91 DEV-valikko Ö: olennon luonti 3 m eteen (katsesuuntaan), pomojen pikasiirrot (pomohuone, portin eteen, elvytys) ja pomohuoneen
+   ääriviiva. Pomot syntyvät herätysanimaatiolla (nousevat maasta 3 m päähän); DEV-luotu pomo ei kirjaa voittoa eikä vajoa pois. */
+function renderDevM(){const B=$('#devMBody');if(!B)return;
+  const grp=[['Eläimet',['flee','neutral']],['Viholliset',['hostile']],['Pomot',['boss','rboss']]],ids=Object.keys(MOBDEF);
+  const bossRow=id=>{const D=REALMS[id],b=MOBDEF[D.boss],dead=!!fo('rb')[id];return `<div class="devBoss"><b>${esc(b.n)}</b> <span class="note">${esc(D.n)}${dead?' · kukistettu':''}</span><div class="devBtns">
+      <button class="btn" data-room="${id}">Pomohuoneeseen</button><button class="btn" data-port="${id}">Portin eteen</button>${dead?`<button class="btn" data-rev="${id}">Elvytä pomo</button>`:''}</div></div>`;};
+  B.innerHTML=`<div class="devRow"><b>Luo olento 3 m eteen</b>${grp.map(([n,ais])=>`<div class="note">${n}</div><div class="devBtns">${ids.filter(k=>ais.includes(MOBDEF[k].ai)).map(k=>`<button class="btn" data-mob="${k}">${esc(MOBDEF[k].n)}</button>`).join('')}</div>`).join('')}</div>
+  <div class="devRow"><b>Ulottuvuuksien pomot</b>${REALM_IDS.map(bossRow).join('')}
+    <div class="devBoss"><b>${esc(MOBDEF.vartija.n)}</b> <span class="note">Kalmankehä</span><div class="devBtns"><button class="btn" data-circle="1">Kalmankehään</button></div></div></div>
+  <div class="devRow"><b>Apuvälineet</b><div class="devChk"><label class="tglRow">${tglHTML('dv_bossLine',!!DEVF.bossLine,'data-dvm="bossLine"')}<span>Näytä pomohuoneen ääriviiva (ulottuvuudessa, seinien läpi)</span></label></div>
+    <div class="note">Herätys alkaa, kun astut ääriviivan sisään tai olet keltaisen ympyrän sisällä (keskimääräinen matka keskeltä seinään).</div>
+    <div class="devChk"><label class="tglRow">${tglHTML('dv_route',!!DEVF.route,'data-dvm="route"')}<span>Näytä reitti pomohuoneeseen (valkoinen viiva lattialla, lyhin reitti)</span></label></div>
+    <div class="note">Reittiviiva toimii ulottuvuudessa. Maailmassa siirry ensin portin eteen ja astu portista sisään.</div></div>`;
+  B.querySelectorAll('[data-mob]').forEach(b=>b.onclick=()=>devSpawnMob(b.dataset.mob));
+  B.querySelectorAll('[data-room]').forEach(b=>b.onclick=()=>{devTpBossRoom(b.dataset.room);closePanels();});
+  B.querySelectorAll('[data-port]').forEach(b=>b.onclick=()=>{devTpPortal(b.dataset.port);closePanels();});
+  B.querySelectorAll('[data-rev]').forEach(b=>b.onclick=()=>{devReviveBoss(b.dataset.rev);renderDevM();});
+  B.querySelectorAll('[data-circle]').forEach(b=>b.onclick=()=>{devLeaveDun();const L=LOC.circle;P.pos.set(L.x+10,terrainH(L.x+10,L.z),L.z);P.vy=0;P.vel.set(0,0,0);camYaw=Math.atan2(10,0);P.yaw=camYaw+Math.PI;msg('DEV: Kalmankehä.','loot');closePanels();});
+  B.querySelectorAll('[data-dvm]').forEach(c=>c.onclick=()=>{DEVF[c.dataset.dvm]=DEVF[c.dataset.dvm]?0:1;saveDevF();renderDevM();});}
+// luo olennon 3 m pelaajan eteen (kameran katsesuunta). Ulottuvuudessa ulottuvuusversio; pomot nousevat maasta herätysanimaatiolla.
+function devSpawnMob(type){const d=MOBDEF[type];if(!d)return;const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw),x=P.pos.x+fx*3,z=P.pos.z+fz*3;
+  const m=P.inDun?spawnMob(type,x,z,{y:DUN.y,dun:true}):spawnMob(type,x,z);m.devSpawn=1;m.yaw=Math.atan2(-fx,-fz);m.home={x,z};
+  if(d.ai==='rboss'){m.realm=P.realm||REALM_IDS.find(id=>REALMS[id].boss===type)||REALM_IDS[0];m.riseY=m.pos.y;bossHide(m,(d.fh||4)+1.5);m.state='rise';m.t=0;m.woke=0;}
+  else if(d.ai==='boss'){m.riseY=m.pos.y;bossHide(m,7.5);m.state='rise';m.t=0;m.woke=0;if(!boss||boss.dead)boss=m;}
+  else{if(P.inDun&&P.realm&&typeof realmize==='function')realmize(m,P.realm);if(d.ai==='hostile')m.state='chase';}
+  sfx('build',.8,.5);msg(`DEV: ${d.n} 3 m eteen${d.ai==='boss'||d.ai==='rboss'?' (herää 8 s)':''}.`,'loot');}
 // DEV: antaa esinettä määrän verran (ei mahtuvat putoavat maahan); ilmoitus kertoo paljonko saatiin
 function devGive(id){const n=devN||1,left=invAdd(id,n);if(left>0)spawnDrop(id,left,P.pos.x,P.pos.y+1,P.pos.z);invDirty=true;updateGear();sfx('pickup');msg(`DEV: +${n} ${ITEMS[id].n}${left>0?` (${left} maahan, reppu täynnä)`:''}`,'loot');}
 // DEV: poistaa karttapilvet kokonaan ja merkitsee kaikki nimetyt paikat (rauniot, portaalit, riimukivet…) löydetyiksi.
@@ -154,13 +220,13 @@ function renderLog(){const fm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60))
 function fitInv(){const el=$('#inv');if(el)el.style.setProperty('--invK',Math.min(1,(innerWidth-16)/1131,(innerHeight-16)/732).toFixed(3));}
 addEventListener('resize',fitInv);
 // v1.40 (lista 4, kohta 28): näppäinopasteet – paneelin oikeaan yläkulmaan "Sulje: P / Tab", pelinäkymän vasempaan alakulmaan "Päävalikko: P".
-const PANEL_KEY={inv:['#inv','inv'],build:['#build','build'],chest:['#chest','interact'],prog:['#progP','prog'],log:['#logP','log'],map:['#mapP','map'],dev:['#devP',null]};
+const PANEL_KEY={inv:['#inv','inv'],build:['#build','build'],chest:['#chest','interact'],prog:['#progP','prog'],log:['#logP','log'],map:['#mapP','map'],dev:['#devP',null],devm:['#devMP',null]};
 function refreshKeyHints(){const on=SET.keyHints!==false;for(const k in PANEL_KEY){const [sel,a]=PANEL_KEY[k],el=$(sel);if(!el)continue;let h=el.querySelector(':scope>.pHint');
-    if(!h){h=document.createElement('span');h.className='pHint';el.appendChild(h);}h.hidden=!on;h.textContent=`Sulje: ${keyLabel(BIND.menu)}${a?' / '+keyLabel(BIND[a]):k==='dev'?' / Ä':''}`;}
+    if(!h){h=document.createElement('span');h.className='pHint';el.appendChild(h);}h.hidden=!on;h.textContent=`Sulje: ${keyLabel(BIND.menu)}${a?' / '+keyLabel(BIND[a]):k==='dev'?' / Ä':k==='devm'?' / Ö':''}`;}
   let g=$('#gameHint');if(!g){g=document.createElement('div');g.id='gameHint';$('#hud').appendChild(g);}g.hidden=!on;g.textContent=`Päävalikko: ${keyLabel(BIND.menu)}`;}
 function togglePanel(name){if(openPanel===name){closePanels();return;}if(P.dead)return;panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';if(!locked)releaseLock();else{VC.x=innerWidth/2;VC.y=innerHeight/2;}mouseL=false;mouseR=false;P.drawing=false;
-  if(name==='inv'){$('#inv').hidden=false;fitInv();{const cs=$('#craftSearch');if(cs)cs.value='';}renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;{const bs=$('#buildSearch');if(bs)bs.value='';}renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){devQ='';devN=1;$('#devP').hidden=false;renderDev();}refreshKeyHints();vcSync();}
-function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;selHalf=false;selEq=null;slotDrag=null;hoverSlot=null;if(typeof updGhost==='function')updGhost();if(!keep){state='play';if(!skipLock&&!locked)requestLock();}vcSync();}
+  if(name==='inv'){$('#inv').hidden=false;fitInv();{const cs=$('#craftSearch');if(cs)cs.value='';}renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;{const bs=$('#buildSearch');if(bs)bs.value='';}renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){devQ='';devN=1;$('#devP').hidden=false;renderDev();}if(name==='devm'&&$('#devMP')){$('#devMP').hidden=false;renderDevM();}refreshKeyHints();vcSync();}
+function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP','#devMP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;selHalf=false;selEq=null;slotDrag=null;hoverSlot=null;if(typeof updGhost==='function')updGhost();if(!keep){state='play';if(!skipLock&&!locked)requestLock();}vcSync();}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
 function nearStations(){const s={};for(const p of pieces){const k=isFirePiece(p.t)?'nuotio':p.t;if(['tyopenkki','nuotio','ahjo'].includes(k)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(k==='nuotio'?4:8)**2&&!P.inDun){if(k==='nuotio'&&p.data.fuel<=0)continue;s[k]=1;}}return s;}
 let fxAt=0;

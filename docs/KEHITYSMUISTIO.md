@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.85)
+## Nykytila (päivitetty v1.95)
 
-- **Versio 1.85**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR: äänierä A (v1.84). Aiempi:
+- **Versio 1.95**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -110,7 +110,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - Käyttäjä etsii äänet netistä (Kenney, Pixabay, Freesound CC0, OpenGameArt), **kuuntelee ne koneellaan** ja korvaa paikkamerkin
   **täsmälleen samalla nimellä** GitHub Desktopilla (commit + push).
 - Claude ajaa käsittelytyökalun `python3 tools/process_sounds.py`: tunnistaa oikeat äänet (yli 3 kt, muoto tiedoston sisällöstä eikä
-  päätteestä) → ffmpeg → `sounds/<nimi>.mp3` (mono, 96 kbps, hiljaisuus pois alusta ja lopusta, loudnorm −16 LUFS). Kirjoittaa
+  päätteestä) → ffmpeg → `sounds/<nimi>.mp3` (mono, 96 kbps; käsittely ks. "Käsittely ja toisto (v1.86)" alla). Kirjoittaa
   `sounds/manifest.json` (nimi → sisältötiiviste, kesto) ja päivittää tilataulukon `sounds/AANILISTA.md`. Raakatiedostoja ei poisteta.
   Jos raaka palautetaan paikkamerkiksi, käsitelty ääni poistuu.
 - **Peli lukee vain käsitellyt äänet** `sounds/`-kansiosta (manifestin kautta, tiiviste osoitteessa → välimuisti ei näytä vanhaa ääntä).
@@ -123,9 +123,41 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   "lainaavat: …" (myös ketjun kautta, "via X").
 - Raakaäänet: lyhyet saa olla wav, pitkät (musiikki, loopit) mp3, alle 25 Mt / tiedosto. **Vaihda ääni vasta kuuntelun jälkeen** –
   git-historia muistaa vanhat versiot (repo kasvaa). Arvio: noin 300 ääntä on ok (repo alle 1 Gt).
-- Nimet: `<id>_<laji>_<n>`, id = MOBDEF-avain (olennot), n = 1–3 (arpoo olemassa olevista, yksi riittää). Lajit: idle, hurt, death,
+- Nimet: `<id>_<laji>_<n>` (lajit nyt myös `echo`, vain ulottuvuuspomot, 1–2 versiota), id = MOBDEF-avain (olennot), n = 1–3 (arpoo olemassa olevista, yksi riittää; **kuolemaäänelle 1 paikka ulottuvuuksien hirviöillä (rboss) ja 2 muilla**). Lajit: idle, hurt, death,
   aggro = suuttumisääni (ai neutral/hostile/boss/rboss; vihamielisillä ja pomoilla vain kerran), chase = toistuva jahtiääni (hostile/boss/rboss).
 - Jokainen äänierä (A–E, ks. ideajono) tehdään samalla paikkamerkkitavalla ja saa oman osion AANILISTA.md:hen.
+
+**Käsittely ja toisto (v1.86, käyttäjän päätökset):**
+- **Aarnihirviö = pääääni 💎.** Se on isoin varaääni: Jäätär, Kalmaherra ja v1.95 alkaen Kalmanvartija lainaavat siltä (`jaajattari` ×1,20, `kalmaherra` ×0,85, `vartija` ×0,70; kivivartija vartijan kautta ×0,805) kunnes saavat
+  omat. Hiidenhirvi lainaa taas suoraan hirveltä. "Ulottuvuuksien hirviöt" = `ai:'rboss'` (3 kpl).
+- **Kuolemaäänet:** ulottuvuuksien hirviöillä 1 paikka (`_1`), kaikilla muilla olennoilla 2 (`_1`, `_2`); `variants_of(ai, laji)` työkalussa,
+  ylimääräiset paikkamerkit poistuvat `--init`:llä (oikeaan ääneen ei koskaan kosketa).
+- **Trimmaus (työkalu):** ylipäästö 40 Hz, hiljaisuus (−48 dB) pois alusta ja lopusta, pituus katkaistaan lajin ylärajaan ja häivytetään
+  (6 ms sisään, laji-kohtainen ulos). Rajat (tavallinen / pomo): idle 3 / 4 s, hurt 1,2 / 1,6 s, death 3,5 / 6 s, aggro 2,5 / 3,5 s, chase 2,5 / 4 s.
+- **Voimakkuus (työkalu):** mitataan LUFS ja nostetaan lajin tavoitteeseen: idle −22, hurt −17, death −16, aggro −16, chase −18 (pomot +1,5 dB,
+  boss +1) ja `alimiter` (katto −1 dBFS, ei leikkaa). Samat äänet siis suunnilleen samalla tasolla ja idle hiljaisin. Manifestin `pv` = käsittelyn
+  versio (`PV`): vaihtuessa kaikki ajetaan uudestaan; `gain` = käytetty vahvistus (dB). Anna raaka puhtaana ja kuivana (ei omaa kaikua).
+- **Kaiku (peli):** vain olennoille joilla `m.dun` (luolasto ja ulottuvuudet, tiheitä tiloja). Yksi yhteinen `ConvolverNode` (proseduraalinen
+  vastaus 1,2 s, stereo, alipäästö 3,2 kHz; sama näytetaajuus kuin AudioContextilla, muuten Chrome heittää virheen). Lähetysmäärä: tavallinen
+  0,45, boss 0,6, rboss 0,75. Kaiku kytketään vain kun kaiullinen ääni soi ja irrotetaan 3 s viimeisen jälkeen → maailmassa ei kuormaa. Ei
+  oman tiedoston kaikua → sama ääni toimii sekä ulkona (kuiva) että luolassa.
+- **Toistosäännöt (`creSnd`):** tärkeys kuolema 5 > osuma 4 > suuttuminen 3 > jahti 2 > rauhallinen 1. Yhdellä olennolla soi yksi ääni
+  kerrallaan: tärkeämpi katkaisee (nopea häivytys 30 ms), heikompi jää pois, samanarvoinen vasta 0,35 s jälkeen. Kuolema vaientaa olennon
+  muut äänet. Koko peliin enintään 10 samanaikaista ääntä (`CRE.max`); täyden ollessa uusi syrjäyttää heikoimman (tasatilanteessa kaukaisimman)
+  tai jää pois jos on heikompi kuin kaikki. Rauhallista/jahtiääntä enintään 3 samaa lajia+tyyppiä kerrallaan ja uusi aikaisintaan 0,3 s edellisen
+  jälkeen (ei kuoroa). Sama versio ei toistu heti perään. Äänekkyys: idle ×0,75, chase ×0,9 muut ×1; pomoilla 3D-viite 8 m (muilla 3 m).
+
+**Äänierän rutiini (kun käyttäjä lisää uusia ääniä; v1.86, jotta isotkin erät sujuvat nopeasti):**
+1. `git pull`/fetch: katso mitä uusia tiedostoja `sounds/raw/` sai (`git diff --stat HEAD origin/main`). Älä lue ääniä itse – työkalu mittaa.
+2. `python3 tools/process_sounds.py` (tarvittaessa `--init` uusille olennoille). Lue **HUOM**-rivit: sama tiedosto kahdessa paikassa, vahvistus yli ±12 dB
+   (raaka hyvin hiljainen/kova → kerro käyttäjälle), ylimääräiset paikat. Tuplatiedosto tai kova vahvistus ei estä erää; ilmoita ne ja jatka.
+3. Tarkista AANILISTA.md:n tilarivit ja VARAANI: jos olento sai omat äänet, varaääniketju voi jäädä; uusi 💎/⭐-rooli päivittyy itse.
+   Jos uusi olento ei ole VARAANI-ketjussa eikä saa ääntä, älä lisää varaääntä ilman syytä.
+4. Muutokset koodiin vain jos sääntö muuttuu (toisto, kaiku, profiilit). Muuten pelkkä dataerä: `sounds/`, manifest, AANILISTA, muistio, versio.
+5. Versio + muistion versioloki + `tarkistus.mjs` → KAIKKI OK (sisältää VARAANI-eheyden). `full157` vain kun koodi muuttui (pelkkä äänidata ei vaadi sitä).
+6. Commit, push, PR, linkit (commit-SHA, haara, PR) ja muistutus Mergestä.
+- Mallisuositus: rutiiniäänierä = Sonnet, medium. Opus/korkea ajattelu vain uudelle koodille (äänierät B–E: askeleet, sää, musiikki, äänifysiikka).
+  Anna äänet isoina erinä (10–20 oliota kerralla), niin konteksti ja testit ajetaan vain kerran.
 
 ## Pysyvät päätökset
 
@@ -191,9 +223,181 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 ### Äänilistan merkinnät (vain työkalu ja dokumentit, ei versionostoa)
 - `tools/process_sounds.py` tuottaa AANILISTA.md:hen roolit varaääniketjusta (`VARAANI`): 💎 = juuri (lainaajia, ei lainaa itse), ⭐ = väli
   (lainaa itse ja muut lainaavat siltä), ei merkkiä = vain lainaa. Luku merkin perässä = kaikki lainaajat ketju mukaan lukien; vasemman
-  sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset: 💎 susi (6), kalmo (5),
-  hirvi (4), karju (2), karhu (1), sammalhiisi (1); ⭐ kalmon ylimys (2), peura, kettu, ilves, hiidenhirvi, kalmanvartija (1 kukin).
+  sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
+  hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v1.95 (Kalmanvartijan äänet)
+- **Ongelma:** Kalmanvartijalla oli kaikki äänipaikat (idle, hurt, death ×2, aggro, chase), mutta varaääni oli `kalmo`, jolla ei ole yhtään
+  ääntä → vartija (ja kivivartija sen kautta) oli mykkä. **Korjaus:** `VARAANI.vartija` → `aarnihirvio` sävelellä ×0,70 (matala kivijättiläinen),
+  kivivartija → vartija ×1,15 (yht. ×0,805). Kun käyttäjä lisää `vartija_*`-äänet, ne korvaavat lainan automaattisesti.
+- **Uusi kaikuääni Kalmanvartijalle** (`vartija_echo_1/2`, paikkamerkit luotu, `ECHO_AI`/`CRE_ECHO` = rboss + boss). Soi `vartijaEcho` (audio.js,
+  `creTick`): maailmassa alle 80 m Kalmankehästä, kunnes vartija on kukistettu ensimmäisen kerran (`flags.boss`) ja vain kun vartija ei ole hereillä.
+  24–48 s välein (ensimmäinen 4–10 s), maan alta (piilo-olento `VEC.m` 3 m maan alla kehän keskellä), tumma (alipäästö), kaiku 0,9, voimakkuus ×0,6.
+  Ilman omaa ääntä lainaa Aarnihirviön kaikuäänen; jos sitäkään ei ole, hiljaa (tarkistus 10 s välein).
+- Äänilista (AANILISTA.md) ja työkalun ohjeteksti päivitetty (`python3 tools/process_sounds.py --init`). Tarkistukseen 1 rivi.
+
+### v1.94 (eeppinen pomopalkki, vaihe-efektit, rauha ja arkkujen täyttyminen)
+- **Pomopalkki uusittu** (`bossBarTick`, ui.js; ainoa paikka joka ohjaa `#bossbar`:ia – muualta piilotus/näyttö poistettu). Ajetaan joka
+  ruudunpäivitys `updateHUD`:n alussa (ennen 0,1 s:n rajoitinta). Näyttää lähimmän herännyn pomon samassa tilassa (< 70 m; ei `sleep`/`sink`).
+  Teemat `BB_T`: vartija = kivi (turkoosi, ᛟ, kivisärö), Jäätär = jää (sininen, ᛁ, jääpuikot), Kalmaherra = kalma (veren punainen, ᛞ, valuvat
+  veripisarat), Aarnihirviö = aarni (vihreä, ᛉ, köynnös ja lehdet). Värit CSS-muuttujina `--bc/--bd/--bl` (rgb-kolmikot) – teemaluokan
+  valitsimen pitää olla `#bossbar.bbT-x` (id-valitsin voittaa pelkän luokan). Kehys, sykkivät riimut, välkkyvä nimi, alaotsikko,
+  virtaava raitakuvio, kiiltojuova, vaihemerkit (vartija 50 %, muut 2/3 ja 1/3), viivepalkki (jää 0,45 s ja valuu 0,32/s).
+- **Vaihe-efekti** (`bbPhaseOf`: vartija `phase2` → 2, rboss `phase`, Kalmaherran `fin` → 4): palkki tärähtää, välähtää, iso teksti
+  "VAIHE II"/"VAIHE III"/"VIIMEINEN RAIVO" (2,8 s), halkeamat (ph2 0,5 / ph3+ 0,9), syke ph3+, viimeisessä raivossa koko palkki punaiseksi.
+  Ruudun reunoille `#bbVig` teeman värissä (0,55), välähtää vaihtuessa ja sykkii sydämenlyöntinä alle 25 %:ssa. Kuollessa "KUKISTETTU",
+  harmaa, häipyy 2,3–3,5 s.
+- **Rauha** (ai.js): `bossVictory(kind)` kutsutaan vartijan (`bossDefeated`) ja ulottuvuuspomon (`onMobKilled`) kaatuessa. Kun kaikki neljä on
+  kaatunut (`allBossesDown`), `flags.peace=1` ja voittoruutu "Hiidenmaa on rauhallinen" (otsikko `#winT`) 13 s kuoleman jälkeen (kuolema-animaatio
+  ehtii; ennen 3,5 s). Vartijan oma voittoruutu vain ensimmäisellä kerralla (`flags.won`). `peaceTick` (updateHUD): kun `flags.peacePend` ja ruutu
+  on suljettu (state play) → 2 s → `peaceRefill`: jokainen **tyhjennetty** maailman arkku (`worldChests`, sisältö olemassa mutta tyhjä; avaamattomat
+  ennallaan) saa 8 eri satunnaista esinettä `PEACE_LOOT`-listasta (hiidenkivi 25 %, karhuntalja 30 %) + ilmoitukset. Kerran per tallennus.
+- Tarkistus: 2 uutta riviä (palkki 4 teemaa + vaihe + KUKISTETTU; rauha + täyttö).
+
+### v1.93 (pomojen uudet korkealaatuiset mallit, Ultra-efektit, saaliin majakkasäde)
+- **Uusi tiedosto `js/bossmodels.js`** (ladataan `models.js`:n jälkeen, ennen `mobs.js`:ää): kaikkien pomojen mallit uusittu **ilman palikoita**,
+  vanhoja malleja matkien. Apurit: `bqLump` (kohinalla muotoiltu pallo – kivi, kaarna, sammal), `bqTaper` (kapeneva kaareva putki – sarvet,
+  piikit, jääpuikot, kylkiluut, juuret, hehkuvat halkeamat), `bqCapsule`, `bqCrystal` (kuusikulmainen jääkristalli), `bqCloth` (kaareva repaleinen
+  kangas), `bqSkirt` (hammastettu helma), `bqChain` (rengasketju), `bqShroom` (sieni), `bqFlameGeo` (liekki); suurmiekka `ExtrudeGeometry`llä.
+  - **Kalmanvartija** (`figVartija`, ennen `figGolem(3.1,true)`; kivivartija käyttää yhä figGolemia): pyöreät kivimöhkäleet, mutkittelevat
+    hehkuvat riimuhalkeamat (ydin + hehku), sammalolkapäät, olkapiikit, rystyset, kivikruunu, kulmakaari, selässä riimumonoliitti.
+  - **Jäätär**: 11 kaarevaa jääpuikkoa harjana, jääkruunu (rengas + kristallit), naamio ja torahampaat, huurrekaulus, repaleinen viitta
+    (keinuu), kristalliviuhkat olkapäillä, rintakivi kehyksineen, kyynärvarsien jääpiikit, kaarevat jääkynnet, jääpuikkohelma.
+  - **Kalmaherra**: kylkiluukaaret, rintalanka ja selkäranka, kallo (leuka, hampaat, hehkuvat silmäkuopat), pässinsarvet, kultakruunu kivineen,
+    kalloolkapäät piikein, iso repaleinen viitta ja sivukaistaleet, rengasketjut, suurmiekka (uurre, sahalaita, kaareva väistin, ponsi), sieluorbi.
+  - **Aarnihirviö**: haarautuvat sarvet (4 haaraa, luukärjet), kaarnakuono, kulmakaari, sammallakki, torahampaat, lisäsilmät, sammalolkapäät ja
+    hohtavat sienet, kaarnalevyt, selkäkyttyrä luupiikein, köynnökset lehtineen (keinuvat), puukynnet.
+  - Kolmiot: 12–20 tuhatta / pomo (ennen ~2 300). Rakenne sama (`makeHumanoid` + osat) → animaatiot, silmät (`f.eyes`), herätys, ryntäys toimivat.
+- **Ultra-efektit** (`bossUltra()`: Ultra-esiasetus tai Ultra-ruoho; `f.fx(dt,m)` kutsutaan joka ruutu ai.js:ssä ennen pomon tekoälyä):
+  silmissä isot värisevät liekit kaikilla; Kalmanvartijan ympärillä 6 leijuvaa riimukiveä hehkuvine renkaineen, Jäättären ympärillä 8 jääkristallia ja
+  huurrehiukkasia, Kalmaherran ympärillä 3 kulkusuuntaan katsovaa aavekalloa ja orbista nouseva sieluliekki, Aarnihirviön ympärillä 12 lehteä ja
+  6 tulikärpästä. Riimuhalkeamat, rintakivi ja sienet sykkivät kaikilla tasoilla. Leijuvat palat ovat `f.g`:n suoria lapsia → irtoavat kuollessa.
+- **Kuolema uusilla malleilla:** näkymättömät lapset (Ultra-palat muulla tasolla) poistetaan ennen repeämistä, joten ne eivät ole osia eivätkä saa
+  kumpua. Hehkuvat osat (MeshBasic: silmät, riimut, sienet, orbi) himmenevät valon kadotessa ja häipyvät maatuessa (`D.basic`). Testi: kaikki 4 –
+  osia 12–25 (Ultra-palat mukana), saaliilla säde, loppu ~21,5 s.
+- **Majakkasäde pomon saaliille** (`beaconAdd`/`beaconTick`, state.js): pystysuora hehkuva valopylväs (ydin + leveä hehku, häipyy ylöspäin,
+  maailmassa 22 m, luolassa 6 m), sykkivä maarengas ja kipinät pomon värissä; näkyy vain samassa ulottuvuudessa, poistuu poimittaessa (`removeDrop`).
+- `tarkistus.mjs` KAIKKI OK (2 uutta riviä: mallit + Ultra, majakkasäde + kuoleman osat).
+
+### v1.92 (DEV: reittiviiva pomohuoneeseen, Ä-valikon isot napit, seinien läpi, aika/sää-lukko, maailman pysäytys, V lennossa)
+- **Ö: reittiviiva** (täppä `route`, `devRouteLine`/`bossRoute`, dungeons.js): valkoinen nauha lattialla **lyhintä reittiä pomohuoneeseen**, näkyy
+  seinien läpi. Leveyshaku ulottuvuuden ruudukossa (`R.grid`, tallennetaan `ensureRealm`issa) pelaajan ruudusta ensimmäiseen pomohuoneen ruutuun,
+  sitten suoristus (hypätään niin pitkälle kuin suora mahtuu 0,6 m välillä seiniin, `rClear`). Lasketaan uudelleen kun pelaajan ruutu vaihtuu,
+  ensimmäinen pätkä seuraa pelaajaa joka ruudussa; huoneessa viiva katoaa. Testi: Aarnihauta sisäänkäynniltä 5 pistettä / 135 m, kaikki pätkät
+  seinättömiä, reittiä kävelemällä (ei noclipiä) päästiin huoneeseen ilman jumitusta ja pomo heräsi.
+- **Ä-valikko käytännöllisemmäksi:** **isot napit alkuun** (vihreä = päällä): *Kuolemattomuus*, *Lento* (alkaa heti, ei tarvitse tuplahypätä),
+  *Seinien läpi*, *Lukitse aika ja sää*, *Pysäytä maailma* ja punainen toimintonappi *Terveys täyteen* (terveys, kestävyys, kylläisyys, palaminen pois).
+  Pienet täpät jäivät: ei nälkää, rajaton kestävyys, korkein taso, ei painorajaa (Kaikki päälle/pois koskee vain niitä).
+- **Seinien läpi** (`noclip`, player.js): ei törmäyksiä eikä kattoa; maa = maasto tai luolan lattia (esineiden päälle ei nousta). Testi: seinä pysäytti
+  1,22 m:ssä, noclipillä läpi 6,67 m.
+- **Lukitse aika ja sää** (`lockTW`, main.js): kello ei etene eikä sää vaihdu. **Pysäytä maailma** (`freeze`): olennot, ammukset, pudotukset,
+  hiukkaset, työpisteet, syntyminen, nälkä/kylmä, aika, sää ja Kalmanpesä seis – vain pelaaja, kamera ja käyttöliittymä päivittyvät.
+- **V nopeuttaa lentoa:** lennossa V pohjassa vaaka- ja pystynopeus ×6 (Ctrl ×2 lisäksi). Testi: 8,8× matka sekunnissa (kiihtyminen mukana).
+- `tarkistus.mjs` KAIKKI OK (2 uutta riviä).
+
+### v1.91 (DEV Ö-valikko: olennot ja pomot; pomon herätys pomohuoneeseen astuessa)
+- **DEV-valikko Ö** (`renderDevM`, ui.js; vain DEV-tilassa, näppäin `Semicolon` / `e.key` ö): **Luo olento 3 m eteen** – kaikki 26 lajia
+  ryhmissä Eläimet / Viholliset / Pomot, kameran katsesuuntaan (`devSpawnMob`). Ulottuvuudessa olento saa ulottuvuusversion; vihamielinen aloittaa
+  jahdin. **Pomot syntyvät herätysanimaatiolla** (nousevat 8 s maasta). DEV-luotu olento `m.devSpawn`: vartija ei vajoa pois kehästä kaukana eikä
+  kirjaa voittoa, ulottuvuuspomo ilman `rmIdx`:ää ei merkitse ulottuvuutta kukistetuksi; terveyspalkki näkyy myös maailmassa.
+- **Ulottuvuuksien pomot:** *Pomohuoneeseen* (`devTpBossRoom`: siirtyy heti ulottuvuuteen ilman häivytystä, pisimpään vapaaseen suuntaan 75 %
+  seinään, katse pomoon → herätys alkaa heti), *Portin eteen* (`devTpPortal`: maailman puolen portin eteen, katse porttiin; poistuu luolasta
+  `devLeaveDun`), *Elvytä pomo* kukistetulle (`devReviveBoss`: `fo('rb')`/`fo('rbHp')` pois, luodaan nukkumaan). Kalmanvartija: *Kalmankehään*.
+- **Apuväline: pomohuoneen ääriviiva** (DEV-täppä `bossLine`, `devRoomOutline`): näkyy seinien läpi ulottuvuudessa – huoneen reuna lattialla ja 2,5 m
+  korkeudella, pystytolpat, keltainen varaetäisyyden ympyrä ja punainen pylväs pomon paikalla; kirkastuu kun olet huoneessa. Viivoilla `fog:false`
+  (muuten luolan tiheä sumu himmensi ne).
+- **Herätys pomohuoneeseen astuessa:** `ensureRealm` laskee **pomohuoneen** (`R.room`): 48 sädettä pomon paikalta lähimpään seinään (enintään 5,5 ruutua
+  = 17,6 m, ettei käytävä venytä huonetta) ja keskiarvon `avg` = keskimääräinen matka keskeltä seinään. `inBossRoom(R,x,z)`: pelaaja säteiden
+  ääriviivan sisällä **tai** varaetäisyyden (`avg`) sisällä → herätys. Korvaa v1.90:n etäisyys + näköyhteys -ehdon. Mitattu: Routaluola avg 10,1 m
+  (säteet 1,5–17,8 m, pomo reunan lähellä), Kalmankammiossa sisään kävellessä herätys juuri ääriviivan kohdalla.
+- Testattu `?dev=1`: Ö avaa valikon (26 olentoa, 3 pomoriviä), susi täsmälleen 3,00 m eteen, pomohuoneeseen → herätys + ääriviiva, portin eteen
+  0 m, elvytys luo pomon, DEV-Aarnihirviö maailmassa nousee ja jahtaa, DEV-vartija ei vajoa eikä kirjaa voittoa. `tarkistus.mjs` KAIKKI OK (2 uutta riviä).
+
+### v1.90 (pomojen 8 s herätys ja 12 s kuolema + maatuminen, ryntäyksen etukeno, jousikalmon miekkaan vaihto)
+- **Jousikalmo:** kun pelaaja tulee alle 3,2 m päähän kesken vedon, kalmo **keskeyttää vedon heti** (`aimT=0`) ja hakkaa miekalla; jousiasento
+  rentoutuu. Uusi veto alkaa vasta yli 3,6 m päässä (ei edestakaista vaihtelua). Testi: veto alkoi, pelaaja tuli viereen → 0 nuolta, 3 miekaniskua.
+- **Bugi korjattu – pomo vilahti näkyviin ennen herätystä:** nukkuva ulottuvuuspomo luodaan heti **näkymättömänä maan alle** (`bossHide`,
+  syvyys `fh`+1,5 m, `m.riseY` = lattia, haavoittumaton). Herätys alkaa vasta kun **pelaaja astuu huoneeseen**: etäisyys < `aggro` **ja näköyhteys**
+  pomon paikalta (`losClear`, seinät estävät) ja korkeusero < 4 m. Pelaajan kuollessa pomo vajoaa piiloon kotipaikalleen ja herää uudelleen.
+- **Herätys 8 s (`BOSS_RISE`, `bossRisePose`):** 0–1,2 s lattia halkeaa (hehkuva rengas + 9 säröä pomon värissä, halkeamasta nousee oikeaa valoa,
+  maa tärisee) · 1,2–5,6 s nousee maan alta pää alhaalla ja kädet sivuilla, multaa varisee maasta ja vartalosta · 5,6–6,6 s pää nousee ja
+  **5,9 s pomo huomaa pelaajan** (`bossWakeRoar`: suuttumisääni, silmät leimahtavat, halkeama välähtää, "X herää!", alkaa kääntyä pelaajaan –
+  ennen sitä se ei seuraa pelaajaa) · 6,6–7,6 s suoristuu ja levittää kätensä, 7,5 s paineaalto, pöly ja jysähdys · 8 s jahti. Sama Kalmanvartijalla.
+- **Kuolema ~12 s + maatuminen ~10 s (`bossDeathAnim`):** kalpenee **heti** noustessaan · kolme **todellista pistevaloa pinoutuu** 0,4 / 1,6 / 2,8 s
+  (kukin 0 → 9 pehmeästi, kiertävät pomon ympäri) ja `BOSS_GLOW` kirkastaa koko huoneen (hemi +1,2 ja amb +0,5 luolassa) · 2,6–5,2 s kädet
+  levälleen, pää taakse · **5,6 s kuolinääni kaiulla** ja ruumis **repeää: vartalo jää keskelle**, muut osat liukuvat 1,8 s:ssa omiin suuntiinsa
+  hieman irti (0,45–0,9 m + koon mukaan), valosäikeet vartalon ja osien välissä; jälkikaiku 0,45 s · saalis ilmestyy leijumaan vartalon korkeudelle ·
+  8,4–9,1 s valo, hehku ja vaaleus katoavat · 8,9 s → **osat putoavat yksitellen** (enintään 0,22 s välein, vartalo viimeisenä), pieni pomppu,
+  pöly · **saalis leijuu ja putoaa nätisti 12,6 s** (`d.hold`, ei poimittavissa leijuessa) · **maatuminen** (yllätys): osat tummuvat mullaksi,
+  painuvat kokoon ja vajoavat; alle kasvaa multakumpu, jolle nousee pomon värissä **hehkuvia sieniä** ja itiöitä leijuu (tulikuolemassa tuhkakasa,
+  hiillos ja savu); kaikki häipyy ~10 s laskeutumisesta. Pomo poistetaan ~21 s kohdalla. Jos pomo poistetaan ennen repeämistä, saalis tulee pelaajan luo.
+- **Valot:** `updateLights` lajittelee nyt ensin etusijan (`pri`) mukaan → pomon valot saavat aina valopaikan, vaikka soihtuja olisi lähempänä
+  (aiemmin kuolemavalo saattoi jäädä kokonaan pois). Herätyksen halkeamavalo `pri:2`, kuolemavalot `pri:4`.
+- **Ryntäys (`bossChargePose`):** kierrosjärjestys **YXZ** → kallistus hahmon omaan eteen (XYZ:llä kallistus tapahtui maailman X-akselin ympäri, joten
+  se näkyi sivukenona). 0–0,6 s kyyristyy, kädet taakse ja **silmät kirkastuvat**; ryntäyksessä etukeno 0,45 rad, polvet koukussa, jalat juoksevat.
+  Asento nollataan myös keskeytyksessä (`bossChargeReset`). Testi: pää 1,1–2,1 m eteenpäin, 0,00 sivulle kaikilla pomoilla kaikissa suunnissa.
+- **Silmät:** `makeHumanoid` palauttaa `f.eyes`; `bossEyes(m,k)` kirkastaa, suurentaa ja lisää hehkupallon (omat materiaalit, ei vaikuta muihin).
+- Testattu pelissä (Kalmaherra, Aarnihirviö, Kalmanvartija ulkona): piilossa 5,9 m maan alla, palkki ei näy ennen huonetta; huomaaminen 5,93 s, aggro 1 kerta;
+  kuoleman kuvasarja; saalis 3,7 m ilmassa leijumassa ja maassa lopuksi; ei jääneitä valoja. `tarkistus.mjs` KAIKKI OK (5 uutta/päivitettyä riviä).
+
+### v1.89 (jousikalmon kädet ja miekka, pomojen herätys- ja kuolema-animaatiot)
+- **Jousikalmo:** jousi on nyt **vasemmassa** kädessä ja **miekka oikeassa**, täsmälleen kuten pelaajalla (`state.js`: `cat==='bow'` → `fig.handL`).
+  Alle 2,4 m päässä kalmo lyö miekalla (tavallinen lähihyökkäys), kauempana ampuu. Vetoon lisätty sekunti: `ARCH_DRAW` 0,9 → **1,9 s**
+  (mitattu testissä: ensimmäisestä tähtäyksestä laukaukseen 1,9 s).
+- **Pomon herätys (`bossRisePose`, effects.js; `BOSS_RISE`=5 s):** pomo nousee maasta **5 sekunnissa** pää alhaalla ja kädet sivuilla (nukkuu yhä);
+  viimeisen viidenneksen aikana pää nousee ja hahmo suoristuu. **Haavoittumaton** koko nousun ajan (`m.sinking=1` → `damageMob` ei tee vahinkoa).
+  **Terveyspalkki tulee heti** animaation alkaessa (tila ei ole enää `sleep`; ulottuvuuksissa yhden ruudun viive, koska `updateDungeons` ajetaan ennen
+  `updateMobs`-kutsua). **Suuttumisääni vasta kun pomo seisoo** ja on huomannut pelaajan (`bossWakeRoar`: oma aggro-ääni tai tehty karjaisu;
+  asettaa `angerDone`, joten `creTick` ei soita sitä toiseen kertaan). Tilan nimi on nyt molemmilla **`rise`** (ennen ulottuvuuspomoilla `intro`,
+  Kalmanvartijalla 2,5 s `rise` + 2,2 s `intro`). Nousun aikana ei soi rauhallista ääntelyä eikä kaikuääntä.
+- **Pomon kuolema (`bossDeathAnim`, effects.js; muilla olennoilla ennallaan):** 0–3 s irtoaa maasta ja kohoaa hitaasti raajat veltoiksi · 3–4,9 s kalpenee
+  valkoiseksi · 4,9–6,2 s sokaiseva valo valaisee huoneen (`lightSources`, kirkkaus 26, + additiivinen hehkupallo) · **5,3 s kuolinääni** `creSnd`illa
+  (`rev:1.8`) ja **ruumis hajoaa osiin ilmassa** (hahmon ylimmän tason osat irrotetaan `scene.attach`illa, saavat sinkoamisnopeuden ja pyörimisen) ·
+  jälkikaiku 0,45 s myöhemmin (`rev:2.4`, `v:.4`, `p:.92`, `add:1`) · 5,3–6,8 s osat putoavat painovoimalla (15 m/s²) ja jäävät maahan · **6,2–6,55 s valo
+  ja vaaleus katoavat nopeasti**, ennen kuin osat osuvat maahan · 7,4–9,4 s osat maatuvat (läpinäkyvyys häivyttää, `DEATH_END` 9,4 s kuten muillakin).
+  Tulikuolemassa osat tummuvat tuhkan värisiksi ja kipinöivät. Kuolinääni ei enää soi `killMob`issa pomoilla (vain tärähdys), vaan animaatiossa.
+  Siivous `bossDeathEnd`: osat, valo ja hehku poistetaan myös jos pomo poistetaan kesken (esim. ulottuvuudesta poistuminen, `mobRemove`).
+- **`creSnd(m, laji, o)` uudet valinnat:** `rev` = pakotettu kaiun määrä (myös maailmassa), `add` = lisä-ääni joka ei katkaise olennon muita ääniä eikä katkea niistä.
+- Testattu: jousi vasemmassa / miekka oikeassa ja kuva vedosta; lähellä 6 miekaniskua eikä yhtään nuolta; herätys 5 s (0,7 s kohdalla 4,4 m maan alla, pää 0,85 rad),
+  vahinko 0 nousun aikana, lopussa pystyssä ja `angerDone`; kuolema: 19 osaa irtosi, valo 26 → 0,05 ennen maahantuloa, molemmat äänet, poisto 9,4 s, ei jääneitä valoja.
+
+### v1.88 (jousikalmo ampuu kuin pelaaja, ulottuvuuspomojen kaikuääni)
+- **Jousikalmo (`archerAI`, ai.js):** veto 0,9 s (`ARCH_DRAW`). Tähtäyspiste seuraa pelaajaa **viiveellä** (aikavakio ~0,25 s) ja kalmo **kääntyy hitaasti**
+  (`ARCH_TURN` 1,0 rad/s, ylös/alas `ARCH_PITCH` 0,9 rad/s; painovoimakorjaus lentoajalle). **Nuoli lähtee vapautushetkellä täsmälleen siihen suuntaan, johon
+  jousi osoittaa** (+ 2° hajonta kuten pelaajan jousessa); ei ennakointia (vanha `P.vel`-ennakointi poistettu). Nuolen fysiikka sama kuin pelaajalla
+  (`shootArrow`, nopeus 32 m/s, painovoima 7, tuuli). Testi (12 m, yö): paikallaan seisova osuu 14/14, sinimuotoisesti sivulle liikkuva 3/14,
+  0,67 s välein puolta vaihtava 0/14 → väistäminen ja häilyminen toimii.
+- **Jousen asento:** `bowAim` (player.js) yleistettiin `bowAimFig(F, jousi, k, yaw, sijainti)`; pelaaja käyttää sitä `bowAim`-kääreen kautta, jousikalmo `archerPose`:lla
+  (ai.js, animMobin jälkeen): vasen käsi kahvaan edessä, jänne poskelle oikealle, nuoli jänteellä (`updateBowMesh`), sulava sisään 0,2 s / ulos 0,3 s.
+  Kalmon keho ei käänny kylkeä kuten pelaajan `rig` (mobeilla ei rigiä) – vain kädet ja jousi.
+- **Kaikuääni (`echo`, uusi äänilaji, vain `ai:'rboss'`: Jäätär, Kalmaherra, Aarnihirviö):** 1–2 versiota (`<pomo>_echo_1/2`). Kuuluu **vain kun pomo nukkuu
+  (`state==='sleep'`) ja pelaaja on samassa ulottuvuudessa** (`m.realm===P.realm`), 24–48 s välein (ensimmäinen 5–14 s sisääntulosta); loppuu kun pomo herää
+  (`intro`) tai pelaaja poistuu. Soi pomon suunnasta, mutta **enintään 38 m päästä** (`creEchoPos`) → kaukainen pomo kuuluu vaimeana kaikuna. Sointi:
+  alipäästö 1,5 kHz, voimakkuus ×0,6, kaiun lähetys 1,3 (kuiva jää hiljaiseksi), tärkeys 1 (ei syrjäytä muita). **Aarnihirviön kaikuäänet ovat kaikkien
+  pomojen varaääni 💎** (Jäätär ×1,2, Kalmaherra ×0,85 VARAANI-ketjun kautta). **v1.95: myös Kalmanvartijalla on kaikuääni** (`vartija_echo_1/2`, ks. v1.95). Työkalu: `ECHO_AI`, raja 5 s (pomo 6), tavoite −26 LUFS, pitkä häivytys 0,8 s; 6 uutta paikkamerkkiä (`aarnihirvio/jaajattari/kalmaherra_echo_1/2`).
+- Testattu: keinoäänillä (voice `ec`, etäisyys 38 m, send 1,3, gain 0,6, sävel ×0,85), herääminen ja toinen ulottuvuus → ei kaikua.
+
+### v1.87 (palavan pomon kipuääni)
+- **Palava pomo (`ai` boss tai rboss) ähkii:** kun pomo on tulessa (`burnT>0`, `updateBurn` actions.js), se toistaa oman **hurt-äänensä silmukkana**
+  1,4–2,2 s välein (alle 60 m päässä), **matalampana (sävel ×0,78) ja hiljaisempana (voimakkuus ×0,55)**. Ei omaa hurt-ääntä → varaääniketju (Aarnihirviön
+  ääni) kuten normaalisti; ei ääntä lainkaan → hiljaa (ei tehtyä ääntä). Tavalliset osumat soivat edelleen normaalisti; muut olennot eivät ähki palaessaan.
+- **`creSnd(m, laji, o)`:** uusi valinnainen `o` = `{p: sävelkerroin, v: voimakkuuskerroin, pri: tärkeys, key: oma laskuriavain}`. Palokipu käyttää
+  `pri:1.5` (rauhallinen 1 < palokipu 1.5 < jahti 2): jahti- ja muut tärkeämmät äänet katkaisevat sen, eikä se tuki muita; dungeoneissa kaiku mukana.
+- Testattu: aarnihirviö palaa 10 s → 6 kutsua (~1,6 s välein) sävel 0,78 ja voimakkuus 0,55, kaiku mukana (dun); palava susi ei ähki. `tarkistus.mjs` + `full157`.
+
+### v1.86 (Aarnihirviön äänet pääääneksi, kuolemapaikat 1/2, trimmaus ja voimakkuus, kaiku, toistosäännöt)
+- Käyttäjä lisäsi Aarnihirviön 7 ääntä (aggro 1–2, chase 1–2, death 1, hurt 1, idle 1). **Aarnihirviö on nyt 💎**: Jäätär ja Kalmaherra lainaavat
+  siltä (ei enää Kalmon ylimykseltä). Havainto: `aarnihirvio_idle_1` ja `aarnihirvio_chase_2` ovat sama tiedosto (sama md5) – korvaa toinen eri äänellä.
+- **Kuolemaäänet:** 1 paikka ulottuvuuksien hirviöille, 2 muille (aiemmin 3). 29 ylimääräistä paikkamerkkiä poistettu (`sounds/raw/*_death_3`,
+  `_death_2` rboss). Työkalu, taulukko ja pelin haku mukautettu (creRes toimii mille tahansa versioille 1–3).
+- **Trimmaus ja voimakkuus:** uusi työkalun käsittely (ks. Äänisuunnitelma). Aarnihirviön tulokset: kesto 1,6–6,0 s, äänekkyys −21…−15 LUFS,
+  huiput −1,3…−7,7 dBFS (ei leikkaa), tiedostot 20–73 kt.
+- **Kaiku:** yhteinen ConvolverNode vain `m.dun`-olennoille, kytkeytyy tarvittaessa (ei kuormaa ulkona). **Toistosäännöt:** tärkeys, yksi ääni per
+  olento, 10 äänen raja, ei kuoroa, ei saman version toistoa (ks. Äänisuunnitelma).
+- Työkalu varoittaa nyt erästä (HUOM-rivit: tuplatiedostot, iso vahvistus, lyhyt, ylimääräinen paikka). Koko pelin tarkistus (6 karttaa) 0 virhettä.
+- Testattu selaimessa (oikea AudioContext, autoplay sallittu): ketju (jaajattari ×1,2, kalmaherra ×0,85), tärkeys (osuma katkaisee jahdin, jahti ei
+  osumaa), 1 ääni/olento, kaiun lähetys vain dun-olennoilla, kaiku irtoaa 3 s jälkeen kun mikään kaiullinen ääni ei soi; `tarkistus.mjs` KAIKKI OK.
 
 ### v1.85 (äänet: 3 versiota, suuttumisääni kerran, jahtiääni)
 - **Versiot:** jokaisella äänilajilla paikat `_1`, `_2`, `_3`; peli arpoo vain olemassa olevista (yksi riittää, tyhjät ohitetaan). Varaääniketju
@@ -2077,7 +2281,7 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
   käyttöliittymä.
 - [ ] **C taustaäänet ja sää:** metsä päivä/yö, Aarnimetsä, luolasto, sade, tuuli, myrsky, tuli.
 - [ ] **D musiikki:** päivä, yö, Aarnimetsä, luolasto, taistelu, pomo, voitto; pehmeä ristiinhäivytys.
-- [ ] **E äänifysiikka:** vaimennus seinän takana (lowpass + losClear), luolan kaiku (ConvolverNode), veden alla vaimea, askeleet
+- [ ] **E äänifysiikka:** vaimennus seinän takana (lowpass + losClear), luolan kaiku (olennoille tehty v1.86; jäljellä pelaajan askeleet ym.), veden alla vaimea, askeleet
   hiljaisempia kyykyssä.
 - Jokainen erä samalla paikkamerkkitavalla ja oma osio AANILISTA.md:hen.
 

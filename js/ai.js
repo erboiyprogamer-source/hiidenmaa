@@ -35,6 +35,7 @@ function updateMobs(dt){
     // v1.39 (lista 4, kohta 19): Aarnihirviö 1,7 min jälkeen hitaasti (1 %/s)
     if((d.ai==='boss'||d.ai==='rboss')&&m.hp<m.maxHp&&!bossTired(m.type)){   // v1.81: 3 kuolemaa samalle pomolle → ei enää parane
      const ar=m.type==='aarnihirvio';if(playTime-m.lastHit>(ar?102:60))m.hp=Math.min(m.maxHp,m.hp+m.maxHp*(ar?.01:.1)*dt);}
+    if(m.f.fx)m.f.fx(dt,m);   // v1.93: pomomallin elävät osat (Ultralla silmäliekit ja leijuvat palat, bossmodels.js)
     if(d.ai==='boss'){bossAI(m,dt,dx,dz,dist);continue;}
     if(d.ai==='rboss'){realmBossAI(m,dt,dx,dz,dist);continue;}
     const night=isNight()&&!P.inDun;
@@ -91,8 +92,10 @@ function updateMobs(dt){
       const zig=d.per&&d.per.zig;m.fleeT=(m.fleeT||0)-dt;if(m.fleeT<=0){m.fleeT=zig?.35+Math.random()*.35:1.2+Math.random()*1.8;m.fleeA=(m.herdA??Math.atan2(-dx,-dz))+(Math.random()-.5)*(zig?2.2:hurt?1.6:.8);m.herdA=null;}
       tx=Math.sin(m.fleeA);tz=Math.cos(m.fleeA);spd=d.run;}
     else if(m.state==='chase'){
-      const ar=m.archer&&dist>2.4&&dist<22&&m.wind<=0?archerAI(m,dt,dx,dz,dist):null;   // v1.42 jousikalmo
-      if(ar){tx=dx;tz=dz;spd=ar.spd;}else{
+      // v1.90: pelaaja tulee ihan lähelle (alle 3,2 m) → jousikalmo keskeyttää vedon heti ja hakkaa miekalla (tavallinen lähihyökkäys)
+      if(m.archer&&dist<=3.2&&m.aimT>0){m.aimT=0;m.atkCd=Math.min(m.atkCd,.25);}
+      const ar=m.archer&&dist>3.2&&dist<22&&m.wind<=0?archerAI(m,dt,dx,dz,dist):null;   // v1.42 jousikalmo
+      if(ar){if(ar.aim){tx=0;tz=0;}else{tx=dx;tz=dz;}spd=ar.spd;}else{
       if(m.wind>0){m.wind-=dt;if(m.wind<=0){if(mobReach(m,dist)<d.range+.25&&!P.dead&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){const f=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(f>.5){hurtPlayer(d.dmg,m.pos.x,m.pos.z);if(d.kb&&!P.dead){P.kbx=dx/(dist||1)*d.kb;P.kbz=dz/(dist||1)*d.kb;P.vy=Math.max(P.vy,d.kb*.25);}}}m.atkCd=d.cd;}}
       else if(mobReach(m,dist)<d.range+.2&&m.atkCd<=0&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){m.wind=MOB_WIND;}
       else if(!m.siege&&m.atkCd<=0&&mobReach(m,dist)<d.range+1&&!losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true))m.siege=nearestOpening(m);
@@ -111,7 +114,7 @@ function updateMobs(dt){
     if(atBorder&&spd>0){const ox=m.pos.x-m.guard.x,oz=m.pos.z-m.guard.z;if(tx*ox+tz*oz>0){spd=0;m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*6));}}   // rajalla: ei ulospäin
     moveMob(m,tx,tz,spd,dt);
     animMob(m,dt);
-    if(m.archer&&m.aimT>0){m.f.armR.rotation.x=-1.45;m.f.armR.rotation.z=0;}   // jousi tähtäyksessä
+    if(m.archer)archerPose(m,dt);   // v1.88: jousen asento kuten pelaajalla
   }
   HURT_K=1;
   // separation
@@ -182,16 +185,35 @@ function mobReach(m,dist){const sy=m.pos.y+(m.f.biped?1:.6)*(m.f.s||1),gap=Math.
 const MOB_SPD=.85;
 // v1.42 (lista 4, kohta 16): jousikalmo ampuu 3–20 m päästä 1 nuolen / 2,5 s (0,6 s tähtäys), vahinko kuin lähi-iskussa; pitää 6–14 m
 // etäisyyden (peruuttaa kasvot pelaajaan päin), lähestyy jos ei näe. Alle 2,4 m lyö tavalliseen tapaan.
-const _arF=new V3(),_arD=new V3();
+/* v1.88: jousikalmo ampuu kuten pelaaja. Veto kestää ARCH_DRAW s; sen aikana tähtäys seuraa pelaajan paikkaa VIIVEELLÄ (aikavakio ~0,25 s) ja
+   kalmo kääntyy hitaasti (ARCH_TURN rad/s, ylös/alas ARCH_PITCH rad/s). Nuoli lähtee täsmälleen siihen suuntaan, johon jousi osoittaa vapautushetkellä
+   (+ pieni hajonta), ei ennakoi liikettä → sivulle väistävä/häilyvä pelaaja jää nuolen ohi. Nuolen fysiikka sama kuin pelaajalla (shootArrow, painovoima
+   ARCH_G, tuuli). v1.89: veto 1,9 s (sekunti lisää) ja jousi vasemmassa kädessä, miekka oikeassa – alle 2,4 m kalmo lyö miekalla. Jousen asento (kahva edessä, jänne poskella, nuoli) tulee pelaajan bowAimFig-funktiosta (player.js), ks. archerPose. */
+const _arF=new V3(),_arD=new V3(),_arX=new V3(),ARCH_DRAW=1.9,ARCH_SPD=32,ARCH_G=7,ARCH_TURN=1.0,ARCH_PITCH=.9;
 function archerAI(m,dt,dx,dz,dist){const d=m.def,los=losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true);
-  if(m.aimT>0){m.aimT-=dt;if(m.aimT<=0&&!P.dead&&los){const fx=Math.sin(m.yaw),fz=Math.cos(m.yaw);_arF.set(m.pos.x+fx*.55,m.pos.y+1.35,m.pos.z+fz*.55);
-      const sp=30,t=dist/sp,sc=(Math.random()-.5)*.9*dist/20;_arD.set(P.pos.x+P.vel.x*t*.6+sc-_arF.x,P.pos.y+1.15-_arF.y,P.pos.z+P.vel.z*t*.6-sc*.5-_arF.z);
-      _arD.y+=.5*7*t*t;const L=_arD.length();_arD.multiplyScalar(1/L);shootArrow(_arF,_arD,L/t,d.dmg,'mob',7);sfx('bow');m.atkCd=1.9;}
-    return {spd:0};}
-  if(!P.dead&&los&&dist>=3&&dist<=20&&m.atkCd<=0){m.aimT=.6;return {spd:0};}
+  if(m.aimT>0){
+    const k=Math.min(1,dt*4);m.aimX+=(P.pos.x-m.aimX)*k;m.aimY+=(P.pos.y+1.15-m.aimY)*k;m.aimZ+=(P.pos.z-m.aimZ)*k;   // viive: tähtäyspiste seuraa pelaajaa hitaasti
+    const ax=m.aimX-m.pos.x,az=m.aimZ-m.pos.z,hd=Math.hypot(ax,az)||1e-4,t=hd/ARCH_SPD,ty=m.aimY-(m.pos.y+1.35)+.5*ARCH_G*t*t;   // painovoimakorjaus nuolen lentoajalle
+    const wy=Math.atan2(ax,az),wp=Math.atan2(ty,hd),dy=((wy-m.yaw+Math.PI)%TAU+TAU)%TAU-Math.PI;
+    m.yaw+=clamp(dy,-ARCH_TURN*dt,ARCH_TURN*dt);m.aimPitch+=clamp(wp-m.aimPitch,-ARCH_PITCH*dt,ARCH_PITCH*dt);
+    m.aimT-=dt;
+    if(m.aimT<=0){m.atkCd=1.9;
+      if(!P.dead&&los){const cp=Math.cos(m.aimPitch),fx=Math.sin(m.yaw)*cp,fz=Math.cos(m.yaw)*cp;
+        _arF.set(m.pos.x+Math.sin(m.yaw)*.55,m.pos.y+1.35,m.pos.z+Math.cos(m.yaw)*.55);_arD.set(fx,Math.sin(m.aimPitch),fz);
+        {const sp=2*Math.PI/180,r=Math.sqrt(Math.random())*Math.tan(sp),ph=Math.random()*TAU,ux=_arX.set(-_arD.z,0,_arD.x).normalize(),vy=_tmpV2.crossVectors(_arD,ux);
+          _arD.addScaledVector(ux,Math.cos(ph)*r).addScaledVector(vy,Math.sin(ph)*r).normalize();}   // pieni hajonta kuten pelaajan jousessa
+        shootArrow(_arF,_arD,ARCH_SPD,d.dmg,'mob',ARCH_G);sfx('bow');}}
+    return {spd:0,aim:1};}
+  if(!P.dead&&los&&dist>=3.6&&dist<=20&&m.atkCd<=0){m.aimT=ARCH_DRAW;m.aimX=P.pos.x;m.aimY=P.pos.y+1.15;m.aimZ=P.pos.z;m.aimPitch=0;return {spd:0,aim:1};}
   if(!los||dist>14)return {spd:d.run};
   if(dist<6){m.vel.x-=dx/dist*10*dt;m.vel.z-=dz/dist*10*dt;}
   return {spd:0};}
+// jousikalmon asento joka ruutu (animMobin jälkeen): sama kuin pelaajalla – kahva edessä, jänne posken luona, nuoli jänteellä; sulava sisään/ulos
+function archerPose(m,dt){const f=m.f,b=m.bow;if(!b)return;if(m.aimT>0&&m.state!=='chase')m.aimT=0;
+  const aiming=m.aimT>0;m.aimK=clamp((m.aimK||0)+(aiming?dt/.2:-dt/.3),0,1);
+  if(m.aimK>.001){f.armL.rotation.set(0,0,0);f.armR.rotation.set(0,0,0);f.elbowL.rotation.x=0;f.elbowR.rotation.x=0;b.rotation.set(-.15,0,0);b.position.set(0,0,0);
+    bowAimFig(f,b,m.aimK,m.yaw,f.g.position);updateBowMesh(b,aiming?1-Math.max(0,m.aimT)/ARCH_DRAW:0,aiming);m.bowPosed=1;}
+  else if(m.bowPosed){f.armL.rotation.set(0,0,0);f.armR.rotation.set(0,0,0);f.elbowL.rotation.x=f.elbowR.rotation.x=0;b.rotation.set(-.15,0,0);b.position.set(0,0,0);updateBowMesh(b,0,false);m.bowPosed=0;}}
 /* v1.50 (lista 5, kohta 2): kalmot ja pelottavat yöolennot (SCARY-tyypit, stalk) palavat auringossa avoimella alueella.
    Suojaa: katos (rakennus yläpuolella), sää (pilvisyys wDark > .35 tai sade), metsäbiomit (korpi, koivikko, aarnimetsä), yö (lightK < .55).
    Kulku ~6 s: 0–3 s paniikkiryntäily (suunta vaihtuu 0,35–0,6 s välein, 1,3× juoksu), 3–5,2 s hidastuu ja horjuu, sitten kaatuu tuhkaksi
@@ -262,7 +284,7 @@ function slamArms(f,t,hitT){const rise=Math.max(.15,hitT-.94),hold=hitT-.14;
 // v1.17 (välilisäys 6): pomojen ryntäys enintään kerran 10 s:ssa
 const BOSS_CHARGE_GAP=10;   // v0.89: kiviä heittävien pomojen hyökkäysviive +10 % (Kalmanvartija, Jäätär)
 function bossAI(m,dt,dx,dz,dist){
-  const L=LOC.circle;
+  const L=LOC.circle;if(m.chPose&&!(m.act&&m.act.k==='charge'))bossChargeReset(m);
   if(m.state==='intro'){m.t+=dt;m.yaw=Math.atan2(dx,dz);m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;m.f.armL.rotation.x=m.f.armR.rotation.x=-2.8*Math.min(1,m.t);if(m.t>2.2){m.state='chase';sfx('roar');shake(.5);}return;}
   if(!m.phase2&&m.hp<m.maxHp*.5){m.phase2=true;sfx('roar');msg('Vartija kutsuu kalmoja maasta!','warn');for(let i=0;i<3;i++){const a=i/3*TAU;spawnMob('kalmo',m.pos.x+Math.cos(a)*5,m.pos.z+Math.sin(a)*5);}shockwave(m.pos.x,m.pos.y,m.pos.z,8);}
   const spd=(m.phase2?1.2:1);
@@ -271,20 +293,21 @@ function bossAI(m,dt,dx,dz,dist){
   if(m.act){m.act.t+=dt/BOSS_SLOW;const a=m.act;const f=m.f;
     if(a.k==='swipe'){f.armR.rotation.x=a.t<1.12?-2.6*a.t/1.12:lerp(-2.6,-.2,Math.min(1,(a.t-1.12)/.2));if(a.t>=1.12&&!a.hit){a.hit=1;sfx('swing');if(dist<4.8+.4){const fc=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(fc>.1)hurtPlayer(22,m.pos.x,m.pos.z);}}if(a.t>1.75)m.act=null;}
     else if(a.k==='slam'){slamArms(f,a.t,1.54);if(a.t>=1.54&&!a.hit){a.hit=1;sfx('slam');shake(.6);const fx=m.pos.x+Math.sin(m.yaw)*2.5,fz=m.pos.z+Math.cos(m.yaw)*2.5;shockwave(fx,m.pos.y,fz,7);burst(fx,m.pos.y+.3,fz,0x5d5a54,16,7);if(dist2(fx,fz,P.pos.x,P.pos.z)<7*7&&P.pos.y-m.pos.y<1.5)hurtPlayer(28,fx,fz);}if(a.t>2.35)m.act=null;}
-    else if(a.k==='charge'){if(a.t<.6){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*6);f.g.rotation.x=-.2;}else{moveMob(m,Math.sin(m.yaw),Math.cos(m.yaw),15*spd,dt);if(!a.hit&&dist<2.8){a.hit=1;hurtPlayer(26,m.pos.x,m.pos.z);P.vel.x+=Math.sin(m.yaw)*10;P.vel.z+=Math.cos(m.yaw)*10;}}if(a.t>1.6){m.act=null;f.g.rotation.x=0;}}
+    else if(a.k==='charge'){bossChargePose(m,a);if(a.t<.6){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*6);}else{moveMob(m,Math.sin(m.yaw),Math.cos(m.yaw),15*spd,dt);if(!a.hit&&dist<2.8){a.hit=1;hurtPlayer(26,m.pos.x,m.pos.z);P.vel.x+=Math.sin(m.yaw)*10;P.vel.z+=Math.cos(m.yaw)*10;}}if(a.t>1.6){m.act=null;bossChargeReset(m);}}   // v1.90: etukeno + silmät
     else if(a.k==='throw'){f.armR.rotation.x=-2.8*Math.min(1,a.t/.8);if(a.t>=.8&&!a.hit){a.hit=1;const hp=new V3();f.hand.getWorldPosition(hp);throwRock(hp,new V3(P.pos.x+P.vel.x*.6,P.pos.y,P.pos.z+P.vel.z*.6),20);}if(a.t>1.3)m.act=null;}
     m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;return;}
   // v0.95 (kohta 10): yli 90 m:n päässä vartija pysähtyy ja vajoaa 3 s:ssa maahan (multaa, jyrinä), vajoamisen ajan haavoittumaton.
-  if(m.state!=='sink'&&(dist2(P.pos.x,P.pos.z,L.x,L.z)>90*90||P.inDun)){m.state='sink';m.t=0;m.act=null;m.sinking=1;m.y0=m.pos.y;sfx('slam',.5,.6);sfx('roar',.6,.5);
+  if(m.state!=='sink'&&!m.devSpawn&&(dist2(P.pos.x,P.pos.z,L.x,L.z)>90*90||P.inDun)){   /* v1.91: DEV-luotu vartija ei vajoa */m.state='sink';m.t=0;m.act=null;m.sinking=1;m.y0=m.pos.y;sfx('slam',.5,.6);sfx('roar',.6,.5);
     msg('Vartija vajoaa takaisin maahan. Hiidenkivet jäävät alttarille – herätä se uudelleen alttarilta (terveys säilyy).','warn');}
   if(m.state==='sink'){m.t+=dt;const k=Math.min(1,m.t/3);m.pos.y=m.y0-k*k*7.5;m.f.armL.rotation.x=m.f.armR.rotation.x=-2.6*Math.min(1,m.t*1.5);
     if(Math.random()<dt*30)burst(m.pos.x+(Math.random()-.5)*4,m.y0+.2,m.pos.z+(Math.random()-.5)*4,Math.random()<.5?0x5d5a54:0x6a5a44,4,5);
     if(dist2(P.pos.x,P.pos.z,m.pos.x,m.pos.z)<40*40&&Math.random()<dt*4)shake(.12);m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;
     if(m.t>=3){mobRemove(m);flags.altarSt=1;flags.bossHp=m.hp;syncAltar();/* v0.75: kivet jäävät alttarille pysyvästi (ei maahan katoavina esineinä), hp säilyy */circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));$('#bossbar').hidden=true;}return;}
   // v0.95: herätettäessä vartija nousee maasta 2,5 s:ssa (haavoittumaton), sitten nykyinen karjaisu (intro)
-  if(m.state==='rise'){m.t+=dt;const k=Math.min(1,m.t/2.5),g=terrainH(m.pos.x,m.pos.z);m.pos.y=g-(1-k)*(1-k)*7.5;m.yaw=Math.atan2(dx,dz);
-    if(Math.random()<dt*30)burst(m.pos.x+(Math.random()-.5)*4,g+.2,m.pos.z+(Math.random()-.5)*4,Math.random()<.5?0x5d5a54:0x6a5a44,4,5);if(Math.random()<dt*5)shake(.15);
-    m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;if(m.t>=2.5){m.pos.y=g;m.state='intro';m.t=0;m.sinking=0;}return;}
+  // v1.89: nousu kestää 5 s (ennen 2,5 s + karjaisu): pää alhaalla ja kädet sivuilla, haavoittumaton; karjaisu vasta pystyssä
+  if(m.state==='rise'){m.t+=dt;const g=terrainH(m.pos.x,m.pos.z);if(m.t>5.9)m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*3));   // v1.90: 8 s, kääntyy vasta huomatessaan
+    if(bossRisePose(m,dt,g,7.5))return;
+    m.pos.y=g;m.sinking=0;m.state='chase';m.t=0;bossWakeRoar(m);return;}
   if(P.dead){moveMob(m,L.x-m.pos.x,L.z-m.pos.z,m.def.walk,dt);animMob(m,dt);return;}// v0.75: iso pomo ei parane
   if(m.atkCd<=0){
     if(dist<5){m.act={k:Math.random()<.55?'swipe':'slam',t:0};m.atkCd=(m.phase2?1.1:1.6)*1.2*BOSS_SLOW;}
@@ -295,9 +318,32 @@ function bossAI(m,dt,dx,dz,dist){
 }
 function bossDefeated(){
   circleStones.forEach(r=>r.material=new THREE.MeshBasicMaterial({color:0x2a3a39}));
-  msg('Kalmanvartija on kaatunut!','loot');sfx('roar');
-  setTimeout(()=>{if(flags.won)return;flags.won=1;state='win';releaseLock();$('#hud').hidden=true;const mm=Math.round(playTime/60);$('#winStats').textContent=`Selvisit ${dayN} päivää (${mm} min). Kaatoit ${P.kills} vihollista ja kaaduit itse ${P.deaths} kertaa. Saari on nyt sinun – jatka rakentamista ja tutkimista.`;$('#winS').hidden=false;saveGame(true);},3500);
-}
+  msg('Kalmanvartija on kaatunut!','loot');sfx('roar');bossVictory('vartija');}
+/* v1.94 VOITTO JA RAUHA: Kalmanvartijan kaatuessa voittoruutu kuten ennen ("Hiidenmaa on vapaa"). Kun VIIMEINEN pomo kaatuu (Kalmanvartija ja kaikki
+   kolme ulottuvuuspomoa, missä järjestyksessä tahansa) tulee rauharuutu "Hiidenmaa on rauhallinen". Ruutu näytetään vasta kun pomon kuolema-animaatio
+   on edennyt (13 s) ja pelaaja on elossa. Kun rauharuutu suljetaan, 2 s myöhemmin ilmoitus ja maailman tyhjennetyt arkut täyttyvät (peaceRefill). */
+function allBossesDown(){const rb=fo('rb');return !!flags.boss&&REALM_IDS.every(id=>rb[id]);}
+function bossVictory(kind){const peace=allBossesDown()&&!flags.peace;if(peace){flags.peace=1;flags.peacePend=1;}
+  if(!peace&&(kind!=='vartija'||flags.won))return;
+  const show=()=>{if(P.dead||state==='dead'||state==='menu'||state==='intro'){setTimeout(show,1000);return;}flags.won=1;if(openPanel)closePanels(true);state='win';releaseLock();$('#hud').hidden=true;const mm=Math.round(playTime/60);
+    $('#winT').innerHTML=peace?'<small>Viimeinen mahti on kukistettu</small>Hiidenmaa on rauhallinen':'<small>Kalmanvartija on kaatunut</small>Hiidenmaa on vapaa';
+    $('#winStats').textContent=peace?`Kalmanvartija, Jäätär, Kalmaherra ja Aarnihirviö ovat kaatuneet. Selvisit ${dayN} päivää (${mm} min), kaatoit ${P.kills} vihollista ja kaaduit itse ${P.deaths} kertaa. Maa lepää nyt – mutta saaren vanhat arkut eivät pysy tyhjinä kauaa.`:
+      `Selvisit ${dayN} päivää (${mm} min). Kaatoit ${P.kills} vihollista ja kaaduit itse ${P.deaths} kertaa. Saari on nyt sinun – jatka rakentamista ja tutkimista.`;
+    $('#winS').hidden=false;saveGame(true);};
+  setTimeout(show,13000);}
+// rauhan ilmoitus: 2 s sen jälkeen, kun rauharuutu on suljettu (myös latauksen jälkeen, jos ruutu jäi sulkematta)
+let peaceTimer=0;
+function peaceTick(){if(flags.peacePend&&!peaceTimer&&state==='play'&&$('#winS').hidden)peaceTimer=setTimeout(peaceRefill,2000);}
+// maailman tyhjennetyt arkut (avattu ja kaikki otettu) täyttyvät: 8 eri tavaraa satunnaisin määrin, harvinaisia pienellä todennäköisyydellä
+const PEACE_LOOT=[['kupari',3,8],['rauta',2,5],['nuolet',10,25],['sulkanuolet',6,14],['tulinuolet',4,10],['liha',2,5],['nahka',2,5],['luu',3,8],['pihka',2,6],
+  ['hiili',3,8],['rautamalmi',2,6],['kivi',5,12],['piikivi',2,6],['sulka',2,6],['hiidenkivi',1,1,.25],['karhuntalja',1,1,.3]];
+function peaceRefill(){peaceTimer=0;if(!flags.peacePend)return;flags.peacePend=0;const fc=fo('fc');let n=0;
+  for(const c of worldChests()){const it=fc[c.key];if(!it||it.some(Boolean))continue;
+    const pool=PEACE_LOOT.filter(e=>ITEMS[e[0]]&&(e[3]==null||Math.random()<e[3])).sort(()=>Math.random()-.5).slice(0,8);
+    fc[c.key]=pool.map(([id,lo,hi])=>({id,n:lo+Math.floor(Math.random()*(hi-lo+1)),q:1}));while(fc[c.key].length<8)fc[c.key].push(null);n++;}
+  sfx('pickup',.7,.9);
+  msg(n?`Hiidenmaa on rauhoittunut. ${n} tyhjennettyä arkkua on täyttynyt uusilla tarvikkeilla – tutki saaren vanhat arkut.`:'Hiidenmaa on rauhoittunut. Maa lepää.','loot');
+  if(n)setTimeout(()=>msg('Vanhoissa arkuissa on nyt kahdeksan tavaraa kussakin.','loot'),1600);saveGame(true);}
 
 /* ---------------- SPAWNER ---------------- */
 let spawnT=0;

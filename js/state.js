@@ -120,7 +120,21 @@ function valGlow(d){const c=new THREE.Color(ITEMS[d.id].c||'#ffd36a');
   d.light={x:d.mesh.position.x,y:d.mesh.position.y+.4,z:d.mesh.position.z,c:c.getHex(),i:.9,move:true,dun:d.dim!=='world',on:()=>drops.includes(d)&&(d.dim||'world')===curDim()};lightSources.push(d.light);}
 // v1.39 (lista 4, kohta 6): esine lepää korkeimman maakohdan päällä (keskusta + 4 pistettä 0,28 m säteellä), jottei uppoa rinteeseen
 function dropGround(x,z,y){let g=-1e9;for(const [ox,oz] of [[0,0],[.28,0],[-.28,0],[0,.28],[0,-.28]])g=Math.max(g,groundAt(x+ox,z+oz,.2,y+.5));return g;}
-function removeDrop(d){scene.remove(d.mesh);const i=drops.indexOf(d);if(i>=0)drops.splice(i,1);if(d.light){const j=lightSources.indexOf(d.light);if(j>=0)lightSources.splice(j,1);d.light=null;}}
+/* v1.93: MAJAKKASÄDE pomon saaliille – pystysuora hehkuva valopylväs (ydin + leveä hehku, häipyy ylöspäin), sykkivä maarengas ja kipinöitä.
+   Näkyy kauas (maailmassa 22 m, luolassa 6 m korkea), vain samassa ulottuvuudessa; poistuu kun esine poimitaan (removeDrop). */
+let _beamTex=null;
+function beaconTex(){if(_beamTex)return _beamTex;const c=document.createElement('canvas');c.width=4;c.height=128;const g=c.getContext('2d'),gr=g.createLinearGradient(0,128,0,0);
+  gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.3,'rgba(255,255,255,.6)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,4,128);return _beamTex=new THREE.CanvasTexture(c);}
+function beaconAdd(d,col){if(d.beacon)return;const c=new THREE.Color(col??0xffe9a8),H=(d.dim||'world')==='world'?22:6,g=new THREE.Group();
+  const add=o=>new THREE.MeshBasicMaterial({color:c,map:beaconTex(),transparent:true,opacity:o,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false});
+  const core=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,H,12,1,true),add(.95)),outer=new THREE.Mesh(new THREE.CylinderGeometry(.3,.22,H,20,1,true),add(.35));core.position.y=outer.position.y=H/2;
+  const ring=new THREE.Mesh(new THREE.RingGeometry(.22,.62,36),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.6,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false}));ring.rotation.x=-Math.PI/2;
+  g.add(core,outer,ring);g.renderOrder=5;scene.add(g);d.beacon={g,core,outer,ring,c};}
+function beaconTick(d,dt){const B=d.beacon,m=d.mesh;if(!B)return;B.g.position.set(m.position.x,m.position.y,m.position.z);
+  const gy=dropGround(m.position.x,m.position.z,m.position.y);B.ring.position.y=Math.min(0,gy+.04-m.position.y);
+  const p=.8+.2*Math.sin(d.t*3.4);B.core.material.opacity=.95*p;B.outer.material.opacity=.32*p;B.ring.material.opacity=.55*p;B.ring.scale.setScalar(.9+.25*Math.sin(d.t*2.2));
+  if(Math.random()<dt*4&&typeof burst==='function')burst(m.position.x+(Math.random()-.5)*.3,m.position.y+Math.random()*1.5,m.position.z+(Math.random()-.5)*.3,B.c.getHex(),1,.8);}
+function removeDrop(d){scene.remove(d.mesh);if(d.beacon){scene.remove(d.beacon.g);d.beacon.g.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();});d.beacon=null;}const i=drops.indexOf(d);if(i>=0)drops.splice(i,1);if(d.light){const j=lightSources.indexOf(d.light);if(j>=0)lightSources.splice(j,1);d.light=null;}}
 // v1.32 (lista 3, kohta 26): pelaajan pudottama esine lentää aina kameran suuntaan eteenpäin, noin kaksi kertaa entistä kauemmas (~2,5–3 m).
 function playerDrop(id,n,q){const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw);spawnDrop(id,n,P.pos.x+fx*.6,P.pos.y+1.1,P.pos.z+fz*.6,q,false,true);
   const d=drops[drops.length-1],j=(Math.random()-.5)*.6;d.vx=fx*4.2-fz*j;d.vz=fz*4.2+fx*j;d.vy=3.4+Math.random()*.6;}
@@ -133,14 +147,18 @@ function updateDrops(dt){
   for(let i=drops.length-1;i>=0;i--){const d=drops[i],m=d.mesh,val=isValuable(d.id);
     if(val){const away=(d.dim||'world')!==dim||P.dead||Math.hypot(m.position.x-P.pos.x,m.position.z-P.pos.z)>VAL_FAR;d.lost=away?(d.lost||0)+dt:0;
       if(d.lost>VAL_LOST||m.position.y<-20){removeDrop(d);relocateValuable(d.id,d.n,d.q);continue;}}
+    if(d.beacon)d.beacon.g.visible=(d.dim||'world')===dim;   // v1.93 majakkasäde vain samassa ulottuvuudessa
     if((d.dim||'world')!==dim)continue;d.t+=dt;
     if(!val){if(d.t>DROP_LIFE){removeDrop(d);continue;}m.visible=d.t<DROP_LIFE-15||((d.t*5)|0)%2===0;}
-    if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=dropGround(m.position.x,m.position.z,m.position.y)+(m.userData.ico?.38:.25);if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
+    if(d.hold>0){d.hold-=dt;m.position.x+=d.vx*dt;m.position.z+=d.vz*dt;const fr=Math.max(0,1-dt*1.6);d.vx*=fr;d.vz*=fr;   // v1.90: pomon saalis leijuu ja putoaa sitten nätisti
+      m.position.y=(d.hy??m.position.y)+Math.sin(d.t*2.4+(d.ph||0))*.08;m.rotation.y+=dt*1.2;if(d.hold<=0){d.vy=.8;d.vx*=.3;d.vz*=.3;}}
+    else if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=dropGround(m.position.x,m.position.z,m.position.y)+(m.userData.ico?.38:.25);if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
     else{m.position.y=d.baseY+.12+Math.sin(d.t*3)*.06;m.rotation.y+=dt*1.5;}
+    if(d.beacon)beaconTick(d,dt);
     if(d.light){d.light.x=m.position.x;d.light.y=m.position.y+.4;d.light.z=m.position.z;d.light.i=.75+Math.sin(d.t*3.2)*.25;}
     if(d.halo){d.halo.material.opacity=.2+Math.sin(d.t*3.2)*.1;if(Math.random()<dt*5&&typeof emitEmber==='function')emitEmber(m.position.x+(Math.random()-.5)*.5,m.position.y+.1,m.position.z+(Math.random()-.5)*.5,'spark');}
     if(d.noPick&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))>2.5*2.5)d.noPick=false;   // v1.31: itse pudotettu poimitaan vasta, kun on käyty kauempana
-    if(d.t>.5&&!d.noPick&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');}else if(dropFullT<=0){dropFullT=4;msg('Reppu on täynnä – et voi poimia.','warn');}d.n=left;if(left<=0){removeDrop(d);continue;}}
+    if(d.t>.5&&!(d.hold>0)&&!d.noPick&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');}else if(dropFullT<=0){dropFullT=4;msg('Reppu on täynnä – et voi poimia.','warn');}d.n=left;if(left<=0){removeDrop(d);continue;}}
     if(m.position.y<-20)removeDrop(d);
   }
 }

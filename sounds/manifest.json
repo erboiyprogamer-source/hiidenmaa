@@ -1,4 +1,54 @@
 {
- "v": 1,
- "sounds": {}
+ "v": 2,
+ "sounds": {
+  "aarnihirvio_aggro_1": {
+   "h": "d795f0ddd1",
+   "src": "0760bca1d179",
+   "dur": 1.82,
+   "pv": 2,
+   "gain": 0.5
+  },
+  "aarnihirvio_aggro_2": {
+   "h": "14a930a04c",
+   "src": "b5cf961aa399",
+   "dur": 1.98,
+   "pv": 2,
+   "gain": 0.7
+  },
+  "aarnihirvio_chase_1": {
+   "h": "0292c6771b",
+   "src": "cf0f63d6bc3a",
+   "dur": 3.99,
+   "pv": 2,
+   "gain": 12.5
+  },
+  "aarnihirvio_chase_2": {
+   "h": "79f51adf36",
+   "src": "137ad5594c7e",
+   "dur": 3.99,
+   "pv": 2,
+   "gain": -0.9
+  },
+  "aarnihirvio_death_1": {
+   "h": "d1debada8b",
+   "src": "00b181a6e7b0",
+   "dur": 5.98,
+   "pv": 2,
+   "gain": 0.6
+  },
+  "aarnihirvio_hurt_1": {
+   "h": "9126dcdf91",
+   "src": "53a86a840a10",
+   "dur": 1.59,
+   "pv": 2,
+   "gain": 1.5
+  },
+  "aarnihirvio_idle_1": {
+   "h": "f8576d42c4",
+   "src": "137ad5594c7e",
+   "dur": 3.99,
+   "pv": 2,
+   "gain": -4.9
+  }
+ }
 }

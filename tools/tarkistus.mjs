@@ -159,6 +159,90 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.84–85 olentojen äänet: VARAANI-ketju eheä, 1–3 versiota (creRes), varaääni, suuttumis- ja jahtiääni, kytkennät, voimakkuusasetus',()=>{const ids=Object.keys(MOBDEF);for(const [k,v] of Object.entries(VARAANI)){if(!ids.includes(k)||!ids.includes(v.to)||!(v.p>0))return 'huono '+k;let c=k,n=0;while(VARAANI[c]&&n<8){c=VARAANI[c].to;n++;}if(n>=8)return 'silmukka '+k;}
     const o=CRE.man;CRE.man={susi_aggro_1:{h:'x'},kalmo_idle_1:{h:'y'},kalmo_idle_3:{h:'z'},susi_chase_2:{h:'w'}};const a=creRes('kalmasusi','aggro'),b=creRes('kalmo','idle'),c=creRes('peura','idle'),d=creRes('kalmasusi','chase');CRE.man=o;
     return a&&a.names[0]==='susi_aggro_1'&&Math.abs(a.p-.88)<1e-9&&b&&b.names.join()==='kalmo_idle_1,kalmo_idle_3'&&c===null&&d&&d.names[0]==='susi_chase_2'&&/creSnd\(m,'death'\)/.test(killMob.toString())&&/creSnd\(m,'hurt'\)/.test(damageMob.toString())&&/creLoad/.test(spawnMob.toString())&&/creTick/.test(update.toString())&&/angerDone/.test(creTick.toString())&&'creVol' in SET_DEF||'virhe';});
+  t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
+    if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
+    const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;
+    if(!a||a.names[0]!=='aarnihirvio_death_1'||Math.abs(a.p-1.2)>1e-9||!b||b.names[0]!=='hirvi_death_1')return 'lainaus';
+    if(!(CRE_PRI.death>CRE_PRI.hurt&&CRE_PRI.hurt>CRE_PRI.aggro&&CRE_PRI.aggro>CRE_PRI.chase&&CRE_PRI.chase>CRE_PRI.idle)||CRE.max!==10)return 'tärkeys';
+    const f=creSnd.toString();if(!/m\.dun/.test(f)||!/creRevOn/.test(f)||!/CRE\.lastAmb/.test(f)||typeof creRevTick!=='function')return 'kaiku/toisto';
+    return true;});
+  t('v1.87 palava pomo ähkii: kipuääni silmukkana matalampana (×0,78) ja hiljaisempana (×0,55), vain boss/rboss',()=>{const f=updateBurn.toString();return /boss/.test(f)&&/burnSnd/.test(f)&&/creSnd\(m,'hurt',\{p:\.78,v:\.55/.test(f)&&/o&&o\.p/.test(creSnd.toString())&&/o&&o\.v/.test(creSnd.toString())||'puuttuu';});
+  t('v1.88 jousikalmo ampuu kuin pelaaja: viiveellä seuraava hidas tähtäys, nuoli lähtee jousen suuntaan (ei ennakointia), jousi pelaajan asennossa (bowAimFig)',()=>{const f=archerAI.toString();return typeof bowAimFig==='function'&&/bowAimFig/.test(archerPose.toString())&&/aimX/.test(f)&&/ARCH_TURN/.test(f)&&!/P\.vel/.test(f)&&ARCH_TURN<2&&/archerPose/.test(animMob.toString()+update.toString()+updateMobs.toString())||'puuttuu';});
+  t('v1.88 ulottuvuuspomojen kaikuääni (echo): Aarnihirviö = pääääni, kuuluu vain nukkuvasta pomosta samassa ulottuvuudessa, kaukaa (≤38 m) kaiulla',()=>{const o=CRE.man;CRE.man={aarnihirvio_echo_1:{h:'x'}};const a=creRes('jaajattari','echo'),b=creRes('vartija','echo'),c=creRes('susi','echo');CRE.man=o;
+    return a&&a.names[0]==='aarnihirvio_echo_1'&&Math.abs(a.p-1.2)<1e-9&&b===null&&c===null&&CRE_ECHO.join()==='rboss'&&/echo/.test(creTick.toString())&&/'sleep'/.test(creTick.toString())&&typeof creEchoPos==='function'||'virhe';});
+  t('v1.89 jousikalmo: jousi vasemmassa kädessä ja miekka oikeassa (kuten pelaajalla), veto 1,9 s',()=>{const m=spawnMob('kalmo',P.pos.x+18,P.pos.z+18);makeArcher(m);
+    const ok=m.f.handL.children.includes(m.bow)&&m.f.hand.children.includes(m.sword)&&ARCH_DRAW>1.85&&/bowAimFig/.test(archerPose.toString());mobRemove(m);return ok||'virhe';});
+  t('v1.89–90 pomon herätys 8 s: piilossa maan alla, nousee pää alhaalla, huomaa pelaajan pään noustessa (5,9 s), haavoittumaton, suoristuu',()=>{const m=spawnMob('vartija',P.pos.x+22,P.pos.z+22);
+    m.state='rise';m.t=0;m.sinking=1;const g=terrainH(m.pos.x,m.pos.z);let ok=true;const oc=window.creSnd;let roar=0;window.creSnd=(mm,k)=>{if(mm===m&&k==='aggro')roar++;return oc(mm,k);};
+    for(let i=0;i<30*3;i++){m.t+=1/30;bossRisePose(m,1/30,g,7.5);}
+    if(!(m.pos.y<g-.5))ok='ei nouse maasta';else if(!(m.f.head.rotation.x>.5))ok='pää ei ole alhaalla';else if(m.woke)ok='huomasi liian aikaisin';
+    const hp=m.hp;damageMob(m,100,'blunt',0,1);if(m.hp!==hp)ok='ei haavoittumaton';
+    for(let i=0;i<30*3.2;i++){m.t+=1/30;bossRisePose(m,1/30,g,7.5);}if(ok===true&&(!m.woke||roar>1))ok='ei huomannut pään noustessa';
+    m.t=BOSS_RISE;if(bossRisePose(m,1/30,g,7.5))ok='nousu ei pääty';else if(Math.abs(m.f.head.rotation.x)>.02)ok='pää ei nouse lopuksi';
+    if(m.rz||lightSources.some(s=>s.pri===2))ok='halkeama/valo jäi';if(BOSS_RISE!==8)ok='kesto ei 8 s';window.creSnd=oc;mobRemove(m);return ok;});
+  t('v1.90 nukkuva ulottuvuuspomo piilossa maan alla eikä näy ennen herätystä',()=>{ensureRealm('portal1');const was=[P.inDun,P.realm];
+    const b=spawnMob('jaajattari',0,0,{y:DUN.y,dun:true});b.realm='portal1';b.state='sleep';bossHide(b,(b.def.fh||4)+1.5);
+    const ok=!b.f.g.visible&&b.pos.y<DUN.y-3&&b.sinking===1&&b.riseY===DUN.y;mobRemove(b);return ok||'virhe';});
+  t('v1.90 pomon kuolema ~12 s: kalpenee heti, 3 pinoutuvaa etusijavaloa + huoneen kirkastus, repeää (vartalo keskellä), osat putoavat yksitellen, saalis leijuu, maatuu',()=>{
+    const m=spawnMob('vartija',P.pos.x+26,P.pos.z+26);m.bossLoot=[['rauta',2]];m.dead=true;m.deadT=0;let ok=true,lmax=0,gmax=0,paleAt1=0,nl=0;const d0=drops.length;
+    const st=()=>{m.deadT+=1/30;return mobDeathAnim(m,1/30);};
+    for(let i=0;i<30;i++)st();paleAt1=m.mats[0].emissive.r;
+    for(let i=0;i<30*5.2;i++){st();if(m.da.lights)nl=Math.max(nl,m.da.lights.length);let s=0;for(const L of m.da.lights)s+=L.i;lmax=Math.max(lmax,s);gmax=Math.max(gmax,BOSS_GLOW);}
+    const D=m.da;if(!(paleAt1>.05))ok='ei kalpene heti';else if(nl<3||!(lmax>20)||!(gmax>.9))ok='valot eivät pinoudu';else if(!D.parts||D.parts.length<3)ok='ei repeä osiin';
+    else{const T=D.parts.find(q=>q.tor),o=D.parts.find(q=>!q.tor);if(!T||T.off.length()>0||!(o.off.length()>.3))ok='vartalo ei keskellä / osat eivät irtoa';}
+    const ld=drops.slice(d0).find(d=>d.id==='rauta');if(ok===true&&(!ld||!(ld.hold>2)))ok='saalis ei leiju';
+    for(let i=0;i<30*4;i++)st();if(ok===true&&(D.lights.length||BOSS_GLOW>0))ok='valo ei katoa';
+    if(ok===true&&!(D.landed>0&&D.landed<D.parts.length+1))ok='osat eivät putoa yksitellen';
+    let done=false;for(let i=0;i<30*30&&!done;i++)done=st();if(ok===true&&!done)ok='ei pääty';
+    if(ok===true&&!(m.deadT>18))ok='maatuminen liian lyhyt';if(lightSources.some(s=>s.pri===4)||BOSS_GLOW)ok='valo jäi';
+    if(ld)removeDrop(ld);mobRemove(m);return ok;});
+  t('v1.90 pomon ryntäys: etukeno YXZ-järjestyksellä (ei sivukenoa), polvet koukussa, silmät kirkastuvat ennen ryntäystä, nollaus',()=>{const m=spawnMob('vartija',P.pos.x+30,P.pos.z+30);
+    const a={k:'charge',t:.4};bossChargePose(m,a);const e0=m.f.eyes[0].scale.x/m.eyeB[0].s.x;a.t=1;bossChargePose(m,a);
+    const ok=m.f.g.rotation.order==='YXZ'&&m.f.g.rotation.x>.35&&m.f.kneeL.rotation.x>.3&&e0>1.3;bossChargeReset(m);const r=m.f.g.rotation.x===0&&!m.chPose&&m.f.eyes[0].scale.x===m.eyeB[0].s.x;mobRemove(m);return ok&&r||'virhe';});
+  t('v1.90 jousikalmo keskeyttää vedon ja vaihtaa miekkaan, kun pelaaja tulee ihan lähelle',()=>/dist<=3\.2&&m\.aimT>0\)\{m\.aimT=0/.test(updateMobs.toString())||'puuttuu');
+  t('v1.91 pomohuone: säteet seinään, varaetäisyys = keskim. keskeltä seinään, herätys huoneeseen astuessa (inBossRoom)',()=>{const R=ensureRealm('portal2'),Q=R.room;
+    if(!Q||Q.rays.length!==48||!(Q.avg>3))return 'huone puuttuu';if(!inBossRoom(R,Q.x+.5,Q.z+.5)||inBossRoom(R,Q.x+40,Q.z+40))return 'sisällä-testi';
+    return /inBossRoom\(BUILT\[m\.realm\]/.test(realmBossAI.toString())||'herätys ei käytä huonetta';});
+  t('v1.91 DEV Ö: olento 3 m eteen, siirto pomohuoneeseen (herätys alkaa) ja portin eteen',()=>{const p0=P.pos.clone(),n=mobs.length;devSpawnMob('susi');const m=mobs[mobs.length-1];
+    const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw),ok1=mobs.length===n+1&&Math.abs(Math.hypot(m.pos.x-P.pos.x,m.pos.z-P.pos.z)-3)<.05&&(m.pos.x-P.pos.x)*fx+(m.pos.z-P.pos.z)*fz>2.9&&m.devSpawn;mobRemove(m);
+    const rb=!!fo('rb').portal1;devTpBossRoom('portal1');const ok2=P.inDun&&P.realm==='portal1'&&inBossRoom(BUILT.portal1,P.pos.x,P.pos.z);update(1/30);
+    const b=mobs.find(o=>o.def.ai==='rboss'&&o.realm==='portal1'&&!o.dead),ok3=rb||(b&&b.state==='rise');
+    devTpPortal('portal1');const F=portalFront('portal1'),ok4=!P.inDun&&Math.hypot(P.pos.x-F.x,P.pos.z-F.z)<.01&&!mobs.some(o=>o.dun);
+    P.pos.copy(p0);P.vy=0;return ok1&&ok2&&ok3&&ok4||`virhe ${ok1}${ok2}${ok3}${ok4}`;});
+  t('v1.92 DEV reittiviiva: lyhin reitti sisäänkäynniltä pomohuoneeseen, suoristettu, ei seinien läpi',()=>{const R=ensureRealm('portal3'),pts=bossRoute(R,R.entry.x+.6,R.entry.z);
+    if(!pts||pts.length<2)return 'ei reittiä';for(let i=0;i<pts.length-1;i++)if(!rClear(R.grid,pts[i],pts[i+1]))return 'seinän läpi';
+    return inBossRoom(R,pts[pts.length-1].x,pts[pts.length-1].z)&&typeof devRouteLine==='function'||'ei pääty huoneeseen';});
+  t('v1.92 DEV: seinien läpi (noclip), lukitse aika ja sää, pysäytä maailma, V nopeuttaa lentoa',()=>{const u=update.toString(),pl=updatePlayer.toString();
+    return /devOn\('freeze'\)/.test(u)&&/devOn\('lockTW'\)/.test(u)&&/devOn\('noclip'\)/.test(pl)&&/vK=DEV&&keys\.KeyV\?6:1/.test(pl)&&'noclip' in DEVF&&'freeze' in DEVF&&'lockTW' in DEVF&&'route' in DEVF||'puuttuu';});
+  t('v1.93 pomojen korkealaatuiset mallit (bossmodels.js): ei palikoita, silmät, elävät osat f.fx; Ultralla silmäliekit ja leijuvat palat',()=>{const o=Object.assign({},SET);let bad=null;
+    for(const type of ['vartija','jaajattari','kalmaherra','aarnihirvio']){const m=spawnMob(type,P.pos.x+30,P.pos.z+30);let tri=0,box=0;
+      m.f.g.traverse(q=>{if(q.isMesh){const g=q.geometry;tri+=(g.index?g.index.count:g.attributes.position.count)/3;if(g.type==='BoxGeometry')box++;}});
+      applyPreset(7);_bqUT=-99;m.f.fx(1/30,m);const orbU=m.f.g.children.filter(c=>c.userData&&c.userData.a0!==undefined&&c.visible).length;
+      applyPreset(3);_bqUT=-99;m.f.fx(1/30,m);const orbL=m.f.g.children.filter(c=>c.userData&&c.userData.a0!==undefined&&c.visible).length;
+      if(!(tri>8000)||box>2||!m.f.eyes||m.f.eyes.length!==2||!(orbU>=3)||orbL!==0)bad=`${type} tri ${Math.round(tri)} box ${box} orbU ${orbU} orbL ${orbL}`;mobRemove(m);if(bad)break;}
+    Object.assign(SET,o);applyGfx();_bqUT=-99;return bad||true;});
+  t('v1.93 pomon saaliin majakkasäde (beaconAdd) ja siivous poimittaessa; kuolemassa piilotetut palat eivät ole osia',()=>{const d=spawnDrop('rauta',1,P.pos.x+3,P.pos.y+1,P.pos.z);beaconAdd(d,0xffffff);
+    const ok=!!d.beacon&&d.beacon.g.parent===scene;const g=d.beacon.g;removeDrop(d);
+    return ok&&!g.parent&&/beaconAdd\(d,/.test(bossDeathAnim.toString())&&/if\(!o\.visible\)g\.remove\(o\)/.test(bossDeathAnim.toString())||'virhe';});
+  t('v1.94 eeppinen pomopalkki: teema pomon mukaan, vaihemerkit, viivepalkki, vaiheen vaihdon efekti, KUKISTETTU',()=>{let bad=null;
+    for(const [type,th] of [['vartija','kivi'],['jaajattari','jaa'],['kalmaherra','kalma'],['aarnihirvio','aarni']]){const m=spawnMob(type,P.pos.x+9,P.pos.z+9);m.state=type==='vartija'?'idle':'chase';m.sinking=0;m.devSpawn=1;
+      if(type!=='vartija')m.realm=REALM_IDS.find(id=>REALMS[id].boss===type);bossBarTick(1/30);const bar=$('#bossbar');
+      const ok1=!bar.hidden&&bar.classList.contains('bbT-'+th)&&bar.querySelectorAll('.mk').length===(type==='vartija'?1:2)&&getComputedStyle(bar).getPropertyValue('--bc').trim().length>4;
+      m.hp=m.maxHp*.6;if(type==='vartija')m.phase2=true;else m.phase=2;bossBarTick(1/30);const ok2=bar.classList.contains('bbHit')&&/VAIHE II/.test(bar.querySelector('.bbPhase').textContent)&&parseFloat(bar.querySelector('.bbLag').style.width)>parseFloat(bar.querySelector('i').style.width);
+      m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
+      if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
+    return bad||true;});
+  t('v1.95 Kalmanvartijan äänet: varaääni Aarnihirviö (ei mykkä), kaikuääni maan alta Kalmankehän lähellä ennen herättämistä',()=>{
+    const ok1=VARAANI.vartija&&VARAANI.vartija.to==='aarnihirvio'&&CRE_ECHO.includes('boss')&&typeof vartijaEcho==='function';
+    const L=LOC.circle,p0=P.pos.clone(),fb=flags.boss;P.pos.set(L.x+20,terrainH(L.x+20,L.z),L.z);delete flags.boss;VEC.t=-1;VEC.m=null;vartijaEcho(.1);
+    const ok2=!!VEC.m&&VEC.m.type==='vartija'&&VEC.t>0;flags.boss=1;vartijaEcho(.1);const ok3=VEC.t===-1;
+    P.pos.set(L.x+200,P.pos.y,L.z);delete flags.boss;vartijaEcho(.1);const ok4=VEC.t===-1;if(fb)flags.boss=fb;else delete flags.boss;P.pos.copy(p0);
+    return ok1&&ok2&&ok3&&ok4||`virhe ${ok1}${ok2}${ok3}${ok4}`;});
+  t('v1.94 viimeinen pomo: rauharuutu, 2 s sulkemisesta ilmoitus ja tyhjennetyt maailman arkut täyttyvät 8 esineellä',()=>{const fc=fo('fc'),W=worldChests(),sv=JSON.stringify(fc),pp=flags.peacePend;
+    fc[W[0].key]=Array(8).fill(null);fc[W[1].key]=[{id:'kivi',n:1,q:1},...Array(7).fill(null)];delete fc[W[2].key];flags.peacePend=1;peaceRefill();
+    const a=fc[W[0].key].filter(Boolean),ok=a.length===8&&new Set(a.map(x=>x.id)).size===8&&fc[W[1].key].filter(Boolean).length===1&&!fc[W[2].key]&&!flags.peacePend;
+    const src=bossVictory.toString()+peaceTick.toString();const ok2=/allBossesDown\(\)/.test(src)&&/setTimeout\(peaceRefill,2000\)/.test(src)&&/winS'\)\.hidden/.test(src)&&/rauhallinen/.test(src);
+    const fc2=JSON.parse(sv);for(const k in fc)delete fc[k];Object.assign(fc,fc2);flags.peacePend=pp;return ok&&ok2||`virhe ${ok}${ok2}`;});
   t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua

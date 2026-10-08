@@ -370,6 +370,10 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Kalmaherra ryntää 5 s välein eikä huitaise ilmaa. Alle 50 %: 20 s välein 1–3 tulilinjaa (8 m, 20 vahinkoa + palaminen 4 s, kestää 5 s).
   Alle 30 %: hehkuu punaisena, vain ryntäyksiä 1,5 s välein, 5 kalmoa 20 s välein.
 - Kalmankammion kalmoista 10 % on jousikalmoja: ampuvat 3–20 m päästä 2,5 s välein, pitävät etäisyyttä, pudottavat joskus nuolia.
+  v1.89: jousi vasemmassa kädessä ja miekka oikeassa kuten pelaajalla; alle 2,4 m lyö miekalla, kauempana ampuu. Veto 1,9 s.
+  v1.90: alle 3,2 m päässä veto keskeytyy heti ja kalmo vaihtaa miekkaan; uusi veto vasta yli 3,6 m päässä.
+  v1.88: veto 0,9 s, tähtäys seuraa pelaajaa viiveellä (~0,25 s) ja kalmo kääntyy hitaasti (1 rad/s); nuoli lähtee jousen suuntaan vapautushetkellä (2° hajonta, 32 m/s,
+  painovoima 7, ei ennakointia) → sivulle väistävä jää nuolen ohi. Jousi pelaajan asennossa (kahva edessä, jänne poskella, nuoli jänteellä).
 - Ensimmäinen käynti ulottuvuudessa: iso animoitu otsikko ja tavoite; myöhemmin sivuviesti.
 
 ## Lista 4, erä E (v1.43)
@@ -466,10 +470,47 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Päävalikossa versionumeron perässä "Early Access 1.0". DEV-viitteet näkyvät vain DEV-tilassa.
 - Veren fysiikka (pisarat lentävät ja jäävät maahan) on päällä Medium-esiasetuksesta ylöspäin.
 
-## Äänet (v1.84, äänierä A: olennot)
+## Äänet (v1.84–v1.86, äänierä A: olennot)
 - Olennoilla voi olla omat äänet (`sounds/<id>_<idle|hurt|death|aggro|chase>_<1–3>.mp3`, arpoo olemassa olevista versioista): rauhallinen
   ääntely 6–15 s välein alle 25 m päässä, suuttumisääni (vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat), jahtiääni 4–9 s
   välein jahdin aikana (vihamieliset ja pomot), osumaääni (enintään 0,4 s välein), kuolinääni. 3D-ääni (suunta ja etäisyys), sävel ±6 %.
 - Jos olennolla ei ole omaa ääntä, käytetään väliaikaista varaääntä toiselta olennolta muutetulla sävelellä (ketju `VARAANI`), muuten
   tehtyä ääntä tai hiljaisuutta. Tila: `sounds/AANILISTA.md`.
 - Asetukset › Ohjaus ja ääni › Olentojen äänet (voimakkuus, oletus 80 %).
+- Varaääniketjun pääääni on Aarnihirviö (💎): Jäätär (sävel ×1,2) ja Kalmaherra (×0,85) lainaavat siltä, kunnes saavat omat. Kuolemaääniä on
+  1 paikka ulottuvuuksien hirviöillä (rboss) ja 2 muilla.
+- Toisto: tärkeys kuolema > osuma > suuttuminen > jahti > rauhallinen; olennolla soi yksi ääni kerrallaan (tärkeämpi katkaisee); enintään 10
+  ääntä kerrallaan (heikoin syrjäytyy); rauhallisia/jahtiääniä samaa lajia enintään 3 ja 0,3 s väli; sama versio ei heti uudestaan.
+- Pomon herätys (kaikki pomot, 8 s): nukkuva ulottuvuuspomo odottaa näkymättömänä maan alla ja herää vasta kun pelaaja astuu pomohuoneeseen
+  (v1.91: huoneen ääriviiva = 48 sädettä seinään, tai varaetäisyys = keskimääräinen matka keskeltä seinään). Lattia halkeaa hehkuen, pomo nousee pää alhaalla ja kädet sivuilla, nostaa päänsä ja huomaa pelaajan (5,9 s: silmät
+  leimahtavat, suuttumisääni), suoristuu ja lyö paineaallon. Haavoittumaton koko ajan, terveyspalkki näkyy heti.
+- Pomon kuolema (kaikki pomot, ~12 s + maatuminen ~10 s): kalpenee heti noustessaan, kolme todellista valoa pinoutuu ja huone kirkastuu pehmeästi,
+  kädet levälleen, kuolinääni kaiulla ja ruumis repeää (vartalo keskellä, osat irti omiin suuntiinsa valosäikein), valo katoaa, osat putoavat
+  yksitellen. Saalis leijuu ilmassa ja putoaa nätisti 12,6 s. Osat maatuvat multakummuiksi, joille nousee hehkuvia sieniä (tulikuolemassa tuhkaa).
+- Pomon ryntäys: kyyristyy ja silmät kirkastuvat 0,6 s, sitten etukenossa polvet koukussa.
+- Pomojen mallit (v1.93, js/bossmodels.js): korkealaatuiset, pyöristetyt ja yksityiskohtaiset (sarvet, kristallit, viitat, ketjut, miekka, sienet).
+  Ultra-tasolla silmissä liekit ja pomon ympärillä leijuvat sen teeman palat (riimukivet, jääkristallit, aavekallot ja sieluliekki, lehdet ja
+  tulikärpäset); ne irtoavat ja putoavat kuollessa muiden osien mukana.
+- Pomopalkki (v1.94): teeman mukainen (kivi/jää/kalma/aarni: väri, riimut, koriste palkin alla), vaihemerkit, viivepalkki, virtaava kuvio.
+  Vaiheen vaihtuessa tärähdys, välähdys ja iso teksti (VAIHE II / III / VIIMEINEN RAIVO), halkeamat ja syke voimistuvat; ruudun reunojen
+  vinjetti teeman värissä, sydämenlyönti alle 25 %:ssa; kuollessa "KUKISTETTU". Näkyy lähimmästä herännestä pomosta alle 70 m päässä.
+- Rauha (v1.94): kun kaikki neljä pomoa on kaatunut, voittoruutu "Hiidenmaa on rauhallinen" (13 s kuoleman jälkeen). Kun ruutu suljetaan,
+  2 s kuluttua ilmoitus, ja jokainen tyhjennetty maailman arkku (rauniot, arkkukivet, kiviröykkiöt, säkit, hautakirstut) täyttyy 8 satunnaisella
+  esineellä. Kerran per maailma.
+- Pomon saaliilla on majakkasäde: hehkuva valopylväs ja maarengas pomon värissä, kunnes esine poimitaan.
+- Palava pomo (boss/rboss): hurt-ääni silmukkana 1,4–2,2 s välein, sävel ×0,78 ja voimakkuus ×0,55, tärkeys 1,5 (jahti katkaisee). Muut olennot eivät ähki palaessaan.
+- Kalmanvartijan kaikuääni (v1.95, `vartija_echo_1/2`): maan alta Kalmankehän lähellä (< 80 m) 24–48 s välein, kunnes vartija on kukistettu kerran; ei kun se on hereillä.
+  Kalmanvartija lainaa Aarnihirviön äänet sävelellä ×0,7 (kivivartija ×0,805), kunnes saa omat.
+- Kaikuääni (echo, ulottuvuuspomot, 1–2 versiota): nukkuva pomo kuuluu 24–48 s välein vain omassa ulottuvuudessaan (≤38 m päästä, tumma, kaiulla) kunnes pelaaja kohtaa sen. Aarnihirviön kaikuäänet ovat kaikkien varaääni.
+- Kaiku: luolaston ja ulottuvuuksien olennoille (lähetys 0,45 / boss 0,6 / rboss 0,75), yksi yhteinen ConvolverNode (1,2 s), kytkeytyy vain tarvittaessa.
+- Työkalu tulostaa erän lopuksi HUOM-varoitukset (tuplatiedosto, vahvistus yli ±12 dB, liian lyhyt, ylimääräinen paikka).
+- Työkalun trimmaus/voimakkuus: pituuden rajat (idle 3 s … death 3,5 s, pomot enemmän) ja tavoite-LUFS lajeittain (idle −22 … death/aggro −16, pomo +1,5 dB).
+
+## DEV-työkalut (vain DEV-tilassa)
+- Ä = DEV-valikko. Isot napit alussa (v1.92): Kuolemattomuus, Lento (alkaa heti), Seinien läpi, Lukitse aika ja sää, Pysäytä maailma
+  (vain pelaaja liikkuu), Terveys täyteen. Lisäksi sää, aika, terveys, kylläisyys, pienet täpät, esinehaku, kartta.
+- V pohjassa = 10× kävelynopeus, lennossa 6× lentonopeus (vaaka ja pysty).
+- Ö = olennot ja pomot (v1.91): luo minkä tahansa olennon 3 m eteen (pomot nousevat herätysanimaatiolla), siirry ulottuvuuspomon huoneeseen tai
+  ulottuvuuden portin eteen, elvytä kukistettu pomo, Kalmankehään. Apuväline: pomohuoneen ääriviiva seinien läpi (huoneen reuna, varaetäisyyden
+  ympyrä, pomon paikka) ja reittiviiva (v1.92: valkoinen nauha lattialla lyhintä reittiä pomohuoneeseen, seinien läpi). DEV-luodut pomot eivät
+  kirjaa voittoa eivätkä merkitse ulottuvuutta kukistetuksi.

@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.85';
+:root{--css-v:'1.95';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -758,3 +758,59 @@ button:focus,select:focus{outline:none}
 /* v1.82: Early Access -merkintä version perässä (kiinteä "1.0" – ei muutu versionoston mukana) */
 .mTitle small .eaTag{display:inline-block;margin-left:8px;padding:1px 9px 2px;border:1px solid rgba(127,233,221,.55);border-radius:10px;background:rgba(20,60,64,.35);
   font:600 11px 'Cinzel',serif;letter-spacing:.06em;text-transform:none;color:#8ff0e4;text-shadow:0 0 8px rgba(95,230,217,.45);vertical-align:1px}
+/* v1.91 DEV Ö-valikko: pomorivit */
+.devBoss{padding:5px 7px;background:rgba(0,0,0,.18);border-radius:4px;margin:3px 0}.devBoss .devBtns{margin-top:4px}.devBoss .note{font-size:12px;opacity:.8}
+/* v1.92 DEV Ä-valikon isot pikanapit */
+.devBig{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 14px}.devBigB{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;text-align:left;min-height:62px}
+.devBigB b{font-size:16px}.devBigB span{font-size:11.5px;opacity:.75;line-height:1.25}.devBigB.on{background:rgba(70,150,80,.55);border-color:#8fe08a}.devBigB.on span{opacity:1}
+.devBigB.act{background:rgba(150,60,50,.45);border-color:#e88a7a}@media (max-width:700px){.devBig{grid-template-columns:1fr 1fr}}
+/* ===== v1.94 EEPPINEN POMOPALKKI: teemat bbT-kivi / jaa / kalma / aarni (--bc pääväri, --bd tumma, --bl vaalea, rgb-kolmikkoina) ===== */
+#bossbar,#bbVig{--bc:127,255,240;--bd:20,38,38;--bl:225,255,250}
+#bossbar.bbT-kivi,#bbVig.bbT-kivi{--bc:127,255,240;--bd:20,38,38;--bl:225,255,250}#bossbar.bbT-jaa,#bbVig.bbT-jaa{--bc:150,215,255;--bd:12,28,48;--bl:240,250,255}
+#bossbar.bbT-kalma,#bbVig.bbT-kalma{--bc:255,58,42;--bd:42,6,12;--bl:255,205,175}#bossbar.bbT-aarni,#bbVig.bbT-aarni{--bc:150,255,110;--bd:14,34,10;--bl:255,226,100}
+#bossbar{width:min(660px,78vw);top:calc(14px + env(safe-area-inset-top,0px));z-index:6;pointer-events:none}
+#bossbar.bbIn{animation:bbIn 1s cubic-bezier(.2,.9,.3,1.15)}
+@keyframes bbIn{0%{opacity:0;transform:translateX(-50%) translateY(-24px) scaleX(.5);filter:blur(6px)}100%{opacity:1;transform:translateX(-50%) translateY(0) scaleX(1);filter:blur(0)}}
+#bossbar .bbFrame{position:relative;padding:4px 46px 14px;background:radial-gradient(ellipse at 50% 120%,rgba(var(--bc),.16),transparent 70%),linear-gradient(180deg,rgba(var(--bd),.15),rgba(var(--bd),.88) 40%,rgba(0,0,0,.9));
+  border-top:1px solid rgba(var(--bc),.6);border-bottom:1px solid rgba(var(--bc),.3);box-shadow:0 0 26px rgba(var(--bc),.22),inset 0 0 34px rgba(0,0,0,.85);border-radius:3px}
+#bossbar .bbRune{position:absolute;top:50%;transform:translateY(-35%);font-size:30px;line-height:1;color:rgb(var(--bc));text-shadow:0 0 12px rgba(var(--bc),.95),0 0 3px #000;animation:bbRune 2.4s ease-in-out infinite}
+#bossbar .bbRune.l{left:10px}#bossbar .bbRune.r{right:10px;animation-delay:-1.2s}
+@keyframes bbRune{0%,100%{opacity:.65}50%{opacity:1;text-shadow:0 0 20px rgba(var(--bc),1),0 0 3px #000}}
+#bossbar .name{font-family:var(--font-d);font-size:27px;letter-spacing:2px;color:rgb(var(--bl));text-shadow:0 0 12px rgba(var(--bc),.85),0 2px 4px #000;animation:bbName 4s infinite}
+@keyframes bbName{0%,92%,100%{opacity:1}93%{opacity:.55}94%{opacity:1}96%{opacity:.7}}
+#bossbar .bbSub{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(var(--bc),.85);margin-top:-1px;text-shadow:0 1px 2px #000}
+#bossbar .track{position:relative;height:17px;margin-top:5px;background:rgba(0,0,0,.78);border:1px solid rgba(var(--bc),.65);box-shadow:inset 0 0 10px #000,0 0 10px rgba(var(--bc),.25);overflow:hidden}
+#bossbar .track i{position:absolute;left:0;top:0;bottom:0;width:100%;transition:width .12s;
+  background:repeating-linear-gradient(115deg,rgba(255,255,255,.13) 0 7px,transparent 7px 18px),linear-gradient(180deg,rgba(var(--bl),.95),rgb(var(--bc)) 42%,rgba(var(--bd),1));background-size:40px 100%,100% 100%;animation:bbFlow 1.1s linear infinite}
+@keyframes bbFlow{to{background-position:40px 0,0 0}}
+#bossbar .bbLag{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(180deg,#fff,rgba(var(--bl),.9) 50%,rgba(var(--bc),.55));opacity:.8}
+#bossbar .bbGlint{position:absolute;top:0;bottom:0;width:60px;left:-80px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:bbGlint 3.4s ease-in-out infinite}
+@keyframes bbGlint{0%,55%{left:-80px}100%{left:110%}}
+#bossbar .bbMarks .mk{position:absolute;top:-2px;bottom:-2px;width:2px;margin-left:-1px;background:rgba(var(--bl),.9);box-shadow:0 0 6px rgba(var(--bc),1)}
+#bossbar .bbMarks .mk.past{background:rgba(0,0,0,.6);box-shadow:none}
+#bossbar .bbCrack{position:absolute;inset:0;opacity:0;transition:opacity .8s;mix-blend-mode:multiply;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='17'%3E%3Cpath d='M8 0 L14 6 L10 10 L17 17 M52 0 L47 7 L55 11 L50 17 M90 0 L96 5 L91 9 L99 17 M30 17 L34 11 L29 8 M72 0 L70 5 L76 8' stroke='%23000' stroke-width='1.6' fill='none'/%3E%3C/svg%3E") repeat-x}
+#bossbar.ph2 .bbCrack{opacity:.5}#bossbar.ph3 .bbCrack,#bossbar.fin .bbCrack{opacity:.9}
+#bossbar.ph3 .track,#bossbar.fin .track{animation:bbPulse .9s ease-in-out infinite}
+@keyframes bbPulse{0%,100%{box-shadow:inset 0 0 10px #000,0 0 10px rgba(var(--bc),.3)}50%{box-shadow:inset 0 0 10px #000,0 0 26px rgba(var(--bc),.95)}}
+#bossbar.bbT-kivi.fin,#bossbar.bbT-jaa.fin,#bossbar.bbT-kalma.fin,#bossbar.bbT-aarni.fin{--bc:255,36,20;--bd:50,4,6;--bl:255,220,180}
+/* teeman koriste palkin alla: jääpuikot, veripisarat, köynnös, kivisärö */
+#bossbar .bbDeco{position:absolute;left:46px;right:46px;top:calc(100% - 13px);height:12px;pointer-events:none;opacity:.85}
+.bbT-jaa .bbDeco{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='12'%3E%3Cpath d='M0 0 L4 9 L8 0 L11 6 L14 0 L19 12 L24 0 L27 5 L30 0 L35 8 L40 0 L43 4 L46 0Z' fill='%23c8ecff' fill-opacity='.85'/%3E%3C/svg%3E") repeat-x}
+.bbT-kalma .bbDeco{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='12'%3E%3Cpath d='M6 0 Q7 6 6 8 Q4 11 6.5 11 Q9 11 7.5 8 Q6 6 8 0Z M31 0 Q32 4 31 5 Q30 7 32 7 Q34 7 33 5 Q32 4 33 0Z M47 0 Q48 7 47 9 Q45 12 48 12 Q51 12 49 9 Q48 7 50 0Z' fill='%23a01018'/%3E%3C/svg%3E") repeat-x;animation:bbDrip 3s ease-in-out infinite}
+@keyframes bbDrip{0%,100%{transform:scaleY(.8);transform-origin:top}50%{transform:scaleY(1.15);transform-origin:top}}
+.bbT-aarni .bbDeco{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='12'%3E%3Cpath d='M0 3 Q17 10 35 3 T70 3' stroke='%233f7a2a' stroke-width='2' fill='none'/%3E%3Cellipse cx='14' cy='8' rx='4' ry='2' fill='%235f9a3a' transform='rotate(30 14 8)'/%3E%3Cellipse cx='50' cy='6' rx='4' ry='2' fill='%237fb84a' transform='rotate(-25 50 6)'/%3E%3Ccircle cx='33' cy='5' r='1.4' fill='%23ffe25a'/%3E%3C/svg%3E") repeat-x}
+.bbT-kivi .bbDeco{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='54' height='12'%3E%3Cpath d='M0 0 L9 0 L11 4 L16 0 L28 0 L30 6 L35 2 L40 0 L54 0 L54 2 L44 3 L38 6 L31 9 L27 3 L18 4 L12 7 L8 2 L0 3Z' fill='%23302e2a'/%3E%3Cpath d='M30 6 L31 9 M11 4 L12 7' stroke='%237ffff0' stroke-width='1'/%3E%3C/svg%3E") repeat-x}
+/* vaiheen vaihtuminen: tärähdys, välähdys ja iso teksti; kukistettu */
+#bossbar .bbPhase{position:absolute;left:0;right:0;top:100%;margin-top:8px;font-family:var(--font-d);font-size:32px;letter-spacing:7px;color:rgb(var(--bl));text-shadow:0 0 20px rgba(var(--bc),1),0 0 6px rgba(var(--bc),1),0 2px 3px #000;opacity:0}
+#bossbar.bbHit .bbFrame{animation:bbShake .55s linear,bbFlash 1.5s ease-out}
+#bossbar.bbHit .bbPhase{animation:bbPhaseTxt 2.8s ease-out}
+@keyframes bbShake{0%,100%{transform:translate(0,0)}15%{transform:translate(-7px,2px)}30%{transform:translate(6px,-3px)}45%{transform:translate(-5px,1px)}60%{transform:translate(4px,2px)}80%{transform:translate(-2px,-1px)}}
+@keyframes bbFlash{0%{box-shadow:0 0 70px rgba(var(--bc),1),inset 0 0 50px rgba(var(--bc),.9)}100%{box-shadow:0 0 26px rgba(var(--bc),.22),inset 0 0 34px rgba(0,0,0,.85)}}
+@keyframes bbPhaseTxt{0%{opacity:0;transform:scale(2.4);filter:blur(8px)}14%{opacity:1;transform:scale(1);filter:blur(0)}72%{opacity:1}100%{opacity:0;transform:translateY(10px)}}
+#bossbar.bbDead{transition:opacity 1.2s;filter:grayscale(.85)}#bossbar.bbDead .bbPhase{opacity:1;animation:none;color:#e8e0d0;text-shadow:0 0 14px rgba(255,255,255,.6),0 2px 3px #000}
+#bossbar.bbOut{opacity:0}
+/* pelottava vinjetti: hiljainen sävy taistelun ajan, välähdys vaiheen vaihtuessa, sydämenlyönti kun pomo on lähes kaatunut */
+#bbVig{position:fixed;inset:0;pointer-events:none;z-index:3;background:radial-gradient(ellipse at center,transparent 52%,rgba(var(--bd),.55) 82%,rgba(var(--bc),.32) 100%);opacity:.55;transition:opacity 1s}
+#bbVig.flash{animation:bbVigF 1.8s ease-out}@keyframes bbVigF{0%{opacity:1;filter:brightness(2.2)}100%{opacity:.55;filter:none}}
+#bbVig.low{animation:bbBeat 1.1s ease-in-out infinite}@keyframes bbBeat{0%,100%{opacity:.5}12%{opacity:.95}24%{opacity:.6}36%{opacity:.85}}

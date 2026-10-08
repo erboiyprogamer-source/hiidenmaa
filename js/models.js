@@ -65,11 +65,11 @@ function makeHumanoid(o){
   const mkHand=(e,sx)=>{const h=new THREE.Group();h.position.set(0,-.33*s,.02*s);rnd(h,0,0,0,.07*s,o.handMat?F(o.handMat):mS,1,1.15,.8,seg);rnd(h,sx*.05*s,.01*s,.04*s,.03*s,o.handMat?F(o.handMat):mS,1,1.4,1,6);e.add(h);return h;};
   const hand=mkHand(elbowR,-1),handL=mkHand(elbowL,1);
   // kaula ja pää
-  const head=new THREE.Group();head.position.set(0,hip+.76*s,0);g.add(head);const hs=(o.headS||1)*s;
+  const head=new THREE.Group();head.position.set(0,hip+.76*s,0);g.add(head);const hs=(o.headS||1)*s,eyes=[];
   if(!o.noHead){tube(head,.06*s,.07*s,.14*s,o.skel?mB:mS,0,.02*s,0,1,1,seg);rnd(head,0,.28*hs,0,.2*hs,mS,.92,1.08,1,o.flat?6:12);
-    if(o.eyes){const em=new THREE.MeshBasicMaterial({color:o.eyes});for(const x of [-.075,.075])rnd(head,x*hs,.3*hs,.17*hs,.032*hs,em,1,.8,.6,6);}}
+    if(o.eyes){const em=new THREE.MeshBasicMaterial({color:o.eyes});for(const x of [-.075,.075])eyes.push(rnd(head,x*hs,.3*hs,.17*hs,.032*hs,em,1,.8,.6,6));}}   // v1.90: silmät talteen (pomon silmien leimahdus)
   g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
-  return{g,legL,legR,kneeL,kneeR,armL,armR,elbowL,elbowR,head,torso,hand,handL,s,biped:true,human:true};
+  return{g,legL,legR,kneeL,kneeR,armL,armR,elbowL,elbowR,head,torso,hand,handL,s,eyes,biped:true,human:true};
 }
 // Yksityiskohtaiset eläimet (v0.72, pelaajahahmon tyyli): pyöreä runko (rinta, keskivartalo, lantio, vaaleampi vatsa), kaula, pää
 // kuono-osineen, silmät, korvat, nivelletyt jalat (reisi, polvi, sääri, kavio/tassu) ja häntä. Rajapinta kuten makeQuad

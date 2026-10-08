@@ -70,7 +70,199 @@ function updatePuffs(dt){for(let i=puffs.length-1;i>=0;i--){const p=puffs[i];p.t
 // Tavallinen: ruumis kaatuu kyljelleen (0,6 s), raajat valahtavat, veriläntti alle; makaa ~7 s, vajoaa ja häipyy 2 s (yht. < 10 s).
 // Palokuolema (palaa kuollessa tai lyöty soihdulla / tulinuolella / kuoli nuotiossa): mustuu 1,5 s liekeissä → tuhkakasa, joka vajoaa 8 s.
 const DEATH_END=9.4;
+/* ===================== POMOT: HERÄTYS, RYNTÄYS JA KUOLEMA (v1.89–v1.90) =====================
+   Yhteiset: silmien kirkastus bossEyes (makeHumanoid → f.eyes, omat materiaalit), etusijavalot bossLight (pri → aina valopaikka,
+   environment.js updateLights), koko huoneen kirkastus BOSS_GLOW (environment.js lisää sen hemi/amb-valoon).
+   Kaikki efektit siivotaan (bossRiseFxEnd, bossDeathEnd), myös jos pomo poistetaan kesken (mobRemove). */
+let BOSS_GLOW=0;
+const _whC=new THREE.Color(0xffffff),_soilC=new THREE.Color(0x3b2e22),_bb=new THREE.Box3(),_bv=new V3(),_bv2=new V3(),_bUp=new V3(0,1,0);
+function bossCol(m){return m.realm&&typeof REALMS!=='undefined'&&REALMS[m.realm]?REALMS[m.realm].glow:0x7ffff0;}
+function bossLight(m,c,i,pri){const L={x:m.pos.x,y:m.pos.y+1,z:m.pos.z,c,i:Math.max(.05,i),on:()=>true,move:true,dun:!!m.dun,pri:pri||3};lightSources.push(L);updateLights();return L;}
+function dropLightSrc(L){if(!L)return;const i=lightSources.indexOf(L);if(i>=0)lightSources.splice(i,1);}
+// silmät: k 0…1,3 kirkastaa (kohti valkoista), suurentaa ja lisää hehkupallon jokaisen silmän ympärille
+function bossEyes(m,k){const E=m.f.eyes;if(!E||!E.length)return;
+  if(!m.eyeB)m.eyeB=E.map(e=>({c:e.material.color.clone(),s:e.scale.clone()}));
+  for(let i=0;i<E.length;i++){const e=E[i],b=m.eyeB[i];e.material.color.copy(b.c).lerp(_whC,Math.min(1,k*.7));e.scale.copy(b.s).multiplyScalar(1+.7*Math.min(1.5,k));}
+  if(k>.02&&!m.eyeH)m.eyeH=E.map(e=>{const h=new THREE.Mesh(new THREE.SphereGeometry(.06*(m.f.s||1),8,6),new THREE.MeshBasicMaterial({color:m.eyeB[0].c.clone().lerp(_whC,.25),transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
+    h.position.copy(e.position);e.parent.add(h);return h;});
+  if(m.eyeH)for(const h of m.eyeH){h.visible=k>.02;h.material.opacity=Math.min(.8,.6*k);h.scale.setScalar(1+.9*k);}}
+
+/* POMON HERÄTYS (8 s, v1.90). Nukkuva pomo odottaa NÄKYMÄTTÖMÄNÄ MAAN ALLA (bossHide) – ei vilahda näkyviin huoneeseen tultaessa.
+   Herää kun pelaaja astuu huoneeseen (etäisyys + näköyhteys, dungeons.js). Haavoittumaton koko ajan (m.sinking), terveyspalkki näkyy heti.
+   0–1,2 s   lattia halkeaa: hehkuva rengas ja säröt pomon värissä, halkeamasta nousee oikeaa valoa, maa tärisee
+   1,2–5,6 s pomo nousee hitaasti maan alta pää alhaalla ja kädet sivuilla (nukkuu yhä); multaa varisee maasta ja vartalosta
+   5,6–6,6 s pää nousee – 5,9 s pomo HUOMAA pelaajan: silmät leimahtavat, suuttumisääni, halkeama välähtää, kääntyy pelaajaan
+   6,6–7,6 s suoristuu ja levittää kätensä; 7,5 s paineaalto, pöly ja jysähdys; halkeamat sammuvat → 8 s jahti alkaa */
+const BOSS_RISE=8;
+function bossHide(m,H){m.riseY=m.riseY??m.pos.y;m.pos.y=m.riseY-H;m.f.g.position.copy(m.pos);m.f.g.visible=false;m.sinking=1;}
+function bossRiseFx(m,gy){const col=bossCol(m),r=Math.max(.9,m.def.r),g=new THREE.Group();g.position.set(m.pos.x,gy+.04,m.pos.z);
+  const mk=c=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+  const rm=mk(col),cm=mk(new THREE.Color(col).lerp(_whC,.35));
+  const ring=new THREE.Mesh(new THREE.RingGeometry(r*.5,r*1.6,40),rm);ring.rotation.x=-Math.PI/2;g.add(ring);
+  for(let i=0;i<9;i++){const a=i/9*TAU+Math.random()*.5,L=r*(1.3+Math.random()*1.7),cg=new THREE.Group();cg.rotation.y=a;
+    const c=new THREE.Mesh(new THREE.PlaneGeometry(.08+Math.random()*.09,L),cm);c.rotation.x=-Math.PI/2;c.position.z=r*.45+L/2;cg.add(c);g.add(cg);}
+  scene.add(g);const L=bossLight(m,col,.05,2);L.x=m.pos.x;L.y=gy+.6;L.z=m.pos.z;m.rz={g,rm,cm,ring,L,sw:0};}
+function bossRiseFxEnd(m){const R=m.rz;if(!R)return;scene.remove(R.g);R.g.traverse(o=>{if(o.geometry)o.geometry.dispose();});R.rm.dispose();R.cm.dispose();dropLightSrc(R.L);updateLights();m.rz=null;}
+function bossRisePose(m,dt,gy,H){const f=m.f,t=m.t,r=Math.max(.9,m.def.r);
+  if(!m.rz){bossRiseFx(m,gy);m.riseY=gy;}
+  f.g.visible=true;
+  const k=sstep(1.2,5.6,t),w=sstep(5.6,6.6,t),st=Math.sin(sstep(6.6,7.6,t)*Math.PI);
+  m.pos.y=gy-(1-k)*H;
+  if(f.head){f.head.rotation.x=.85*(1-w);f.head.rotation.y=0;}
+  if(f.armL){f.armL.rotation.set(-.3*st,0,.14*(1-w)+.75*st);f.armR.rotation.set(-.3*st,0,-.14*(1-w)-.75*st);}
+  if(f.elbowL){const e=-.15*(1-w)-.6*st;f.elbowL.rotation.x=e;f.elbowR.rotation.x=e;}
+  if(f.legL){f.legL.rotation.set(0,0,0);f.legR.rotation.set(0,0,0);if(f.kneeL){f.kneeL.rotation.x=0;f.kneeR.rotation.x=0;}}
+  f.g.position.copy(m.pos);f.g.rotation.y=m.yaw;
+  const R=m.rz,crack=sstep(0,1.2,t)*(1-sstep(7.3,8,t)),pulse=.82+.18*Math.sin(t*7),notice=sstep(5.8,6.05,t)*(1-sstep(6.2,7.4,t));
+  R.rm.opacity=.55*crack*pulse;R.cm.opacity=.85*crack*pulse;R.ring.scale.setScalar(.6+.4*sstep(0,1.2,t)+.25*k);
+  R.L.i=.05+3.4*crack*pulse+5*notice;
+  if(t<1.2&&Math.random()<dt*10)shake(.08);
+  if(t>1.2&&t<5.6&&Math.random()<dt*3)shake(.12);
+  if(t<5.8&&Math.random()<dt*(t<1.2?14:26))burst(m.pos.x+(Math.random()-.5)*r*3.2,gy+.15,m.pos.z+(Math.random()-.5)*r*3.2,Math.random()<.5?0x5d5a54:0x6a5a44,3,4);   // multaa ja kiviä
+  if(k>.05&&k<.99&&Math.random()<dt*10)burst(m.pos.x+(Math.random()-.5)*r,gy+Math.random()*H*k*.9,m.pos.z+(Math.random()-.5)*r,0x4a3e30,3,1.5);   // vartalosta varisee multaa
+  if(t>=5.9&&!m.woke)bossWakeRoar(m);   // pää nousee → huomaa pelaajan
+  bossEyes(m,t<5.8?0:1.3*sstep(5.8,6.05,t)*(1-sstep(6.4,7.8,t)));
+  if(t>=7.5&&!R.sw){R.sw=1;const col=bossCol(m);shockwave(m.pos.x,gy,m.pos.z,9,col);burst(m.pos.x,gy+.3,m.pos.z,col,22,7);smokePuff(m.pos.x,gy+.4,m.pos.z,2+r,.4);shake(.5);sfx('slam',.7,.8);}
+  if(t>=BOSS_RISE){bossRiseFxEnd(m);bossEyes(m,0);return false;}
+  return true;}
+// pomo huomaa pelaajan (pään noustessa): oma suuttumisääni (tai tehty karjaisu), viesti. Estää creTickiä soittamasta samaa uudestaan.
+function bossWakeRoar(m){if(m.woke)return;m.woke=1;if(!creSnd(m,'aggro'))sfx('roar');m.angerDone=1;m.angerTry=99;m.inChase=1;m.chT=2.5+Math.random()*2;shake(.5);msg(`${m.def.n} herää!`,'warn');}
+
+/* POMON RYNTÄYS (v1.90): kierrosjärjestys YXZ → kallistus hahmon OMAAN eteen (ennen XYZ kallisti maailman X-akselin ympäri = sivulle).
+   0–0,6 s valmistautuu: kyyristyy, kädet taakse, SILMÄT KIRKASTUVAT · 0,6–1,45 s etukeno 0,45 rad, polvet koukussa, jalat juoksevat ·
+   loppu palautuu. bossChargeReset nollaa asennon myös, jos ryntäys keskeytyy (vaihe vaihtuu, pomo kuolee). */
+function bossChargePose(m,a){const f=m.f;if(f.g.rotation.order!=='YXZ')f.g.rotation.order='YXZ';m.chPose=1;
+  const wk=sstep(0,.5,a.t),run=sstep(.55,.75,a.t)*(1-sstep(1.4,1.6,a.t)),ph=a.t*15,cr=wk*(1-run);
+  f.g.rotation.x=.16*cr+.45*run;
+  if(f.head)f.head.rotation.x=-.18*cr-.38*run;
+  if(f.armL){const ax=.55*cr+(.95+Math.sin(ph)*.25)*run;f.armL.rotation.set(ax,0,.18);f.armR.rotation.set(ax,0,-.18);}   // kädet taakse
+  if(f.legL){const s=Math.sin(ph)*.85*run;f.legL.rotation.set(-.45*cr+s-.25*run,0,0);f.legR.rotation.set(-.45*cr-s-.25*run,0,0);}
+  if(f.kneeL){f.kneeL.rotation.x=.8*cr+(.45+.45*Math.max(0,Math.sin(ph)))*run;f.kneeR.rotation.x=.8*cr+(.45+.45*Math.max(0,-Math.sin(ph)))*run;}
+  if(f.elbowL){f.elbowL.rotation.x=-.5*run;f.elbowR.rotation.x=-.5*run;}
+  bossEyes(m,a.t<.6?1.3*sstep(0,.35,a.t):1.3*(1-sstep(.6,1.1,a.t)));}
+function bossChargeReset(m){if(!m.chPose)return;m.chPose=0;const f=m.f;f.g.rotation.x=0;if(f.head)f.head.rotation.x=0;
+  if(f.armL){f.armL.rotation.set(0,0,0);f.armR.rotation.set(0,0,0);}if(f.legL){f.legL.rotation.set(0,0,0);f.legR.rotation.set(0,0,0);}
+  if(f.kneeL){f.kneeL.rotation.x=0;f.kneeR.rotation.x=0;}if(f.elbowL){f.elbowL.rotation.x=0;f.elbowR.rotation.x=0;}bossEyes(m,0);}
+
+/* POMON KUOLEMA (v1.90: ~12 s + maatuminen ~10 s, kaikki pomot – muut olennot lössähtävät kuten ennen):
+   0–3,2 s    kohoaa irti maasta ja KALPENEE HETI; todelliset pistevalot syttyvät ja PINOUTUVAT (0,4 / 1,6 / 2,8 s, etusija valopaikkoihin,
+              kiertävät hitaasti pomon ympäri) → huone kirkastuu pehmeästi (+ BOSS_GLOW hemi/amb-valoon); valopölyä nousee
+   2,6–5,2 s  levittää kätensä, pää taakse
+   5,6 s      kuolinääni kaiulla (+ jälkikaiku 0,45 s) – RUUMIS REPEÄÄ: vartalo jää keskelle, muut osat liukuvat hitaasti omiin suuntiinsa
+              hieman irti kehosta, valosäikeet vartalon ja osien välissä; saalis ilmestyy leijumaan
+   8,4–9,1 s  valo, hehku ja vaaleus katoavat (pehmeä nopea häivytys)
+   8,9 s →    osat putoavat yksitellen painovoimalla (vartalo viimeisenä), pieni pomppu ja pöly; saalis leijuu vielä ja putoaa nätisti 12,6 s
+   maassa     MAATUMINEN ~10 s: osat tummuvat mullaksi, painuvat kokoon ja vajoavat; alle kasvaa multakumpu, jolle nousee pomon värissä
+              hehkuvia sieniä ja itiöitä leijuu. Tulikuolemassa tuhkakasa ja hiillosta. Lopuksi kaikki häipyy. */
+const BD={brk:5.6,dim:8.4,dimLen:.7,drop0:8.9,loot:12.6,decay:10};
+function bossDeathAnim(m,dt){const f=m.f,g=f.g,t=m.deadT,r=Math.max(.9,m.def.r),col=bossCol(m);
+  if(!m.da){bossChargeReset(m);bossEyes(m,0);if(m.rz)bossRiseFxEnd(m);
+    g.position.copy(m.pos);g.visible=true;
+    const basic=[];g.traverse(o=>{if(o.isMesh&&o.material&&o.material.isMeshBasicMaterial&&!basic.includes(o.material))basic.push(o.material);});   // v1.93: hehkut (silmät, riimut, sienet)
+    for(const b of basic){b.transparent=true;b.userData.op0=b.opacity;}
+    m.da={boss:1,y0:m.pos.y,ash:!!m.ashDeath,basic,col:m.mats.map(mt=>mt.color.clone()),emi:m.mats.map(mt=>mt.emissive.clone()),
+      lights:[],lightsOff:0,parts:null,beams:null,loot:m.bossLoot||null,lootDone:!m.bossLoot,firstLand:0,lastLand:0,landed:0,mounds:[]};
+    const gl=new THREE.Mesh(new THREE.SphereGeometry(r*1.5,14,10),new THREE.MeshBasicMaterial({color:0xfff6e0,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
+    gl.position.set(m.pos.x,m.pos.y+r*1.6,m.pos.z);scene.add(gl);m.da.glow=gl;}
+  const D=m.da,out=1-sstep(BD.dim,BD.dim+BD.dimLen,t),pale=sstep(0,4.2,t)*out;
+  // 1) kohoaa ja levittää kädet (ennen repeämistä)
+  if(!D.parts){const lift=sstep(0,3.2,t)*(1.3+r*.5),sp=sstep(2.6,5.2,t),lk=Math.min(1,dt*2.5);
+    g.position.set(m.pos.x,D.y0+lift+Math.sin(t*1.7)*.06*sstep(2,3.2,t),m.pos.z);g.rotation.y+=dt*.22;
+    if(f.head)f.head.rotation.x=lerp(f.head.rotation.x,.45*(1-sp)-.6*sp,lk);
+    if(f.armL){const ax=lerp(f.armL.rotation.x,.15*(1-sp)-.15*sp,lk),az=lerp(f.armL.rotation.z,.35*(1-sp)+1.45*sp,lk);f.armL.rotation.set(ax,0,az);f.armR.rotation.set(ax,0,-az);}
+    if(f.elbowL){const e=lerp(f.elbowL.rotation.x,-.25*(1-sp),lk);f.elbowL.rotation.x=e;f.elbowR.rotation.x=e;}
+    if(f.legL){f.legL.rotation.set(lerp(f.legL.rotation.x,.15,lk),0,lerp(f.legL.rotation.z,.18*sp,lk));f.legR.rotation.set(lerp(f.legR.rotation.x,.05,lk),0,lerp(f.legR.rotation.z,-.18*sp,lk));}
+    if(f.kneeL){f.kneeL.rotation.x=lerp(f.kneeL.rotation.x,.3*(1-sp),lk);f.kneeR.rotation.x=lerp(f.kneeR.rotation.x,.2*(1-sp),lk);}
+    if(t<1.5&&Math.random()<dt*6)burst(m.pos.x+(Math.random()-.5)*r*2,D.y0+.2,m.pos.z+(Math.random()-.5)*r*2,0x6a5a44,3,3);}
+  const cy=D.cy??(g.position.y+r*1.4);
+  // 2) vaaleus ja väri: kalpenee heti, tulikuolemassa tuhka, maassa multa
+  const ac=D.ash?sstep(BD.dim,BD.dim+1.5,t):0,dkc=D.firstLand?sstep(D.firstLand+.5,D.firstLand+5,t):0;
+  if(D.basic){const bo=(1-sstep(BD.dim,BD.dim+1.2,t))*(D.landed>=(D.parts?D.parts.length:1e9)?1-sstep(D.lastLand+BD.decay-2,D.lastLand+BD.decay,t):1);for(const b of D.basic)b.opacity=(b.userData.op0??1)*Math.max(.0,bo);}
+  for(let i=0;i<m.mats.length;i++){const mt=m.mats[i];mt.color.copy(D.col[i]).lerp(_ashC,ac).lerp(D.ash?_ashC:_soilC,dkc*.85).lerp(_whC,pale);mt.emissive.copy(D.emi[i]).multiplyScalar(1-dkc).lerp(_whC,pale*.9);}
+  // 3) pinoutuvat todelliset valot + huoneen kirkastus; katoavat himmennyksessä
+  if(!D.lightsOff){
+    for(let j=0;j<3;j++)if(!D.lights[j]&&t>=.4+j*1.2)D.lights[j]=bossLight(m,j===0?0xfff2d8:j===1?0xffffff:new THREE.Color(col).lerp(_whC,.6).getHex(),.05,4);
+    for(let j=0;j<D.lights.length;j++){const L=D.lights[j];if(!L)continue;const a=j/3*TAU+t*.5;L.x=m.pos.x+Math.cos(a)*r*1.3;L.z=m.pos.z+Math.sin(a)*r*1.3;L.y=cy-.3+j*.4;L.i=.05+9*sstep(.4+j*1.2,2.2+j*1.2,t)*out;}
+    BOSS_GLOW=sstep(.8,4.6,t)*out;
+    if(D.glow){D.glow.material.opacity=.26*pale*(.9+.1*Math.sin(t*5));D.glow.scale.setScalar(.7+.5*pale);D.glow.position.set(m.pos.x,cy,m.pos.z);}
+    if(out>.5&&Math.random()<dt*(6+18*pale))burst(m.pos.x+(Math.random()-.5)*r*2.4,cy-1+Math.random()*2,m.pos.z+(Math.random()-.5)*r*2.4,0xffffff,1,1);   // valopölyä
+    if(t>BD.dim+BD.dimLen+.05){D.lightsOff=1;for(const L of D.lights)dropLightSrc(L);D.lights=[];BOSS_GLOW=0;updateLights();
+      if(D.glow){scene.remove(D.glow);D.glow.material.dispose();D.glow=null;}}}
+  // 4) repeäminen: vartalo jää keskelle, muut osat liukuvat omiin suuntiinsa; kuolinääni; saalis leijumaan
+  if(!D.parts&&t>=BD.brk){g.updateMatrixWorld(true);D.cx=m.pos.x;D.cz=m.pos.z;let ty=g.position.y+r*1.4;if(f.torso){_bb.setFromObject(f.torso);_bb.getCenter(_bv);ty=_bv.y;}D.cy=ty;
+    if(!creSnd(m,'death',{rev:1.9}))sfx('die',.7,1);
+    for(const o of g.children.slice())if(!o.visible)g.remove(o);   // v1.93: piilotetut (esim. Ultra-palat muulla tasolla) eivät ole osia
+    D.parts=g.children.slice().map(o=>{_bb.setFromObject(o);const c=_bb.getCenter(new V3()),sz=_bb.getSize(new V3()),tor=o===f.torso;scene.attach(o);
+      let dx=c.x-D.cx,dy=c.y-ty,dz=c.z-D.cz,l=Math.hypot(dx,dy,dz);if(l<.15){const a=Math.random()*TAU;dx=Math.cos(a);dz=Math.sin(a);dy=.2;l=Math.hypot(dx,dy,dz);}
+      const dd=tor?0:.45+Math.random()*.45+Math.max(sz.x,sz.y,sz.z)*.15;
+      return {o,tor,c,p0:o.position.clone(),r0:o.rotation.clone(),s0:o.scale.clone(),off:new V3(dx/l*dd,dy/l*dd*.6,dz/l*dd),
+        w:new V3((Math.random()-.5)*.7,(Math.random()-.5)*.7,(Math.random()-.5)*.7),size:Math.max(sz.x,sz.y,sz.z),fall:0,rest:0,v:new V3(),spin:new V3()};});
+    const ord=D.parts.filter(q=>!q.tor).sort(()=>Math.random()-.5),gap=Math.min(.22,1.5/Math.max(1,ord.length));
+    ord.forEach((q,i)=>q.dropT=BD.drop0+i*gap);for(const q of D.parts)if(q.tor)q.dropT=BD.drop0+ord.length*gap+.3;
+    D.bm=new THREE.MeshBasicMaterial({color:0xfffaf0,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    D.beams=ord.slice().sort((a,b)=>b.size-a.size).slice(0,10).map(q=>{const b=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,1,6,1,true),D.bm);scene.add(b);return {b,q};});
+    if(D.loot&&!D.lootDone){D.lootDone=1;D.loot.forEach(([id,c],i)=>{const a=i/D.loot.length*TAU+Math.random()*.4,d=spawnDrop(id,c,D.cx,ty,D.cz);
+      d.hold=BD.loot-t+i*.12;d.hy=ty+.1+Math.random()*.5;d.vx=Math.cos(a)*.9;d.vz=Math.sin(a)*.9;d.vy=0;d.ph=Math.random()*TAU;beaconAdd(d,new THREE.Color(col).lerp(_whC,.35).getHex());});}   // v1.93 majakkasäde
+    burst(D.cx,ty,D.cz,0xffffff,30,8);shake(.55);}
+  if(t>=BD.brk+.45&&!D.ech&&D.parts){D.ech=1;creSnd(m,'death',{rev:2.6,v:.4,p:.9,pri:1.4,add:1,key:'kaiku'});}   // jälkikaiku
+  // valosäikeet vartalon ja irtoavien osien välissä
+  if(D.beams){const bo=sstep(BD.brk,BD.brk+.6,t)*out;D.bm.opacity=.7*bo*(.8+.2*Math.sin(t*11));
+    for(const B of D.beams){const q=B.q;B.b.visible=bo>.01&&!q.fall;if(!B.b.visible)continue;
+      _bv.set(q.c.x+q.o.position.x-q.p0.x,q.c.y+q.o.position.y-q.p0.y,q.c.z+q.o.position.z-q.p0.z).sub(_bv2.set(D.cx,D.cy,D.cz));
+      const L=_bv.length()||.01;B.b.position.set(D.cx+_bv.x/2,D.cy+_bv.y/2,D.cz+_bv.z/2);B.b.scale.set(1,L,1);B.b.quaternion.setFromUnitVectors(_bUp,_bv.multiplyScalar(1/L));}
+    if(t>BD.dim+BD.dimLen+.05){for(const B of D.beams){scene.remove(B.b);B.b.geometry.dispose();}D.beams=null;D.bm.dispose();D.bm=null;}}
+  // 5) osat: leijuvat irti → putoavat yksitellen → maatuvat
+  if(D.parts){const e=sstep(BD.brk,BD.brk+1.8,t);
+    for(const q of D.parts){const o=q.o;
+      if(!q.fall){o.position.copy(q.p0).addScaledVector(q.off,e);o.position.y+=Math.sin(t*1.6+q.p0.x)*.05*e;
+        o.rotation.set(q.r0.x+q.w.x*e,q.r0.y+q.w.y*e,q.r0.z+q.w.z*e);
+        if(t>=q.dropT){q.fall=1;q.v.set(q.off.x*.6,0,q.off.z*.6);q.spin.set((Math.random()-.5)*4,(Math.random()-.5)*3,(Math.random()-.5)*4);}}
+      else if(!q.rest){q.v.y-=15*dt;o.position.addScaledVector(q.v,dt);o.rotation.x+=q.spin.x*dt;o.rotation.y+=q.spin.y*dt;o.rotation.z+=q.spin.z*dt;
+        _bb.setFromObject(o);const gy=groundY(o.position.x,o.position.z,_bb.min.y+.5,m.dun);
+        if(_bb.min.y<=gy){o.position.y+=gy-_bb.min.y;
+          if(q.v.y<-3&&!q.bounced){q.bounced=1;q.v.y*=-.22;q.v.x*=.5;q.v.z*=.5;q.spin.multiplyScalar(.4);}
+          else{q.rest=1;q.landT=t;q.gy=gy;q.y0=o.position.y;_bb.setFromObject(o);q.lc=_bb.getCenter(new V3());D.landed++;if(!D.firstLand)D.firstLand=t;D.lastLand=t;bossMound(m,q);}
+          burst(o.position.x,gy+.15,o.position.z,D.ash?0x3a3633:0x6a5a44,q.tor?14:6,q.tor?4:2);if(q.tor){shake(.3);sfx('slam',.5,.5);}}}
+      else{const a=t-q.landT,k=sstep(1,8,a);o.scale.set(q.s0.x*(1+.15*k),q.s0.y*(1-.6*k),q.s0.z*(1+.15*k));o.position.y=q.y0-k*(.25+q.size*.3);}}
+    bossDecay(m,dt,t);}
+  // 6) loppuhäivytys ja siivous, kun kaikki osat ovat maatuneet
+  if(D.parts&&D.landed>=D.parts.length){const fe=1-sstep(D.lastLand+BD.decay-2,D.lastLand+BD.decay,t);
+    for(const mt of m.mats){if(!mt.transparent){mt.transparent=true;mt.needsUpdate=true;}mt.opacity=fe;}
+    if(t>=D.lastLand+BD.decay){bossDeathEnd(m);return true;}}
+  if(t>40){bossDeathEnd(m);return true;}   // varmistus: osa ei koskaan laskeutunut
+  return false;}
+// maatuminen: multakumpu (tai tuhkakasa) kasvaa osan alle, hehkuvat sienet nousevat, itiöitä leijuu; lopuksi häipyy
+function bossMound(m,q){const D=m.da;if(D.mounds.length>=8||q.size<.3)return;
+  if(!D.mm)D.mm={soil:new THREE.MeshStandardMaterial({color:D.ash?0x2a2725:0x3b2e22,roughness:1,transparent:true,opacity:1}),
+    stem:new THREE.MeshStandardMaterial({color:0xd8cfb8,roughness:.9,transparent:true,opacity:1}),
+    cap:new THREE.MeshBasicMaterial({color:bossCol(m),transparent:true,opacity:.95}),ember:new THREE.MeshBasicMaterial({color:0xff6a1a,transparent:true,opacity:.9})};
+  const M=D.mm,gr=new THREE.Group(),sz=Math.min(1.3,.35+q.size*.4);
+  const mound=new THREE.Mesh(new THREE.SphereGeometry(sz,12,6,0,TAU,0,Math.PI/2),M.soil);mound.scale.set(1,.01,1);gr.add(mound);
+  const sh=[];
+  if(!D.ash){const n=2+(Math.random()*2|0);for(let i=0;i<n;i++){const s=new THREE.Group(),h=.12+Math.random()*.22;
+      const st=new THREE.Mesh(new THREE.CylinderGeometry(.022,.032,h,6),M.stem);st.position.y=h/2;s.add(st);
+      const cp=new THREE.Mesh(new THREE.SphereGeometry(.06+Math.random()*.06,8,5,0,TAU,0,Math.PI/2),M.cap);cp.position.y=h;s.add(cp);
+      const a=Math.random()*TAU,d=sz*(.1+Math.random()*.5);s.position.set(Math.cos(a)*d,sz*.5*Math.sqrt(Math.max(0,1-(d/sz)**2)),Math.sin(a)*d);s.scale.setScalar(.001);s.userData.t0=3.5+Math.random()*2.5;gr.add(s);sh.push(s);}}
+  else for(let i=0;i<6;i++){const e=new THREE.Mesh(new THREE.SphereGeometry(.03+Math.random()*.03,5,4),M.ember);const a=Math.random()*TAU,d=Math.random()*sz*.7;e.position.set(Math.cos(a)*d,sz*.12+Math.random()*sz*.15,Math.sin(a)*d);gr.add(e);}
+  gr.position.set(q.lc.x,q.gy,q.lc.z);scene.add(gr);D.mounds.push({gr,mound,sh,q,sz});}
+function bossDecay(m,dt,t){const D=m.da;if(!D.mounds.length)return;
+  const fe=D.landed>=D.parts.length?1-sstep(D.lastLand+BD.decay-2,D.lastLand+BD.decay,t):1;
+  if(D.mm){D.mm.soil.opacity=fe;D.mm.stem.opacity=fe;D.mm.cap.opacity=.95*fe*(.75+.25*Math.sin(t*3));D.mm.ember.opacity=.9*fe*(.6+.4*Math.sin(t*9));}
+  for(const M of D.mounds){const a=t-M.q.landT;M.mound.scale.y=.55*sstep(0,3,a)*(.4+.6*fe);
+    for(const s of M.sh){const u=a-s.userData.t0;s.scale.setScalar(u<=0?.001:sstep(0,.45,u)*(1+.25*Math.sin(Math.min(1,u/.6)*Math.PI))*(.3+.7*fe));}
+    if(fe>.2&&Math.random()<dt*(D.ash?3:1.4)){const p=M.gr.position;if(D.ash)smokePuff(p.x+(Math.random()-.5)*M.sz,p.y+.3,p.z+(Math.random()-.5)*M.sz,.6+M.sz*.4,.25);
+      else burst(p.x+(Math.random()-.5)*M.sz,p.y+M.sz*.5,p.z+(Math.random()-.5)*M.sz,bossCol(m),1,.6);}}}   // itiöitä / savua
+function bossDeathEnd(m){const D=m.da;if(!D||!D.boss)return;
+  if(D.parts){for(const q of D.parts)scene.remove(q.o);D.parts=null;}
+  if(D.beams){for(const B of D.beams){scene.remove(B.b);B.b.geometry.dispose();}D.beams=null;}if(D.bm){D.bm.dispose();D.bm=null;}
+  if(D.glow){scene.remove(D.glow);D.glow.material.dispose();D.glow=null;}
+  for(const L of D.lights||[])dropLightSrc(L);D.lights=[];D.lightsOff=1;
+  for(const M of D.mounds){scene.remove(M.gr);M.gr.traverse(o=>{if(o.geometry)o.geometry.dispose();});}D.mounds=[];
+  if(D.mm){for(const k in D.mm)D.mm[k].dispose();D.mm=null;}
+  if(D.loot&&!D.lootDone){D.lootDone=1;for(const [id,c] of D.loot)beaconAdd(spawnDrop(id,c,P.pos.x,P.pos.y+1,P.pos.z),bossCol(m));}   // pomo poistui ennen repeämistä → saalis pelaajan luo
+  BOSS_GLOW=0;updateLights();}
 function mobDeathAnim(m,dt){const f=m.f,g=f.g,t=m.deadT;
+  if((m.def.ai==='boss'||m.def.ai==='rboss')&&!m.sunKill)return bossDeathAnim(m,dt);   // v1.89: pomoilla oma kuolema-animaatio
   if(!m.da){m.da={dir:Math.random()<.5?-1:1,ash:!!m.ashDeath,pool:false,y0:m.pos.y,legs:(f.legs||[]).map(()=>(Math.random()-.5)*.8)};if(m.da.ash)m.da.flames=ashFlames(m);}
   const D=m.da,big=m.def.r>1;
   if(D.ash)return ashAnim(m,dt);

@@ -253,6 +253,35 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   joka ruudussa ja lerp vetää takaisin → värinä. Mittaa: nivelkulmien suunnanvaihdot ruutujen välillä (> 0,003 rad).
 - **Korjaus:** vasen käsi ulospäin = +z, oikea = −z; seisoessa kädet hieman irti reisistä. Älä aseta käsien lepokohdetta vartalon sisään.
 
+## 34. ConvolverNode heittää virheen kaiun luonnissa (v1.86)
+- **Oire:** `NotSupportedError: The buffer sample rate of 22050 does not match the context rate of 44100 Hz` ensimmäisellä ulottuvuuden äänellä.
+- **Syy:** ConvolverNodeen asetettavan AudioBufferin näytetaajuuden pitää olla sama kuin AudioContextin.
+- **Korjaus:** `a.createBuffer(2, len, a.sampleRate)`. Älä yritä "halpaa" matalaa näytetaajuutta; pidä vastaus lyhyt (1,2 s) ja irrota kaiku kun ei käytössä.
+- Kaiku irrotetaan 3 s kuluttua – mutta EI niin kauan kuin jokin kaiullinen ääni (`v.sd`) vielä soi (muuten kuolema- ja jahtiäänet katkeavat kuivaksi).
+
+## 35. Muuttuja käytössä ennen määrittelyä samassa funktiossa (v1.89)
+- **Oire:** `ReferenceError: Cannot access 'addv' before initialization` heti kun uutta ääntä yritetään soittaa.
+- **Syy:** `const` lisättiin funktion keskelle, mutta sitä käytettiin jo ylempänä (TDZ).
+- **Korjaus:** uudet `const`-apumuuttujat funktion alkuun, ennen ensimmäistä käyttöä. Tarkista aina `node --check` JA kertaalleen ajamalla.
+- **Muista myös (KORJAUKSET 18):** rivin keskelle lisätty `//`-kommentti syö loppurivin – käytä `/* */`, kun rivi jatkuu.
+
+## 36. Pomo vilahti näkyviin ennen herätystä / kuolemavalo jäi näkymättä / ryntäys sivukenossa (v1.90)
+- **Vilahdus:** nukkuva pomo seisoi lattialla näkyvänä ja vajosi vasta herätyksen alussa. **Korjaus:** `bossHide` heti luonnissa (näkymätön,
+  maan alla, `m.sinking=1`, `m.riseY` = lattia); herätys alkaa vasta näköyhteydestä. Älä palauta `f.g.position.copy(m.pos)` nukkuvalle pomolle.
+- **Valo:** `updateLights` antaa vain `SET.lights` lähintä valoa; luolassa soihdut veivät paikat. **Korjaus:** `pri`-kenttä lajitellaan ensin.
+  Valon kirkkaus seuraa `s.i`:tä vain jos aloitusarvo > 0 (`userData.base`), siksi `i` alkaa 0,05:stä.
+- **Sivukeno:** `f.g.rotation.x` oletusjärjestyksellä XYZ kallistaa maailman X-akselin ympäri (näkyy sivukenona suunnasta riippuen).
+  **Korjaus:** `rotation.order='YXZ'` ennen kallistusta (kuten harppovilla hirviöillä animMobissa).
+- **Testin sudenkuoppa:** `page.evaluate` ja `tools/tarkistus.mjs`: nuolifunktion runko ilman aaltosulkeita ei saa päättyä `;` ennen `)` (SyntaxError).
+
+## 37. Pomomallit ja kuolema (v1.93)
+- Pomon mallin osat irtoavat kuollessa **`f.g`:n suorina lapsina**. Ultra-palat lisätään siksi suoraan `f.g`:hen; näkymättömät lapset poistetaan
+  ennen repeämistä (muuten niistä tulee näkymättömiä osia ja multakumpuja).
+- Älä käytä pomomallissa jaettuja materiaaleja (`MAT.glow` tms.): kuolema muuttaa MeshBasic-materiaalien läpinäkyvyyttä (`D.basic`) ja
+  MeshStandard-materiaalien väriä (`m.mats` kloonataan spawnMobissa). bossmodels.js luo materiaalit joka kutsulla (`bqMat`, `bqGlow`, `bqAdd`).
+- Saman nimisiä ylimmän tason funktioita ei saa olla kahdessa tiedostossa: myöhemmin ladattu korvaa aiemman hiljaa. Vanhat pomomallit poistettiin
+  mobs.js:stä, kun uudet tulivat bossmodels.js:ään.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

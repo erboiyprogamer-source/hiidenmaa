@@ -37,10 +37,11 @@ function updatePlayer(dt){
   // v1.37 (lista 3, kohta 33): DEV-lento. Kun "Lento" on päällä, tuplahyppy (2 painallusta 0,35 s sisällä) aloittaa tai lopettaa lennon.
   // Lennossa välilyönti nousee, Shift laskee, Ctrl nopeampi; ei painovoimaa eikä putoamisvahinkoa.
   {const jd=state==='play'&&kd('jump');if(jd&&!P.jumpHeld){if(devOn('fly')&&playTime-(P.jumpTap||-9)<.35){P.flying=!P.flying;P.vy=0;msg(P.flying?'Lento päällä (välilyönti ylös, Shift alas).':'Lento pois.');P.jumpTap=-9;}else P.jumpTap=playTime;}P.jumpHeld=jd;if(!devOn('fly'))P.flying=false;}
-  if(P.flying){const fs=keys.ControlLeft||keys.ControlRight?32:16;P.vel.x=lerp(P.vel.x,dx*fs,Math.min(1,dt*6));P.vel.z=lerp(P.vel.z,dz*fs,Math.min(1,dt*6));}
+  const vK=DEV&&keys.KeyV?6:1;   // v1.92: V pohjassa myös lento 6× nopeampi
+  if(P.flying){const fs=(keys.ControlLeft||keys.ControlRight?32:16)*vK;P.vel.x=lerp(P.vel.x,dx*fs,Math.min(1,dt*6));P.vel.z=lerp(P.vel.z,dz*fs,Math.min(1,dt*6));}
   if(state==='play'&&kd('jump')&&P.onGround&&!P.swim&&P.stam>=8&&!over&&!P.flying){P.vy=7.2;P.onGround=false;P.stam-=8*(P.upK||1);P.stamDelay=.8;}
   const lad=!P.swim&&!P.dead&&ladderAt(P.pos);P.onLadder=!!lad;
-  if(P.flying){P.vy=lerp(P.vy,(kd('jump')?9:0)-(keys.ShiftLeft||keys.ShiftRight?9:0),Math.min(1,dt*6));P.onGround=false;}
+  if(P.flying){P.vy=lerp(P.vy,((kd('jump')?9:0)-(keys.ShiftLeft||keys.ShiftRight?9:0))*vK,Math.min(1,dt*6));P.onGround=false;}
   else if(P.swim){P.vy=lerp(P.vy,(-1.25-P.pos.y)*3,dt*4);}
   else if(lad&&(kd('fwd')||kd('jump')||kd('back'))){P.vy=kd('back')&&!kd('fwd')&&!kd('jump')?-2.6:2.6;P.onGround=false;}
   else if(lad&&!P.onGround){P.vy=Math.max(P.vy,-1);}
@@ -49,10 +50,12 @@ function updatePlayer(dt){
   P.pos.x+=P.vel.x*dt;P.pos.z+=P.vel.z*dt;
   // v0.86 erillinen tönäisy (hirvi, karhu: def.kb): ei muuta tavallista liikefysiikkaa, vaimenee e^(−4,5 t) → matka ≈ kb / 4,5 m
   if(P.kbx||P.kbz){P.pos.x+=P.kbx*dt;P.pos.z+=P.kbz*dt;const kk=Math.exp(-dt*4.5);P.kbx*=kk;P.kbz*=kk;if(Math.abs(P.kbx)+Math.abs(P.kbz)<.05)P.kbx=P.kbz=0;}
-  collideXZ(P.pos,.38,1.8,feet);
+  // v1.92 DEV seinien läpi (noclip): ei törmäyksiä eikä kattoa; maa = maasto tai luolan lattia (esineiden päälle ei nousta)
+  const nc=devOn('noclip');
+  if(!nc)collideXZ(P.pos,.38,1.8,feet);
   P.pos.y+=P.vy*dt;
-  const ceil=ceilingAt(P.pos.x,P.pos.z,.38,feet+1.8);if(P.vy>0&&P.pos.y+1.8>ceil){P.pos.y=ceil-1.8;P.vy=0;}
-  const g=groundAt(P.pos.x,P.pos.z,.38,feet);
+  const ceil=nc?1e9:ceilingAt(P.pos.x,P.pos.z,.38,feet+1.8);if(P.vy>0&&P.pos.y+1.8>ceil){P.pos.y=ceil-1.8;P.vy=0;}
+  const g=nc?(P.inDun?DUN.y:terrainH(P.pos.x,P.pos.z)):groundAt(P.pos.x,P.pos.z,.38,feet);
   if(P.pos.y<=g+.02&&P.vy<=0){if(!P.onGround&&P.vy<-4)P.landT=.25;if(!P.onGround&&P.vy<-15&&!P.flying){const fd=(-P.vy-15)*6;P.hp-=fd;floatText('-'+Math.round(fd),P.pos.x,P.pos.y+2,P.pos.z,'#e0614f');if(P.hp<=0)playerDie();}P.pos.y=g;P.vy=0;P.onGround=true;}
   else if(P.pos.y>g+.3)P.onGround=false;
   if(P.pos.y<g&&P.vy<=0)P.pos.y=g;
@@ -272,15 +275,18 @@ const _ikV=new V3(),_ikS=new V3(),_ikH=new V3(),_ikT=new V3(),_poleR=new V3(-.7,
    (oikea käsi IK:lla). Ennen jänne ja oikea käsi menivät hahmon vasemmalle puolelle (jousen asento seurasi vasemman käden kiertoa).
    Pisteet hahmon suunnassa: F = eteen, Lv = vasemmalle (+x), y = posken korkeus. Jousen paikallinen +z = tähtäyssuunta (jänteeltä kahvaan). */
 const _bwN=new V3(),_bwG=new V3(),_bwH=new V3(),_bwX=new V3(),_bwY=new V3(),_bwZ=new V3(),_bwM=new THREE.Matrix4(),_bwQ=new THREE.Quaternion(),_bwP=new THREE.Quaternion(),_bwO=new V3();
-function bowAim(hm,k){const b=hm.userData.bow;fig.g.updateMatrixWorld(true);fig.head.getWorldPosition(_bwH);
-  const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),lx=Math.cos(P.yaw),lz=-Math.sin(P.yaw),o=fig.g.position,y=_bwH.y+.22,full=.12-(b.tipZ-(.1+.32));
+/* v1.88: yleistetty hahmolle F (pelaaja `fig` tai mobi `m.f`), katsesuunta yaw ja hahmon sijainti o – jousikalmo käyttää samaa asentoa kuin pelaaja. */
+function bowAimFig(F,hm,k,yaw,o){const b=hm.userData.bow;F.g.updateMatrixWorld(true);F.head.getWorldPosition(_bwH);
+  const fx=Math.sin(yaw),fz=Math.cos(yaw),lx=Math.cos(yaw),lz=-Math.sin(yaw),y=_bwH.y+.22,full=.12-(b.tipZ-(.1+.32));
   _bwN.set(o.x+fx*.04-lx*.2,y-.09,o.z+fz*.04-lz*.2);   // v1.37 (lista 3, kohta 15): jänne vedetään enemmän oikealle (posken oikealle puolelle, olan suuntaan)
   _bwG.set(_bwN.x+fx*full+lx*.08,y-.02,_bwN.z+fz*full+lz*.08);   // kahva keskellä edessä (n. 4 cm vasemmalla keskilinjasta)
-  armIK(fig.armL,fig.elbowL,_bwG,k,_poleBowL);fig.g.updateMatrixWorld(true);
+  armIK(F.armL,F.elbowL,_bwG,k,_poleBowL);F.g.updateMatrixWorld(true);
   _bwZ.subVectors(_bwG,_bwN).normalize();_bwY.set(0,1,0).addScaledVector(_bwZ,-_bwZ.y).normalize();_bwX.crossVectors(_bwY,_bwZ);_bwM.makeBasis(_bwX,_bwY,_bwZ);
   _bwQ.setFromRotationMatrix(_bwM);hm.parent.getWorldQuaternion(_bwP);_bwQ.premultiply(_bwP.invert());hm.quaternion.slerp(_bwQ,k);
   _bwO.set(0,0,.12).applyQuaternion(hm.quaternion).negate();hm.position.lerp(_bwO,k);hm.updateMatrixWorld(true);
-  _gp.set(0,0,b.ar.position.z+.02);hm.localToWorld(_gp);armIK(fig.armR,fig.elbowR,_gp,k,_poleBow);}
+  _gp.set(0,0,b.ar.position.z+.02);hm.localToWorld(_gp);armIK(F.armR,F.elbowR,_gp,k,_poleBow);}
+function bowAim(hm,k){bowAimFig(fig,hm,k,P.yaw,fig.g.position);}
+
 function lerpAngle(a,b,t){let d=((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;return a+d*t;}
 function playerDie(){if(state==='paused'||state==='intro'){P.hp=Math.max(P.hp,1);return;}
   if(devOn('god')){P.hp=Math.max(1,P.hp);return;}   // DEV: kuolemattomuus
