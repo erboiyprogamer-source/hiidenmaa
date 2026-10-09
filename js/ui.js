@@ -656,8 +656,8 @@ applyHudMode();
    d:n matkalla ≈ ½·g·(d/v)², kulma atan(pudotus/d) → pikseleinä kameran näkökentän mukaan. Lyhyemmät viivat kauemmas, numerot oikealla. */
 /* v2.03 KYYKKYTÄHTÄIN (täysi veto kyykyssä): lentorata projisoidaan ruudulle (bowTraj – katsekulma, painovoima, tuuli). Ohut viiva tähtäyspisteestä alas
    lentoradan merkkien kautta, merkit (leveys kapenee etäisyyden mukaan), pienet metrit sivussa (m vain viimeisessä) ja maahan osuma ▼. Z vaihtaa tyyliä:
-   Viivasto / Pisteet / Kevyt (localStorage hiidenmaa_aimst). Vilkkuminen: ks. aimBlinkOp (v2.04). */
-const AIM_ST=['Viivasto','Pisteet','Kevyt'];let aimSt=0;try{aimSt=(+localStorage.getItem('hiidenmaa_aimst')||0)%AIM_ST.length;}catch(e){}
+   Viivasto / Pisteet / Kevyt / Pois (localStorage hiidenmaa_aimst). Vilkkuminen: ks. aimBlinkOp (v2.04). */
+const AIM_ST=['Viivasto','Pisteet','Kevyt','Pois'];   /* v2.05: viimeinen = apuviivasto pois */let aimSt=0;try{aimSt=(+localStorage.getItem('hiidenmaa_aimst')||0)%AIM_ST.length;}catch(e){}
 function aimStyleNext(){aimSt=(aimSt+1)%AIM_ST.length;try{localStorage.setItem('hiidenmaa_aimst',aimSt);}catch(e){}dropT=0;sfx('pickup',1.6,.3);}
 let dropT=0;
 /* v2.04 VILKKUMINEN (oletus pois, X kytkee jousta jännittäessä; localStorage hiidenmaa_aimblink): täydellä vedolla piste ja apuviivat himmenevät
@@ -671,7 +671,7 @@ function updDropRet(dt){const el=$('#dropRet');if(!el)return;const on=P.drawing&
   const W=innerWidth,H=innerHeight,cx=W/2,cy=H/2,T=bowTraj(),pr=v=>{const q=v.clone().project(camera);return q.z>1?null:{x:(q.x+1)/2*W,y:(1-q.y)/2*H};};
   // v2.04: merkit suoraan tähtäyspisteen alla (x = keskikohta), korkeus todellisesta lentoradasta; viivasto symmetrinen
   const pts=[];let ly=-1e9;for(const m of T.marks){const s=pr(m.p);if(!s||s.y<cy+3||s.y>H)continue;if(s.y-ly<11)continue;ly=s.y;pts.push({d:m.d,x:cx,y:s.y});}
-  const ld0=T.land&&pr(T.land.p),ld=ld0&&{x:cx,y:ld0.y},st=AIM_ST[aimSt];let h='',f=n=>n.toFixed(1);
+  const ld0=T.land&&pr(T.land.p),ld=ld0&&{x:cx,y:ld0.y},st=AIM_ST[aimSt];if(st==='Pois'){if(el.innerHTML)el.innerHTML='';return;}let h='',f=n=>n.toFixed(1);
   if(st==='Viivasto'&&(pts.length||ld)){const y2=Math.max(pts.length?pts[pts.length-1].y:cy,ld&&ld.y<H?ld.y-6:0);const pl=`${cx},${cy+4} ${cx},${f(y2)}`;h+=`<polyline class="sh" points="${pl}"/><polyline points="${pl}"/>`;}
   pts.forEach((p,i)=>{const w=Math.max(8,30-p.d*.17),last=i===pts.length-1,lab=`<text x="${f(p.x+w/2+5)}" y="${f(p.y+3.5)}">${p.d}${last?' m':''}</text>`;
     if(st==='Pisteet')h+=`<circle class="sh" cx="${f(p.x)}" cy="${f(p.y)}" r="2.4"/><circle cx="${f(p.x)}" cy="${f(p.y)}" r="1.6"/>`+lab;

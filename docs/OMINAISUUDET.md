@@ -119,6 +119,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
+- **Tähtäin (v2.05):** Z vaihtaa Viivasto / Pisteet / Kevyt / Pois; vilkkuessa apuviivasto ja piste samaan tahtiin.
 - **Tähtäin (v2.04):** kyykkytähtäimen merkit suoraan pisteen alla; X kytkee täyden vedon vilkkumisen (oletus pois, 3 s välein, piste ja viivat yhtä aikaa); tuulen suunta ja nopeus näkyvät aina jousta jännittäessä ristikon yläpuolella. Linnakkeen muurin harjalla voi kävellä.
 - **Kyykkytähtäin (v2.03):** täydellä vedolla kyykyssä näkyy todellinen lentorata metrimerkkeineen ja osumakohta (huomioi katsekulman, painovoiman ja tuulen); Z vaihtaa tyyliä (Viivasto, Pisteet, Kevyt). Täydellä vedolla piste pienenee ja himmenee 2 s välein; ohjeet C- ja Z-näppäimille. Jousta jännitettävä vähintään 0,4 s.
 - **Valot (v2.03):** asetukset "Valojen näkyvyysetäisyys" (40 m … koko kartta) ja "Valon kantama" (17–32 m); High+/Ultra pitkät etäisyydet, Ultran varjot 220 m. Tulinuolen liekki hehkuu kauas.

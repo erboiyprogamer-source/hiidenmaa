@@ -299,6 +299,11 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Korjaus: ympyrä, jolla `c.ground=1`, on myös lattia (`groundAt`). Jos teet ympyrätörmäyksistä kävelypinnan (muuri, pylväs, kivi), aseta `ground=1`;
   puita ja muita korkeita ympyröitä ei saa merkitä (latvasta tulisi lattia).
 
+## 41. Apuviivasto ei vilkkunut pisteen kanssa (v2.05)
+- Syy: CSS-animaatio, jonka `animation-fill-mode` on `both`/`forwards`, pitää viimeisen ruudun arvon (opacity 1) ja ohittaa JS:n `el.style.opacity`n.
+- Korjaus: `#dropRet { animation: drIn .25s ease backwards }`. Älä käytä `both`/`forwards`-täyttötilaa elementeillä, joiden läpinäkyvyyttä tai muuta
+  animoitua ominaisuutta ohjataan JS:stä.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

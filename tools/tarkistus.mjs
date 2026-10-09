@@ -232,6 +232,9 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v2.05 apuviivasto vilkkuu pisteen tahdissa (ei CSS-täyttötilaa, joka ohittaa JS:n), Z:n viimeinen tila = apuviivasto pois',()=>{
+    const fm=getComputedStyle($('#dropRet')).animationFillMode;const ok1=fm!=='both'&&fm!=='forwards';const ok2=AIM_ST[AIM_ST.length-1]==='Pois'&&/st==='Pois'/.test(updDropRet.toString());
+    return ok1&&ok2||`virhe täyttötila ${fm} pois ${ok2}`;});
   t('v2.04 linnakkeen muurin harja on kävelypinta (ympyrä lattiana), tähtäimen merkit suoraan pisteen alla, tuulimittari aina jännittäessä, vilkkuminen X (oletus pois, synkronoitu)',()=>{
     const k=Object.keys(FORT)[0],L=LOC[k],y=terrainH(L.x,L.z),a=FORT[k].a0+1,x=L.x+Math.cos(a)*5.5,z=L.z+Math.sin(a)*5.5,g=groundAt(x,z,.38,y+3.6);
     const ok1=Math.abs(g-(y+3.57))<.02;const sv=[camYaw,camPitch,P.crouch,P.onGround,P.crouchK,P.pos.clone()];let ok2=false,ok3=false,ok4=false,ok5=false;
