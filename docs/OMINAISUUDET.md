@@ -240,7 +240,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Viholliset** (sammalhiisi, harmaasusi, kalmo, ylimys, kivivartija, routasusi): tarvitsevat näköyhteyden; huomaavat pelaajan aina 10 s
   vahingon jälkeen (myös jousella); kyykky puolittaa huomausetäisyyden, yö × 1,35. Ilman näköyhteyttä 3 s → luopuvat.
 - **Tulen pelko:** nuotio 7 m, seisova soihtu 5 m, käsisoihtu 6 m (ei luolastossa) – kaikki paitsi ylimys ja pomot.
-- **Piiritys:** seinän takana vihollinen hakee lähimmän oven/ikkunan ja hajottaa sen (2× vahinko).
+- **Piiritys:** (v2.08) talossa olevaa pelaajaa muistava vihollinen hajottaa oven, jos se on heikompi kuin lähin seinä, muuten lähimmän seinän (2× vahinko), ja tulee aukosta sisään.
 - **Terveyspalkit:** näkyvät lyödyllä tai lähellä katsottaessa; pääkallot kertovat vaikeuden; vaikeat (≥ 3 kalloa) näkyvät kaukaa ja
   parantuvat 30 s iskuttomuuden jälkeen.
 - **Spawneri (`spawner`):** 2,5 s välein 38–68 m päähän biomin taulukosta (`SPAWN`), katto 10 (yö 14); ei rakennusten, löytöpaikkojen
