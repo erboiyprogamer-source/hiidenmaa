@@ -3,7 +3,8 @@
 'use strict';
 if(DEV){const p=document.createElement('div');p.id='devP';p.className='panel';p.hidden=true;p.innerHTML='<button class="close" data-close="1" aria-label="Sulje">✕</button><h2>DEV-valikko</h2><div id="devBody"></div>';document.body.appendChild(p);p.querySelector('.close').addEventListener('click',()=>closePanels());}
 if(DEV){const p=document.createElement('div');p.id='devMP';p.className='panel';p.hidden=true;p.innerHTML='<button class="close" data-close="1" aria-label="Sulje">✕</button><h2>Olennot ja pomot (DEV)</h2><div id="devMBody"></div>';document.body.appendChild(p);p.querySelector('.close').addEventListener('click',()=>closePanels());}   // v1.91: Ö-valikko
-if(DEV){const d=document.createElement('div');d.textContent='DEV-tila · V = 10× nopeus · Ä = DEV-valikko · Ö = olennot ja pomot';d.style.cssText='position:fixed;left:50%;top:4px;transform:translateX(-50%);z-index:50;font:700 12px sans-serif;color:#ffd36a;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:3px;pointer-events:none';document.body.appendChild(d);}
+if(DEV){const p=document.createElement('div');p.id='devIP';p.className='panel';p.hidden=true;p.innerHTML='<button class="close" data-close="1" aria-label="Sulje">✕</button><h2>Esineet (DEV)</h2><div id="devIBody"></div>';document.body.appendChild(p);p.querySelector('.close').addEventListener('click',()=>closePanels());}   // v2.00: Å-valikko
+if(DEV){const d=document.createElement('div');d.textContent='DEV-tila · V = 10× nopeus · Ä = DEV-valikko · Ö = olennot ja pomot · Å = esineet';d.style.cssText='position:fixed;left:50%;top:4px;transform:translateX(-50%);z-index:50;font:700 12px sans-serif;color:#ffd36a;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:3px;pointer-events:none';document.body.appendChild(d);}
 
 /* ---------------- UI ---------------- */
 // Viestin näkyvyysaika riippuu pituudesta: 3 s + 70 ms / merkki, rajattuna 4–13 s.
@@ -47,7 +48,7 @@ function showAmmo(dur,small){const e=$('#ammoT');if(!e)return;const am=typeof am
 /* v1.77: pikapaikan valinnassa esineen nimi valitun ruudun yläpuolelle ~1 s + häivytys. Väri harvinaisuuden mukaan: arvoesine / harvinainen
    = kulta, valmistustaso ≥ 6 = sininen, taso ≥ 3 tai laatu ≥ 2 = vihreä, muut vaaleat. Yksi elementti → vaihdettaessa vanha nimi pois heti. */
 let hnSel=-1;
-function itemRarity(s){const id=s.id,r=RECIPE_BY[id],lv=r&&r.lvl||0;return isValuable(id)?'leg':lv>=6?'rare':(lv>=3||(s.q||1)>=2)?'unc':'com';}
+function itemRarity(s){const id=s.id,r=RECIPE_BY[id],lv=r&&r.lvl||0;return isValuable(id)?'leg':ITEMS[id].potion?'rare':lv>=6?'rare':(lv>=3||(s.q||1)>=2)?'unc':'com';}
 function showHotName(i){const e=$('#hotName'),s=inv[i],sl=document.querySelectorAll('#hotbar .slot')[i];if(!e)return;e.className='';if(!s||!sl)return;
   const r=sl.getBoundingClientRect();e.textContent=ITEMS[s.id].n+((s.q||1)>1?' ★'.repeat(s.q-1):'');e.style.left=(r.left+r.width/2)+'px';void e.offsetWidth;e.className='on r_'+itemRarity(s);}
 function updateHUD(dt){
@@ -101,8 +102,6 @@ function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=d
   <div class="devRow"><b>Kylläisyys <span id="devHuV">${Math.round(P.hunger)}</span></b>${sldHTML('devHu',0,100,1,Math.round(P.hunger))}</div>
   <div class="devRow"><b>Jumalvoimat</b><div class="devChk">${[['food','Ei nälkää'],['stam','Rajaton kestävyys'],['lvl','Korkein taso'],['weight','Ei painorajaa']].map(([k,n])=>`<label class="tglRow">${tglHTML('dv_'+k,!!DEVF[k],`data-dv="${k}"`)} ${n}</label>`).join('')}</div>
     <div class="devBtns"><button class="btn" data-dvall="1">Kaikki päälle</button><button class="btn" data-dvall="0">Kaikki pois</button></div></div>
-  <div class="devRow"><b>Hae esine (DEV)</b><div class="devGive"><input id="devQ" class="search" type="search" placeholder="Hae esinettä nimellä…" autocomplete="off" spellcheck="false" value="${esc(devQ)}">
-    <input id="devN" type="text" inputmode="numeric" maxlength="3" placeholder="1" value="${devN>1?devN:''}" title="Määrä (tyhjä = 1)"><button class="btn" id="devGo">Hae</button></div><div id="devList" class="devList"></div></div>
   <div class="devRow"><b>Kartta</b><div class="devBtns"><button class="btn" id="devMap">Paljasta kartta ja kohteet</button></div></div>`;
   B.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{weather.cur=b.dataset.w;weather.until=playTime+600;renderDev();});
   B.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{dayT=+b.dataset.t;renderDev();});
@@ -115,15 +114,25 @@ function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=d
   B.querySelectorAll('[data-big]').forEach(b=>b.onclick=()=>{const k=b.dataset.big;DEVF[k]=DEVF[k]?0:1;saveDevF();if(k==='fly'){P.flying=!!DEVF.fly;P.vy=0;}
     if(k==='noclip'&&!DEVF.noclip&&!P.flying)P.vy=0;msg(`DEV: ${b.querySelector('b').textContent} ${DEVF[k]?'päällä':'pois'}.`,'loot');invDirty=true;renderDev();});
   B.querySelectorAll('[data-heal]').forEach(b=>b.onclick=()=>{P.hp=maxHp();P.stam=100;P.hunger=100;P.burnT=0;P.dead=false;msg('DEV: terveys, kestävyys ja kylläisyys täynnä.','loot');renderDev();});
+  $('#devMap').onclick=()=>{devRevealMap();msg('Kartta ja kaikki kohteet paljastettu.','loot');};}
+let devQ='',devN=1;
+/* v2.00 DEV-valikko Å: esineet. Pikavalinnat (yksi painallus antaa ehdotetun määrän, "Anna kaikki" kaikki kerralla) + esinehaku määrällä. */
+const DEV_PICKS=[['hiidenmiekka',1],['hiidenpanssari',1],['rautakilpi',1],['hiidenjousi',1],['sulkanuolet',100],['tulinuolet',100],['pihka',100],
+  ['hiidenkivi',3],['jaaavain',1],['luuavain',1],['aarniavain',1],['kruunusirpale',3],['parannusjuoma',5],['elpymisjuoma',5],['sisujuoma',5]];
+function renderDevI(){const B=$('#devIBody');if(!B)return;
+  B.innerHTML=`<div class="devRow"><b>Pikavalinnat</b><div class="devList devPicks">${DEV_PICKS.map(([id,n])=>`<div class="devIt"><span class="ic" style="background-image:url(${icon(id)})"></span><span class="nm">${esc(ITEMS[id].n)} × ${n}</span><button class="btn" data-pick="${id}" data-n="${n}">Anna</button></div>`).join('')}</div>
+    <div class="devBtns"><button class="btn" id="devPickAll">Anna kaikki</button></div></div>
+  <div class="devRow"><b>Hae esine</b><div class="devGive"><input id="devQ" class="search" type="search" placeholder="Hae esinettä nimellä…" autocomplete="off" spellcheck="false" value="${esc(devQ)}">
+    <input id="devN" type="text" inputmode="numeric" maxlength="3" placeholder="1" value="${devN>1?devN:''}" title="Määrä (tyhjä = 1)"><button class="btn" id="devGo">Hae</button></div><div id="devList" class="devList"></div></div>`;
+  B.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>devGive(b.dataset.pick,+b.dataset.n));
+  $('#devPickAll').onclick=()=>{for(const [id,n] of DEV_PICKS)devGive(id,n,true);msg(`DEV: kaikki pikavalinnat annettu (${DEV_PICKS.length} esinettä).`,'loot');};
   // v1.05 DEV-esinehaku: hakusana + määrä hakunapin vieressä, osumalista "Anna"-napeilla (lähtee pois DEV-tilan mukana)
   const listGive=()=>{const q=fold($('#devQ').value.trim()),L=$('#devList');devQ=$('#devQ').value;devN=Math.max(1,Math.min(999,Math.round(+$('#devN').value||1)));
     const rank=id=>{const n=fold(ITEMS[id].n);return n===q||id===q?0:n.startsWith(q)||id.startsWith(q)?1:2;};
   const ids=Object.keys(ITEMS).filter(id=>!q||searchHit(ITEMS[id].n,q)||id.includes(q)).sort((a,b)=>(q?rank(a)-rank(b):0)||ITEMS[a].n.localeCompare(ITEMS[b].n,'fi')).slice(0,q?40:200);
     L.innerHTML=ids.map(id=>`<div class="devIt"><span class="ic" style="background-image:url(${icon(id)})"></span><span class="nm">${esc(ITEMS[id].n)}</span><button class="btn" data-give="${id}">Anna ${devN}</button></div>`).join('')||'<div class="note">Ei osumia.</div>';
     L.querySelectorAll('[data-give]').forEach(b=>b.onclick=()=>devGive(b.dataset.give));};
-  $('#devGo').onclick=listGive;$('#devQ').oninput=listGive;$('#devN').oninput=listGive;$('#devQ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();const f=$('#devList [data-give]');if(f)devGive(f.dataset.give);}};listGive();
-  $('#devMap').onclick=()=>{devRevealMap();msg('Kartta ja kaikki kohteet paljastettu.','loot');};}
-let devQ='',devN=1;
+  $('#devGo').onclick=listGive;$('#devQ').oninput=listGive;$('#devN').oninput=listGive;$('#devQ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();const f=$('#devList [data-give]');if(f)devGive(f.dataset.give);}};listGive();}
 /* v1.94 EEPPINEN POMOPALKKI (kaikki pomot, ainoa paikka joka ohjaa #bossbar-elementtiä): lähin herännyt pomo samassa ulottuvuudessa (< 70 m).
    Teema pomon mukaan (väri, riimu, alaotsikko, koriste palkin alla: kivisärö / jääpuikot / veripisarat / köynnös), vaihemerkit palkissa,
    viivepalkki (vaalea osa jää hetkeksi ja valuu alas osumien jälkeen), virtaava kuvio ja kiiltojuova. VAIHE VAIHTUU → palkki tärähtää ja
@@ -182,7 +191,7 @@ function devSpawnMob(type){const d=MOBDEF[type];if(!d)return;const fx=-Math.sin(
   else{if(P.inDun&&P.realm&&typeof realmize==='function')realmize(m,P.realm);if(d.ai==='hostile')m.state='chase';}
   sfx('build',.8,.5);msg(`DEV: ${d.n} 3 m eteen${d.ai==='boss'||d.ai==='rboss'?' (herää 8 s)':''}.`,'loot');}
 // DEV: antaa esinettä määrän verran (ei mahtuvat putoavat maahan); ilmoitus kertoo paljonko saatiin
-function devGive(id){const n=devN||1,left=invAdd(id,n);if(left>0)spawnDrop(id,left,P.pos.x,P.pos.y+1,P.pos.z);invDirty=true;updateGear();sfx('pickup');msg(`DEV: +${n} ${ITEMS[id].n}${left>0?` (${left} maahan, reppu täynnä)`:''}`,'loot');}
+function devGive(id,cnt,quiet){const n=cnt||devN||1,left=invAdd(id,n);if(left>0)spawnDrop(id,left,P.pos.x,P.pos.y+1,P.pos.z);invDirty=true;updateGear();if(quiet)return;sfx('pickup');msg(`DEV: +${n} ${ITEMS[id].n}${left>0?` (${left} maahan, reppu täynnä)`:''}`,'loot');}
 // DEV: poistaa karttapilvet kokonaan ja merkitsee kaikki nimetyt paikat (rauniot, portaalit, riimukivet…) löydetyiksi.
 function devRevealMap(){explored.fill(1);resetFog();for(const k in LOC){const L=LOC[k];if(k!=='spawn'&&L&&L.name)flags.disc[k]=1;}}
 // v0.82: alueet (biomit). Nykyinen alue P.zone tarkistetaan 0,4 s välein; ensimmäisellä kerralla "Uusi alue löydetty" (flags.bio).
@@ -220,13 +229,13 @@ function renderLog(){const fm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60))
 function fitInv(){const el=$('#inv');if(el)el.style.setProperty('--invK',Math.min(1,(innerWidth-16)/1131,(innerHeight-16)/732).toFixed(3));}
 addEventListener('resize',fitInv);
 // v1.40 (lista 4, kohta 28): näppäinopasteet – paneelin oikeaan yläkulmaan "Sulje: P / Tab", pelinäkymän vasempaan alakulmaan "Päävalikko: P".
-const PANEL_KEY={inv:['#inv','inv'],build:['#build','build'],chest:['#chest','interact'],prog:['#progP','prog'],log:['#logP','log'],map:['#mapP','map'],dev:['#devP',null],devm:['#devMP',null]};
+const PANEL_KEY={inv:['#inv','inv'],build:['#build','build'],chest:['#chest','interact'],prog:['#progP','prog'],log:['#logP','log'],map:['#mapP','map'],dev:['#devP',null],devm:['#devMP',null],devi:['#devIP',null]};
 function refreshKeyHints(){const on=SET.keyHints!==false;for(const k in PANEL_KEY){const [sel,a]=PANEL_KEY[k],el=$(sel);if(!el)continue;let h=el.querySelector(':scope>.pHint');
-    if(!h){h=document.createElement('span');h.className='pHint';el.appendChild(h);}h.hidden=!on;h.textContent=`Sulje: ${keyLabel(BIND.menu)}${a?' / '+keyLabel(BIND[a]):k==='dev'?' / Ä':k==='devm'?' / Ö':''}`;}
+    if(!h){h=document.createElement('span');h.className='pHint';el.appendChild(h);}h.hidden=!on;h.textContent=`Sulje: ${keyLabel(BIND.menu)}${a?' / '+keyLabel(BIND[a]):k==='dev'?' / Ä':k==='devm'?' / Ö':k==='devi'?' / Å':''}`;}
   let g=$('#gameHint');if(!g){g=document.createElement('div');g.id='gameHint';$('#hud').appendChild(g);}g.hidden=!on;g.textContent=`Päävalikko: ${keyLabel(BIND.menu)}`;}
 function togglePanel(name){if(openPanel===name){closePanels();return;}if(P.dead)return;panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';if(!locked)releaseLock();else{VC.x=innerWidth/2;VC.y=innerHeight/2;}mouseL=false;mouseR=false;P.drawing=false;
-  if(name==='inv'){$('#inv').hidden=false;fitInv();{const cs=$('#craftSearch');if(cs)cs.value='';}renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;{const bs=$('#buildSearch');if(bs)bs.value='';}renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){devQ='';devN=1;$('#devP').hidden=false;renderDev();}if(name==='devm'&&$('#devMP')){$('#devMP').hidden=false;renderDevM();}refreshKeyHints();vcSync();}
-function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP','#devMP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;selHalf=false;selEq=null;slotDrag=null;hoverSlot=null;if(typeof updGhost==='function')updGhost();if(!keep){state='play';if(!skipLock&&!locked)requestLock();}vcSync();}
+  if(name==='inv'){$('#inv').hidden=false;fitInv();{const cs=$('#craftSearch');if(cs)cs.value='';}renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;{const bs=$('#buildSearch');if(bs)bs.value='';}renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){$('#devP').hidden=false;renderDev();}if(name==='devi'&&$('#devIP')){devQ='';devN=1;$('#devIP').hidden=false;renderDevI();}if(name==='devm'&&$('#devMP')){$('#devMP').hidden=false;renderDevM();}refreshKeyHints();vcSync();}
+function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP','#devMP','#devIP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;selHalf=false;selEq=null;slotDrag=null;hoverSlot=null;if(typeof updGhost==='function')updGhost();if(!keep){state='play';if(!skipLock&&!locked)requestLock();}vcSync();}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
 function nearStations(){const s={};for(const p of pieces){const k=isFirePiece(p.t)?'nuotio':p.t;if(['tyopenkki','nuotio','ahjo'].includes(k)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(k==='nuotio'?4:8)**2&&!P.inDun){if(k==='nuotio'&&p.data.fuel<=0)continue;s[k]=1;}}return s;}
 let fxAt=0;
@@ -405,7 +414,9 @@ function openChest(p){togglePanel('chest');curChest=p;renderChest();}
 // ja tallentuu flags.fc[avain] (myös pelaajan sinne jättämät esineet). Jos paikka on avattu vanhassa tallennuksessa (saalis jo annettu), se on tyhjä.
 function foundItems(key,loot,slots=8){const fc=fo('fc');if(!fc[key]){const it=[];for(const [id,n,q] of loot||[])if(ITEMS[id])it.push({id,n,q:q||1});while(it.length<slots)it.push(null);fc[key]=it;}return fc[key];}
 // v1.34: ensimmäisellä avauksella maailman saalissuunnitelma (wlLoot) ja Aarnihaudan sirpalearkut (flags.sirpC).
-function openFound(key,title,loot){if(loot&&!fo('fc')[key]){loot=wlLoot(key,loot).slice();const m=/^portal3:(\d+)$/.exec(key);if(m&&(flags.sirpC||[]).includes(+m[1]))loot.unshift(['kruunusirpale',1]);}
+const POTIONS=['parannusjuoma','elpymisjuoma','sisujuoma'];   // v2.00: arkkuun (ei tynnyri/säkki) 10 % / juoma ensimmäisellä avauksella
+function openFound(key,title,loot){if(loot&&!fo('fc')[key]){loot=wlLoot(key,loot).slice();const m=/^portal3:(\d+)$/.exec(key);if(m&&(flags.sirpC||[]).includes(+m[1]))loot.unshift(['kruunusirpale',1]);
+    if(title!=='Tynnyri'&&title!=='Hylätty säkki')for(const id of POTIONS)if(Math.random()<.1&&loot.length<8)loot.push([id,1]);}
   const items=foundItems(key,loot);if(openPanel)closePanels(true);togglePanel('chest');curChest={found:true,title,data:{items}};sfx('pickup');renderChest();}
 const foundEmpty=key=>{const it=fo('fc')[key];return !!it&&!it.some(Boolean);};
 function renderChest(){if(!curChest)return;const items=curChest.data.items;$('#chestTitle').textContent=curChest.found?curChest.title:PIECES[curChest.t].n+(curChest.data.lv?` (taso ${curChest.data.lv+1})`:'');

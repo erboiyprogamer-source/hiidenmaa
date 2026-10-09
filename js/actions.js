@@ -189,11 +189,19 @@ P.vel=new V3();
 // Ähky tulee vain, jos kylläisyys on jo täynnä (≥99) ja syö silti; palkin täyttyminen syödessä ei aiheuta sitä. Kesto 52 s (−30 %).
 function eat(s){const f=ITEMS[s.id].food;
   if(P.hunger>=99&&!f.raw&&!f.buff){P.buffs.vatsakipu=52;msg('Söit vaikka olit jo täynnä – vatsaa kivistää.','warn');}
-  P.hunger=Math.min(100,P.hunger+f.h);if(f.hp)P.heal+=f.hp;if(f.st)P.stam=Math.min(maxStam(),P.stam+f.st);
+  P.hunger=Math.min(100,P.hunger+f.h);if(P.hunger>=99.5){P.hunger=100;P.buffs.taysi=60;}   /* v2.00: täyteen syöty = 100, ja ensimmäinen pudotus vasta 60 s:n kuluttua */
+  if(f.hp)P.heal+=f.hp;if(f.st)P.stam=Math.min(maxStam(),P.stam+f.st);
   if(f.raw&&Math.random()<.45){P.buffs.pahoinvointi=40;msg('Raaka liha kääntää vatsaa.','warn');}
   if(f.buff)P.buffs[f.buff]=300;if(!f.raw)flags.ate=1;
   s.n--;if(s.n<=0)inv[inv.indexOf(s)]=null;invDirty=true;sfx('eat');msg(`Söit: ${ITEMS[s.id].n}`);
 }
+// v2.00 juomat: parannus = terveys heti täyteen; elpyminen = +1 terveys/s 60 s; sisu = kylläisyys täynnä 5 min (+ 60 s ennen pudotusta) ja kestävyys täynnä 30 s.
+function drink(s){const d=ITEMS[s.id],p=d.potion;
+  if(p.full){P.hp=maxHp();floatText('Terveys täynnä!',P.pos.x,P.pos.y+2.2,P.pos.z,'#ff6a6a');}
+  if(p.regen)P.buffs.elpyminen=p.regen;
+  if(p.sisu){P.buffs.kylla=300;P.buffs.sisu=30;P.hunger=100;P.stam=maxStam();}
+  burst(P.pos.x,P.pos.y+1.2,P.pos.z,new THREE.Color(d.c).getHex(),10,2);
+  s.n--;if(s.n<=0)inv[inv.indexOf(s)]=null;invDirty=true;sfx('eat',1.5,.8);msg(`Joit: ${d.n}`,'loot');}
 // v1.20 (lista 2, kohta 12): perusterveys kasvaa tasoilla 2–5: 60 / 70 / 80 / 90 / 100 (+ saavutukset ja voima päälle)
 function lvlHp(){return Math.min(4,Math.max(0,lvlInfo().L-1))*10;}
 function maxHp(){return 60+lvlHp()+(P.buffs.voima?15:0)+BON.hp;}

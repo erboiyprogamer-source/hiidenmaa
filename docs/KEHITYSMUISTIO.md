@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.99)
+## Nykytila (päivitetty v2.00)
 
-- **Versio 1.99**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 2.00**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,19 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.00 (juomat, kylläisyys 100, DEV Å -esinevalikko)
+- **Juomat** (items.js, `potion`): Parannusjuoma (punainen, terveys heti täyteen), Elpymisjuoma (vihreä, +1 terveys/s 60 s, tila `elpyminen`),
+  Sisujuoma (sininen, kylläisyys täynnä 5 min `kylla` + kestävyys täynnä 30 s `sisu`). Juodaan pikapaikasta (`useSlot` → `drink`, actions.js), pino 5,
+  paino 0,4, harvinaisuus "rare". Kuvake: lasipullo, neste, korkki. Maassa oikea 3D-pullo (`potionMesh`, state.js; nesteessä hehku, koko ×1,7).
+  **Saatavuus:** vain arkuista – ensimmäisellä avauksella jokaisella juomalla 10 % mahdollisuus (`POTIONS`, `openFound`, ui.js); ei tynnyreissä eikä
+  säkeissä (testattu 3000 arkkua: ~9,5 % / juoma, tynnyrit 0).
+- **Kylläisyys 100:** aiemmin mittari kului heti syömisen jälkeen (99,97 → näytti 99). Nyt täyteen syöty = tasan 100 ja `P.buffs.taysi` 60 s: kylläisyys ei
+  kulu minuuttiin, sitten normaalisti. Sisujuoman aikana sama.
+- **DEV Å** (`renderDevI`, `#devIP`, näppäin `BracketLeft`/å): oma esinesivu. Pikavalinnat `DEV_PICKS` (Hiidenmiekka, Hiidenpanssari, Rautakilpi, Hiidenjousi,
+  sulitetut ja tulinuolet 100, pihka 100, hiidenkivet 3, kaikki avaimet + kruunusirpaleet 3, juomat 5) "Anna"-napein + "Anna kaikki", alla esinehaku
+  määrällä. Esinehaku poistettiin Ä-valikosta.
+- Tarkistukseen 3 riviä.
 
 ### v1.99 (pomot murskaavat rakennelmat, ulottuvuuksissa vain työpenkki)
 - **`bossTrample(m,dt)`** (ai.js, kaikille `boss`/`rboss`, 0,2 s välein; ei tiloissa sleep/rise/sink eikä vajotessa tai kuolleena): rakennusosa, jonka törmäyslaatikko

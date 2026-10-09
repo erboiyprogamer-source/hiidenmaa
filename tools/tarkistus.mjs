@@ -232,6 +232,22 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v2.00 juomat: 3 kpl (kuvake, 3D-pullo), parannus täyteen, elpyminen 1 hp/s 60 s, sisu: kylläisyys 5 min + kestävyys 30 s; arkuissa 10 %/juoma, ei tynnyreissä',()=>{
+    const sv=[P.hp,P.hunger,P.stam,JSON.stringify(P.buffs)];let res;
+    try{const ok0=POTIONS.every(id=>ITEMS[id]&&ITEMS[id].potion&&icon(id)&&dropMesh(id).userData.potion);
+      const s1={id:'parannusjuoma',n:2,q:1};inv.push(s1);P.hp=5;drink(s1);const a=P.hp===maxHp()&&s1.n===1;
+      const s2={id:'elpymisjuoma',n:1,q:1};inv.push(s2);drink(s2);const b=P.buffs.elpyminen===60;
+      const s3={id:'sisujuoma',n:1,q:1};inv.push(s3);P.hunger=10;P.stam=0;drink(s3);const c=P.buffs.kylla===300&&P.buffs.sisu===30&&P.hunger===100&&P.stam===maxStam();
+      inv.length=32;const fc=fo('fc');let pc=0,bc=0;for(let i=0;i<600;i++){openFound('tt:'+i,'Arkku',[['kivi',1]]);pc+=fc['tt:'+i].filter(x=>x&&POTIONS.includes(x.id)).length;delete fc['tt:'+i];
+        openFound('tb:'+i,'Tynnyri',[['kivi',1]]);bc+=fc['tb:'+i].filter(x=>x&&POTIONS.includes(x.id)).length;delete fc['tb:'+i];}closePanels();
+      const d=pc>90&&pc<270&&bc===0;res=ok0&&a&&b&&c&&d||`virhe ${ok0}${a}${b}${c}${d}(${pc}/${bc})`;}
+    finally{[P.hp,P.hunger,P.stam]=sv;P.buffs=JSON.parse(sv[3]);invDirty=true;}
+    return res;});
+  t('v2.00 kylläisyys: täyteen syöty = 100 ja ensimmäinen pudotus vasta 60 s:n jälkeen',()=>{const sv=[P.hunger,JSON.stringify(P.buffs)];let res;
+    try{delete P.buffs.taysi;delete P.buffs.kylla;P.hunger=95;const s={id:'paisti',n:1,q:1};inv.push(s);eat(s);inv.length=32;const a=P.hunger===100&&P.buffs.taysi===60;
+      res=a&&/!P\.buffs\.taysi/.test(survival.toString())||`virhe ${a}`;}
+    finally{P.hunger=sv[0];P.buffs=JSON.parse(sv[1]);}return res;});
+  t('v2.00 DEV Å: esinevalikko (pikavalinnat + haku), Ä:sta haku pois',()=>typeof renderDevI==='function'&&DEV_PICKS.length>=15&&DEV_PICKS.some(([i,n])=>i==='pihka'&&n===100)&&PANEL_KEY.devi&&!/devQ/.test(renderDev.toString())||'puuttuu');
   t('v1.99 pomo murskaa alleen jäävät rakennelmat ja puut (ei arkkuja, ei nukkuessa)',()=>{const bx=P.pos.x+25,bz=P.pos.z+25,mk=(t,dx,dz)=>addPiece(t,bx+dx,terrainH(bx+dx,bz+dz)+.02,bz+dz,0);
     const w=mk('seina',0,0),s=mk('sanky',0,2),ch=mk('arkku',-1.5,1),far=mk('seina',20,0);const m=spawnMob('vartija',bx,bz);m.state='rise';m.devSpawn=1;const om=msg;msg=()=>{};let res;
     try{bossTrample(m,.3);const keep=pieces.includes(w);m.state='chase';m.sinking=0;for(let i=0;i<5;i++)bossTrample(m,.21);

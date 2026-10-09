@@ -179,6 +179,9 @@ function effects(){const e=[],wt=invWeight(),b=P.buffs,add=(key,name,kind,desc,t
   if(b.vatsakipu)add('vatsakipu','Vatsakipu','bad','Liiasta syömisestä: kävely −10 %, kestävyys palautuu 30 % hitaammin ja kramppi vie välillä kestävyyttä.',b.vatsakipu);
   if(!devOn('weight')&&wt>MAXW)add('kuorma','Ylikuormitus','bad','Kävely −45 %, et voi juosta etkä hypätä. Pudota tavaroita tai päivitä reppu.');
   if(b.levannyt)add('levannyt','Levännyt','good','Kestävyys palautuu 45 % nopeammin ja terveys palautuu nopeammin.',b.levannyt);
+  if(b.elpyminen)add('elpyminen','Elpyminen','good','Elpymisjuoma: terveys palautuu 1 sekunnissa.',b.elpyminen);
+  if(b.kylla)add('kylla','Kylläinen','good','Sisujuoma: kylläisyys pysyy täynnä.',b.kylla);
+  if(b.sisu)add('sisu','Sisu','good','Sisujuoma: kestävyys pysyy täynnä.',b.sisu);
   if(b.voima)add('voima','Voimistunut','good','Isku +15 %, enimmäisterveys +15, enimmäiskestävyys +25.',b.voima);
   if(fireCache)add('lampo','Lämmin','good','Tulen lähellä et kylmety ja kuivut nopeasti.');
   if(shelterCache&&!P.inDun)add('suoja','Suojassa','neu','Katon alla sade ja lumi eivät kastele.');
@@ -206,7 +209,9 @@ function survival(dt){
   for(const k in P.buffs){P.buffs[k]-=dt;if(P.buffs[k]<=0)delete P.buffs[k];}
   calcFx();
   P.crampT-=dt;if(P.buffs.vatsakipu&&P.crampT<=0){P.crampT=8+Math.random()*6;P.stam=Math.max(0,P.stam-12);P.stamDelay=Math.max(P.stamDelay,1);floatText('Auts!',P.pos.x,P.pos.y+2,P.pos.z,'#c9a66b');}
-  P.hunger=Math.max(0,P.hunger-dt*(100/1000)*(cold?1.3:1)*(P.atk||kd('run')?1.15:1));if(devOn('food'))P.hunger=100;   // DEV: ei nälkää
+  if(P.buffs.kylla){P.hunger=100;P.buffs.taysi=60;}   // v2.00 sisujuoma: kylläisyys täynnä 5 min
+  if(!P.buffs.taysi)P.hunger=Math.max(0,P.hunger-dt*(100/1000)*(cold?1.3:1)*(P.atk||kd('run')?1.15:1));if(devOn('food'))P.hunger=100;   // DEV: ei nälkää; v2.00: täyteen syötyä 60 s ei kulu
+  if(P.buffs.elpyminen)P.hp=Math.min(maxHp(),P.hp+dt);   // v2.00 elpymisjuoma: +1 terveys / s
   // regen
   let reg=P.hunger>35?.35:P.hunger>0?.15:0;if(P.buffs.levannyt)reg+=.6;reg*=P.fx.hpRegen;
   if(P.heal>0){const h=Math.min(P.heal,3*dt);P.heal-=h;P.hp+=h;}

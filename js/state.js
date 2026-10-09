@@ -94,7 +94,7 @@ function toggleEquip(s){const cat=ITEMS[s.id].cat;if(!cat)return;
   if(equipGroup(cat)==='offhand'&&s.eq){const w=equipped('weapon');if(w&&ITEMS[w.id].cat==='bow')w.eq=false;}
   invDirty=true;updateGear();if(cat!=='hammer'||!s.eq)setBuildSel(null);sfx('pickup');}
 // v1.32 (lista 3, kohdat 3 ja 29): pikapaikan numero syö ruoan (ainoa tapa syödä), ottaa nuolet käyttöön (pysyvät valittuina) tai varustaa.
-function useSlot(i){const s=inv[i];if(!s)return;const d=ITEMS[s.id];if(d.food)eat(s);else if(AMMO.includes(s.id)){if(flags.ammo!==s.id){flags.ammo=s.id;msg(`Ammus: ${d.n}`);sfx('pickup',1.2,.4);}invDirty=true;}else if(d.cat)toggleEquip(s);}
+function useSlot(i){const s=inv[i];if(!s)return;const d=ITEMS[s.id];if(d.food)eat(s);else if(d.potion)drink(s);else if(AMMO.includes(s.id)){if(flags.ammo!==s.id){flags.ammo=s.id;msg(`Ammus: ${d.n}`);sfx('pickup',1.2,.4);}invDirty=true;}else if(d.cat)toggleEquip(s);}
 function giveOrDrop(id,n,x,y,z,q=1){const left=invAdd(id,n,q);if(left>0){spawnDrop(id,left,x,y,z,q);msg('Reppu on täynnä.','warn');}if(n-left>0){msg(`+${n-left} ${ITEMS[id].n}`,'loot');}}
 let invDirty=true;
 
@@ -107,7 +107,14 @@ const VALUABLE=['jaaavain','luuavain','aarniavain','sydan','kruunusirpale','hiid
 const isValuable=id=>VALUABLE.includes(id)||!!(ITEMS[id]&&ITEMS[id].rare);
 const VAL_LOST=120,VAL_FAR=10;
 const _icoMat={},_icoGeo=new THREE.PlaneGeometry(.5,.5);
-function dropMesh(id){if(!(typeof SET!=='undefined'&&SET.drop3d!==false)||typeof THREE.CanvasTexture!=='function'){const me=new THREE.Mesh(dropGeo,mat(new THREE.Color(ITEMS[id].c).getHex()));me.castShadow=true;return me;}
+/* v2.00: juomapullo maassa oikeana 3D-mallina (lasi, värillinen neste joka hehkuu hieman, kaula, korkki) – myös ilman 3D-kuvakkeita. */
+function potionMesh(id){const c=new THREE.Color(ITEMS[id].c),g=new THREE.Group();
+  const glass=new THREE.Mesh(new THREE.SphereGeometry(.13,16,12),new THREE.MeshStandardMaterial({color:0xd8eef2,transparent:true,opacity:.35,roughness:.1,metalness:.1,depthWrite:false}));
+  const liq=new THREE.Mesh(new THREE.SphereGeometry(.112,16,12,0,TAU,Math.PI*.32,Math.PI*.68),new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:.35,roughness:.3}));
+  const neck=new THREE.Mesh(new THREE.CylinderGeometry(.04,.05,.11,12),new THREE.MeshStandardMaterial({color:0xd8eef2,transparent:true,opacity:.45,roughness:.1,depthWrite:false}));neck.position.y=.16;
+  const cork=new THREE.Mesh(new THREE.CylinderGeometry(.038,.034,.05,10),new THREE.MeshStandardMaterial({color:0x8a5a32,roughness:.9}));cork.position.y=.235;
+  liq.castShadow=cork.castShadow=true;g.add(liq,glass,neck,cork);g.scale.setScalar(1.7);g.userData.potion=1;return g;}
+function dropMesh(id){if(ITEMS[id]&&ITEMS[id].potion)return potionMesh(id);if(!(typeof SET!=='undefined'&&SET.drop3d!==false)||typeof THREE.CanvasTexture!=='function'){const me=new THREE.Mesh(dropGeo,mat(new THREE.Color(ITEMS[id].c).getHex()));me.castShadow=true;return me;}
   icon(id);let M=_icoMat[id];if(!M){const tx=new THREE.CanvasTexture(ICONC[id]);tx.anisotropy=2;
     M=_icoMat[id]=[new THREE.MeshStandardMaterial({map:tx,alphaTest:.45,side:THREE.DoubleSide,roughness:.7}),new THREE.MeshStandardMaterial({map:tx,alphaTest:.45,side:THREE.DoubleSide,color:0x5a5248,roughness:.9})];}
   const g=new THREE.Group();for(let k=-3;k<=3;k++){const pl=new THREE.Mesh(_icoGeo,Math.abs(k)===3?M[0]:M[1]);pl.position.z=k*.011;g.add(pl);}

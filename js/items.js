@@ -26,6 +26,10 @@ const ITEMS={
   marjat:{n:'Puolukat',w:.2,s:50,c:'#c82a3c',food:{h:8,st:20},d:'Hapanta virkistystä.'},
   sieni:{n:'Herkkutatti',w:.3,s:30,c:'#c8a26b',food:{h:10,hp:6},d:'Metsän pohjalta.'},
   varras:{n:'Metsästäjän varras',w:1,s:10,c:'#b06c3a',food:{h:45,hp:35,buff:'voima'},d:'Lihaa, sieniä ja marjoja. Antaa voimaa viideksi minuutiksi.'},
+  /* v2.00 juomat: löytyvät vain arkuista (10 % / juoma / arkku ensimmäisellä avauksella). Juodaan pikapaikasta kuten ruoka (drink, actions.js). */
+  parannusjuoma:{n:'Parannusjuoma',w:.4,s:5,c:'#d8323c',potion:{full:1},d:'Punainen juoma. Palauttaa terveyden heti täyteen.'},
+  elpymisjuoma:{n:'Elpymisjuoma',w:.4,s:5,c:'#3fbf5a',potion:{regen:60},d:'Vihreä juoma. Palauttaa 1 terveyttä sekunnissa minuutin ajan.'},
+  sisujuoma:{n:'Sisujuoma',w:.4,s:5,c:'#3f7fe0',potion:{sisu:1},d:'Sininen juoma. Kylläisyys pysyy täynnä 5 minuuttia ja kestävyys 30 sekuntia.'},
   sienipaisti:{n:'Paistettu sieni',w:.3,s:30,c:'#9b6a3a',food:{h:18,hp:10},d:'Nuotiolla kypsennetty herkkutatti.'},
   hiili:{n:'Puuhiili',w:.5,s:50,c:'#2a2623',fuel:10,d:'Palaa kymmenen kertaa pidempään kuin puu. Nuotioon, sulatusuuniin ja seisoviin soihtuihin. Syntyy ylipaistetusta ruoasta tai nuotiolla puusta.'},
   nuolet:{n:'Piikivinuolet',w:.1,s:100,c:'#6d6a60',d:'Ammuksia jouselle.'},
@@ -125,6 +129,10 @@ function icon(id){
     case 'hiidenkivi':poly([[24,6],[34,20],[30,40],[18,40],[14,20]],'#7fd6cc','#2f8f86');poly([[24,10],[28,20],[24,34],[20,20]],'#c9fff8');break;
     case 'jaaavain':case 'aarniavain':case 'luuavain':{const c1=id==='jaaavain'?'#9fd8ff':id==='luuavain'?'#e6e0cf':'#7aff9a',c2=id==='jaaavain'?'#3d7fa8':id==='luuavain'?'#8a8070':'#2f8f4a';circ(15,15,9,c1,c2);circ(15,15,4,'#13110e');line(21,21,40,40,5,c1);line(33,33,38,28,4,c1);line(38,38,42,34,4,c1);line(21,21,40,40,1.5,c2);break;}
     case 'kruunusirpale':poly([[10,30],[16,14],[22,26],[28,8],[34,24],[40,16],[38,36],[12,38]],'#9aff7a','#2f6a2a');poly([[16,18],[22,28],[28,12],[30,26]],'#e8ffd8');circ(24,33,3,'#ffe27a');break;
+    case 'parannusjuoma':case 'elpymisjuoma':case 'sisujuoma':{const lc=d.c,dk=id==='parannusjuoma'?'#6a1018':id==='elpymisjuoma'?'#145a24':'#14306a';   // v2.00 pullo: lasi, neste, korkki, heijastus
+      circ(24,30,12,'rgba(210,235,240,.55)','#3a4a50');g.save();g.beginPath();g.arc(24,30,10.5,0,TAU);g.clip();g.fillStyle=lc;g.fillRect(10,25,28,18);g.fillStyle=dk;g.fillRect(10,38,28,6);g.fillStyle='rgba(255,255,255,.35)';g.fillRect(10,25,28,2);g.restore();
+      g.fillStyle='rgba(210,235,240,.6)';g.fillRect(20,11,8,10);g.strokeStyle='#3a4a50';g.lineWidth=1.5;g.strokeRect(20,11,8,10);g.fillStyle='#8a5a32';g.fillRect(19,6,10,6);g.strokeStyle='#4a2e18';g.strokeRect(19,6,10,6);
+      line(17,24,15,32,2.5,'rgba(255,255,255,.75)');circ(30,33,1.6,'rgba(255,255,255,.6)');break;}
     case 'sydan':circ(18,20,9,'#5fe6d9');circ(30,20,9,'#5fe6d9');poly([[10,24],[38,24],[24,40]],'#5fe6d9');circ(20,18,3,'#d8fffb');break;
     case 'liha':case 'paisti':circ(28,22,12,d.c,'#4a2216');line(18,32,9,41,5,'#e7e1cf');circ(8,42,3.5,'#e7e1cf');if(id==='paisti')line(22,18,34,24,2,'#c47a4a');break;
     case 'marjat':[[18,20],[28,18],[22,29],[32,28],[15,31]].forEach(p=>circ(p[0],p[1],6,'#c82a3c','#6a1220'));line(22,8,24,16,2,'#5a7a2a');break;

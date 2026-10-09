@@ -51,7 +51,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 - **Nälkä:** 100 → 0 noin 1000 s:ssa; kylmässä × 1,3, iskiessä/juostessa × 1,15. Terveys palautuu 0,35/s (nälkä > 35), 0,15/s (> 0),
   levänneenä + 0,6/s.
-- **Syöminen:** ruoka lisää kylläisyyttä ja terveyttä (`heal` 3/s). **Ähky (vatsakipu) vain, jos kylläisyys on jo ≥ 99 ja syö silti**
+- **Syöminen:** ruoka lisää kylläisyyttä ja terveyttä (`heal` 3/s). **Ähky (vatsakipu) vain, jos kylläisyys on jo ≥ 99 ja syö silti** (v2.00: täyteen syöty = 100, laskee vasta 60 s:n jälkeen)
   (52 s: kävely −10 %, kestävyys hitaammin, kramppi vie 12 kestävyyttä 8–14 s välein). Raaka liha: 45 % pahoinvointi (40 s).
 - **Tilat** (repun Tilat-osio, hiirellä lisätiedot ja ajastin): märkä (60 s, kuivuu 5× nopeammin tulella), kylmä (−7 % nopeus, −10 % isku,
   −40 % kestävyyden palautus), nälkä / nälkäinen, pahoinvointi, vatsakipu, ylikuormitus, levännyt (12 s tulen ja katon alla →
@@ -119,6 +119,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
+- **Juomat (v2.00):** Parannusjuoma (punainen) palauttaa terveyden heti täyteen; Elpymisjuoma (vihreä) +1 terveys/s minuutin; Sisujuoma (sininen) pitää kylläisyyden täynnä 5 min ja kestävyyden 30 s. Löytyvät arkuista (10 % / juoma / arkku), juodaan pikapaikasta.
+- **Kylläisyys (v2.00):** täyteen syöty = 100, ja mittari alkaa laskea vasta minuutin kuluttua.
+- **DEV Å (v2.00):** esinevalikko – pikavalinnat ja esinehaku.
 - **Pomot murskaavat (v1.99):** pomo tuhoaa kulkiessaan alleen/eteensä jäävät rakennelmat (seinät, aidat, ovet, lattiat, katot, työpisteet, sängyt) ja kaataa puut; arkut ja tynnyrit säilyvät. Ei nukkuessa eikä herätessä.
 - **Ulottuvuuksissa rakentaminen (v1.99):** vain työpenkki, vapaalle lattialle (ei seinän tai esineen päälle); muusta tulee ilmoitus. Hautakummussa ei rakenneta.
 - **Nuolet (v1.98):** pysähtyvät tarkasti pintaan (seinät, suljetut ovet, muurit, puut, kivet, maa, vesi). Osumasta: nuoli häviää 10 s (tulinuoli 8 s), tulinuolen liekki ja valo sammuvat 5 s:ssa; sade (ei katon alla) tai vesi sammuttaa heti osuessa.

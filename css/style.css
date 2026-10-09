@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'1.99';
+:root{--css-v:'2.00';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -814,3 +814,7 @@ button:focus,select:focus{outline:none}
 #bbVig{position:fixed;inset:0;pointer-events:none;z-index:3;background:radial-gradient(ellipse at center,transparent 52%,rgba(var(--bd),.55) 82%,rgba(var(--bc),.32) 100%);opacity:.55;transition:opacity 1s}
 #bbVig.flash{animation:bbVigF 1.8s ease-out}@keyframes bbVigF{0%{opacity:1;filter:brightness(2.2)}100%{opacity:.55;filter:none}}
 #bbVig.low{animation:bbBeat 1.1s ease-in-out infinite}@keyframes bbBeat{0%,100%{opacity:.5}12%{opacity:.95}24%{opacity:.6}36%{opacity:.85}}
+
+/* v2.00 DEV Å: pikavalinnat kahdessa sarakkeessa ilman vieritystä */
+#devIP .devPicks{display:grid;grid-template-columns:1fr 1fr;gap:3px 8px;max-height:none;overflow:visible}
+#devIP .devPicks .devIt .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
