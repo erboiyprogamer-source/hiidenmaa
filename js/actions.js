@@ -33,9 +33,9 @@ function terraTool(mode){
   terraFlush();mudFlush();for(const n of nodesNear(c.x,c.z,R+3,_sh))syncNodeY(n);
   sfx('build');burst(c.x,terrainH(c.x,c.z)+.2,c.z,mode==='path'?0x7a5a38:0x6b5a3a,8,3);}
 function useTool(alt){const w=curWeapon();if(w.cat!=='shovel')return;terraTool(w.id==='kuokka'?(alt?'restore':'raise'):(alt?'path':'dig'));}
-/* v2.01: jousi laukeaa vasta, kun vetoa on kestänyt vähintään BOW_MIN_T (0,7 s); lyhyempi veto peruuntuu (nuoli ei kulu), ilmoitus enintään 4 s välein. */
-const BOW_MIN_T=.7;
-function bowCancel(){if(playTime-(P.bowCancelMsg||-99)>4){P.bowCancelMsg=playTime;msg('Ampuminen peruuntui – jännitä jousta vähintään 0,7 s.','warn');}}
+/* v2.01: jousi laukeaa vasta, kun vetoa on kestänyt vähintään BOW_MIN_T (v2.03: 0,4 s); lyhyempi veto peruuntuu (nuoli ei kulu), ilmoitus enintään 4 s välein. */
+const BOW_MIN_T=.4;   // v2.03: 0,7 → 0,4 s
+function bowCancel(){if(playTime-(P.bowCancelMsg||-99)>4){P.bowCancelMsg=playTime;msg('Ampuminen peruuntui – jännitä jousta vähintään 0,4 s.','warn');}}
 function onPrimaryUp(){if(P.drawing){P.drawing=false;if((P.drawT||0)<BOW_MIN_T)bowCancel();else if(P.bowDraw>.15&&ammoId())fireBow();P.bowDraw=0;P.drawT=0;}}
 function onSecondary(){const w=curWeapon();if(w.cat==='hammer'){togglePanel('build');}else if(w.cat==='shovel')useTool(true);}
 function startAttack(){
@@ -174,6 +174,19 @@ function bowAimPoint(max){const p=camRayPoint(max),{o,d}=camRay();let best=o.dis
     const a=d.x*d.x+d.z*d.z;if(a<1e-6)continue;const t0=(dx*d.x+dz*d.z)/a;if(t0<1||t0>best)continue;const cx=o.x+d.x*t0-m.pos.x,cz=o.z+d.z*t0-m.pos.z,c2=cx*cx+cz*cz;if(c2>r*r)continue;
     const t=t0-Math.sqrt((r*r-c2)/a),y=o.y+d.y*t;if(t>1&&t<best&&y>m.pos.y-.2&&y<m.pos.y+h)best=t;}
   return o.addScaledVector(d,best);}
+/* v2.03 LENTORATA tähtäimeen: sama lähtö (pelaaja + 1,5 m, 0,6 m eteen), suunta (bowAimPoint), nopeus ja painovoima (bowShot) sekä tuuli kuin
+   oikealla nuolella (updateProjs). Palauttaa merkkietäisyyksien (vaakamatka m) 3D-pisteet ja maahan osuman. Katsekulma (ylös/alas) vaikuttaa suoraan. */
+const AIM_MARKS=[10,20,30,40,50,60,70,80,100,120,150];
+function bowTraj(){const am=ammoId()||'nuolet',a=AMMO_STATS[am]||AMMO_STATS.nuolet,bs=bowShot(Math.min(1,P.bowDraw||0),am),from=new V3(P.pos.x,P.pos.y+1.5,P.pos.z);
+  const dir=bowAimPoint(70).sub(from).normalize();from.addScaledVector(dir,.6);const p=from.clone(),v=dir.multiplyScalar(bs.v),x0=p.x,z0=p.z,dt=1/60,marks=[];let mi=0,land=null;
+  for(let i=0;i<60*5;i++){v.y-=bs.g*dt;if(!P.inDun){const wa=WIND.spd*ARROW_WIND*dt*(a.wind<1?.5:1);v.x+=WIND.x*wa;v.z+=WIND.z*wa;}
+    const ox=p.x,oy=p.y,oz=p.z;p.addScaledVector(v,dt);const hd=Math.hypot(p.x-x0,p.z-z0);
+    while(mi<AIM_MARKS.length&&hd>=AIM_MARKS[mi]){const pd=Math.hypot(ox-x0,oz-z0),k=hd>pd?(AIM_MARKS[mi]-pd)/(hd-pd):1;marks.push({d:AIM_MARKS[mi],p:new V3(ox+(p.x-ox)*k,oy+(p.y-oy)*k,oz+(p.z-oz)*k)});mi++;}
+    {const vl=v.length()||1,tx=p.x+v.x/vl*.45,ty=p.y+v.y/vl*.45,tz=p.z+v.z/vl*.45,g=P.inDun?DUN.y:terrainH(tx,tz);   // kärki osuu (kuten arrowContact)
+      let hitB=null;if(ty>=g){const n=Math.max(1,Math.ceil(vl*dt/.25));for(let j=1;j<=n&&!hitB;j++){const k=j/n,bx=ox+(p.x-ox)*k+v.x/vl*.45,by=oy+(p.y-oy)*k+v.y/vl*.45,bz=oz+(p.z-oz)*k+v.z/vl*.45;if(arrowBlocked(bx,by,bz))hitB=new V3(bx,by,bz);}}
+      if(ty<g||hitB){let q=hitB||new V3(tx,ty,tz);if(ty<g){const px=ox+v.x/vl*.45,py=oy+v.y/vl*.45,pz=oz+v.z/vl*.45,og=P.inDun?DUN.y:terrainH(px,pz),k=clamp((py-og)/((py-og)-(ty-g)||1),0,1);q.set(px+(tx-px)*k,py+(ty-py)*k,pz+(tz-pz)*k);}
+        land={d:Math.round(Math.hypot(q.x-x0,q.z-z0)),p:q};break;}}if(mi>=AIM_MARKS.length)break;}
+  return {marks,land};}
 function fireBow(){
   const w=curWeapon();const k=Math.min(1,P.bowDraw),am=ammoId();if(!am)return;invRemove(am,1);bump('shots');
   const from=new V3(P.pos.x,P.pos.y+1.5,P.pos.z);

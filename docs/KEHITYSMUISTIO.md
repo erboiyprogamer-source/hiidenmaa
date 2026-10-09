@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.02)
+## Nykytila (päivitetty v2.03)
 
-- **Versio 2.02**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 2.03**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,22 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.03 (valojen etäisyydet, tulinuolen hehku kaukaa, uusi kyykkytähtäin, minimiveto 0,4 s)
+- **Minimiveto** `BOW_MIN_T` 0,7 → 0,4 s.
+- **Uudet asetukset (Grafiikka › Valo):** `lightDist` "Valojen näkyvyysetäisyys" (40/60/90/150/300/800 = koko kartta; ennen kiinteä 60 m, `updateLights`)
+  ja `lightRange` "Valon kantama" (PointLight.distance 17/20/24/28/32 m; tulien varjokameran far = kantama − 2, enint. 30). Esiasetukset Low…Ultra:
+  lightDist 40,40,60,60,90,150,300,800; lightRange 17,17,17,17,20,24,28,32. **Auringon varjoetäisyys** suurempi: High 80→110, High+ 110→160, Ultra 140→220
+  (uudet valinnat 160/220; varjokameran far kasvaa mukana). Vanhat tallennetut esiasetukset päivittyvät (`SET._v` 3), eivät muutu Customiksi.
+- **Tulinuolen hehku** (`arrowGlowTick`, state.js): additiivinen sprite liekissä, ei sumua, koko kasvaa etäisyyden mukaan (näkyy valopisteenä), näkyy
+  `lightDist`:n sisällä → Ultralla kartan päästä päähän. Himmenee valon/liekin mukana (`p.glowK`), myös ilman "tulinuolten valo" -asetusta.
+- **Kyykkytähtäin** (`bowTraj` actions.js + `updDropRet` ui.js): lentorata lasketaan samalla fysiikalla kuin oikea nuoli (lähtöpiste, `bowAimPoint`, nopeus,
+  painovoima, tuuli; kärki 0,45 m) ja projisoidaan ruudulle → katsekulma ylös/alas venyttää ja kaartaa viivastoa; testattu: ennustettu osuma = oikea
+  nuoli < 1 cm. Merkit 10…150 m (vaakamatka), ohut viiva tähtäyspisteestä merkkien kautta, merkkien leveys kapenee, pienet metrit sivussa ("m" vain
+  viimeisessä), maahan/esteeseen osuma ▼ + metrit. **Z** vaihtaa tyyliä Viivasto / Pisteet / Kevyt (`AIM_ST`, localStorage `hiidenmaa_aimst`).
+- **Täysi veto:** piste pienempi (kyykyssä 2 px, seisten 3 px) ja piste + viivat himmenevät 2 s välein läpinäkyviksi ja palaavat (CSS `aimBlink`).
+  Ohjeet `#aimHint`: seisten "C Kyykkyyn: tarkka laukaus ja lentorata", kyykyssä "C Nouse ylös" + "Z Tähtäin: X (n/3)". Tuulivaroitus siirtyi ristikon yläpuolelle.
+- Tarkistukseen 1 rivi.
 
 ### v2.02 (tärkeimmät esineet maassa 3D-malleina)
 - `dropModel(id)` (state.js, `dropMesh` käyttää ensin sitä): aseet, työkalut, vasara ja jouset = sama malli kuin kädessä (`makeHeld`), kilvet `makeShield`,

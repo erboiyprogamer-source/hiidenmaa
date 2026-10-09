@@ -167,7 +167,7 @@ function updateRain(dt){const a=rain.geometry.attributes.position.array,sp=26*(w
 function updateLights(){
   const src=lightSources.filter(s=>s.on()&&(!!s.dun===P.inDun)).sort((a,b)=>((b.pri||0)-(a.pri||0))||dist2(a.x,a.z,P.pos.x,P.pos.z)-dist2(b.x,b.z,P.pos.x,P.pos.z));   // v1.90: etusija (pri) ensin – pomon valot saavat aina valopaikan
   const nL=Math.min(LIGHTS.length,+SET.lights||6);
-  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=i<nL?src[i]:null;if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){if(i===0&&(l.position.x!==s.x||l.position.z!==s.z))l.shadow.needsUpdate=true;l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;l.userData.src=s;}else{l.intensity=0;l.userData.base=0;l.userData.src=null;}}
+  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=i<nL?src[i]:null;if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<(+SET.lightDist||60)**2){   /* v2.03: näkyvyysetäisyys asetuksesta */if(i===0&&(l.position.x!==s.x||l.position.z!==s.z))l.shadow.needsUpdate=true;l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;l.userData.src=s;}else{l.intensity=0;l.userData.base=0;l.userData.src=null;}}
 }
 // Tilat: jokaisella on vaikutus pelaajan kykyihin (P.fx), kuvaus ja halutessa ajastin (s). effects() kerää aktiiviset, calcFx() laskee kertoimet.
 function effects(){const e=[],wt=invWeight(),b=P.buffs,add=(key,name,kind,desc,t)=>e.push({key,name,kind,desc,t});

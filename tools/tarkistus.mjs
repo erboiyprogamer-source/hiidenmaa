@@ -232,6 +232,18 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v2.03 jousi 0,4 s, kyykkytähtäimen lentorata = oikea nuoli (eri katsekulmat), tyylit Z:llä, ohjeet; valojen näkyvyys/kantama ja varjoetäisyys esiasetuksissa, tulinuolen hehku kaukaa',()=>{
+    const sv=[camYaw,camPitch,WIND.spd,P.crouch,P.onGround,P.crouchK,aimSt,JSON.stringify(SET)];let res;const om=msg;msg=()=>{};
+    try{invAdd('jousi',1);invAdd('nuolet',10);const bw=inv.find(x=>x&&x.id==='jousi');if(!bw.eq)toggleEquip(bw);WIND.spd=0;let worst=0;
+      for(const pitch of [-.12,0,.12]){camYaw=.8;camPitch=pitch;P.drawing=true;P.crouch=true;P.onGround=true;P.crouchK=1;P.bowDraw=1;P.drawT=2;for(let i=0;i<20;i++)updateCamera(1/30);camera.updateMatrixWorld(true);
+        const T=bowTraj();fireBow();const pr=projs[projs.length-1];for(let i=0;i<480&&!pr.stuck&&projs.includes(pr);i++)updateProjs(1/60);const tp=pr.m.position.clone().addScaledVector(pr.v.clone().normalize(),.45);
+        worst=Math.max(worst,T.land?Math.hypot(T.land.p.x-tp.x,T.land.p.z-tp.z):99);}
+      const s0=aimSt;aimStyleNext();const cyc=aimSt===(s0+1)%AIM_ST.length;aimHintK='';P.bowDraw=1;P.drawing=true;updateHUD(1/30);const hint=/Tähtäin/.test($('#aimHint').textContent);P.drawing=false;updateHUD(1/30);
+      applyPreset(7);const ul=SET.lightDist>=700&&SET.lightRange>=30&&SET.shDist>=200&&LIGHTS[0].distance===SET.lightRange;applyPreset(3);const md=SET.lightDist===60&&SET.lightRange===17&&presetOf(SET)==='Medium';
+      applyPreset(7);shootArrow(new THREE.Vector3(P.pos.x+300,terrainH(P.pos.x+300,P.pos.z)+20,P.pos.z),new THREE.Vector3(1,0,0),40,10,'player',1e-6,true);const fa=projs[projs.length-1];updateProjs(1/30);const glow=fa.glow.visible;
+      res=BOW_MIN_T===.4&&worst<.1&&cyc&&hint&&ul&&md&&glow||`virhe minveto ${BOW_MIN_T} rata ${worst.toFixed(2)} tyyli ${cyc} ohje ${hint} ultra ${ul} medium ${md} hehku ${glow}`;}
+    finally{msg=om;[camYaw,camPitch,WIND.spd,P.crouch,P.onGround,P.crouchK,aimSt]=sv;Object.assign(SET,JSON.parse(sv[7]));applyGfx();P.drawing=false;P.drawT=0;for(const q of projs.splice(0)){scene.remove(q.m);if(q.light){const j=lightSources.indexOf(q.light);if(j>=0)lightSources.splice(j,1);}}arrowFade.length=0;}
+    return res;});
   t('v2.02 tärkeimmät esineet maassa 3D-malleina (aseet, työkalut, jouset, kilvet, haarniskat, avaimet, arvoesineet), raaka-aineet kuvakkeina; lepokorkeus',()=>{
     const want=Object.keys(ITEMS).filter(id=>['weapon','bow','hammer','shovel','shield','armor'].includes(ITEMS[id].cat)).concat(['jaaavain','luuavain','aarniavain','hiidenkivi','kruunusirpale','sydan']);
     const bad=want.filter(id=>{const m=dropMesh(id);if(!m.userData.m3d||!(m.userData.lift>=.2))return true;const s=new THREE.Box3().setFromObject(m).getSize(new THREE.Vector3());return Math.max(s.x,s.y,s.z)>.95;});
