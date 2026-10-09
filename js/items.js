@@ -32,6 +32,8 @@ const ITEMS={
   sisujuoma:{n:'Sisujuoma',w:.4,s:5,c:'#3f7fe0',potion:{sisu:1},d:'Sininen juoma. Kylläisyys pysyy täynnä 5 minuuttia ja kestävyys 30 sekuntia.'},
   sienipaisti:{n:'Paistettu sieni',w:.3,s:30,c:'#9b6a3a',food:{h:18,hp:10},d:'Nuotiolla kypsennetty herkkutatti.'},
   hiili:{n:'Puuhiili',w:.5,s:50,c:'#2a2623',fuel:10,d:'Palaa kymmenen kertaa pidempään kuin puu. Nuotioon, sulatusuuniin ja seisoviin soihtuihin. Syntyy ylipaistetusta ruoasta tai nuotiolla puusta.'},
+  hiekka:{n:'Hiekka',w:.5,s:50,c:'#d8c38c',d:'Rannan hiekkaa. Sulatusuunissa 2 hiekkaa → 1 lasi.'},
+  lasi:{n:'Lasi',w:.4,s:20,c:'#a9d6e6',d:'Sulatettua hiekkaa. Lasi-ikkunoihin.'},
   puunuolet:{n:'Puunuolet',w:.08,s:100,c:'#a87a46',d:'Halpoja ammuksia pelkästä puusta. Putoavat ja kaartuvat tuulessa enemmän ja tekevät vähemmän vahinkoa.'},
   nuolet:{n:'Piikivinuolet',w:.1,s:100,c:'#6d6a60',d:'Ammuksia jouselle.'},
   karhuntalja:{n:'Karhuntalja',w:4,s:5,c:'#5a4030',d:'Paksu karhun talja. Siitä tehdään karhuntaljamatto (Kalusto).'},
@@ -140,6 +142,8 @@ function icon(id){
     case 'marjat':[[18,20],[28,18],[22,29],[32,28],[15,31]].forEach(p=>circ(p[0],p[1],6,'#c82a3c','#6a1220'));line(22,8,24,16,2,'#5a7a2a');break;
     case 'sieni':g.fillStyle='#efe6d2';g.fillRect(20,24,8,16);poly([[8,26],[14,12],[24,8],[34,12],[40,26]],'#9b6a3a','#5e3b1f');break;
     case 'varras':line(8,40,40,8,2.5,'#c9b48a');[[16,32,'#8d4b2b'],[24,24,'#c8a26b'],[32,16,'#8d4b2b']].forEach(p=>circ(p[0],p[1],5.5,p[2]));circ(20,28,3,'#c82a3c');break;
+    case 'hiekka':poly([[6,38],[14,24],[24,18],[34,24],[42,38]],'#d8c38c','#9a8452');[[16,32],[24,27],[31,33],[22,35],[28,30]].forEach(p=>circ(p[0],p[1],1.2,'#b39a62'));circ(33,29,2.5,'#f2ecdf','#9a8452');break;
+    case 'lasi':poly([[10,12],[36,8],[40,36],[14,40]],'rgba(170,215,232,.75)','#5a8ea2');line(16,16,22,15,2,'rgba(255,255,255,.85)');line(16,21,30,18,1.5,'rgba(255,255,255,.6)');line(30,34,36,33,1.5,'rgba(255,255,255,.5)');break;
     case 'puunuolet':for(let i=0;i<3;i++){line(10+i*5,40,32+i*5,10,2,'#c9b48a');poly([[32+i*5,10],[35+i*5,7],[34+i*5,13]],'#8a5a32');}break;
     case 'nuolet':for(let i=0;i<3;i++){line(10+i*5,40,32+i*5,10,2,'#c9b48a');poly([[32+i*5,10],[36+i*5,6],[34+i*5,14]],'#4d535c');}break;
     case 'karhuntalja':poly([[8,18],[14,10],[20,14],[28,14],[34,10],[40,18],[36,26],[40,36],[32,40],[24,36],[16,40],[8,36],[12,26]],'#5a4030','#2e2016');circ(24,12,5,'#4a3426');break;

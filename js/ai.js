@@ -427,7 +427,10 @@ function updateStations(dt){
       const fm=p.mesh.userData.food;if(fm)for(let i=0;i<4;i++){const c=d.cook[i],m=fm[i];m.visible=!!c;if(c){const r=c.t/c.need;m.material.color.setHex(r<1?(r<.6?0xc9554e:0xb06a42):r<2?0x7a4524:0x15110f);}}}
     if(p.t==='soihtuteline'||p.t==='seinasoihtu'){const f=p.mesh.userData.flame,on=p.data.burn>0;f[0].visible=f[1].visible=on;if(on){p.data.burn=Math.max(0,p.data.burn-dt);const u=p.fl||(p.fl={cur:1,target:1,t:Math.random()*.2}),s=flick(u,dt);f[0].scale.set(.9+s*.15,.7+s*.5,.9+s*.15);f[1].scale.set(1,.8+s*.4,1);
         if(dist2(p.x,p.z,P.pos.x,P.pos.z)<30*30){if(Math.random()<dt*1.8)emitEmber(p.x+(Math.random()-.5)*.15,p.y+1.9,p.z+(Math.random()-.5)*.15,'spark');if(Math.random()<dt*.4)emitEmber(p.x,p.y+2,p.z,'smoke');}}}
-    if(p.t==='sulatin'){const run=(p.data.ore>0||p.data.iore>0)&&p.data.wood>0;p.mesh.userData.glow.visible=run;if(run){p.data.t+=dt;const iron=p.data.ore<=0;if(p.data.t>=(iron?10:7)){p.data.t=0;p.data.wood--;if(iron){p.data.iore--;p.data.idone++;}else{p.data.ore--;p.data.done++;}}}}
+    if(p.t==='sulatin'){const D=p.data,met=D.ore>0||D.iore>0,sand=(D.sand||0)>=2,run=(met||sand)&&D.wood>0;p.mesh.userData.glow.visible=run;
+      if(run){if(!met)D.job='sand';else if(!sand)D.job='met';else if(!D.job)D.job='met';   // v2.07: malmit ja hiekka vuorotellen
+        D.t+=dt;if(D.job==='sand'){if(D.t>=GLASS_T){D.t=0;D.wood--;D.sand-=2;D.glass=(D.glass||0)+1;D.job=met?'met':'sand';}}
+        else{const iron=D.ore<=0;if(D.t>=(iron?10:7)){D.t=0;D.wood--;if(iron){D.iore--;D.idone++;}else{D.ore--;D.done++;}D.job=sand?'sand':'met';}}}}
   }
   for(const g of graves){const same=(g.dim||'world')===curDim(),near=same&&dist2(g.x,g.z,P.pos.x,P.pos.z)<50*50;g.mesh.visible=same;g.beam.visible=near;   // v1.33 (kohta 13): majakka myös ulottuvuuksissa, hauta näkyy vain omassa tilassaan
     if(near)g.beam.material.opacity=.28+Math.sin(playTime*3)*.1;}

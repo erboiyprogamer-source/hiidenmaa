@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'2.06';
+:root{--css-v:'2.07';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;

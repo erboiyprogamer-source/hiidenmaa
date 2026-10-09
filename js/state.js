@@ -146,9 +146,15 @@ function treasureMesh(id){const g=new THREE.Group();
   else if(id==='sydan'){const M=dm(0x5fe6d9,{emissive:0x2fbfb0,emissiveIntensity:.8,roughness:.3});for(const sx of [-1,1]){const s=new THREE.Mesh(new THREE.SphereGeometry(.1,14,10),M);s.position.set(sx*.07,.05,0);g.add(s);}
     const tip=new THREE.Mesh(new THREE.ConeGeometry(.15,.2,14),M);tip.rotation.z=Math.PI;tip.position.y=-.09;g.add(tip);}
   return g.children.length?g:null;}
+function matDropMesh(id){const g=new THREE.Group();   // v2.07 hiekka: pieni kasa; lasi: sinertävä lasilevy
+  if(id==='hiekka'){const s=new THREE.Mesh(new THREE.SphereGeometry(.2,12,6,0,TAU,0,Math.PI/2),dm(0xd8c38c,{roughness:1}));s.scale.set(1,.6,1);g.add(s);for(const [x,z] of [[.14,.08],[-.1,-.12]]){const k=new THREE.Mesh(new THREE.SphereGeometry(.07,8,5,0,TAU,0,Math.PI/2),dm(0xcbb37a,{roughness:1}));k.position.set(x,0,z);g.add(k);}}
+  else if(id==='lasi'){const p=new THREE.Mesh(new THREE.BoxGeometry(.42,.32,.03),new THREE.MeshStandardMaterial({color:0xa9d6e6,transparent:true,opacity:.55,roughness:.05,metalness:.2}));p.rotation.x=-.25;g.add(p);
+    const e=new THREE.Mesh(new THREE.BoxGeometry(.43,.012,.035),dm(0xe8f6fb,{emissive:0x9fd6e6,emissiveIntensity:.3}));e.position.y=.16;e.rotation.x=-.25;g.add(e);}
+  return g.children.length?g:null;}
 function dropModel(id){const d=ITEMS[id];if(!d)return null;let m=null;
   if(d.potion)return potionMesh(id);
-  if(d.cat==='shield')m=makeShield(id);else if(d.cat==='armor')m=armorDropMesh(id);else if(DROP3D_CAT.has(d.cat))m=makeHeld(id);
+  if(id==='hiekka'||id==='lasi')m=matDropMesh(id);else
+  if(m);else if(d.cat==='shield')m=makeShield(id);else if(d.cat==='armor')m=armorDropMesh(id);else if(DROP3D_CAT.has(d.cat))m=makeHeld(id);
   else if(/avain$/.test(id))m=keyMesh(id);else m=treasureMesh(id);
   if(!m)return null;m.traverse(o=>{if(o.isMesh)o.castShadow=true;});
   const b=new THREE.Box3().setFromObject(m),sz=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3()),mx=Math.max(sz.x,sz.y,sz.z),k=mx>.8?.8/mx:1;

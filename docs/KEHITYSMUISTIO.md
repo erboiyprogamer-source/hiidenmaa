@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.06)
+## Nykytila (päivitetty v2.07)
 
-- **Versio 2.06**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 2.07**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.07 (hiekka, lasi, lasi-ikkunat, rautaovi – käyttäjän prompti osa 1/3)
+- **Hiekkakasat** (`NODE.hiekkakasa`, pick, 2–3 hiekkaa, uusiutuu 1200 s = 20 min): 5–10 per kartta rannalla (`beach`, korkeus 0,15–1,05, väli ≥ 60 m),
+  oma satunnaislähde `mulberry32(4242+MAP_ID*97)` ja lisätään viimeisinä → muiden solmujen id:t eivät muutu (tallennukset ehjät). Malli: hiekkakasa + simpukka.
+- **Sulatusuuni:** hiekka (enint. `SAND_MAX` 20) → 2 hiekkaa + 1 puu = 1 lasi, `GLASS_T` 15 s. Malmit ja hiekka vuorotellen (`D.job`). Uudet kentät `sand`, `glass`.
+- **Esineet** `hiekka` (paino 0,5, pino 50), `lasi` (0,4, pino 20): kuvakkeet ja 3D-mallit maassa (`matDropMesh`).
+- **Rakennusosat:** Aukkoikkuna (ent. Ikkunaseinä) ja Kivinen aukkoikkuna (ent. Kiviikkuna) säilyvät. Uudet **Puinen lasi-ikkuna** (`lasiikkuna`, 2 puuta + 1 lasi,
+  100) ja **Kivinen lasi-ikkuna** (`kivilasiikkuna`, 5 kiveä + 1 lasi, 250): base `ikkunaseina`, lasiruutu = törmäyslaatikko `glass` (estää kulun, nuolet ja sateen),
+  `losClear` ohittaa lasin (`pointBlocked(...,seeThru)`) → olennot näkevät läpi. Malli `GLASS_MAT` (läpikuultava sinertävä) + ristipuitteet. Rikkoutuessa
+  `shatterGlass` (building.js): helinä, sirpaleet, osa vaihtuu aukkoikkunaksi (`def.glass` = kohdetyyppi) täydellä kestävyydellä.
+- **Rautaovi** (`rautaovi`, 4 rautaharkkoa + 2 puuta, 900): base `ovi`, ovilehti `IRON_MAT` + vanteet ja niitit.
+- Tarkistukseen 1 rivi.
 
 ### v2.06 (puunuolet, tuuli +10 %, tähtäimen ohjeet)
 - **Puunuolet** (`puunuolet`, työpenkki, 2 puuta → 15, taso 3): `AMMO_STATS.puunuolet` = putoaa 30 % enemmän (grav 1,3), tuuli 20 % enemmän (wind 1,2),

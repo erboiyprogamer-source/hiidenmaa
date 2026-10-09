@@ -119,6 +119,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
+- **Hiekka ja lasi (v2.07):** rannoilla harvinaisia hiekkakasoja (5–10 / kartta, uusiutuvat 20 min, 2–3 hiekkaa). Sulatusuunissa 2 hiekkaa → 1 lasi 15 s:ssa (enint. 20 hiekkaa, vuorotellen malmien kanssa).
+- **Ikkunat ja ovet (v2.07):** Aukkoikkuna (2 puuta, 130) ja Kivinen aukkoikkuna (5 kiveä, 420); Puinen lasi-ikkuna (2 puuta + lasi, 100) ja Kivinen lasi-ikkuna (5 kiveä + lasi, 250) – lasi estää kulun, nuolet ja sateen, mutta olennot näkevät läpi; rikkoutuessa lasi särkyy ja jäljelle jää aukkoikkuna. Rautaovi 4 rautaa + 2 puuta, 900.
 - **Puunuolet (v2.06):** pelkästä puusta (2 puuta → 15, työpenkki); putoavat 30 % ja kaartuvat tuulessa 20 % enemmän ja tekevät 40 % vähemmän vahinkoa kuin piikivinuolet. Tuuli kaartaa kaikkia nuolia 10 % enemmän kuin ennen.
 - **Tähtäin (v2.05):** Z vaihtaa Viivasto / Pisteet / Kevyt / Pois; vilkkuessa apuviivasto ja piste samaan tahtiin.
 - **Tähtäin (v2.04):** kyykkytähtäimen merkit suoraan pisteen alla; X kytkee täyden vedon vilkkumisen (oletus pois, 3 s välein, piste ja viivat yhtä aikaa); tuulen suunta ja nopeus näkyvät aina jousta jännittäessä ristikon yläpuolella. Linnakkeen muurin harjalla voi kävellä.

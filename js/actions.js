@@ -145,6 +145,7 @@ function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;
    BOW_STATS: veto (s), nuolen nopeus- ja tarkkuuskerroin. Hiidenjousi vetää 1,15 s, nuoli +25 % nopeampi, hajonta ×0,7.
    AMMO_STATS: sulitettu +25 % nopeus, −40 % pudotus, +15 % vahinko, puolet tuulesta; tulinuoli = piikivinuoli + sytyttää.
    Hajonta (asteina): 10° × (1 − veto) + liike (juoksu 2°, ilmassa 3°), × jousen tarkkuus, ★-laatu pienentää. Täysi veto paikallaan = 0°. */
+const SAND_MAX=20,GLASS_T=15;   // v2.07 sulatusuuni: enintään 20 hiekkaa, 2 hiekkaa → 1 lasi 15 s (1 puu)
 const BOW_STATS={jousi:{draw:1.6,spd:1,acc:1},hiidenjousi:{draw:1.15,spd:1.25,acc:.7}};
 const AMMO_STATS={puunuolet:{spd:1,grav:1.3,dmg:.6,wind:1.2,wood:1},nuolet:{spd:1,grav:1,dmg:1,wind:1},   /* v2.06 puunuoli: putoaa 30 % enemmän, tuuli 20 % enemmän, vahinko −40 % */sulkanuolet:{spd:1.25,grav:.6,dmg:1.15,wind:.5},tulinuolet:{spd:1,grav:1,dmg:1,wind:1,fire:1}};
 function bowStats(w){return BOW_STATS[w.id]||BOW_STATS.jousi;}
@@ -253,7 +254,7 @@ function pieceLabel(p){if(PIECES[p.t].store)return 'Avaa '+PIECES[p.t].n.toLower
   case 'sanky':return isNight()?'Nuku':'Aseta herätyspaikka';
   case 'arkku':return 'Avaa arkku';
   case 'tynnyri':return 'Avaa tynnyri';
-  case 'sulatin':{const st=`kupari ${p.data.ore}, rauta ${p.data.iore}, puu ${p.data.wood}`;return p.data.done>0||p.data.idone>0?`Ota harkot (kupari ${p.data.done}, rauta ${p.data.idone})`:invCount('malmi')>0||invCount('rautamalmi')>0||invCount('puu')>0?`Lisää malmia ja puuta (${st})`:`Sulatusuuni (${st})`;}
+  case 'sulatin':{const D=p.data,st=`kupari ${D.ore}, rauta ${D.iore}, hiekka ${D.sand||0}, puu ${D.wood}`;return D.done>0||D.idone>0||D.glass>0?`Ota valmiit (kupari ${D.done}, rauta ${D.idone}, lasi ${D.glass||0})`:invCount('malmi')>0||invCount('rautamalmi')>0||invCount('hiekka')>0||invCount('puu')>0?`Lisää malmia, hiekkaa ja puuta (${st})`:`Sulatusuuni (${st})`;}
   case 'tyopenkki':return 'Käytä työpenkkiä';
   case 'ahjo':return 'Käytä ahjoa';
   default:return null;}}
@@ -272,9 +273,10 @@ function interact(){
     case 'soihtuteline':{const b=p.data.burn;if(torchPct(p)>50){msg(`Soihdussa on jo tarpeeksi polttoainetta (${torchPct(p)} %).`);break;}if(invCount('puu')>0&&b<600){invRemove('puu',1);p.data.burn=600;markFull(p);msg('Soihtu palaa 10 min.');sfx('build');}else if(invCount('hiili')>0&&b<1800){invRemove('hiili',1);p.data.burn=1800;markFull(p);msg('Hiili: soihtu palaa 30 min.');sfx('build');}else msg(invCount('puu')>0||invCount('hiili')>0?'Soihdussa on jo tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');break;}
     case 'sanky':sleepAt(p);break;
     case 'arkku':case 'tynnyri':openChest(p);break;
-    case 'sulatin':if(p.data.done>0||p.data.idone>0){if(p.data.done>0)giveOrDrop('kupari',p.data.done,p.x,p.y+1,p.z);if(p.data.idone>0)giveOrDrop('rauta',p.data.idone,p.x,p.y+1,p.z);p.data.done=0;p.data.idone=0;sfx('pickup');break;}
-      {const o=Math.min(invCount('malmi'),10-p.data.ore),io=Math.min(invCount('rautamalmi'),10-p.data.iore),w=Math.min(invCount('puu'),20-p.data.wood),hc=Math.min(invCount('hiili'),Math.floor((20-p.data.wood-w)/10));if(o<=0&&io<=0&&w<=0&&hc<=0){msg('Tarvitset malmia (kupari tai rauta) ja puuta tai hiiltä.','warn');break;}
-       if(o>0){invRemove('malmi',o);p.data.ore+=o;}if(io>0){invRemove('rautamalmi',io);p.data.iore+=io;}if(w>0){invRemove('puu',w);p.data.wood+=w;}if(hc>0){invRemove('hiili',hc);p.data.wood+=hc*10;}msg(`Uuniin: ${o} kuparimalmia, ${io} rautamalmia, ${w} puuta${hc?`, ${hc} hiiltä`:''}.`);sfx('build');}break;
+    case 'sulatin':{const D=p.data;D.sand=D.sand||0;D.glass=D.glass||0;
+      if(D.done>0||D.idone>0||D.glass>0){if(D.done>0)giveOrDrop('kupari',D.done,p.x,p.y+1,p.z);if(D.idone>0)giveOrDrop('rauta',D.idone,p.x,p.y+1,p.z);if(D.glass>0)giveOrDrop('lasi',D.glass,p.x,p.y+1,p.z);D.done=0;D.idone=0;D.glass=0;sfx('pickup');break;}
+      {const o=Math.min(invCount('malmi'),10-D.ore),io=Math.min(invCount('rautamalmi'),10-D.iore),sd=Math.min(invCount('hiekka'),SAND_MAX-D.sand),w=Math.min(invCount('puu'),20-D.wood),hc=Math.min(invCount('hiili'),Math.floor((20-D.wood-w)/10));if(o<=0&&io<=0&&sd<=0&&w<=0&&hc<=0){msg('Tarvitset malmia (kupari tai rauta) tai hiekkaa sekä puuta tai hiiltä.','warn');break;}
+       if(o>0){invRemove('malmi',o);D.ore+=o;}if(io>0){invRemove('rautamalmi',io);D.iore+=io;}if(sd>0){invRemove('hiekka',sd);D.sand+=sd;}if(w>0){invRemove('puu',w);D.wood+=w;}if(hc>0){invRemove('hiili',hc);D.wood+=hc*10;}msg(`Uuniin: ${o} kuparimalmia, ${io} rautamalmia, ${sd} hiekkaa, ${w} puuta${hc?`, ${hc} hiiltä`:''}.`);sfx('build');}break;}
     case 'tyopenkki':case 'ahjo':togglePanel('inv');break;
   }}
 }

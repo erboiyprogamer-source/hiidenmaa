@@ -13,7 +13,9 @@ const STEP_N=6;   // portaiden askelmat: WH/STEP_N pitää olla selvästi alle S
 const PIECES={
   lattia:{n:'Puulattia',req:{puu:2},hp:120,snap:'floor',cat:'seinat',alku:1},
   seina:{n:'Puuseinä',req:{puu:2},hp:150,snap:'wall',cat:'seinat',alku:1},
-  ikkunaseina:{n:'Ikkunaseinä',req:{puu:2},hp:130,snap:'wall',cat:'seinat'},
+  ikkunaseina:{n:'Aukkoikkuna',req:{puu:2},hp:130,snap:'wall',cat:'seinat'},
+  lasiikkuna:{n:'Puinen lasi-ikkuna',req:{puu:2,lasi:1},hp:100,snap:'wall',cat:'seinat',base:'ikkunaseina',glass:'ikkunaseina'},   // v2.07: lasi estää kulun, nuolet ja sateen, näkee läpi; rikkoutuessa → aukkoikkuna
+  rautaovi:{n:'Rautaovi',req:{rauta:4,puu:2},hp:900,snap:'wall',cat:'seinat',base:'ovi',iron:1},   // v2.07
   seina_k2:{n:'Puoliseinä pysty',req:{puu:1},hp:80,snap:'wall',cat:'seinat',dim:[G/2,WH]},
   seina_k4:{n:'Neljäsosaseinä pysty',req:{puu:1},hp:50,snap:'wall',cat:'seinat',dim:[G/4,WH]},
   seina_m2:{n:'Puoliseinä vaaka',req:{puu:1},hp:80,snap:'wall',cat:'seinat',dim:[G,WH/2]},
@@ -51,7 +53,8 @@ const PIECES={
   tynnyri:{n:'Tynnyri',req:{puu:6},hp:90,snap:'free',cat:'kalusto',store:12},
   kiviseina:{n:'Kiviseinä',req:{kivi:5},hp:500,snap:'wall',cat:'kivi',alku:1},
   kivilattia:{n:'Kivilattia',req:{kivi:3},hp:400,snap:'floor',cat:'kivi',base:'lattia',stone:1},
-  kiviikkuna:{n:'Kiviikkuna',req:{kivi:5},hp:420,snap:'wall',cat:'kivi',base:'ikkunaseina',stone:1},
+  kiviikkuna:{n:'Kivinen aukkoikkuna',req:{kivi:5},hp:420,snap:'wall',cat:'kivi',base:'ikkunaseina',stone:1},
+  kivilasiikkuna:{n:'Kivinen lasi-ikkuna',req:{kivi:5,lasi:1},hp:250,snap:'wall',cat:'kivi',base:'ikkunaseina',stone:1,glass:'kiviikkuna'},   // v2.07
   kiviovi:{n:'Kiviovi',req:{kivi:6,puu:2},hp:350,snap:'wall',cat:'kivi',base:'ovi',stone:1},
   kivipylvas:{n:'Kivipylväs',req:{kivi:2},hp:300,snap:'free',cat:'kivi',base:'pylvas',stone:1},
   kivipalkki:{n:'Kivipalkki',req:{kivi:2},hp:250,snap:'wall',cat:'kivi',base:'palkki',stone:1},
@@ -101,7 +104,7 @@ function pieceBoxes(t,f=0){const def=PIECES[t];t=bt(t);if(def.dim)return[[0,def.
   case 'harjakatto':{const n=4,d=G/8,out=[];for(let i=0;i<n;i++){const top=d*(i+1),bot=Math.max(0,top-.3),zc=G/2-d*(i+.5);out.push([0,(top+bot)/2,zc,G,top-bot,d]);out.push([0,(top+bot)/2,-zc,G,top-bot,d]);}return out;}
   // Vinoseinä: suorakulmainen kolmio G × WH. Päätykolmio: tasakylkinen G × G/2. f: bitti0 = peilaus, bitti1 = ylösalaisin.
   case 'vinoseina':case 'kolmio':{const tri=t==='kolmio',h=tri?G/2:WH,n=6,w=G/n,out=[];for(let j=0;j<n;j++){const u=(j+.5)/n,jj=(f&1)?n-1-j:j,hj=tri?h*(1-Math.abs(2*u-1)):h*(1-(jj+.5)/n),cy=(f&2)?h-hj/2:hj/2;out.push([-G/2+w*(j+.5),cy,0,w,hj,.2]);}return out;}
-  case 'ikkunaseina':{const ww=1.1,y0=.95,y1=2.05,pw=(G-ww)/2,px=ww/2+pw/2;return[[-px,WH/2,0,pw,WH,.2],[px,WH/2,0,pw,WH,.2],[0,y0/2,0,ww,y0,.2],[0,(y1+WH)/2,0,ww,WH-y1,.2]];}
+  case 'ikkunaseina':{const ww=1.1,y0=.95,y1=2.05,pw=(G-ww)/2,px=ww/2+pw/2,o=[[-px,WH/2,0,pw,WH,.2],[px,WH/2,0,pw,WH,.2],[0,y0/2,0,ww,y0,.2],[0,(y1+WH)/2,0,ww,WH-y1,.2]];if(def.glass)o.push([0,(y0+y1)/2,0,ww,y1-y0,.08,'glass']);return o;}   // v2.07 lasiruutu (näkee läpi)
   // Palkki: asento f 0–4 = kallistus 0, 22,5, 45, 67,5, 90° (nousee +x-suuntaan). Kallistettu palkki jaetaan paloihin.
   case 'palkki':case 'palkki2':{const L=BEAM_L(t),th=BEAM_TH(t),a=(f%5)*Math.PI/8;if(!a)return[[0,th/2,0,L,th,th]];
     const n=Math.max(1,Math.ceil(L/.4)),l=L/n,c=Math.cos(a),sn=Math.sin(a),y0=L/2*sn+th/2*c,out=[];
@@ -137,6 +140,8 @@ function triMesh(t,f=0,W=MAT.wood){const kolmio=t==='kolmio',h=kolmio?G/2:WH,s=n
 function roofSlope(run,rise,fringeHigh,stone){const L=Math.hypot(run,rise)+.15,rg=new THREE.Group();rg.position.y=rise/2;rg.rotation.x=Math.atan2(rise,run);rg.add(bx(G+.1,.14,L,stone?MAT.stone:MAT.thatch));
   if(!stone)for(const s of fringeHigh?[-1,1]:[1]){const gm=new THREE.PlaneGeometry(G+.1,.5);gm.rotateX(-Math.PI/2);if(s>0)gm.rotateY(Math.PI);const f=new THREE.Mesh(gm,MAT.thatchFringe);f.position.set(0,.08,s*L/2);rg.add(f);}
   return rg;}
+const GLASS_MAT=new THREE.MeshStandardMaterial({color:0x9ccde6,transparent:true,opacity:.42,roughness:.05,metalness:.15,depthWrite:false,side:THREE.DoubleSide});   // v2.07
+const IRON_MAT=new THREE.MeshStandardMaterial({color:0x7c838c,roughness:.5,metalness:.3});
 function buildPieceMesh(t,f=0){
   const g=new THREE.Group(),def=PIECES[t],W=def.stone?MAT.stone:MAT.wood;t=bt(t);
   if(def.dim){g.add(bxw(def.dim[0]+.02,def.dim[1],.2,W,0,def.dim[1]/2,0));}
@@ -148,11 +153,15 @@ function buildPieceMesh(t,f=0){
     case 'seina':g.add(bxw(G+.02,WH,.2,W,0,WH/2,0));break;
     case 'ikkunaseina':{const ww=1.1,y0=.95,y1=2.05,pw=(G-ww)/2,px=ww/2+pw/2;
       g.add(bxw(pw+.01,WH,.2,W,-px,WH/2,0),bxw(pw+.01,WH,.2,W,px,WH/2,0),bxw(ww,y0,.2,W,0,y0/2,0),bxw(ww,WH-y1,.2,W,0,(y1+WH)/2,0));
-      g.add(DET(bxw(ww+.12,.07,.3,W,0,y0+.035,0)));break;}
+      g.add(DET(bxw(ww+.12,.07,.3,W,0,y0+.035,0)));
+      if(def.glass){const gp=new THREE.Mesh(new THREE.BoxGeometry(ww,y1-y0,.04),GLASS_MAT);gp.position.set(0,(y0+y1)/2,0);gp.renderOrder=2;g.add(gp);g.userData.glass=gp;   // v2.07 läpikuultava sinertävä lasi + puitteet
+        const fm=def.stone?MAT.stone:MAT.wood;g.add(bxw(.05,y1-y0,.07,fm,0,(y0+y1)/2,0),bxw(ww,.05,.07,fm,0,(y0+y1)/2,0));}
+      break;}
     case 'kiviseina':g.add(bxw(G+.02,WH,.36,MAT.stone,0,WH/2,0));break;
     case 'aita':{const n=9;for(let i=0;i<n;i++){const x=-G/2+.12+i*(G-.24)/(n-1);g.add(bxw(.18,1.5,.18,MAT.wood,x,.75,0));const tip=new THREE.Mesh(new THREE.ConeGeometry(.12,.35,4),MAT.wood);tip.position.set(x,1.65,0);tip.castShadow=true;g.add(tip);}g.add(bxw(G,.14,.24,MAT.wood,0,.7,.08));break;}
     case 'ovi':{const pw=(G-DOOR_W)/2,px=DOOR_W/2+pw/2,DW=def.stone?W:MAT.doorwood;g.add(bxw(pw,WH,.22,DW,-px,WH/2,0),bxw(pw,WH,.22,DW,px,WH/2,0),bxw(G,WH-DOOR_H,.22,DW,0,(DOOR_H+WH)/2,0));
-      const piv=new THREE.Group();piv.position.set(-DOOR_W/2,0,0);piv.add(bxw(DOOR_W,DOOR_H-.05,.1,MAT.doorwood,DOOR_W/2,(DOOR_H-.05)/2,0));
+      const piv=new THREE.Group();piv.position.set(-DOOR_W/2,0,0);piv.add(bxw(DOOR_W,DOOR_H-.05,.1,def.iron?IRON_MAT:MAT.doorwood,DOOR_W/2,(DOOR_H-.05)/2,0));
+      if(def.iron){const rv=mat(0x2a2d31);for(const yy of [.3,1.05,1.8])piv.add(DET(bx(DOOR_W-.06,.07,.13,rv,DOOR_W/2,yy,0)));for(const xx of [.12,DOOR_W-.12])for(const yy of [.3,1.05,1.8])for(const sd of[-1,1])piv.add(DET(bx(.05,.05,.03,rv,xx,yy,sd*.075)));}   // v2.07 rautaovi: vanteet ja niitit
       const hm=mat(0x3a3a3a);for(const sd of[-1,1]){piv.add(DET(bx(.05,.05,.1,hm,DOOR_W-.2,1.05,sd*.08)),DET(bx(.2,.045,.045,hm,DOOR_W-.28,1.05,sd*.125)));}
       g.add(piv);g.userData.leaf=piv;break;}
     case 'katto':g.add(roofSlope(G,G,true,def.stone));break;
@@ -218,11 +227,11 @@ function updateBenchRings(){const on=state==='play'&&!P.inDun&&curWeapon().cat==
 function rotLocal(b,rot){const r=((rot%4)+4)%4;let [x,y,z,w,h,d]=b;for(let i=0;i<r;i++){const nx=z,nz=-x;x=nx;z=nz;const t=w;w=d;d=t;}return[x,y,z,w,h,d];}
 // rot = kahdeksasosakierroksia (45°). Parilliset kierrot ovat suoria AABB-kiertoja; parittomat jaetaan ~.4 m paloihin.
 function worldBoxes(t,x,y,z,rot,f=0){const R8=((rot%8)+8)%8,boxes=pieceBoxes(t,f);
-  if(R8%2===0)return boxes.map(b=>{const[cx,cy,cz,w,h,d]=rotLocal(b,R8/2);return{minX:x+cx-w/2,maxX:x+cx+w/2,minY:y+cy-h/2,maxY:y+cy+h/2,minZ:z+cz-d/2,maxZ:z+cz+d/2,door:b[6]==='door'};});
+  if(R8%2===0)return boxes.map(b=>{const[cx,cy,cz,w,h,d]=rotLocal(b,R8/2);return{minX:x+cx-w/2,maxX:x+cx+w/2,minY:y+cy-h/2,maxY:y+cy+h/2,minZ:z+cz-d/2,maxZ:z+cz+d/2,door:b[6]==='door',glass:b[6]==='glass'};});
   const ang=R8*Math.PI/4,c=Math.cos(ang),s=Math.sin(ang),out=[];
   for(const b of boxes){const[cx,cy,cz,w,h,d]=b,ax=w>=d,L=ax?w:d,n=Math.max(1,Math.ceil(L/.4)),l=L/n;
     for(let k=0;k<n;k++){const off=-L/2+l*(k+.5),lx=ax?cx+off:cx,lz=ax?cz:cz+off,sw=ax?l:w,sd=ax?d:l,wx=lx*c+lz*s,wz=-lx*s+lz*c,hw=sw*Math.abs(c)+sd*Math.abs(s),hd=sw*Math.abs(s)+sd*Math.abs(c);
-      out.push({minX:x+wx-hw/2,maxX:x+wx+hw/2,minY:y+cy-h/2,maxY:y+cy+h/2,minZ:z+wz-hd/2,maxZ:z+wz+hd/2,door:b[6]==='door'});}}
+      out.push({minX:x+wx-hw/2,maxX:x+wx+hw/2,minY:y+cy-h/2,maxY:y+cy+h/2,minZ:z+wz-hd/2,maxZ:z+wz+hd/2,door:b[6]==='door',glass:b[6]==='glass'});}}
   return out;}
 function addPiece(t,x,y,z,rot,hp,data,f=0){
   if(typeof grassDirty!=='undefined')grassDirty=true;   // v1.00 ruoho väistää rakennuksia
@@ -232,12 +241,12 @@ function addPiece(t,x,y,z,rot,hp,data,f=0){
   scene.add(mesh);
   const p={t,x,y,z,rot,f,hp:hp??def.hp,mesh,data:data||{},cols:[],dmgLv:0};
   mesh.userData.piece=p;mesh.traverse(m=>{m.userData.piece=p;});if(typeof applyPieceDetail==='function')applyPieceDetail(mesh);
-  for(const b of worldBoxes(t,x,y,z,rot,f)){const c=addBox(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ,p);c.door=b.door;p.cols.push(c);}
+  for(const b of worldBoxes(t,x,y,z,rot,f)){const c=addBox(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ,p);c.door=b.door;c.glass=b.glass;p.cols.push(c);}
   if(isFirePiece(t)){p.data.fuel=p.data.fuel??4;p.data.burn=p.data.burn??0;if(!p.data.full)p.data.full=Math.max(90,fireRem(p));p.data.cook=(p.data.cook||[]).map(c=>typeof c==='number'?{id:'liha',t:0,need:10}:c);lightSources.push(p.light={x,y:y+.8,z,c:0xff8c3a,i:2,on:()=>p.data.fuel>0,piece:p});}
   // Seisova soihtu palaa p.data.burn sekuntia (5 min aluksi; puu nollaa 10 min, hiili 30 min).
   if(t==='seinasoihtu'){p.data.burn=p.data.burn??900;if(!p.data.full)p.data.full=Math.max(60,p.data.burn);const a=(p.rot||0)*Math.PI/4;lightSources.push(p.light={x:x+Math.sin(a)*.45,y:y+.7,z:z+Math.cos(a)*.45,c:0xffa04a,i:1.5,on:()=>p.data.burn>0,piece:p});}
   if(t==='soihtuteline'){p.data.burn=p.data.burn??300;if(!p.data.full)p.data.full=Math.max(60,p.data.burn);lightSources.push(p.light={x,y:y+1.8,z,c:0xffa04a,i:1.5,on:()=>p.data.burn>0,piece:p});}
-  if(t==='sulatin'){p.data.ore=p.data.ore||0;p.data.iore=p.data.iore||0;p.data.wood=p.data.wood||0;p.data.done=p.data.done||0;p.data.idone=p.data.idone||0;p.data.t=0;lightSources.push(p.light={x,y:y+.6,z,c:0xff7a2a,i:1.2,on:()=>(p.data.ore>0||p.data.iore>0)&&p.data.wood>0,piece:p});}
+  if(t==='sulatin'){p.data.ore=p.data.ore||0;p.data.iore=p.data.iore||0;p.data.wood=p.data.wood||0;p.data.done=p.data.done||0;p.data.idone=p.data.idone||0;p.data.sand=p.data.sand||0;p.data.glass=p.data.glass||0;p.data.t=0;lightSources.push(p.light={x,y:y+.6,z,c:0xff7a2a,i:1.2,on:()=>(p.data.ore>0||p.data.iore>0||p.data.sand>=2)&&p.data.wood>0,piece:p});}
   if(t==='tyopenkki')p.ring=makeBenchRing(x,z,y<DUN.y+5&&y>DUN.y-5&&Math.abs(y-terrainH(x,z))>3?y:null);
   if(def.store){p.data.lv=p.data.lv||0;p.data.items=p.data.items||[];while(p.data.items.length<storeSlots(p))p.data.items.push(null);}
   if(bt(t)==='ovi'){p.data.open=!!p.data.open;setDoor(p,p.data.open,p.data.dir||1);}

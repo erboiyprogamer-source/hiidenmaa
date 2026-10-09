@@ -48,7 +48,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/bossmodels.js` | pomojen korkealaatuiset mallit (`figVartija`, `figJaatar`, `figKalmaherra`, `figAarni`), apurit `bqLump`/`bqTaper`/`bqCloth`/`bqCrystal`…, Ultra-efektit `f.fx` + `bossUltra()` |
 | `js/resources.js` | `NODE`, `NGEO`, sijoittelu ruutuihin (`CHN`, `VIS_R`), `nodes`, tukit (`logs`), `regrowForest`, kohteiden suoja `siteBlocked`, ruoho `rebuildGrass`, maaston LOD `terrLodTick`, staattisten yhdistäminen `mergeStatics`/`mergeTick` |
 | `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`), `wallTorch`, `brazier`, `rockC`, liekkirekisteri `FLAMES`, arkut `makeChest`/`openLid`/`syncChests` |
-| `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, `PIECES`, `pieceBoxes`, `buildPieceMesh`, `addPiece`, `removePiece` |
+| `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, `PIECES`, `pieceBoxes` (tagit `door`/`glass`), `buildPieceMesh` (`GLASS_MAT`, `IRON_MAT`), `addPiece`, `removePiece` |
 | `js/mobs.js` | `MOBDEF`, mallit (`figGolem` kivivartija, `figYlimys`, `figKalmo`, `figHiisi`; pomot bossmodels.js:ssä), `spawnMob`, `mobs`, `boss` |
 | `js/dungeons.js` | `REALMS` (3 ulottuvuutta, avainketju `lock`/`key`/`alt`), generaattorit, `ensureRealm`, koristeet (`dressFloor`, tynnyrit, spawneri), portaalit, `realmBossAI`, Kalmanpesän murskaus `hitSpawner`, usva/höyry/pisarat, `P.spawnProt`, `fo(k)` |
 | `js/story.js` | löytöpaikat (`SITE_KEYS`, rauniot, arkkukivilinnakkeet `FORT`), vartijat (`GUARDS`), lisäriimukivet (`XRUNES`), tehtävät (`QUESTS`), leirit `CAMPS`/`ensureCamps`, kiviröykkiöt `STASHES`, maailman saalis `planLoot`/`wlLoot`, arvoesineiden palautus `relocateValuable`/`valuableCensus`, kyltit `SIGNS` |

@@ -232,6 +232,15 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v2.07 hiekkakasat rannoilla 5–10, sulatin 2 hiekkaa → 1 lasi 15 s (vuorotellen malmin kanssa), lasi-ikkunat (näkee läpi, ei kulkua/nuolia, rikkoutuu aukkoikkunaksi), rautaovi 900',()=>{
+    const S=nodes.filter(n=>n.type==='hiekkakasa');const ok1=S.length>=5&&S.length<=10&&S.every(n=>biomeAt(n.x,n.z,terrainH(n.x,n.z))==='beach')&&NODE.hiekkakasa.respawn===1200&&NODE.hiekkakasa.n.join()==='2,3';
+    const made=[];let res;try{const x=P.pos.x+30,z=P.pos.z+30;const su=addPiece('sulatin',x,terrainH(x,z),z,0);made.push(su);su.data.sand=4;su.data.wood=5;let t=0;while(!su.data.glass&&t<20){updateStations(1/30);t+=1/30;}const ok2=su.data.glass===1&&Math.abs(t-GLASS_T)<.2&&GLASS_T===15&&SAND_MAX===20;
+      const w=addPiece('lasiikkuna',x+6,terrainH(x+6,z),z,0);made.push(w);const gc=w.cols.find(c=>c.glass),cx=(gc.minX+gc.maxX)/2,cy=(gc.minY+gc.maxY)/2,cz=(gc.minZ+gc.maxZ)/2,tx=(gc.maxX-gc.minX)<(gc.maxZ-gc.minZ);
+      const ok3=losClear(cx-(tx?3:0),cy,cz-(tx?0:3),cx+(tx?3:0),cy,cz+(tx?0:3))&&arrowBlocked(cx,cy,cz)&&pointBlocked(cx,cy,cz);const om=msg;msg=()=>{};damagePiece(w,200,'mob');msg=om;
+      const nw=pieces.find(q=>Math.abs(q.x-x-6)<.01&&Math.abs(q.z-z)<.01);made.push(nw);const ok4=nw&&nw.t==='ikkunaseina'&&PIECES.kivilasiikkuna.glass==='kiviikkuna'&&PIECES.lasiikkuna.hp===100&&PIECES.kivilasiikkuna.hp===250;
+      const ok5=PIECES.rautaovi.hp===900&&PIECES.rautaovi.req.rauta===4&&PIECES.rautaovi.req.puu===2&&bt('rautaovi')==='ovi'&&ITEMS.hiekka&&ITEMS.lasi&&dropMesh('lasi').userData.m3d;
+      res=ok1&&ok2&&ok3&&ok4&&ok5||`virhe kasat ${ok1}(${S.length}) uuni ${ok2} lasi ${ok3} rikko ${ok4} ovi ${ok5}`;}
+    finally{for(const p of made)if(p&&pieces.includes(p))removePiece(p);}return res;});
   t('v2.06 puunuolet (puusta, putoaa +30 %, tuuli +20 %, vahinko −40 %), tuuli +10 %, ohjeet piiloon kun näppäinopasteet pois',()=>{
     const A=AMMO_STATS.puunuolet,r=RECIPES.find(x=>x.id==='puunuolet');const ok1=A&&A.grav===1.3&&A.wind===1.2&&A.dmg===.6&&r&&Object.keys(r.req).join()==='puu'&&AMMO[0]==='puunuolet'&&!!icon('puunuolet')&&Math.abs(ARROW_WIND-.143)<1e-9;
     // lento: sama lähtö, tuuli sivulta → puunuoli putoaa ja kaartuu enemmän kuin piikivinuoli

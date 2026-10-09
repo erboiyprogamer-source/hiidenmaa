@@ -35,10 +35,10 @@ function ceilingAt(x,z,r,head){let m=Infinity;gridQuery(x,z,r,_cl);for(const c o
 // Näköyhteys pisteestä A pisteeseen B: ei rakenteita välissä (päiden .4 m ohitetaan).
 // doors=true: ovet (myös suljetut) estävät, esim. iskuissa. Ilman sitä ovet eivät estä näköyhteyttä.
 function losClear(ax,ay,az,bx,by,bz,doors){const dx=bx-ax,dy=by-ay,dz=bz-az,L=Math.hypot(dx,dy,dz);
-  for(let t=.4;t<L-.4;t+=.3){const k=t/L;if(pointBlocked(ax+dx*k,ay+dy*k,az+dz*k,doors))return false;}return true;}
+  for(let t=.4;t<L-.4;t+=.3){const k=t/L;if(pointBlocked(ax+dx*k,ay+dy*k,az+dz*k,doors,false,true))return false;}return true;}   // v2.07: lasi ei estä näkemistä
 /* v1.98: nuolen tarkka osuma – laatikot ilman 15 cm:n marginaalia (2 cm), ympyrät (puut, kivet, tukit) tarkalleen, suljetut ovet estävät (avoin ovi on `off`).
    Nuoli pysähtyy siihen pintaan, johon kärki osuu (ei seinän sisään eikä sen läpi; liike pilkotaan askeliin, ks. state.js arrowStep). */
 function arrowBlocked(x,y,z){gridQuery(x,z,.1,_cl);for(const c of _cl){if(c.t==='c'){if(y>c.minY&&y<c.maxY&&(x-c.x)**2+(z-c.z)**2<c.r*c.r)return true;continue;}
   if(c.t==='b'&&x>c.minX-.02&&x<c.maxX+.02&&z>c.minZ-.02&&z<c.maxZ+.02&&y>c.minY-.02&&y<c.maxY+.02)return true;}return false;}
 // v1.39 (lista 4, extra 1): circ = myös ympyräosumat (puut, kivet, tukit, linnakkeen muuri) – nuolet ja veripisarat eivät mene niiden läpi
-function pointBlocked(x,y,z,doors,circ){gridQuery(x,z,.2,_cl);for(const c of _cl){if(c.t==='c'){if(!circ)continue;if(y>c.minY&&y<c.maxY&&(x-c.x)**2+(z-c.z)**2<(c.r+.05)**2)return true;continue;}if(c.t!=='b'||(c.door&&!doors))continue;if(x>c.minX-.15&&x<c.maxX+.15&&z>c.minZ-.15&&z<c.maxZ+.15&&y>c.minY-.15&&y<c.maxY+.15)return true;}return false;}
+function pointBlocked(x,y,z,doors,circ,seeThru){gridQuery(x,z,.2,_cl);for(const c of _cl){if(c.t==='c'){if(!circ)continue;if(y>c.minY&&y<c.maxY&&(x-c.x)**2+(z-c.z)**2<(c.r+.05)**2)return true;continue;}if(c.t!=='b'||(c.door&&!doors)||(seeThru&&c.glass))continue;if(x>c.minX-.15&&x<c.maxX+.15&&z>c.minZ-.15&&z<c.maxZ+.15&&y>c.minY-.15&&y<c.maxY+.15)return true;}return false;}
