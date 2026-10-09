@@ -60,14 +60,15 @@ function updateHUD(dt){
   // v1.23 (kohta 17): tähtäysympyrä = nuolen hajonta: iso alussa, pienenee vedettäessä, keltainen → punainen, täysi veto = pieni + piste
   updDropRet(dt);
   // v2.01: tuulivaroitus jousta jännittäessä – kova tuuli (≥ 8 m/s, myrsky ≥ 15) kaartaa nuolta; nuoli näyttää tuulen suunnan ruudulla
-  {const ww=$('#windWarn');if(ww){const on=P.drawing&&!P.inDun&&WIND.spd>=WIND_WARN&&state==='play';if(on!==!ww.hidden)ww.hidden=!on;
-    if(on){const st=WIND.spd>=15,rr=WIND.x*Math.cos(camYaw)-WIND.z*Math.sin(camYaw),ff=-(WIND.x*Math.sin(camYaw)+WIND.z*Math.cos(camYaw));
-      ww.classList.toggle('storm',st);const t=`${st?'Myrskytuuli':'Kova tuuli'} ${Math.round(WIND.spd)} m/s – nuoli kaartuu`;const b=ww.querySelector('b');if(b.textContent!==t)b.textContent=t;
+  // v2.04: tuulimittari näkyy aina jousta jännittäessä (ulkona): suunta ruudulla ja nopeus reaaliajassa; kova tuuli (≥ 8 m/s) varoituksena
+  {const ww=$('#windWarn');if(ww){const on=P.drawing&&!P.inDun&&state==='play';if(on!==!ww.hidden)ww.hidden=!on;
+    if(on){const st=WIND.spd>=15,strong=WIND.spd>=WIND_WARN,rr=WIND.x*Math.cos(camYaw)-WIND.z*Math.sin(camYaw),ff=-(WIND.x*Math.sin(camYaw)+WIND.z*Math.cos(camYaw));
+      ww.classList.toggle('storm',st);ww.classList.toggle('calm',!strong);const sp=WIND.spd.toFixed(1).replace('.',',');const t=strong?`${st?'Myrskytuuli':'Kova tuuli'} ${sp} m/s – nuoli kaartuu`:`Tuuli ${sp} m/s`;const b=ww.querySelector('b');if(b.textContent!==t)b.textContent=t;
       ww.querySelector('.wwArr').style.transform=`rotate(${Math.atan2(-ff,rr)}rad)`;}}}
   {const c=$('#cross');if(P.drawing){const sp=bowSpread(),k=Math.min(1,P.bowDraw||0),R=Math.max(k>=1?(bowCrouch()?2:3):4,Math.tan(sp*Math.PI/180)/Math.tan(camera.fov*Math.PI/360)*innerHeight/2);
-      c.className='aim'+(sp<.35?' full':'')+(k>=1?' blink':'');c.style.width=c.style.height=(R*2)+'px';c.style.margin=`${-R-2}px 0 0 ${-R-2}px`;
+      c.className='aim'+(sp<.35?' full':'');c.style.opacity=k>=1?aimBlinkOp():'';c.style.width=c.style.height=(R*2)+'px';c.style.margin=`${-R-2}px 0 0 ${-R-2}px`;
       c.style.borderColor=`rgb(${Math.round(lerp(232,224,k))},${Math.round(lerp(196,72,k))},${Math.round(lerp(90,60,k))})`;}
-    else if(c.className){c.className='';c.style.width=c.style.height=c.style.margin=c.style.borderColor='';}}
+    else if(c.className){c.className='';c.style.width=c.style.height=c.style.margin=c.style.borderColor=c.style.opacity='';}}
   // Ruudun ilmoitukset piilotetaan kun jokin valikko/paneeli on auki (tai peli tauolla); ne säilyvät T-lokissa ja palaavat valikon sulkeuduttua.
   {const hide=!!openPanel||state!=='play';if(hide!==msgHidden){msgHidden=hide;$('#msgs').style.visibility=hide?'hidden':'';}}
   bossBarTick(dt);peaceTick();   // v1.94 eeppinen pomopalkki (joka ruudunpäivitys: sulava viivepalkki); rauhan ilmoitus 2 s voittoruudun sulkemisesta
@@ -655,25 +656,31 @@ applyHudMode();
    d:n matkalla ≈ ½·g·(d/v)², kulma atan(pudotus/d) → pikseleinä kameran näkökentän mukaan. Lyhyemmät viivat kauemmas, numerot oikealla. */
 /* v2.03 KYYKKYTÄHTÄIN (täysi veto kyykyssä): lentorata projisoidaan ruudulle (bowTraj – katsekulma, painovoima, tuuli). Ohut viiva tähtäyspisteestä alas
    lentoradan merkkien kautta, merkit (leveys kapenee etäisyyden mukaan), pienet metrit sivussa (m vain viimeisessä) ja maahan osuma ▼. Z vaihtaa tyyliä:
-   Viivasto / Pisteet / Kevyt (localStorage hiidenmaa_aimst). Täydellä vedolla piste ja viivat himmenevät 2 s välein läpinäkyviksi ja palaavat (CSS aimBlink). */
+   Viivasto / Pisteet / Kevyt (localStorage hiidenmaa_aimst). Vilkkuminen: ks. aimBlinkOp (v2.04). */
 const AIM_ST=['Viivasto','Pisteet','Kevyt'];let aimSt=0;try{aimSt=(+localStorage.getItem('hiidenmaa_aimst')||0)%AIM_ST.length;}catch(e){}
 function aimStyleNext(){aimSt=(aimSt+1)%AIM_ST.length;try{localStorage.setItem('hiidenmaa_aimst',aimSt);}catch(e){}dropT=0;sfx('pickup',1.6,.3);}
 let dropT=0;
+/* v2.04 VILKKUMINEN (oletus pois, X kytkee jousta jännittäessä; localStorage hiidenmaa_aimblink): täydellä vedolla piste ja apuviivat himmenevät
+   SAMAAN AIKAAN 3 s välein (3 s näkyvä, 3 s himmeä 0,55, pehmeä 0,4 s siirtymä) – yksi yhteinen ajastin, ei erillisiä CSS-animaatioita. */
+let aimBlink=false;try{aimBlink=localStorage.getItem('hiidenmaa_aimblink')==='1';}catch(e){}
+function aimBlinkToggle(){aimBlink=!aimBlink;try{localStorage.setItem('hiidenmaa_aimblink',aimBlink?'1':'0');}catch(e){}aimHintK='';sfx('pickup',1.6,.3);msg(`Tähtäimen vilkkuminen ${aimBlink?'päällä':'pois'}.`);}
+function aimBlinkOp(){if(!aimBlink)return 1;const t=(performance.now()/1000)%6;return t<3?.55+.45*sstep(0,.4,t):1-.45*sstep(3,3.4,t);}
 function updDropRet(dt){const el=$('#dropRet');if(!el)return;const on=P.drawing&&bowCrouch()&&(P.bowDraw||0)>=1&&state==='play'&&!P.dead;
   aimHint(on);if(!on){if(!el.hidden){el.hidden=true;el.innerHTML='';}return;}
-  if(el.hidden){el.hidden=false;dropT=0;}dropT-=dt||.016;if(dropT>0)return;dropT=1/30;
+  if(el.hidden){el.hidden=false;dropT=0;}el.style.opacity=aimBlinkOp();dropT-=dt||.016;if(dropT>0)return;dropT=1/30;
   const W=innerWidth,H=innerHeight,cx=W/2,cy=H/2,T=bowTraj(),pr=v=>{const q=v.clone().project(camera);return q.z>1?null:{x:(q.x+1)/2*W,y:(1-q.y)/2*H};};
-  const pts=[];let ly=-1e9;for(const m of T.marks){const s=pr(m.p);if(!s||s.y<cy+3||s.y>H||s.x<0||s.x>W)continue;if(s.y-ly<11)continue;ly=s.y;pts.push({d:m.d,...s});}
-  const ld=T.land&&pr(T.land.p),st=AIM_ST[aimSt];let h='',f=n=>n.toFixed(1);
-  if(st==='Viivasto'&&pts.length){const pl=[`${cx},${cy+4}`].concat(pts.map(p=>`${f(p.x)},${f(p.y)}`)).join(' ');h+=`<polyline class="sh" points="${pl}"/><polyline points="${pl}"/>`;}
+  // v2.04: merkit suoraan tähtäyspisteen alla (x = keskikohta), korkeus todellisesta lentoradasta; viivasto symmetrinen
+  const pts=[];let ly=-1e9;for(const m of T.marks){const s=pr(m.p);if(!s||s.y<cy+3||s.y>H)continue;if(s.y-ly<11)continue;ly=s.y;pts.push({d:m.d,x:cx,y:s.y});}
+  const ld0=T.land&&pr(T.land.p),ld=ld0&&{x:cx,y:ld0.y},st=AIM_ST[aimSt];let h='',f=n=>n.toFixed(1);
+  if(st==='Viivasto'&&(pts.length||ld)){const y2=Math.max(pts.length?pts[pts.length-1].y:cy,ld&&ld.y<H?ld.y-6:0);const pl=`${cx},${cy+4} ${cx},${f(y2)}`;h+=`<polyline class="sh" points="${pl}"/><polyline points="${pl}"/>`;}
   pts.forEach((p,i)=>{const w=Math.max(8,30-p.d*.17),last=i===pts.length-1,lab=`<text x="${f(p.x+w/2+5)}" y="${f(p.y+3.5)}">${p.d}${last?' m':''}</text>`;
-    if(st==='Pisteet')h+=`<circle class="sh" cx="${f(p.x)}" cy="${f(p.y)}" r="3"/><circle cx="${f(p.x)}" cy="${f(p.y)}" r="2"/>`+lab;
+    if(st==='Pisteet')h+=`<circle class="sh" cx="${f(p.x)}" cy="${f(p.y)}" r="2.4"/><circle cx="${f(p.x)}" cy="${f(p.y)}" r="1.6"/>`+lab;
     else{h+=`<line class="sh" x1="${f(p.x-w/2)}" y1="${f(p.y)}" x2="${f(p.x+w/2)}" y2="${f(p.y)}"/><line x1="${f(p.x-w/2)}" y1="${f(p.y)}" x2="${f(p.x+w/2)}" y2="${f(p.y)}"/>`;if(st!=='Kevyt'||last||i%2===1)h+=lab;}});
   if(ld&&ld.y>cy&&ld.y<H)h+=`<text class="land" x="${f(ld.x)}" y="${f(ld.y+4)}" text-anchor="middle">▼</text><text class="land s" x="${f(ld.x+9)}" y="${f(ld.y+4)}">${T.land.d} m</text>`;
   el.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${h}</svg>`;}
 // täyden vedon ohjeet: C (kyykky / nouse); Z (vaihda tähtäin) vain kyykyssä
 let aimHintK='';
 function aimHint(crouchOn){const el=$('#aimHint');if(!el)return;const full=P.drawing&&(P.bowDraw||0)>=1&&state==='play'&&!P.dead;
-  const k=full?(bowCrouch()?'c'+aimSt:'s'):'';if(k===aimHintK)return;aimHintK=k;el.hidden=!full;if(!full)return;
-  el.innerHTML=bowCrouch()?`<span><kbd>${keyLabel(BIND.crouch)}</kbd>Nouse ylös</span><span><kbd>${keyLabel(BIND.down)}</kbd>Tähtäin: ${AIM_ST[aimSt]} (${aimSt+1}/${AIM_ST.length})</span>`
-    :`<span><kbd>${keyLabel(BIND.crouch)}</kbd>Kyykkyyn: tarkka laukaus ja lentorata</span>`;}
+  const k=full?(bowCrouch()?'c'+aimSt:'s')+aimBlink:'';if(k===aimHintK)return;aimHintK=k;el.hidden=!full;if(!full)return;
+  el.innerHTML=bowCrouch()?`<span><kbd>${keyLabel(BIND.crouch)}</kbd>Nouse ylös</span><span><kbd>${keyLabel(BIND.down)}</kbd>Tähtäin: ${AIM_ST[aimSt]} (${aimSt+1}/${AIM_ST.length})</span><span><kbd>${keyLabel(BIND.remove)}</kbd>Vilkkuminen: ${aimBlink?'päällä':'pois'}</span>`
+    :`<span><kbd>${keyLabel(BIND.crouch)}</kbd>Kyykkyyn: tarkka laukaus ja lentorata</span><span><kbd>${keyLabel(BIND.remove)}</kbd>Vilkkuminen: ${aimBlink?'päällä':'pois'}</span>`;}

@@ -232,6 +232,15 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v2.04 linnakkeen muurin harja on kävelypinta (ympyrä lattiana), tähtäimen merkit suoraan pisteen alla, tuulimittari aina jännittäessä, vilkkuminen X (oletus pois, synkronoitu)',()=>{
+    const k=Object.keys(FORT)[0],L=LOC[k],y=terrainH(L.x,L.z),a=FORT[k].a0+1,x=L.x+Math.cos(a)*5.5,z=L.z+Math.sin(a)*5.5,g=groundAt(x,z,.38,y+3.6);
+    const ok1=Math.abs(g-(y+3.57))<.02;const sv=[camYaw,camPitch,P.crouch,P.onGround,P.crouchK,P.pos.clone()];let ok2=false,ok3=false,ok4=false,ok5=false;
+    try{invAdd('jousi',1);invAdd('nuolet',5);const bw=inv.find(q=>q&&q.id==='jousi');if(!bw.eq)toggleEquip(bw);camYaw=.8;camPitch=-.12;P.drawing=true;P.crouch=true;P.onGround=true;P.crouchK=1;P.bowDraw=1;P.drawT=2;
+      for(let i=0;i<15;i++)updateCamera(1/30);camera.updateMatrixWorld(true);dropT=0;updateHUD(1/30);const xs=[...$('#dropRet').querySelectorAll('line')].map(l=>(+l.getAttribute('x1')+ +l.getAttribute('x2'))/2);
+      ok2=xs.length>0&&xs.every(v=>Math.abs(v-innerWidth/2)<.6);ok3=!$('#windWarn').hidden;
+      const b0=aimBlink;aimBlink=true;updateHUD(1/30);const o1=+$('#cross').style.opacity,o2=+$('#dropRet').style.opacity;ok4=o1>=.55&&Math.abs(o1-o2)<.05&&aimBlinkOp()>=.55;aimBlink=false;updateHUD(1/30);ok5=$('#cross').style.opacity==='1'||$('#cross').style.opacity==='';aimBlink=b0;}
+    finally{P.drawing=false;updateHUD(1/30);[camYaw,camPitch,P.crouch,P.onGround,P.crouchK]=sv;P.pos.copy(sv[5]);}
+    return ok1&&ok2&&ok3&&ok4&&ok5||`virhe harja ${ok1}(${(g-y).toFixed(2)}) merkit ${ok2} tuuli ${ok3} vilkku ${ok4}/${ok5}`;});
   t('v2.03 jousi 0,4 s, kyykkytähtäimen lentorata = oikea nuoli (eri katsekulmat), tyylit Z:llä, ohjeet; valojen näkyvyys/kantama ja varjoetäisyys esiasetuksissa, tulinuolen hehku kaukaa',()=>{
     const sv=[camYaw,camPitch,WIND.spd,P.crouch,P.onGround,P.crouchK,aimSt,JSON.stringify(SET)];let res;const om=msg;msg=()=>{};
     try{invAdd('jousi',1);invAdd('nuolet',10);const bw=inv.find(x=>x&&x.id==='jousi');if(!bw.eq)toggleEquip(bw);WIND.spd=0;let worst=0;

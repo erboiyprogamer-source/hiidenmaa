@@ -294,6 +294,11 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Korjaus: `bowAimPoint` = `camRayPoint` + olentojen lieriöt. Jos lisäät uuden kohteen tyypin, johon pitää voida tähdätä (esim. liikkuvat maalitaulut), lisää se
   `bowAimPoint`iin. Älä vaihda nuolen lähtöpistettä kameraan (nuoli näyttäisi lähtevän pelaajan ohi).
 
+## 40. Arkkukivilinnakkeen muurin harjalla jalat upposivat ja pelaaja putosi (v2.04)
+- Syy: harjan törmäys on ympyröitä (`addCircle`), ja `groundAt` käyttää lattiana vain laatikoita → harjalla ei ollut maata.
+- Korjaus: ympyrä, jolla `c.ground=1`, on myös lattia (`groundAt`). Jos teet ympyrätörmäyksistä kävelypinnan (muuri, pylväs, kivi), aseta `ground=1`;
+  puita ja muita korkeita ympyröitä ei saa merkitä (latvasta tulisi lattia).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

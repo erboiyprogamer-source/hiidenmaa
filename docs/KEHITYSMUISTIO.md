@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.03)
+## Nykytila (päivitetty v2.04)
 
-- **Versio 2.03**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 2.04**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.04 (linnakkeen muurin harja, tähtäin suoraan alas, tuulimittari)
+- **Arkkukivilinnakkeen muuri (KORJAUKSET 40):** harjan törmäys on ympyröitä (v1.39), mutta `groundAt` huomioi vain laatikot → harjalla ei ollut lattiaa,
+  pelaaja vajosi ja putosi (testissä heti 3,57 m alas). Nyt ympyrä, jolla `ground=1`, toimii lattiana (keskipiste alle `c.r + 0,35·r` päässä), harjan
+  pinta sammaleen tasolla (+7 cm). Testattu: koko kierros harjalla kolmessa linnakkeessa, jalat tasan pinnalla.
+- **Kyykkytähtäin:** merkit ja viiva nyt suoraan tähtäyspisteen alla (x = ruudun keskikohta), symmetrisesti; korkeus tulee yhä todellisesta lentoradasta
+  (katsekulma, painovoima, tuuli). Maahan osuma ▼ samalla viivalla. Punainen täyden vedon piste 4 → 2,8 px (−30 %); Pisteet-tyylin pisteet −20 % (r 1,6).
+- **Vilkkuminen** oletuksena POIS; **X** (`BIND.remove`, jousta jännittäessä) kytkee (`aimBlink`, localStorage `hiidenmaa_aimblink`). Piste ja viivat
+  vilkkuvat samaan aikaan yhdellä ajastimella (`aimBlinkOp`): 3 s näkyvä, 3 s himmeä (0,55), pehmeä 0,4 s siirtymä. Ohjeissa X-rivi (seisten ja kyykyssä).
+- **Tuulimittari** (`#windWarn`) näkyy aina jousta jännittäessä ulkona ristikon yläpuolella: "Tuuli 3,3 m/s" + suuntanuoli reaaliajassa (hillitty);
+  ≥ 8 m/s varoitus ⚠ kuten ennen. Tuuli vaikuttaa nuoleen (`ARROW_WIND` .13, sulitetut puolet) ja tähtäimen laskettuun rataan.
+- Tarkistukseen 1 rivi.
 
 ### v2.03 (valojen etäisyydet, tulinuolen hehku kaukaa, uusi kyykkytähtäin, minimiveto 0,4 s)
 - **Minimiveto** `BOW_MIN_T` 0,7 → 0,4 s.

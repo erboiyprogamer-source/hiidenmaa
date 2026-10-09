@@ -15,7 +15,8 @@ const STEPUP=.55, _cl=[];
 function groundAt(x,z,r,feet){
   let g=terrainH(x,z);
   gridQuery(x,z,r+.1,_cl);
-  for(const c of _cl){if(c.t!=='b'||c.noGround)continue;if(c.maxY>feet+STEPUP+.01)continue;
+  for(const c of _cl){if(c.t==='c'&&c.ground){if(c.maxY>feet+STEPUP+.01||c.maxY<=g)continue;if(dist2(x,z,c.x,c.z)<(c.r+r*.35)**2)g=c.maxY;continue;}   // v2.04: ympyrä lattiana (linnakkeen muurin harja)
+    if(c.t!=='b'||c.noGround)continue;if(c.maxY>feet+STEPUP+.01)continue;
     const cx=clamp(x,c.minX,c.maxX),cz=clamp(z,c.minZ,c.maxZ);if(dist2(x,z,cx,cz)<(r*.7)**2&&c.maxY>g)g=c.maxY;}
   return g;
 }
