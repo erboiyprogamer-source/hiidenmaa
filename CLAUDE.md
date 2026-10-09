@@ -58,7 +58,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/input.js` | näppäimet, hiiri, hiiren lukitus; virtuaalinen osoitin `VC`/`vcSync`/`vcFlush` (lukitus pysyy paneelien ajan; herkkyys `SET.sens`/`SET.curSens`) |
 | `js/actions.js` | hyökkäys, vahinko, syöminen, `interact()`, alttari, luolastoon meno; jousi `bowSpread`/`bowShot`/`bowCrouch`, tähtäys `bowAimPoint`, lentorata `bowTraj` |
 | `js/building.js` | rakennushaamu, ruudukkoon kohdistus, reunakohdistus `smartSnap`, `validPlace`, purku |
-| `js/environment.js` | päivä/yö (`DAY_LEN`), sää, tuuli (`WIND`, `updateWind`), valot, selviytyminen (nälkä, kylmä, lepo) |
+| `js/environment.js` | päivä/yö (`DAY_LEN`), sää, tuuli (`WIND`, `updateWind`), valot, selviytyminen (nälkä, kylmä, lepo), kodin lämpö `HOME`/`homeScan`/`homeTick` |
 | `js/player.js` | liike, fysiikka, animaatio (lyönnit `swingPose`, kirves/hakku `chopIK`/`CHOP_K`, käsien IK `armIK`, läpäisyn esto `armClear`), DEV-lento, kuolema, uudelleensyntyminen, nukkuminen |
 | `js/ai.js` | vihollisten tekoäly (luonteet `per`, `temperAI`, `stalkAI`), pomon hyökkäykset, `SPAWN`-taulukot, `spawnScary`, jousikalmot `archerAI`, auringossa palaminen `sunBurnAI`, voitto/rauha `bossVictory`/`peaceRefill`, työpisteiden päivitys |
 | `js/camera.js` | kolmannen persoonan kamera |

@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'2.08';
+:root{--css-v:'2.09';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -26,7 +26,7 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 #status{position:absolute;left:16px;top:120px;display:flex;flex-direction:column;gap:5px;align-items:flex-start}
 .chip{font-size:12px;font-weight:700;padding:3px 9px;border-radius:3px;background:rgba(19,17,14,.75);border:1px solid var(--line);display:flex;gap:6px;align-items:center}
 .chip b{width:7px;height:7px;border-radius:50%;display:inline-block}
-.chip.good b{background:var(--moss)} .chip.bad b{background:var(--bad)} .chip.neu b{background:var(--frost)}
+.chip.good b{background:var(--moss)} .chip.bad b{background:var(--bad)} .chip.neu b{background:var(--frost)} .chip.off{opacity:.55;filter:grayscale(1)} .chip.off b{background:#888}   /* v2.09 harmaa tehoste (ovi auki) */
 #topright{position:absolute;right:16px;top:calc(16px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 #mini{width:150px;height:150px;border-radius:50%;border:2px solid var(--line2);box-shadow:0 0 0 4px rgba(19,17,14,.6)}
 #clock{font-size:13px;color:var(--bone);background:rgba(19,17,14,.75);padding:3px 10px;border-radius:3px;font-weight:700}

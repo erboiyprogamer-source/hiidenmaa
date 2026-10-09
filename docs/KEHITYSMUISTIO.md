@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.08)
+## Nykytila (päivitetty v2.09)
 
-- **Versio 2.08**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 2.09**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,19 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.09 (kodin lämpö – käyttäjän prompti osa 3/3)
+- **Tunnistus** (`homeScan`, environment.js, 0,5 s välein, vain jos rakennusosia 15 m sisällä): 16 vaakasädettä (kulmasiirto 0,031 rad, ettei säde kulje
+  seinäsaumaa pitkin) kolmella korkeudella 0,6 / 1,5 / 2,2 m enintään 15 m; jokaisen on osuttava **rakennusosaan** (ovet lasketaan kiinni, lasi kelpaa) tai
+  maastoon alle 6 m:ssä (rinnetalo). Puut/kivet/rauniot eivät kelpaa (aukon läpi mennyt säde osui ennen kaukaiseen puuhun). Katto: `sheltered` pelaajan
+  kohdalla ja 1 m joka suuntaan. **Aukkoikkuna** tai **avoin ovi** talon reunalla (`homeOnEdge`, keskipiste ±1,6 m reunasta) tarkistetaan erikseen, koska
+  16 sädettä voi ohittaa kapean aukon: aukkoikkuna → ei tehostetta; avoin ovi → "ovi auki".
+- **Tasot** (`HOME.lvl`): 1 = **Mukava lämpötila** (+0,5 hp/s, nälkä × 0,7), 2 = **Lämmin koti** (sisällä palanut lämmönlähde ≥ 5 s: nuotio/grilli `fuel>0`,
+  seisova soihtu/seinäsoihtu `burn>0`; +1,0 hp/s, nälkä × 0,5). Lähde sisällä = etäisyys < reunan etäisyys siihen suuntaan (viereisten säteiden suurin, koska
+  esine voi katkaista säteen). Lähde sammuu → 30 s → takaisin tasolle 1. Ovi auki: 20 s armo, sitten harmaa tehoste "… – ovesi on auki" (`.chip.off`) +
+  ilmoitus, sulkiessa palaa heti. Ulkona taso säilyy 20 s ja hiipuu (`HOME.k`). Parannus ei toimi nälkäisenä 0 tai pahoinvoinnissa.
+- **Nukkuminen** (`sleepAt`): ei enää palauta terveyttä täyteen; Mukava +10 %, Lämmin koti +20 % enimmäisterveydestä (muualla 0), ilmoitus herätessä.
+- Testattu (kuva-/simulaatiotesti): kaikki yllä olevat siirtymät. Tarkistukseen 1 rivi.
 
 ### v2.08 (viholliset: ovet, muisti ja piiritys – käyttäjän prompti osa 2/3)
 - **Näköyhteys:** vihollisten `m.los` laskee nyt `losClear(...,true)` → suljettu ovi estää näkemisen (avoin ovi `off` ei); lasi ei estä (v2.07).

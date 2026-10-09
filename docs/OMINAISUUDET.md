@@ -57,7 +57,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   −40 % kestävyyden palautus), nälkä / nälkäinen, pahoinvointi, vatsakipu, ylikuormitus, levännyt (12 s tulen ja katon alla →
   360 s, kestävyys +45 %), voimistunut, lämmin, suojassa, hiipii.
 - **Kylmä tulee:** märkänä, lumisateessa vuorilla tai yöllä ulkona ilman lämpimiä vaatteita, ellei tulen lähellä.
-- **Lepo ja uni:** sänky asettaa herätyspaikan; nukkuminen vaatii yön, katon eikä vihollisia 20 m sisällä → seuraava aamu, levännyt.
+- **Lepo ja uni:** sänky asettaa herätyspaikan; nukkuminen vaatii yön, katon eikä vihollisia 20 m sisällä → seuraava aamu, levännyt. Terveys palautuu vain kodin lämmössä: Mukava +10 %, Lämmin koti +20 % (v2.09).
 - **Kuoleman ruutu (Kaaduit):** kaikki valikot ja päävalikko sulkeutuvat, kursori näkyy, herätys napista tai Enterillä.
 - **Päävalikon tausta (v1.25):** oletuksena 10 animoitua kuvaa (ei 3D-piirtoa valikossa); kuva arvotaan aina (v1.31, myös sivun avauksessa),
   vaihtuu 20 s välein. Asetus "Valikon tausta": kuvat / 3D-kamera (alla, v1.15).
@@ -119,6 +119,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
+- **Kodin lämpö (v2.09):** kokonaan suljettu talo (seinät, katto, suljettu ovi, lasi-ikkunat – ei aukkoikkunoita) antaa tehosteen **Mukava lämpötila** (+0,5 terveyttä/s, nälkä kuluu 30 % hitaammin, nukkuessa +10 % terveyttä). Kun sisällä palaa nuotio, grillinuotio, seisova soihtu tai seinäsoihtu vähintään 5 s, tehoste on **Lämmin koti** (+1,0/s, nälkä −50 %, nukkuessa +20 %). Ovi saa olla auki 20 s, sitten tehoste harmaantuu; lämmönlähteen sammuttua Lämmin koti kestää 30 s; ulos lähtiessä tehoste hiipuu 20 s:ssa. Nukkuminen ei enää paranna täyteen.
 - **Viholliset ja talot (v2.08):** suljettu ovi estää näkemisen (ikkunoista ja lasista näkee). Vihollinen muistaa sinut 30 s; jos pakenet taloon, se hajottaa oven, jos se on heikompi kuin lähin seinä, muuten lähimmän seinän, ja tulee sisään. Saman lajin lauma 20 m:n päästä liittyy mukaan. Kun muisti loppuu, vihollinen poistuu murtokohdasta.
 - **Hiekka ja lasi (v2.07):** rannoilla harvinaisia hiekkakasoja (5–10 / kartta, uusiutuvat 20 min, 2–3 hiekkaa). Sulatusuunissa 2 hiekkaa → 1 lasi 15 s:ssa (enint. 20 hiekkaa, vuorotellen malmien kanssa).
 - **Ikkunat ja ovet (v2.07):** Aukkoikkuna (2 puuta, 130) ja Kivinen aukkoikkuna (5 kiveä, 420); Puinen lasi-ikkuna (2 puuta + lasi, 100) ja Kivinen lasi-ikkuna (5 kiveä + lasi, 250) – lasi estää kulun, nuolet ja sateen, mutta olennot näkevät läpi; rikkoutuessa lasi särkyy ja jäljelle jää aukkoikkuna. Rautaovi 4 rautaa + 2 puuta, 900.

@@ -232,6 +232,20 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v2.09 kodin lämpö: suljettu talo = Mukava lämpötila, lämmönlähde 5 s = Lämmin koti, aukkoikkuna estää, lasi ei, ovi auki 20 s → harmaa, ulkona hiipuu 20 s, nukkuminen 10/20 %',()=>{
+    const made=[];const p0=P.pos.clone(),hu=P.hunger;let res;const om=msg;msg=()=>{};
+    try{const cx=P.pos.x+70,cz=P.pos.z-70,y=terrainH(cx,cz)+.02,put=(t,x,z,r)=>{const q=addPiece(t,x,y,z,r);made.push(q);return q;};
+      const D=put('ovi',cx-G/2,cz-G,0);put('seina',cx+G/2,cz-G,0);put('seina',cx-G/2,cz+G,0);let N=put('lasiikkuna',cx+G/2,cz+G,0);
+      put('seina',cx-G,cz-G/2,2);put('seina',cx-G,cz+G/2,2);put('seina',cx+G,cz-G/2,2);put('seina',cx+G,cz+G/2,2);for(const [a,b] of [[-.5,-.5],[.5,-.5],[-.5,.5],[.5,.5]])put('katto',cx+a*G,cz+b*G,0).mesh.position.y=y+WH;
+      for(const q of made.slice(-4)){q.mesh.position.y=y+WH;}scene.updateMatrixWorld(true);
+      const tick=s=>{for(let i=0;i<s*30;i++){P.pos.set(cx,y+.02,cz);P.vel.set(0,0,0);homeTick(1/30);}};HOME.heatT=0;HOME.heatOff=99;HOME.linger=0;tick(1);const a=HOME.inside&&HOME.lvl===1&&homeHealRate()===.5&&Math.abs(homeHungerK()-.7)<1e-9;
+      const tr=put('soihtuteline',cx+1.2,cz+1.2,0);tr.data.burn=600;tick(6);const b=HOME.lvl===2&&homeHealRate()===1&&homeHungerK()===.5;
+      D.data.open=true;tick(21);const c=HOME.grey&&HOME.lvl===0&&effects().some(e=>e.key==='koti_off');D.data.open=false;tick(1);const d=HOME.lvl===2&&!HOME.grey;
+      removePiece(N);made.splice(made.indexOf(N),1);N=put('ikkunaseina',cx+G/2,cz+G,0);scene.updateMatrixWorld(true);tick(1);const e=!HOME.inside;
+      P.pos.set(cx,y,cz-G-5);homeTick(1/30);const f=HOME.lvl>0&&HOME.k<1;for(let i=0;i<30*21;i++){P.pos.set(cx,y,cz-G-5);homeTick(1/30);}const g=HOME.lvl===0;
+      const h=/HOME\.lvl===2\?\.2:HOME\.lvl===1\?\.1:0/.test(sleepAt.toString())&&!/P\.hp=maxHp\(\)/.test(sleepAt.toString());
+      res=a&&b&&c&&d&&e&&f&&g&&h||`virhe mukava ${a} lämmin ${b} ovi ${c}/${d} aukko ${e} hiipuu ${f}/${g} uni ${h}`;}
+    finally{msg=om;for(const q of made)if(pieces.includes(q))removePiece(q);P.pos.copy(p0);P.hunger=hu;HOME.lvl=0;HOME.linger=0;HOME.inside=false;}return res;});
   t('v2.08 suljettu ovi estää näkemisen, piiritys: ovi jos heikompi kuin lähin seinä muuten lähin seinä, muisti 30 s, saman lajin lauma 20 m',()=>{
     const made=[],mm=[];let res;try{const cx=P.pos.x+50,cz=P.pos.z+50,y=terrainH(cx,cz)+.02;const H=d=>{const L=[addPiece(d,cx,y,cz-G/2,0),addPiece('seina',cx,y,cz+G/2,0),addPiece('seina',cx-G/2,y,cz,2),addPiece('seina',cx+G/2,y,cz,2)];made.push(...L);return L;};
       let L=H('ovi');const ok1=!losClear(cx,y+1.3,cz-5,cx,y+1.3,cz,true);setDoor(L[0],true,1);const ok2=losClear(cx,y+1.3,cz-5,cx,y+1.3,cz,true);setDoor(L[0],false,1);

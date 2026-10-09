@@ -331,5 +331,6 @@ function sleepAt(p){
   bump('slept');
   if(!sheltered(p.x,p.y,p.z)){msg('Sänky tarvitsee katon yläpuolelleen.','warn');return;}
   if(mobs.some(m=>!m.dead&&m.def.ai==='hostile'&&dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<20*20)){msg('Et voi nukkua, vihollisia on lähellä.','warn');return;}
-  fadeTo(()=>{flags.sleptN=nightId();dayT=.23;dayN++;P.buffs.levannyt=420;P.hunger=Math.max(20,P.hunger-15);P.hp=maxHp();for(const m of [...mobs])if(m.def.ai==='hostile'&&!m.dun)mobRemove(m);const gr=regrowForest();saveGame(true);msg(`Päivä ${dayN} alkaa.`+(gr.planted+gr.revived?' Metsä on kasvanut yön aikana.':''));});
+  const sh=HOME.inside&&!HOME.grey?(HOME.lvl===2?.2:HOME.lvl===1?.1:0):0;   // v2.09: nukkuminen parantaa vain kodin lämmössä (+10 % / +20 %), ei enää täyteen
+  fadeTo(()=>{flags.sleptN=nightId();dayT=.23;dayN++;P.buffs.levannyt=420;P.hunger=Math.max(20,P.hunger-15);const h0=P.hp;P.hp=Math.min(maxHp(),P.hp+maxHp()*sh);if(P.hp>h0+.5)setTimeout(()=>msg(`Nukuit ${sh>=.2?'lämpimässä kodissa':'mukavassa lämmössä'}: terveys +${Math.round(P.hp-h0)}.`,'loot'),900);for(const m of [...mobs])if(m.def.ai==='hostile'&&!m.dun)mobRemove(m);const gr=regrowForest();saveGame(true);msg(`Päivä ${dayN} alkaa.`+(gr.planted+gr.revived?' Metsä on kasvanut yön aikana.':''));});
 }
