@@ -232,6 +232,24 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v1.98 nuolet: pysähtyvät tarkasti pintaan (seinä, kivi, suljettu ovi; avoin päästää), häviävät 10 s (tuli 8 s) osumasta, liekki+valo 5 s, sade/vesi sammuttaa heti osuessa',()=>{
+    const sv=[wRain,SET.arrowLight];SET.arrowLight=true;wRain=0;const made=[];let res;
+    try{const bx=P.pos.x+10,bz=P.pos.z+10,mk=(t,dx)=>{const x=bx+dx,p=addPiece(t,x,terrainH(x,bz)+.05,bz,0);made.push(p);return p;};
+      const shoot=(c,spd,fire,fromD=15)=>{const thinX=(c.maxX-c.minX)<(c.maxZ-c.minZ),dir=thinX?new THREE.Vector3(1,0,0):new THREE.Vector3(0,0,1),cx=(c.minX+c.maxX)/2,cy=(c.minY+c.maxY)/2,cz=(c.minZ+c.maxZ)/2;
+        shootArrow(new THREE.Vector3(cx-dir.x*fromD,cy,cz-dir.z*fromD),dir,spd,10,'player',1e-6,fire);const pr=projs[projs.length-1];for(let i=0;i<400&&!pr.stuck;i++)updateProjs(1/30);
+        return {pr,err:pr.m.position.x*dir.x+pr.m.position.z*dir.z+.45-(thinX?c.minX:c.minZ)};};
+      const w=mk('seina',0),a=shoot(w.cols[0],75,false),k=mk('kiviseina',20),b=shoot(k.cols[0],90,false);const ok1=a.pr.stuck&&Math.abs(a.err)<.05&&b.pr.stuck&&Math.abs(b.err)<.05;
+      const d=mk('ovi',40),dc=d.cols.find(c=>c.door);setDoor(d,false,1);const c1=shoot(dc,75,false,10);const closed=c1.pr.stuck;setDoor(d,true,1);
+      shootArrow(new THREE.Vector3((dc.minX+dc.maxX)/2-((dc.maxX-dc.minX)<(dc.maxZ-dc.minZ)?10:0),(dc.minY+dc.maxY)/2,(dc.minZ+dc.maxZ)/2-((dc.maxX-dc.minX)<(dc.maxZ-dc.minZ)?0:10)),(dc.maxX-dc.minX)<(dc.maxZ-dc.minZ)?new THREE.Vector3(1,0,0):new THREE.Vector3(0,0,1),75,10,'player',1e-6,false);
+      const po=projs[projs.length-1];for(let i=0;i<8;i++)updateProjs(1/30);const open=!po.stuck;
+      const tm=fire=>{const gx=P.pos.x-12,gz=P.pos.z-12,gy=terrainH(gx,gz),n0=lightSources.length;shootArrow(new THREE.Vector3(gx,gy+6,gz),new THREE.Vector3(0,-1,0),30,10,'player',1e-6,fire);const pr=projs[projs.length-1];
+        for(let i=0;i<150&&!pr.stuck;i++)updateProjs(1/30);let tl=null,tf=null,tg=null,t=0;for(let i=0;i<420;i++){updateProjs(1/30);t+=1/30;if(tl===null&&fire&&lightSources.length<=n0)tl=t;if(tf===null&&fire&&!pr.flame.visible)tf=t;if(!projs.includes(pr)){tg=t;break;}}return {tl,tf,tg};};
+      const n=tm(false),f=tm(true),ok2=Math.abs(n.tg-10)<.2&&Math.abs(f.tg-8)<.2&&Math.abs(f.tl-5)<.2&&Math.abs(f.tf-5)<.2;
+      wRain=1;const n0=lightSources.length;shootArrow(new THREE.Vector3(P.pos.x-12,terrainH(P.pos.x-12,P.pos.z+12)+6,P.pos.z+12),new THREE.Vector3(0,-1,0),30,10,'player',1e-6,true);const pr=projs[projs.length-1];updateProjs(1/30);const air=lightSources.length>n0;
+      for(let i=0;i<150&&!pr.stuck;i++)updateProjs(1/30);const ok3=air&&pr.stuck&&lightSources.length<=n0&&!pr.flame.visible;wRain=0;
+      res=ok1&&closed&&open&&ok2&&ok3||`virhe seinä ${ok1}(${a.err.toFixed(3)},${b.err.toFixed(3)}) ovi ${closed}/${open} ajastimet ${ok2}(${JSON.stringify([n,f])}) sade ${ok3}`;}
+    finally{[wRain,SET.arrowLight]=sv;for(const p of made)removePiece(p);for(const q of projs.splice(0)){scene.remove(q.m);if(q.light){const j=lightSources.indexOf(q.light);if(j>=0)lightSources.splice(j,1);}}arrowFade.length=0;updateLights();}
+    return res;});
   t('v1.97 sade ja tuli: märkä pelaaja/mobi ei syty (ei spämmiä), katon alla syttyy ja palaa, sateen sammutus jäähy 3 s, vesi sammuttaa',()=>{let msgs=0;const om=msg;msg=()=>{msgs++;};const sv=[wRain,shelterCache,P.burnT,P.igniteCd,P.hp,P.maxHp,P.pos.clone(),P.inWater];let res;
     try{const x=P.pos.x+3,z=P.pos.z,fp=addPiece('nuotio',x,terrainH(x,z),z,0);fp.data.fuel=5;P.pos.set(x,terrainH(x,z)+.01,z);P.hp=P.maxHp=1e5;
       const run=sec=>{let ign=0,prev=P.burnT>0;for(let i=0;i<sec*30;i++){playTime+=1/30;updatePlayerBurn(1/30);const b=P.burnT>0;if(b&&!prev)ign++;prev=b;}return ign;};

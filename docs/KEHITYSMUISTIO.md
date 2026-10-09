@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.97)
+## Nykytila (päivitetty v1.98)
 
-- **Versio 1.97**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 1.98**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,17 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v1.98 (nuolten tarkka osuma ja ajastimet)
+- **Tarkka pysähtyminen (`arrowStep`/`arrowContact`, state.js; `arrowBlocked`, collision.js):** nuolen liike pilkotaan enintään 12 cm:n askeliin ja kärjen
+  (0,45 m keskeltä) osuma tarkennetaan puolittamalla 6 kertaa → nuoli jää kiinni täsmälleen pintaan (virhe < 2 cm; testattu 75–90 m/s). Aiemmin tarkistus
+  oli vain kerran kehyksessä (nopea nuoli saattoi mennä ohuen seinän läpi tai jäädä sen sisään) ja laatikoissa oli 15 cm:n marginaali. Pysäyttävät:
+  rakennetut seinät/lattiat/katot/pylväät, **suljetut ovet** (avoin ovi `off` päästää läpi), luolaston ja rauniomuurit, puut/kivet/tukit (ympyrät), maa ja
+  **vesi** (pinta y≈0 pysäyttää nuolen). Koskee myös vihollisten nuolia. Kivet (`rock`) käyttävät vanhaa tarkistusta.
+- **Ajastimet alkavat osumahetkestä:** nuoli häviää 10 s (tulinuoli 8 s) osumasta (aiemmin 6 s); tulinuolen liekki ja valo sammuvat 5 s:ssa (valo
+  himmenee tasaisesti, `arrowFade` dur 5; mobiin osunut tulinuoli 2 s). **Sade** (`wRain>.3`, ei katon alla: `sheltered`) tai **veteen osuminen** sammuttaa
+  liekin ja valon heti osuessa (savupuuska); lennossa valo säilyy (sateessa himmenee nopeammin kuten ennenkin).
+- Tarkistukseen 1 rivi (seinäosuma, ovi auki/kiinni, ajastimet, sade).
 
 ### v1.97 (sade ja tuli ilman spämmiä, Suonäkki syntyy, osuma-äänen häntä pois)
 - **Sade + nuotio (korjaus, KORJAUKSET 38):** pelaaja syttyi nuotiossa, sade sammutti heti, uudestaan… joka ruudulla → ilmoitusspämmi ja tiheä ääni.

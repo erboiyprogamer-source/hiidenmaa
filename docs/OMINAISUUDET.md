@@ -119,6 +119,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
+- **Nuolet (v1.98):** pysähtyvät tarkasti pintaan (seinät, suljetut ovet, muurit, puut, kivet, maa, vesi). Osumasta: nuoli häviää 10 s (tulinuoli 8 s), tulinuolen liekki ja valo sammuvat 5 s:ssa; sade (ei katon alla) tai vesi sammuttaa heti osuessa.
 - **Tuli:** palava käsisoihtu sytyttää lyödyn, tulinuoli osumansa: 5–10 s, 5 hp/s; sade tai vesi sammuttaa heti.
   **v1.97:** märkä (sataa ja ei katon alla, tai vedessä) ei syty lainkaan – pelaaja eikä olento; katon alla sateessa syttyy ja palaa. Sammutuksen jälkeen 3 s jäähy; syttymisilmoitus enintään 12 s välein.
   Suonäkki syntyy öisin suolla (22 % suon yöspawneista, enintään yksi väijyjä kerrallaan).
@@ -311,7 +312,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Mobit lyövät liikkeestä 0,1 s viiveellä, jäähy lyöntien välillä. Tavallisten ulottuma enintään 1,9 m.
 - Pelaajan taistelu −10 % (vahinko, tönäisy, lyöntinopeus).
 - Yöhirviö: kerran yössä 20 % vuorilla / 10 % muualla, varmasti jos edellinen yö jäi nukkumatta; 6,6 m/s, hyökkää heti.
-- Haudan majakka näkyy myös ulottuvuuksissa ja Hautakummussa (vain siinä tilassa, jossa kuoli).
+- Tulinuolen valo hiipuu lennossa, sateessa kaksi kertaa nopeammin; osumasta liekki ja valo sammuvat 5 s:ssa (v1.98), sateessa tai vedessä heti.
 - Tulinuolen valo hiipuu lennossa, sateessa kaksi kertaa nopeammin; osumasta sammuu 2 s:ssa.
 
 ## Eteneminen ja arvoesineet v1.34
