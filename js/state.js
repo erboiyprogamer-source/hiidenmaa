@@ -113,8 +113,51 @@ function potionMesh(id){const c=new THREE.Color(ITEMS[id].c),g=new THREE.Group()
   const liq=new THREE.Mesh(new THREE.SphereGeometry(.112,16,12,0,TAU,Math.PI*.32,Math.PI*.68),new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:.35,roughness:.3}));
   const neck=new THREE.Mesh(new THREE.CylinderGeometry(.04,.05,.11,12),new THREE.MeshStandardMaterial({color:0xd8eef2,transparent:true,opacity:.45,roughness:.1,depthWrite:false}));neck.position.y=.16;
   const cork=new THREE.Mesh(new THREE.CylinderGeometry(.038,.034,.05,10),new THREE.MeshStandardMaterial({color:0x8a5a32,roughness:.9}));cork.position.y=.235;
-  liq.castShadow=cork.castShadow=true;g.add(liq,glass,neck,cork);g.scale.setScalar(1.7);g.userData.potion=1;return g;}
-function dropMesh(id){if(ITEMS[id]&&ITEMS[id].potion)return potionMesh(id);if(!(typeof SET!=='undefined'&&SET.drop3d!==false)||typeof THREE.CanvasTexture!=='function'){const me=new THREE.Mesh(dropGeo,mat(new THREE.Color(ITEMS[id].c).getHex()));me.castShadow=true;return me;}
+  liq.castShadow=cork.castShadow=true;g.add(liq,glass,neck,cork);g.scale.setScalar(1.7);g.userData.potion=1;g.userData.lift=.27;return g;}
+/* v2.02 MAAHAN PUDONNEIDEN TÄRKEIMPIEN ESINEIDEN 3D-MALLIT (ennen litteä kuvakelaatta, joka näytti oudolta): aseet, työkalut, vasara ja jouset
+   (sama malli kuin kädessä, makeHeld), kilvet (makeShield), haarniskat (armorDropMesh: vartalo, olkasuojat, vyö, aineen mukaan), avaimet (keyMesh),
+   arvoesineet hiidenkivi, kruunusirpale ja vartijan sydän (hehkuvat). Malli keskitetään ja skaalataan (pisin sivu ≤ 0,8 m); userData.lift = lepokorkeus.
+   Muut esineet (raaka-aineet, ruoka, nuolet) pysyvät kuvakelaattoina – ne näyttävät hyviltä niinkin. */
+const DROP3D_CAT=new Set(['weapon','bow','hammer','shovel','shield','armor']);
+function dm(c,o){return new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.6,metalness:.1},o||{}));}
+function armorDropMesh(id){const d=ITEMS[id],c=new THREE.Color(d.c),met=/rauta|kupari|hiiden/.test(id),fur=id==='karhuhaarniska',g=new THREE.Group();
+  const M=dm(c,{metalness:met?.55:0,roughness:met?.35:.85,side:THREE.DoubleSide}),T=dm(c.clone().multiplyScalar(.6),{metalness:met?.5:0,roughness:.6});
+  // rintapanssari sorvattuna: lantio levenee, vyötärö kapea, rinta leveä, olat pyöristyvät kaula-aukkoon; edestä litteämpi
+  const prof=[[.001,-.27],[.19,-.27],[.21,-.2],[.175,-.08],[.2,.04],[.235,.14],[.225,.22],[.17,.27],[.1,.29],[.085,.3]].map(([r,y])=>new THREE.Vector2(r,y));
+  const torso=new THREE.Mesh(new THREE.LatheGeometry(prof,20),M);torso.scale.set(1,1,.72);g.add(torso);
+  const neck=new THREE.Mesh(new THREE.TorusGeometry(.09,.022,8,16),T);neck.rotation.x=Math.PI/2;neck.position.y=.3;neck.scale.set(1,.72,1);g.add(neck);
+  const ridge=new THREE.Mesh(new THREE.BoxGeometry(.03,.42,.02),T);ridge.position.set(0,.0,.165);g.add(ridge);
+  for(const sx of [-1,1]){const sh=new THREE.Mesh(new THREE.SphereGeometry(.11,12,8,0,TAU,0,Math.PI/2),fur?dm(0x4a3426,{roughness:1}):M);sh.position.set(sx*.24,.19,0);sh.rotation.z=-sx*.5;sh.scale.set(1,.75,1);g.add(sh);}
+  const belt=new THREE.Mesh(new THREE.TorusGeometry(.2,.025,8,20),dm(0x4a2e18,{roughness:.8}));belt.rotation.x=Math.PI/2;belt.scale.set(1,.74,1);belt.position.y=-.2;g.add(belt);
+  const buckle=new THREE.Mesh(new THREE.BoxGeometry(.06,.05,.02),dm(0xc9a24a,{metalness:.7,roughness:.3}));buckle.position.set(0,-.2,.15);g.add(buckle);
+  if(met)for(let i=0;i<2;i++){const r=new THREE.Mesh(new THREE.TorusGeometry(i?.2:.185,.011,6,20),T);r.rotation.x=Math.PI/2;r.scale.set(1,.73,1);r.position.y=i?.06:-.1;g.add(r);}
+  if(id==='hiidenpanssari'){const gl=new THREE.MeshBasicMaterial({color:0x7ffff0});for(const sx of [-1,1]){const l=new THREE.Mesh(new THREE.BoxGeometry(.02,.16,.02),gl);l.position.set(sx*.07,.03,.15);l.rotation.z=sx*.3;g.add(l);}
+    const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.04),gl);gem.position.set(0,.13,.17);g.add(gem);}
+  if(fur){const f=new THREE.Mesh(new THREE.TorusGeometry(.15,.06,8,18),dm(0x4a3426,{roughness:1}));f.rotation.x=Math.PI/2;f.scale.set(1,.8,1);f.position.y=.26;g.add(f);}
+  return g;}
+function keyMesh(id){const C={jaaavain:[0x9fd8ff,0x3d7fa8],luuavain:[0xe6e0cf,0x8a8070],aarniavain:[0x7aff9a,0x2f8f4a]}[id],g=new THREE.Group(),M=dm(C[0],{metalness:id==='luuavain'?0:.5,roughness:.35,emissive:C[0],emissiveIntensity:.25});
+  const bow=new THREE.Mesh(new THREE.TorusGeometry(.09,.025,8,18),M);bow.position.y=.2;g.add(bow);const sh=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,.32,8),M);sh.position.y=-.03;g.add(sh);
+  for(const [y,w] of [[-.16,.08],[-.09,.06]]){const t=new THREE.Mesh(new THREE.BoxGeometry(w,.035,.03),dm(C[1],{metalness:.4}));t.position.set(w/2,y,0);g.add(t);}return g;}
+function treasureMesh(id){const g=new THREE.Group();
+  if(id==='hiidenkivi'){const m=new THREE.Mesh(new THREE.OctahedronGeometry(.16,0),dm(0x7fd6cc,{emissive:0x2fbfb0,emissiveIntensity:.6,metalness:.2,roughness:.15,flatShading:true}));m.scale.set(.75,1.4,.75);g.add(m);
+    for(const [x,s] of [[-.11,.5],[.12,.42]]){const k=m.clone();k.scale.multiplyScalar(s);k.position.set(x,-.1,0);k.rotation.z=x*3;g.add(k);}}
+  else if(id==='kruunusirpale'){const M=dm(0x9aff7a,{emissive:0x3a8a2a,emissiveIntensity:.6,roughness:.25,flatShading:true});const base=new THREE.Mesh(new THREE.CylinderGeometry(.16,.18,.08,8,1,true,0,Math.PI),dm(0xc9a24a,{metalness:.8,roughness:.3,side:THREE.DoubleSide}));g.add(base);
+    for(const [a,h] of [[.4,.22],[1.2,.3],[2,.2],[2.7,.26]]){const sp=new THREE.Mesh(new THREE.ConeGeometry(.04,h,5),M);sp.position.set(Math.cos(a)*.16,.04+h/2,Math.sin(a)*.16);g.add(sp);}}
+  else if(id==='sydan'){const M=dm(0x5fe6d9,{emissive:0x2fbfb0,emissiveIntensity:.8,roughness:.3});for(const sx of [-1,1]){const s=new THREE.Mesh(new THREE.SphereGeometry(.1,14,10),M);s.position.set(sx*.07,.05,0);g.add(s);}
+    const tip=new THREE.Mesh(new THREE.ConeGeometry(.15,.2,14),M);tip.rotation.z=Math.PI;tip.position.y=-.09;g.add(tip);}
+  return g.children.length?g:null;}
+function dropModel(id){const d=ITEMS[id];if(!d)return null;let m=null;
+  if(d.potion)return potionMesh(id);
+  if(d.cat==='shield')m=makeShield(id);else if(d.cat==='armor')m=armorDropMesh(id);else if(DROP3D_CAT.has(d.cat))m=makeHeld(id);
+  else if(/avain$/.test(id))m=keyMesh(id);else m=treasureMesh(id);
+  if(!m)return null;m.traverse(o=>{if(o.isMesh)o.castShadow=true;});
+  const b=new THREE.Box3().setFromObject(m),sz=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3()),mx=Math.max(sz.x,sz.y,sz.z),k=mx>.8?.8/mx:1;
+  const inner=new THREE.Group();m.position.sub(c);inner.add(m);inner.scale.setScalar(k);
+  // pitkät aseet ja työkalut makaavat hieman kallellaan (ei pystyssä maan läpi)
+  if(DROP3D_CAT.has(d.cat)&&d.cat!=='shield'&&d.cat!=='armor'&&d.cat!=='bow'&&sz.y>=sz.x&&sz.y>=sz.z)inner.rotation.x=Math.PI/2;   // pystyyn osoittava pisin sivu → makaamaan
+  if(d.cat==='weapon'||d.cat==='hammer'||d.cat==='shovel')inner.rotation.z=.25;
+  const g=new THREE.Group();g.add(inner);const bb=new THREE.Box3().setFromObject(g);g.userData.lift=Math.max(.2,-bb.min.y+.06);g.userData.m3d=1;return g;}
+function dropMesh(id){{const m=dropModel(id);if(m)return m;}if(!(typeof SET!=='undefined'&&SET.drop3d!==false)||typeof THREE.CanvasTexture!=='function'){const me=new THREE.Mesh(dropGeo,mat(new THREE.Color(ITEMS[id].c).getHex()));me.castShadow=true;return me;}
   icon(id);let M=_icoMat[id];if(!M){const tx=new THREE.CanvasTexture(ICONC[id]);tx.anisotropy=2;
     M=_icoMat[id]=[new THREE.MeshStandardMaterial({map:tx,alphaTest:.45,side:THREE.DoubleSide,roughness:.7}),new THREE.MeshStandardMaterial({map:tx,alphaTest:.45,side:THREE.DoubleSide,color:0x5a5248,roughness:.9})];}
   const g=new THREE.Group();for(let k=-3;k<=3;k++){const pl=new THREE.Mesh(_icoGeo,Math.abs(k)===3?M[0]:M[1]);pl.position.z=k*.011;g.add(pl);}
@@ -159,7 +202,7 @@ function updateDrops(dt){
     if(!val){if(d.t>DROP_LIFE){removeDrop(d);continue;}m.visible=d.t<DROP_LIFE-15||((d.t*5)|0)%2===0;}
     if(d.hold>0){d.hold-=dt;m.position.x+=d.vx*dt;m.position.z+=d.vz*dt;const fr=Math.max(0,1-dt*1.6);d.vx*=fr;d.vz*=fr;   // v1.90: pomon saalis leijuu ja putoaa sitten nätisti
       m.position.y=(d.hy??m.position.y)+Math.sin(d.t*2.4+(d.ph||0))*.08;m.rotation.y+=dt*1.2;if(d.hold<=0){d.vy=.8;d.vx*=.3;d.vz*=.3;}}
-    else if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=dropGround(m.position.x,m.position.z,m.position.y)+(m.userData.ico?.38:.25);if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
+    else if(!d.rest){d.vy-=18*dt;m.position.x+=d.vx*dt;m.position.y+=d.vy*dt;m.position.z+=d.vz*dt;const g=dropGround(m.position.x,m.position.z,m.position.y)+(m.userData.ico?.38:m.userData.lift||.25);if(m.position.y<g){m.position.y=g;d.rest=true;d.baseY=g;}}
     else{m.position.y=d.baseY+.12+Math.sin(d.t*3)*.06;m.rotation.y+=dt*1.5;}
     if(d.beacon)beaconTick(d,dt);
     if(d.light){d.light.x=m.position.x;d.light.y=m.position.y+.4;d.light.z=m.position.z;d.light.i=.75+Math.sin(d.t*3.2)*.25;}

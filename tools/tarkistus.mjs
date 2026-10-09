@@ -232,6 +232,10 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v2.02 tärkeimmät esineet maassa 3D-malleina (aseet, työkalut, jouset, kilvet, haarniskat, avaimet, arvoesineet), raaka-aineet kuvakkeina; lepokorkeus',()=>{
+    const want=Object.keys(ITEMS).filter(id=>['weapon','bow','hammer','shovel','shield','armor'].includes(ITEMS[id].cat)).concat(['jaaavain','luuavain','aarniavain','hiidenkivi','kruunusirpale','sydan']);
+    const bad=want.filter(id=>{const m=dropMesh(id);if(!m.userData.m3d||!(m.userData.lift>=.2))return true;const s=new THREE.Box3().setFromObject(m).getSize(new THREE.Vector3());return Math.max(s.x,s.y,s.z)>.95;});
+    const ico=['puu','kivi','paisti','nuolet'].filter(id=>!dropMesh(id).userData.ico);return !bad.length&&!ico.length||`3D puuttuu: ${bad.join(',')} kuvake: ${ico.join(',')}`;});
   t('v2.01 jousi: tähtäys osuu ristikon kohtaan olentoon (ei vasemmalle), 0,7 s minimiveto (peruuntuu, nuoli ei kulu), tuulivaroitus, tulinuolen valo 2,8 kohteessa',()=>{
     const sv=[camYaw,camPitch,WIND.spd,WIND.x,WIND.z,P.crouch,P.onGround,P.crouchK,SET.arrowLight,wRain];let res;const om=msg;msg=()=>{};const made=[];
     try{invAdd('jousi',1);invAdd('nuolet',10);const bw=inv.find(x=>x&&x.id==='jousi');if(!bw.eq)toggleEquip(bw);WIND.spd=0;camPitch=-.05;let hits=0;

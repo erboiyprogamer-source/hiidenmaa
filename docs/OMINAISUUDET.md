@@ -119,6 +119,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
+- **Esineet maassa (v2.02):** aseet, työkalut, jouset, kilvet, haarniskat, avaimet, arvoesineet ja juomat näkyvät oikeina 3D-malleina; raaka-aineet ja ruoka kuvakkeina.
 - **Jousi (v2.01):** nuoli osuu ristikon kohtaan myös olentoihin; jousta pitää jännittää vähintään 0,7 s (muuten peruuntuu, nuoli ei kulu); tuuli kaartaa nuolta hieman (sulitettua puolet) ja kova tuuli (≥ 8 m/s) näkyy varoituksena ⚠ suuntanuolineen jännittäessä. Tulinuoli valaisee kohteessa kirkkaasti 5 s (sateessa 1,6 s pehmeästi hiipuen).
 - **Juomat (v2.00):** Parannusjuoma (punainen) palauttaa terveyden heti täyteen; Elpymisjuoma (vihreä) +1 terveys/s minuutin; Sisujuoma (sininen) pitää kylläisyyden täynnä 5 min ja kestävyyden 30 s. Löytyvät arkuista (10 % / juoma / arkku), juodaan pikapaikasta.
 - **Kylläisyys (v2.00):** täyteen syöty = 100, ja mittari alkaa laskea vasta minuutin kuluttua.

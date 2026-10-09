@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.01)
+## Nykytila (päivitetty v2.02)
 
-- **Versio 2.01**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 2.02**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.02 (tärkeimmät esineet maassa 3D-malleina)
+- `dropModel(id)` (state.js, `dropMesh` käyttää ensin sitä): aseet, työkalut, vasara ja jouset = sama malli kuin kädessä (`makeHeld`), kilvet `makeShield`,
+  haarniskat `armorDropMesh` (sorvattu rintapanssari LatheGeometry, olkasuojat, kaula, vyö + solki; metallisissa vanteet, karhuntaljassa turkiskaulus,
+  Hiidenpanssarissa hehkuvat riimuviivat ja kivi), avaimet `keyMesh` (rengas, varsi, lovet, hehku), arvoesineet `treasureMesh` (hiidenkivi kristallirypäs,
+  kruunusirpale kultareunus + piikit, vartijan sydän). Juomat `potionMesh` (v2.00). Keskitys + skaalaus pisin sivu ≤ 0,8 m; pystyyn osoittava pitkä esine
+  käännetään makaamaan (ei jouset), lyömäaseet pieneen kallistukseen; `userData.lift` = lepokorkeus (ei uppoa maahan). Raaka-aineet, ruoka, nuolet ja soihtu
+  pysyvät kuvakelaattoina (näyttävät niinkin hyviltä).
+- Tarkistukseen 1 rivi.
 
 ### v2.01 (jousen tähtäys, minimiveto, tuuli, tulinuolen valo)
 - **Tähtäysvika (KORJAUKSET 39):** nuolet osuivat vasemmalle. Kamera on tähdätessä 0,75 m pelaajan oikealla; nuoli lähtee pelaajasta kohti kameran säteen
