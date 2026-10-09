@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.07)
+## Nykytila (päivitetty v2.08)
 
-- **Versio 2.07**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 2.08**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.08 (viholliset: ovet, muisti ja piiritys – käyttäjän prompti osa 2/3)
+- **Näköyhteys:** vihollisten `m.los` laskee nyt `losClear(...,true)` → suljettu ovi estää näkemisen (avoin ovi `off` ei); lasi ei estä (v2.07).
+- **Muisti** `MOB_MEM` 30 s (`mobKnows`): `m.seenT` päivittyy, kun jahtaava vihollinen näkee pelaajan tai osuu/saa osuman (`damageMob`); myös viimeinen
+  sijainti `lastPX/lastPZ`. Jahti päättyy, kun muisti loppuu (ennen: 3 s ilman näköyhteyttä) tai pelaaja näkyy yli 1,6 × huomausetäisyyden päässä.
+- **Piiritys** (`siegeTarget`): kun vihollinen ei näe (≥ 1 s) mutta muistaa pelaajan (alle 30 m), tai jää jumiin, se valitsee pelaajan lähellä (14 m) olevista
+  osista: suljettu ovi, jos sen kestävyys < lähimmän seinän (`SIEGE_WALLS`: seinä, tervas-, kiviseinä, aukko-/lasi-ikkunat), muuten lähin seinä. Lasi ei ole
+  erikoisasemassa. Hajottaa 2 × vahingolla. Murron jälkeen (`m.breach`, `m.thru` 1→3): 1,8 m aukon ulkopuolelle (kiertää kulman) → aukkoon → 1,5 m sisään,
+  kunnes näkee pelaajan. Muistin loputtua talossa → tila `exit`: 4 m murtokohdasta ulos, sitten normaalisti. `nearestOpening` ei ole enää käytössä.
+- **Lauma** (`packAlert`): kun vihollinen aloittaa jahdin tai piirityksen, saman lajin viholliset 20 m säteellä liittyvät (neutraalit suuttuvat). Muut lajit eivät.
+- Testattu: puuovi (130) < seinä (150) → vain ovi rikki ja susi aukkoon; rautaovi (900) → lähin seinä; lauma; muisti 30 s; ulos murtokohdasta.
+- Tarkistukseen 1 rivi.
 
 ### v2.07 (hiekka, lasi, lasi-ikkunat, rautaovi – käyttäjän prompti osa 1/3)
 - **Hiekkakasat** (`NODE.hiekkakasa`, pick, 2–3 hiekkaa, uusiutuu 1200 s = 20 min): 5–10 per kartta rannalla (`beach`, korkeus 0,15–1,05, väli ≥ 60 m),

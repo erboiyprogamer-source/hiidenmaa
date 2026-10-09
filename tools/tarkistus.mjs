@@ -232,6 +232,15 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v2.08 suljettu ovi estää näkemisen, piiritys: ovi jos heikompi kuin lähin seinä muuten lähin seinä, muisti 30 s, saman lajin lauma 20 m',()=>{
+    const made=[],mm=[];let res;try{const cx=P.pos.x+50,cz=P.pos.z+50,y=terrainH(cx,cz)+.02;const H=d=>{const L=[addPiece(d,cx,y,cz-G/2,0),addPiece('seina',cx,y,cz+G/2,0),addPiece('seina',cx-G/2,y,cz,2),addPiece('seina',cx+G/2,y,cz,2)];made.push(...L);return L;};
+      let L=H('ovi');const ok1=!losClear(cx,y+1.3,cz-5,cx,y+1.3,cz,true);setDoor(L[0],true,1);const ok2=losClear(cx,y+1.3,cz-5,cx,y+1.3,cz,true);setDoor(L[0],false,1);
+      const p0=P.pos.clone();P.pos.set(cx,y,cz);const w=spawnMob('susi',cx+8,cz);mm.push(w);const ok3=siegeTarget(w)===L[0];
+      for(const q of L)removePiece(q);L=H('rautaovi');const t2=siegeTarget(w);const ok4=t2&&t2.t==='seina'&&Math.abs(t2.x-(cx+G/2))<.01;
+      w.seenT=playTime;const ok5=mobKnows(w)&&MOB_MEM===30;const b=spawnMob('susi',cx+8,cz+12),k=spawnMob('karju',cx+8,cz-12),f=spawnMob('susi',cx+8,cz+45);mm.push(b,k,f);for(const q of [b,k,f])q.state='idle';packAlert(w);
+      const ok6=b.state==='chase'&&k.state!=='chase'&&f.state!=='chase';P.pos.copy(p0);
+      res=ok1&&ok2&&ok3&&ok4&&ok5&&ok6||`virhe ovi-näkö ${ok1}/${ok2} kohde ${ok3}/${ok4} muisti ${ok5} lauma ${ok6}`;}
+    finally{for(const q of made)if(pieces.includes(q))removePiece(q);for(const m of mm)mobRemove(m);}return res;});
   t('v2.07 hiekkakasat rannoilla 5–10, sulatin 2 hiekkaa → 1 lasi 15 s (vuorotellen malmin kanssa), lasi-ikkunat (näkee läpi, ei kulkua/nuolia, rikkoutuu aukkoikkunaksi), rautaovi 900',()=>{
     const S=nodes.filter(n=>n.type==='hiekkakasa');const ok1=S.length>=5&&S.length<=10&&S.every(n=>biomeAt(n.x,n.z,terrainH(n.x,n.z))==='beach')&&NODE.hiekkakasa.respawn===1200&&NODE.hiekkakasa.n.join()==='2,3';
     const made=[];let res;try{const x=P.pos.x+30,z=P.pos.z+30;const su=addPiece('sulatin',x,terrainH(x,z),z,0);made.push(su);su.data.sand=4;su.data.wood=5;let t=0;while(!su.data.glass&&t<20){updateStations(1/30);t+=1/30;}const ok2=su.data.glass===1&&Math.abs(t-GLASS_T)<.2&&GLASS_T===15&&SAND_MAX===20;

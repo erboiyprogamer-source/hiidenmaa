@@ -97,7 +97,7 @@ const KB_V=3.75;   // mitattu: arvo 10 → 5 m (harmaasusi)
 function damageMob(m,dmg,dt,kx,kz,kb=4){
   if(m.dead||m.sinking)return;   // v0.95: vajoava/nouseva vartija on haavoittumaton
   const mult=(m.def.weak&&m.def.weak[dt])||1;dmg*=mult;
-  m.hp-=dmg;m.flash=.15;m.lastHit=playTime;m.angry=true;m.hurtT=playTime;
+  m.hp-=dmg;m.flash=.15;m.lastHit=playTime;m.angry=true;m.hurtT=playTime;m.seenT=playTime;m.lastPX=P.pos.x;m.lastPZ=P.pos.z;   // v2.08: osuma = muisti
   if(m.def.ai!=='boss'&&m.def.ai!=='rboss'){const l=Math.hypot(kx,kz)||1,k=kb*(m.def.r>.8?.4:m.def.r>.6?.7:1);m.vel.x+=kx/l*k;m.vel.z+=kz/l*k;m.wind=0;}
   floatText(Math.round(dmg)+'',m.pos.x,m.pos.y+(m.type==='vartija'?6:(m.def.fh||1.8)),mult>1.2?'#ffd36a':mult<.9?'#a99d89':'#eee5d3');
   sfx('hit');bleed(m.pos.x,m.pos.y+Math.min(3,(m.barH||m.def.r*2.4)*.55),m.pos.z,bleedKind(m.type),m.def.r,dmg,m.dun,kx,kz,kb);if(dt==='slash'&&SET.bloodFx)addSlash(m);else if(Math.random()<.6)addWound(m);   // v1.37 (kohta 24): veri ja haavat

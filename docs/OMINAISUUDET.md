@@ -119,6 +119,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
+- **Viholliset ja talot (v2.08):** suljettu ovi estää näkemisen (ikkunoista ja lasista näkee). Vihollinen muistaa sinut 30 s; jos pakenet taloon, se hajottaa oven, jos se on heikompi kuin lähin seinä, muuten lähimmän seinän, ja tulee sisään. Saman lajin lauma 20 m:n päästä liittyy mukaan. Kun muisti loppuu, vihollinen poistuu murtokohdasta.
 - **Hiekka ja lasi (v2.07):** rannoilla harvinaisia hiekkakasoja (5–10 / kartta, uusiutuvat 20 min, 2–3 hiekkaa). Sulatusuunissa 2 hiekkaa → 1 lasi 15 s:ssa (enint. 20 hiekkaa, vuorotellen malmien kanssa).
 - **Ikkunat ja ovet (v2.07):** Aukkoikkuna (2 puuta, 130) ja Kivinen aukkoikkuna (5 kiveä, 420); Puinen lasi-ikkuna (2 puuta + lasi, 100) ja Kivinen lasi-ikkuna (5 kiveä + lasi, 250) – lasi estää kulun, nuolet ja sateen, mutta olennot näkevät läpi; rikkoutuessa lasi särkyy ja jäljelle jää aukkoikkuna. Rautaovi 4 rautaa + 2 puuta, 900.
 - **Puunuolet (v2.06):** pelkästä puusta (2 puuta → 15, työpenkki); putoavat 30 % ja kaartuvat tuulessa 20 % enemmän ja tekevät 40 % vähemmän vahinkoa kuin piikivinuolet. Tuuli kaartaa kaikkia nuolia 10 % enemmän kuin ennen.
