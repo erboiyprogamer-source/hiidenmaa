@@ -246,6 +246,11 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       const h=/HOME\.lvl===2\?\.2:HOME\.lvl===1\?\.1:0/.test(sleepAt.toString())&&!/P\.hp=maxHp\(\)/.test(sleepAt.toString());
       res=a&&b&&c&&d&&e&&f&&g&&h||`virhe mukava ${a} lämmin ${b} ovi ${c}/${d} aukko ${e} hiipuu ${f}/${g} uni ${h}`;}
     finally{msg=om;for(const q of made)if(pieces.includes(q))removePiece(q);P.pos.copy(p0);P.hunger=hu;HOME.lvl=0;HOME.linger=0;HOME.inside=false;}return res;});
+  t('v2.10 emakon suuttuminen: yksi suuttumisääni (ei karjaisua tiedostoäänen päälle, olento 15 s, laji 6 s)',()=>{
+    const src=temperAI.toString(),a=/!creRes\(m\.type,'aggro'\)&&creAngerOk\(m\)/.test(src),b=/creAngerOk\(m\)\)creSnd\(m,'aggro'\)/.test(creTick.toString());
+    const o1={type:'emakko'},o2={type:'emakko'},o3={type:'emakko'};for(const k in CRE_AGT)delete CRE_AGT[k];const c=creAngerOk(o1)&&!creAngerOk(o2)&&!creAngerOk(o1);
+    const pt=playTime;playTime+=7;const d=creAngerOk(o3)&&!creAngerOk(o1);playTime+=9;const e=creAngerOk(o1);playTime=pt;for(const k in CRE_AGT)delete CRE_AGT[k];
+    return a&&b&&c&&d&&e||`virhe ai ${a} tick ${b} kerros ${c} laji ${d} olento ${e}`;});
   t('v2.08 suljettu ovi estää näkemisen, piiritys: ovi jos heikompi kuin lähin seinä muuten lähin seinä, muisti 30 s, saman lajin lauma 20 m',()=>{
     const made=[],mm=[];let res;try{const cx=P.pos.x+50,cz=P.pos.z+50,y=terrainH(cx,cz)+.02;const H=d=>{const L=[addPiece(d,cx,y,cz-G/2,0),addPiece('seina',cx,y,cz+G/2,0),addPiece('seina',cx-G/2,y,cz,2),addPiece('seina',cx+G/2,y,cz,2)];made.push(...L);return L;};
       let L=H('ovi');const ok1=!losClear(cx,y+1.3,cz-5,cx,y+1.3,cz,true);setDoor(L[0],true,1);const ok2=losClear(cx,y+1.3,cz-5,cx,y+1.3,cz,true);setDoor(L[0],false,1);

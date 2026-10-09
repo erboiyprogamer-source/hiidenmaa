@@ -304,6 +304,12 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Korjaus: `#dropRet { animation: drIn .25s ease backwards }`. Älä käytä `both`/`forwards`-täyttötilaa elementeillä, joiden läpinäkyvyyttä tai muuta
   animoitua ominaisuutta ohjataan JS:stä.
 
+## 42. Emakon suuttumisäänet kerrostuivat (v2.10)
+- Syy: suuttuminen soitti kaksi lähdettä (`temperAI` `anger()` → `sfx('roar')` JA `creTick` → tiedostoääni `aggro`), ja saman lajin
+  suuttuvat (lauma, useampi emakko) soittivat kukin omansa samaan aikaan.
+- Korjaus: `creAngerOk(m)` (audio.js) – olento 15 s, laji 6 s; `anger()` karjaisee vain jos `!creRes(m.type,'aggro')`. Uutta suuttumisen ääntä
+  ei lisätä kahdesta paikasta: käytä aina `creAngerOk`-lupaa. Tarkistus: rivi "v2.10 emakon suuttuminen".
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

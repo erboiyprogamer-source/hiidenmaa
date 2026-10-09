@@ -491,7 +491,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## Äänet (v1.84–v1.86, äänierä A: olennot)
 - Olennoilla voi olla omat äänet (`sounds/<id>_<idle|hurt|death|aggro|chase>_<1–3>.mp3`, arpoo olemassa olevista versioista): rauhallinen
-  ääntely 6–15 s välein alle 25 m päässä, suuttumisääni (vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat), jahtiääni 4–9 s
+  ääntely 6–15 s välein alle 25 m päässä, suuttumisääni (vihamieliset ja pomot vain kerran, neutraalit kerran per suuttuminen – v2.10: sama olento enintään 15 s, sama laji 6 s välein, ei karjaisua tiedostoäänen päälle), jahtiääni 4–9 s
   välein jahdin aikana (vihamieliset ja pomot), osumaääni (enintään 0,4 s välein), kuolinääni. 3D-ääni (suunta ja etäisyys), sävel ±6 %.
 - Jos olennolla ei ole omaa ääntä, käytetään väliaikaista varaääntä toiselta olennolta muutetulla sävelellä (ketju `VARAANI`), muuten
   tehtyä ääntä tai hiljaisuutta. Tila: `sounds/AANILISTA.md`.
