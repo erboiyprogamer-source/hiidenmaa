@@ -59,6 +59,11 @@ function updateHUD(dt){
   // prompt
   // v1.23 (kohta 17): tähtäysympyrä = nuolen hajonta: iso alussa, pienenee vedettäessä, keltainen → punainen, täysi veto = pieni + piste
   updDropRet();
+  // v2.01: tuulivaroitus jousta jännittäessä – kova tuuli (≥ 8 m/s, myrsky ≥ 15) kaartaa nuolta; nuoli näyttää tuulen suunnan ruudulla
+  {const ww=$('#windWarn');if(ww){const on=P.drawing&&!P.inDun&&WIND.spd>=WIND_WARN&&state==='play';if(on!==!ww.hidden)ww.hidden=!on;
+    if(on){const st=WIND.spd>=15,rr=WIND.x*Math.cos(camYaw)-WIND.z*Math.sin(camYaw),ff=-(WIND.x*Math.sin(camYaw)+WIND.z*Math.cos(camYaw));
+      ww.classList.toggle('storm',st);const t=`${st?'Myrskytuuli':'Kova tuuli'} ${Math.round(WIND.spd)} m/s – nuoli kaartuu`;const b=ww.querySelector('b');if(b.textContent!==t)b.textContent=t;
+      ww.querySelector('.wwArr').style.transform=`rotate(${Math.atan2(-ff,rr)}rad)`;}}}
   {const c=$('#cross');if(P.drawing){const sp=bowSpread(),k=Math.min(1,P.bowDraw||0),R=Math.max(bowCrouch()&&k>=1?2.5:4,Math.tan(sp*Math.PI/180)/Math.tan(camera.fov*Math.PI/360)*innerHeight/2);
       c.className='aim'+(sp<.35?' full':'');c.style.width=c.style.height=(R*2)+'px';c.style.margin=`${-R-2}px 0 0 ${-R-2}px`;
       c.style.borderColor=`rgb(${Math.round(lerp(232,224,k))},${Math.round(lerp(196,72,k))},${Math.round(lerp(90,60,k))})`;}
@@ -116,6 +121,7 @@ function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=d
   B.querySelectorAll('[data-heal]').forEach(b=>b.onclick=()=>{P.hp=maxHp();P.stam=100;P.hunger=100;P.burnT=0;P.dead=false;msg('DEV: terveys, kestävyys ja kylläisyys täynnä.','loot');renderDev();});
   $('#devMap').onclick=()=>{devRevealMap();msg('Kartta ja kaikki kohteet paljastettu.','loot');};}
 let devQ='',devN=1;
+const WIND_WARN=8;   // v2.01 tuulivaroituksen raja (m/s)
 /* v2.00 DEV-valikko Å: esineet. Pikavalinnat (yksi painallus antaa ehdotetun määrän, "Anna kaikki" kaikki kerralla) + esinehaku määrällä. */
 const DEV_PICKS=[['hiidenmiekka',1],['hiidenpanssari',1],['rautakilpi',1],['hiidenjousi',1],['sulkanuolet',100],['tulinuolet',100],['pihka',100],
   ['hiidenkivi',3],['jaaavain',1],['luuavain',1],['aarniavain',1],['kruunusirpale',3],['parannusjuoma',5],['elpymisjuoma',5],['sisujuoma',5]];

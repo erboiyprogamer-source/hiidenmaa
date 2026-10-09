@@ -70,7 +70,7 @@ function updatePlayer(dt){
   if(!P.atk&&mouseL&&state==='play'&&w.cat==='weapon'&&locked)startAttack();
   else if(mouseL&&state==='play'&&w.cat==='shovel'&&locked)useTool(false);
   else if(mouseR&&state==='play'&&w.cat==='shovel'&&locked)useTool(true);   // v0.96 oikea pohjassa: toissijainen (polku / värin palautus)
-  if(P.drawing){P.bowDraw=Math.min(1,P.bowDraw+dt/bowDrawTime());P.stam-=6*dt;P.stamDelay=.5;if(P.stam<=0){P.drawing=false;fireBow();}}
+  if(P.drawing){P.drawT=(P.drawT||0)+dt;P.bowDraw=Math.min(1,P.bowDraw+dt/bowDrawTime());P.stam-=6*dt;P.stamDelay=.5;if(P.stam<=0){P.drawing=false;if(P.drawT>=BOW_MIN_T)fireBow();else bowCancel();P.drawT=0;}}
   // animate figure
   // v0.93 harppova juoksu: juoksukerroin runK 0 (kävely 4,6) → 1 (juoksu 8); askel pitenee ja tahti harvenee juostessa, kävelyssäkin hieman
   // v1.12 (välilisäys 3): runK pehmennetään (nousu 6/s, lasku 2,2/s), jotta juoksusta kävelyyn etukeno, askel ja kädet palautuvat rauhallisesti

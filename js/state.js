@@ -240,7 +240,7 @@ function shootArrow(from,dir,speed,dmg,owner,grav,fire){if(owner!=='player')dmg*
   if(fire&&SET.arrowLight){pr.light={x:from.x,y:from.y,z:from.z,c:0xff8a3a,i:1.5,on:()=>true,move:true};lightSources.push(pr.light);updateLights();}}   // v1.23 asetus: tulinuolen valo
 function throwRock(from,target,dmg){dmg*=HURT_K;const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,0),mat(0x5d5a54));m.castShadow=true;m.position.copy(from);scene.add(m);const d=_tmpV.subVectors(target,from);const T=1.1/.7;   // v0.89: kivi lentää 30 % hitaammin (ennen 1,1 s)
   const v=new V3(d.x/T,(d.y+.5*14*T*T)/T,d.z/T);projs.push({m,v,dmg,owner:'boss',t:0,g:14,kind:'rock'});}
-const arrowFade=[];
+const arrowFade=[],ARROW_WIND=.13;   // v2.01 tuulen vaikutus nuoleen (ennen .08): 13 m/s → noin 0,8 m sivuun 30 m:ssä
 /* v1.98 NUOLEN OSUMAT JA AJASTIMET (kaikki nuolet): liike pilkotaan enintään 12 cm:n askeliin ja kärjen (0,45 m keskeltä) osuma tarkennetaan puolittamalla
    → nuoli jää kiinni täsmälleen pintaan (rakennetut seinät, katot, suljetut ovet, luolaston ja rauniomuurit, puut, kivet, maa). Vesi (pinta y≈0) pysäyttää nuolen myös.
    Osumahetkestä lähtevät ajastimet: nuoli häviää 10 s (tulinuoli 8 s), tulinuolen liekki ja valo sammuvat 5 s:ssa (valo himmenee tasaisesti).
@@ -259,12 +259,12 @@ function updateProjs(dt){updateHitMarks(dt);
   const dropLight=p=>{if(p.light){const j=lightSources.indexOf(p.light);if(j>=0)lightSources.splice(j,1);p.light=null;updateLights();}};
   // v1.33: tulinuolen valo hiipuu lennossa (sateessa 2× nopeammin). v1.98: osumasta valo himmenee tasaisesti 5 s:ssa (f.dur; mobiin osunut 2 s), sateessa/vedessä heti.
   const rainK=!P.inDun&&wRain>.3?2:1;
-  for(let i=arrowFade.length-1;i>=0;i--){const f=arrowFade[i],D=f.dur||2;f.t+=dt;f.L.i=1.5*Math.max(0,1-f.t/D);if(f.t>=D){const j=lightSources.indexOf(f.L);if(j>=0)lightSources.splice(j,1);arrowFade.splice(i,1);if(f.p&&f.p.flame)f.p.flame.visible=false;updateLights();}}
+  for(let i=arrowFade.length-1;i>=0;i--){const f=arrowFade[i],D=f.dur||2,H=f.hold||0;f.t+=dt;const k=f.t<H?1:1-sstep(0,1,(f.t-H)/Math.max(.01,D-H));f.L.i=(f.I||1.5)*k;if(f.p&&f.p.flame&&f.p.flame.visible)f.p.flame.scale.setScalar(.3+.7*k);if(f.t>=D){const j=lightSources.indexOf(f.L);if(j>=0)lightSources.splice(j,1);arrowFade.splice(i,1);if(f.p&&f.p.flame)f.p.flame.visible=false;updateLights();}}
   const arrowOut=(p,x,y,z)=>{dropLight(p);if(p.flame)p.flame.visible=false;smokePuff(x,y,z,.45,.2);};
   for(let i=projs.length-1;i>=0;i--){const p=projs[i];p.t+=dt;if(p.light){p.light.x=p.m.position.x;p.light.y=p.m.position.y;p.light.z=p.m.position.z;
       p.light.i=1.5*Math.max(.25,1-p.t*.12*rainK);}
-    if(p.stuck){if(p.fire&&p.flame&&p.flame.visible&&p.t>5)p.flame.visible=false;if(p.t>(p.fire?8:10)){dropLight(p);scene.remove(p.m);projs.splice(i,1);}continue;}   // v1.98: ajastin alkaa osumasta: 10 s (tulinuoli 8 s)
-    p.v.y-=p.g*dt;if(p.kind==='arrow'&&!P.inDun){const wa=WIND.spd*.08*dt*(p.steady?.5:1);p.v.x+=WIND.x*wa;p.v.z+=WIND.z*wa;} // v0.84: tuuli kallistaa nuolen rataa (13 m/s ≈ 0,5 m / 30 m)
+    if(p.stuck){if(p.fire&&p.flame&&p.flame.visible){if(p.fT&&!p.light)p.flame.scale.setScalar(Math.max(.3,1-p.t/p.fT));if(p.t>(p.fT||5))p.flame.visible=false;}if(p.t>(p.fire?8:10)){dropLight(p);scene.remove(p.m);projs.splice(i,1);}continue;}   // v1.98: ajastin alkaa osumasta: 10 s (tulinuoli 8 s)
+    p.v.y-=p.g*dt;if(p.kind==='arrow'&&!P.inDun){const wa=WIND.spd*ARROW_WIND*dt*(p.steady?.5:1);p.v.x+=WIND.x*wa;p.v.z+=WIND.z*wa;} // v0.84: tuuli kallistaa nuolen rataa (13 m/s ≈ 0,5 m / 30 m)
     let cont=0;if(p.kind==='arrow'){cont=arrowStep(p,dt);p.m.lookAt(_tmpV.copy(p.m.position).add(p.v));}else{p.m.position.addScaledVector(p.v,dt);p.m.rotation.x+=dt*5;}
     const pos=p.m.position;let hit=false;
     if(p.owner==='player'){const hm=headShot(p,pos,dt);if(hm){const m=hm;m.fireHit=!!p.fire;damageMob(m,p.dmg*1.1,'pierce',p.v.x,p.v.z);hitMarker(pos.x,pos.y,pos.z,true);m.fireHit=false;if(p.fire)igniteMob(m);floatText('Pääosuma!',pos.x,pos.y+.4,pos.z,'#ff5a4a');hit=true;}
@@ -272,11 +272,12 @@ function updateProjs(dt){updateHitMarks(dt);
     else{if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<(p.kind==='rock'?2.2*2.2:.6)&&pos.y<P.pos.y+2.2&&pos.y>P.pos.y-.5){hurtPlayer(p.dmg,pos.x-p.v.x,pos.z-p.v.z);hit=true;}}
     const g=P.inDun?DUN.y:terrainH(pos.x,pos.z);
     if(!hit&&cont){p.stuck=true;p.t=0;const tx=pos.x+_aD.x*.45,ty=pos.y+_aD.y*.45,tz=pos.z+_aD.z*.45;
-      if(p.light){if(cont===2||arrowRainHit(tx,ty,tz))arrowOut(p,tx,ty,tz);else{p.light.x=pos.x;p.light.y=pos.y;p.light.z=pos.z;arrowFade.push({L:p.light,t:0,dur:5,p});p.light.move=false;p.light=null;}}
-      else if(p.fire&&p.flame&&(cont===2||arrowRainHit(tx,ty,tz))){p.flame.visible=false;smokePuff(tx,ty,tz,.45,.2);}
+      if(p.light){if(cont===2)arrowOut(p,tx,ty,tz);else{const rain=cont!==2&&arrowRainHit(tx,ty,tz);p.light.x=pos.x;p.light.y=pos.y;p.light.z=pos.z;   /* v2.01: kohteessa kirkkaampi (2,8); sateessa palaa 1,6 s ja hiipuu pehmeästi */
+          if(rain){p.light.i=2.2;arrowFade.push({L:p.light,t:0,dur:1.6,hold:0,I:2.2,p});p.fT=1.6;}else{p.light.i=2.8;arrowFade.push({L:p.light,t:0,dur:5,hold:3.2,I:2.8,p});}p.light.move=false;p.light=null;}}
+      else if(p.fire&&p.flame&&cont===2){p.flame.visible=false;smokePuff(tx,ty,tz,.45,.2);}else if(p.fire&&p.flame&&arrowRainHit(tx,ty,tz))p.fT=1.6;
       if(cont===2)burst(tx,0,tz,0x9ad0e0,5,2);continue;}
     if(!hit&&p.kind!=='arrow'&&(pos.y<g||pointBlocked(pos.x,pos.y,pos.z,false,true))){if(p.kind==='rock'){shockwave(pos.x,g,pos.z,3);burst(pos.x,g+.3,pos.z,0x5d5a54,10,5);sfx('slam');if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<9)hurtPlayer(p.dmg,pos.x,pos.z);scene.remove(p.m);projs.splice(i,1);continue;}p.stuck=true;p.t=0;continue;}
-    if(hit||p.t>8){if(p.kind==='rock'){shockwave(pos.x,pos.y-.5,pos.z,3);sfx('slam');}if(hit&&p.light){if(arrowRainHit(pos.x,pos.y,pos.z))arrowOut(p,pos.x,pos.y,pos.z);else{arrowFade.push({L:p.light,t:0});p.light.move=false;p.light=null;}}dropLight(p);scene.remove(p.m);projs.splice(i,1);}
+    if(hit||p.t>8){if(p.kind==='rock'){shockwave(pos.x,pos.y-.5,pos.z,3);sfx('slam');}if(hit&&p.light){if(arrowRainHit(pos.x,pos.y,pos.z)){arrowFade.push({L:p.light,t:0,dur:1.2,I:p.light.i});p.light.move=false;p.light=null;}else{arrowFade.push({L:p.light,t:0});p.light.move=false;p.light=null;}}dropLight(p);scene.remove(p.m);projs.splice(i,1);}
   }
 }
 

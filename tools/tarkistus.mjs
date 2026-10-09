@@ -232,6 +232,19 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v2.01 jousi: tähtäys osuu ristikon kohtaan olentoon (ei vasemmalle), 0,7 s minimiveto (peruuntuu, nuoli ei kulu), tuulivaroitus, tulinuolen valo 2,8 kohteessa',()=>{
+    const sv=[camYaw,camPitch,WIND.spd,WIND.x,WIND.z,P.crouch,P.onGround,P.crouchK,SET.arrowLight,wRain];let res;const om=msg;msg=()=>{};const made=[];
+    try{invAdd('jousi',1);invAdd('nuolet',10);const bw=inv.find(x=>x&&x.id==='jousi');if(!bw.eq)toggleEquip(bw);WIND.spd=0;camPitch=-.05;let hits=0;
+      for(const D of [8,20]){camYaw=.3;P.drawing=true;P.crouch=true;P.onGround=true;P.crouchK=1;for(let i=0;i<20;i++)updateCamera(1/30);camera.updateMatrixWorld(true);
+        const {o,d}=camRay(),t=D/Math.hypot(d.x,d.z),aim=o.clone().addScaledVector(d,t),m=spawnMob('peura',aim.x,aim.z);made.push(m);m.pos.y=aim.y-(m.barH||m.def.r*2.6)*.5;
+        P.bowDraw=1;P.drawT=2;const hp0=m.hp;fireBow();const pr=projs[projs.length-1];pr.g=1e-6;for(let i=0;i<300&&projs.includes(pr);i++)updateProjs(1/120);if(m.hp<hp0)hits++;}
+      const n0=inv.filter(x=>x&&x.id==='nuolet').reduce((a,x)=>a+x.n,0),pj=projs.length;P.drawing=true;P.drawT=.3;P.bowDraw=.5;onPrimaryUp();const cancel=projs.length===pj&&inv.filter(x=>x&&x.id==='nuolet').reduce((a,x)=>a+x.n,0)===n0;
+      P.drawing=true;WIND.spd=12;updateHUD(.05);const ww=!$('#windWarn').hidden;WIND.spd=2;updateHUD(.05);const calm=$('#windWarn').hidden;P.drawing=false;updateHUD(.05);
+      SET.arrowLight=true;wRain=0;const gx=P.pos.x-12,gz=P.pos.z-12;shootArrow(new THREE.Vector3(gx,terrainH(gx,gz)+6,gz),new THREE.Vector3(0,-1,0),30,10,'player',1e-6,true);const fp=projs[projs.length-1];for(let i=0;i<150&&!fp.stuck;i++)updateProjs(1/30);
+      const f=arrowFade[arrowFade.length-1],bright=f&&f.I===2.8&&f.hold>0;
+      res=hits===2&&cancel&&ww&&calm&&bright&&ARROW_WIND>.08||`virhe osumat ${hits}/2 peruutus ${cancel} tuuli ${ww}/${calm} valo ${bright}`;}
+    finally{msg=om;for(const m of made)mobRemove(m);[camYaw,camPitch,WIND.spd,WIND.x,WIND.z,P.crouch,P.onGround,P.crouchK,SET.arrowLight,wRain]=sv;P.drawing=false;P.drawT=0;}
+    return res;});
   t('v2.00 juomat: 3 kpl (kuvake, 3D-pullo), parannus täyteen, elpyminen 1 hp/s 60 s, sisu: kylläisyys 5 min + kestävyys 30 s; arkuissa 10 %/juoma, ei tynnyreissä',()=>{
     const sv=[P.hp,P.hunger,P.stam,JSON.stringify(P.buffs)];let res;
     try{const ok0=POTIONS.every(id=>ITEMS[id]&&ITEMS[id].potion&&icon(id)&&dropMesh(id).userData.potion);
@@ -276,7 +289,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
         for(let i=0;i<150&&!pr.stuck;i++)updateProjs(1/30);let tl=null,tf=null,tg=null,t=0;for(let i=0;i<420;i++){updateProjs(1/30);t+=1/30;if(tl===null&&fire&&lightSources.length<=n0)tl=t;if(tf===null&&fire&&!pr.flame.visible)tf=t;if(!projs.includes(pr)){tg=t;break;}}return {tl,tf,tg};};
       const n=tm(false),f=tm(true),ok2=Math.abs(n.tg-10)<.2&&Math.abs(f.tg-8)<.2&&Math.abs(f.tl-5)<.2&&Math.abs(f.tf-5)<.2;
       wRain=1;const n0=lightSources.length;shootArrow(new THREE.Vector3(P.pos.x-12,terrainH(P.pos.x-12,P.pos.z+12)+6,P.pos.z+12),new THREE.Vector3(0,-1,0),30,10,'player',1e-6,true);const pr=projs[projs.length-1];updateProjs(1/30);const air=lightSources.length>n0;
-      for(let i=0;i<150&&!pr.stuck;i++)updateProjs(1/30);const ok3=air&&pr.stuck&&lightSources.length<=n0&&!pr.flame.visible;wRain=0;
+      for(let i=0;i<150&&!pr.stuck;i++)updateProjs(1/30);const lit=lightSources.length>n0;for(let i=0;i<60;i++)updateProjs(1/30);const ok3=air&&pr.stuck&&lit&&lightSources.length<=n0&&!pr.flame.visible;wRain=0;   /* v2.01: sateessa hiipuu 1,6 s */
       res=ok1&&closed&&open&&ok2&&ok3||`virhe seinä ${ok1}(${a.err.toFixed(3)},${b.err.toFixed(3)}) ovi ${closed}/${open} ajastimet ${ok2}(${JSON.stringify([n,f])}) sade ${ok3}`;}
     finally{[wRain,SET.arrowLight]=sv;for(const p of made)removePiece(p);for(const q of projs.splice(0)){scene.remove(q.m);if(q.light){const j=lightSources.indexOf(q.light);if(j>=0)lightSources.splice(j,1);}}arrowFade.length=0;updateLights();}
     return res;});
@@ -304,7 +317,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const a=fc[W[0].key].filter(Boolean),ok=a.length===8&&new Set(a.map(x=>x.id)).size===8&&fc[W[1].key].filter(Boolean).length===1&&!fc[W[2].key]&&!flags.peacePend;
     const src=bossVictory.toString()+peaceTick.toString();const ok2=/allBossesDown\(\)/.test(src)&&/setTimeout\(peaceRefill,2000\)/.test(src)&&/winS'\)\.hidden/.test(src)&&/rauhallinen/.test(src);
     const fc2=JSON.parse(sv);for(const k in fc)delete fc[k];Object.assign(fc,fc2);flags.peacePend=pp;return ok&&ok2||`virhe ${ok}${ok2}`;});
-  t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
+  t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;P.drawT=1;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua
 {const p2=await b.newPage({viewport:{width:800,height:500}});const e2=[];p2.on('pageerror',e=>e2.push(e.message));

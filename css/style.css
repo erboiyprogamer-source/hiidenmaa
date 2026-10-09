@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'2.00';
+:root{--css-v:'2.01';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -818,3 +818,11 @@ button:focus,select:focus{outline:none}
 /* v2.00 DEV Å: pikavalinnat kahdessa sarakkeessa ilman vieritystä */
 #devIP .devPicks{display:grid;grid-template-columns:1fr 1fr;gap:3px 8px;max-height:none;overflow:visible}
 #devIP .devPicks .devIt .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* v2.01 tuulivaroitus jousta jännittäessä (kova tuuli ≥ 8 m/s): kolmio, teksti ja nuoli tuulen suuntaan ruudulla */
+#windWarn{position:absolute;left:50%;top:calc(50% + 34px);transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:2px 9px;border-radius:4px;
+  background:rgba(20,16,10,.62);border:1px solid rgba(255,196,64,.55);color:#ffd36a;font:700 13px var(--font-b,sans-serif);text-shadow:0 1px 2px #000;pointer-events:none;white-space:nowrap}
+#windWarn .wwTri{font-size:16px;color:#ffb22e;animation:wwPulse 1s ease-in-out infinite}
+#windWarn .wwArr{font-style:normal;display:inline-block;color:#e8f4ff;transition:transform .2s}
+#windWarn.storm{border-color:rgba(255,90,60,.7);color:#ff9a7a}#windWarn.storm .wwTri{color:#ff5a3a}
+@keyframes wwPulse{0%,100%{opacity:.65}50%{opacity:1}}

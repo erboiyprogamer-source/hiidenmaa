@@ -10,7 +10,7 @@ function onPrimary(){
   const w=curWeapon();
   if(w.cat==='hammer'){placeBuild();return;}
   if(w.cat==='shovel'){useTool(false);return;}
-  if(w.cat==='bow'){if(!ammoId()){msg('Ei nuolia.','warn');showAmmo(2,true);return;}P.drawing=true;P.bowDraw=0;showAmmo(2,true);return;}
+  if(w.cat==='bow'){if(!ammoId()){msg('Ei nuolia.','warn');showAmmo(2,true);return;}P.drawing=true;P.bowDraw=0;P.drawT=0;showAmmo(2,true);return;}
   startAttack();
 }
 // v0.96 (kohta 11) maanmuokkaustyökalut, vasen = ensisijainen, oikea = toissijainen (pohjassa pitäen toistuu 0,45 s välein, kestävyys −6):
@@ -33,7 +33,10 @@ function terraTool(mode){
   terraFlush();mudFlush();for(const n of nodesNear(c.x,c.z,R+3,_sh))syncNodeY(n);
   sfx('build');burst(c.x,terrainH(c.x,c.z)+.2,c.z,mode==='path'?0x7a5a38:0x6b5a3a,8,3);}
 function useTool(alt){const w=curWeapon();if(w.cat!=='shovel')return;terraTool(w.id==='kuokka'?(alt?'restore':'raise'):(alt?'path':'dig'));}
-function onPrimaryUp(){if(P.drawing){P.drawing=false;if(P.bowDraw>.15&&ammoId())fireBow();P.bowDraw=0;}}
+/* v2.01: jousi laukeaa vasta, kun vetoa on kestänyt vähintään BOW_MIN_T (0,7 s); lyhyempi veto peruuntuu (nuoli ei kulu), ilmoitus enintään 4 s välein. */
+const BOW_MIN_T=.7;
+function bowCancel(){if(playTime-(P.bowCancelMsg||-99)>4){P.bowCancelMsg=playTime;msg('Ampuminen peruuntui – jännitä jousta vähintään 0,7 s.','warn');}}
+function onPrimaryUp(){if(P.drawing){P.drawing=false;if((P.drawT||0)<BOW_MIN_T)bowCancel();else if(P.bowDraw>.15&&ammoId())fireBow();P.bowDraw=0;P.drawT=0;}}
 function onSecondary(){const w=curWeapon();if(w.cat==='hammer'){togglePanel('build');}else if(w.cat==='shovel')useTool(true);}
 function startAttack(){
   if(P.atk||P.inWater&&P.swim)return;
@@ -162,10 +165,19 @@ const SHIELD_COST={kilpi:.9,kuparikilpi:.75,rautakilpi:.6};
 const SHIELD_HITS={kilpi:20,kuparikilpi:15,rautakilpi:15},SHIELD_FIX=60;
 function shieldOk(s){if(s.shBrk!=null&&playTime-s.shBrk>=SHIELD_FIX){s.shBrk=null;s.shHit=0;msg(`${ITEMS[s.id].n} on taas ehjä.`,'loot');invDirty=true;updateGear();}return s.shBrk==null;}
 function shieldWear(s){s.shHit=(s.shHit||0)+1;invDirty=true;if(s.shHit>=(SHIELD_HITS[s.id]||15)){s.shBrk=playTime;sfx('crumble',1.2,.7);burst(P.pos.x,P.pos.y+1.2,P.pos.z,0x8a5a32,14,4);msg(`${ITEMS[s.id].n} hajosi! Se korjautuu itsestään minuutissa.`,'warn');updateGear();}}
+/* v2.01 TÄHTÄYS: kamera on tähdätessä 0,75 m pelaajan oikealla, nuoli lähtee pelaajasta. Nuoli suunnataan pisteeseen, johon tähtäyspiste osuu –
+   aiemmin kameran säde ei huomioinut olentoja, vaan osui maahan/70 m olennon taakse, jolloin lähempi kohde jäi nuolen radan oikealle puolelle
+   (nuoli meni ~0,6 m vasemmalle 15 m:ssä). Nyt säde testataan myös olentojen pystylieriöihin (säde def.r, korkeus barH) → nuoli osuu ristikon kohtaan
+   (vain painovoima ja tuuli kaartavat). */
+function bowAimPoint(max){const p=camRayPoint(max),{o,d}=camRay();let best=o.distanceTo(p);
+  for(const m of mobs){if(m.dead||!!m.dun!==P.inDun)continue;const r=(m.def.r||.5)+.1,h=m.barH||(m.def.r||.5)*2.6,dx=m.pos.x-o.x,dz=m.pos.z-o.z;
+    const a=d.x*d.x+d.z*d.z;if(a<1e-6)continue;const t0=(dx*d.x+dz*d.z)/a;if(t0<1||t0>best)continue;const cx=o.x+d.x*t0-m.pos.x,cz=o.z+d.z*t0-m.pos.z,c2=cx*cx+cz*cz;if(c2>r*r)continue;
+    const t=t0-Math.sqrt((r*r-c2)/a),y=o.y+d.y*t;if(t>1&&t<best&&y>m.pos.y-.2&&y<m.pos.y+h)best=t;}
+  return o.addScaledVector(d,best);}
 function fireBow(){
   const w=curWeapon();const k=Math.min(1,P.bowDraw),am=ammoId();if(!am)return;invRemove(am,1);bump('shots');
   const from=new V3(P.pos.x,P.pos.y+1.5,P.pos.z);
-  const tgt=camRayPoint(70);const dir=tgt.sub(from).normalize();
+  const tgt=bowAimPoint(70);const dir=tgt.sub(from).normalize();   // v2.01: tähtäyspiste huomioi olennot (ei ohi vasemmalle)
   from.addScaledVector(dir,.6);
   {const sp=bowSpread()*Math.PI/180;if(sp>1e-4){const r=Math.sqrt(Math.random())*Math.tan(sp),ph=Math.random()*TAU,ux=_tmpV2.set(-dir.z,0,dir.x).normalize(),vy=new V3().crossVectors(dir,ux);
     dir.addScaledVector(ux,Math.cos(ph)*r).addScaledVector(vy,Math.sin(ph)*r).normalize();}}   // vajaa veto: nuoli lähtee tähtäysympyrän alueelle

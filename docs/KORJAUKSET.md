@@ -288,6 +288,12 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Korjaus: `playerWet()` (sade eikä `shelterCache`, tai vesi) estää syttymisen kokonaan, jäähy `P.igniteCd` 3 s, ilmoitus 12 s välein. Mobeilla `mobWet(m)`
   + `m.igniteCd` + ääni 4 s välein. Älä lisää uusia sytytyslähteitä ilman `canIgnitePlayer()`/`mobWet`-tarkistusta.
 
+## 39. Jousen nuolet osuivat aina vasemmalle tähtäyksestä (v2.01)
+- Syy: kolmannen persoonan kamera on tähdätessä 0,75 m oikealla. Nuolen suunta = pelaaja → kameran säteen osumapiste, ja `camRayPoint` ei osu olentoihin,
+  joten piste oli kohteen takana (maa tai 70 m) → lähellä oleva kohde jäi radan oikealle (0,4–0,7 m).
+- Korjaus: `bowAimPoint` = `camRayPoint` + olentojen lieriöt. Jos lisäät uuden kohteen tyypin, johon pitää voida tähdätä (esim. liikkuvat maalitaulut), lisää se
+  `bowAimPoint`iin. Älä vaihda nuolen lähtöpistettä kameraan (nuoli näyttäisi lähtevän pelaajan ohi).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`
