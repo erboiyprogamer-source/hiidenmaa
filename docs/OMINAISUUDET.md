@@ -119,6 +119,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
+- **Puunuolet (v2.06):** pelkästä puusta (2 puuta → 15, työpenkki); putoavat 30 % ja kaartuvat tuulessa 20 % enemmän ja tekevät 40 % vähemmän vahinkoa kuin piikivinuolet. Tuuli kaartaa kaikkia nuolia 10 % enemmän kuin ennen.
 - **Tähtäin (v2.05):** Z vaihtaa Viivasto / Pisteet / Kevyt / Pois; vilkkuessa apuviivasto ja piste samaan tahtiin.
 - **Tähtäin (v2.04):** kyykkytähtäimen merkit suoraan pisteen alla; X kytkee täyden vedon vilkkumisen (oletus pois, 3 s välein, piste ja viivat yhtä aikaa); tuulen suunta ja nopeus näkyvät aina jousta jännittäessä ristikon yläpuolella. Linnakkeen muurin harjalla voi kävellä.
 - **Kyykkytähtäin (v2.03):** täydellä vedolla kyykyssä näkyy todellinen lentorata metrimerkkeineen ja osumakohta (huomioi katsekulman, painovoiman ja tuulen); Z vaihtaa tyyliä (Viivasto, Pisteet, Kevyt). Täydellä vedolla piste pienenee ja himmenee 2 s välein; ohjeet C- ja Z-näppäimille. Jousta jännitettävä vähintään 0,4 s.
@@ -144,7 +145,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   **Vetoasento (v1.22):** vartalo kääntyy sivuttain, jousi keskellä edessä, oikea käsi vetää jänteen posken oikealle puolelle; levossa jousi heiluu käden mukana.
   **Tähtäys (v1.23):** ympyrä = hajonta: vedon alussa n. 10°, pienenee vedettäessä (keltainen → punainen), täysi veto paikallaan = 0° (pieni ympyrä + piste); liike lisää 2–3°.
   **Jouset (v1.23):** hiidenjousi vetää 1,15 s, nuoli +25 % nopeampi, hajonta ×0,7; ★ nopeuttaa vetoa ja pienentää hajontaa.
-- **Nuolet (v1.23):** piikivi = perus; sulitettu +25 % nopeus, −40 % pudotus, +15 % vahinko, tuuli puolet; tulinuoli = perus + sytyttää. Asetus: tulinuolten valo (oletus pois).
+- **Nuolet (v1.23):** puunuoli (v2.06) = heikoin (putoaa +30 %, tuuli +20 %, vahinko −40 %); piikivi = perus; sulitettu +25 % nopeus, −40 % pudotus, +15 % vahinko, tuuli puolet; tulinuoli = perus + sytyttää. Asetus: tulinuolten valo (oletus pois).
 - **Kestävyys / isku (v1.23):** kupari −10 %, rauta −20 %, hiiden −30 %; kilven torjunta kuluttaa puu 90 %, kupari 75 %, rauta 60 % iskusta.
 - **Palava mob (v1.23):** isommat liekit, kipinöitä ja savua, oranssi valo maahan.
 - **Repun käyttö (v1.32):** kiinteä kolmen sarakkeen näkymä (ruudukko | tiedot | valmistus), mikään ei liiku. Napsautus valitsee,

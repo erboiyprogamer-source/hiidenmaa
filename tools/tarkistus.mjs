@@ -232,6 +232,14 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v2.06 puunuolet (puusta, putoaa +30 %, tuuli +20 %, vahinko −40 %), tuuli +10 %, ohjeet piiloon kun näppäinopasteet pois',()=>{
+    const A=AMMO_STATS.puunuolet,r=RECIPES.find(x=>x.id==='puunuolet');const ok1=A&&A.grav===1.3&&A.wind===1.2&&A.dmg===.6&&r&&Object.keys(r.req).join()==='puu'&&AMMO[0]==='puunuolet'&&!!icon('puunuolet')&&Math.abs(ARROW_WIND-.143)<1e-9;
+    // lento: sama lähtö, tuuli sivulta → puunuoli putoaa ja kaartuu enemmän kuin piikivinuoli
+    const sv=[WIND.spd,WIND.x,WIND.z];WIND.spd=10;WIND.x=1;WIND.z=0;const fly=(wood,wk,g)=>{shootArrow(new THREE.Vector3(P.pos.x,P.pos.y+40,P.pos.z),new THREE.Vector3(0,0,1),40,10,'player',g,false,wood);const p=projs[projs.length-1];p.windK=wk;
+      for(let i=0;i<30;i++)updateProjs(1/30);const o={dx:p.m.position.x-P.pos.x,dy:P.pos.y+40-p.m.position.y};scene.remove(p.m);projs.splice(projs.indexOf(p),1);return o;};
+    const pi=fly(false,1,7),pu=fly(true,1.2,7*1.3);[WIND.spd,WIND.x,WIND.z]=sv;const ok2=pu.dx/pi.dx>1.15&&pu.dx/pi.dx<1.25&&pu.dy/pi.dy>1.25&&pu.dy/pi.dy<1.35;
+    const kh=SET.keyHints;SET.keyHints=false;P.drawing=true;P.bowDraw=1;aimHintK='x';updateHUD(1/30);const ok3=$('#aimHint').hidden;SET.keyHints=kh;P.drawing=false;aimHintK='x';updateHUD(1/30);
+    return ok1&&ok2&&ok3||`virhe arvot ${ok1} lento ${ok2}(${(pu.dx/pi.dx).toFixed(2)},${(pu.dy/pi.dy).toFixed(2)}) ohjeet ${ok3}`;});
   t('v2.05 apuviivasto vilkkuu pisteen tahdissa (ei CSS-täyttötilaa, joka ohittaa JS:n), Z:n viimeinen tila = apuviivasto pois',()=>{
     const fm=getComputedStyle($('#dropRet')).animationFillMode;const ok1=fm!=='both'&&fm!=='forwards';const ok2=AIM_ST[AIM_ST.length-1]==='Pois'&&/st==='Pois'/.test(updDropRet.toString());
     return ok1&&ok2||`virhe täyttötila ${fm} pois ${ok2}`;});

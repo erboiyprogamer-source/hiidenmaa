@@ -128,7 +128,7 @@ function updateBurn(m,dt){if(mobWet(m)){stopBurn(m);m.igniteCd=playTime+3;burst(
   if(m.burnT<=0)stopBurn(m);return false;}
 // Ammukset heikoimmasta parhaaseen (v0.76). Jos ammusta ei ole valittu (flags.ammo), käytetään heikointa jota on; valittu ammus käytetään
 // ensin ja sen loputtua taas heikoimmasta alkaen. Uusi ammus lisätään listaan oikeaan kohtaan (esim. tulevat rautanuolet).
-const AMMO=['nuolet','sulkanuolet','tulinuolet'];
+const AMMO=['puunuolet','nuolet','sulkanuolet','tulinuolet'];   // heikoimmasta parhaaseen (v2.06: puunuolet)
 function ammoId(){if(flags.ammo&&invCount(flags.ammo)>0)return flags.ammo;return AMMO.find(id=>invCount(id)>0)||null;}
 function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;
   if(m.def.ai==='boss'||m.def.ai==='rboss')sfx('slam',.6,.8);else if(!creSnd(m,'death'))sfx('die');   // v1.84 oma kuolinääni; v1.89 pomon kuolinääni soi vasta kuolema-animaatiossa
@@ -146,7 +146,7 @@ function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;
    AMMO_STATS: sulitettu +25 % nopeus, −40 % pudotus, +15 % vahinko, puolet tuulesta; tulinuoli = piikivinuoli + sytyttää.
    Hajonta (asteina): 10° × (1 − veto) + liike (juoksu 2°, ilmassa 3°), × jousen tarkkuus, ★-laatu pienentää. Täysi veto paikallaan = 0°. */
 const BOW_STATS={jousi:{draw:1.6,spd:1,acc:1},hiidenjousi:{draw:1.15,spd:1.25,acc:.7}};
-const AMMO_STATS={nuolet:{spd:1,grav:1,dmg:1,wind:1},sulkanuolet:{spd:1.25,grav:.6,dmg:1.15,wind:.5},tulinuolet:{spd:1,grav:1,dmg:1,wind:1,fire:1}};
+const AMMO_STATS={puunuolet:{spd:1,grav:1.3,dmg:.6,wind:1.2,wood:1},nuolet:{spd:1,grav:1,dmg:1,wind:1},   /* v2.06 puunuoli: putoaa 30 % enemmän, tuuli 20 % enemmän, vahinko −40 % */sulkanuolet:{spd:1.25,grav:.6,dmg:1.15,wind:.5},tulinuolet:{spd:1,grav:1,dmg:1,wind:1,fire:1}};
 function bowStats(w){return BOW_STATS[w.id]||BOW_STATS.jousi;}
 // v1.49 (lista 5, kohta 3): kyykyssä veto ja nuolen nopeus +10 %, täysi veto paikallaan kyykyssä = ei hajontaa; seisten täydelläkin pieni hajonta.
 const BOW_CROUCH_K=1.1,BOW_STAND_MIN=1.1;
@@ -179,7 +179,7 @@ function bowAimPoint(max){const p=camRayPoint(max),{o,d}=camRay();let best=o.dis
 const AIM_MARKS=[10,20,30,40,50,60,70,80,100,120,150];
 function bowTraj(){const am=ammoId()||'nuolet',a=AMMO_STATS[am]||AMMO_STATS.nuolet,bs=bowShot(Math.min(1,P.bowDraw||0),am),from=new V3(P.pos.x,P.pos.y+1.5,P.pos.z);
   const dir=bowAimPoint(70).sub(from).normalize();from.addScaledVector(dir,.6);const p=from.clone(),v=dir.multiplyScalar(bs.v),x0=p.x,z0=p.z,dt=1/60,marks=[];let mi=0,land=null;
-  for(let i=0;i<60*5;i++){v.y-=bs.g*dt;if(!P.inDun){const wa=WIND.spd*ARROW_WIND*dt*(a.wind<1?.5:1);v.x+=WIND.x*wa;v.z+=WIND.z*wa;}
+  for(let i=0;i<60*5;i++){v.y-=bs.g*dt;if(!P.inDun){const wa=WIND.spd*ARROW_WIND*dt*a.wind;v.x+=WIND.x*wa;v.z+=WIND.z*wa;}
     const ox=p.x,oy=p.y,oz=p.z;p.addScaledVector(v,dt);const hd=Math.hypot(p.x-x0,p.z-z0);
     while(mi<AIM_MARKS.length&&hd>=AIM_MARKS[mi]){const pd=Math.hypot(ox-x0,oz-z0),k=hd>pd?(AIM_MARKS[mi]-pd)/(hd-pd):1;marks.push({d:AIM_MARKS[mi],p:new V3(ox+(p.x-ox)*k,oy+(p.y-oy)*k,oz+(p.z-oz)*k)});mi++;}
     {const vl=v.length()||1,tx=p.x+v.x/vl*.45,ty=p.y+v.y/vl*.45,tz=p.z+v.z/vl*.45,g=P.inDun?DUN.y:terrainH(tx,tz);   // kärki osuu (kuten arrowContact)
@@ -194,8 +194,8 @@ function fireBow(){
   from.addScaledVector(dir,.6);
   {const sp=bowSpread()*Math.PI/180;if(sp>1e-4){const r=Math.sqrt(Math.random())*Math.tan(sp),ph=Math.random()*TAU,ux=_tmpV2.set(-dir.z,0,dir.x).normalize(),vy=new V3().crossVectors(dir,ux);
     dir.addScaledVector(ux,Math.cos(ph)*r).addScaledVector(vy,Math.sin(ph)*r).normalize();}}   // vajaa veto: nuoli lähtee tähtäysympyrän alueelle
-  const a=AMMO_STATS[am]||AMMO_STATS.nuolet,bs=bowShot(k,am);shootArrow(from,dir,bs.v,weaponDmg(w)*(.2+.8*k)*a.dmg,'player',bs.g,!!a.fire);
-  if(a.wind<1)projs[projs.length-1].steady=1;sfx('bow');P.yaw=camYaw+Math.PI;
+  const a=AMMO_STATS[am]||AMMO_STATS.nuolet,bs=bowShot(k,am);shootArrow(from,dir,bs.v,weaponDmg(w)*(.2+.8*k)*a.dmg,'player',bs.g,!!a.fire,!!a.wood);
+  projs[projs.length-1].windK=a.wind;   // v2.06: nuolikohtainen tuulikerroin (sulitettu .5, puu 1.2)sfx('bow');P.yaw=camYaw+Math.PI;
 }
 // v1.39 (lista 4, kohdat 8–9): vahinkokerroin sille, joka parhaillaan päivittyy (ai.js asettaa): pomot ×1,2, vartijat ×1,8.
 let HURT_K=1;

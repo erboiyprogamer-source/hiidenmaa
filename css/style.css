@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'2.05';
+:root{--css-v:'2.06';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -557,10 +557,10 @@ button:focus,select:focus{outline:none}
 #dropRet polyline,#dropRet line{fill:none;stroke:rgba(255,242,215,.92);stroke-width:1;stroke-linecap:round;stroke-linejoin:round}
 #dropRet .sh{stroke:rgba(0,0,0,.5);stroke-width:3}#dropRet circle{fill:rgba(255,242,215,.95)}#dropRet circle.sh{fill:rgba(0,0,0,.5);stroke:none}
 #dropRet text{font:700 9.5px var(--font-b,sans-serif);fill:#ffe8c0;paint-order:stroke;stroke:rgba(0,0,0,.7);stroke-width:2.5px;letter-spacing:.3px}
-#dropRet text.land{fill:#ffb070;font-size:11px}#dropRet text.land.s{font-size:9.5px}
+#dropRet text.land{fill:#ffb070;font-size:8.8px}   /* v2.06: ▼ −20 % */#dropRet text.land.s{font-size:9.5px}
 /* v2.04: vilkkuminen ohjataan JS:stä (aimBlinkOp), piste ja viivat samaan aikaan */
-#aimHint{position:absolute;left:calc(50% + 46px);top:calc(50% + 14px);display:flex;flex-direction:column;gap:3px;pointer-events:none;font:600 12px var(--font-b,sans-serif);color:#f2e6cc;text-shadow:0 1px 2px #000,0 0 4px #000;white-space:nowrap;animation:drIn .3s ease both}
-#aimHint kbd{display:inline-block;min-width:16px;padding:0 4px;margin-right:6px;border:1px solid rgba(255,230,180,.6);border-radius:3px;background:rgba(0,0,0,.45);font:700 11px var(--font-b,sans-serif);text-align:center;color:#ffd36a}
+#aimHint{position:absolute;left:calc(50% + 74px);top:calc(50% + 16px);display:flex;flex-direction:column;gap:2px;pointer-events:none;font:600 10.5px var(--font-b,sans-serif);color:#f2e6cc;text-shadow:0 1px 2px #000,0 0 4px #000;white-space:nowrap;animation:drIn .3s ease both}
+#aimHint kbd{display:inline-block;min-width:13px;padding:0 3px;margin-right:5px;font-size:9.5px!important;border:1px solid rgba(255,230,180,.6);border-radius:3px;background:rgba(0,0,0,.45);font:700 11px var(--font-b,sans-serif);text-align:center;color:#ffd36a}
 @keyframes drIn{from{opacity:0}to{opacity:1}}
 /* v1.52 CSS-pilviverho uuden maailman intron alussa (alle Medium-grafiikka) */
 #cloudVeil{position:fixed;inset:0;z-index:8990;pointer-events:none;overflow:hidden}

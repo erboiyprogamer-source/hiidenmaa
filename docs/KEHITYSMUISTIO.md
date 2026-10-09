@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.05)
+## Nykytila (päivitetty v2.06)
 
-- **Versio 2.05**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 2.06**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,14 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.06 (puunuolet, tuuli +10 %, tähtäimen ohjeet)
+- **Puunuolet** (`puunuolet`, työpenkki, 2 puuta → 15, taso 3): `AMMO_STATS.puunuolet` = putoaa 30 % enemmän (grav 1,3), tuuli 20 % enemmän (wind 1,2),
+  vahinko −40 % (dmg 0,6). Heikoin ammus (`AMMO` alkaa siitä → automaattinen valinta käyttää ensin). Kuvake ja lentävä nuoli: teroitettu puukärki
+  (`shootArrow(...,wood)`). Tuulikerroin on nyt nuolikohtainen `p.windK` = `AMMO_STATS[am].wind` (sulitettu .5, puu 1.2; ennen `steady`), sama `bowTraj`issa.
+- **Tuuli +10 %:** `ARROW_WIND` .13 → .143 (13 m/s ≈ 0,9 m sivuun 30 m:ssä).
+- **Ohjeet** (`#aimHint`) oikeammalle (+74 px) ja pienemmät (10,5 px); piilossa, kun Näppäinopasteet (`SET.keyHints`) on pois. Maahan osuman ▼ 11 → 8,8 px (−20 %).
+- Tarkistukseen 1 rivi (arvot, lento sivutuulessa: kaarto ×1,2 ja pudotus ×1,3, ohjeiden piilotus).
 
 ### v2.05 (apuviivaston vilkkuminen, Z: apuviivasto pois)
 - **Vika (KORJAUKSET 41):** apuviivasto ei vilkkunut, vaikka piste vilkkui: `#dropRet`:n sisääntuloanimaatio `drIn` oli täyttötilalla `both`, ja CSS-animaation

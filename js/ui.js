@@ -680,7 +680,7 @@ function updDropRet(dt){const el=$('#dropRet');if(!el)return;const on=P.drawing&
   el.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${h}</svg>`;}
 // täyden vedon ohjeet: C (kyykky / nouse); Z (vaihda tähtäin) vain kyykyssä
 let aimHintK='';
-function aimHint(crouchOn){const el=$('#aimHint');if(!el)return;const full=P.drawing&&(P.bowDraw||0)>=1&&state==='play'&&!P.dead;
+function aimHint(crouchOn){const el=$('#aimHint');if(!el)return;const full=P.drawing&&(P.bowDraw||0)>=1&&state==='play'&&!P.dead&&SET.keyHints!==false;   /* v2.06: näppäinopasteet pois → ei ohjeita */
   const k=full?(bowCrouch()?'c'+aimSt:'s')+aimBlink:'';if(k===aimHintK)return;aimHintK=k;el.hidden=!full;if(!full)return;
   el.innerHTML=bowCrouch()?`<span><kbd>${keyLabel(BIND.crouch)}</kbd>Nouse ylös</span><span><kbd>${keyLabel(BIND.down)}</kbd>Tähtäin: ${AIM_ST[aimSt]} (${aimSt+1}/${AIM_ST.length})</span><span><kbd>${keyLabel(BIND.remove)}</kbd>Vilkkuminen: ${aimBlink?'päällä':'pois'}</span>`
     :`<span><kbd>${keyLabel(BIND.crouch)}</kbd>Kyykkyyn: tarkka laukaus ja lentorata</span><span><kbd>${keyLabel(BIND.remove)}</kbd>Vilkkuminen: ${aimBlink?'päällä':'pois'}</span>`;}
