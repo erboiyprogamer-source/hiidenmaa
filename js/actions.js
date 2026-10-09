@@ -101,7 +101,10 @@ function damageMob(m,dmg,dt,kx,kz,kb=4){
   if(m.hp<=0)killMob(m);else if(playTime-(m.sndHurt??-9)>.4){m.sndHurt=playTime;creSnd(m,'hurt');}   // v1.84 osumaääni, tauko 0,4 s
 }
 // Tuli (v0.75): soihdulla lyöty tai tulinuolella osuttu mobi/eläin palaa 5–10 s, 5 hp/s. Sade tai vesi sammuttaa heti.
-function igniteMob(m){if(m.dead)return;if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9))return;const fresh=!(m.burnT>0);m.burnT=5+Math.random()*5;
+/* v1.97: mobi on märkä, kun sataa eikä se ole katon alla (suoja tarkistetaan korkeintaan 1 s välein, vain kun sataa) tai se on vedessä.
+   Märkä mobi ei syty; sateen sammuttama mobi ei syty uudelleen 3 s:iin; "Syttyi!"-ääni ja -teksti enintään 4 s välein per mobi. */
+function mobWet(m){if(m.dun)return false;if(m.pos.y<-.9)return true;if(!(wRain>.5))return false;if(playTime>=(m.shU||0)){m.shU=playTime+1;m.shd=sheltered(m.pos.x,m.pos.y,m.pos.z);}return !m.shd;}
+function igniteMob(m){if(m.dead)return;if(mobWet(m)||playTime<(m.igniteCd||0))return;const fresh=!(m.burnT>0);m.burnT=5+Math.random()*5;
   if(!m.fireFx){const g=new THREE.Group(),h=(m.barH||m.def.r*2.8)*.55,r=Math.max(.25,m.def.r*.7);
     for(const [x,z,s] of [[0,0,1],[r*.6,.1,.7],[-r*.6,-.1,.75],[.05,r*.5,.6]]){const a=new THREE.Mesh(new THREE.ConeGeometry(.16*s*r*2,.6*s*r*2,6),MAT.flame),b=new THREE.Mesh(new THREE.ConeGeometry(.09*s*r*2,.4*s*r*2,6),MAT.flame2);a.position.set(x,h,z);b.position.set(x,h-.03,z);g.add(a,b);}
     for(let i=0;i<4;i++){const c=new THREE.Mesh(new THREE.ConeGeometry(.1*r*2,.45*r*2,5),MAT.flame);const a2=i/4*TAU;c.position.set(Math.cos(a2)*r*.8,h*.55,Math.sin(a2)*r*.8);g.add(c);}   // v1.23 tulisempi: lisää liekkejä vartalolla
@@ -109,10 +112,10 @@ function igniteMob(m){if(m.dead)return;if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-
     {const gl=new THREE.Mesh(new THREE.SphereGeometry(r*1.1,10,8),new THREE.MeshBasicMaterial({color:0xff7a2a,transparent:true,opacity:.18,blending:THREE.AdditiveBlending,depthWrite:false}));gl.position.y=h*.8;gl.userData.glow=1;g.add(gl);}
     m.f.g.add(g);m.fireFx=g;}
   if(!m.fireLight){m.fireLight={x:m.pos.x,y:m.pos.y+.4,z:m.pos.z,c:0xff7a2a,i:2.2,on:()=>true,move:true};lightSources.push(m.fireLight);updateLights();}   // v1.23 valo maahan mobin alle
-  if(fresh){sfx('build',1.4,.6);floatText('Syttyi!',m.pos.x,m.pos.y+(m.barH||2)+.6,m.pos.z,'#ff9a3a');}m.hurtT=playTime;}
+  if(fresh&&playTime-(m.igFx||-99)>4){m.igFx=playTime;sfx('build',1.4,.6);floatText('Syttyi!',m.pos.x,m.pos.y+(m.barH||2)+.6,m.pos.z,'#ff9a3a');}m.hurtT=playTime;}
 function stopBurn(m){m.burnT=0;if(m.fireFx){m.f.g.remove(m.fireFx);m.fireFx=null;}if(m.fireLight){const i=lightSources.indexOf(m.fireLight);if(i>=0)lightSources.splice(i,1);m.fireLight=null;updateLights();}}
 // Palavan mobin päivitys: palauttaa true, jos mobi kuoli tulessa.
-function updateBurn(m,dt){if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9)){stopBurn(m);burst(m.pos.x,m.pos.y+1,m.pos.z,0x9a9a9a,6,2);return false;}
+function updateBurn(m,dt){if(mobWet(m)){stopBurn(m);m.igniteCd=playTime+3;burst(m.pos.x,m.pos.y+1,m.pos.z,0x9a9a9a,6,2);return false;}
   m.burnT-=dt;if(!m.sunBurn)m.hp-=5*dt;m.hurtT=playTime;m.lastHit=playTime;
   // v1.87: palava pomo (boss/rboss) ähkii silmukkana: oma kipuääni (hurt) matalampana (×0,78) ja hiljaisempana (×0,55), 1,4–2,2 s välein, alle 60 m päässä
   if(m.def.ai==='boss'||m.def.ai==='rboss'){m.burnSnd=(m.burnSnd??.3)-dt;if(m.burnSnd<=0){m.burnSnd=1.4+Math.random()*.8;if(dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<60*60)creSnd(m,'hurt',{p:.78,v:.55,pri:1.5,key:'burn'});}}

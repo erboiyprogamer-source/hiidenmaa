@@ -26,7 +26,7 @@ AGGRO_AI = ('neutral', 'hostile', 'boss', 'rboss')   # suuttumisääni (aggro)
 CHASE_AI = ('hostile', 'boss', 'rboss')               # + toistuva jahtiääni (chase)
 ECHO_AI = ('rboss', 'boss')                           # v1.88: kaikuääni (echo): nukkuva ulottuvuuspomo kaikuu luolastossa kunnes pelaaja kohtaa sen; v1.95 myös Kalmanvartija maan alta
 VARIANTS = (1, 2, 3)                                  # jokaisella lajilla enintään 3 versiota; peli arpoo olemassa olevista
-PV = 2                                                # käsittelyn versio: vaihtuessa kaikki äänet käsitellään uudestaan
+PV = 3                                                # käsittelyn versio: vaihtuessa kaikki äänet käsitellään uudestaan
 
 
 def variants_of(ai, kind):
@@ -42,7 +42,7 @@ def variants_of(ai, kind):
 # Tavoitteet: kuolema ja suuttuminen kovimpia, osuma ja jahti keskitasoa, rauhallinen ääntely hiljaisin (soi usein).
 PROFIILI = {
     'idle':  (3.0, 4.0, 0.30, -22),
-    'hurt':  (1.2, 1.6, 0.12, -17),
+    'hurt':  (1.2, 1.6, 0.20, -17),   # v1.97: pehmeämpi häntä; lisäksi yksitapahtumaleikkaus (event_end)
     'death': (3.5, 6.0, 0.50, -16),
     'aggro': (2.5, 3.5, 0.30, -16),
     'chase': (2.5, 4.0, 0.30, -18),
@@ -188,6 +188,23 @@ def loudness(ff, wav):
     return float(m.group(1)) - 1.0 if m else None
 
 
+def event_end(ff, wav, win=0.025, drop=20.0, hold=4):
+    """v1.97: osuma-äänen (hurt) loppuhäntä pois. Etsii ensimmäisen tapahtuman lopun: kohdan, jossa taso (RMS, 25 ms ikkunat) on pysyvästi
+    (hold ikkunaa) yli `drop` dB kulkevan huipun alapuolella; palauttaa sen ajan sekunteina (+ 60 ms jättö). Raakaäänen perässä oleva hiljainen
+    kohina, veden kaltainen ääni tai uusi alkava ääni jää pois. Palauttaa None, jos ei löydy (ääni jää ennalleen)."""
+    r = run([ff, '-hide_banner', '-nostats', '-i', wav, '-af', f'asetnsamples={int(44100 * win)},astats=metadata=1:reset=1,'
+             'ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-', '-f', 'null', '-'])
+    lv = [float(x) if x not in ('-inf', 'inf') else -120.0 for x in re.findall(r'RMS_level=(-?[\d.]+|-inf)', r.stdout + r.stderr)]
+    if len(lv) < hold + 2:
+        return None
+    m = -120.0   # kulkeva huippu: ensimmäinen tapahtuma päättyy kun taso pysyy `drop` dB sen alapuolella (myöhempi kovempi osa ei jatka ääntä)
+    for i in range(len(lv) - hold + 1):
+        m = max(m, lv[i])
+        if m > -60 and all(lv[j] < m - drop for j in range(i, i + hold)):
+            return round(i * win + 0.06, 3)
+    return None
+
+
 def process(ff, src, dst, fmt, ai='hostile', kind='idle'):
     cap_n, cap_b, fade, target = PROFIILI.get(kind, PROFIILI['idle'])
     boss = ai in BOSS_DB
@@ -207,6 +224,10 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle'):
             return 'ääni on käytännössä hiljaa', None
         # 2) pituuden yläraja + häivytykset (ei klikkausta alussa, pehmeä loppu)
         L = min(d, cap)
+        if kind == 'hurt':
+            ee = event_end(ff, w1)
+            if ee and ee > 0.15:
+                L = min(L, ee)
         f = min(fade, L * 0.5)
         r = run([ff, '-hide_banner', '-loglevel', 'error', '-y', '-i', w1, '-af',
                  f'atrim=duration={L:.3f},afade=t=in:d=0.006,afade=t=out:st={max(L - f, 0):.3f}:d={f:.3f}', '-c:a', 'pcm_s16le', w2])

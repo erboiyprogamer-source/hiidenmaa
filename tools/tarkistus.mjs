@@ -232,6 +232,18 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v1.97 sade ja tuli: märkä pelaaja/mobi ei syty (ei spämmiä), katon alla syttyy ja palaa, sateen sammutus jäähy 3 s, vesi sammuttaa',()=>{let msgs=0;const om=msg;msg=()=>{msgs++;};const sv=[wRain,shelterCache,P.burnT,P.igniteCd,P.hp,P.maxHp,P.pos.clone(),P.inWater];let res;
+    try{const x=P.pos.x+3,z=P.pos.z,fp=addPiece('nuotio',x,terrainH(x,z),z,0);fp.data.fuel=5;P.pos.set(x,terrainH(x,z)+.01,z);P.hp=P.maxHp=1e5;
+      const run=sec=>{let ign=0,prev=P.burnT>0;for(let i=0;i<sec*30;i++){playTime+=1/30;updatePlayerBurn(1/30);const b=P.burnT>0;if(b&&!prev)ign++;prev=b;}return ign;};
+      wRain=1;shelterCache=false;P.burnT=0;P.igniteCd=0;msgs=0;const a=run(10)===0&&msgs===0;
+      wRain=0;const b=run(1)===1&&P.burnT>0;wRain=1;msgs=0;const c=run(10)===0&&P.burnT===0&&msgs===0;
+      shelterCache=true;P.burnT=0;P.igniteCd=0;const d=run(1)===1&&P.burnT>0;P.inWater=true;run(.2);const e=!(P.burnT>0);P.inWater=false;
+      shelterCache=false;const m=spawnMob('susi',P.pos.x+20,P.pos.z+20);m.burnT=0;igniteMob(m);const f=!(m.burnT>0);wRain=0;igniteMob(m);const g=m.burnT>0;
+      wRain=1;m.shU=0;m.shd=false;updateBurn(m,.03);const h=!(m.burnT>0)&&m.igniteCd>playTime;mobRemove(m);removePiece(fp);res=a&&b&&c&&d&&e&&f&&g&&h||`virhe ${a}${b}${c}${d}${e}${f}${g}${h}`;}
+    finally{msg=om;[wRain,shelterCache,P.burnT,P.igniteCd,P.hp,P.maxHp,,P.inWater]=sv;P.pos.copy(sv[6]);}
+    return res;});
+  t('v1.97 Suonäkki syntyy suolla öisin (SPAWN.suo.night, väijyjä enintään yksi, nousee maasta)',()=>{const tb=SPAWN.suo.night.find(e=>e[0]==='suonakki');if(!tb||tb[1]<.1)return 'ei taulukossa';
+    const src=spawner.toString();return /MOBDEF\[type\]\.stalk/.test(src)&&/riseT=0/.test(src)||'spawner ei käsittele väijyjää';});
   t('v1.95 Kalmanvartijan äänet: varaääni Aarnihirviö (ei mykkä), kaikuääni maan alta Kalmankehän lähellä ennen herättämistä',()=>{
     let kv=true,c='kivivartija';for(let d=0;d<6&&c;d++){if(MOBDEF[c]&&(MOBDEF[c].ai==='boss'||MOBDEF[c].ai==='rboss'))kv=false;c=VARAANI[c]&&VARAANI[c].to;}   /* kivivartija (hostile) ei saa lainata pomoääniä */
     const ok1=kv&&VARAANI.vartija&&VARAANI.vartija.to==='aarnihirvio'&&CRE_ECHO.includes('boss')&&typeof vartijaEcho==='function';

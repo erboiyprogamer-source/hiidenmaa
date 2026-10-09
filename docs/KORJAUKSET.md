@@ -282,6 +282,12 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Saman nimisiä ylimmän tason funktioita ei saa olla kahdessa tiedostossa: myöhemmin ladattu korvaa aiemman hiljaa. Vanhat pomomallit poistettiin
   mobs.js:stä, kun uudet tulivat bossmodels.js:ään.
 
+## 38. Sade + nuotio: syttyminen/sammuminen joka ruudulla spämmäsi ilmoituksia ja ääniä (v1.97)
+- Oire: sateessa nuotioon astuessa "Syttyit tuleen!" + ääni toistui jatkuvasti, koska nuotio sytytti ja sade sammutti heti uudestaan.
+- Syy: sytytyksellä ei ollut sadeestoa eikä jäähyä; sammutus tarkisti vain `wRain>.5` (ei kattoa, joten myös katon alla sammui).
+- Korjaus: `playerWet()` (sade eikä `shelterCache`, tai vesi) estää syttymisen kokonaan, jäähy `P.igniteCd` 3 s, ilmoitus 12 s välein. Mobeilla `mobWet(m)`
+  + `m.igniteCd` + ääni 4 s välein. Älä lisää uusia sytytyslähteitä ilman `canIgnitePlayer()`/`mobWet`-tarkistusta.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

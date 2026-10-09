@@ -229,7 +229,7 @@ function sunBurnAI(m,dt){const d=m.def;
   if(t<3){m.panT=(m.panT||0)-dt;if(m.panT<=0){m.panT=.35+Math.random()*.25;m.panA=Math.random()*TAU;}moveMob(m,Math.sin(m.panA),Math.cos(m.panA),(d.run||4)*1.3,dt);}
   else{const k=clamp(1-(t-3)/2.2,0,1);m.panT=(m.panT||0)-dt;if(m.panT<=0){m.panT=.6;m.panA+=(Math.random()-.5)*2;}moveMob(m,Math.sin(m.panA),Math.cos(m.panA),(d.run||4)*.6*k,dt);
     m.f.g.rotation.z=Math.sin(playTime*7)*.12*(1-k);}
-  if(!P.dead&&!(P.burnT>0)&&dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<1&&Math.abs(P.pos.y-m.pos.y)<1.5){P.burnT=4;msg('Palava olento sytytti sinut!','warn');}
+  if(canIgnitePlayer()&&dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<1&&Math.abs(P.pos.y-m.pos.y)<1.5){P.burnT=4;P.igniteCd=playTime+3;if(playTime-(P.igMsgT||-99)>12){P.igMsgT=playTime;msg('Palava olento sytytti sinut!','warn');}}
   animMob(m,dt);
   if(t>=5.2){m.f.g.rotation.z=0;m.sunKill=1;m.hp=0;stopBurn(m);m.burnT=1;killMob(m);m.burnT=0;}
   return true;}
@@ -356,7 +356,7 @@ const SPAWN={
   aarni:{day:[['hiisi',.46],['susi',.28],['peura',.18],['karhu',.08]],night:[['susi',.5],['hiisi',.5]]},
   // v0.82 uudet biomit (kohta 2 säätää päivä/yö-jakauman)
   koivu:{day:[['peura',.38],['janis',.26],['karju',.12],['metso',.1],['hirvi',.14]],night:[['susi',.35],['hiisi',.2],['peura',.25],['kettu',.2]]},
-  suo:{day:[['karju',.3],['hiisi',.4],['hirvi',.3]],night:[['hiisi',.5],['susi',.4],['hirvi',.1]]},
+  suo:{day:[['karju',.3],['hiisi',.4],['hirvi',.3]],night:[['hiisi',.4],['susi',.3],['hirvi',.08],['suonakki',.22]]},   /* v1.97: Suonäkki syntyy myös tavallisesti öisin suolla (aiemmin vain yön pelottavana, jolloin sitä ei käytännössä tavannut) */
   kangas:{day:[['metso',.32],['peura',.22],['poro',.18],['karju',.16],['ilves',.12]],night:[['susi',.55],['hiisi',.22],['kettu',.13],['ilves',.1]]},
   tunturi:{day:[['poro',.46],['janis',.12],['susi',.18],['ahma',.16],['karhu',.08]],night:[['susi',.75],['kettu',.1],['ahma',.15]]},
   rakka:{day:[['poro',.4],['susi',.25],['janis',.15],['ahma',.1],['ilves',.1]],night:[['susi',.8],['ilves',.2]]},
@@ -392,6 +392,9 @@ function spawner(dt){
     let r=Math.random()*tot,type=list[0][0];for(const [t,p] of list){if(r<p){type=t;break;}r-=p;}
     if(nearBase(x,z)||nearSite(x,z,50))continue;
     if(type==='karhu'&&mobs.some(o=>o.type==='karhu'&&!o.dead))continue;   // enintään yksi karhu
+    if(MOBDEF[type].stalk){if(mobs.some(o=>o.def.stalk&&!o.dead))continue;   /* v1.97: väijyjä (Suonäkki) enintään yksi; nousee lätäköstä (lampare) tai maasta 2 s:ssa */
+      let sx=x,sz=z;if(type==='suonakki'){nodesNear(x,z,12,_fellN);const pd=_fellN.find(n=>n.type==='lampare');if(pd){sx=pd.x;sz=pd.z;}}
+      const m=spawnMob(type,sx,sz);if(m){m.riseT=0;if(sp.near)m.state='idle';}return;}
     if(dist2(x,z,LOC.spawn.x,LOC.spawn.z)<30*30&&(MOBDEF[type].ai==='hostile'||type==='karhu')&&!night)continue;
     const pack=type==='susi'&&night&&!sp.near?2:type==='poro'?3+(Math.random()*3|0):1;/* porot laumoina 3–5 */for(let k=0;k<pack;k++){const m=spawnMob(type,x+(k%3)*1.8,z+(k/3|0)*1.8+k*.3);if(m&&sp.near)m.state='idle';
       if(type==='emakko')for(let j=0,n=2+(Math.random()*3|0);j<n;j++){const pg=spawnMob('porsas',x+1.2+j*.8,z-1+j*.6);pg.mom=m;}}return;}  // emakko + 2–4 porsasta

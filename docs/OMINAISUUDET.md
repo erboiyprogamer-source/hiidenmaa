@@ -120,6 +120,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
 - **Tuli:** palava käsisoihtu sytyttää lyödyn, tulinuoli osumansa: 5–10 s, 5 hp/s; sade tai vesi sammuttaa heti.
+  **v1.97:** märkä (sataa ja ei katon alla, tai vedessä) ei syty lainkaan – pelaaja eikä olento; katon alla sateessa syttyy ja palaa. Sammutuksen jälkeen 3 s jäähy; syttymisilmoitus enintään 12 s välein.
+  Suonäkki syntyy öisin suolla (22 % suon yöspawneista, enintään yksi väijyjä kerrallaan).
 - **Ammukset:** piikivinuolet ja tulinuolet (+ pihka). Oletuksena käytetään heikointa ensin (`AMMO`-järjestys); repusta voi valita ammuksen
   ("Käytä ammuksena"), uusi painallus palauttaa automaattiseen.
 - **Hiipiminen (kyykky):** paikallaan eläimet eivät huomaa; liikkuessa 1,5 m (eläin katsoo kohti) / 0,9 m (selin). Kävely 7 m, juoksu 16 m, ase ×1,4.

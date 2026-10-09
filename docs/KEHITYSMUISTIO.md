@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.96)
+## Nykytila (päivitetty v1.97)
 
-- **Versio 1.96**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 1.97**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,22 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v1.97 (sade ja tuli ilman spämmiä, Suonäkki syntyy, osuma-äänen häntä pois)
+- **Sade + nuotio (korjaus, KORJAUKSET 38):** pelaaja syttyi nuotiossa, sade sammutti heti, uudestaan… joka ruudulla → ilmoitusspämmi ja tiheä ääni.
+  Nyt `playerWet()` (effects.js) = vedessä TAI sataa (`wRain>.5`) eikä pelaaja ole katon alla (`shelterCache`). Märkä pelaaja **ei syty lainkaan**
+  (`canIgnitePlayer`), sama sääntö palavan olennon sytytykselle; palava sammuu märäksi tullessa; katon alla sateessakin voi syttyä ja palaa. Jäähy
+  `P.igniteCd` 3 s sammutuksen/syttymisen jälkeen; ilmoitus ("Syttyit tuleen!") enintään 12 s välein (`P.igMsgT`). Mobit: `mobWet(m)` (actions.js,
+  suoja tarkistetaan enintään 1 s välein vain sateella, `m.shU`/`m.shd`), märkä mobi ei syty, `m.igniteCd` 3 s, "Syttyi!"-ääni/teksti 4 s välein (`m.igFx`).
+  Aiemmin sateen tarkistus ei huomioinut kattoa (sade sammutti myös katon alla).
+- **Suonäkki:** syntyi vain yön "pelottavana" (10 %/yö, vain jos pelaaja on suolla) → käytännössä ei koskaan. Nyt `SPAWN.suo.night` sisältää sen (22 %),
+  spawner käsittelee väijyjän: enintään yksi, nousee 2 s maasta tai lätäköstä (lampare), jahdissa kuten ennen (katoaa aamulla). Testattu: 6 kartasta 5:llä
+  syntyy suolla (kartta 1 pienin suo, ei satunnaisesti). `BIOMES.suo.foe` mainitsee sen.
+- **Osuma-äänen häntä (`tools/process_sounds.py`, PV 3):** `event_end()` leikkaa osuma-äänen (hurt) ensimmäisen tapahtuman loppuun (taso pysyy 20 dB
+  kulkevan huipun alla ≥ 100 ms) + 60 ms; häivytys 0,20 s. Raaka `aarnihirvio_hurt_1` oli 4 s: ääni 0–0,45 s, sitten veden kaltaista kohinaa ja uusi
+  kova ääni 1,3 s:stä (leikkautui keskeltä) → nyt 0,47 s siisti. Muut lajit ennallaan. Käyttäjä aikoo vaihtaa jo lisättyjä ääniä → tarkista ne
+  seuraavalla äänierällä (HUOM-rivit: `aarnihirvio_idle_1`/`chase_2` sama tiedosto, `chase_1` +12,5 dB).
+- Tarkistukseen 2 riviä (sade/tuli-skenaariot, Suonäkki-spawn).
 
 ### v1.96 (kivivartijalta pois pomoäänet)
 - Käyttäjän korjaus: boss-äänet kuuluvat vain Kalmanvartijalle. `VARAANI.kivivartija` oli `vartija` ×1,15 → kivivartija lainasi Aarnihirviön pomoääniä

@@ -107,8 +107,8 @@ function biomeAt(x,z,h){
 const BIOMES={
   meadow:{n:'Rantaniitty',temp:'Leuto',danger:1,life:'Peurat ja villikarjut',foe:'Öisin sudet ja hiidet',res:'Oksat, kivet, puolukat, yksittäiset koivut'},
   koivu:{n:'Koivulehto',temp:'Leuto',danger:1,life:'Peuroja tavallista enemmän',foe:'Vähän vihollisia',res:'Koivut, puolukat, sienet, oksat'},
-  forest:{n:'Korpimetsä',temp:'Viileä',danger:2,life:'Peurat ja villikarjut',foe:'Sammalhiidet, öisin sudet',res:'Kuuset, koivut, sienet, kuparisuonet'},
-  suo:{n:'Upposuo',temp:'Kostea ja viileä',danger:2,life:'Villikarjut',foe:'Sammalhiidet, öisin sudet',res:'Puolukat, kelot, sienet',note:'Upottava maa: liike 15 % hitaampaa'},
+  forest:{n:'Korpimetsä',temp:'Viileä',danger:2,life:'Peurat ja villikarjut',foe:'Sammalhiidet, öisin sudet ja Suonäkki',res:'Kuuset, koivut, sienet, kuparisuonet'},
+  suo:{n:'Upposuo',temp:'Kostea ja viileä',danger:2,life:'Villikarjut',foe:'Sammalhiidet, öisin sudet ja Suonäkki',res:'Puolukat, kelot, sienet',note:'Upottava maa: liike 15 % hitaampaa'},
   kangas:{n:'Jäkäläkangas',temp:'Kuiva',danger:1,life:'Peurat',foe:'Öisin sudet',res:'Männyt (pihka), kivet, piikivi',note:'Piikiveä ja kiviä tavallista enemmän'},
   aarni:{n:'Aarnimetsä',temp:'Kolea',danger:3,life:'Harvinaisia',foe:'Sammalhiidet ja sudet',res:'Aarnipuut (vaatii rautakirveen), sienet'},
   moor:{n:'Kalmanummi',temp:'Kolea',danger:3,life:'Villikarjut',foe:'Kalmot',res:'Kelot, kivet'},

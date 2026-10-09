@@ -300,10 +300,14 @@ const _ashC=new THREE.Color(0x0e0c0b);
 /* ---------------- PELAAJA: PALAMINEN JA KUOLEMA ---------------- */
 // Palavan nuotion päällä seisova pelaaja syttyy (4 s, 4 hp/s, sade/vesi sammuttaa). Kuolema: kaatuminen ja raajojen valahtaminen,
 // veriläntti jää 60 s; palokuolemassa hahmo mustuu ja muuttuu tuhkakasaksi (näkyy taas herätessä).
+/* v1.97: märkä = ulkona sateessa (ei katon alla; shelterCache) tai vedessä. Märkä pelaaja EI syty lainkaan (ei ilmoitusta, ei ääntä) eikä liekki pala
+   märkänä; katon alla sade ei kastele, joten sielläkin voi syttyä ja palaa. Sateen sammutus: 3 s jäähy ennen uutta syttymistä, ilmoitus enintään 12 s välein. */
+function playerWet(){return P.inWater||(wRain>.5&&!P.inDun&&!shelterCache);}
+function canIgnitePlayer(){return !P.dead&&!(P.burnT>0)&&!playerWet()&&playTime>=(P.igniteCd||0);}
 function updatePlayerBurn(dt){if(P.dead)return;
-  if(!P.inDun&&!(P.burnT>0)){for(const p of pieces){if(!isFirePiece(p.t)||!(p.data.fuel>0))continue;if(dist2(p.x,p.z,P.pos.x,P.pos.z)<.8*.8&&Math.abs(P.pos.y-(p.y||0))<1.2){P.burnT=4;msg('Syttyit tuleen! Pois tulesta – vesi tai sade sammuttaa.','warn');sfx('build',1.4,.6);break;}}}
+  if(!P.inDun&&canIgnitePlayer()){for(const p of pieces){if(!isFirePiece(p.t)||!(p.data.fuel>0))continue;if(dist2(p.x,p.z,P.pos.x,P.pos.z)<.8*.8&&Math.abs(P.pos.y-(p.y||0))<1.2){P.burnT=4;P.igniteCd=playTime+3;if(playTime-(P.igMsgT||-99)>12){P.igMsgT=playTime;msg('Syttyit tuleen! Pois tulesta – vesi tai sade sammuttaa.','warn');}sfx('build',1.4,.6);break;}}}
   if(!(P.burnT>0)){if(P.fireFx){fig.g.remove(P.fireFx);P.fireFx=null;}return;}
-  if((wRain>.5&&!P.inDun)||P.inWater){P.burnT=0;burst(P.pos.x,P.pos.y+1,P.pos.z,0x9a9a9a,6,2);return;}
+  if(playerWet()){P.burnT=0;P.igniteCd=playTime+3;burst(P.pos.x,P.pos.y+1,P.pos.z,0x9a9a9a,6,2);return;}
   P.burnT-=dt;if(!devOn('god')){P.hp-=4*dt;P.hurtFlash=Math.max(P.hurtFlash,.2);}P.lastFire=playTime;
   if(!P.fireFx){const g=new THREE.Group();for(let i=0;i<7;i++){const a=i/7*TAU,c=new THREE.Mesh(new THREE.ConeGeometry(.12,.45+Math.random()*.25,6),i%2?MAT.flame2:MAT.flame);c.position.set(Math.cos(a)*.22,.5+Math.random()*.9,Math.sin(a)*.18);g.add(c);}fig.g.add(g);P.fireFx=g;}
   P.fireFx.children.forEach((c,i)=>{c.scale.y=.7+.5*Math.abs(Math.sin(playTime*11+i*1.3));});
