@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.95)
+## Nykytila (päivitetty v1.96)
 
-- **Versio 1.95**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 1.96**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -128,7 +128,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - Jokainen äänierä (A–E, ks. ideajono) tehdään samalla paikkamerkkitavalla ja saa oman osion AANILISTA.md:hen.
 
 **Käsittely ja toisto (v1.86, käyttäjän päätökset):**
-- **Aarnihirviö = pääääni 💎.** Se on isoin varaääni: Jäätär, Kalmaherra ja v1.95 alkaen Kalmanvartija lainaavat siltä (`jaajattari` ×1,20, `kalmaherra` ×0,85, `vartija` ×0,70; kivivartija vartijan kautta ×0,805) kunnes saavat
+- **Aarnihirviö = pääääni 💎.** Se on isoin varaääni: Jäätär, Kalmaherra ja v1.95 alkaen Kalmanvartija lainaavat siltä (`jaajattari` ×1,20, `kalmaherra` ×0,85, `vartija` ×0,70). **Kivivartija (tavallinen vihollinen) ei lainaa pomoääniä** (v1.96: `kivivartija` → `kalmo` ×0,75) kunnes saavat
   omat. Hiidenhirvi lainaa taas suoraan hirveltä. "Ulottuvuuksien hirviöt" = `ai:'rboss'` (3 kpl).
 - **Kuolemaäänet:** ulottuvuuksien hirviöillä 1 paikka (`_1`), kaikilla muilla olennoilla 2 (`_1`, `_2`); `variants_of(ai, laji)` työkalussa,
   ylimääräiset paikkamerkit poistuvat `--init`:llä (oikeaan ääneen ei koskaan kosketa).
@@ -227,10 +227,15 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
 
+### v1.96 (kivivartijalta pois pomoäänet)
+- Käyttäjän korjaus: boss-äänet kuuluvat vain Kalmanvartijalle. `VARAANI.kivivartija` oli `vartija` ×1,15 → kivivartija lainasi Aarnihirviön pomoääniä
+  vartijan kautta. Nyt `kivivartija` → `kalmo` ×0,75 (tavallinen vihollinen; kalmolla ei vielä ole ääniä → kivivartija on hiljainen, kunnes se saa
+  omat `kivivartija_*`-äänet tai kalmo omansa). Tarkistusrivi (v1.95-rivi) varmistaa, ettei kivivartijan varaketjussa ole pomoa.
+
 ### v1.95 (Kalmanvartijan äänet)
 - **Ongelma:** Kalmanvartijalla oli kaikki äänipaikat (idle, hurt, death ×2, aggro, chase), mutta varaääni oli `kalmo`, jolla ei ole yhtään
   ääntä → vartija (ja kivivartija sen kautta) oli mykkä. **Korjaus:** `VARAANI.vartija` → `aarnihirvio` sävelellä ×0,70 (matala kivijättiläinen),
-  kivivartija → vartija ×1,15 (yht. ×0,805). Kun käyttäjä lisää `vartija_*`-äänet, ne korvaavat lainan automaattisesti.
+  Kun käyttäjä lisää `vartija_*`-äänet, ne korvaavat lainan automaattisesti. (v1.95:n kivivartija lainasi vartijan kautta pomoääniä – korjattu v1.96:ssa.)
 - **Uusi kaikuääni Kalmanvartijalle** (`vartija_echo_1/2`, paikkamerkit luotu, `ECHO_AI`/`CRE_ECHO` = rboss + boss). Soi `vartijaEcho` (audio.js,
   `creTick`): maailmassa alle 80 m Kalmankehästä, kunnes vartija on kukistettu ensimmäisen kerran (`flags.boss`) ja vain kun vartija ei ole hereillä.
   24–48 s välein (ensimmäinen 4–10 s), maan alta (piilo-olento `VEC.m` 3 m maan alla kehän keskellä), tumma (alipäästö), kaiku 0,9, voimakkuus ×0,6.

@@ -233,7 +233,8 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
   t('v1.95 Kalmanvartijan äänet: varaääni Aarnihirviö (ei mykkä), kaikuääni maan alta Kalmankehän lähellä ennen herättämistä',()=>{
-    const ok1=VARAANI.vartija&&VARAANI.vartija.to==='aarnihirvio'&&CRE_ECHO.includes('boss')&&typeof vartijaEcho==='function';
+    let kv=true,c='kivivartija';for(let d=0;d<6&&c;d++){if(MOBDEF[c]&&(MOBDEF[c].ai==='boss'||MOBDEF[c].ai==='rboss'))kv=false;c=VARAANI[c]&&VARAANI[c].to;}   /* kivivartija (hostile) ei saa lainata pomoääniä */
+    const ok1=kv&&VARAANI.vartija&&VARAANI.vartija.to==='aarnihirvio'&&CRE_ECHO.includes('boss')&&typeof vartijaEcho==='function';
     const L=LOC.circle,p0=P.pos.clone(),fb=flags.boss;P.pos.set(L.x+20,terrainH(L.x+20,L.z),L.z);delete flags.boss;VEC.t=-1;VEC.m=null;vartijaEcho(.1);
     const ok2=!!VEC.m&&VEC.m.type==='vartija'&&VEC.t>0;flags.boss=1;vartijaEcho(.1);const ok3=VEC.t===-1;
     P.pos.set(L.x+200,P.pos.y,L.z);delete flags.boss;vartijaEcho(.1);const ok4=VEC.t===-1;if(fb)flags.boss=fb;else delete flags.boss;P.pos.copy(p0);

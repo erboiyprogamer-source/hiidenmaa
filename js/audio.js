@@ -57,7 +57,7 @@ const VARAANI=/*VARAANI-ALKU*/{
   "emakko":{"to":"karju","p":1.08},"porsas":{"to":"karju","p":1.5},
   "hiidenkarhu":{"to":"karhu","p":0.85},
   "hiidenhirvi":{"to":"hirvi","p":0.82},"poro":{"to":"peura","p":0.9},"peura":{"to":"hirvi","p":1.3},
-  "ylimys":{"to":"kalmo","p":0.85},"vartija":{"to":"aarnihirvio","p":0.7},"kivivartija":{"to":"vartija","p":1.15},
+  "ylimys":{"to":"kalmo","p":0.85},"vartija":{"to":"aarnihirvio","p":0.7},"kivivartija":{"to":"kalmo","p":0.75},
   "jaajattari":{"to":"aarnihirvio","p":1.2},"kalmaherra":{"to":"aarnihirvio","p":0.85},"suonakki":{"to":"hiisi","p":0.7}
 }/*VARAANI-LOPPU*/;
 const CRE_AGGRO=['neutral','hostile','boss','rboss'];   // niillä on suuttumisääni (aggro)
