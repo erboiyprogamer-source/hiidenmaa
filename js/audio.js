@@ -57,7 +57,7 @@ const VARAANI=/*VARAANI-ALKU*/{
   "emakko":{"to":"karju","p":1.08},"porsas":{"to":"karju","p":1.5},
   "hiidenkarhu":{"to":"karhu","p":0.85},
   "hiidenhirvi":{"to":"hirvi","p":0.82},"poro":{"to":"peura","p":0.9},"peura":{"to":"hirvi","p":1.3},
-  "ylimys":{"to":"kalmo","p":0.85},"vartija":{"to":"aarnihirvio","p":0.7},"kivivartija":{"to":"vartija","p":1.15},
+  "ylimys":{"to":"kalmo","p":0.85},"vartija":{"to":"aarnihirvio","p":0.7},"kivivartija":{"to":"kalmo","p":0.75},
   "jaajattari":{"to":"aarnihirvio","p":1.2},"kalmaherra":{"to":"aarnihirvio","p":0.85},"suonakki":{"to":"hiisi","p":0.7}
 }/*VARAANI-LOPPU*/;
 const CRE_AGGRO=['neutral','hostile','boss','rboss'];   // niillä on suuttumisääni (aggro)
@@ -86,6 +86,9 @@ function crePos(pn,x,y,z){if(pn.positionX){pn.positionX.value=x;pn.positionY.val
 // Kaikkiaan enintään CRE.max ääntä: täyden ollessa uusi syrjäyttää heikoimman (tasatilanteessa kaukaisimman), tai jää pois jos on heikompi kuin kaikki.
 // Rauhallisia ja jahtiääniä saa samaa lajia soida enintään 3, ja uusi alkaa aikaisintaan 0,3 s edellisen jälkeen (ei kuoroa).
 // Sama versio ei toistu heti perään (jos versioita on useita).
+// v2.10: suuttumisäänen lupa (olento 15 s, laji 6 s); varaa vuoron heti, jotta samassa ruudussa suuttuvat eivät soi päällekkäin
+const CRE_AGT={};
+function creAngerOk(m){const t=playTime;if(t-(m.agT??-99)<15||t-(CRE_AGT[m.type]??-99)<6)return false;m.agT=t;CRE_AGT[m.type]=t;return true;}
 const CRE_PRI={idle:1,chase:2,aggro:3,hurt:4,death:5},CRE_G={idle:.75,chase:.9,aggro:1,hurt:1,death:1};
 // Kaiku (vain ulottuvuuksien ja luolaston olennoille m.dun): yksi yhteinen ConvolverNode + proseduraalinen vastaus (1,2 s; ConvolverNode vaatii saman näytetaajuuden kuin ääni-AudioContext),
 // pimeä (alipäästö 3,2 kHz). Kytkeytyy vain kun jokin kaiullinen ääni soi ja irtoaa 3 s sen jälkeen → ei kuormaa maailmassa.
@@ -161,5 +164,7 @@ function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='u
       }else m.inChase=0;
     }else if(ai==='neutral'){
       // neutraali: suuttumisääni aina kun suuttuu (uusi vasta 5 s jahdin päättymisen jälkeen), ei jahtiääntä
-      if(chasing){m.sndOff=0;if(!m.sndAg){m.sndAg=1;if(d2<70*70)creSnd(m,'aggro');}}else if(m.sndAg){m.sndOff=(m.sndOff||0)+dt;if(m.sndOff>5)m.sndAg=0;}
+      // v2.10: yksi ääni / suuttuminen: uusi vasta kun rauhoittunut (ei vihainen, 5 s ilman jahtia), olennolla vähintään 15 s väli ja
+      // saman lajin suuttumisäänten välillä 6 s (lauma / emakot eivät kerrostu)
+      if(chasing){m.sndOff=0;if(!m.sndAg){m.sndAg=1;if(d2<70*70&&creAngerOk(m))creSnd(m,'aggro');}}else if(m.sndAg&&!m.angry){m.sndOff=(m.sndOff||0)+dt;if(m.sndOff>5)m.sndAg=0;}
     }}}

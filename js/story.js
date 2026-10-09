@@ -31,7 +31,7 @@ function buildPoiRock(k){const L=LOC[k],y=terrainH(L.x,L.z),r=mulberry32(k.charC
   for(let i=0;i<18;i++){const a=i/18*TAU,[x,z]=P2(WR,a),gy=Math.min(y,terrainH(x,z)),h=WH+(y-gy)+1,len=WR*TAU/18+.35;
     const m=stoneBox(WT,h,len,x,gy-1+h/2,z,-a,stoneM(),false);m.add(bx(WT*1.02,.15,len*.95,mossM,0,h/2,0,false));}
   // v1.39 (lista 4, extra 2): muurin osuma kaaren mukaan ympyröinä (ennen kierretyn lohkon AABB, joka ulottui jopa ~0,9 m sisään portaille)
-  for(let i=0,n=Math.ceil(WR*TAU/.42);i<n;i++){const a=i/n*TAU,[x,z]=P2(WR,a),gy=Math.min(y,terrainH(x,z));addCircle(x,z,WT/2+.04,gy-1,y+WH,'static');}
+  for(let i=0,n=Math.ceil(WR*TAU/.42);i<n;i++){const a=i/n*TAU,[x,z]=P2(WR,a),gy=Math.min(y,terrainH(x,z));addCircle(x,z,WT/2+.04,gy-1,y+WH+.07,'static').ground=1;}   // v2.04: harja on kävelypinta (sammaleen pinta +7 cm)
   // v1.03 vaikeammat hypyt: 5 kapeaa pilaria (0,75–0,85 m) siksakissa (säde vuorotellen 8,2 / 10,2 m), nousu 0,8 m (huippu 4,0 m),
   // välit reunasta reunaan 2,0–2,4 m → vaatii juoksuhypyn (kävellen ~2,4 m, juosten ~4 m). Viimeiseltä pudotaan 0,5 m muurin harjalle (väli 1,6 m).
   const PH=[.8,1.6,2.4,3.2,4.0];let a=a0,prevP=null;

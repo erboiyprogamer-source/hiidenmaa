@@ -10,7 +10,7 @@ function onPrimary(){
   const w=curWeapon();
   if(w.cat==='hammer'){placeBuild();return;}
   if(w.cat==='shovel'){useTool(false);return;}
-  if(w.cat==='bow'){if(!ammoId()){msg('Ei nuolia.','warn');showAmmo(2,true);return;}P.drawing=true;P.bowDraw=0;showAmmo(2,true);return;}
+  if(w.cat==='bow'){if(!ammoId()){msg('Ei nuolia.','warn');showAmmo(2,true);return;}P.drawing=true;P.bowDraw=0;P.drawT=0;showAmmo(2,true);return;}
   startAttack();
 }
 // v0.96 (kohta 11) maanmuokkaustyökalut, vasen = ensisijainen, oikea = toissijainen (pohjassa pitäen toistuu 0,45 s välein, kestävyys −6):
@@ -33,7 +33,10 @@ function terraTool(mode){
   terraFlush();mudFlush();for(const n of nodesNear(c.x,c.z,R+3,_sh))syncNodeY(n);
   sfx('build');burst(c.x,terrainH(c.x,c.z)+.2,c.z,mode==='path'?0x7a5a38:0x6b5a3a,8,3);}
 function useTool(alt){const w=curWeapon();if(w.cat!=='shovel')return;terraTool(w.id==='kuokka'?(alt?'restore':'raise'):(alt?'path':'dig'));}
-function onPrimaryUp(){if(P.drawing){P.drawing=false;if(P.bowDraw>.15&&ammoId())fireBow();P.bowDraw=0;}}
+/* v2.01: jousi laukeaa vasta, kun vetoa on kestänyt vähintään BOW_MIN_T (v2.03: 0,4 s); lyhyempi veto peruuntuu (nuoli ei kulu), ilmoitus enintään 4 s välein. */
+const BOW_MIN_T=.4;   // v2.03: 0,7 → 0,4 s
+function bowCancel(){if(playTime-(P.bowCancelMsg||-99)>4){P.bowCancelMsg=playTime;msg('Ampuminen peruuntui – jännitä jousta vähintään 0,4 s.','warn');}}
+function onPrimaryUp(){if(P.drawing){P.drawing=false;if((P.drawT||0)<BOW_MIN_T)bowCancel();else if(P.bowDraw>.15&&ammoId())fireBow();P.bowDraw=0;P.drawT=0;}}
 function onSecondary(){const w=curWeapon();if(w.cat==='hammer'){togglePanel('build');}else if(w.cat==='shovel')useTool(true);}
 function startAttack(){
   if(P.atk||P.inWater&&P.swim)return;
@@ -94,14 +97,17 @@ const KB_V=3.75;   // mitattu: arvo 10 → 5 m (harmaasusi)
 function damageMob(m,dmg,dt,kx,kz,kb=4){
   if(m.dead||m.sinking)return;   // v0.95: vajoava/nouseva vartija on haavoittumaton
   const mult=(m.def.weak&&m.def.weak[dt])||1;dmg*=mult;
-  m.hp-=dmg;m.flash=.15;m.lastHit=playTime;m.angry=true;m.hurtT=playTime;
+  m.hp-=dmg;m.flash=.15;m.lastHit=playTime;m.angry=true;m.hurtT=playTime;m.seenT=playTime;m.lastPX=P.pos.x;m.lastPZ=P.pos.z;   // v2.08: osuma = muisti
   if(m.def.ai!=='boss'&&m.def.ai!=='rboss'){const l=Math.hypot(kx,kz)||1,k=kb*(m.def.r>.8?.4:m.def.r>.6?.7:1);m.vel.x+=kx/l*k;m.vel.z+=kz/l*k;m.wind=0;}
   floatText(Math.round(dmg)+'',m.pos.x,m.pos.y+(m.type==='vartija'?6:(m.def.fh||1.8)),mult>1.2?'#ffd36a':mult<.9?'#a99d89':'#eee5d3');
   sfx('hit');bleed(m.pos.x,m.pos.y+Math.min(3,(m.barH||m.def.r*2.4)*.55),m.pos.z,bleedKind(m.type),m.def.r,dmg,m.dun,kx,kz,kb);if(dt==='slash'&&SET.bloodFx)addSlash(m);else if(Math.random()<.6)addWound(m);   // v1.37 (kohta 24): veri ja haavat
   if(m.hp<=0)killMob(m);else if(playTime-(m.sndHurt??-9)>.4){m.sndHurt=playTime;creSnd(m,'hurt');}   // v1.84 osumaääni, tauko 0,4 s
 }
 // Tuli (v0.75): soihdulla lyöty tai tulinuolella osuttu mobi/eläin palaa 5–10 s, 5 hp/s. Sade tai vesi sammuttaa heti.
-function igniteMob(m){if(m.dead)return;if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9))return;const fresh=!(m.burnT>0);m.burnT=5+Math.random()*5;
+/* v1.97: mobi on märkä, kun sataa eikä se ole katon alla (suoja tarkistetaan korkeintaan 1 s välein, vain kun sataa) tai se on vedessä.
+   Märkä mobi ei syty; sateen sammuttama mobi ei syty uudelleen 3 s:iin; "Syttyi!"-ääni ja -teksti enintään 4 s välein per mobi. */
+function mobWet(m){if(m.dun)return false;if(m.pos.y<-.9)return true;if(!(wRain>.5))return false;if(playTime>=(m.shU||0)){m.shU=playTime+1;m.shd=sheltered(m.pos.x,m.pos.y,m.pos.z);}return !m.shd;}
+function igniteMob(m){if(m.dead)return;if(mobWet(m)||playTime<(m.igniteCd||0))return;const fresh=!(m.burnT>0);m.burnT=5+Math.random()*5;
   if(!m.fireFx){const g=new THREE.Group(),h=(m.barH||m.def.r*2.8)*.55,r=Math.max(.25,m.def.r*.7);
     for(const [x,z,s] of [[0,0,1],[r*.6,.1,.7],[-r*.6,-.1,.75],[.05,r*.5,.6]]){const a=new THREE.Mesh(new THREE.ConeGeometry(.16*s*r*2,.6*s*r*2,6),MAT.flame),b=new THREE.Mesh(new THREE.ConeGeometry(.09*s*r*2,.4*s*r*2,6),MAT.flame2);a.position.set(x,h,z);b.position.set(x,h-.03,z);g.add(a,b);}
     for(let i=0;i<4;i++){const c=new THREE.Mesh(new THREE.ConeGeometry(.1*r*2,.45*r*2,5),MAT.flame);const a2=i/4*TAU;c.position.set(Math.cos(a2)*r*.8,h*.55,Math.sin(a2)*r*.8);g.add(c);}   // v1.23 tulisempi: lisää liekkejä vartalolla
@@ -109,10 +115,10 @@ function igniteMob(m){if(m.dead)return;if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-
     {const gl=new THREE.Mesh(new THREE.SphereGeometry(r*1.1,10,8),new THREE.MeshBasicMaterial({color:0xff7a2a,transparent:true,opacity:.18,blending:THREE.AdditiveBlending,depthWrite:false}));gl.position.y=h*.8;gl.userData.glow=1;g.add(gl);}
     m.f.g.add(g);m.fireFx=g;}
   if(!m.fireLight){m.fireLight={x:m.pos.x,y:m.pos.y+.4,z:m.pos.z,c:0xff7a2a,i:2.2,on:()=>true,move:true};lightSources.push(m.fireLight);updateLights();}   // v1.23 valo maahan mobin alle
-  if(fresh){sfx('build',1.4,.6);floatText('Syttyi!',m.pos.x,m.pos.y+(m.barH||2)+.6,m.pos.z,'#ff9a3a');}m.hurtT=playTime;}
+  if(fresh&&playTime-(m.igFx||-99)>4){m.igFx=playTime;sfx('build',1.4,.6);floatText('Syttyi!',m.pos.x,m.pos.y+(m.barH||2)+.6,m.pos.z,'#ff9a3a');}m.hurtT=playTime;}
 function stopBurn(m){m.burnT=0;if(m.fireFx){m.f.g.remove(m.fireFx);m.fireFx=null;}if(m.fireLight){const i=lightSources.indexOf(m.fireLight);if(i>=0)lightSources.splice(i,1);m.fireLight=null;updateLights();}}
 // Palavan mobin päivitys: palauttaa true, jos mobi kuoli tulessa.
-function updateBurn(m,dt){if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9)){stopBurn(m);burst(m.pos.x,m.pos.y+1,m.pos.z,0x9a9a9a,6,2);return false;}
+function updateBurn(m,dt){if(mobWet(m)){stopBurn(m);m.igniteCd=playTime+3;burst(m.pos.x,m.pos.y+1,m.pos.z,0x9a9a9a,6,2);return false;}
   m.burnT-=dt;if(!m.sunBurn)m.hp-=5*dt;m.hurtT=playTime;m.lastHit=playTime;
   // v1.87: palava pomo (boss/rboss) ähkii silmukkana: oma kipuääni (hurt) matalampana (×0,78) ja hiljaisempana (×0,55), 1,4–2,2 s välein, alle 60 m päässä
   if(m.def.ai==='boss'||m.def.ai==='rboss'){m.burnSnd=(m.burnSnd??.3)-dt;if(m.burnSnd<=0){m.burnSnd=1.4+Math.random()*.8;if(dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<60*60)creSnd(m,'hurt',{p:.78,v:.55,pri:1.5,key:'burn'});}}
@@ -122,7 +128,7 @@ function updateBurn(m,dt){if((wRain>.5&&!m.dun)||(!m.dun&&m.pos.y<-.9)){stopBurn
   if(m.burnT<=0)stopBurn(m);return false;}
 // Ammukset heikoimmasta parhaaseen (v0.76). Jos ammusta ei ole valittu (flags.ammo), käytetään heikointa jota on; valittu ammus käytetään
 // ensin ja sen loputtua taas heikoimmasta alkaen. Uusi ammus lisätään listaan oikeaan kohtaan (esim. tulevat rautanuolet).
-const AMMO=['nuolet','sulkanuolet','tulinuolet'];
+const AMMO=['puunuolet','nuolet','sulkanuolet','tulinuolet'];   // heikoimmasta parhaaseen (v2.06: puunuolet)
 function ammoId(){if(flags.ammo&&invCount(flags.ammo)>0)return flags.ammo;return AMMO.find(id=>invCount(id)>0)||null;}
 function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;
   if(m.def.ai==='boss'||m.def.ai==='rboss')sfx('slam',.6,.8);else if(!creSnd(m,'death'))sfx('die');   // v1.84 oma kuolinääni; v1.89 pomon kuolinääni soi vasta kuolema-animaatiossa
@@ -139,8 +145,9 @@ function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;
    BOW_STATS: veto (s), nuolen nopeus- ja tarkkuuskerroin. Hiidenjousi vetää 1,15 s, nuoli +25 % nopeampi, hajonta ×0,7.
    AMMO_STATS: sulitettu +25 % nopeus, −40 % pudotus, +15 % vahinko, puolet tuulesta; tulinuoli = piikivinuoli + sytyttää.
    Hajonta (asteina): 10° × (1 − veto) + liike (juoksu 2°, ilmassa 3°), × jousen tarkkuus, ★-laatu pienentää. Täysi veto paikallaan = 0°. */
+const SAND_MAX=20,GLASS_T=15;   // v2.07 sulatusuuni: enintään 20 hiekkaa, 2 hiekkaa → 1 lasi 15 s (1 puu)
 const BOW_STATS={jousi:{draw:1.6,spd:1,acc:1},hiidenjousi:{draw:1.15,spd:1.25,acc:.7}};
-const AMMO_STATS={nuolet:{spd:1,grav:1,dmg:1,wind:1},sulkanuolet:{spd:1.25,grav:.6,dmg:1.15,wind:.5},tulinuolet:{spd:1,grav:1,dmg:1,wind:1,fire:1}};
+const AMMO_STATS={puunuolet:{spd:1,grav:1.3,dmg:.6,wind:1.2,wood:1},nuolet:{spd:1,grav:1,dmg:1,wind:1},   /* v2.06 puunuoli: putoaa 30 % enemmän, tuuli 20 % enemmän, vahinko −40 % */sulkanuolet:{spd:1.25,grav:.6,dmg:1.15,wind:.5},tulinuolet:{spd:1,grav:1,dmg:1,wind:1,fire:1}};
 function bowStats(w){return BOW_STATS[w.id]||BOW_STATS.jousi;}
 // v1.49 (lista 5, kohta 3): kyykyssä veto ja nuolen nopeus +10 %, täysi veto paikallaan kyykyssä = ei hajontaa; seisten täydelläkin pieni hajonta.
 const BOW_CROUCH_K=1.1,BOW_STAND_MIN=1.1;
@@ -159,15 +166,37 @@ const SHIELD_COST={kilpi:.9,kuparikilpi:.75,rautakilpi:.6};
 const SHIELD_HITS={kilpi:20,kuparikilpi:15,rautakilpi:15},SHIELD_FIX=60;
 function shieldOk(s){if(s.shBrk!=null&&playTime-s.shBrk>=SHIELD_FIX){s.shBrk=null;s.shHit=0;msg(`${ITEMS[s.id].n} on taas ehjä.`,'loot');invDirty=true;updateGear();}return s.shBrk==null;}
 function shieldWear(s){s.shHit=(s.shHit||0)+1;invDirty=true;if(s.shHit>=(SHIELD_HITS[s.id]||15)){s.shBrk=playTime;sfx('crumble',1.2,.7);burst(P.pos.x,P.pos.y+1.2,P.pos.z,0x8a5a32,14,4);msg(`${ITEMS[s.id].n} hajosi! Se korjautuu itsestään minuutissa.`,'warn');updateGear();}}
+/* v2.01 TÄHTÄYS: kamera on tähdätessä 0,75 m pelaajan oikealla, nuoli lähtee pelaajasta. Nuoli suunnataan pisteeseen, johon tähtäyspiste osuu –
+   aiemmin kameran säde ei huomioinut olentoja, vaan osui maahan/70 m olennon taakse, jolloin lähempi kohde jäi nuolen radan oikealle puolelle
+   (nuoli meni ~0,6 m vasemmalle 15 m:ssä). Nyt säde testataan myös olentojen pystylieriöihin (säde def.r, korkeus barH) → nuoli osuu ristikon kohtaan
+   (vain painovoima ja tuuli kaartavat). */
+function bowAimPoint(max){const p=camRayPoint(max),{o,d}=camRay();let best=o.distanceTo(p);
+  for(const m of mobs){if(m.dead||!!m.dun!==P.inDun)continue;const r=(m.def.r||.5)+.1,h=m.barH||(m.def.r||.5)*2.6,dx=m.pos.x-o.x,dz=m.pos.z-o.z;
+    const a=d.x*d.x+d.z*d.z;if(a<1e-6)continue;const t0=(dx*d.x+dz*d.z)/a;if(t0<1||t0>best)continue;const cx=o.x+d.x*t0-m.pos.x,cz=o.z+d.z*t0-m.pos.z,c2=cx*cx+cz*cz;if(c2>r*r)continue;
+    const t=t0-Math.sqrt((r*r-c2)/a),y=o.y+d.y*t;if(t>1&&t<best&&y>m.pos.y-.2&&y<m.pos.y+h)best=t;}
+  return o.addScaledVector(d,best);}
+/* v2.03 LENTORATA tähtäimeen: sama lähtö (pelaaja + 1,5 m, 0,6 m eteen), suunta (bowAimPoint), nopeus ja painovoima (bowShot) sekä tuuli kuin
+   oikealla nuolella (updateProjs). Palauttaa merkkietäisyyksien (vaakamatka m) 3D-pisteet ja maahan osuman. Katsekulma (ylös/alas) vaikuttaa suoraan. */
+const AIM_MARKS=[10,20,30,40,50,60,70,80,100,120,150];
+function bowTraj(){const am=ammoId()||'nuolet',a=AMMO_STATS[am]||AMMO_STATS.nuolet,bs=bowShot(Math.min(1,P.bowDraw||0),am),from=new V3(P.pos.x,P.pos.y+1.5,P.pos.z);
+  const dir=bowAimPoint(70).sub(from).normalize();from.addScaledVector(dir,.6);const p=from.clone(),v=dir.multiplyScalar(bs.v),x0=p.x,z0=p.z,dt=1/60,marks=[];let mi=0,land=null;
+  for(let i=0;i<60*5;i++){v.y-=bs.g*dt;if(!P.inDun){const wa=WIND.spd*ARROW_WIND*dt*a.wind;v.x+=WIND.x*wa;v.z+=WIND.z*wa;}
+    const ox=p.x,oy=p.y,oz=p.z;p.addScaledVector(v,dt);const hd=Math.hypot(p.x-x0,p.z-z0);
+    while(mi<AIM_MARKS.length&&hd>=AIM_MARKS[mi]){const pd=Math.hypot(ox-x0,oz-z0),k=hd>pd?(AIM_MARKS[mi]-pd)/(hd-pd):1;marks.push({d:AIM_MARKS[mi],p:new V3(ox+(p.x-ox)*k,oy+(p.y-oy)*k,oz+(p.z-oz)*k)});mi++;}
+    {const vl=v.length()||1,tx=p.x+v.x/vl*.45,ty=p.y+v.y/vl*.45,tz=p.z+v.z/vl*.45,g=P.inDun?DUN.y:terrainH(tx,tz);   // kärki osuu (kuten arrowContact)
+      let hitB=null;if(ty>=g){const n=Math.max(1,Math.ceil(vl*dt/.25));for(let j=1;j<=n&&!hitB;j++){const k=j/n,bx=ox+(p.x-ox)*k+v.x/vl*.45,by=oy+(p.y-oy)*k+v.y/vl*.45,bz=oz+(p.z-oz)*k+v.z/vl*.45;if(arrowBlocked(bx,by,bz))hitB=new V3(bx,by,bz);}}
+      if(ty<g||hitB){let q=hitB||new V3(tx,ty,tz);if(ty<g){const px=ox+v.x/vl*.45,py=oy+v.y/vl*.45,pz=oz+v.z/vl*.45,og=P.inDun?DUN.y:terrainH(px,pz),k=clamp((py-og)/((py-og)-(ty-g)||1),0,1);q.set(px+(tx-px)*k,py+(ty-py)*k,pz+(tz-pz)*k);}
+        land={d:Math.round(Math.hypot(q.x-x0,q.z-z0)),p:q};break;}}if(mi>=AIM_MARKS.length)break;}
+  return {marks,land};}
 function fireBow(){
   const w=curWeapon();const k=Math.min(1,P.bowDraw),am=ammoId();if(!am)return;invRemove(am,1);bump('shots');
   const from=new V3(P.pos.x,P.pos.y+1.5,P.pos.z);
-  const tgt=camRayPoint(70);const dir=tgt.sub(from).normalize();
+  const tgt=bowAimPoint(70);const dir=tgt.sub(from).normalize();   // v2.01: tähtäyspiste huomioi olennot (ei ohi vasemmalle)
   from.addScaledVector(dir,.6);
   {const sp=bowSpread()*Math.PI/180;if(sp>1e-4){const r=Math.sqrt(Math.random())*Math.tan(sp),ph=Math.random()*TAU,ux=_tmpV2.set(-dir.z,0,dir.x).normalize(),vy=new V3().crossVectors(dir,ux);
     dir.addScaledVector(ux,Math.cos(ph)*r).addScaledVector(vy,Math.sin(ph)*r).normalize();}}   // vajaa veto: nuoli lähtee tähtäysympyrän alueelle
-  const a=AMMO_STATS[am]||AMMO_STATS.nuolet,bs=bowShot(k,am);shootArrow(from,dir,bs.v,weaponDmg(w)*(.2+.8*k)*a.dmg,'player',bs.g,!!a.fire);
-  if(a.wind<1)projs[projs.length-1].steady=1;sfx('bow');P.yaw=camYaw+Math.PI;
+  const a=AMMO_STATS[am]||AMMO_STATS.nuolet,bs=bowShot(k,am);shootArrow(from,dir,bs.v,weaponDmg(w)*(.2+.8*k)*a.dmg,'player',bs.g,!!a.fire,!!a.wood);
+  projs[projs.length-1].windK=a.wind;   // v2.06: nuolikohtainen tuulikerroin (sulitettu .5, puu 1.2)sfx('bow');P.yaw=camYaw+Math.PI;
 }
 // v1.39 (lista 4, kohdat 8–9): vahinkokerroin sille, joka parhaillaan päivittyy (ai.js asettaa): pomot ×1,2, vartijat ×1,8.
 let HURT_K=1;
@@ -186,11 +215,19 @@ P.vel=new V3();
 // Ähky tulee vain, jos kylläisyys on jo täynnä (≥99) ja syö silti; palkin täyttyminen syödessä ei aiheuta sitä. Kesto 52 s (−30 %).
 function eat(s){const f=ITEMS[s.id].food;
   if(P.hunger>=99&&!f.raw&&!f.buff){P.buffs.vatsakipu=52;msg('Söit vaikka olit jo täynnä – vatsaa kivistää.','warn');}
-  P.hunger=Math.min(100,P.hunger+f.h);if(f.hp)P.heal+=f.hp;if(f.st)P.stam=Math.min(maxStam(),P.stam+f.st);
+  P.hunger=Math.min(100,P.hunger+f.h);if(P.hunger>=99.5){P.hunger=100;P.buffs.taysi=60;}   /* v2.00: täyteen syöty = 100, ja ensimmäinen pudotus vasta 60 s:n kuluttua */
+  if(f.hp)P.heal+=f.hp;if(f.st)P.stam=Math.min(maxStam(),P.stam+f.st);
   if(f.raw&&Math.random()<.45){P.buffs.pahoinvointi=40;msg('Raaka liha kääntää vatsaa.','warn');}
   if(f.buff)P.buffs[f.buff]=300;if(!f.raw)flags.ate=1;
   s.n--;if(s.n<=0)inv[inv.indexOf(s)]=null;invDirty=true;sfx('eat');msg(`Söit: ${ITEMS[s.id].n}`);
 }
+// v2.00 juomat: parannus = terveys heti täyteen; elpyminen = +1 terveys/s 60 s; sisu = kylläisyys täynnä 5 min (+ 60 s ennen pudotusta) ja kestävyys täynnä 30 s.
+function drink(s){const d=ITEMS[s.id],p=d.potion;
+  if(p.full){P.hp=maxHp();floatText('Terveys täynnä!',P.pos.x,P.pos.y+2.2,P.pos.z,'#ff6a6a');}
+  if(p.regen)P.buffs.elpyminen=p.regen;
+  if(p.sisu){P.buffs.kylla=300;P.buffs.sisu=30;P.hunger=100;P.stam=maxStam();}
+  burst(P.pos.x,P.pos.y+1.2,P.pos.z,new THREE.Color(d.c).getHex(),10,2);
+  s.n--;if(s.n<=0)inv[inv.indexOf(s)]=null;invDirty=true;sfx('eat',1.5,.8);msg(`Joit: ${d.n}`,'loot');}
 // v1.20 (lista 2, kohta 12): perusterveys kasvaa tasoilla 2–5: 60 / 70 / 80 / 90 / 100 (+ saavutukset ja voima päälle)
 function lvlHp(){return Math.min(4,Math.max(0,lvlInfo().L-1))*10;}
 function maxHp(){return 60+lvlHp()+(P.buffs.voima?15:0)+BON.hp;}
@@ -217,7 +254,7 @@ function pieceLabel(p){if(PIECES[p.t].store)return 'Avaa '+PIECES[p.t].n.toLower
   case 'sanky':return isNight()?'Nuku':'Aseta herätyspaikka';
   case 'arkku':return 'Avaa arkku';
   case 'tynnyri':return 'Avaa tynnyri';
-  case 'sulatin':{const st=`kupari ${p.data.ore}, rauta ${p.data.iore}, puu ${p.data.wood}`;return p.data.done>0||p.data.idone>0?`Ota harkot (kupari ${p.data.done}, rauta ${p.data.idone})`:invCount('malmi')>0||invCount('rautamalmi')>0||invCount('puu')>0?`Lisää malmia ja puuta (${st})`:`Sulatusuuni (${st})`;}
+  case 'sulatin':{const D=p.data,st=`kupari ${D.ore}, rauta ${D.iore}, hiekka ${D.sand||0}, puu ${D.wood}`;return D.done>0||D.idone>0||D.glass>0?`Ota valmiit (kupari ${D.done}, rauta ${D.idone}, lasi ${D.glass||0})`:invCount('malmi')>0||invCount('rautamalmi')>0||invCount('hiekka')>0||invCount('puu')>0?`Lisää malmia, hiekkaa ja puuta (${st})`:`Sulatusuuni (${st})`;}
   case 'tyopenkki':return 'Käytä työpenkkiä';
   case 'ahjo':return 'Käytä ahjoa';
   default:return null;}}
@@ -236,9 +273,10 @@ function interact(){
     case 'soihtuteline':{const b=p.data.burn;if(torchPct(p)>50){msg(`Soihdussa on jo tarpeeksi polttoainetta (${torchPct(p)} %).`);break;}if(invCount('puu')>0&&b<600){invRemove('puu',1);p.data.burn=600;markFull(p);msg('Soihtu palaa 10 min.');sfx('build');}else if(invCount('hiili')>0&&b<1800){invRemove('hiili',1);p.data.burn=1800;markFull(p);msg('Hiili: soihtu palaa 30 min.');sfx('build');}else msg(invCount('puu')>0||invCount('hiili')>0?'Soihdussa on jo tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');break;}
     case 'sanky':sleepAt(p);break;
     case 'arkku':case 'tynnyri':openChest(p);break;
-    case 'sulatin':if(p.data.done>0||p.data.idone>0){if(p.data.done>0)giveOrDrop('kupari',p.data.done,p.x,p.y+1,p.z);if(p.data.idone>0)giveOrDrop('rauta',p.data.idone,p.x,p.y+1,p.z);p.data.done=0;p.data.idone=0;sfx('pickup');break;}
-      {const o=Math.min(invCount('malmi'),10-p.data.ore),io=Math.min(invCount('rautamalmi'),10-p.data.iore),w=Math.min(invCount('puu'),20-p.data.wood),hc=Math.min(invCount('hiili'),Math.floor((20-p.data.wood-w)/10));if(o<=0&&io<=0&&w<=0&&hc<=0){msg('Tarvitset malmia (kupari tai rauta) ja puuta tai hiiltä.','warn');break;}
-       if(o>0){invRemove('malmi',o);p.data.ore+=o;}if(io>0){invRemove('rautamalmi',io);p.data.iore+=io;}if(w>0){invRemove('puu',w);p.data.wood+=w;}if(hc>0){invRemove('hiili',hc);p.data.wood+=hc*10;}msg(`Uuniin: ${o} kuparimalmia, ${io} rautamalmia, ${w} puuta${hc?`, ${hc} hiiltä`:''}.`);sfx('build');}break;
+    case 'sulatin':{const D=p.data;D.sand=D.sand||0;D.glass=D.glass||0;
+      if(D.done>0||D.idone>0||D.glass>0){if(D.done>0)giveOrDrop('kupari',D.done,p.x,p.y+1,p.z);if(D.idone>0)giveOrDrop('rauta',D.idone,p.x,p.y+1,p.z);if(D.glass>0)giveOrDrop('lasi',D.glass,p.x,p.y+1,p.z);D.done=0;D.idone=0;D.glass=0;sfx('pickup');break;}
+      {const o=Math.min(invCount('malmi'),10-D.ore),io=Math.min(invCount('rautamalmi'),10-D.iore),sd=Math.min(invCount('hiekka'),SAND_MAX-D.sand),w=Math.min(invCount('puu'),20-D.wood),hc=Math.min(invCount('hiili'),Math.floor((20-D.wood-w)/10));if(o<=0&&io<=0&&sd<=0&&w<=0&&hc<=0){msg('Tarvitset malmia (kupari tai rauta) tai hiekkaa sekä puuta tai hiiltä.','warn');break;}
+       if(o>0){invRemove('malmi',o);D.ore+=o;}if(io>0){invRemove('rautamalmi',io);D.iore+=io;}if(sd>0){invRemove('hiekka',sd);D.sand+=sd;}if(w>0){invRemove('puu',w);D.wood+=w;}if(hc>0){invRemove('hiili',hc);D.wood+=hc*10;}msg(`Uuniin: ${o} kuparimalmia, ${io} rautamalmia, ${sd} hiekkaa, ${w} puuta${hc?`, ${hc} hiiltä`:''}.`);sfx('build');}break;}
     case 'tyopenkki':case 'ahjo':togglePanel('inv');break;
   }}
 }

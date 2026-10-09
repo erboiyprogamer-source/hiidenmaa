@@ -26,8 +26,15 @@ const ITEMS={
   marjat:{n:'Puolukat',w:.2,s:50,c:'#c82a3c',food:{h:8,st:20},d:'Hapanta virkistystä.'},
   sieni:{n:'Herkkutatti',w:.3,s:30,c:'#c8a26b',food:{h:10,hp:6},d:'Metsän pohjalta.'},
   varras:{n:'Metsästäjän varras',w:1,s:10,c:'#b06c3a',food:{h:45,hp:35,buff:'voima'},d:'Lihaa, sieniä ja marjoja. Antaa voimaa viideksi minuutiksi.'},
+  /* v2.00 juomat: löytyvät vain arkuista (10 % / juoma / arkku ensimmäisellä avauksella). Juodaan pikapaikasta kuten ruoka (drink, actions.js). */
+  parannusjuoma:{n:'Parannusjuoma',w:.4,s:5,c:'#d8323c',potion:{full:1},d:'Punainen juoma. Palauttaa terveyden heti täyteen.'},
+  elpymisjuoma:{n:'Elpymisjuoma',w:.4,s:5,c:'#3fbf5a',potion:{regen:60},d:'Vihreä juoma. Palauttaa 1 terveyttä sekunnissa minuutin ajan.'},
+  sisujuoma:{n:'Sisujuoma',w:.4,s:5,c:'#3f7fe0',potion:{sisu:1},d:'Sininen juoma. Kylläisyys pysyy täynnä 5 minuuttia ja kestävyys 30 sekuntia.'},
   sienipaisti:{n:'Paistettu sieni',w:.3,s:30,c:'#9b6a3a',food:{h:18,hp:10},d:'Nuotiolla kypsennetty herkkutatti.'},
   hiili:{n:'Puuhiili',w:.5,s:50,c:'#2a2623',fuel:10,d:'Palaa kymmenen kertaa pidempään kuin puu. Nuotioon, sulatusuuniin ja seisoviin soihtuihin. Syntyy ylipaistetusta ruoasta tai nuotiolla puusta.'},
+  hiekka:{n:'Hiekka',w:.5,s:50,c:'#d8c38c',d:'Rannan hiekkaa. Sulatusuunissa 2 hiekkaa → 1 lasi.'},
+  lasi:{n:'Lasi',w:.4,s:20,c:'#a9d6e6',d:'Sulatettua hiekkaa. Lasi-ikkunoihin.'},
+  puunuolet:{n:'Puunuolet',w:.08,s:100,c:'#a87a46',d:'Halpoja ammuksia pelkästä puusta. Putoavat ja kaartuvat tuulessa enemmän ja tekevät vähemmän vahinkoa.'},
   nuolet:{n:'Piikivinuolet',w:.1,s:100,c:'#6d6a60',d:'Ammuksia jouselle.'},
   karhuntalja:{n:'Karhuntalja',w:4,s:5,c:'#5a4030',d:'Paksu karhun talja. Siitä tehdään karhuntaljamatto (Kalusto).'},
   sulka:{n:'Metson sulka',w:.05,s:50,c:'#3a3a40',d:'Metson pyrstösulka. Sulitetut nuolet lentävät suorempaan.'},
@@ -73,6 +80,7 @@ const RECIPES=[
   {id:'hakku',st:'tyopenkki',req:{puu:4,piikivi:5,nahka:2},lvl:2},
   {id:'keihas',st:'tyopenkki',req:{puu:5,piikivi:4,nahka:1},lvl:2},
   {id:'jousi',st:'tyopenkki',req:{puu:8,nahka:3},lvl:3},
+  {id:'puunuolet',st:'tyopenkki',req:{puu:2},n:15,lvl:3},
   {id:'nuolet',st:'tyopenkki',req:{puu:2,piikivi:2},n:15,lvl:3},
   {id:'sulkanuolet',st:'tyopenkki',req:{puu:2,piikivi:2,sulka:1},n:15,lvl:4},
   {id:'tulinuolet',st:'tyopenkki',req:{puu:2,piikivi:2,pihka:1},n:15,lvl:3},
@@ -125,11 +133,18 @@ function icon(id){
     case 'hiidenkivi':poly([[24,6],[34,20],[30,40],[18,40],[14,20]],'#7fd6cc','#2f8f86');poly([[24,10],[28,20],[24,34],[20,20]],'#c9fff8');break;
     case 'jaaavain':case 'aarniavain':case 'luuavain':{const c1=id==='jaaavain'?'#9fd8ff':id==='luuavain'?'#e6e0cf':'#7aff9a',c2=id==='jaaavain'?'#3d7fa8':id==='luuavain'?'#8a8070':'#2f8f4a';circ(15,15,9,c1,c2);circ(15,15,4,'#13110e');line(21,21,40,40,5,c1);line(33,33,38,28,4,c1);line(38,38,42,34,4,c1);line(21,21,40,40,1.5,c2);break;}
     case 'kruunusirpale':poly([[10,30],[16,14],[22,26],[28,8],[34,24],[40,16],[38,36],[12,38]],'#9aff7a','#2f6a2a');poly([[16,18],[22,28],[28,12],[30,26]],'#e8ffd8');circ(24,33,3,'#ffe27a');break;
+    case 'parannusjuoma':case 'elpymisjuoma':case 'sisujuoma':{const lc=d.c,dk=id==='parannusjuoma'?'#6a1018':id==='elpymisjuoma'?'#145a24':'#14306a';   // v2.00 pullo: lasi, neste, korkki, heijastus
+      circ(24,30,12,'rgba(210,235,240,.55)','#3a4a50');g.save();g.beginPath();g.arc(24,30,10.5,0,TAU);g.clip();g.fillStyle=lc;g.fillRect(10,25,28,18);g.fillStyle=dk;g.fillRect(10,38,28,6);g.fillStyle='rgba(255,255,255,.35)';g.fillRect(10,25,28,2);g.restore();
+      g.fillStyle='rgba(210,235,240,.6)';g.fillRect(20,11,8,10);g.strokeStyle='#3a4a50';g.lineWidth=1.5;g.strokeRect(20,11,8,10);g.fillStyle='#8a5a32';g.fillRect(19,6,10,6);g.strokeStyle='#4a2e18';g.strokeRect(19,6,10,6);
+      line(17,24,15,32,2.5,'rgba(255,255,255,.75)');circ(30,33,1.6,'rgba(255,255,255,.6)');break;}
     case 'sydan':circ(18,20,9,'#5fe6d9');circ(30,20,9,'#5fe6d9');poly([[10,24],[38,24],[24,40]],'#5fe6d9');circ(20,18,3,'#d8fffb');break;
     case 'liha':case 'paisti':circ(28,22,12,d.c,'#4a2216');line(18,32,9,41,5,'#e7e1cf');circ(8,42,3.5,'#e7e1cf');if(id==='paisti')line(22,18,34,24,2,'#c47a4a');break;
     case 'marjat':[[18,20],[28,18],[22,29],[32,28],[15,31]].forEach(p=>circ(p[0],p[1],6,'#c82a3c','#6a1220'));line(22,8,24,16,2,'#5a7a2a');break;
     case 'sieni':g.fillStyle='#efe6d2';g.fillRect(20,24,8,16);poly([[8,26],[14,12],[24,8],[34,12],[40,26]],'#9b6a3a','#5e3b1f');break;
     case 'varras':line(8,40,40,8,2.5,'#c9b48a');[[16,32,'#8d4b2b'],[24,24,'#c8a26b'],[32,16,'#8d4b2b']].forEach(p=>circ(p[0],p[1],5.5,p[2]));circ(20,28,3,'#c82a3c');break;
+    case 'hiekka':poly([[6,38],[14,24],[24,18],[34,24],[42,38]],'#d8c38c','#9a8452');[[16,32],[24,27],[31,33],[22,35],[28,30]].forEach(p=>circ(p[0],p[1],1.2,'#b39a62'));circ(33,29,2.5,'#f2ecdf','#9a8452');break;
+    case 'lasi':poly([[10,12],[36,8],[40,36],[14,40]],'rgba(170,215,232,.75)','#5a8ea2');line(16,16,22,15,2,'rgba(255,255,255,.85)');line(16,21,30,18,1.5,'rgba(255,255,255,.6)');line(30,34,36,33,1.5,'rgba(255,255,255,.5)');break;
+    case 'puunuolet':for(let i=0;i<3;i++){line(10+i*5,40,32+i*5,10,2,'#c9b48a');poly([[32+i*5,10],[35+i*5,7],[34+i*5,13]],'#8a5a32');}break;
     case 'nuolet':for(let i=0;i<3;i++){line(10+i*5,40,32+i*5,10,2,'#c9b48a');poly([[32+i*5,10],[36+i*5,6],[34+i*5,14]],'#4d535c');}break;
     case 'karhuntalja':poly([[8,18],[14,10],[20,14],[28,14],[34,10],[40,18],[36,26],[40,36],[32,40],[24,36],[16,40],[8,36],[12,26]],'#5a4030','#2e2016');circ(24,12,5,'#4a3426');break;
     case 'sulka':line(12,40,34,8,2.5,'#2a2a2e');poly([[34,8],[22,20],[16,32],[20,30],[30,18]],'#3a3a40','#1d1d22');poly([[34,8],[28,24],[22,32],[26,26],[33,16]],'#55555e');break;

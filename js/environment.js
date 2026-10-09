@@ -167,7 +167,7 @@ function updateRain(dt){const a=rain.geometry.attributes.position.array,sp=26*(w
 function updateLights(){
   const src=lightSources.filter(s=>s.on()&&(!!s.dun===P.inDun)).sort((a,b)=>((b.pri||0)-(a.pri||0))||dist2(a.x,a.z,P.pos.x,P.pos.z)-dist2(b.x,b.z,P.pos.x,P.pos.z));   // v1.90: etusija (pri) ensin – pomon valot saavat aina valopaikan
   const nL=Math.min(LIGHTS.length,+SET.lights||6);
-  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=i<nL?src[i]:null;if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<60*60){if(i===0&&(l.position.x!==s.x||l.position.z!==s.z))l.shadow.needsUpdate=true;l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;l.userData.src=s;}else{l.intensity=0;l.userData.base=0;l.userData.src=null;}}
+  for(let i=0;i<LIGHTS.length;i++){const l=LIGHTS[i],s=i<nL?src[i]:null;if(s&&dist2(s.x,s.z,P.pos.x,P.pos.z)<(+SET.lightDist||60)**2){   /* v2.03: näkyvyysetäisyys asetuksesta */if(i===0&&(l.position.x!==s.x||l.position.z!==s.z))l.shadow.needsUpdate=true;l.position.set(s.x,s.y,s.z);l.color.setHex(s.c);l.userData.base=s.i*1.15;l.userData.src=s;}else{l.intensity=0;l.userData.base=0;l.userData.src=null;}}
 }
 // Tilat: jokaisella on vaikutus pelaajan kykyihin (P.fx), kuvaus ja halutessa ajastin (s). effects() kerää aktiiviset, calcFx() laskee kertoimet.
 function effects(){const e=[],wt=invWeight(),b=P.buffs,add=(key,name,kind,desc,t)=>e.push({key,name,kind,desc,t});
@@ -179,10 +179,16 @@ function effects(){const e=[],wt=invWeight(),b=P.buffs,add=(key,name,kind,desc,t
   if(b.vatsakipu)add('vatsakipu','Vatsakipu','bad','Liiasta syömisestä: kävely −10 %, kestävyys palautuu 30 % hitaammin ja kramppi vie välillä kestävyyttä.',b.vatsakipu);
   if(!devOn('weight')&&wt>MAXW)add('kuorma','Ylikuormitus','bad','Kävely −45 %, et voi juosta etkä hypätä. Pudota tavaroita tai päivitä reppu.');
   if(b.levannyt)add('levannyt','Levännyt','good','Kestävyys palautuu 45 % nopeammin ja terveys palautuu nopeammin.',b.levannyt);
+  if(b.elpyminen)add('elpyminen','Elpyminen','good','Elpymisjuoma: terveys palautuu 1 sekunnissa.',b.elpyminen);
+  if(b.kylla)add('kylla','Kylläinen','good','Sisujuoma: kylläisyys pysyy täynnä.',b.kylla);
+  if(b.sisu)add('sisu','Sisu','good','Sisujuoma: kestävyys pysyy täynnä.',b.sisu);
   if(b.voima)add('voima','Voimistunut','good','Isku +15 %, enimmäisterveys +15, enimmäiskestävyys +25.',b.voima);
   if(fireCache)add('lampo','Lämmin','good','Tulen lähellä et kylmety ja kuivut nopeasti.');
   if(shelterCache&&!P.inDun)add('suoja','Suojassa','neu','Katon alla sade ja lumi eivät kastele.');
   if(P.crouch)add('hiipii','Hiipii','neu','Hitaampi liike; viholliset huomaavat vasta lähempää, eläimet eivät säiky.');
+  if(HOME.inside&&HOME.grey)add('koti_off',`${HOME.lastLvl===2?'Lämmin koti':'Mukava lämpötila'} – ovesi on auki`,'off','Ovi on ollut auki yli 20 s. Sulje ovi, niin kodin lämpö palaa heti.');
+  else if(HOME.lvl===2)add('lammin_koti',HOME.inside?'Lämmin koti':'Lämmin koti (hiipuu)','good',`Suljettu talo ja lämmönlähde: terveys +1,0/s, nälkä kuluu 50 % hitaammin, nukkuessa +20 % terveyttä.${HOME.inside&&HOME.heatOff>0?' Lämmönlähde on sammunut – sytytä se!':''}`,!HOME.inside?HOME.linger:HOME.heatOff>0&&HOME.heatOff<30?30-HOME.heatOff:undefined);
+  else if(HOME.lvl===1)add('mukava',HOME.inside?'Mukava lämpötila':'Mukava lämpötila (hiipuu)','good','Suljettu talo: terveys +0,5/s, nälkä kuluu 30 % hitaammin, nukkuessa +10 % terveyttä. Lämmönlähde (nuotio, soihtu) tekee siitä Lämpimän kodin.',!HOME.inside?HOME.linger:undefined);
   if(P.restT>0&&!b.levannyt)add('lepaa','Lepää…','neu','Pysy tulen ja katon alla, niin tunnet olosi levänneeksi.',12-P.restT);
   return e;}
 function calcFx(){const f=P.fx,b=P.buffs;f.speed=1;f.dmg=1;f.stamRegen=1;f.hpRegen=1;
@@ -191,10 +197,43 @@ function calcFx(){const f=P.fx,b=P.buffs;f.speed=1;f.dmg=1;f.stamRegen=1;f.hpReg
   if(b.pahoinvointi){f.stamRegen*=.5;f.hpRegen=0;}
   if(b.vatsakipu){f.speed*=.9;f.stamRegen*=.7;}
   if(b.levannyt)f.stamRegen*=1.45;f.speed*=1+BON.spd/100;}
+/* v2.09 KODIN LÄMPÖ. homeScan (0,5 s välein): 16 vaakasädettä kolmella korkeudella (0,6 / 1,5 / 2,2 m) pelaajasta enintään 15 m – jokaisen on
+   osuttava seinään, suljettuun oveen, lasiin tai maastoon; katto pelaajan kohdalla ja 1 m joka suuntaan (sheltered). Aukkoikkuna päästää säteen läpi
+   (1,5 m) → ei tehostetta. Avoin ovi: tila on suljettu vain, jos ovet lasketaan kiinni → "ovi auki". Tasot: 1 = Mukava lämpötila (+0,5 hp/s, nälkä −30 %),
+   2 = Lämmin koti (lämmönlähde sisällä palanut ≥ 5 s: nuotio, grillinuotio, seisova soihtu, seinäsoihtu; +1,0 hp/s, nälkä −50 %). Ovi saa olla auki 20 s,
+   sitten tehoste harmaantuu ("Ovesi on auki"), sulkiessa palaa heti. Lähde sammuu → 30 s ajastin → takaisin Mukavaksi. Ulos lähtiessä taso säilyy 20 s ja hiipuu.
+   Nukkuminen (sleepAt): +10 % / +20 % enimmäisterveydestä (muualla ei paranna). */
+const HOME={lvl:0,k:1,inside:false,grey:false,doorT:0,heatT:0,heatOff:99,linger:0,lvlL:0,dist:null,chk:0},HOME_DIRS=16,HOME_R=15;
+function homeHit(x,y,z,closedDoors){if(y<terrainH(x,z))return 2;const a=CG.get(ck(Math.floor(x/CELL),Math.floor(z/CELL)));if(!a)return false;
+  for(const c of a){if(c.off&&!(closedDoors&&c.door))continue;if(!(c.owner&&c.owner.t&&PIECES[c.owner.t]))continue;   /* vain rakennusosat (ei puut, kivet, rauniot) */if(c.t==='b'){if(x>=c.minX&&x<=c.maxX&&z>=c.minZ&&z<=c.maxZ&&y>=c.minY&&y<=c.maxY)return true;}   /* sisältävä: seinäpalojen saumat */else if(y>c.minY&&y<c.maxY&&(x-c.x)**2+(z-c.z)**2<c.r*c.r)return true;}return false;}
+function homeScan(closedDoors){const x0=P.pos.x,z0=P.pos.z,y0=P.pos.y,dist=[];
+  for(let i=0;i<HOME_DIRS;i++){const a=i/HOME_DIRS*TAU+.031,dx=Math.cos(a),dz=Math.sin(a);let dmin=HOME_R;   // pieni kulmasiirto: säde ei kulje saumaa pitkin
+    for(const h of [.6,1.5,2.2]){let hit=null,ter=false;for(let t=.3;t<HOME_R;t+=.15){const r=homeHit(x0+dx*t,y0+h,z0+dz*t,closedDoors);if(r){hit=t;ter=r===2;break;}}if(hit===null)return null;if(ter&&hit>6)return null;if(h===1.5)dmin=hit;}dist.push(dmin);}   // maasto kelpaa seinäksi vain lähellä (rinteeseen rakennettu talo)
+  for(const [ox,oz] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]])if(!sheltered(x0+ox,y0,z0+oz))return null;return dist;}
+function homeHeat(dist){for(const p of pieces){const fire=isFirePiece(p.t)&&p.data.fuel>0,torch=(p.t==='soihtuteline'||p.t==='seinasoihtu')&&p.data.burn>0;if(!fire&&!torch)continue;
+    const dx=p.x-P.pos.x,dz=p.z-P.pos.z,d=Math.hypot(dx,dz);if(d>HOME_R||Math.abs((p.y||0)-P.pos.y)>3)continue;if(d<homeEdge(dist,dx,dz)-.05)return true;}return false;}
+// talon reunan etäisyys suunnassa (viereisten säteiden suurin – esine itse voi katkaista yhden säteen)
+function homeEdge(dist,dx,dz){const i=Math.round(((Math.atan2(dz,dx)-.031+TAU)%TAU)/TAU*HOME_DIRS)%HOME_DIRS,n=HOME_DIRS;return Math.max(dist[(i+n-1)%n],dist[i],dist[(i+1)%n]);}
+// osa talon reunalla (aukkoikkuna tai ovi): keskipiste lähellä reunan etäisyyttä
+function homeOnEdge(p,dist){const dx=p.x-P.pos.x,dz=p.z-P.pos.z,d=Math.hypot(dx,dz);if(d>HOME_R||Math.abs((p.y||0)-P.pos.y)>2.5)return false;return Math.abs(d-homeEdge(dist,dx,dz))<1.6;}
+function homeTick(dt){const H=HOME;H.chk-=dt;
+  if(H.chk<=0){H.chk=.5;let closed=null;if(!P.inDun&&pieces.some(p=>dist2(p.x,p.z,P.pos.x,P.pos.z)<HOME_R*HOME_R))closed=homeScan(true);
+    // aukkoikkuna reunalla → ei suljettu; avoin ovi reunalla → "ovi auki" (säteet voivat ohittaa kapean aukon, siksi erillinen tarkistus)
+    let hole=false,door=false;if(closed)for(const p of pieces){const b=bt(p.t);if(b==='ikkunaseina'&&!PIECES[p.t].glass&&homeOnEdge(p,closed))hole=true;else if(b==='ovi'&&p.data.open&&homeOnEdge(p,closed))door=true;}
+    H.inside=!!closed&&!hole;H.doorOpen=H.inside&&door;H.dist=closed;H.heatNow=H.inside&&homeHeat(closed);}
+  if(H.inside){H.doorT=H.doorOpen?H.doorT+dt:0;const active=!H.doorOpen||H.doorT<20;H.grey=!active;
+    if(H.heatNow&&active){H.heatT+=dt;H.heatOff=0;}else{H.heatOff+=dt;if(H.heatOff>=30)H.heatT=0;}
+    const lvl=active?(H.heatT>=5&&H.heatOff<30?2:1):0;if(lvl&&H.lvl!==lvl)msg(lvl===2?'Lämmin koti: talo on suljettu ja lämmönlähde palaa.':'Mukava lämpötila: talo on suljettu.','loot');
+    if(!active&&H.lvl&&!H.greyMsg){H.greyMsg=1;msg('Ovesi on auki – kodin lämpö karkaa. Sulje ovi.','warn');}if(active)H.greyMsg=0;
+    H.lvl=lvl;H.k=1;if(lvl){H.linger=20;H.lvlL=lvl;}H.lastLvl=lvl||H.lastLvl;}
+  else{H.grey=false;H.doorT=0;H.heatOff=99;H.heatT=0;if(H.linger>0){H.linger=Math.max(0,H.linger-dt);H.lvl=H.lvlL;H.k=H.linger/20;if(H.linger<=0)H.lvl=0;}else{H.lvl=0;H.k=1;}}}
+function homeHealRate(){return HOME.lvl===2?1*HOME.k:HOME.lvl===1?.5*HOME.k:0;}
+function homeHungerK(){const m=HOME.lvl===2?.5:HOME.lvl===1?.7:1;return 1-(1-m)*HOME.k;}
 function fmtT(t){return t>=60?`${Math.ceil(t/60)} min`:`${Math.ceil(t)} s`;}
 function survival(dt){
   // statuses
   envTick-=dt;if(envTick<=0){envTick=.5;shelterCache=sheltered(P.pos.x,P.pos.y,P.pos.z);fireCache=nearFire(P.pos.x,P.pos.z);indoorT=indoorScore();}
+  homeTick(dt);   // v2.09 kodin lämpö
   const raining=wRain>.5&&!P.inDun;
   if(raining&&!shelterCache)P.wetT=60;if(P.inWater)P.wetT=60;
   if(P.wetT>0)P.wetT-=dt*(fireCache?5:1);
@@ -206,9 +245,11 @@ function survival(dt){
   for(const k in P.buffs){P.buffs[k]-=dt;if(P.buffs[k]<=0)delete P.buffs[k];}
   calcFx();
   P.crampT-=dt;if(P.buffs.vatsakipu&&P.crampT<=0){P.crampT=8+Math.random()*6;P.stam=Math.max(0,P.stam-12);P.stamDelay=Math.max(P.stamDelay,1);floatText('Auts!',P.pos.x,P.pos.y+2,P.pos.z,'#c9a66b');}
-  P.hunger=Math.max(0,P.hunger-dt*(100/1000)*(cold?1.3:1)*(P.atk||kd('run')?1.15:1));if(devOn('food'))P.hunger=100;   // DEV: ei nälkää
+  if(P.buffs.kylla){P.hunger=100;P.buffs.taysi=60;}   // v2.00 sisujuoma: kylläisyys täynnä 5 min
+  if(!P.buffs.taysi)P.hunger=Math.max(0,P.hunger-dt*(100/1000)*(cold?1.3:1)*(P.atk||kd('run')?1.15:1)*homeHungerK());   // v2.09: kodin lämpö hidastaa nälkääif(devOn('food'))P.hunger=100;   // DEV: ei nälkää; v2.00: täyteen syötyä 60 s ei kulu
+  if(P.buffs.elpyminen)P.hp=Math.min(maxHp(),P.hp+dt);   // v2.00 elpymisjuoma: +1 terveys / s
   // regen
-  let reg=P.hunger>35?.35:P.hunger>0?.15:0;if(P.buffs.levannyt)reg+=.6;reg*=P.fx.hpRegen;
+  let reg=P.hunger>35?.35:P.hunger>0?.15:0;if(P.buffs.levannyt)reg+=.6;reg*=P.fx.hpRegen;if(P.hunger>0&&!P.buffs.pahoinvointi)reg+=homeHealRate();   // v2.09 kodin lämpö +0,5 / +1,0 hp/s
   if(P.heal>0){const h=Math.min(P.heal,3*dt);P.heal-=h;P.hp+=h;}
   P.hp=Math.min(maxHp(),P.hp+reg*dt);
   if(P.hunger<=0){P.hp-=.5*dt;if(P.hp<=0)playerDie();}

@@ -17,6 +17,7 @@ const NODE={
   kuparisuoni:{kind:'rock',hp:70,drops:[['malmi',3,5],['kivi',1,3]],r:1.1,respawn:2400,tier:1},
   rautasuoni:{kind:'rock',hp:120,drops:[['rautamalmi',2,4],['kivi',1,2]],r:1.15,respawn:3600,tier:2},
   oksa:{kind:'pick',item:'puu',n:[1,1],respawn:300,label:'Oksa'},
+  hiekkakasa:{kind:'pick',item:'hiekka',n:[2,3],respawn:1200,label:'Hiekkakasa'},   // v2.07: harvinainen rannoilla (5–10 / kartta), uusiutuu 20 min
   kivikasa:{kind:'pick',item:'kivi',n:[1,1],respawn:300,label:'Kivi'},
   piikivi:{kind:'pick',item:'piikivi',n:[1,2],respawn:420,label:'Piikivi'},
   marjat:{kind:'pick',item:'marjat',n:[2,3],respawn:480,label:'Puolukkamätäs'},
@@ -59,6 +60,7 @@ const NGEO={
   lohkare:mergeParts([part(new THREE.IcosahedronGeometry(1.2,0),0x85837d,0,.55,0,0,0,0,1,.75,1),part(new THREE.IcosahedronGeometry(.7,0),0x77756f,.7,.35,.3)]),
   kuparisuoni:mergeParts([part(new THREE.IcosahedronGeometry(1.25,0),0x66605a,0,.6,0,0,0,0,1,.8,1),part(new THREE.BoxGeometry(.3,.3,.3),0xd9874a,.6,.9,.6,.5,.5),part(new THREE.BoxGeometry(.28,.28,.28),0xd9874a,-.7,.6,.5,.3,.8),part(new THREE.BoxGeometry(.25,.25,.25),0xe39a5a,.1,1.3,-.5,.2,.4),part(new THREE.BoxGeometry(.3,.3,.3),0xd9874a,-.3,.8,-.8)]),
   rautasuoni:mergeParts([part(new THREE.IcosahedronGeometry(1.3,0),0x4f4a47,0,.6,0,0,0,0,1,.8,1),part(new THREE.BoxGeometry(.32,.32,.32),0x8a4f3c,.6,.9,.6,.5,.5),part(new THREE.BoxGeometry(.3,.3,.3),0x9a5c46,-.7,.6,.5,.3,.8),part(new THREE.BoxGeometry(.26,.26,.26),0x7d4636,.1,1.3,-.5,.2,.4),part(new THREE.BoxGeometry(.3,.3,.3),0x8a4f3c,-.3,.8,-.8)]),
+  hiekkakasa:mergeParts([part(new THREE.SphereGeometry(.55,10,6,0,TAU,0,Math.PI/2),0xbf9f5e,0,-.02,0,0,0,0,1,.55,1),part(new THREE.SphereGeometry(.32,8,5,0,TAU,0,Math.PI/2),0xcdb06c,.38,-.02,.2,0,0,0,1,.6,1),part(new THREE.SphereGeometry(.22,8,5,0,TAU,0,Math.PI/2),0xcbb37a,-.3,-.02,-.25,0,0,0,1,.5,1),part(new THREE.BoxGeometry(.06,.04,.04),0xf2ecdf,.1,.28,.05,0,.6)]),   // v2.07 hiekkakasa (kasa + pikkukasat + simpukka)
   oksa:mergeParts([part(new THREE.BoxGeometry(.08,.08,1),0x6b4527,0,.05,0),part(new THREE.BoxGeometry(.05,.05,.4),0x6b4527,.12,.05,.2,0,.8)]),
   kivikasa:mergeParts([part(new THREE.IcosahedronGeometry(.22,0),0x8f8d86,0,.12,0),part(new THREE.IcosahedronGeometry(.15,0),0x7a7872,.25,.08,.1)]),
   piikivi:mergeParts([part(new THREE.TetrahedronGeometry(.22,0),0x40464f,0,.12,0),part(new THREE.TetrahedronGeometry(.16,0),0x50565f,.22,.08,-.1)]),
@@ -137,6 +139,10 @@ function chunkOf(x,z){return clamp(Math.floor((z+HALF)/CHS),0,CHN-1)*CHN+clamp(M
   const S0=LOC.spawn;
   for(let i=0;i<14;i++){const a=rng()*TAU,d=7+rng()*14;add(i%2?'oksa':'kivikasa',S0.x+Math.cos(a)*d,S0.z+Math.sin(a)*d);}
   for(let i=0;i<4;i++){const a=rng()*TAU,d=12+rng()*12;add('marjat',S0.x+Math.cos(a)*d,S0.z+Math.sin(a)*d);}
+  // v2.07: hiekkakasat rannoille, 5–10 per kartta (oma satunnaislähde ja viimeisinä → muiden solmujen id:t ja sijainnit eivät muutu)
+  {const rs=mulberry32(4242+MAP_ID*97),want=5+Math.floor(rs()*6),pts=[];
+   for(let i=0;i<60000&&pts.length<want;i++){const px=(rs()-.5)*AR,pz=(rs()-.5)*AR,h=terrainH(px,pz);if(h<.15||h>1.05||biomeAt(px,pz,h)!=='beach'||!clear(px,pz))continue;
+     if(pts.some(q=>dist2(q[0],q[1],px,pz)<60*60))continue;pts.push([px,pz]);add('hiekkakasa',px,pz,1.2+rs()*.35);}}
   // Instanssit jaetaan CHN×CHN ruutuun: jokaisella oma rajauspallo, joten näkymättömät ruudut karsitaan.
   for(const type in tmp){const per=new Map();for(const n of tmp[type]){const k=chunkOf(n.x,n.z);if(!per.has(k))per.set(k,[]);per.get(k).push(n);}
     const pool=POOL[type]||0;nodeIM[type]=[];

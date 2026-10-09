@@ -9,8 +9,8 @@ addEventListener('keydown',e=>{
   // v1.40 (kohta 4): tekstikentässä Enter lopettaa kirjoittamisen, Tab sulkee repun kuten ennen; muut näppäimet menevät tekstiin
   if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT'||e.target.tagName==='SELECT'){if(e.code==='Enter'&&e.target.classList.contains('search')){e.target.blur();return;}if(e.code!=='Tab'||e.target.tagName==='TEXTAREA')return;e.target.blur();}
   // Paneelissa kirjoittaminen menee suoraan hakukenttään (ei tarvitse napsauttaa sitä ensin); toimintonäppäimet toimivat kuten ennen.
-  if(state==='ui'&&openPanel&&e.key.length===1&&e.key!==' '&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat){const sf={inv:'#craftSearch',build:'#buildSearch',dev:'#devQ'}[openPanel],el=sf&&$(sf);
-    const skip=[BIND.interact,BIND.inv,'KeyI',BIND.menu,BIND.build,BIND.map,BIND.prog,BIND.log,BIND.full,BIND.hud,'KeyQ','Quote','Semicolon'];
+  if(state==='ui'&&openPanel&&e.key.length===1&&e.key!==' '&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat){const sf={inv:'#craftSearch',build:'#buildSearch',devi:'#devQ'}[openPanel],el=sf&&$(sf);
+    const skip=[BIND.interact,BIND.inv,'KeyI',BIND.menu,BIND.build,BIND.map,BIND.prog,BIND.log,BIND.full,BIND.hud,'KeyQ','Quote','Semicolon','BracketLeft'];
     if(el&&!skip.includes(e.code)){e.preventDefault();el.focus();el.value+=e.key;el.dispatchEvent(new Event('input'));setTimeout(()=>{const n=el.value.length;try{el.setSelectionRange(n,n);}catch(err){}},5);return;}}
   keys[e.code]=true;
   if(e.code==='Tab'){e.preventDefault();}
@@ -25,7 +25,8 @@ addEventListener('keydown',e=>{
   if(e.repeat)return;
   const c=e.code;
   if(DEV&&c==='Quote'){togglePanel('dev');return;}// DEV: Ä avaa/sulkee kehitysvalikon
-  if(DEV&&(c==='Semicolon'||e.key==='ö'||e.key==='Ö')){togglePanel('devm');return;}   // v1.91 DEV: Ö avaa olento- ja pomovalikon
+  if(DEV&&(c==='Semicolon'||e.key==='ö'||e.key==='Ö')){togglePanel('devm');return;}
+  if(DEV&&(c==='BracketLeft'||e.key==='å'||e.key==='Å')){togglePanel('devi');return;}   // v2.00 DEV: Å avaa esinevalikon (pikavalinnat + haku)   // v1.91 DEV: Ö avaa olento- ja pomovalikon
   // v0.75: E sulkee avoimen valikon; repussa Q pudottaa valitusta yhden, Shift+Q kaikki
   if(openPanel&&c===BIND.interact){e.preventDefault();closePanels(false,true);return;}
   if((openPanel==='inv'||openPanel==='chest')&&c==='KeyQ'&&hoverSlot&&dropAt(hoverSlot.g,hoverSlot.i,e.shiftKey))return;   // v1.31 hiiren alla
@@ -44,8 +45,8 @@ addEventListener('keydown',e=>{
     else if(c===BIND.snap){if(isBuilding())cycleSnap();}
     else if(c===BIND.vsnap){if(isBuilding())cycleVMode();}
     else if(c===BIND.up){if(isBuilding())liftBuild(1);else dropHot(e.shiftKey);}   // v1.57: pelissä Q pudottaa valitusta pikapaikasta 1, Shift+Q koko pinon
-    else if(c===BIND.down){if(isBuilding())liftBuild(-1);}
-    else if(c===BIND.remove)removeLooked();
+    else if(c===BIND.down){if(isBuilding())liftBuild(-1);else if(P.drawing&&bowCrouch())aimStyleNext();}   // v2.03: Z vaihtaa kyykkytähtäimen tyylin
+    else if(c===BIND.remove){if(P.drawing&&!isBuilding())aimBlinkToggle();else removeLooked();}   // v2.04: jousta jännittäessä X = tähtäimen vilkkuminen
     else if(c===BIND.repair)repairLooked();
     else if(/^Digit[1-8]$/.test(c)){hotSel=+c.slice(5)-1;invDirty=true;useSlot(hotSel);}
   }

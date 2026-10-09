@@ -51,13 +51,13 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 - **Nälkä:** 100 → 0 noin 1000 s:ssa; kylmässä × 1,3, iskiessä/juostessa × 1,15. Terveys palautuu 0,35/s (nälkä > 35), 0,15/s (> 0),
   levänneenä + 0,6/s.
-- **Syöminen:** ruoka lisää kylläisyyttä ja terveyttä (`heal` 3/s). **Ähky (vatsakipu) vain, jos kylläisyys on jo ≥ 99 ja syö silti**
+- **Syöminen:** ruoka lisää kylläisyyttä ja terveyttä (`heal` 3/s). **Ähky (vatsakipu) vain, jos kylläisyys on jo ≥ 99 ja syö silti** (v2.00: täyteen syöty = 100, laskee vasta 60 s:n jälkeen)
   (52 s: kävely −10 %, kestävyys hitaammin, kramppi vie 12 kestävyyttä 8–14 s välein). Raaka liha: 45 % pahoinvointi (40 s).
 - **Tilat** (repun Tilat-osio, hiirellä lisätiedot ja ajastin): märkä (60 s, kuivuu 5× nopeammin tulella), kylmä (−7 % nopeus, −10 % isku,
   −40 % kestävyyden palautus), nälkä / nälkäinen, pahoinvointi, vatsakipu, ylikuormitus, levännyt (12 s tulen ja katon alla →
   360 s, kestävyys +45 %), voimistunut, lämmin, suojassa, hiipii.
 - **Kylmä tulee:** märkänä, lumisateessa vuorilla tai yöllä ulkona ilman lämpimiä vaatteita, ellei tulen lähellä.
-- **Lepo ja uni:** sänky asettaa herätyspaikan; nukkuminen vaatii yön, katon eikä vihollisia 20 m sisällä → seuraava aamu, levännyt.
+- **Lepo ja uni:** sänky asettaa herätyspaikan; nukkuminen vaatii yön, katon eikä vihollisia 20 m sisällä → seuraava aamu, levännyt. Terveys palautuu vain kodin lämmössä: Mukava +10 %, Lämmin koti +20 % (v2.09).
 - **Kuoleman ruutu (Kaaduit):** kaikki valikot ja päävalikko sulkeutuvat, kursori näkyy, herätys napista tai Enterillä.
 - **Päävalikon tausta (v1.25):** oletuksena 10 animoitua kuvaa (ei 3D-piirtoa valikossa); kuva arvotaan aina (v1.31, myös sivun avauksessa),
   vaihtuu 20 s välein. Asetus "Valikon tausta": kuvat / 3D-kamera (alla, v1.15).
@@ -119,7 +119,26 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
+- **Kodin lämpö (v2.09):** kokonaan suljettu talo (seinät, katto, suljettu ovi, lasi-ikkunat – ei aukkoikkunoita) antaa tehosteen **Mukava lämpötila** (+0,5 terveyttä/s, nälkä kuluu 30 % hitaammin, nukkuessa +10 % terveyttä). Kun sisällä palaa nuotio, grillinuotio, seisova soihtu tai seinäsoihtu vähintään 5 s, tehoste on **Lämmin koti** (+1,0/s, nälkä −50 %, nukkuessa +20 %). Ovi saa olla auki 20 s, sitten tehoste harmaantuu; lämmönlähteen sammuttua Lämmin koti kestää 30 s; ulos lähtiessä tehoste hiipuu 20 s:ssa. Nukkuminen ei enää paranna täyteen.
+- **Viholliset ja talot (v2.08):** suljettu ovi estää näkemisen (ikkunoista ja lasista näkee). Vihollinen muistaa sinut 30 s; jos pakenet taloon, se hajottaa oven, jos se on heikompi kuin lähin seinä, muuten lähimmän seinän, ja tulee sisään. Saman lajin lauma 20 m:n päästä liittyy mukaan. Kun muisti loppuu, vihollinen poistuu murtokohdasta.
+- **Hiekka ja lasi (v2.07):** rannoilla harvinaisia hiekkakasoja (5–10 / kartta, uusiutuvat 20 min, 2–3 hiekkaa). Sulatusuunissa 2 hiekkaa → 1 lasi 15 s:ssa (enint. 20 hiekkaa, vuorotellen malmien kanssa).
+- **Ikkunat ja ovet (v2.07):** Aukkoikkuna (2 puuta, 130) ja Kivinen aukkoikkuna (5 kiveä, 420); Puinen lasi-ikkuna (2 puuta + lasi, 100) ja Kivinen lasi-ikkuna (5 kiveä + lasi, 250) – lasi estää kulun, nuolet ja sateen, mutta olennot näkevät läpi; rikkoutuessa lasi särkyy ja jäljelle jää aukkoikkuna. Rautaovi 4 rautaa + 2 puuta, 900.
+- **Puunuolet (v2.06):** pelkästä puusta (2 puuta → 15, työpenkki); putoavat 30 % ja kaartuvat tuulessa 20 % enemmän ja tekevät 40 % vähemmän vahinkoa kuin piikivinuolet. Tuuli kaartaa kaikkia nuolia 10 % enemmän kuin ennen.
+- **Tähtäin (v2.05):** Z vaihtaa Viivasto / Pisteet / Kevyt / Pois; vilkkuessa apuviivasto ja piste samaan tahtiin.
+- **Tähtäin (v2.04):** kyykkytähtäimen merkit suoraan pisteen alla; X kytkee täyden vedon vilkkumisen (oletus pois, 3 s välein, piste ja viivat yhtä aikaa); tuulen suunta ja nopeus näkyvät aina jousta jännittäessä ristikon yläpuolella. Linnakkeen muurin harjalla voi kävellä.
+- **Kyykkytähtäin (v2.03):** täydellä vedolla kyykyssä näkyy todellinen lentorata metrimerkkeineen ja osumakohta (huomioi katsekulman, painovoiman ja tuulen); Z vaihtaa tyyliä (Viivasto, Pisteet, Kevyt). Täydellä vedolla piste pienenee ja himmenee 2 s välein; ohjeet C- ja Z-näppäimille. Jousta jännitettävä vähintään 0,4 s.
+- **Valot (v2.03):** asetukset "Valojen näkyvyysetäisyys" (40 m … koko kartta) ja "Valon kantama" (17–32 m); High+/Ultra pitkät etäisyydet, Ultran varjot 220 m. Tulinuolen liekki hehkuu kauas.
+- **Esineet maassa (v2.02):** aseet, työkalut, jouset, kilvet, haarniskat, avaimet, arvoesineet ja juomat näkyvät oikeina 3D-malleina; raaka-aineet ja ruoka kuvakkeina.
+- **Jousi (v2.01):** nuoli osuu ristikon kohtaan myös olentoihin; jousta pitää jännittää vähintään 0,4 s (v2.03) (muuten peruuntuu, nuoli ei kulu); tuuli kaartaa nuolta hieman (sulitettua puolet) ja kova tuuli (≥ 8 m/s) näkyy varoituksena ⚠ suuntanuolineen jännittäessä. Tulinuoli valaisee kohteessa kirkkaasti 5 s (sateessa 1,6 s pehmeästi hiipuen).
+- **Juomat (v2.00):** Parannusjuoma (punainen) palauttaa terveyden heti täyteen; Elpymisjuoma (vihreä) +1 terveys/s minuutin; Sisujuoma (sininen) pitää kylläisyyden täynnä 5 min ja kestävyyden 30 s. Löytyvät arkuista (10 % / juoma / arkku), juodaan pikapaikasta.
+- **Kylläisyys (v2.00):** täyteen syöty = 100, ja mittari alkaa laskea vasta minuutin kuluttua.
+- **DEV Å (v2.00):** esinevalikko – pikavalinnat ja esinehaku.
+- **Pomot murskaavat (v1.99):** pomo tuhoaa kulkiessaan alleen/eteensä jäävät rakennelmat (seinät, aidat, ovet, lattiat, katot, työpisteet, sängyt) ja kaataa puut; arkut ja tynnyrit säilyvät. Ei nukkuessa eikä herätessä.
+- **Ulottuvuuksissa rakentaminen (v1.99):** vain työpenkki, vapaalle lattialle (ei seinän tai esineen päälle); muusta tulee ilmoitus. Hautakummussa ei rakenneta.
+- **Nuolet (v1.98):** pysähtyvät tarkasti pintaan (seinät, suljetut ovet, muurit, puut, kivet, maa, vesi). Osumasta: nuoli häviää 10 s (tulinuoli 8 s), tulinuolen liekki ja valo sammuvat 5 s:ssa; sade (ei katon alla) tai vesi sammuttaa heti osuessa.
 - **Tuli:** palava käsisoihtu sytyttää lyödyn, tulinuoli osumansa: 5–10 s, 5 hp/s; sade tai vesi sammuttaa heti.
+  **v1.97:** märkä (sataa ja ei katon alla, tai vedessä) ei syty lainkaan – pelaaja eikä olento; katon alla sateessa syttyy ja palaa. Sammutuksen jälkeen 3 s jäähy; syttymisilmoitus enintään 12 s välein.
+  Suonäkki syntyy öisin suolla (22 % suon yöspawneista, enintään yksi väijyjä kerrallaan).
 - **Ammukset:** piikivinuolet ja tulinuolet (+ pihka). Oletuksena käytetään heikointa ensin (`AMMO`-järjestys); repusta voi valita ammuksen
   ("Käytä ammuksena"), uusi painallus palauttaa automaattiseen.
 - **Hiipiminen (kyykky):** paikallaan eläimet eivät huomaa; liikkuessa 1,5 m (eläin katsoo kohti) / 0,9 m (selin). Kävely 7 m, juoksu 16 m, ase ×1,4.
@@ -130,7 +149,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   **Vetoasento (v1.22):** vartalo kääntyy sivuttain, jousi keskellä edessä, oikea käsi vetää jänteen posken oikealle puolelle; levossa jousi heiluu käden mukana.
   **Tähtäys (v1.23):** ympyrä = hajonta: vedon alussa n. 10°, pienenee vedettäessä (keltainen → punainen), täysi veto paikallaan = 0° (pieni ympyrä + piste); liike lisää 2–3°.
   **Jouset (v1.23):** hiidenjousi vetää 1,15 s, nuoli +25 % nopeampi, hajonta ×0,7; ★ nopeuttaa vetoa ja pienentää hajontaa.
-- **Nuolet (v1.23):** piikivi = perus; sulitettu +25 % nopeus, −40 % pudotus, +15 % vahinko, tuuli puolet; tulinuoli = perus + sytyttää. Asetus: tulinuolten valo (oletus pois).
+- **Nuolet (v1.23):** puunuoli (v2.06) = heikoin (putoaa +30 %, tuuli +20 %, vahinko −40 %); piikivi = perus; sulitettu +25 % nopeus, −40 % pudotus, +15 % vahinko, tuuli puolet; tulinuoli = perus + sytyttää. Asetus: tulinuolten valo (oletus pois).
 - **Kestävyys / isku (v1.23):** kupari −10 %, rauta −20 %, hiiden −30 %; kilven torjunta kuluttaa puu 90 %, kupari 75 %, rauta 60 % iskusta.
 - **Palava mob (v1.23):** isommat liekit, kipinöitä ja savua, oranssi valo maahan.
 - **Repun käyttö (v1.32):** kiinteä kolmen sarakkeen näkymä (ruudukko | tiedot | valmistus), mikään ei liiku. Napsautus valitsee,
@@ -222,7 +241,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Viholliset** (sammalhiisi, harmaasusi, kalmo, ylimys, kivivartija, routasusi): tarvitsevat näköyhteyden; huomaavat pelaajan aina 10 s
   vahingon jälkeen (myös jousella); kyykky puolittaa huomausetäisyyden, yö × 1,35. Ilman näköyhteyttä 3 s → luopuvat.
 - **Tulen pelko:** nuotio 7 m, seisova soihtu 5 m, käsisoihtu 6 m (ei luolastossa) – kaikki paitsi ylimys ja pomot.
-- **Piiritys:** seinän takana vihollinen hakee lähimmän oven/ikkunan ja hajottaa sen (2× vahinko).
+- **Piiritys:** (v2.08) talossa olevaa pelaajaa muistava vihollinen hajottaa oven, jos se on heikompi kuin lähin seinä, muuten lähimmän seinän (2× vahinko), ja tulee aukosta sisään.
 - **Terveyspalkit:** näkyvät lyödyllä tai lähellä katsottaessa; pääkallot kertovat vaikeuden; vaikeat (≥ 3 kalloa) näkyvät kaukaa ja
   parantuvat 30 s iskuttomuuden jälkeen.
 - **Spawneri (`spawner`):** 2,5 s välein 38–68 m päähän biomin taulukosta (`SPAWN`), katto 10 (yö 14); ei rakennusten, löytöpaikkojen
@@ -309,7 +328,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Mobit lyövät liikkeestä 0,1 s viiveellä, jäähy lyöntien välillä. Tavallisten ulottuma enintään 1,9 m.
 - Pelaajan taistelu −10 % (vahinko, tönäisy, lyöntinopeus).
 - Yöhirviö: kerran yössä 20 % vuorilla / 10 % muualla, varmasti jos edellinen yö jäi nukkumatta; 6,6 m/s, hyökkää heti.
-- Haudan majakka näkyy myös ulottuvuuksissa ja Hautakummussa (vain siinä tilassa, jossa kuoli).
+- Tulinuolen valo hiipuu lennossa, sateessa kaksi kertaa nopeammin; osumasta liekki ja valo sammuvat 5 s:ssa (v1.98), sateessa tai vedessä heti.
 - Tulinuolen valo hiipuu lennossa, sateessa kaksi kertaa nopeammin; osumasta sammuu 2 s:ssa.
 
 ## Eteneminen ja arvoesineet v1.34
@@ -472,7 +491,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## Äänet (v1.84–v1.86, äänierä A: olennot)
 - Olennoilla voi olla omat äänet (`sounds/<id>_<idle|hurt|death|aggro|chase>_<1–3>.mp3`, arpoo olemassa olevista versioista): rauhallinen
-  ääntely 6–15 s välein alle 25 m päässä, suuttumisääni (vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat), jahtiääni 4–9 s
+  ääntely 6–15 s välein alle 25 m päässä, suuttumisääni (vihamieliset ja pomot vain kerran, neutraalit kerran per suuttuminen – v2.10: sama olento enintään 15 s, sama laji 6 s välein, ei karjaisua tiedostoäänen päälle), jahtiääni 4–9 s
   välein jahdin aikana (vihamieliset ja pomot), osumaääni (enintään 0,4 s välein), kuolinääni. 3D-ääni (suunta ja etäisyys), sävel ±6 %.
 - Jos olennolla ei ole omaa ääntä, käytetään väliaikaista varaääntä toiselta olennolta muutetulla sävelellä (ketju `VARAANI`), muuten
   tehtyä ääntä tai hiljaisuutta. Tila: `sounds/AANILISTA.md`.
@@ -500,7 +519,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Pomon saaliilla on majakkasäde: hehkuva valopylväs ja maarengas pomon värissä, kunnes esine poimitaan.
 - Palava pomo (boss/rboss): hurt-ääni silmukkana 1,4–2,2 s välein, sävel ×0,78 ja voimakkuus ×0,55, tärkeys 1,5 (jahti katkaisee). Muut olennot eivät ähki palaessaan.
 - Kalmanvartijan kaikuääni (v1.95, `vartija_echo_1/2`): maan alta Kalmankehän lähellä (< 80 m) 24–48 s välein, kunnes vartija on kukistettu kerran; ei kun se on hereillä.
-  Kalmanvartija lainaa Aarnihirviön äänet sävelellä ×0,7 (kivivartija ×0,805), kunnes saa omat.
+  Kalmanvartija lainaa Aarnihirviön äänet sävelellä ×0,7, kunnes saa omat. Kivivartija ei lainaa pomoääniä (varaääni kalmo ×0,75).
 - Kaikuääni (echo, ulottuvuuspomot, 1–2 versiota): nukkuva pomo kuuluu 24–48 s välein vain omassa ulottuvuudessaan (≤38 m päästä, tumma, kaiulla) kunnes pelaaja kohtaa sen. Aarnihirviön kaikuäänet ovat kaikkien varaääni.
 - Kaiku: luolaston ja ulottuvuuksien olennoille (lähetys 0,45 / boss 0,6 / rboss 0,75), yksi yhteinen ConvolverNode (1,2 s), kytkeytyy vain tarvittaessa.
 - Työkalu tulostaa erän lopuksi HUOM-varoitukset (tuplatiedosto, vahvistus yli ±12 dB, liian lyhyt, ylimääräinen paikka).

@@ -3,7 +3,7 @@
    vasta sitten latausnäyttö ja pelin skriptit. Ennen jakso pyöri pelin latauksen päällä, jolloin häivytykset pätkivät. Pelin skriptit
    esiladataan taustalla (<link rel=preload>) ja ajetaan yksi kerrallaan pienellä tauolla, jotta riimut ehtivät syttyä näkyvästi.
    Välilyönti, Enter tai napsautus ohittaa koko jakson (ja testin) ja vie suoraan latausnäyttöön. */
-window.__BJV='1.95';
+window.__BJV='2.10';
 (function(){
   var Q=location.search,wd=!!navigator.webdriver;
   function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}

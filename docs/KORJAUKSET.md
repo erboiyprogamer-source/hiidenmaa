@@ -282,6 +282,34 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Saman nimisiä ylimmän tason funktioita ei saa olla kahdessa tiedostossa: myöhemmin ladattu korvaa aiemman hiljaa. Vanhat pomomallit poistettiin
   mobs.js:stä, kun uudet tulivat bossmodels.js:ään.
 
+## 38. Sade + nuotio: syttyminen/sammuminen joka ruudulla spämmäsi ilmoituksia ja ääniä (v1.97)
+- Oire: sateessa nuotioon astuessa "Syttyit tuleen!" + ääni toistui jatkuvasti, koska nuotio sytytti ja sade sammutti heti uudestaan.
+- Syy: sytytyksellä ei ollut sadeestoa eikä jäähyä; sammutus tarkisti vain `wRain>.5` (ei kattoa, joten myös katon alla sammui).
+- Korjaus: `playerWet()` (sade eikä `shelterCache`, tai vesi) estää syttymisen kokonaan, jäähy `P.igniteCd` 3 s, ilmoitus 12 s välein. Mobeilla `mobWet(m)`
+  + `m.igniteCd` + ääni 4 s välein. Älä lisää uusia sytytyslähteitä ilman `canIgnitePlayer()`/`mobWet`-tarkistusta.
+
+## 39. Jousen nuolet osuivat aina vasemmalle tähtäyksestä (v2.01)
+- Syy: kolmannen persoonan kamera on tähdätessä 0,75 m oikealla. Nuolen suunta = pelaaja → kameran säteen osumapiste, ja `camRayPoint` ei osu olentoihin,
+  joten piste oli kohteen takana (maa tai 70 m) → lähellä oleva kohde jäi radan oikealle (0,4–0,7 m).
+- Korjaus: `bowAimPoint` = `camRayPoint` + olentojen lieriöt. Jos lisäät uuden kohteen tyypin, johon pitää voida tähdätä (esim. liikkuvat maalitaulut), lisää se
+  `bowAimPoint`iin. Älä vaihda nuolen lähtöpistettä kameraan (nuoli näyttäisi lähtevän pelaajan ohi).
+
+## 40. Arkkukivilinnakkeen muurin harjalla jalat upposivat ja pelaaja putosi (v2.04)
+- Syy: harjan törmäys on ympyröitä (`addCircle`), ja `groundAt` käyttää lattiana vain laatikoita → harjalla ei ollut maata.
+- Korjaus: ympyrä, jolla `c.ground=1`, on myös lattia (`groundAt`). Jos teet ympyrätörmäyksistä kävelypinnan (muuri, pylväs, kivi), aseta `ground=1`;
+  puita ja muita korkeita ympyröitä ei saa merkitä (latvasta tulisi lattia).
+
+## 41. Apuviivasto ei vilkkunut pisteen kanssa (v2.05)
+- Syy: CSS-animaatio, jonka `animation-fill-mode` on `both`/`forwards`, pitää viimeisen ruudun arvon (opacity 1) ja ohittaa JS:n `el.style.opacity`n.
+- Korjaus: `#dropRet { animation: drIn .25s ease backwards }`. Älä käytä `both`/`forwards`-täyttötilaa elementeillä, joiden läpinäkyvyyttä tai muuta
+  animoitua ominaisuutta ohjataan JS:stä.
+
+## 42. Emakon suuttumisäänet kerrostuivat (v2.10)
+- Syy: suuttuminen soitti kaksi lähdettä (`temperAI` `anger()` → `sfx('roar')` JA `creTick` → tiedostoääni `aggro`), ja saman lajin
+  suuttuvat (lauma, useampi emakko) soittivat kukin omansa samaan aikaan.
+- Korjaus: `creAngerOk(m)` (audio.js) – olento 15 s, laji 6 s; `anger()` karjaisee vain jos `!creRes(m.type,'aggro')`. Uutta suuttumisen ääntä
+  ei lisätä kahdesta paikasta: käytä aina `creAngerOk`-lupaa. Tarkistus: rivi "v2.10 emakon suuttuminen".
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

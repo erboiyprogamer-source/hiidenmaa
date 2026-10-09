@@ -12,7 +12,8 @@ function cyclePose(){const d=buildSel&&PIECES[buildSel];if(!d||!(d.flip||d.poses
 const raycaster=new THREE.Raycaster();
 function setBuildSel(t){buildSel=t;if(ghost){scene.remove(ghost);ghost=null;}if(typeof gridHelper!=='undefined'&&gridHelper)gridHelper.visible=false;if(t){ghost=buildPieceMesh(t,poseOf(t));ghost.traverse(m=>{if(m.isMesh){m.material=MAT.ghostOk;m.castShadow=false;m.receiveShadow=false;}});scene.add(ghost);}}
 function camRay(){const o=camera.position.clone(),d=new V3();camera.getWorldDirection(d);return{o,d};}
-function marchTerrain(o,d,max){if(P.inDun)return null;let prev=0;for(let t=0;t<max;t+=.25){const x=o.x+d.x*t,y=o.y+d.y*t,z=o.z+d.z*t;if(y<terrainH(x,z)){let a=prev,b=t;for(let i=0;i<8;i++){const m=(a+b)/2;if(o.y+d.y*m<terrainH(o.x+d.x*m,o.z+d.z*m))b=m;else a=m;}return b;}prev=t;}return null;}
+function marchTerrain(o,d,max){if(P.inDun){if(!P.realm||d.y>-.02)return null;const t=(DUN.y-o.y)/d.y;return t>0&&t<max?t:null;}   /* v1.99: ulottuvuudessa tähdätään tasaiseen lattiaan (työpenkki) */
+  let prev=0;for(let t=0;t<max;t+=.25){const x=o.x+d.x*t,y=o.y+d.y*t,z=o.z+d.z*t;if(y<terrainH(x,z)){let a=prev,b=t;for(let i=0;i<8;i++){const m=(a+b)/2;if(o.y+d.y*m<terrainH(o.x+d.x*m,o.z+d.z*m))b=m;else a=m;}return b;}prev=t;}return null;}
 function camRayPoint(max){const {o,d}=camRay();let t=marchTerrain(o,d,max);raycaster.set(o,d);raycaster.far=max;const hits=raycaster.intersectObjects(pieceRoots.concat(statics.children),true);if(hits.length&&(t===null||hits[0].distance<t))t=hits[0].distance;if(t===null)t=max;return o.addScaledVector(d,t);}
 function buildRaycast(){
   const {o,d}=camRay();const max=camDist+8;
@@ -128,7 +129,8 @@ function updateGhost(){
     // Seinä ja ovi asettuvat viereisen lattian pintaan, ettei aukko jää lattiaa matalammaksi.
     const fl=floorAtEdge(x,z,y);if(fl!==null)y=fl;}
   else{if(m1){x=r1(hx);z=r1(hz);}else if(hf){x=half(hx,ox);z=half(hz,oz);}else if(def.col){x=edge(hx,ox);z=edge(hz,oz);}else{x=cell(hx,ox);z=cell(hz,oz);}y=hit.piece?baseY:terrainH(x,z);}
-  if(vMode||m3){const ref=hit.piece?hit.piece.y:0;y=es?y+buildLift*VSTEP:ref+Math.round((y-ref)/VSTEP)*VSTEP+buildLift*VSTEP;}
+  if(P.inDun&&!hit.piece){x=Math.round(hx*4)/4;z=Math.round(hz*4)/4;y=DUN.y;}   // v1.99: ulottuvuudessa vapaa sijoitus lattialle
+  if(!P.inDun&&(vMode||m3)){const ref=hit.piece?hit.piece.y:0;y=es?y+buildLift*VSTEP:ref+Math.round((y-ref)/VSTEP)*VSTEP+buildLift*VSTEP;}
   ghost.position.set(x,y,z);ghost.rotation.y=rot*Math.PI/4;ghostPos={x,y,z};ghostRot=rot;
   ghostOk=validPlace(t,x,y,z,rot,poseOf(t));
   const m=ghostOk?MAT.ghostOk:MAT.ghostBad;ghost.traverse(o=>{if(o.isMesh)o.material=m;});
@@ -138,7 +140,21 @@ function floorAtEdge(x,z,y){let best=null;for(const p of pieces){if(!isFloor(p))
 let lastInvalid='';
 function validPlace(t,x,y,z,rot,f=0){
   const def=PIECES[t];lastInvalid='';
-  if(P.inDun){lastInvalid='Täällä ei voi rakentaa.';return false;}
+  /* v1.99: ulottuvuuksissa saa rakentaa vain työpenkin: lattialle, vapaaseen ruutuun (ei seinän sisään tai taakse), ei päällekkäin minkään kanssa
+     (marginaali 0,15 m) ja näköyhteys pelaajasta. Hautakummussa ei rakenneta lainkaan. */
+  if(P.inDun){if(!P.realm){lastInvalid='Hautakummussa ei voi rakentaa.';return false;}
+    if(t!=='tyopenkki'){lastInvalid='Ulottuvuuksissa ei voi rakentaa – vain työpenkin voi asettaa.';return false;}
+    if(Math.abs(y-DUN.y)>.3){lastInvalid='Työpenkki asetetaan lattialle.';return false;}
+    const RB=BUILT[P.realm],G2=RB&&RB.grid;if(!G2){lastInvalid='Täällä ei voi rakentaa.';return false;}
+    for(const b of worldBoxes(t,x,y,z,rot,f)){for(const [cx,cz] of [[b.minX,b.minZ],[b.maxX,b.minZ],[b.minX,b.maxZ],[b.maxX,b.maxZ],[(b.minX+b.maxX)/2,(b.minZ+b.maxZ)/2]]){const c=rCell(G2,cx,cz);if(rWall(G2,c[0],c[1])){lastInvalid='Työpenkki ei mahdu tähän – seinä on tiellä.';return false;}}
+      gridQuery((b.minX+b.maxX)/2,(b.minZ+b.maxZ)/2,Math.max(b.maxX-b.minX,b.maxZ-b.minZ)+.5,_cl);
+      for(const c of _cl){if(c.maxY<=b.minY+.05||c.minY>=b.maxY)continue;
+        if(c.t==='c'){const cx=clamp(c.x,b.minX-.15,b.maxX+.15),cz=clamp(c.z,b.minZ-.15,b.maxZ+.15);if(dist2(cx,cz,c.x,c.z)<c.r*c.r){lastInvalid='Tiellä on jotain.';return false;}}
+        else if(c.minX<b.maxX+.15&&c.maxX>b.minX-.15&&c.minZ<b.maxZ+.15&&c.maxZ>b.minZ-.15){lastInvalid='Työpenkki ei mahdu tähän – tiellä on seinä tai esine.';return false;}}
+      const px=clamp(P.pos.x,b.minX,b.maxX),pz=clamp(P.pos.z,b.minZ,b.maxZ);if(dist2(px,pz,P.pos.x,P.pos.z)<.16){lastInvalid='Seisot tiellä.';return false;}}
+    if(!losClear(P.pos.x,P.pos.y+1.3,P.pos.z,x,y+.6,z,true)){lastInvalid='Työpenkki ei mahdu tähän – seinä on tiellä.';return false;}
+    for(const [id,n] of Object.entries(PIECES[t].req))if(invCount(id)<n){lastInvalid=`Tarvitset: ${reqText(PIECES[t].req)}`;return false;}
+    return true;}
   for(const [id,n] of Object.entries(def.req))if(invCount(id)<n){lastInvalid=`Tarvitset: ${reqText(def.req)}`;return false;}
   if(!def.noBench&&!nearPiece('tyopenkki',x,z,BENCH_R)){lastInvalid=pieces.some(p=>p.t==='tyopenkki')?'Rakenna työpenkin alueelle (oranssi raja).':'Rakenna ensin työpenkki.';return false;}
   if(y<-.4&&bt(t)!=='lattia'&&bt(t)!=='tervaslattia'&&!def.col){lastInvalid='Liian syvällä vedessä.';return false;}
@@ -156,7 +172,8 @@ function validPlace(t,x,y,z,rot,f=0){
 }
 function placeBuild(){
   if(!buildSel){togglePanel('build');return;}
-  if(!ghostPos||!ghost||!ghost.visible)return;
+  if(P.inDun&&(!P.realm||buildSel!=='tyopenkki')){msg(P.realm?'Ulottuvuuksissa ei voi rakentaa – vain työpenkin voi asettaa.':'Hautakummussa ei voi rakentaa.','warn');return;}   // v1.99
+  if(!ghostPos||!ghost||!ghost.visible){if(P.inDun)msg('Tähtää lattiaan – työpenkki asetetaan vapaalle lattialle.','warn');return;}
   if(!ghostOk){msg(lastInvalid||'Ei voi rakentaa tähän.','warn');return;}
   const def=PIECES[buildSel];for(const [id,n] of Object.entries(def.req))invRemove(id,n);
   addPiece(buildSel,ghostPos.x,ghostPos.y,ghostPos.z,ghostRot,undefined,undefined,poseOf(buildSel));bump('built');xpFirst('b_'+buildSel,4);sfx('build');burst(ghostPos.x,ghostPos.y+.5,ghostPos.z,0x8a5a32,6,2);
@@ -179,5 +196,11 @@ function removeLooked(){
   if(p.t==='sulatin'){if(p.data.ore)giveOrDrop('malmi',p.data.ore,p.x,p.y+1,p.z);if(p.data.iore)giveOrDrop('rautamalmi',p.data.iore,p.x,p.y+1,p.z);if(p.data.done)giveOrDrop('kupari',p.data.done,p.x,p.y+1,p.z);if(p.data.idone)giveOrDrop('rauta',p.data.idone,p.x,p.y+1,p.z);}
   removePiece(p);sfx(/^kivi/.test(p.t)?'crumble':'woodBreak');burst(p.x,p.y+.5,p.z,0x8a5a32,8,3);
 }
-function damagePiece(p,d,src){if(src==='mob'&&PIECES[p.t].mobProof)return;p.hp-=d;burst(p.x,p.y+1,p.z,0x8a5a32,4,2);if(p.hp>0)setPieceDamage(p);if(p.hp<=0){removePiece(p);sfx(/^kivi/.test(p.t)?'crumble':'woodBreak',1,clamp(1.1-Math.hypot(P.pos.x-p.x,P.pos.z-p.z)/60,.15,1));msg(`${PIECES[p.t].n} tuhoutui!`,'warn');if(PIECES[p.t].store)p.data.items.forEach(s=>s&&spawnDrop(s.id,s.n,p.x,p.y+.5,p.z,s.q));}}
+function damagePiece(p,d,src){if(src==='mob'&&PIECES[p.t].mobProof)return;p.hp-=d;burst(p.x,p.y+1,p.z,0x8a5a32,4,2);if(p.hp>0)setPieceDamage(p);
+  if(p.hp<=0&&PIECES[p.t].glass){shatterGlass(p);return;}
+  if(p.hp<=0){removePiece(p);sfx(/^kivi/.test(p.t)?'crumble':'woodBreak',1,clamp(1.1-Math.hypot(P.pos.x-p.x,P.pos.z-p.z)/60,.15,1));msg(`${PIECES[p.t].n} tuhoutui!`,'warn');if(PIECES[p.t].store)p.data.items.forEach(s=>s&&spawnDrop(s.id,s.n,p.x,p.y+.5,p.z,s.q));}}
+/* v2.07: lasi-ikkunan lasi särkyy (helinä, sinertävät sirpaleet), kehys jää aukkoikkunaksi täydellä kestävyydellä */
+function shatterGlass(p){const to=PIECES[p.t].glass,{x,y,z,rot,f}=p;removePiece(p);const np=addPiece(to,x,y,z,rot,undefined,undefined,f);
+  for(let i=0;i<3;i++)burst(x,y+1.5,z,0xbfe6f2,8,4);sfx('crumble',2.2,clamp(1.1-Math.hypot(P.pos.x-x,P.pos.z-z)/50,.15,1));sfx('pickup',2.6,clamp(.9-Math.hypot(P.pos.x-x,P.pos.z-z)/50,.1,.8));
+  msg(`${PIECES[to===np.t?p.t:p.t].n}: lasi särkyi!`,'warn');return np;}
 function reqText(req){return Object.entries(req).map(([id,n])=>`${n} ${ITEMS[id].n.toLowerCase()}`).join(', ');}

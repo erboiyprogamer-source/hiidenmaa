@@ -232,8 +232,155 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v2.09 kodin lämpö: suljettu talo = Mukava lämpötila, lämmönlähde 5 s = Lämmin koti, aukkoikkuna estää, lasi ei, ovi auki 20 s → harmaa, ulkona hiipuu 20 s, nukkuminen 10/20 %',()=>{
+    const made=[];const p0=P.pos.clone(),hu=P.hunger;let res;const om=msg;msg=()=>{};
+    try{const cx=P.pos.x+70,cz=P.pos.z-70,y=terrainH(cx,cz)+.02,put=(t,x,z,r)=>{const q=addPiece(t,x,y,z,r);made.push(q);return q;};
+      const D=put('ovi',cx-G/2,cz-G,0);put('seina',cx+G/2,cz-G,0);put('seina',cx-G/2,cz+G,0);let N=put('lasiikkuna',cx+G/2,cz+G,0);
+      put('seina',cx-G,cz-G/2,2);put('seina',cx-G,cz+G/2,2);put('seina',cx+G,cz-G/2,2);put('seina',cx+G,cz+G/2,2);for(const [a,b] of [[-.5,-.5],[.5,-.5],[-.5,.5],[.5,.5]])put('katto',cx+a*G,cz+b*G,0).mesh.position.y=y+WH;
+      for(const q of made.slice(-4)){q.mesh.position.y=y+WH;}scene.updateMatrixWorld(true);
+      const tick=s=>{for(let i=0;i<s*30;i++){P.pos.set(cx,y+.02,cz);P.vel.set(0,0,0);homeTick(1/30);}};HOME.heatT=0;HOME.heatOff=99;HOME.linger=0;tick(1);const a=HOME.inside&&HOME.lvl===1&&homeHealRate()===.5&&Math.abs(homeHungerK()-.7)<1e-9;
+      const tr=put('soihtuteline',cx+1.2,cz+1.2,0);tr.data.burn=600;tick(6);const b=HOME.lvl===2&&homeHealRate()===1&&homeHungerK()===.5;
+      D.data.open=true;tick(21);const c=HOME.grey&&HOME.lvl===0&&effects().some(e=>e.key==='koti_off');D.data.open=false;tick(1);const d=HOME.lvl===2&&!HOME.grey;
+      removePiece(N);made.splice(made.indexOf(N),1);N=put('ikkunaseina',cx+G/2,cz+G,0);scene.updateMatrixWorld(true);tick(1);const e=!HOME.inside;
+      P.pos.set(cx,y,cz-G-5);homeTick(1/30);const f=HOME.lvl>0&&HOME.k<1;for(let i=0;i<30*21;i++){P.pos.set(cx,y,cz-G-5);homeTick(1/30);}const g=HOME.lvl===0;
+      const h=/HOME\.lvl===2\?\.2:HOME\.lvl===1\?\.1:0/.test(sleepAt.toString())&&!/P\.hp=maxHp\(\)/.test(sleepAt.toString());
+      res=a&&b&&c&&d&&e&&f&&g&&h||`virhe mukava ${a} lämmin ${b} ovi ${c}/${d} aukko ${e} hiipuu ${f}/${g} uni ${h}`;}
+    finally{msg=om;for(const q of made)if(pieces.includes(q))removePiece(q);P.pos.copy(p0);P.hunger=hu;HOME.lvl=0;HOME.linger=0;HOME.inside=false;}return res;});
+  t('v2.10 emakon suuttuminen: yksi suuttumisääni (ei karjaisua tiedostoäänen päälle, olento 15 s, laji 6 s)',()=>{
+    const src=temperAI.toString(),a=/!creRes\(m\.type,'aggro'\)&&creAngerOk\(m\)/.test(src),b=/creAngerOk\(m\)\)creSnd\(m,'aggro'\)/.test(creTick.toString());
+    const o1={type:'emakko'},o2={type:'emakko'},o3={type:'emakko'};for(const k in CRE_AGT)delete CRE_AGT[k];const c=creAngerOk(o1)&&!creAngerOk(o2)&&!creAngerOk(o1);
+    const pt=playTime;playTime+=7;const d=creAngerOk(o3)&&!creAngerOk(o1);playTime+=9;const e=creAngerOk(o1);playTime=pt;for(const k in CRE_AGT)delete CRE_AGT[k];
+    return a&&b&&c&&d&&e||`virhe ai ${a} tick ${b} kerros ${c} laji ${d} olento ${e}`;});
+  t('v2.08 suljettu ovi estää näkemisen, piiritys: ovi jos heikompi kuin lähin seinä muuten lähin seinä, muisti 30 s, saman lajin lauma 20 m',()=>{
+    const made=[],mm=[];let res;try{const cx=P.pos.x+50,cz=P.pos.z+50,y=terrainH(cx,cz)+.02;const H=d=>{const L=[addPiece(d,cx,y,cz-G/2,0),addPiece('seina',cx,y,cz+G/2,0),addPiece('seina',cx-G/2,y,cz,2),addPiece('seina',cx+G/2,y,cz,2)];made.push(...L);return L;};
+      let L=H('ovi');const ok1=!losClear(cx,y+1.3,cz-5,cx,y+1.3,cz,true);setDoor(L[0],true,1);const ok2=losClear(cx,y+1.3,cz-5,cx,y+1.3,cz,true);setDoor(L[0],false,1);
+      const p0=P.pos.clone();P.pos.set(cx,y,cz);const w=spawnMob('susi',cx+8,cz);mm.push(w);const ok3=siegeTarget(w)===L[0];
+      for(const q of L)removePiece(q);L=H('rautaovi');const t2=siegeTarget(w);const ok4=t2&&t2.t==='seina'&&Math.abs(t2.x-(cx+G/2))<.01;
+      w.seenT=playTime;const ok5=mobKnows(w)&&MOB_MEM===30;const b=spawnMob('susi',cx+8,cz+12),k=spawnMob('karju',cx+8,cz-12),f=spawnMob('susi',cx+8,cz+45);mm.push(b,k,f);for(const q of [b,k,f])q.state='idle';packAlert(w);
+      const ok6=b.state==='chase'&&k.state!=='chase'&&f.state!=='chase';P.pos.copy(p0);
+      res=ok1&&ok2&&ok3&&ok4&&ok5&&ok6||`virhe ovi-näkö ${ok1}/${ok2} kohde ${ok3}/${ok4} muisti ${ok5} lauma ${ok6}`;}
+    finally{for(const q of made)if(pieces.includes(q))removePiece(q);for(const m of mm)mobRemove(m);}return res;});
+  t('v2.07 hiekkakasat rannoilla 5–10, sulatin 2 hiekkaa → 1 lasi 15 s (vuorotellen malmin kanssa), lasi-ikkunat (näkee läpi, ei kulkua/nuolia, rikkoutuu aukkoikkunaksi), rautaovi 900',()=>{
+    const S=nodes.filter(n=>n.type==='hiekkakasa');const ok1=S.length>=5&&S.length<=10&&S.every(n=>biomeAt(n.x,n.z,terrainH(n.x,n.z))==='beach')&&NODE.hiekkakasa.respawn===1200&&NODE.hiekkakasa.n.join()==='2,3';
+    const made=[];let res;try{const x=P.pos.x+30,z=P.pos.z+30;const su=addPiece('sulatin',x,terrainH(x,z),z,0);made.push(su);su.data.sand=4;su.data.wood=5;let t=0;while(!su.data.glass&&t<20){updateStations(1/30);t+=1/30;}const ok2=su.data.glass===1&&Math.abs(t-GLASS_T)<.2&&GLASS_T===15&&SAND_MAX===20;
+      const w=addPiece('lasiikkuna',x+6,terrainH(x+6,z),z,0);made.push(w);const gc=w.cols.find(c=>c.glass),cx=(gc.minX+gc.maxX)/2,cy=(gc.minY+gc.maxY)/2,cz=(gc.minZ+gc.maxZ)/2,tx=(gc.maxX-gc.minX)<(gc.maxZ-gc.minZ);
+      const ok3=losClear(cx-(tx?3:0),cy,cz-(tx?0:3),cx+(tx?3:0),cy,cz+(tx?0:3))&&arrowBlocked(cx,cy,cz)&&pointBlocked(cx,cy,cz);const om=msg;msg=()=>{};damagePiece(w,200,'mob');msg=om;
+      const nw=pieces.find(q=>Math.abs(q.x-x-6)<.01&&Math.abs(q.z-z)<.01);made.push(nw);const ok4=nw&&nw.t==='ikkunaseina'&&PIECES.kivilasiikkuna.glass==='kiviikkuna'&&PIECES.lasiikkuna.hp===100&&PIECES.kivilasiikkuna.hp===250;
+      const ok5=PIECES.rautaovi.hp===900&&PIECES.rautaovi.req.rauta===4&&PIECES.rautaovi.req.puu===2&&bt('rautaovi')==='ovi'&&ITEMS.hiekka&&ITEMS.lasi&&dropMesh('lasi').userData.m3d;
+      res=ok1&&ok2&&ok3&&ok4&&ok5||`virhe kasat ${ok1}(${S.length}) uuni ${ok2} lasi ${ok3} rikko ${ok4} ovi ${ok5}`;}
+    finally{for(const p of made)if(p&&pieces.includes(p))removePiece(p);}return res;});
+  t('v2.06 puunuolet (puusta, putoaa +30 %, tuuli +20 %, vahinko −40 %), tuuli +10 %, ohjeet piiloon kun näppäinopasteet pois',()=>{
+    const A=AMMO_STATS.puunuolet,r=RECIPES.find(x=>x.id==='puunuolet');const ok1=A&&A.grav===1.3&&A.wind===1.2&&A.dmg===.6&&r&&Object.keys(r.req).join()==='puu'&&AMMO[0]==='puunuolet'&&!!icon('puunuolet')&&Math.abs(ARROW_WIND-.143)<1e-9;
+    // lento: sama lähtö, tuuli sivulta → puunuoli putoaa ja kaartuu enemmän kuin piikivinuoli
+    const sv=[WIND.spd,WIND.x,WIND.z];WIND.spd=10;WIND.x=1;WIND.z=0;const fly=(wood,wk,g)=>{shootArrow(new THREE.Vector3(P.pos.x,P.pos.y+40,P.pos.z),new THREE.Vector3(0,0,1),40,10,'player',g,false,wood);const p=projs[projs.length-1];p.windK=wk;
+      for(let i=0;i<30;i++)updateProjs(1/30);const o={dx:p.m.position.x-P.pos.x,dy:P.pos.y+40-p.m.position.y};scene.remove(p.m);projs.splice(projs.indexOf(p),1);return o;};
+    const pi=fly(false,1,7),pu=fly(true,1.2,7*1.3);[WIND.spd,WIND.x,WIND.z]=sv;const ok2=pu.dx/pi.dx>1.15&&pu.dx/pi.dx<1.25&&pu.dy/pi.dy>1.25&&pu.dy/pi.dy<1.35;
+    const kh=SET.keyHints;SET.keyHints=false;P.drawing=true;P.bowDraw=1;aimHintK='x';updateHUD(1/30);const ok3=$('#aimHint').hidden;SET.keyHints=kh;P.drawing=false;aimHintK='x';updateHUD(1/30);
+    return ok1&&ok2&&ok3||`virhe arvot ${ok1} lento ${ok2}(${(pu.dx/pi.dx).toFixed(2)},${(pu.dy/pi.dy).toFixed(2)}) ohjeet ${ok3}`;});
+  t('v2.05 apuviivasto vilkkuu pisteen tahdissa (ei CSS-täyttötilaa, joka ohittaa JS:n), Z:n viimeinen tila = apuviivasto pois',()=>{
+    const fm=getComputedStyle($('#dropRet')).animationFillMode;const ok1=fm!=='both'&&fm!=='forwards';const ok2=AIM_ST[AIM_ST.length-1]==='Pois'&&/st==='Pois'/.test(updDropRet.toString());
+    return ok1&&ok2||`virhe täyttötila ${fm} pois ${ok2}`;});
+  t('v2.04 linnakkeen muurin harja on kävelypinta (ympyrä lattiana), tähtäimen merkit suoraan pisteen alla, tuulimittari aina jännittäessä, vilkkuminen X (oletus pois, synkronoitu)',()=>{
+    const k=Object.keys(FORT)[0],L=LOC[k],y=terrainH(L.x,L.z),a=FORT[k].a0+1,x=L.x+Math.cos(a)*5.5,z=L.z+Math.sin(a)*5.5,g=groundAt(x,z,.38,y+3.6);
+    const ok1=Math.abs(g-(y+3.57))<.02;const sv=[camYaw,camPitch,P.crouch,P.onGround,P.crouchK,P.pos.clone()];let ok2=false,ok3=false,ok4=false,ok5=false;
+    try{invAdd('jousi',1);invAdd('nuolet',5);const bw=inv.find(q=>q&&q.id==='jousi');if(!bw.eq)toggleEquip(bw);camYaw=.8;camPitch=-.12;P.drawing=true;P.crouch=true;P.onGround=true;P.crouchK=1;P.bowDraw=1;P.drawT=2;
+      for(let i=0;i<15;i++)updateCamera(1/30);camera.updateMatrixWorld(true);dropT=0;updateHUD(1/30);const xs=[...$('#dropRet').querySelectorAll('line')].map(l=>(+l.getAttribute('x1')+ +l.getAttribute('x2'))/2);
+      ok2=xs.length>0&&xs.every(v=>Math.abs(v-innerWidth/2)<.6);ok3=!$('#windWarn').hidden;
+      const b0=aimBlink;aimBlink=true;updateHUD(1/30);const o1=+$('#cross').style.opacity,o2=+$('#dropRet').style.opacity;ok4=o1>=.55&&Math.abs(o1-o2)<.05&&aimBlinkOp()>=.55;aimBlink=false;updateHUD(1/30);ok5=$('#cross').style.opacity==='1'||$('#cross').style.opacity==='';aimBlink=b0;}
+    finally{P.drawing=false;updateHUD(1/30);[camYaw,camPitch,P.crouch,P.onGround,P.crouchK]=sv;P.pos.copy(sv[5]);}
+    return ok1&&ok2&&ok3&&ok4&&ok5||`virhe harja ${ok1}(${(g-y).toFixed(2)}) merkit ${ok2} tuuli ${ok3} vilkku ${ok4}/${ok5}`;});
+  t('v2.03 jousi 0,4 s, kyykkytähtäimen lentorata = oikea nuoli (eri katsekulmat), tyylit Z:llä, ohjeet; valojen näkyvyys/kantama ja varjoetäisyys esiasetuksissa, tulinuolen hehku kaukaa',()=>{
+    const sv=[camYaw,camPitch,WIND.spd,P.crouch,P.onGround,P.crouchK,aimSt,JSON.stringify(SET)];let res;const om=msg;msg=()=>{};
+    try{invAdd('jousi',1);invAdd('nuolet',10);const bw=inv.find(x=>x&&x.id==='jousi');if(!bw.eq)toggleEquip(bw);WIND.spd=0;let worst=0;
+      for(const pitch of [-.12,0,.12]){camYaw=.8;camPitch=pitch;P.drawing=true;P.crouch=true;P.onGround=true;P.crouchK=1;P.bowDraw=1;P.drawT=2;for(let i=0;i<20;i++)updateCamera(1/30);camera.updateMatrixWorld(true);
+        const T=bowTraj();fireBow();const pr=projs[projs.length-1];for(let i=0;i<480&&!pr.stuck&&projs.includes(pr);i++)updateProjs(1/60);const tp=pr.m.position.clone().addScaledVector(pr.v.clone().normalize(),.45);
+        worst=Math.max(worst,T.land?Math.hypot(T.land.p.x-tp.x,T.land.p.z-tp.z):99);}
+      const s0=aimSt;aimStyleNext();const cyc=aimSt===(s0+1)%AIM_ST.length;aimHintK='';P.bowDraw=1;P.drawing=true;updateHUD(1/30);const hint=/Tähtäin/.test($('#aimHint').textContent);P.drawing=false;updateHUD(1/30);
+      applyPreset(7);const ul=SET.lightDist>=700&&SET.lightRange>=30&&SET.shDist>=200&&LIGHTS[0].distance===SET.lightRange;applyPreset(3);const md=SET.lightDist===60&&SET.lightRange===17&&presetOf(SET)==='Medium';
+      applyPreset(7);shootArrow(new THREE.Vector3(P.pos.x+300,terrainH(P.pos.x+300,P.pos.z)+20,P.pos.z),new THREE.Vector3(1,0,0),40,10,'player',1e-6,true);const fa=projs[projs.length-1];updateProjs(1/30);const glow=fa.glow.visible;
+      res=BOW_MIN_T===.4&&worst<.1&&cyc&&hint&&ul&&md&&glow||`virhe minveto ${BOW_MIN_T} rata ${worst.toFixed(2)} tyyli ${cyc} ohje ${hint} ultra ${ul} medium ${md} hehku ${glow}`;}
+    finally{msg=om;[camYaw,camPitch,WIND.spd,P.crouch,P.onGround,P.crouchK,aimSt]=sv;Object.assign(SET,JSON.parse(sv[7]));applyGfx();P.drawing=false;P.drawT=0;for(const q of projs.splice(0)){scene.remove(q.m);if(q.light){const j=lightSources.indexOf(q.light);if(j>=0)lightSources.splice(j,1);}}arrowFade.length=0;}
+    return res;});
+  t('v2.02 tärkeimmät esineet maassa 3D-malleina (aseet, työkalut, jouset, kilvet, haarniskat, avaimet, arvoesineet), raaka-aineet kuvakkeina; lepokorkeus',()=>{
+    const want=Object.keys(ITEMS).filter(id=>['weapon','bow','hammer','shovel','shield','armor'].includes(ITEMS[id].cat)).concat(['jaaavain','luuavain','aarniavain','hiidenkivi','kruunusirpale','sydan']);
+    const bad=want.filter(id=>{const m=dropMesh(id);if(!m.userData.m3d||!(m.userData.lift>=.2))return true;const s=new THREE.Box3().setFromObject(m).getSize(new THREE.Vector3());return Math.max(s.x,s.y,s.z)>.95;});
+    const ico=['puu','kivi','paisti','nuolet'].filter(id=>!dropMesh(id).userData.ico);return !bad.length&&!ico.length||`3D puuttuu: ${bad.join(',')} kuvake: ${ico.join(',')}`;});
+  t('v2.01 jousi: tähtäys osuu ristikon kohtaan olentoon (ei vasemmalle), 0,7 s minimiveto (peruuntuu, nuoli ei kulu), tuulivaroitus, tulinuolen valo 2,8 kohteessa',()=>{
+    const sv=[camYaw,camPitch,WIND.spd,WIND.x,WIND.z,P.crouch,P.onGround,P.crouchK,SET.arrowLight,wRain];let res;const om=msg;msg=()=>{};const made=[];
+    try{invAdd('jousi',1);invAdd('nuolet',10);const bw=inv.find(x=>x&&x.id==='jousi');if(!bw.eq)toggleEquip(bw);WIND.spd=0;camPitch=-.05;let hits=0;
+      for(const D of [8,20]){camYaw=.3;P.drawing=true;P.crouch=true;P.onGround=true;P.crouchK=1;for(let i=0;i<20;i++)updateCamera(1/30);camera.updateMatrixWorld(true);
+        const {o,d}=camRay(),t=D/Math.hypot(d.x,d.z),aim=o.clone().addScaledVector(d,t),m=spawnMob('peura',aim.x,aim.z);made.push(m);m.pos.y=aim.y-(m.barH||m.def.r*2.6)*.5;
+        P.bowDraw=1;P.drawT=2;const hp0=m.hp;fireBow();const pr=projs[projs.length-1];pr.g=1e-6;for(let i=0;i<300&&projs.includes(pr);i++)updateProjs(1/120);if(m.hp<hp0)hits++;}
+      const n0=inv.filter(x=>x&&x.id==='nuolet').reduce((a,x)=>a+x.n,0),pj=projs.length;P.drawing=true;P.drawT=.3;P.bowDraw=.5;onPrimaryUp();const cancel=projs.length===pj&&inv.filter(x=>x&&x.id==='nuolet').reduce((a,x)=>a+x.n,0)===n0;
+      P.drawing=true;WIND.spd=12;updateHUD(.05);const ww=!$('#windWarn').hidden;WIND.spd=2;updateHUD(.05);const calm=$('#windWarn').hidden;P.drawing=false;updateHUD(.05);
+      SET.arrowLight=true;wRain=0;const gx=P.pos.x-12,gz=P.pos.z-12;shootArrow(new THREE.Vector3(gx,terrainH(gx,gz)+6,gz),new THREE.Vector3(0,-1,0),30,10,'player',1e-6,true);const fp=projs[projs.length-1];for(let i=0;i<150&&!fp.stuck;i++)updateProjs(1/30);
+      const f=arrowFade[arrowFade.length-1],bright=f&&f.I===2.8&&f.hold>0;
+      res=hits===2&&cancel&&ww&&calm&&bright&&ARROW_WIND>.08||`virhe osumat ${hits}/2 peruutus ${cancel} tuuli ${ww}/${calm} valo ${bright}`;}
+    finally{msg=om;for(const m of made)mobRemove(m);[camYaw,camPitch,WIND.spd,WIND.x,WIND.z,P.crouch,P.onGround,P.crouchK,SET.arrowLight,wRain]=sv;P.drawing=false;P.drawT=0;}
+    return res;});
+  t('v2.00 juomat: 3 kpl (kuvake, 3D-pullo), parannus täyteen, elpyminen 1 hp/s 60 s, sisu: kylläisyys 5 min + kestävyys 30 s; arkuissa 10 %/juoma, ei tynnyreissä',()=>{
+    const sv=[P.hp,P.hunger,P.stam,JSON.stringify(P.buffs)];let res;
+    try{const ok0=POTIONS.every(id=>ITEMS[id]&&ITEMS[id].potion&&icon(id)&&dropMesh(id).userData.potion);
+      const s1={id:'parannusjuoma',n:2,q:1};inv.push(s1);P.hp=5;drink(s1);const a=P.hp===maxHp()&&s1.n===1;
+      const s2={id:'elpymisjuoma',n:1,q:1};inv.push(s2);drink(s2);const b=P.buffs.elpyminen===60;
+      const s3={id:'sisujuoma',n:1,q:1};inv.push(s3);P.hunger=10;P.stam=0;drink(s3);const c=P.buffs.kylla===300&&P.buffs.sisu===30&&P.hunger===100&&P.stam===maxStam();
+      inv.length=32;const fc=fo('fc');let pc=0,bc=0;for(let i=0;i<600;i++){openFound('tt:'+i,'Arkku',[['kivi',1]]);pc+=fc['tt:'+i].filter(x=>x&&POTIONS.includes(x.id)).length;delete fc['tt:'+i];
+        openFound('tb:'+i,'Tynnyri',[['kivi',1]]);bc+=fc['tb:'+i].filter(x=>x&&POTIONS.includes(x.id)).length;delete fc['tb:'+i];}closePanels();
+      const d=pc>90&&pc<270&&bc===0;res=ok0&&a&&b&&c&&d||`virhe ${ok0}${a}${b}${c}${d}(${pc}/${bc})`;}
+    finally{[P.hp,P.hunger,P.stam]=sv;P.buffs=JSON.parse(sv[3]);invDirty=true;}
+    return res;});
+  t('v2.00 kylläisyys: täyteen syöty = 100 ja ensimmäinen pudotus vasta 60 s:n jälkeen',()=>{const sv=[P.hunger,JSON.stringify(P.buffs)];let res;
+    try{delete P.buffs.taysi;delete P.buffs.kylla;P.hunger=95;const s={id:'paisti',n:1,q:1};inv.push(s);eat(s);inv.length=32;const a=P.hunger===100&&P.buffs.taysi===60;
+      res=a&&/!P\.buffs\.taysi/.test(survival.toString())||`virhe ${a}`;}
+    finally{P.hunger=sv[0];P.buffs=JSON.parse(sv[1]);}return res;});
+  t('v2.00 DEV Å: esinevalikko (pikavalinnat + haku), Ä:sta haku pois',()=>typeof renderDevI==='function'&&DEV_PICKS.length>=15&&DEV_PICKS.some(([i,n])=>i==='pihka'&&n===100)&&PANEL_KEY.devi&&!/devQ/.test(renderDev.toString())||'puuttuu');
+  t('v1.99 pomo murskaa alleen jäävät rakennelmat ja puut (ei arkkuja, ei nukkuessa)',()=>{const bx=P.pos.x+25,bz=P.pos.z+25,mk=(t,dx,dz)=>addPiece(t,bx+dx,terrainH(bx+dx,bz+dz)+.02,bz+dz,0);
+    const w=mk('seina',0,0),s=mk('sanky',0,2),ch=mk('arkku',-1.5,1),far=mk('seina',20,0);const m=spawnMob('vartija',bx,bz);m.state='rise';m.devSpawn=1;const om=msg;msg=()=>{};let res;
+    try{bossTrample(m,.3);const keep=pieces.includes(w);m.state='chase';m.sinking=0;for(let i=0;i<5;i++)bossTrample(m,.21);
+      res=keep&&!pieces.includes(w)&&!pieces.includes(s)&&pieces.includes(ch)&&pieces.includes(far)||'virhe';}finally{msg=om;mobRemove(m);for(const p of [ch,far])if(pieces.includes(p))removePiece(p);}
+    return res;});
+  t('v1.99 ulottuvuuksissa ei rakenneta (ilmoitus), paitsi työpenkki vapaalle lattialle; haamu osuu lattiaan',()=>{const p0=P.pos.clone(),inv0=JSON.stringify(inv);let res;const om=msg,msgs=[];msg=t=>msgs.push(t);
+    try{invAdd('puu',20);devTpBossRoom('portal1');for(const m of mobs.slice())if(m.dun)mobRemove(m);const no=!validPlace('seina',P.pos.x+3,DUN.y,P.pos.z,0);
+      let ok=null;for(let a=0;a<16&&!ok;a++){const x=P.pos.x+Math.cos(a/16*TAU)*3,z=P.pos.z+Math.sin(a/16*TAU)*3;if(validPlace('tyopenkki',x,DUN.y,z,0))ok={x,z};}
+      const G2=BUILT.portal1.grid;let wc=null;for(let iz=0;iz<G2.H&&!wc;iz++)for(let ix=0;ix<G2.W;ix++)if(rWall(G2,ix,iz)){wc=rPos(G2,ix,iz);break;}const inWall=!validPlace('tyopenkki',wc.x,DUN.y,wc.z,0);
+      buildSel='seina';placeBuild();const m1=/Ulottuvuuksissa ei voi rakentaa/.test(msgs[0]||'');
+      setBuildSel('tyopenkki');camera.position.set(P.pos.x,DUN.y+3,P.pos.z);camera.lookAt(P.pos.x+3,DUN.y,P.pos.z);camera.updateMatrixWorld(true);const cd=camDist;camDist=4;updateGhost();camDist=cd;const gh=ghost&&ghost.visible&&ghostPos&&Math.abs(ghostPos.y-DUN.y)<.01;setBuildSel(null);
+      res=no&&!!ok&&inWall&&m1&&gh||`virhe ${no}${!!ok}${inWall}${m1}${gh}`;}
+    finally{msg=om;devLeaveDun();P.pos.copy(p0);inv.splice(0,inv.length,...JSON.parse(inv0));invDirty=true;}
+    return res;});
+  t('v1.98 nuolet: pysähtyvät tarkasti pintaan (seinä, kivi, suljettu ovi; avoin päästää), häviävät 10 s (tuli 8 s) osumasta, liekki+valo 5 s, sade/vesi sammuttaa heti osuessa',()=>{
+    const sv=[wRain,SET.arrowLight];SET.arrowLight=true;wRain=0;const made=[];let res;
+    try{const bx=P.pos.x+10,bz=P.pos.z+10,mk=(t,dx)=>{const x=bx+dx,p=addPiece(t,x,terrainH(x,bz)+.05,bz,0);made.push(p);return p;};
+      const shoot=(c,spd,fire,fromD=15)=>{const thinX=(c.maxX-c.minX)<(c.maxZ-c.minZ),dir=thinX?new THREE.Vector3(1,0,0):new THREE.Vector3(0,0,1),cx=(c.minX+c.maxX)/2,cy=(c.minY+c.maxY)/2,cz=(c.minZ+c.maxZ)/2;
+        shootArrow(new THREE.Vector3(cx-dir.x*fromD,cy,cz-dir.z*fromD),dir,spd,10,'player',1e-6,fire);const pr=projs[projs.length-1];for(let i=0;i<400&&!pr.stuck;i++)updateProjs(1/30);
+        return {pr,err:pr.m.position.x*dir.x+pr.m.position.z*dir.z+.45-(thinX?c.minX:c.minZ)};};
+      const w=mk('seina',0),a=shoot(w.cols[0],75,false),k=mk('kiviseina',20),b=shoot(k.cols[0],90,false);const ok1=a.pr.stuck&&Math.abs(a.err)<.05&&b.pr.stuck&&Math.abs(b.err)<.05;
+      const d=mk('ovi',40),dc=d.cols.find(c=>c.door);setDoor(d,false,1);const c1=shoot(dc,75,false,10);const closed=c1.pr.stuck;setDoor(d,true,1);
+      shootArrow(new THREE.Vector3((dc.minX+dc.maxX)/2-((dc.maxX-dc.minX)<(dc.maxZ-dc.minZ)?10:0),(dc.minY+dc.maxY)/2,(dc.minZ+dc.maxZ)/2-((dc.maxX-dc.minX)<(dc.maxZ-dc.minZ)?0:10)),(dc.maxX-dc.minX)<(dc.maxZ-dc.minZ)?new THREE.Vector3(1,0,0):new THREE.Vector3(0,0,1),75,10,'player',1e-6,false);
+      const po=projs[projs.length-1];for(let i=0;i<8;i++)updateProjs(1/30);const open=!po.stuck;
+      const tm=fire=>{const gx=P.pos.x-12,gz=P.pos.z-12,gy=terrainH(gx,gz),n0=lightSources.length;shootArrow(new THREE.Vector3(gx,gy+6,gz),new THREE.Vector3(0,-1,0),30,10,'player',1e-6,fire);const pr=projs[projs.length-1];
+        for(let i=0;i<150&&!pr.stuck;i++)updateProjs(1/30);let tl=null,tf=null,tg=null,t=0;for(let i=0;i<420;i++){updateProjs(1/30);t+=1/30;if(tl===null&&fire&&lightSources.length<=n0)tl=t;if(tf===null&&fire&&!pr.flame.visible)tf=t;if(!projs.includes(pr)){tg=t;break;}}return {tl,tf,tg};};
+      const n=tm(false),f=tm(true),ok2=Math.abs(n.tg-10)<.2&&Math.abs(f.tg-8)<.2&&Math.abs(f.tl-5)<.2&&Math.abs(f.tf-5)<.2;
+      wRain=1;const n0=lightSources.length;shootArrow(new THREE.Vector3(P.pos.x-12,terrainH(P.pos.x-12,P.pos.z+12)+6,P.pos.z+12),new THREE.Vector3(0,-1,0),30,10,'player',1e-6,true);const pr=projs[projs.length-1];updateProjs(1/30);const air=lightSources.length>n0;
+      for(let i=0;i<150&&!pr.stuck;i++)updateProjs(1/30);const lit=lightSources.length>n0;for(let i=0;i<60;i++)updateProjs(1/30);const ok3=air&&pr.stuck&&lit&&lightSources.length<=n0&&!pr.flame.visible;wRain=0;   /* v2.01: sateessa hiipuu 1,6 s */
+      res=ok1&&closed&&open&&ok2&&ok3||`virhe seinä ${ok1}(${a.err.toFixed(3)},${b.err.toFixed(3)}) ovi ${closed}/${open} ajastimet ${ok2}(${JSON.stringify([n,f])}) sade ${ok3}`;}
+    finally{[wRain,SET.arrowLight]=sv;for(const p of made)removePiece(p);for(const q of projs.splice(0)){scene.remove(q.m);if(q.light){const j=lightSources.indexOf(q.light);if(j>=0)lightSources.splice(j,1);}}arrowFade.length=0;updateLights();}
+    return res;});
+  t('v1.97 sade ja tuli: märkä pelaaja/mobi ei syty (ei spämmiä), katon alla syttyy ja palaa, sateen sammutus jäähy 3 s, vesi sammuttaa',()=>{let msgs=0;const om=msg;msg=()=>{msgs++;};const sv=[wRain,shelterCache,P.burnT,P.igniteCd,P.hp,P.maxHp,P.pos.clone(),P.inWater];let res;
+    try{const x=P.pos.x+3,z=P.pos.z,fp=addPiece('nuotio',x,terrainH(x,z),z,0);fp.data.fuel=5;P.pos.set(x,terrainH(x,z)+.01,z);P.hp=P.maxHp=1e5;
+      const run=sec=>{let ign=0,prev=P.burnT>0;for(let i=0;i<sec*30;i++){playTime+=1/30;updatePlayerBurn(1/30);const b=P.burnT>0;if(b&&!prev)ign++;prev=b;}return ign;};
+      wRain=1;shelterCache=false;P.burnT=0;P.igniteCd=0;msgs=0;const a=run(10)===0&&msgs===0;
+      wRain=0;const b=run(1)===1&&P.burnT>0;wRain=1;msgs=0;const c=run(10)===0&&P.burnT===0&&msgs===0;
+      shelterCache=true;P.burnT=0;P.igniteCd=0;const d=run(1)===1&&P.burnT>0;P.inWater=true;run(.2);const e=!(P.burnT>0);P.inWater=false;
+      shelterCache=false;const m=spawnMob('susi',P.pos.x+20,P.pos.z+20);m.burnT=0;igniteMob(m);const f=!(m.burnT>0);wRain=0;igniteMob(m);const g=m.burnT>0;
+      wRain=1;m.shU=0;m.shd=false;updateBurn(m,.03);const h=!(m.burnT>0)&&m.igniteCd>playTime;mobRemove(m);removePiece(fp);res=a&&b&&c&&d&&e&&f&&g&&h||`virhe ${a}${b}${c}${d}${e}${f}${g}${h}`;}
+    finally{msg=om;[wRain,shelterCache,P.burnT,P.igniteCd,P.hp,P.maxHp,,P.inWater]=sv;P.pos.copy(sv[6]);}
+    return res;});
+  t('v1.97 Suonäkki syntyy suolla öisin (SPAWN.suo.night, väijyjä enintään yksi, nousee maasta)',()=>{const tb=SPAWN.suo.night.find(e=>e[0]==='suonakki');if(!tb||tb[1]<.1)return 'ei taulukossa';
+    const src=spawner.toString();return /MOBDEF\[type\]\.stalk/.test(src)&&/riseT=0/.test(src)||'spawner ei käsittele väijyjää';});
   t('v1.95 Kalmanvartijan äänet: varaääni Aarnihirviö (ei mykkä), kaikuääni maan alta Kalmankehän lähellä ennen herättämistä',()=>{
-    const ok1=VARAANI.vartija&&VARAANI.vartija.to==='aarnihirvio'&&CRE_ECHO.includes('boss')&&typeof vartijaEcho==='function';
+    let kv=true,c='kivivartija';for(let d=0;d<6&&c;d++){if(MOBDEF[c]&&(MOBDEF[c].ai==='boss'||MOBDEF[c].ai==='rboss'))kv=false;c=VARAANI[c]&&VARAANI[c].to;}   /* kivivartija (hostile) ei saa lainata pomoääniä */
+    const ok1=kv&&VARAANI.vartija&&VARAANI.vartija.to==='aarnihirvio'&&CRE_ECHO.includes('boss')&&typeof vartijaEcho==='function';
     const L=LOC.circle,p0=P.pos.clone(),fb=flags.boss;P.pos.set(L.x+20,terrainH(L.x+20,L.z),L.z);delete flags.boss;VEC.t=-1;VEC.m=null;vartijaEcho(.1);
     const ok2=!!VEC.m&&VEC.m.type==='vartija'&&VEC.t>0;flags.boss=1;vartijaEcho(.1);const ok3=VEC.t===-1;
     P.pos.set(L.x+200,P.pos.y,L.z);delete flags.boss;vartijaEcho(.1);const ok4=VEC.t===-1;if(fb)flags.boss=fb;else delete flags.boss;P.pos.copy(p0);
@@ -243,7 +390,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const a=fc[W[0].key].filter(Boolean),ok=a.length===8&&new Set(a.map(x=>x.id)).size===8&&fc[W[1].key].filter(Boolean).length===1&&!fc[W[2].key]&&!flags.peacePend;
     const src=bossVictory.toString()+peaceTick.toString();const ok2=/allBossesDown\(\)/.test(src)&&/setTimeout\(peaceRefill,2000\)/.test(src)&&/winS'\)\.hidden/.test(src)&&/rauhallinen/.test(src);
     const fc2=JSON.parse(sv);for(const k in fc)delete fc[k];Object.assign(fc,fc2);flags.peacePend=pp;return ok&&ok2||`virhe ${ok}${ok2}`;});
-  t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
+  t('Jousi laukeaa hiiren vapautuksesta',()=>{if(typeof onPrimaryUp!=='function')return 'onPrimaryUp puuttuu';const n=projs.length,d=P.drawing,b=P.bowDraw,ai=ammoId,fb=fireBow;let f=0;fireBow=()=>{f++;};ammoId=()=>'nuolet';P.drawing=true;P.bowDraw=.8;P.drawT=1;onPrimaryUp();fireBow=fb;ammoId=ai;P.drawing=d;P.bowDraw=b;return f===1||'ei laukaissut';});
   return chk;});
 // v1.24 (KORJAUKSET 22): karttavaihdon jälkeinen automaattinen aloitus (uudelleenlataus, sessionStorage 'hiidenmaa_pending') ei saa kaatua
 {const p2=await b.newPage({viewport:{width:800,height:500}});const e2=[];p2.on('pageerror',e=>e2.push(e.message));

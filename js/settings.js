@@ -37,25 +37,25 @@ function validateKey(action,code){
 // Oletukset = taso, jolla suurin osa pelaa. Varjot: sunRes = auringon varjokartta (px), shDist = auringon varjoalueen säde (m),
 // shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
 const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,grass:1,particles:1,detail:'high',bldDetail:true,
-  renderDist:165,lights:6,mist:.6,clouds:1,drop3d:true,blood:1,bloodFx:true,keyHints:true,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
+  renderDist:165,lights:6,lightDist:60,lightRange:17,mist:.6,clouds:1,drop3d:true,blood:1,bloodFx:true,keyHints:true,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
   autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,sens:1,curSens:1,hudMode:0,creVol:.8,arrowLight:false,menuBg:'img',shUltra:'off',menuAnimKeep:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
 // Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
 // v1.35 (lista 3, kohta 16): varjot ovat Grafiikka-sivun väliotsikko (ei omaa sivua).
-const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar','shUltra'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep','creVol']};
+const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','lightDist','lightRange','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar','shUltra'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep','creVol']};
 /* v1.35 (lista 3, kohta 17): esiasetukset Low … Ultra (8 tasoa, oletus Medium = SET_DEF:n grafiikka). Esiasetus muuttaa kaikki alla
    luetellut asetukset; Low–Medium kytkee automaattisäädön päälle, High–Ultra pois. Ultra ylittää aiemmat maksimit (piirtoetäisyys 520 m,
    ruoho Ultra, varjoalue 140 m, tulien varjot 1024). Jos jotain säädetään käsin, nimi on "Custom".
    v1.76: tulinuolten valo päällä High+ ja Ultra; automaattisäädöt pois High-tasosta ylöspäin. Erittäin tarkat varjot (shUltra) eivät kuulu esiasetuksiin. */
 const PRESET_N=['Low','Low+','Medium-','Medium','Medium+','High','High+','Ultra'];
 const PRESETS=[
-  {res:.55,renderDist:60,detail:'low',grass:0,sway:false,clouds:.3,lights:2,shafts:false,particles:.25,mist:0,bldDetail:false,drop3d:false,shadow:'off',sunRes:1024,shDist:35,shRate:'slow',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
-  {res:.7,renderDist:90,detail:'low',grass:0,sway:true,clouds:.3,lights:2,shafts:false,particles:.5,mist:.3,bldDetail:false,drop3d:false,shadow:'low',sunRes:1024,shDist:35,shRate:'slow',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
-  {res:.85,renderDist:120,detail:'high',grass:1,sway:true,clouds:.6,lights:4,shafts:false,particles:.5,mist:.3,bldDetail:true,drop3d:false,shadow:'low',sunRes:1024,shDist:55,shRate:'normal',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
-  {res:1,renderDist:165,detail:'high',grass:1,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:.6,bldDetail:true,drop3d:true,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
-  {res:1,renderDist:210,detail:'high',grass:1,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:1,bldDetail:true,drop3d:true,shadow:'high',sunRes:2048,shDist:80,shRate:'normal',ptShadow:true,ptRes:384,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
-  {res:'native',renderDist:260,detail:'high',grass:2,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:1,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:80,shRate:'normal',ptShadow:true,ptRes:768,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,autoRes:false,autoFx:false,autoDist:false,autoQ:false,arrowLight:false},
-  {res:'native',renderDist:400,detail:'high',grass:2,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:2,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:110,shRate:'fast',ptShadow:true,ptRes:768,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,autoRes:false,autoFx:false,autoDist:false,autoQ:false,arrowLight:true},
-  {res:'native',renderDist:520,detail:'high',grass:3,sway:true,clouds:1,lights:6,shafts:true,particles:1,mist:2,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:140,shRate:'fast',ptShadow:true,ptRes:1024,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,autoRes:false,autoFx:false,autoDist:false,autoQ:false,arrowLight:true}];
+  {res:.55,renderDist:60,detail:'low',grass:0,sway:false,clouds:.3,lightDist:40,lightRange:17,lights:2,shafts:false,particles:.25,mist:0,bldDetail:false,drop3d:false,shadow:'off',sunRes:1024,shDist:35,shRate:'slow',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
+  {res:.7,renderDist:90,detail:'low',grass:0,sway:true,clouds:.3,lightDist:40,lightRange:17,lights:2,shafts:false,particles:.5,mist:.3,bldDetail:false,drop3d:false,shadow:'low',sunRes:1024,shDist:35,shRate:'slow',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
+  {res:.85,renderDist:120,detail:'high',grass:1,sway:true,clouds:.6,lightDist:60,lightRange:17,lights:4,shafts:false,particles:.5,mist:.3,bldDetail:true,drop3d:false,shadow:'low',sunRes:1024,shDist:55,shRate:'normal',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
+  {res:1,renderDist:165,detail:'high',grass:1,sway:true,clouds:1,lightDist:60,lightRange:17,lights:6,shafts:true,particles:1,mist:.6,bldDetail:true,drop3d:true,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
+  {res:1,renderDist:210,detail:'high',grass:1,sway:true,clouds:1,lightDist:90,lightRange:20,lights:6,shafts:true,particles:1,mist:1,bldDetail:true,drop3d:true,shadow:'high',sunRes:2048,shDist:80,shRate:'normal',ptShadow:true,ptRes:384,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
+  {res:'native',renderDist:260,detail:'high',grass:2,sway:true,clouds:1,lightDist:150,lightRange:24,lights:6,shafts:true,particles:1,mist:1,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:110,shRate:'normal',ptShadow:true,ptRes:768,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,autoRes:false,autoFx:false,autoDist:false,autoQ:false,arrowLight:false},
+  {res:'native',renderDist:400,detail:'high',grass:2,sway:true,clouds:1,lightDist:300,lightRange:28,lights:6,shafts:true,particles:1,mist:2,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:160,shRate:'fast',ptShadow:true,ptRes:768,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,autoRes:false,autoFx:false,autoDist:false,autoQ:false,arrowLight:true},
+  {res:'native',renderDist:520,detail:'high',grass:3,sway:true,clouds:1,lightDist:800,lightRange:32,lights:6,shafts:true,particles:1,mist:2,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:220,shRate:'fast',ptShadow:true,ptRes:1024,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,autoRes:false,autoFx:false,autoDist:false,autoQ:false,arrowLight:true}];
 function presetIdx(){return PRESETS.findIndex(p=>Object.keys(p).every(k=>String(SET[k])===String(p[k])));}
 function applyPreset(i){Object.assign(SET,PRESETS[i]);saveSet();applyGfx();}
 const SET=Object.assign({},SET_DEF);
@@ -64,6 +64,10 @@ try{const sv=JSON.parse(localStorage.getItem('hiidenmaa_set')||'{}');Object.assi
   const nk=['terrLod','mergeSt','shFar'].filter(k=>!(k in sv));if(nk.length&&Object.keys(sv).length){const i=PRESETS.findIndex(p=>Object.keys(p).every(k=>nk.includes(k)||String(SET[k])===String(p[k])));if(i>=0)for(const k of nk)SET[k]=PRESETS[i][k];}}catch(e){}
 // v1.35 (kohta 35): usvatasot siirtyivät (Ultra 2 = vanha Korkea, Korkea 1 = vanha Normaali, Normaali .6 = uusi oletus, Matala .3).
 if(!(SET._v>=2)){if(+SET.mist===1)SET.mist=.6;else if(+SET.mist===.5)SET.mist=.3;SET._v=2;}
+/* v2.03: uudet valoasetukset (lightDist, lightRange) ja suuremmat varjoetäisyydet High (80→110), High+ (110→160), Ultra (140→220). Vanha esiasetus
+   tunnistetaan vanhoilla arvoilla ja päivitetään uusiin, jottei nimi muutu Customiksi. */
+if(!(SET._v>=3)){const OLD_SH={5:80,6:110,7:140};const i=PRESETS.findIndex((p,j)=>Object.keys(p).every(k=>k==='lightDist'||k==='lightRange'||(k==='shDist'?+SET.shDist===(OLD_SH[j]??p.shDist):String(SET[k])===String(p[k]))));
+  if(i>=0)Object.assign(SET,{shDist:PRESETS[i].shDist,lightDist:PRESETS[i].lightDist,lightRange:PRESETS[i].lightRange});SET._v=3;}
 /* v1.79: esiasetukset asettavat myös automaattisäädön alavalinnat (High–Ultra pois, muut päällä) ja tulinuolten valon. Kertasiirto:
    jos tallenne vastaa jotain esiasetusta näitä avaimia lukuun ottamatta, ne asetetaan siitä (muuten nimi muuttuisi Customiksi). */
 if(!(SET._v>=3)){const MK=['autoRes','autoFx','autoDist','autoQ','arrowLight'],i=PRESETS.findIndex(p=>Object.keys(p).every(k=>MK.includes(k)||String(SET[k])===String(p[k])));if(i>=0)for(const k of MK)SET[k]=PRESETS[i][k];SET._v=3;}
@@ -91,7 +95,8 @@ function applyGfx(){
      wide = 8192 + 1,6× alue näkymän suuntaan sovitettuna + päivitys joka ruutu (raskain, punainen). Kartan koko render.js setQuality. */
   {const u=SET.shUltra||'off',want=u==='soft'?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;if(renderer.shadowMap.type!==want){renderer.shadowMap.type=want;lastShadowOn=null;}
    sun.shadow.radius=u==='soft'?3.5:1;const d=SHU[u]?SHU[u].d:(+SET.shDist||55),sc=sun.shadow.camera;if(sc.right!==d){sc.left=-d;sc.right=d;sc.top=d;sc.bottom=-d;sc.updateProjectionMatrix();}
-   sun.shadow.bias=SHU[u]?-.00035:-.0006;sc.far=SHU[u]?420:260;sc.updateProjectionMatrix();}
+   sun.shadow.bias=SHU[u]?-.00035:-.0006;sc.far=Math.max(SHU[u]?420:260,d*2+120);sc.updateProjectionMatrix();}
+  {const R=+SET.lightRange||17;for(const l of LIGHTS)l.distance=R;torchFill.distance=R+1;const sc2=LIGHTS[0].shadow.camera,fr=Math.min(30,R-2);if(sc2.far!==fr){sc2.far=fr;sc2.updateProjectionMatrix();LIGHTS[0].shadow.needsUpdate=true;}if(typeof updateLights==='function'&&typeof lightSources!=='undefined')updateLights();}   // v2.03 valon kantama
   const on=SET.shadow!=='off'||shUltraOn();renderer.shadowMap.enabled=on;
   if(lastShadowOn!==on){lastShadowOn=on;scene.traverse(o=>{if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true);});}
   if(typeof setQuality==='function')setQuality(QUAL.lvl);
@@ -171,6 +176,8 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       setRow('Pilvet','clouds',[[1,'Kaikki'],[.6,'Vähemmän'],[.3,'Vähän'],[0,'Pois']])+
       sub('Valo')+
       setRow('Valonlähteitä yhtä aikaa','lights',[[6,'Paljon (6)'],[4,'Normaali (4)'],[2,'Vähän (2)']],'tulet, soihdut, portaalit')+
+      setRow('Valojen näkyvyysetäisyys','lightDist',[[40,'Lähellä (40 m)'],[60,'Normaali (60 m)'],[90,'Kaukana (90 m)'],[150,'Hyvin kaukana (150 m)'],[300,'Erittäin kaukana (300 m)'],[800,'Koko kartta (Ultra)']],'kuinka kaukaa tulet, soihdut ja tulinuolet valaisevat ja tulinuolen liekki hehkuu')+
+      setRow('Valon kantama','lightRange',[[17,'Normaali (17 m)'],[20,'Pidempi (20 m)'],[24,'Pitkä (24 m)'],[28,'Hyvin pitkä (28 m)'],[32,'Ultra (32 m)']],'kuinka laajalle yksi valo valaisee; tulien varjot ulottuvat yhtä kauas')+
       setRow('Auringon valonsäteet','shafts')+
       setRow('Tulinuolten valo','arrowLight',null,'tulinuoli valaisee ympäristöä lentäessään (käyttää valonlähteen)')+
       sub('Partikkelit')+
@@ -185,7 +192,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       sub('Varjot')+
       setRow('Varjot','shadow',[['high','Hyvät'],['low','Kevyet'],['off','Pois']])+ultraShRow()+
       setRow('Auringon varjojen tarkkuus','sunRes',[[1024,'Matala (1024)'],[2048,'Normaali (2048)'],[4096,'Korkea (4096)']])+
-      setRow('Auringon varjojen etäisyys','shDist',[[35,'Lähellä (35 m)'],[55,'Normaali (55 m)'],[80,'Kaukana (80 m)'],[110,'Hyvin kaukana (110 m)'],[140,'Ultra (140 m)']],'kauempana varjot ovat epätarkempia')+
+      setRow('Auringon varjojen etäisyys','shDist',[[35,'Lähellä (35 m)'],[55,'Normaali (55 m)'],[80,'Kaukana (80 m)'],[110,'Hyvin kaukana (110 m)'],[140,'Erittäin kaukana (140 m)'],[160,'Laaja (160 m)'],[220,'Ultra (220 m)']],'kauempana varjot ovat epätarkempia')+
       setRow('Varjojen päivitystiheys','shRate',[['fast','Nopea'],['normal','Normaali'],['slow','Hidas']],'hidas = kevyempi, varjot liikkuvat nykien')+
       setRow('Automaattinen varjojen laatu','autoQ',null,'laskee varjojen laatua jos peli nykii'+autoN())+
       setRow('Tulien ja soihtujen varjot','ptShadow',null,'pimeällä')+
@@ -243,7 +250,7 @@ const ALL_KEYS=[
   ['Pelatessa',[['fwd',0,'liiku eteen'],['back',0,'liiku taakse'],['left',0,'liiku vasemmalle'],['right',0,'liiku oikealle'],['run',0,'juokse (pohjassa)'],['jump',0,'hyppää / kiipeä ylös'],
     ['crouch',0,'kyykky / hiipiminen (jousella kyykyssä tarkka tähtäin)'],['interact',0,'poimi, avaa, puhu, nuku, käytä'],[null,'Hiiren vasen','isku; jousella pidä pohjassa = jännitä, päästä = ammu'],
     [null,'Hiiren oikea','torju kilvellä (pohjassa)'],[null,'1–8','valitse pikapaikka; ruoka syödään, varuste otetaan käteen'],[null,'Hiiren rulla','kameran zoom (tai pikapaikat, Asetukset › Ohjaus)'],
-    ['up',0,'pudota valitusta pikapaikasta 1 (Shift = koko pino)'],['remove',0,'pura katsottu rakennusosa'],['repair',0,'korjaa katsottu rakennusosa'],
+    ['up',0,'pudota valitusta pikapaikasta 1 (Shift = koko pino)'],['remove',0,'pura katsottu rakennusosa (jousta jännittäessä: tähtäimen vilkkuminen päälle/pois)'],['repair',0,'korjaa katsottu rakennusosa'],
     ['hud',0,'tehtävä ja tavoite näkyviin / piiloon'],['minizoom',0,'minikartan zoom'],['full',0,'koko näyttö'],[null,'Esc','vapauttaa hiiren (selain) – käytä mieluummin P:tä']]],
   ['Rakentaessa (vasara kädessä)',[['build',0,'rakennusvalikko'],[null,'Hiiren vasen','aseta rakennusosa'],[null,'Hiiren oikea','rakennusvalikko'],['rot',0,'käännä osaa'],[null,'Shift + R','osan asento / kaltevuus'],
     ['snap',0,'sivuttaiskohdistus (tilat)'],['vsnap',0,'pystykohdistus'],['up',0,'nosta haamua'],['down',0,'laske haamua'],['remove',0,'pura'],['repair',0,'korjaa']]],
@@ -258,7 +265,7 @@ const ALL_KEYS=[
 function showAllKeys(){let d=$('#allKeys');if(!d){d=document.createElement('div');d.id='allKeys';d.className='dlg';document.body.appendChild(d);d.onclick=e=>{if(e.target===d)d.hidden=true;};}
   const row=([a,k,t])=>{const def=a?keyLabel(BIND_DEF[a]):k,now=a&&BIND[a]!==BIND_DEF[a]?`<small class="now">nyt: ${keyLabel(BIND[a])}</small>`:'';return `<div class="akRow"><span class="kb fixed">${def}</span><span>${t}${now}</span></div>`;};
   d.innerHTML=`<div class="dlgBox akBox"><div class="akHead"><b>Kaikki toiminnot</b><button class="btn" id="akClose">Sulje</button></div><p class="note">Oletusnäppäimet. Jos olet vaihtanut näppäimen, nykyinen näkyy perässä.</p>
-    <div class="akGrid">${ALL_KEYS.map(([h,R])=>`<div class="akCat"><h3>${h}</h3>${R.map(row).join('')}</div>`).join('')}${DEV?`<div class="akCat"><h3>DEV-tila</h3>${[[null,'V (pohjassa)','10× nopeus'],[null,'Ä','DEV-valikko'],[null,'Ö','olennot (luo 3 m eteen) ja pomot (pomohuone, portin eteen, ääriviiva)'],[null,'Välilyönti ×2','lento (jos päällä DEV-valikossa): välilyönti ylös, Shift alas, Ctrl nopeammin']].map(row).join('')}</div>`:''}</div></div>`;
+    <div class="akGrid">${ALL_KEYS.map(([h,R])=>`<div class="akCat"><h3>${h}</h3>${R.map(row).join('')}</div>`).join('')}${DEV?`<div class="akCat"><h3>DEV-tila</h3>${[[null,'V (pohjassa)','10× nopeus'],[null,'Ä','DEV-valikko'],[null,'Ö','olennot (luo 3 m eteen) ja pomot (pomohuone, portin eteen, ääriviiva)'],[null,'Å','esineet: pikavalinnat (varusteet, nuolet, pihka, avaimet, juomat) ja esinehaku'],[null,'Välilyönti ×2','lento (jos päällä DEV-valikossa): välilyönti ylös, Shift alas, Ctrl nopeammin']].map(row).join('')}</div>`:''}</div></div>`;
   d.hidden=false;$('#akClose').onclick=()=>{d.hidden=true;};}
 function ultraShRow(){const v=SET.shUltra||'off',on=v!=='off',O=[['off','Pois'],['sharp','Terävä 8192'],['soft','Terävä + pehmeät reunat'],['wide','Terävä + laaja alue']];
   return `<div class="setRow ultraRow${on?' on':''}"><label>Erittäin tarkat varjot${on?' <span class="ultraBang" title="Erittäin raskas asetus päällä">!</span>':' <span class="defTag">oletus</span>'}</label><div class="ultraOpts">${O.map(([k,t])=>`<button class="uo${k===v?' sel':''}${k==='wide'?' red':''}" data-ush="${k}">${t}</button>`).join('')}</div><span class="note">${on?SHU[v].n+' – ohittaa alla harmaana näkyvät varjoasetukset':'ei kuulu esiasetuksiin – vain hyvin tehokkaille koneille; punainen on raskain'}</span></div>`;}

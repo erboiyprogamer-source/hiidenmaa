@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.95)
+## Nykytila (päivitetty v2.10)
 
-- **Versio 1.95**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 2.10**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. PR #27 (v1.84–v1.95) on **yhdistetty**. Uusi PR [#28](https://github.com/erboiyprogamer-source/hiidenmaa/pull/28) (v1.96–v2.10). Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -128,7 +128,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - Jokainen äänierä (A–E, ks. ideajono) tehdään samalla paikkamerkkitavalla ja saa oman osion AANILISTA.md:hen.
 
 **Käsittely ja toisto (v1.86, käyttäjän päätökset):**
-- **Aarnihirviö = pääääni 💎.** Se on isoin varaääni: Jäätär, Kalmaherra ja v1.95 alkaen Kalmanvartija lainaavat siltä (`jaajattari` ×1,20, `kalmaherra` ×0,85, `vartija` ×0,70; kivivartija vartijan kautta ×0,805) kunnes saavat
+- **Aarnihirviö = pääääni 💎.** Se on isoin varaääni: Jäätär, Kalmaherra ja v1.95 alkaen Kalmanvartija lainaavat siltä (`jaajattari` ×1,20, `kalmaherra` ×0,85, `vartija` ×0,70). **Kivivartija (tavallinen vihollinen) ei lainaa pomoääniä** (v1.96: `kivivartija` → `kalmo` ×0,75) kunnes saavat
   omat. Hiidenhirvi lainaa taas suoraan hirveltä. "Ulottuvuuksien hirviöt" = `ai:'rboss'` (3 kpl).
 - **Kuolemaäänet:** ulottuvuuksien hirviöillä 1 paikka (`_1`), kaikilla muilla olennoilla 2 (`_1`, `_2`); `variants_of(ai, laji)` työkalussa,
   ylimääräiset paikkamerkit poistuvat `--init`:llä (oikeaan ääneen ei koskaan kosketa).
@@ -227,10 +227,173 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
 
+### v2.10 (emakon suuttumisäänet eivät kerrostu)
+- Porsaita jahdatessa emakon suuttuminen soitti useita ääniä päällekkäin: `temperAI`:n `anger()` karjaisi (`sfx('roar')`) ja `creTick` soitti
+  lisäksi tiedostoäänen (emakko lainaa karjun `aggro`-äänen), ja lauma/useampi emakko lisäsi omansa. Nyt **yksi suuttumisääni / suuttuminen**:
+  karjaisu vain jos olennolla ei ole tiedostoääntä; lupa `creAngerOk(m)` (audio.js): sama olento enintään 15 s välein, sama laji 6 s välein
+  (`CRE_AGT`); neutraalin uusi suuttumisääni vasta kun se on rauhoittunut (`!m.angry`) ja ollut 5 s ilman jahtia. KORJAUKSET 42.
+
+### v2.09 (kodin lämpö – käyttäjän prompti osa 3/3)
+- **Tunnistus** (`homeScan`, environment.js, 0,5 s välein, vain jos rakennusosia 15 m sisällä): 16 vaakasädettä (kulmasiirto 0,031 rad, ettei säde kulje
+  seinäsaumaa pitkin) kolmella korkeudella 0,6 / 1,5 / 2,2 m enintään 15 m; jokaisen on osuttava **rakennusosaan** (ovet lasketaan kiinni, lasi kelpaa) tai
+  maastoon alle 6 m:ssä (rinnetalo). Puut/kivet/rauniot eivät kelpaa (aukon läpi mennyt säde osui ennen kaukaiseen puuhun). Katto: `sheltered` pelaajan
+  kohdalla ja 1 m joka suuntaan. **Aukkoikkuna** tai **avoin ovi** talon reunalla (`homeOnEdge`, keskipiste ±1,6 m reunasta) tarkistetaan erikseen, koska
+  16 sädettä voi ohittaa kapean aukon: aukkoikkuna → ei tehostetta; avoin ovi → "ovi auki".
+- **Tasot** (`HOME.lvl`): 1 = **Mukava lämpötila** (+0,5 hp/s, nälkä × 0,7), 2 = **Lämmin koti** (sisällä palanut lämmönlähde ≥ 5 s: nuotio/grilli `fuel>0`,
+  seisova soihtu/seinäsoihtu `burn>0`; +1,0 hp/s, nälkä × 0,5). Lähde sisällä = etäisyys < reunan etäisyys siihen suuntaan (viereisten säteiden suurin, koska
+  esine voi katkaista säteen). Lähde sammuu → 30 s → takaisin tasolle 1. Ovi auki: 20 s armo, sitten harmaa tehoste "… – ovesi on auki" (`.chip.off`) +
+  ilmoitus, sulkiessa palaa heti. Ulkona taso säilyy 20 s ja hiipuu (`HOME.k`). Parannus ei toimi nälkäisenä 0 tai pahoinvoinnissa.
+- **Nukkuminen** (`sleepAt`): ei enää palauta terveyttä täyteen; Mukava +10 %, Lämmin koti +20 % enimmäisterveydestä (muualla 0), ilmoitus herätessä.
+- Testattu (kuva-/simulaatiotesti): kaikki yllä olevat siirtymät. Tarkistukseen 1 rivi.
+
+### v2.08 (viholliset: ovet, muisti ja piiritys – käyttäjän prompti osa 2/3)
+- **Näköyhteys:** vihollisten `m.los` laskee nyt `losClear(...,true)` → suljettu ovi estää näkemisen (avoin ovi `off` ei); lasi ei estä (v2.07).
+- **Muisti** `MOB_MEM` 30 s (`mobKnows`): `m.seenT` päivittyy, kun jahtaava vihollinen näkee pelaajan tai osuu/saa osuman (`damageMob`); myös viimeinen
+  sijainti `lastPX/lastPZ`. Jahti päättyy, kun muisti loppuu (ennen: 3 s ilman näköyhteyttä) tai pelaaja näkyy yli 1,6 × huomausetäisyyden päässä.
+- **Piiritys** (`siegeTarget`): kun vihollinen ei näe (≥ 1 s) mutta muistaa pelaajan (alle 30 m), tai jää jumiin, se valitsee pelaajan lähellä (14 m) olevista
+  osista: suljettu ovi, jos sen kestävyys < lähimmän seinän (`SIEGE_WALLS`: seinä, tervas-, kiviseinä, aukko-/lasi-ikkunat), muuten lähin seinä. Lasi ei ole
+  erikoisasemassa. Hajottaa 2 × vahingolla. Murron jälkeen (`m.breach`, `m.thru` 1→3): 1,8 m aukon ulkopuolelle (kiertää kulman) → aukkoon → 1,5 m sisään,
+  kunnes näkee pelaajan. Muistin loputtua talossa → tila `exit`: 4 m murtokohdasta ulos, sitten normaalisti. `nearestOpening` ei ole enää käytössä.
+- **Lauma** (`packAlert`): kun vihollinen aloittaa jahdin tai piirityksen, saman lajin viholliset 20 m säteellä liittyvät (neutraalit suuttuvat). Muut lajit eivät.
+- Testattu: puuovi (130) < seinä (150) → vain ovi rikki ja susi aukkoon; rautaovi (900) → lähin seinä; lauma; muisti 30 s; ulos murtokohdasta.
+- Tarkistukseen 1 rivi.
+
+### v2.07 (hiekka, lasi, lasi-ikkunat, rautaovi – käyttäjän prompti osa 1/3)
+- **Hiekkakasat** (`NODE.hiekkakasa`, pick, 2–3 hiekkaa, uusiutuu 1200 s = 20 min): 5–10 per kartta rannalla (`beach`, korkeus 0,15–1,05, väli ≥ 60 m),
+  oma satunnaislähde `mulberry32(4242+MAP_ID*97)` ja lisätään viimeisinä → muiden solmujen id:t eivät muutu (tallennukset ehjät). Malli: hiekkakasa + simpukka.
+- **Sulatusuuni:** hiekka (enint. `SAND_MAX` 20) → 2 hiekkaa + 1 puu = 1 lasi, `GLASS_T` 15 s. Malmit ja hiekka vuorotellen (`D.job`). Uudet kentät `sand`, `glass`.
+- **Esineet** `hiekka` (paino 0,5, pino 50), `lasi` (0,4, pino 20): kuvakkeet ja 3D-mallit maassa (`matDropMesh`).
+- **Rakennusosat:** Aukkoikkuna (ent. Ikkunaseinä) ja Kivinen aukkoikkuna (ent. Kiviikkuna) säilyvät. Uudet **Puinen lasi-ikkuna** (`lasiikkuna`, 2 puuta + 1 lasi,
+  100) ja **Kivinen lasi-ikkuna** (`kivilasiikkuna`, 5 kiveä + 1 lasi, 250): base `ikkunaseina`, lasiruutu = törmäyslaatikko `glass` (estää kulun, nuolet ja sateen),
+  `losClear` ohittaa lasin (`pointBlocked(...,seeThru)`) → olennot näkevät läpi. Malli `GLASS_MAT` (läpikuultava sinertävä) + ristipuitteet. Rikkoutuessa
+  `shatterGlass` (building.js): helinä, sirpaleet, osa vaihtuu aukkoikkunaksi (`def.glass` = kohdetyyppi) täydellä kestävyydellä.
+- **Rautaovi** (`rautaovi`, 4 rautaharkkoa + 2 puuta, 900): base `ovi`, ovilehti `IRON_MAT` + vanteet ja niitit.
+- Tarkistukseen 1 rivi.
+
+### v2.06 (puunuolet, tuuli +10 %, tähtäimen ohjeet)
+- **Puunuolet** (`puunuolet`, työpenkki, 2 puuta → 15, taso 3): `AMMO_STATS.puunuolet` = putoaa 30 % enemmän (grav 1,3), tuuli 20 % enemmän (wind 1,2),
+  vahinko −40 % (dmg 0,6). Heikoin ammus (`AMMO` alkaa siitä → automaattinen valinta käyttää ensin). Kuvake ja lentävä nuoli: teroitettu puukärki
+  (`shootArrow(...,wood)`). Tuulikerroin on nyt nuolikohtainen `p.windK` = `AMMO_STATS[am].wind` (sulitettu .5, puu 1.2; ennen `steady`), sama `bowTraj`issa.
+- **Tuuli +10 %:** `ARROW_WIND` .13 → .143 (13 m/s ≈ 0,9 m sivuun 30 m:ssä).
+- **Ohjeet** (`#aimHint`) oikeammalle (+74 px) ja pienemmät (10,5 px); piilossa, kun Näppäinopasteet (`SET.keyHints`) on pois. Maahan osuman ▼ 11 → 8,8 px (−20 %).
+- Tarkistukseen 1 rivi (arvot, lento sivutuulessa: kaarto ×1,2 ja pudotus ×1,3, ohjeiden piilotus).
+
+### v2.05 (apuviivaston vilkkuminen, Z: apuviivasto pois)
+- **Vika (KORJAUKSET 41):** apuviivasto ei vilkkunut, vaikka piste vilkkui: `#dropRet`:n sisääntuloanimaatio `drIn` oli täyttötilalla `both`, ja CSS-animaation
+  täyttötila ohittaa elementin `style.opacity`n → laskettu läpinäkyvyys jäi 1:ksi. Nyt `backwards` → viivat ja piste samaan tahtiin (mitattu: samat arvot).
+- **Z-tyylit:** Viivasto / Pisteet / Kevyt / **Pois** (viimeinen piilottaa apuviivaston, ohjeessa "Tähtäin: Pois (4/4)").
+- Tarkistukseen 1 rivi.
+
+### v2.04 (linnakkeen muurin harja, tähtäin suoraan alas, tuulimittari)
+- **Arkkukivilinnakkeen muuri (KORJAUKSET 40):** harjan törmäys on ympyröitä (v1.39), mutta `groundAt` huomioi vain laatikot → harjalla ei ollut lattiaa,
+  pelaaja vajosi ja putosi (testissä heti 3,57 m alas). Nyt ympyrä, jolla `ground=1`, toimii lattiana (keskipiste alle `c.r + 0,35·r` päässä), harjan
+  pinta sammaleen tasolla (+7 cm). Testattu: koko kierros harjalla kolmessa linnakkeessa, jalat tasan pinnalla.
+- **Kyykkytähtäin:** merkit ja viiva nyt suoraan tähtäyspisteen alla (x = ruudun keskikohta), symmetrisesti; korkeus tulee yhä todellisesta lentoradasta
+  (katsekulma, painovoima, tuuli). Maahan osuma ▼ samalla viivalla. Punainen täyden vedon piste 4 → 2,8 px (−30 %); Pisteet-tyylin pisteet −20 % (r 1,6).
+- **Vilkkuminen** oletuksena POIS; **X** (`BIND.remove`, jousta jännittäessä) kytkee (`aimBlink`, localStorage `hiidenmaa_aimblink`). Piste ja viivat
+  vilkkuvat samaan aikaan yhdellä ajastimella (`aimBlinkOp`): 3 s näkyvä, 3 s himmeä (0,55), pehmeä 0,4 s siirtymä. Ohjeissa X-rivi (seisten ja kyykyssä).
+- **Tuulimittari** (`#windWarn`) näkyy aina jousta jännittäessä ulkona ristikon yläpuolella: "Tuuli 3,3 m/s" + suuntanuoli reaaliajassa (hillitty);
+  ≥ 8 m/s varoitus ⚠ kuten ennen. Tuuli vaikuttaa nuoleen (`ARROW_WIND` .13, sulitetut puolet) ja tähtäimen laskettuun rataan.
+- Tarkistukseen 1 rivi.
+
+### v2.03 (valojen etäisyydet, tulinuolen hehku kaukaa, uusi kyykkytähtäin, minimiveto 0,4 s)
+- **Minimiveto** `BOW_MIN_T` 0,7 → 0,4 s.
+- **Uudet asetukset (Grafiikka › Valo):** `lightDist` "Valojen näkyvyysetäisyys" (40/60/90/150/300/800 = koko kartta; ennen kiinteä 60 m, `updateLights`)
+  ja `lightRange` "Valon kantama" (PointLight.distance 17/20/24/28/32 m; tulien varjokameran far = kantama − 2, enint. 30). Esiasetukset Low…Ultra:
+  lightDist 40,40,60,60,90,150,300,800; lightRange 17,17,17,17,20,24,28,32. **Auringon varjoetäisyys** suurempi: High 80→110, High+ 110→160, Ultra 140→220
+  (uudet valinnat 160/220; varjokameran far kasvaa mukana). Vanhat tallennetut esiasetukset päivittyvät (`SET._v` 3), eivät muutu Customiksi.
+- **Tulinuolen hehku** (`arrowGlowTick`, state.js): additiivinen sprite liekissä, ei sumua, koko kasvaa etäisyyden mukaan (näkyy valopisteenä), näkyy
+  `lightDist`:n sisällä → Ultralla kartan päästä päähän. Himmenee valon/liekin mukana (`p.glowK`), myös ilman "tulinuolten valo" -asetusta.
+- **Kyykkytähtäin** (`bowTraj` actions.js + `updDropRet` ui.js): lentorata lasketaan samalla fysiikalla kuin oikea nuoli (lähtöpiste, `bowAimPoint`, nopeus,
+  painovoima, tuuli; kärki 0,45 m) ja projisoidaan ruudulle → katsekulma ylös/alas venyttää ja kaartaa viivastoa; testattu: ennustettu osuma = oikea
+  nuoli < 1 cm. Merkit 10…150 m (vaakamatka), ohut viiva tähtäyspisteestä merkkien kautta, merkkien leveys kapenee, pienet metrit sivussa ("m" vain
+  viimeisessä), maahan/esteeseen osuma ▼ + metrit. **Z** vaihtaa tyyliä Viivasto / Pisteet / Kevyt (`AIM_ST`, localStorage `hiidenmaa_aimst`).
+- **Täysi veto:** piste pienempi (kyykyssä 2 px, seisten 3 px) ja piste + viivat himmenevät 2 s välein läpinäkyviksi ja palaavat (CSS `aimBlink`).
+  Ohjeet `#aimHint`: seisten "C Kyykkyyn: tarkka laukaus ja lentorata", kyykyssä "C Nouse ylös" + "Z Tähtäin: X (n/3)". Tuulivaroitus siirtyi ristikon yläpuolelle.
+- Tarkistukseen 1 rivi.
+
+### v2.02 (tärkeimmät esineet maassa 3D-malleina)
+- `dropModel(id)` (state.js, `dropMesh` käyttää ensin sitä): aseet, työkalut, vasara ja jouset = sama malli kuin kädessä (`makeHeld`), kilvet `makeShield`,
+  haarniskat `armorDropMesh` (sorvattu rintapanssari LatheGeometry, olkasuojat, kaula, vyö + solki; metallisissa vanteet, karhuntaljassa turkiskaulus,
+  Hiidenpanssarissa hehkuvat riimuviivat ja kivi), avaimet `keyMesh` (rengas, varsi, lovet, hehku), arvoesineet `treasureMesh` (hiidenkivi kristallirypäs,
+  kruunusirpale kultareunus + piikit, vartijan sydän). Juomat `potionMesh` (v2.00). Keskitys + skaalaus pisin sivu ≤ 0,8 m; pystyyn osoittava pitkä esine
+  käännetään makaamaan (ei jouset), lyömäaseet pieneen kallistukseen; `userData.lift` = lepokorkeus (ei uppoa maahan). Raaka-aineet, ruoka, nuolet ja soihtu
+  pysyvät kuvakelaattoina (näyttävät niinkin hyviltä).
+- Tarkistukseen 1 rivi.
+
+### v2.01 (jousen tähtäys, minimiveto, tuuli, tulinuolen valo)
+- **Tähtäysvika (KORJAUKSET 39):** nuolet osuivat vasemmalle. Kamera on tähdätessä 0,75 m pelaajan oikealla; nuoli lähtee pelaajasta kohti kameran säteen
+  osumapistettä, mutta `camRayPoint` ei huomioinut olentoja → osuma maahan/70 m olennon taakse → nuoli kulki kohteen kohdalla 0,4–0,7 m vasemmalla (mitattu
+  6–35 m, kaikki ohi). Nyt `bowAimPoint` (actions.js) testaa säteen myös olentojen pystylieriöihin (säde `def.r`+0,1, korkeus `barH`) → kaikki osuivat.
+  Pystysuunnassa painovoima pudottaa nuolta edelleen (tarkoituksellinen; kyykyssä tiputusristikko).
+- **Minimiveto 0,7 s** (`BOW_MIN_T`, `P.drawT`): lyhyempi veto peruuntuu (nuoli ei kulu, ei laukausta), ilmoitus enintään 4 s välein. Koskee myös kestävyyden loppumista.
+- **Tuuli:** vaikutus nuoleen `ARROW_WIND` .08 → .13 (13 m/s ≈ 0,8 m sivuun 30 m:ssä; sulitetut puolet). **Tuulivaroitus** `#windWarn` jousta jännittäessä, kun tuuli
+  ≥ 8 m/s (`WIND_WARN`): ⚠ "Kova tuuli N m/s – nuoli kaartuu" (≥ 15 m/s punainen "Myrskytuuli") ja nuoli, joka näyttää tuulen suunnan ruudulla.
+- **Tulinuolen valo kohteessa:** voimakkuus 2,8 (lennossa 1,5), palaa täysillä 3,2 s ja hiipuu pehmeästi (smoothstep) 5 s:iin; liekki kutistuu samalla. **Sateessa**
+  (ei katon alla) valo 2,2 ja hiipuu pehmeästi 1,6 s:ssa (ennen: sammui heti); mobiin osuessa sateessa 1,2 s. Veteen osuessa sammuu yhä heti.
+- Tarkistukseen 1 rivi, v1.98-rivin sadetesti päivitetty.
+
+### v2.00 (juomat, kylläisyys 100, DEV Å -esinevalikko)
+- **Juomat** (items.js, `potion`): Parannusjuoma (punainen, terveys heti täyteen), Elpymisjuoma (vihreä, +1 terveys/s 60 s, tila `elpyminen`),
+  Sisujuoma (sininen, kylläisyys täynnä 5 min `kylla` + kestävyys täynnä 30 s `sisu`). Juodaan pikapaikasta (`useSlot` → `drink`, actions.js), pino 5,
+  paino 0,4, harvinaisuus "rare". Kuvake: lasipullo, neste, korkki. Maassa oikea 3D-pullo (`potionMesh`, state.js; nesteessä hehku, koko ×1,7).
+  **Saatavuus:** vain arkuista – ensimmäisellä avauksella jokaisella juomalla 10 % mahdollisuus (`POTIONS`, `openFound`, ui.js); ei tynnyreissä eikä
+  säkeissä (testattu 3000 arkkua: ~9,5 % / juoma, tynnyrit 0).
+- **Kylläisyys 100:** aiemmin mittari kului heti syömisen jälkeen (99,97 → näytti 99). Nyt täyteen syöty = tasan 100 ja `P.buffs.taysi` 60 s: kylläisyys ei
+  kulu minuuttiin, sitten normaalisti. Sisujuoman aikana sama.
+- **DEV Å** (`renderDevI`, `#devIP`, näppäin `BracketLeft`/å): oma esinesivu. Pikavalinnat `DEV_PICKS` (Hiidenmiekka, Hiidenpanssari, Rautakilpi, Hiidenjousi,
+  sulitetut ja tulinuolet 100, pihka 100, hiidenkivet 3, kaikki avaimet + kruunusirpaleet 3, juomat 5) "Anna"-napein + "Anna kaikki", alla esinehaku
+  määrällä. Esinehaku poistettiin Ä-valikosta.
+- Tarkistukseen 3 riviä.
+
+### v1.99 (pomot murskaavat rakennelmat, ulottuvuuksissa vain työpenkki)
+- **`bossTrample(m,dt)`** (ai.js, kaikille `boss`/`rboss`, 0,2 s välein; ei tiloissa sleep/rise/sink eikä vajotessa tai kuolleena): rakennusosa, jonka törmäyslaatikko
+  osuu pomon ympärille (säde `def.r`+0,5 m – suurempi kuin pomon oma törmäyssäde, jotta seinä jota vasten se painaa murskautuu; korkeus jaloista −0,3 m
+  mallin korkeuteen), poistetaan heti: seinät, aidat (myös `mobProof`), ovet, lattiat, katot, työpisteet, sängyt… **Ei** `store`-osia (arkut, tynnyrit – tavarat
+  säilyvät) eikä ulottuvuuksien pintoja (eivät ole rakennusosia). Puut (ei aarnipuita) kaatuvat poispäin pomosta (`fallTree`). Ääni + tärähdys, ilmoitus
+  "X murskaa kaiken tieltään!" enintään 4 s välein.
+- **Rakentaminen ulottuvuuksissa** (`validPlace`, building.js): vain **työpenkki**, ja vain lattialle (`DUN.y`), vapaisiin ruutuihin (`rCell`/`rWall`: kulmat ja
+  keskipiste), ei päällekkäin minkään törmäyksen kanssa (0,15 m marginaali), näköyhteys pelaajasta (ei seinän takaa). Muu osa → "Ulottuvuuksissa ei voi rakentaa
+  – vain työpenkin voi asettaa." (`placeBuild` ilmoittaa myös, kun haamu ei näy). Hautakummussa ei rakenneta lainkaan. Haamu: `marchTerrain` osuu ulottuvuudessa
+  lattiatasoon, sijoitus vapaa (0,25 m). Penkin rengas lattian korkeudelle (`makeBenchRing(x,z,fy)`).
+- Tarkistukseen 2 riviä.
+
+### v1.98 (nuolten tarkka osuma ja ajastimet)
+- **Tarkka pysähtyminen (`arrowStep`/`arrowContact`, state.js; `arrowBlocked`, collision.js):** nuolen liike pilkotaan enintään 12 cm:n askeliin ja kärjen
+  (0,45 m keskeltä) osuma tarkennetaan puolittamalla 6 kertaa → nuoli jää kiinni täsmälleen pintaan (virhe < 2 cm; testattu 75–90 m/s). Aiemmin tarkistus
+  oli vain kerran kehyksessä (nopea nuoli saattoi mennä ohuen seinän läpi tai jäädä sen sisään) ja laatikoissa oli 15 cm:n marginaali. Pysäyttävät:
+  rakennetut seinät/lattiat/katot/pylväät, **suljetut ovet** (avoin ovi `off` päästää läpi), luolaston ja rauniomuurit, puut/kivet/tukit (ympyrät), maa ja
+  **vesi** (pinta y≈0 pysäyttää nuolen). Koskee myös vihollisten nuolia. Kivet (`rock`) käyttävät vanhaa tarkistusta.
+- **Ajastimet alkavat osumahetkestä:** nuoli häviää 10 s (tulinuoli 8 s) osumasta (aiemmin 6 s); tulinuolen liekki ja valo sammuvat 5 s:ssa (valo
+  himmenee tasaisesti, `arrowFade` dur 5; mobiin osunut tulinuoli 2 s). **Sade** (`wRain>.3`, ei katon alla: `sheltered`) tai **veteen osuminen** sammuttaa
+  liekin ja valon heti osuessa (savupuuska); lennossa valo säilyy (sateessa himmenee nopeammin kuten ennenkin).
+- Tarkistukseen 1 rivi (seinäosuma, ovi auki/kiinni, ajastimet, sade).
+
+### v1.97 (sade ja tuli ilman spämmiä, Suonäkki syntyy, osuma-äänen häntä pois)
+- **Sade + nuotio (korjaus, KORJAUKSET 38):** pelaaja syttyi nuotiossa, sade sammutti heti, uudestaan… joka ruudulla → ilmoitusspämmi ja tiheä ääni.
+  Nyt `playerWet()` (effects.js) = vedessä TAI sataa (`wRain>.5`) eikä pelaaja ole katon alla (`shelterCache`). Märkä pelaaja **ei syty lainkaan**
+  (`canIgnitePlayer`), sama sääntö palavan olennon sytytykselle; palava sammuu märäksi tullessa; katon alla sateessakin voi syttyä ja palaa. Jäähy
+  `P.igniteCd` 3 s sammutuksen/syttymisen jälkeen; ilmoitus ("Syttyit tuleen!") enintään 12 s välein (`P.igMsgT`). Mobit: `mobWet(m)` (actions.js,
+  suoja tarkistetaan enintään 1 s välein vain sateella, `m.shU`/`m.shd`), märkä mobi ei syty, `m.igniteCd` 3 s, "Syttyi!"-ääni/teksti 4 s välein (`m.igFx`).
+  Aiemmin sateen tarkistus ei huomioinut kattoa (sade sammutti myös katon alla).
+- **Suonäkki:** syntyi vain yön "pelottavana" (10 %/yö, vain jos pelaaja on suolla) → käytännössä ei koskaan. Nyt `SPAWN.suo.night` sisältää sen (22 %),
+  spawner käsittelee väijyjän: enintään yksi, nousee 2 s maasta tai lätäköstä (lampare), jahdissa kuten ennen (katoaa aamulla). Testattu: 6 kartasta 5:llä
+  syntyy suolla (kartta 1 pienin suo, ei satunnaisesti). `BIOMES.suo.foe` mainitsee sen.
+- **Osuma-äänen häntä (`tools/process_sounds.py`, PV 3):** `event_end()` leikkaa osuma-äänen (hurt) ensimmäisen tapahtuman loppuun (taso pysyy 20 dB
+  kulkevan huipun alla ≥ 100 ms) + 60 ms; häivytys 0,20 s. Raaka `aarnihirvio_hurt_1` oli 4 s: ääni 0–0,45 s, sitten veden kaltaista kohinaa ja uusi
+  kova ääni 1,3 s:stä (leikkautui keskeltä) → nyt 0,47 s siisti. Muut lajit ennallaan. Käyttäjä aikoo vaihtaa jo lisättyjä ääniä → tarkista ne
+  seuraavalla äänierällä (HUOM-rivit: `aarnihirvio_idle_1`/`chase_2` sama tiedosto, `chase_1` +12,5 dB).
+- Tarkistukseen 2 riviä (sade/tuli-skenaariot, Suonäkki-spawn).
+
+### v1.96 (kivivartijalta pois pomoäänet)
+- Käyttäjän korjaus: boss-äänet kuuluvat vain Kalmanvartijalle. `VARAANI.kivivartija` oli `vartija` ×1,15 → kivivartija lainasi Aarnihirviön pomoääniä
+  vartijan kautta. Nyt `kivivartija` → `kalmo` ×0,75 (tavallinen vihollinen; kalmolla ei vielä ole ääniä → kivivartija on hiljainen, kunnes se saa
+  omat `kivivartija_*`-äänet tai kalmo omansa). Tarkistusrivi (v1.95-rivi) varmistaa, ettei kivivartijan varaketjussa ole pomoa.
+
 ### v1.95 (Kalmanvartijan äänet)
 - **Ongelma:** Kalmanvartijalla oli kaikki äänipaikat (idle, hurt, death ×2, aggro, chase), mutta varaääni oli `kalmo`, jolla ei ole yhtään
   ääntä → vartija (ja kivivartija sen kautta) oli mykkä. **Korjaus:** `VARAANI.vartija` → `aarnihirvio` sävelellä ×0,70 (matala kivijättiläinen),
-  kivivartija → vartija ×1,15 (yht. ×0,805). Kun käyttäjä lisää `vartija_*`-äänet, ne korvaavat lainan automaattisesti.
+  Kun käyttäjä lisää `vartija_*`-äänet, ne korvaavat lainan automaattisesti. (v1.95:n kivivartija lainasi vartijan kautta pomoääniä – korjattu v1.96:ssa.)
 - **Uusi kaikuääni Kalmanvartijalle** (`vartija_echo_1/2`, paikkamerkit luotu, `ECHO_AI`/`CRE_ECHO` = rboss + boss). Soi `vartijaEcho` (audio.js,
   `creTick`): maailmassa alle 80 m Kalmankehästä, kunnes vartija on kukistettu ensimmäisen kerran (`flags.boss`) ja vain kun vartija ei ole hereillä.
   24–48 s välein (ensimmäinen 4–10 s), maan alta (piilo-olento `VEC.m` 3 m maan alla kehän keskellä), tumma (alipäästö), kaiku 0,9, voimakkuus ×0,6.

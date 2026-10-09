@@ -31,7 +31,7 @@ function updatePlayer(dt){
   // stamina regen
   P.stamDelay-=dt;if(P.stamDelay<=0&&!P.swim){let r=22*P.fx.stamRegen;P.stam=Math.min(maxStam(),P.stam+r*dt);}
   if(P.blocking&&P.stam<=0)P.blocking=false;
-  P.stam=Math.max(0,P.stam);if(devOn('stam'))P.stam=maxStam();// DEV: kestävyys ei kulu
+  P.stam=Math.max(0,P.stam);if(devOn('stam')||P.buffs.sisu)P.stam=maxStam();// DEV: kestävyys ei kulu
   // velocity
   P.vel.x=lerp(P.vel.x,dx*speed,Math.min(1,dt*(P.onGround?12:3)));P.vel.z=lerp(P.vel.z,dz*speed,Math.min(1,dt*(P.onGround?12:3)));
   // v1.37 (lista 3, kohta 33): DEV-lento. Kun "Lento" on päällä, tuplahyppy (2 painallusta 0,35 s sisällä) aloittaa tai lopettaa lennon.
@@ -70,7 +70,7 @@ function updatePlayer(dt){
   if(!P.atk&&mouseL&&state==='play'&&w.cat==='weapon'&&locked)startAttack();
   else if(mouseL&&state==='play'&&w.cat==='shovel'&&locked)useTool(false);
   else if(mouseR&&state==='play'&&w.cat==='shovel'&&locked)useTool(true);   // v0.96 oikea pohjassa: toissijainen (polku / värin palautus)
-  if(P.drawing){P.bowDraw=Math.min(1,P.bowDraw+dt/bowDrawTime());P.stam-=6*dt;P.stamDelay=.5;if(P.stam<=0){P.drawing=false;fireBow();}}
+  if(P.drawing){P.drawT=(P.drawT||0)+dt;P.bowDraw=Math.min(1,P.bowDraw+dt/bowDrawTime());P.stam-=6*dt;P.stamDelay=.5;if(P.stam<=0){P.drawing=false;if(P.drawT>=BOW_MIN_T)fireBow();else bowCancel();P.drawT=0;}}
   // animate figure
   // v0.93 harppova juoksu: juoksukerroin runK 0 (kävely 4,6) → 1 (juoksu 8); askel pitenee ja tahti harvenee juostessa, kävelyssäkin hieman
   // v1.12 (välilisäys 3): runK pehmennetään (nousu 6/s, lasku 2,2/s), jotta juoksusta kävelyyn etukeno, askel ja kädet palautuvat rauhallisesti
@@ -331,5 +331,6 @@ function sleepAt(p){
   bump('slept');
   if(!sheltered(p.x,p.y,p.z)){msg('Sänky tarvitsee katon yläpuolelleen.','warn');return;}
   if(mobs.some(m=>!m.dead&&m.def.ai==='hostile'&&dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<20*20)){msg('Et voi nukkua, vihollisia on lähellä.','warn');return;}
-  fadeTo(()=>{flags.sleptN=nightId();dayT=.23;dayN++;P.buffs.levannyt=420;P.hunger=Math.max(20,P.hunger-15);P.hp=maxHp();for(const m of [...mobs])if(m.def.ai==='hostile'&&!m.dun)mobRemove(m);const gr=regrowForest();saveGame(true);msg(`Päivä ${dayN} alkaa.`+(gr.planted+gr.revived?' Metsä on kasvanut yön aikana.':''));});
+  const sh=HOME.inside&&!HOME.grey?(HOME.lvl===2?.2:HOME.lvl===1?.1:0):0;   // v2.09: nukkuminen parantaa vain kodin lämmössä (+10 % / +20 %), ei enää täyteen
+  fadeTo(()=>{flags.sleptN=nightId();dayT=.23;dayN++;P.buffs.levannyt=420;P.hunger=Math.max(20,P.hunger-15);const h0=P.hp;P.hp=Math.min(maxHp(),P.hp+maxHp()*sh);if(P.hp>h0+.5)setTimeout(()=>msg(`Nukuit ${sh>=.2?'lämpimässä kodissa':'mukavassa lämmössä'}: terveys +${Math.round(P.hp-h0)}.`,'loot'),900);for(const m of [...mobs])if(m.def.ai==='hostile'&&!m.dun)mobRemove(m);const gr=regrowForest();saveGame(true);msg(`Päivä ${dayN} alkaa.`+(gr.planted+gr.revived?' Metsä on kasvanut yön aikana.':''));});
 }
