@@ -232,6 +232,20 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       m.dead=true;bossBarTick(1/30);const ok3=bar.querySelector('.bbPhase').textContent==='KUKISTETTU';for(let i=0;i<40;i++)bossBarTick(.1);const ok4=bar.hidden;m.dead=false;mobRemove(m);
       if(!(ok1&&ok2&&ok3&&ok4)){bad=`${type} ${ok1}${ok2}${ok3}${ok4}`;break;}}
     return bad||true;});
+  t('v1.99 pomo murskaa alleen jäävät rakennelmat ja puut (ei arkkuja, ei nukkuessa)',()=>{const bx=P.pos.x+25,bz=P.pos.z+25,mk=(t,dx,dz)=>addPiece(t,bx+dx,terrainH(bx+dx,bz+dz)+.02,bz+dz,0);
+    const w=mk('seina',0,0),s=mk('sanky',0,2),ch=mk('arkku',-1.5,1),far=mk('seina',20,0);const m=spawnMob('vartija',bx,bz);m.state='rise';m.devSpawn=1;const om=msg;msg=()=>{};let res;
+    try{bossTrample(m,.3);const keep=pieces.includes(w);m.state='chase';m.sinking=0;for(let i=0;i<5;i++)bossTrample(m,.21);
+      res=keep&&!pieces.includes(w)&&!pieces.includes(s)&&pieces.includes(ch)&&pieces.includes(far)||'virhe';}finally{msg=om;mobRemove(m);for(const p of [ch,far])if(pieces.includes(p))removePiece(p);}
+    return res;});
+  t('v1.99 ulottuvuuksissa ei rakenneta (ilmoitus), paitsi työpenkki vapaalle lattialle; haamu osuu lattiaan',()=>{const p0=P.pos.clone(),inv0=JSON.stringify(inv);let res;const om=msg,msgs=[];msg=t=>msgs.push(t);
+    try{invAdd('puu',20);devTpBossRoom('portal1');for(const m of mobs.slice())if(m.dun)mobRemove(m);const no=!validPlace('seina',P.pos.x+3,DUN.y,P.pos.z,0);
+      let ok=null;for(let a=0;a<16&&!ok;a++){const x=P.pos.x+Math.cos(a/16*TAU)*3,z=P.pos.z+Math.sin(a/16*TAU)*3;if(validPlace('tyopenkki',x,DUN.y,z,0))ok={x,z};}
+      const G2=BUILT.portal1.grid;let wc=null;for(let iz=0;iz<G2.H&&!wc;iz++)for(let ix=0;ix<G2.W;ix++)if(rWall(G2,ix,iz)){wc=rPos(G2,ix,iz);break;}const inWall=!validPlace('tyopenkki',wc.x,DUN.y,wc.z,0);
+      buildSel='seina';placeBuild();const m1=/Ulottuvuuksissa ei voi rakentaa/.test(msgs[0]||'');
+      setBuildSel('tyopenkki');camera.position.set(P.pos.x,DUN.y+3,P.pos.z);camera.lookAt(P.pos.x+3,DUN.y,P.pos.z);camera.updateMatrixWorld(true);const cd=camDist;camDist=4;updateGhost();camDist=cd;const gh=ghost&&ghost.visible&&ghostPos&&Math.abs(ghostPos.y-DUN.y)<.01;setBuildSel(null);
+      res=no&&!!ok&&inWall&&m1&&gh||`virhe ${no}${!!ok}${inWall}${m1}${gh}`;}
+    finally{msg=om;devLeaveDun();P.pos.copy(p0);inv.splice(0,inv.length,...JSON.parse(inv0));invDirty=true;}
+    return res;});
   t('v1.98 nuolet: pysähtyvät tarkasti pintaan (seinä, kivi, suljettu ovi; avoin päästää), häviävät 10 s (tuli 8 s) osumasta, liekki+valo 5 s, sade/vesi sammuttaa heti osuessa',()=>{
     const sv=[wRain,SET.arrowLight];SET.arrowLight=true;wRain=0;const made=[];let res;
     try{const bx=P.pos.x+10,bz=P.pos.z+10,mk=(t,dx)=>{const x=bx+dx,p=addPiece(t,x,terrainH(x,bz)+.05,bz,0);made.push(p);return p;};

@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v1.98)
+## Nykytila (päivitetty v1.99)
 
-- **Versio 1.98**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 1.99**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. Uusi PR [#27](https://github.com/erboiyprogamer-source/hiidenmaa/pull/27): äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -226,6 +226,18 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v1.99 (pomot murskaavat rakennelmat, ulottuvuuksissa vain työpenkki)
+- **`bossTrample(m,dt)`** (ai.js, kaikille `boss`/`rboss`, 0,2 s välein; ei tiloissa sleep/rise/sink eikä vajotessa tai kuolleena): rakennusosa, jonka törmäyslaatikko
+  osuu pomon ympärille (säde `def.r`+0,5 m – suurempi kuin pomon oma törmäyssäde, jotta seinä jota vasten se painaa murskautuu; korkeus jaloista −0,3 m
+  mallin korkeuteen), poistetaan heti: seinät, aidat (myös `mobProof`), ovet, lattiat, katot, työpisteet, sängyt… **Ei** `store`-osia (arkut, tynnyrit – tavarat
+  säilyvät) eikä ulottuvuuksien pintoja (eivät ole rakennusosia). Puut (ei aarnipuita) kaatuvat poispäin pomosta (`fallTree`). Ääni + tärähdys, ilmoitus
+  "X murskaa kaiken tieltään!" enintään 4 s välein.
+- **Rakentaminen ulottuvuuksissa** (`validPlace`, building.js): vain **työpenkki**, ja vain lattialle (`DUN.y`), vapaisiin ruutuihin (`rCell`/`rWall`: kulmat ja
+  keskipiste), ei päällekkäin minkään törmäyksen kanssa (0,15 m marginaali), näköyhteys pelaajasta (ei seinän takaa). Muu osa → "Ulottuvuuksissa ei voi rakentaa
+  – vain työpenkin voi asettaa." (`placeBuild` ilmoittaa myös, kun haamu ei näy). Hautakummussa ei rakenneta lainkaan. Haamu: `marchTerrain` osuu ulottuvuudessa
+  lattiatasoon, sijoitus vapaa (0,25 m). Penkin rengas lattian korkeudelle (`makeBenchRing(x,z,fy)`).
+- Tarkistukseen 2 riviä.
 
 ### v1.98 (nuolten tarkka osuma ja ajastimet)
 - **Tarkka pysähtyminen (`arrowStep`/`arrowContact`, state.js; `arrowBlocked`, collision.js):** nuolen liike pilkotaan enintään 12 cm:n askeliin ja kärjen

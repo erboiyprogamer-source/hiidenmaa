@@ -36,6 +36,7 @@ function updateMobs(dt){
     if((d.ai==='boss'||d.ai==='rboss')&&m.hp<m.maxHp&&!bossTired(m.type)){   // v1.81: 3 kuolemaa samalle pomolle → ei enää parane
      const ar=m.type==='aarnihirvio';if(playTime-m.lastHit>(ar?102:60))m.hp=Math.min(m.maxHp,m.hp+m.maxHp*(ar?.01:.1)*dt);}
     if(m.f.fx)m.f.fx(dt,m);   // v1.93: pomomallin elävät osat (Ultralla silmäliekit ja leijuvat palat, bossmodels.js)
+    if(d.ai==='boss'||d.ai==='rboss')bossTrample(m,dt);   // v1.99: pomo murskaa alleen jäävät rakennelmat ja puut
     if(d.ai==='boss'){bossAI(m,dt,dx,dz,dist);continue;}
     if(d.ai==='rboss'){realmBossAI(m,dt,dx,dz,dist);continue;}
     const night=isNight()&&!P.inDun;
@@ -167,6 +168,20 @@ function spawnScary(hunt){if(mobs.some(o=>o.def.stalk&&!o.dead))return false;
     const m=spawnMob(type,x,z);if(MOBDEF[type].rise)m.riseT=0;if(MOBDEF[type].howl){sfx('howl',1,.9);msg('Kaukaa kuuluu kalmea ulvonta…','warn');}
     if(hunt){m.def=Object.assign({},m.def,{run:SCARY_SPD});m.state='chase';m.angry=true;m.lastHit=playTime-5;msg('Jokin lähestyy pimeässä…','warn');}return m;}
   return false;}
+/* v1.99: POMO MURSKAA KULKIESSAAN (boss + rboss, 0,2 s välein, ei nukkuessa/herätessä/vajotessa/kuolleena). Kaikki pelaajan rakennusosat, joiden törmäyslaatikko
+   osuu pomon ympärille (säde def.r + 0,5 m, korkeus jaloista 0,3 m alta mallin korkeuteen) tuhoutuvat: seinät, aidat (myös mobProof), ovet, lattiat, katot,
+   työpisteet, sängyt jne. EI arkkuja eikä tynnyreitä (store – tavarat säilyvät) eikä ulottuvuuksien omia pintoja (ne eivät ole rakennusosia).
+   Puut kaatuvat pois päin pomosta (ei aarnipuita). Ilmoitus enintään 4 s välein, ääni ja tärähdys. */
+function bossTrample(m,dt){if(m.dead||m.state==='sleep'||m.state==='rise'||m.state==='sink'||m.sinking)return;m.trT=(m.trT||0)-dt;if(m.trT>0)return;m.trT=.2;
+  const R=(m.def.r||1)+.5,y0=m.pos.y-.3,y1=m.pos.y+Math.max(2.5,m.barH||(m.def.fh||3)+1);let n=0,stone=false;
+  for(const p of pieces.slice()){const def=PIECES[p.t];if(!def||def.store)continue;if(dist2(p.x,p.z,m.pos.x,m.pos.z)>(R+6)*(R+6))continue;
+    let hit=false;if(!p.cols||!p.cols.length)hit=dist2(p.x,p.z,m.pos.x,m.pos.z)<R*R&&Math.abs(p.y-m.pos.y)<2;
+    else for(const c of p.cols){if(c.minY>y1||c.maxY<y0)continue;const cx=clamp(m.pos.x,c.minX,c.maxX),cz=clamp(m.pos.z,c.minZ,c.maxZ);if(dist2(cx,cz,m.pos.x,m.pos.z)<R*R){hit=true;break;}}
+    if(!hit)continue;if(/^kivi/.test(p.t)||def.stone)stone=true;burst(p.x,p.y+1,p.z,stone?0x8f8d86:0x8a5a32,10,4);removePiece(p);n++;}
+  if(!m.dun){nodesNear(m.pos.x,m.pos.z,R+3,_fellN);for(const t of _fellN){if(!t.alive||t.def.kind!=='tree'||t.type==='aarnipuu')continue;
+    if(dist2(t.x,t.z,m.pos.x,m.pos.z)>(R+t.def.r*t.s)**2)continue;killNode(t);fallTree(t,Math.atan2(t.x-m.pos.x,t.z-m.pos.z),true,m);n++;}}
+  if(!n)return;const vol=clamp(1.1-Math.hypot(P.pos.x-m.pos.x,P.pos.z-m.pos.z)/60,.15,1);sfx(stone?'crumble':'woodBreak',.8,vol);if(vol>.3)shake(.25);
+  if(playTime-(m.trMsg||-99)>4){m.trMsg=playTime;msg(`${m.def.n} murskaa kaiken tieltään!`,'warn');}}
 // v0.87 karhu kaataa jahdatessaan edessään (1,6 m) olevat puut (ei aarnipuita) sivulle tukeiksi, 0,25 s välein.
 const _fellN=[];
 function fellAhead(m,dt){m.fellT=(m.fellT||0)-dt;if(m.fellT>0)return;m.fellT=.25;for(const dd of [.9,1.8]){const ax=m.pos.x+Math.sin(m.yaw)*dd,az=m.pos.z+Math.cos(m.yaw)*dd;

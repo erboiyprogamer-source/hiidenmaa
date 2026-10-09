@@ -210,8 +210,8 @@ function setPieceDamage(p){const r=p.hp/PIECES[p.t].hp,lv=r>.66?0:r>.33?1:2;if(p
   p.mesh.traverse(o=>{if(!o.isMesh)return;const b=o.userData.baseMat||(o.userData.baseMat=o.material);if(b!==MAT.wood&&b!==MAT.doorwood&&b!==MAT.stone&&b!==MAT.thatch&&b!==MAT.tarwood)return;o.material=lv?damageMat(b,lv):b;});}
 // Työpenkin alueen raja: maastoa seuraava oranssi nauha, näkyy vain kun vasara on kädessä.
 const RING_MAT=new THREE.MeshBasicMaterial({color:0xff9a3a,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false});
-function makeBenchRing(x,z){const n=128,pos=new Float32Array((n+1)*6),idx=[];
-  for(let i=0;i<=n;i++){const a=i/n*TAU,px=x+Math.cos(a)*BENCH_R,pz=z+Math.sin(a)*BENCH_R,h=terrainH(px,pz);pos.set([px,h+.05,pz,px,h+.45,pz],i*6);if(i<n){const k=i*2;idx.push(k,k+1,k+2,k+1,k+3,k+2);}}
+function makeBenchRing(x,z,fy){const n=128,pos=new Float32Array((n+1)*6),idx=[];   // fy: tasainen lattia (ulottuvuus), muuten maaston korkeus
+  for(let i=0;i<=n;i++){const a=i/n*TAU,px=x+Math.cos(a)*BENCH_R,pz=z+Math.sin(a)*BENCH_R,h=fy!=null?fy:terrainH(px,pz);pos.set([px,h+.05,pz,px,h+.45,pz],i*6);if(i<n){const k=i*2;idx.push(k,k+1,k+2,k+1,k+3,k+2);}}
   const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setIndex(idx);
   const m=new THREE.Mesh(geo,RING_MAT);m.visible=false;m.frustumCulled=false;scene.add(m);return m;}
 function updateBenchRings(){const on=state==='play'&&!P.inDun&&curWeapon().cat==='hammer';for(const p of pieces)if(p.ring)p.ring.visible=on;}
@@ -238,7 +238,7 @@ function addPiece(t,x,y,z,rot,hp,data,f=0){
   if(t==='seinasoihtu'){p.data.burn=p.data.burn??900;if(!p.data.full)p.data.full=Math.max(60,p.data.burn);const a=(p.rot||0)*Math.PI/4;lightSources.push(p.light={x:x+Math.sin(a)*.45,y:y+.7,z:z+Math.cos(a)*.45,c:0xffa04a,i:1.5,on:()=>p.data.burn>0,piece:p});}
   if(t==='soihtuteline'){p.data.burn=p.data.burn??300;if(!p.data.full)p.data.full=Math.max(60,p.data.burn);lightSources.push(p.light={x,y:y+1.8,z,c:0xffa04a,i:1.5,on:()=>p.data.burn>0,piece:p});}
   if(t==='sulatin'){p.data.ore=p.data.ore||0;p.data.iore=p.data.iore||0;p.data.wood=p.data.wood||0;p.data.done=p.data.done||0;p.data.idone=p.data.idone||0;p.data.t=0;lightSources.push(p.light={x,y:y+.6,z,c:0xff7a2a,i:1.2,on:()=>(p.data.ore>0||p.data.iore>0)&&p.data.wood>0,piece:p});}
-  if(t==='tyopenkki')p.ring=makeBenchRing(x,z);
+  if(t==='tyopenkki')p.ring=makeBenchRing(x,z,y<DUN.y+5&&y>DUN.y-5&&Math.abs(y-terrainH(x,z))>3?y:null);
   if(def.store){p.data.lv=p.data.lv||0;p.data.items=p.data.items||[];while(p.data.items.length<storeSlots(p))p.data.items.push(null);}
   if(bt(t)==='ovi'){p.data.open=!!p.data.open;setDoor(p,p.data.open,p.data.dir||1);}
   pieces.push(p);pieceRoots.push(mesh);setPieceDamage(p);markShadowDirty();return p;

@@ -119,6 +119,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Hakukenttä hakee kaikista välilehdistä nimen osalla.
 - **Tietopaneeli (reppu, napsautus):** nimi isolla, kaikki ominaisuudet taulukkona (esim. soihtu: palamisaika max ja jäljellä).
 - **Päivitykset (★, reppu, arkku, tynnyri):** ensimmäinen painallus näyttää mitä muuttuu (nyt → uusi) ja hinnan; vasta **Päivitä nyt** päivittää.
+- **Pomot murskaavat (v1.99):** pomo tuhoaa kulkiessaan alleen/eteensä jäävät rakennelmat (seinät, aidat, ovet, lattiat, katot, työpisteet, sängyt) ja kaataa puut; arkut ja tynnyrit säilyvät. Ei nukkuessa eikä herätessä.
+- **Ulottuvuuksissa rakentaminen (v1.99):** vain työpenkki, vapaalle lattialle (ei seinän tai esineen päälle); muusta tulee ilmoitus. Hautakummussa ei rakenneta.
 - **Nuolet (v1.98):** pysähtyvät tarkasti pintaan (seinät, suljetut ovet, muurit, puut, kivet, maa, vesi). Osumasta: nuoli häviää 10 s (tulinuoli 8 s), tulinuolen liekki ja valo sammuvat 5 s:ssa; sade (ei katon alla) tai vesi sammuttaa heti osuessa.
 - **Tuli:** palava käsisoihtu sytyttää lyödyn, tulinuoli osumansa: 5–10 s, 5 hp/s; sade tai vesi sammuttaa heti.
   **v1.97:** märkä (sataa ja ei katon alla, tai vedessä) ei syty lainkaan – pelaaja eikä olento; katon alla sateessa syttyy ja palaa. Sammutuksen jälkeen 3 s jäähy; syttymisilmoitus enintään 12 s välein.
