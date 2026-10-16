@@ -204,6 +204,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     k.forEach(q=>q.state='idle');startFlee(k[1],1,0);const c=k.every(q=>q.state==='flee')&&/m\.orphan\)sr\*=2/.test(updateMobs.toString());
     const s2=spawnMob('emakko',P.pos.x+60,P.pos.z+60,{noBorn:1});ms.push(s2);const kk=spawnMob('porsas',P.pos.x+61,P.pos.z+60,{noBorn:1});kk.mom=s2;ms.push(kk);s2.famT=0;famPlan(s2,.01,99);const d=!!s2.fam&&kk.fam===s2.fam&&['nuzzle','play','root'].includes(s2.fam.k);
     res=a&&b&&c&&d||`virhe suuttuu ${a} orvot ${b} pako ${c} perhe ${d}`;}finally{msg=om;for(const m of ms)if(mobs.includes(m))mobRemove(m);}return res;});
+  t('v2.14 DEV Å: pikavalinnoissa 100 puuta (antaa reppuun)',()=>{const ok=DEV_PICKS.some(([i,n])=>i==='puu'&&n===100);const c0=invCount('puu');invAdd('puu',100);const c1=invCount('puu');invRemove('puu',c1-c0);return ok&&c1-c0===100||`virhe lista ${ok} reppu ${c1-c0}`;});
   t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
     if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
     const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;

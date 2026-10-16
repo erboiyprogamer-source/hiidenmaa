@@ -233,7 +233,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Eläinten luonteet (v0.85, `per`):** jänis jähmettyy ja pakenee siksakkia, kettu jää katsomaan matkan päästä, metso antaa tulla lähelle
   ja lehahtaa 14–24 m, porolauma pakenee yhdessä. Uudet eläimet: metsäjänis, kettu, metso (sulat → sulitetut nuolet), poro.
 - **Joskus vihaiset (v0.86, `temper`):** hirvi (35 % suuttuu alle 6 m:ssä, ryntää ja tönäisee ~2 m), ilves (yöllä hyökkää haavoittuneen
-  < 50 % kimppuun, muuten väistää), ahma (suuttuu raa'asta lihasta repussa), emakko (puolustaa 2–4 porsastaan alle 7 m:ssä ja suuttuu, kun porsas säikähtää sinua ja emo on alle 30 m päässä – v2.12). Rauhoittuvat
+  < 50 % kimppuun, muuten väistää), ahma (suuttuu raa'asta lihasta repussa), emakko (puolustaa 2–4 porsastaan alle 7 m:ssä ja suuttuu aina, kun sen oma porsas säikähtää sinua, missä tahansa – v2.14; emon kuoltua sen porsaat jäävät orpolaumaksi, joka pelkää 2× kauempaa; rauhallisena perhehetket: nuuhkaisu, leikki, tonkiminen). Rauhoittuvat
   12 s:n kuluttua, kun pelaaja on kaukana.
 - **Karhu (v0.87):** 120 hp, murisee 14 m:ssä ja hyökkää alle 8 m:ssä tai lyötynä; lyö liikkeestä pysähtymättä, tönäisee ~3,5 m, kaataa
   jahdatessaan edessään olevat puut tukeiksi, palautuu (5 %/s), jos sitä ei lyödä minuuttiin. Pelaaja pääsee juosten karkuun. Saalis
@@ -252,6 +252,12 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Spawneri (`spawner`):** 2,5 s välein 38–68 m päähän biomin taulukosta (`SPAWN`), katto 10 (yö 14); ei rakennusten, löytöpaikkojen
   (50 m) eikä aloitusrannan lähelle päivällä.
 - **Vartijat (`GUARDS`):** löytöpaikkojen ja portaalien vartijat syntyvät < 75 m, pysyvät paikallaan (palaavat 15–16 m jälkeen), kaatuminen tallentuu.
+
+- **Syntyanimaatio (v2.14):** uusi olento häivytetään näkyviin makuulla (0,8 s) ja nousee: nelijalkaiset etujalat ensin (istuva asento),
+  sitten takajalat ja pään ravistus; kaksijalkaiset vatsallaan → punnerrus → polvilleen → seisomaan. Kesto 2,5 s; osuma tai säikähdys
+  nostaa heti (~0,2 s). Ei pomoille, maasta nouseville väijyjille eikä valmiiksi paikalla oleville (luolat, vartijat).
+- **Kalmanummi (v2.14):** kalmot ja ylimykset eivät pala auringossa nummella. Kalmanvartijan taistelun aikana Kalmankehän ympärille
+  (60 m kehästä) ei synny kalmoja itsestään – vain vartijan kutsumat.
 
 ## 10. Pomot
 
@@ -433,7 +439,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Jousi: seisten täysin vedettynä pieni tähtäinympyrä ja pieni hajonta; kyykyssä täysin vedettynä tähtäin pistemäinen, ei hajontaa,
   veto ja nuolen nopeus +10 %, ja näkyviin tulee tiputusristikko (20–70 m).
 - Valikon Tallenna nyt -painike näyttää "Tallennettu ✓" ja välähtää vihreänä.
-- Kalmot ja pelottavat yöolennot syttyvät auringossa avoimella alueella (ei metsässä, katoksen alla, pilvisellä/sateella eikä yöllä):
+- Kalmot ja pelottavat yöolennot syttyvät auringossa avoimella alueella (ei metsässä, katoksen alla, pilvisellä/sateella eikä yöllä; kalmot ja ylimykset eivät pala Kalmanummella – v2.14):
   ryntäilevät palaen ~3 s, hidastuvat ja muuttuvat tuhkaksi ~6 s:ssa (ei saalista). Liian lähelle mennessä syttyy itsekin.
 - Valikossa 21 animoitua taustaa (mm. kaatuvia puita myrskyssä, raivoava karhu, susilauma, hirvi järvellä, ulottuvuuksien vihjeet,
   Kalmanvartijan varjo salamoissa, nousevat kalmot, ahjo). Portaalikuva on eeppinen riimukaari, joskus hahmo portin edessä.
@@ -495,6 +501,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Veren fysiikka (pisarat lentävät ja jäävät maahan) on päällä Medium-esiasetuksesta ylöspäin.
 
 ## Äänet (v1.84–v1.86, äänierä A: olennot)
+- **v2.14 kuuluvuus:** kutsuäänet kuuluvat noin 150 m, muut 64 m, rauhallinen ääntely 36 m. Kaukana suora ääni hiljenee 30 %, tummuu
+  (puolimatkassa alle 1,5 kHz), kaikuu (jopa ~1,9 × suora) ja huojuu hieman. Sudet ulvovat päivällä 3× harvemmin, yöllä 20 % harvemmin; yön
+  kaukainen ulvonta 100–145 m.
 - **v2.12 kuuluvuus:** kutsuäänet (📢 suden ulvonta, hirven mylvintä, metson soidin, karhun karjaisu) kuuluvat noin 220 m päähän, muut äänet noin
   80 m (rauhallinen ääntely alle 45 m). Kaukana ääni hiljenee, tummuu (alipäästö 15 kHz → 650 Hz) ja kaikuu enemmän. Yöllä ulkona kuuluu
   45–110 s välein (60 %) kaukaista suden ulvontaa 150–230 m päästä. Pitkiä kutsuääniä ei katkaista kesken (enintään 10 s, loppu luonnolliseen taukoon).

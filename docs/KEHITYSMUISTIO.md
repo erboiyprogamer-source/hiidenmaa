@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.13)
+## Nykytila (päivitetty v2.14)
 
-- **Versio 2.13**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. v2.11 (äänierä A2), v2.12 (pitkät äänet, kuuluvuus, emakko) ja v2.13 (tikkaiden kulmat, JATKO-kohdistus) PR:ssä [#29](https://github.com/erboiyprogamer-source/hiidenmaa/pull/29). Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
+- **Versio 2.14**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. v2.11 (äänierä A2), v2.12 (pitkät äänet, kuuluvuus, emakko) v2.13 (tikkaiden kulmat, JATKO-kohdistus) ja v2.14 (syntyanimaatiot, Kalmanummi, äänten kantama, emakon perhe) PR:ssä [#29](https://github.com/erboiyprogamer-source/hiidenmaa/pull/29). Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -228,6 +228,27 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.14 (päivitysideat 1–7, käyttäjän vastaukset kysymyksiin)
+- **1. Syntyanimaatio** (`bornStart`/`bornTick`/`bornPose`/`bornEnd`, effects.js; kutsu `spawnMob`:ssa, tikki `updateMobs`): kaikki olennot, joilla ei
+  ole omaa nousua (ei pomot, ei `def.rise`/väijyjät), häivytetään näkyviin makuulla 0,8 s (`BORN_FADE`) ja nousevat, yhteensä 2,5 s (`BORN_T`).
+  Nelijalkaiset (`BORN_Q`): jalat taitettuina rungon alla → etujalat suoristuvat (etupää nousee, istuva asento) → takajalat → pään ravistus.
+  Kaksijalkaiset (`BORN_B`, makeHumanoid): vatsallaan → punnerrus → polvilleen → seisomaan (kierto lonkan ympäri). Lintu: kyyristynyt → suora.
+  Osuma tai säikähdys (`bornScared`) → loppu 10× nopeammin (~0,2 s) ja tekoäly jatkaa. Ei-standardimateriaalit (silmät) piilossa kunnes näkyvyys > 0,6.
+  `opts.noBorn`: luolien ja ulottuvuuksien valmiit asukkaat, vartijat, valikon taustaeläin, uuden pelin peurat ja maasta nousevat väijyjät.
+- **2. Kalmanummi:** kalmo ja ylimys (`MOOR_UNDEAD`) eivät pala auringossa nummella (`biomeHere==='moor'`); muualla palavat. Kalmanvartijan
+  taistelun ajan (`vartijaFight`) ei synny luonnollisia kalmoja/ylimyksiä 75 m säteelle Kalmankehän keskeltä (`moorFightBlock`, kehä 15 + 60 m).
+- **3–5. Äänet** (audio.js): kutsuäänet (ulvonta ym.) `CRE_FAR_R` 220 → **150 m**, muut `CRE_NEAR_R` 80 → **64 m**, rauhallinen ääntely `CRE_IDLE_R`
+  45 → **36 m** (−20 %), panner ref ×0,8 (3 → 2,4, pomo 8 → 6,4; kutsu 14 → 10, max 220). Kaukaisuusefekti vahvempi: suora ääni 1 → 0,7
+  (`dg`), alipäästö `creLpf` 15 kHz·(1−k)^4 + 500 Hz (puolimatkassa ~1,4 kHz), ulkokaiku 0,08 → 1,88, sävelhuojunta LFO 0,35–0,65 Hz ≤ 30 senttiä
+  (`lg` → `src.detune`). Sudet (`CRE_WOLF`: susi, routasusi, kalmasusi) ulvovat päivällä 3× harvemmin ja yöllä 1,25× (20 %) harvemmin kuin ennen;
+  kaukainen yöulvonta 100–145 m (ennen 150–230 m), väli ×1,25.
+- **6. Emakko:** oma porsas säikähtää pelaajaa (`startFlee` → `mom.pigScare`) → emo suuttuu missä tahansa (myös kyykyssä tehdystä osumasta) ja
+  tietää pelaajan sijainnin (KORJAUKSET 43: ennen kaukaa suuttunut rauhoittui heti). Emon kuollessa sen alle 30 m päässä olevat porsaat →
+  orpolauma (`orphanPiglets`, `m.orphan`): seuraavat ensimmäistä, pakenevat yhdessä, säikähdys- ja turvaetäisyys ×2 pysyvästi. **Perhehetket**
+  (`famPlan`/`famStep`, 12–24 s välein, pelaaja yli 14 m): nuuhkaisu, leikki (porsaat kiertävät emoa hyppien), tonkiminen; keskeytyy pelaajaan alle 12 m.
+- **7. DEV Å:** pikavalinnoissa 100 puuta.
+- Tarkistusrivit v2.14 (5 kpl). Testattu kuvasarjoin (syntyminen 9 olennolla, perhehetket) ja selaimessa (äänet, emakko, orvot).
 
 ### v2.13 (tikkaiden kulmat, JATKO-kohdistus tikkaille ja portaille, saumaton jatko – käyttäjän 5 vastausta)
 - **Tikkaiden kulmat** (`LADDER_RUN`/`ladRun`, pieces.js): asento 1 = pysty (suoraan 1 kerros ylös), 2 = **1:3** (sivulle G/3 per WH), 3 = **1:2**
