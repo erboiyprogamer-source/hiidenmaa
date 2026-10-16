@@ -91,6 +91,13 @@ const FUEL_MAX=40,COOKABLE={liha:'paisti',sieni:'sienipaisti'};
 for(const d of Object.values(PIECES))if(d.base){const b=PIECES[d.base];for(const k of ['poses','flip','span2','noBench','store','col','dim'])if(d[k]===undefined&&b[k]!==undefined)d[k]=b[k];}
 const BUILD_CATS=[['alku','Alkupeli'],['seinat','Seinät ja lattiat'],['katot','Katot'],['palkit','Palkit ja pylväät'],['portaat','Portaat ja tikkaat'],['kalusto','Kalusto'],['tyopisteet','Työpisteet'],['valo','Valo'],['puolustus','Puolustus'],['kivi','Kivirakennus'],['kivikatot','Kivikatot']];
 // Portaiden geometria asennon mukaan: 0 tavallinen, 1 jyrkkä (puolet syvyydestä), 2 loiva (puolet korkeudesta).
+// v2.13 tikkaiden kulmat: asento f 0–2 = pysty, 1:3, 1:2. Jokainen tikas nousee WH:n ja siirtyy sivulle (yläpää taaksepäin, -z) G/3 tai G/2 →
+// 3 tai 2 tikasta jatkona = tasan yksi ruutu sivulle (3 tai 2 kerrosta ylös). Vanhat tallennukset: 15° → 1:3, 30° → 1:2 (lähimmät).
+const LADDER_RUN=[0,G/3,G/2],ladRun=f=>LADDER_RUN[((f%3)+3)%3];
+// v2.13 saumaton puusyy jatkokappaleissa: pitkän akselin tekstuuri venytetään kokonaiseen toistomäärään, jotta seuraava kappale jatkaa samasta kohdasta
+function seamLen(me,axis){const g=me.geometry,P=g.parameters,uv=g.attributes.uv;if(axis==='h'){const n=Math.max(1,Math.round(P.height/WH)),k=n*WH/P.height;for(const f of[0,1,4,5])for(let i=0;i<4;i++){const j=f*4+i;uv.setY(j,uv.getY(j)*k);}}
+  else{const n=Math.max(1,Math.round(P.depth/G)),k=n*G/P.depth;for(const f of[0,1])for(let i=0;i<4;i++){const j=f*4+i;uv.setX(j,uv.getX(j)*k);}for(const f of[2,3])for(let i=0;i<4;i++){const j=f*4+i;uv.setY(j,uv.getY(j)*k);}}
+  uv.needsUpdate=true;return me;}
 function stairGeom(f){return f===1?{run:G/2,rise:WH}:f===2?{run:G,rise:WH/2}:{run:G,rise:WH};}
 const BEAM_TH=t=>t==='palkki'?.22:.3,BEAM_L=t=>t==='palkki'?G:2*G;
 // local AABBs: [cx,cy,cz,w,h,d]
@@ -109,8 +116,8 @@ function pieceBoxes(t,f=0){const def=PIECES[t];t=bt(t);if(def.dim)return[[0,def.
   case 'palkki':case 'palkki2':{const L=BEAM_L(t),th=BEAM_TH(t),a=(f%5)*Math.PI/8;if(!a)return[[0,th/2,0,L,th,th]];
     const n=Math.max(1,Math.ceil(L/.4)),l=L/n,c=Math.cos(a),sn=Math.sin(a),y0=L/2*sn+th/2*c,out=[];
     for(let k=0;k<n;k++){const sp=-L/2+l*(k+.5);out.push([sp*c,y0+sp*sn,0,l*c+th*sn,l*sn+th*c,th]);}return out;}
-  // Tikkaat: asento f 0–2 = pysty, nojaa 15°, nojaa 30° (yläpää kallistuu taaksepäin -z). Pituus säädetään niin, että yläpää on aina WH:n korkeudella.
-  case 'tikkaat':{const a=(f%3)*Math.PI/12;if(!a)return[[0,WH/2,0,.8,WH,.1]];const L=WH/Math.cos(a),n=Math.ceil(L/.4),l=L/n,c=Math.cos(a),sn=Math.sin(a),out=[];
+  // Tikkaat: asento f 0–2 = pysty, 1:3, 1:2 (v2.13, yläpää kallistuu taaksepäin -z ladRun(f) verran). Yläpää on aina WH:n korkeudella.
+  case 'tikkaat':{const run=ladRun(f);if(!run)return[[0,WH/2,0,.8,WH,.1]];const L=Math.hypot(WH,run),n=Math.ceil(L/.4),l=L/n,c=WH/L,sn=run/L,out=[];
     for(let k=0;k<n;k++){const s=l*(k+.5);out.push([0,s*c,-s*sn,.8,l*c+.1*sn,l*sn+.1*c]);}return out;}
   case 'portaat_ontelo':{const gm=stairGeom(f%3),d=gm.run/STEP_N,h=gm.rise/STEP_N,out=[];for(let i=0;i<STEP_N;i++)out.push([0,h*(i+1)-.05,G/2-d/2-i*d,G,.1,d]);return out;}
   case 'tynnyri':return[[0,.5,0,.9,1,.9]];
@@ -169,11 +176,12 @@ function buildPieceMesh(t,f=0){
     case 'harjakatto':{const a=roofSlope(G/2,G/2,false,def.stone),b2=new THREE.Group();b2.add(roofSlope(G/2,G/2,false,def.stone));a.position.z=G/4;b2.position.z=-G/4;b2.rotation.y=Math.PI;g.add(a,b2);break;}
     case 'vinoseina':case 'kolmio':g.add(triMesh(t,f,W));break;
     case 'palkki':case 'palkki2':{const L=BEAM_L(t),th=BEAM_TH(t),a=(f%5)*Math.PI/8,b=bxw(L,th,th,W,0,0,0);const grp=new THREE.Group();grp.add(b);grp.rotation.z=a;grp.position.y=L/2*Math.sin(a)+th/2*Math.cos(a);g.add(grp);break;}
-    case 'tikkaat':{const a=(f%3)*Math.PI/12,L=WH/Math.cos(a),lg=new THREE.Group();for(const x of[-.35,.35])lg.add(bxw(.08,L,.08,W,x,L/2,0));for(let y=.3;y<L-.1;y+=.36)lg.add(DET(bxw(.7,.06,.06,W,0,y,.02)));lg.rotation.x=-a;g.add(lg);break;}
+    case 'tikkaat':{const run=ladRun(f),a=Math.atan2(run,WH),L=Math.hypot(WH,run),lg=new THREE.Group();for(const x of[-.35,.35])lg.add(seamLen(bxw(.08,L,.08,W,x,L/2,0),'h'));
+      const n=Math.max(1,Math.round(L/.36)),st=L/n;for(let k=0;k<n;k++)lg.add(DET(bxw(.7,.06,.06,W,0,st*(k+.5),.02)));lg.rotation.x=-a;g.add(lg);break;}   // v2.13: puolat tasavälein → jatkuvat saumassa
     case 'portaat':{const d=G/STEP_N,h=WH/STEP_N;for(let i=0;i<STEP_N;i++)g.add(bxw(G,h*(i+1),d,W,0,h*(i+1)/2,G/2-d/2-i*d));break;}
     case 'portaat_ontelo':{const gm=stairGeom(f%3),d=gm.run/STEP_N,h=gm.rise/STEP_N,L=Math.hypot(gm.run,gm.rise),al=Math.atan2(gm.rise,gm.run);
       for(let i=0;i<STEP_N;i++)g.add(bxw(G,.1,d+.02,W,0,h*(i+1)-.05,G/2-d/2-i*d));
-      for(const x of[-(G/2-.07),G/2-.07]){const sb=bxw(.12,.26,L,W,x,0,0);const gr=new THREE.Group();gr.add(sb);gr.rotation.x=al;gr.position.set(0,gm.rise/2-.22,G/2-gm.run/2);g.add(gr);}break;}
+      for(const x of[-(G/2-.07),G/2-.07]){const sb=seamLen(bxw(.12,.26,L,W,x,0,0),'d');const gr=new THREE.Group();gr.add(sb);gr.rotation.x=al;gr.position.set(0,gm.rise/2-.22,G/2-gm.run/2);g.add(gr);}break;}
     case 'tyopenkki':g.add(bxw(1.8,.14,.9,MAT.wood,0,.86,0));for(const [x,z] of [[-.8,-.35],[.8,-.35],[-.8,.35],[.8,.35]])g.add(bxw(.14,.8,.14,MAT.wood,x,.4,z));g.add(DET(bx(.5,.08,.2,mat(0x8f8d86),.3,.98,0)));g.add(DET(bxw(.08,.06,.6,MAT.wood,-.4,.96,.1)));break;
     case 'nuotio':for(let i=0;i<8;i++){const a=i/8*TAU;g.add(bx(.26,.2,.26,mat(0x6a6862),Math.cos(a)*.48,.1,Math.sin(a)*.48));}{const l1=bxw(.14,.14,.8,MAT.wood,0,.12,0);l1.rotation.y=.6;const l2=bxw(.14,.14,.8,MAT.wood,0,.16,0);l2.rotation.y=-.6;g.add(l1,l2);const f=new THREE.Mesh(new THREE.ConeGeometry(.28,.7,5),MAT.flame);f.position.y=.5;g.add(f);const f2=new THREE.Mesh(new THREE.ConeGeometry(.15,.45,5),MAT.flame2);f2.position.y=.45;g.add(f2);g.userData.flame=[f,f2];}break;
     case 'grilli':{for(let i=0;i<8;i++){const a=i/8*TAU;g.add(bx(.26,.2,.26,mat(0x6a6862),Math.cos(a)*.48,.1,Math.sin(a)*.48));}

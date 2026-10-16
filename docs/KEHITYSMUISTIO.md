@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.12)
+## Nykytila (päivitetty v2.13)
 
-- **Versio 2.12**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. v2.11 (äänierä A2) ja v2.12 (pitkät äänet, kuuluvuus, emakko) PR:ssä [#29](https://github.com/erboiyprogamer-source/hiidenmaa/pull/29). Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
+- **Versio 2.13**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. v2.11 (äänierä A2), v2.12 (pitkät äänet, kuuluvuus, emakko) ja v2.13 (tikkaiden kulmat, JATKO-kohdistus) PR:ssä [#29](https://github.com/erboiyprogamer-source/hiidenmaa/pull/29). Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -228,6 +228,22 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.13 (tikkaiden kulmat, JATKO-kohdistus tikkaille ja portaille, saumaton jatko – käyttäjän 5 vastausta)
+- **Tikkaiden kulmat** (`LADDER_RUN`/`ladRun`, pieces.js): asento 1 = pysty (suoraan 1 kerros ylös), 2 = **1:3** (sivulle G/3 per WH), 3 = **1:2**
+  (G/2 per WH) → 3 tai 2 tikasta jatkona = tasan 1 ruutu (2,5 m) sivulle ja 3 tai 2 kerrosta ylös. Ennen 0°/15°/30° (ei osunut ruudukkoon);
+  vanhat tallennukset: 15° → 1:3, 30° → 1:2. Kiipeäminen (`ladderAt`) seuraa uutta kaltevuutta; ketjua pitkin pääsee ylös asti.
+- **JATKO** (building.js: `JFAM`, `jTop`, `jPlace`, `jFree`, `jatkoFind`, tila `JK`): tikkaat (tikkaat, kivitikkaat) ja portaat (raput, portaikko,
+  kiviversiot keskenään) napsahtavat alemman yläpään jatkoksi **automaattisesti kaikissa G-tiloissa** (tähtäys alle 1,3 m yläpäästä) ja uudessa
+  G-tilassa **jatko** (haku 3 m; muut osat kuten ruudukko). Kohteen vaihtuessa kopioidaan alemman suunta ja kulma (Shift+R vaihtaa kulmaa, R
+  portailla 90° kerrallaan): suoraan / käännös 90° (tasanne yläpään taakse, seuraava sivulle) / U-käännös (paluuportaat viereiseen ruutuun,
+  puoli tähtäyksen mukaan). Tasanteeksi lisätään lattia itse (vihje rakennusrivillä). Varattu yläpää ohitetaan (`jFree`). Pystykohdistus (Q/Z) ei
+  vaikuta jatkoon.
+- **Tikkaat seinään** (`ladderWall`): seinän pintaa tähdätessä (seinä, ovi, ikkuna; ei palkki) tikkaat asettuvat seinän eteen sen alareunaan,
+  yläpää 6 cm seinästä kulman mukaan, keskelle seinää (vapaa-tilassa tähtäyskohtaan). Ennen tikkaat menivät seinän sisään.
+- **Saumaton ulkonäkö:** tikkaiden puolat tasavälein (`round(L/0,36)`), sivupuiden ja portaikon sivupalkkien puusyy venytetään kokonaiseen
+  toistomäärään (`seamLen`) → jatko alkaa samasta kuviosta. Muiden osien kohdistusta ei muutettu.
+- Tarkistusrivi "v2.13 tikkaat …"; G-tilarivi 7 tilaa. Testattu: ketjut 1:2 ja 1:3 kiivetty ylös, portaat kävelty kahden kappaleen yli.
 
 ### v2.12 (pitkät äänet, kuuluvuus kauas, etäisyysefekti, emakko ja säikähtäneet porsaat)
 - **Emakko:** suuttuu myös kun sen porsas säikähtää pelaajaa ja pakenee (`startFlee` → `mom.pigScare`, emo alle 30 m, 3 s ikkuna). Ennen porsaat

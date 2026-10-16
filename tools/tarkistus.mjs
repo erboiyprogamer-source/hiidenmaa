@@ -12,7 +12,17 @@ await p.route('**/fonts.googleapis.com/**',r=>r.abort());
 await p.goto('http://localhost:8977/index.html');await p.waitForFunction('window.__game',null,{timeout:120000});
 const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play');document.getElementById('menu').hidden=true;for(let i=0;i<10;i++)g.update(1/30);
   const chk={},t=(k,f)=>{try{chk[k]=!!f();}catch(e){chk[k]='ERR '+e.message;}};
-  t('G-tilat 6 (ruudukko,1 m,puoli,3D,vapaa,reuna)',()=>SNAP_NAMES.join()==='ruudukko,1 m,puoli,3D,vapaa,reuna');
+  t('G-tilat 7 (ruudukko,1 m,puoli,3D,vapaa,reuna,jatko)',()=>SNAP_NAMES.join()==='ruudukko,1 m,puoli,3D,vapaa,reuna,jatko');
+  t('v2.13 tikkaat 1:3/1:2 jatkona tasan 1 ruutu sivulle, portaiden jatko suoraan/90°/U, tikkaat seinään, saumaton puusyy',()=>{const x=P.pos.x+40,z=P.pos.z+40,y=terrainH(x,z),made=[];
+    try{const ch=(f,n)=>{let q=addPiece('tikkaat',x,y,z,0,undefined,undefined,f);made.push(q);const q0=q;for(let i=1;i<n;i++){const j=jPlace(q,'tikkaat',f,0,1);q=addPiece('tikkaat',j.x,j.y,j.z,0,undefined,undefined,f);made.push(q);}const T=jTop(q);return [T.x-q0.x,T.z-q0.z,T.y-q0.y].map(v=>+v.toFixed(3)).join();};
+      const a=ch(2,2)==='0,-2.5,5.2'&&ch(1,3)==='0,-2.5,7.8'&&ch(0,2)==='0,0,5.2';
+      const S=addPiece('portaat_ontelo',x+20,y,z,0,undefined,undefined,0);made.push(S);const r=k=>{const j=jPlace(S,'portaat_ontelo',0,k,1);return [j.x-S.x,j.y-S.y,j.z-S.z].map(v=>+v.toFixed(2)).join();};
+      const b=r(0)==='0,2.6,-2.5'&&r(2)==='-2.5,2.6,-2.5'&&r(4)==='2.5,2.6,0'&&jPlace(S,'portaat_ontelo',0,1,1)===null;
+      const W=addPiece('seina',x-20,y,z,0);made.push(W);const lw=ladderWall('tikkaat',{pt:new THREE.Vector3(x-20,y+1,z+.1),n:new THREE.Vector3(0,0,1),piece:W},2,false);const c=lw&&lw.rot===0&&Math.abs(lw.z-(z+.1+.06+G/2))<1e-6&&Math.abs(lw.y-y)<1e-6;
+      const m=buildPieceMesh('tikkaat',2);let rail=null;m.traverse(o=>{if(o.isMesh&&!rail&&o.geometry.parameters.height>2)rail=o;});let mx=0;const uv=rail.geometry.attributes.uv;for(let i=0;i<uv.count;i++)mx=Math.max(mx,uv.getY(i));const d=Math.abs(mx-Math.round(mx))<1e-4;
+      const e=/ladRun/.test(ladderAt.toString())&&/JK\.tgt/.test(updateGhost.toString());
+      return a&&b&&c&&d&&e||`virhe tikkaat ${a} portaat ${b} seinä ${c} uv ${d} haamu ${e}`;}
+    finally{for(const q of made)if(pieces.includes(q))removePiece(q);}});
   t('H pystykohdistus auto/pysty/3D',()=>VNAMES.length===3);t('reunakohdistus smartSnap',()=>typeof smartSnap==='function');
   t('kartat 6',()=>MAPS.length===6);t('ulottuvuudet 3',()=>Object.keys(REALMS).length===3);t('tehtävät 13',()=>QUESTS.length>=13);
   t('asetussivut (grafiikka + varjot väliotsikkona, ohjaus)',()=>SET_PAGES&&Object.keys(SET_PAGES).length>=2&&SET_PAGES.gfx.includes('shadow'));t('oletusasetukset SET_DEF',()=>Object.keys(SET_DEF).length>10);

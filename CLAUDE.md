@@ -48,7 +48,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/bossmodels.js` | pomojen korkealaatuiset mallit (`figVartija`, `figJaatar`, `figKalmaherra`, `figAarni`), apurit `bqLump`/`bqTaper`/`bqCloth`/`bqCrystal`…, Ultra-efektit `f.fx` + `bossUltra()` |
 | `js/resources.js` | `NODE`, `NGEO`, sijoittelu ruutuihin (`CHN`, `VIS_R`), `nodes`, tukit (`logs`), `regrowForest`, kohteiden suoja `siteBlocked`, ruoho `rebuildGrass`, maaston LOD `terrLodTick`, staattisten yhdistäminen `mergeStatics`/`mergeTick` |
 | `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`), `wallTorch`, `brazier`, `rockC`, liekkirekisteri `FLAMES`, arkut `makeChest`/`openLid`/`syncChests` |
-| `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, `PIECES`, `pieceBoxes` (tagit `door`/`glass`), `buildPieceMesh` (`GLASS_MAT`, `IRON_MAT`), `addPiece`, `removePiece` |
+| `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, tikkaiden kulmat `LADDER_RUN`/`ladRun`, saumaton puusyy `seamLen`, `PIECES`, `pieceBoxes` (tagit `door`/`glass`), `buildPieceMesh` (`GLASS_MAT`, `IRON_MAT`), `addPiece`, `removePiece` |
 | `js/mobs.js` | `MOBDEF`, mallit (`figGolem` kivivartija, `figYlimys`, `figKalmo`, `figHiisi`; pomot bossmodels.js:ssä), `spawnMob`, `mobs`, `boss` |
 | `js/dungeons.js` | `REALMS` (3 ulottuvuutta, avainketju `lock`/`key`/`alt`), generaattorit, `ensureRealm`, koristeet (`dressFloor`, tynnyrit, spawneri), portaalit, `realmBossAI`, Kalmanpesän murskaus `hitSpawner`, usva/höyry/pisarat, `P.spawnProt`, `fo(k)` |
 | `js/story.js` | löytöpaikat (`SITE_KEYS`, rauniot, arkkukivilinnakkeet `FORT`), vartijat (`GUARDS`), lisäriimukivet (`XRUNES`), tehtävät (`QUESTS`), leirit `CAMPS`/`ensureCamps`, kiviröykkiöt `STASHES`, maailman saalis `planLoot`/`wlLoot`, arvoesineiden palautus `relocateValuable`/`valuableCensus`, kyltit `SIGNS` |
@@ -57,7 +57,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/settings.js` | `ACTIONS`/`BIND` (näppäinsidonnat, `kd()`), `SET`/`SET_DEF` (oletus = yleisin taso), `SET_PAGES`, `applyGfx()`, asetusvalikko (Grafiikka, Varjot, …); automaattisäätö `AUTO`/`autoOn`, väliotsikot; esiasetussäätimen teemat `pvTheme`/`PV_FX`; kaikki toiminnot -ikkuna `ALL_KEYS`/`showAllKeys` (päivitä, kun lisäät näppäimen). |
 | `js/input.js` | näppäimet, hiiri, hiiren lukitus; virtuaalinen osoitin `VC`/`vcSync`/`vcFlush` (lukitus pysyy paneelien ajan; herkkyys `SET.sens`/`SET.curSens`) |
 | `js/actions.js` | hyökkäys, vahinko, syöminen, `interact()`, alttari, luolastoon meno; jousi `bowSpread`/`bowShot`/`bowCrouch`, tähtäys `bowAimPoint`, lentorata `bowTraj` |
-| `js/building.js` | rakennushaamu, ruudukkoon kohdistus, reunakohdistus `smartSnap`, `validPlace`, purku |
+| `js/building.js` | rakennushaamu, ruudukkoon kohdistus, reunakohdistus `smartSnap`, tikkaiden/portaiden jatko `jatkoFind`/`jPlace` (tila `JK`, G-tila jatko), tikkaat seinään `ladderWall`, `validPlace`, purku |
 | `js/environment.js` | päivä/yö (`DAY_LEN`), sää, tuuli (`WIND`, `updateWind`), valot, selviytyminen (nälkä, kylmä, lepo), kodin lämpö `HOME`/`homeScan`/`homeTick` |
 | `js/player.js` | liike, fysiikka, animaatio (lyönnit `swingPose`, kirves/hakku `chopIK`/`CHOP_K`, käsien IK `armIK`, läpäisyn esto `armClear`), DEV-lento, kuolema, uudelleensyntyminen, nukkuminen |
 | `js/ai.js` | vihollisten tekoäly (luonteet `per`, `temperAI`, `stalkAI`), pomon hyökkäykset, `SPAWN`-taulukot, `spawnScary`, jousikalmot `archerAI`, auringossa palaminen `sunBurnAI`, voitto/rauha `bossVictory`/`peaceRefill`, työpisteiden päivitys |

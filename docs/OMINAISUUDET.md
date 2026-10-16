@@ -166,7 +166,12 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Osat (58):** lattiat, seinät (täysi, ikkuna, puoli/neljännes pysty/vaaka, vino, päätykolmio), ovet, katot (olki, loiva, harja + kiviversiot),
   palkit, pylväät (ohut, lyhyt, pitkä), raput, portaat, tikkaat, paaluaita, seisova soihtu, työpisteet, sänky, arkku, tynnyri; kiviversiot.
 - **Kohdistustilat (G):** ruudukko (2,5 m), **1 m**, puoli (1,25 m), **3D** (vaaka- + pystyruudukko, korkeus WH/4 portain), vapaa (0,25 m),
-  reuna. Ruudukkotiloissa kaikki osat kohdistuvat: lattiat ruutujen keskelle, seinät reunoille, **pylväät kulmiin, muut ruudun keskelle**.
+  reuna, **jatko** (v2.13). Ruudukkotiloissa kaikki osat kohdistuvat: lattiat ruutujen keskelle, seinät reunoille, **pylväät kulmiin, muut ruudun keskelle**.
+- **Tikkaat (v2.13):** asennot pysty, 1:3 ja 1:2 (Shift+R): jokainen tikas nousee 2,6 m ja siirtyy 0 / 0,83 / 1,25 m → 3 tikasta 1:3 tai 2 tikasta
+  1:2 = tasan 1 ruutu sivulle. Seinän pintaan tähdätessä tikkaat nojaavat seinään (alareuna maassa/seinän alareunassa).
+- **Jatkokohdistus (v2.13):** tikkaat ja portaat (raput, portaikko, kiviversiot) napsahtavat alemman yläpään jatkoksi kaikissa tiloissa (alle 1,3 m),
+  G-tilassa **jatko** 3 m päästä. Jatko ottaa alemman kulman ja suunnan; portailla R = 90°: suoraan, käännös 90° tai U-käännös (tasanteeksi lattia).
+  Sivupuut, puolat ja portaiden sivupalkit jatkuvat saumattomasti.
 - **3D-tila:** näkyvä 3D-hila haamun ympärillä (pystytolpat ruudukon kulmissa, vaakaruudukot WH/2 välein kahteen kerrokseen).
 - **Pystykohdistus (H):** auto, pysty (Q/Z nostaa/laskee), 3D (seuraava kerros näkyy).
 - **Reunakohdistus (`smartSnap`, kaikki G-tilat paitsi vapaa, kaikki osat):** kohteen muoto = törmäyslaatikoiden rajaus.
