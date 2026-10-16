@@ -182,6 +182,12 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const d=/farHowl\(dt\)/.test(creTick.toString())&&/farOnly/.test(farHowl.toString());
     const e=!o||!o.susi_idle_1||(o.susi_idle_1.far===1&&o.susi_idle_1.dur>4&&!o.susi_hurt_1.far);
     return a&&b&&c&&d&&e||`virhe emakko ${a} far ${b} etäisyys ${c} ulvonta ${d} manifest ${e}`;});
+  t('v2.14 syntyanimaatio: häivytys makuulla → nousu (2,5 s), osuma keskeyttää, ei pomoille/Suonäkille/noBorn',()=>{const ms=[];try{
+    const a=spawnMob('peura',P.pos.x+60,P.pos.z+60);ms.push(a);const b=spawnMob('kalmo',P.pos.x+64,P.pos.z+60);ms.push(b);const c=spawnMob('suonakki',P.pos.x+68,P.pos.z+60,{noBorn:0});ms.push(c);const d=spawnMob('susi',P.pos.x+72,P.pos.z+60,{noBorn:1});ms.push(d);
+    const s0=a.born===0&&a.mats[0].opacity===0&&b.born===0&&c.born===undefined&&d.born===undefined;bornTick(a,.4,99);const s1=Math.abs(a.mats[0].opacity-.5)<.01&&a.f.legs[0].rotation.x<-1;
+    bornTick(b,1.2,99);const s2=b.f.g.rotation.x>.5&&b.f.armL.rotation.x<-.5;a.lastHit=playTime;bornTick(a,.05,99);for(let i=0;i<6;i++)bornTick(a,.05,99);const s3=a.born===undefined&&a.mats[0].opacity===1&&!a.mats[0].transparent;
+    for(let i=0;i<40;i++)bornTick(b,.05,99);const s4=b.born===undefined&&b.f.g.rotation.x===0;
+    return s0&&s1&&s2&&s3&&s4||`virhe alku ${s0} häivytys ${s1} punnerrus ${s2} keskeytys ${s3} valmis ${s4}`;}finally{for(const m of ms)if(mobs.includes(m))mobRemove(m);}});
   t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
     if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
     const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;

@@ -70,7 +70,7 @@ function newGame(){
   camYaw=Math.PI*1.1;camPitch=.3;P.yaw=camYaw+Math.PI;fig.g.rotation.x=0;resetFog();invDirty=true;updateGear();goalShown=-1;planLoot(false);
   // start with a few mobs around
   ensureCamps();syncChests();   // v0.99 hylätyt leirit
-  for(let i=0;i<3;i++){const a=i*2.1,d=30+i*6;spawnMob('peura',LOC.spawn.x+Math.cos(a)*d,LOC.spawn.z+Math.sin(a)*d);}
+  for(let i=0;i<3;i++){const a=i*2.1,d=30+i*6;spawnMob('peura',LOC.spawn.x+Math.cos(a)*d,LOC.spawn.z+Math.sin(a)*d,{noBorn:1});}
   setTimeout(()=>{msg('Rannalla seisoo riimukivi. Lue se (E).');},800);
 }
 

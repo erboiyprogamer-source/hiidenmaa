@@ -156,7 +156,8 @@ function spawnMob(type,x,z,opts={}){
   const m={type,def,f,mats,pos:new V3(x,y,z),vel:new V3(),yaw:rng()*TAU,hp:def.hp,maxHp:def.hp,state:'idle',t:0,wander:null,atkCd:1,wind:0,angry:false,flash:0,walkPh:0,lastHit:-99,stuck:0,home:{x,z},dun:!!opts.dun,anim:0,dead:false,deadT:0,hurtT:-99};
   // v1.39 (lista 4, kohta 25): vihollisten ja eläinten hp 100–160 %, vahvemmat hieman isompia (+0–10 %). Ei pomoille.
   if(def.ai!=='boss'&&def.ai!=='rboss'&&!opts.noVar){const k=1+Math.random()*.6;m.hp=m.maxHp=Math.round(def.hp*k);m.hpK=k;f.g.scale.multiplyScalar(1+(k-1)/6);}
-  mobs.push(m);return m;
+  mobs.push(m);if(!opts.noBorn&&!def.rise&&def.ai!=='boss'&&def.ai!=='rboss'&&typeof bornStart==='function')bornStart(m);   // v2.14 syntyanimaatio
+  return m;
 }
 function bossTired(type){return ((flags.bossDeaths||{})[type]||0)>=3;}   // v1.81
 function mobRemove(m){scene.remove(m.f.g);if(m.da){if(m.da.flames)scene.remove(m.da.flames);if(m.da.pile)scene.remove(m.da.pile);if(m.da.boss)bossDeathEnd(m);}if(m.rz)bossRiseFxEnd(m);   /* v1.89–90: pomon irronneet osat, valot, kummut ja herätyksen halkeama pois */mobs.splice(mobs.indexOf(m),1);if(m===boss)boss=null;}

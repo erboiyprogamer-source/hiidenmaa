@@ -28,13 +28,14 @@ function packAlert(m){if(m.def.stalk)return;for(const o of mobs){if(o===m||o.dea
 function updateMobs(dt){
   refreshFire(dt);
   for(let i=mobs.length-1;i>=0;i--){const m=mobs[i];HURT_K=m.def.ai==='boss'||m.def.ai==='rboss'?1.2:m.guard?1.8:1;
-    if(m.dead){if(m.fireFx)stopBurn(m);m.deadT+=dt;if(mobDeathAnim(m,dt))mobRemove(m);continue;}   // v1.37 (kohta 23b): lössähtäminen / tuhka, < 10 s
+    if(m.dead){if(m.born!==undefined)bornEnd(m);if(m.fireFx)stopBurn(m);m.deadT+=dt;if(mobDeathAnim(m,dt))mobRemove(m);continue;}   // v1.37 (kohta 23b): lössähtäminen / tuhka, < 10 s
     const d=m.def,dx=P.pos.x-m.pos.x,dz=P.pos.z-m.pos.z,dist=Math.hypot(dx,dz);
     if(!m.dun&&m!==boss&&dist>120){mobRemove(m);continue;}
     // Piirtoetäisyyden ulkopuolella (sumun takana) mobia ei piirretä eikä animoida
     if(m!==boss&&!m.dun){const far=dist>scene.fog.far+8;if(far!==!m.f.g.visible){m.f.g.visible=!far;}if(far){m.f.g.position.copy(m.pos);}}
     if(m.dun!==P.inDun){continue;}
     m.flash=Math.max(0,m.flash-dt);for(const mt of m.mats)mt.emissive.setHex(m.flash>0?0x661111:0x000000);
+    if(m.born!==undefined&&bornTick(m,dt,dist))continue;   // v2.14 syntyanimaatio (nousee makuulta)
     if(m.burnT>0&&updateBurn(m,dt))continue;
     if(!m.dun&&!m.dead&&sunBurnAI(m,dt))continue;   // v1.50 yöolennot palavat auringossa
     if(!(m.burnT>0)&&!m.dun)for(const s of fireSrc)if(!s.torch&&s.r===7&&dist2(s.x,s.z,m.pos.x,m.pos.z)<.8*.8){igniteMob(m);break;}   // v1.37: nuotioon astuva syttyy
@@ -430,7 +431,7 @@ function spawner(dt){
     if(type==='karhu'&&mobs.some(o=>o.type==='karhu'&&!o.dead))continue;   // enintään yksi karhu
     if(MOBDEF[type].stalk){if(mobs.some(o=>o.def.stalk&&!o.dead))continue;   /* v1.97: väijyjä (Suonäkki) enintään yksi; nousee lätäköstä (lampare) tai maasta 2 s:ssa */
       let sx=x,sz=z;if(type==='suonakki'){nodesNear(x,z,12,_fellN);const pd=_fellN.find(n=>n.type==='lampare');if(pd){sx=pd.x;sz=pd.z;}}
-      const m=spawnMob(type,sx,sz);if(m){m.riseT=0;if(sp.near)m.state='idle';}return;}
+      const m=spawnMob(type,sx,sz,{noBorn:1});if(m){m.riseT=0;if(sp.near)m.state='idle';}return;}
     if(dist2(x,z,LOC.spawn.x,LOC.spawn.z)<30*30&&(MOBDEF[type].ai==='hostile'||type==='karhu')&&!night)continue;
     const pack=type==='susi'&&night&&!sp.near?2:type==='poro'?3+(Math.random()*3|0):1;/* porot laumoina 3–5 */for(let k=0;k<pack;k++){const m=spawnMob(type,x+(k%3)*1.8,z+(k/3|0)*1.8+k*.3);if(m&&sp.near)m.state='idle';
       if(type==='emakko')for(let j=0,n=2+(Math.random()*3|0);j<n;j++){const pg=spawnMob('porsas',x+1.2+j*.8,z-1+j*.6);pg.mom=m;}}return;}  // emakko + 2–4 porsasta
