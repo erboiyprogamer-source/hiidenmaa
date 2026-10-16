@@ -63,16 +63,19 @@ const VARAANI=/*VARAANI-ALKU*/{
 const CRE_AGGRO=['neutral','hostile','boss','rboss'];   // niillä on suuttumisääni (aggro)
 const CRE_CHASE=['hostile','boss','rboss'];             // niillä on lisäksi toistuva jahtiääni (chase) ja suuttumisääni vain kerran
 const CRE_ECHO=['rboss','boss'];                         // v1.88: pomoilla lisäksi kaikuääni (echo, 1–2 versiota): kuuluu kaukaa kunnes pelaaja kohtaa pomon (v1.95: myös Kalmanvartija maan alta)
-const CRE_KINDS=['idle','hurt','death','aggro','chase','echo'];  // jokaisella lajilla 1–3 versiota (_1.._3), arvonta niistä jotka ovat olemassa
-const CRE={man:null,ok:false,buf:{},load:{},want:{},gain:null,voices:[],max:10,last:{},lastAmb:-9,rev:null};
+const CRE_KINDS=['idle','hurt','death','aggro','chase','echo'];  // v2.11: versioita rajattomasti (_1, _2 … _9 …), arvonta niistä jotka ovat manifestissa
+const CRE={man:null,idx:{},ok:false,buf:{},load:{},want:{},gain:null,voices:[],max:10,last:{},lastAmb:-9,rev:null};
 // manifest kerran (tiiviste osoitteessa → välimuisti ei anna vanhaa ääntä). Ilman palvelinta (file://) epäonnistuu hiljaa.
 function creInit(){if(CRE.man)return;CRE.man={};
-  try{fetch('sounds/manifest.json?v='+(window.HV||'')).then(r=>r.ok?r.json():null).then(j=>{CRE.man=(j&&j.sounds)||{};CRE.ok=true;for(const t in CRE.want)creLoad(t);}).catch(()=>{});}catch(e){}}
-// ratkaisee lajin äänet: omat versiot (_1.._3, vain olemassa olevat) → muuten varaääniketju. Palauttaa {names:[…], p} tai null.
-function creRes(id,kind){const M=CRE.man;if(!M)return null;let cur=id,p=1;
-  for(let d=0;d<6&&cur;d++){const L=[1,2,3].map(n=>`${cur}_${kind}_${n}`).filter(a=>M[a]);if(L.length)return{names:L,p};const v=VARAANI[cur];if(!v)break;p*=v.p;cur=v.to;}
+  try{fetch('sounds/manifest.json?v='+(window.HV||'')).then(r=>r.ok?r.json():null).then(j=>{CRE.man=(j&&j.sounds)||{};creIndex();CRE.ok=true;for(const t in CRE.want)creLoad(t);}).catch(()=>{});}catch(e){}}
+// v2.11: hakemisto '<id>_<laji>' → kaikki manifestin versiot numerojärjestyksessä (idle_4, idle_5 … toimivat ilman koodimuutosta)
+function creIndex(){const I={};for(const n in CRE.man){const m=/^(.+)_(\d+)$/.exec(n);if(m)(I[m[1]]||(I[m[1]]=[])).push([+m[2],n]);}
+  CRE.idx={};CRE.idxOf=CRE.man;for(const k in I)CRE.idx[k]=I[k].sort((a,b)=>a[0]-b[0]).map(x=>x[1]);}
+// ratkaisee lajin äänet: omat versiot (kaikki olemassa olevat) → muuten varaääniketju. Palauttaa {names:[…], p} tai null.
+function creRes(id,kind){const M=CRE.man;if(!M)return null;if(CRE.idxOf!==M)creIndex();let cur=id,p=1;
+  for(let d=0;d<6&&cur;d++){const L=CRE.idx[`${cur}_${kind}`];if(L&&L.length)return{names:L,p};const v=VARAANI[cur];if(!v)break;p*=v.p;cur=v.to;}
   // v1.88: kaikuäänen pääääni on Aarnihirviö (💎): pomo ilman omaa kaikuääntä lainaa sen, vaikka VARAANI-ketju ei johtaisi sinne
-  if(kind==='echo'&&id!=='aarnihirvio'&&MOBDEF[id]&&CRE_ECHO.includes(MOBDEF[id].ai)){const L=[1,2,3].map(n=>`aarnihirvio_echo_${n}`).filter(a=>M[a]);if(L.length)return{names:L,p:1};}
+  if(kind==='echo'&&id!=='aarnihirvio'&&MOBDEF[id]&&CRE_ECHO.includes(MOBDEF[id].ai)){const L=CRE.idx.aarnihirvio_echo;if(L&&L.length)return{names:L,p:1};}
   return null;}
 function creBuf(name){if(CRE.buf[name]||CRE.load[name])return;const a=audio(),e=CRE.man&&CRE.man[name];if(!a||!e)return;
   CRE.load[name]=fetch(`sounds/${name}.mp3?h=${e.h}`).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(b=>a.decodeAudioData(b)).then(B=>{CRE.buf[name]=B;}).catch(()=>{});}

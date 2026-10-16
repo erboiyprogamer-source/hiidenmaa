@@ -25,7 +25,7 @@ PLACEHOLDER_MAX = 3072          # tavua: tätä pienempi/yhtä suuri = paikkamer
 AGGRO_AI = ('neutral', 'hostile', 'boss', 'rboss')   # suuttumisääni (aggro)
 CHASE_AI = ('hostile', 'boss', 'rboss')               # + toistuva jahtiääni (chase)
 ECHO_AI = ('rboss', 'boss')                           # v1.88: kaikuääni (echo): nukkuva ulottuvuuspomo kaikuu luolastossa kunnes pelaaja kohtaa sen; v1.95 myös Kalmanvartija maan alta
-VARIANTS = (1, 2, 3)                                  # jokaisella lajilla enintään 3 versiota; peli arpoo olemassa olevista
+VARIANTS = (1, 2, 3)                                  # paikkamerkit _1.._3; v2.11: lisäversiot _4, _5 … kelpaavat ilman koodimuutosta (peli arpoo kaikista)
 PV = 3                                                # käsittelyn versio: vaihtuessa kaikki äänet käsitellään uudestaan
 
 
@@ -266,7 +266,7 @@ def main():
         creset = {c for c, _, _ in creatures()}
         for f in sorted(os.listdir(RAW)):
             n, p = os.path.splitext(f)[0], os.path.join(RAW, f)
-            mm = re.match(r'^([a-z_0-9]+?)_(idle|hurt|death|aggro|chase|echo)_[123]$', n)
+            mm = re.match(r'^([a-z_0-9]+?)_(idle|hurt|death|aggro|chase|echo)_(\d+)$', n)
             if mm and mm.group(1) in creset and n not in expset and os.path.getsize(p) <= PLACEHOLDER_MAX:
                 os.remove(p)
                 gone += 1
@@ -296,7 +296,7 @@ def main():
                 removed += 1
             continue
         src_h = sha(p)
-        mm = re.match(r'^([a-z_0-9]+?)_(idle|hurt|death|aggro|chase|echo)_[123]$', n)
+        mm = re.match(r'^([a-z_0-9]+?)_(idle|hurt|death|aggro|chase|echo)_(\d+)$', n)
         cid, kind = (mm.group(1), mm.group(2)) if mm else (None, 'idle')
         ai = next((a for c, _, a in creatures() if c == cid), 'hostile')
         if n in old and old[n].get('src') == src_h and old[n].get('pv') == PV and os.path.exists(dst):
@@ -319,9 +319,15 @@ def main():
         if len(ns) > 1:
             warn.append('SAMA TIEDOSTO useassa paikassa: ' + ', '.join(ns))
     expset = set(exp)
+    extra = []
+    creai = {c: a for c, _, a in creatures()}
     for n in sounds:
         if n not in expset:
-            warn.append(f'{n}: ei odotettu paikka (lajin versioita on vähemmän, peli käyttää silti jos _1.._3)')
+            mm = re.match(r'^([a-z_0-9]+?)_(idle|hurt|death|aggro|chase|echo)_(\d+)$', n)
+            if mm and mm.group(1) in creai and mm.group(2) in kinds_of(creai[mm.group(1)]):
+                extra.append(n)   # v2.11: lisäversio (_4, _5 … tai kuolemaäänen ylimääräinen) – peli käyttää sen
+            else:
+                warn.append(f'{n}: tuntematon olento tai laji, jota olennolla ei ole (peli ei käytä)')
         g = sounds[n].get('gain')
         if g is not None and abs(g) > 12:
             warn.append(f'{n}: iso vahvistus {g:+.1f} dB (raaka erittäin hiljainen tai kova – tarkista kuuntelemalla)')
@@ -337,6 +343,8 @@ def main():
         f.write('\n')
     write_list(sounds, raws)
     print(f'Käsitelty: {done}, ennallaan: {skipped}, poistettu: {removed}, oikeita ääniä yhteensä: {len(sounds)}')
+    if extra:
+        print('Lisäversiot käytössä (yli paikkamerkkien): ' + ', '.join(sorted(extra, key=natkey)))
     for w in warn:
         print('HUOM', w)
     for e in errors:
@@ -344,13 +352,24 @@ def main():
     return 1 if errors else 0
 
 
+def natkey(n):
+    """Luonnollinen järjestys: idle_2 ennen idle_10."""
+    return [int(t) if t.isdigit() else t for t in re.split(r'(\d+)', n)]
+
+
+def own_versions(cid, kind, have):
+    """Kaikki olemassa olevat versionumerot (v2.11: rajaton määrä, _4, _5 …)."""
+    pre = f'{cid}_{kind}_'
+    return sorted(int(n[len(pre):]) for n in have if n.startswith(pre) and n[len(pre):].isdigit())
+
+
 def resolve(cid, kind, have, vara):
-    """Sama logiikka kuin pelissä (audio.js creRes): omat versiot _1.._3 → varaääniketju. Palauttaa (nimet, sävelkerroin)."""
+    """Sama logiikka kuin pelissä (audio.js creRes): omat versiot (kaikki) → varaääniketju. Palauttaa (nimet, sävelkerroin)."""
     cur, p = cid, 1.0
     for _ in range(6):
         if not cur:
             break
-        L = [f'{cur}_{kind}_{n}' for n in VARIANTS if f'{cur}_{kind}_{n}' in have]
+        L = [f'{cur}_{kind}_{n}' for n in own_versions(cur, kind, have)]
         if L:
             return L, p
         v = vara.get(cur)
@@ -386,11 +405,30 @@ def write_list(sounds, raws):
                     todo.append(u)
         return out
     cats = [('Eläimet', ('flee', 'neutral')), ('Viholliset', ('hostile',)), ('Pomot', ('boss', 'rboss'))]
+    aiof = {cid: ai for cid, _, ai in cre}
+
+    def silent_fill(cid, kind):
+        """v2.11 🎯: olennot, joilla ei nyt ole lainkaan tätä ääntä ja jotka saisivat sen, jos `cid` saa oman (cid itse mukaan lukien)."""
+        out = []
+        for u, _ in [(cid, None)] + borrowers(cid):
+            if kind in kinds_of(aiof[u]) and not resolve(u, kind, sounds, vara)[0]:
+                out.append(u)
+        return out
+    def kind_root(cid, kind):
+        """Ketjun alku tälle lajille: kukaan ketjussa ylempänä ei voi antaa tätä lajia (ei lainaa tai ylemmillä ei ole lajia, esim. jahtiääni)."""
+        cur, seen = vara.get(cid, {}).get('to'), {cid}
+        while cur and cur not in seen:
+            if cur in aiof and kind in kinds_of(aiof[cur]):
+                return False
+            seen.add(cur)
+            cur = vara.get(cur, {}).get('to')
+        return True
+    gaps = []   # (cid, kind, täyttyvät)
     own = tot = 0
     rows = []
     for title, ais in cats:
         rows.append(f'\n### {title}\n')
-        rows.append('| Olento | Ääni | Tiedostot (1–3 versiota, kuolema ja kaiku 1–2) | Tila | Millainen ääni | Hakusanat (englanniksi) |')
+        rows.append('| Olento | Ääni | Tiedostot (paikat 1–3, kuolema ja kaiku 1–2; lisää _4, _5 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |')
         rows.append('| --- | --- | --- | --- | --- | --- |')
         for cid, name, ai in cre:
             if ai not in ais:
@@ -402,15 +440,17 @@ def write_list(sounds, raws):
                 mark = '⭐' if cid in vara else '💎'
                 lst = ', '.join(names[u].lower() + (f' (via {names[v].lower()})' if v else '') for u, v in deps)
                 star = f' {mark} ({len(deps)})<br>lainaavat: {lst}'
+            elif cid not in vara:
+                star = ' 🌱<br>ei lainaa eikä lainata'
             else:
                 star = ''
             for j, kind in enumerate(kinds_of(ai)):
                 tot += 1
-                mine = [n for n in variants_of(ai, kind) if f'{cid}_{kind}_{n}' in sounds]
+                mine = own_versions(cid, kind, sounds)
                 vs = variants_of(ai, kind)
-                files = ', '.join(f'`{cid}_{kind}_{n}`' for n in vs)
+                files = ', '.join(f'`{cid}_{kind}_{n}`' for n in sorted(set(vs) | set(mine)))
                 if mine:
-                    st = f'✅ oma: {", ".join(f"_{n}" for n in mine)} ({len(mine)}/{len(vs)})'
+                    st = f'✅ oma: {", ".join(f"_{n}" for n in mine)} ({len(mine)} kpl)'
                     own += 1
                 else:
                     src, p = resolve(cid, kind, sounds, vara)
@@ -419,13 +459,21 @@ def write_list(sounds, raws):
                     elif kind == 'echo':
                         st = '⬜ puuttuu' + ('' if cid == 'aarnihirvio' else ' (varalla: aarnihirvio)') + (' – **kaikuäänien pääääni 💎**' if cid == 'aarnihirvio' else '')
                     elif kind == 'chase' and cid in vara:
-                        st = f'⬜ puuttuu (varalla: {vara[cid]["to"]})'
+                        st = '⬜ puuttuu (varaääniketjussa ei ole jahtiääntä)' if kind_root(cid, kind) else f'⬜ puuttuu (varalla: {vara[cid]["to"]})'
                     elif kind == 'aggro' and ai in CHASE_AI:
                         st = '⬜ puuttuu → ei erillistä suuttumisääntä, jahtiääni alkaa heti'
                     else:
                         st = '⬜ puuttuu' + (f' (varalla: {vara[cid]["to"]})' if cid in vara else '')
+                if not mine and kind_root(cid, kind):
+                    fill = silent_fill(cid, kind)
+                    if fill:
+                        st += f'<br>🎯 lisää tämä → ääni {len(fill)} olennolle'
+                        gaps.append((cid, kind, fill))
                 who = f'**{name}** (`{cid}`){star}' if j == 0 else ''
                 rows.append(f'| {who} | {kind} | {files} | {st} | {KIND_FI[kind]} – {info[0]} | {info[1].get(kind, info[1].get("aggro", "") if kind == "chase" else "")} |')
+    gap_txt = ('Kaikilla olennoilla on jokin ääni jokaiseen lajiin. ✅' if not gaps else
+               f'{len(gaps)} ääntä puuttuu ketjujen alusta – lisää nämä, niin jokainen olento saa jokaiseen lajiin jonkin äänen:\n\n' +
+               '\n'.join(f'- `{c}_{k}_1` → {", ".join(names[u].lower() for u in f)}' for c, k, f in gaps))
     head = f'''# Hiidenmaan äänilista
 
 Äänisuunnitelma: `docs/KEHITYSMUISTIO.md` → "Äänisuunnitelma". Tämä taulukko päivittyy automaattisesti
@@ -437,7 +485,9 @@ def write_list(sounds, raws):
    **OpenGameArt**. Käytä alla olevia hakusanoja.
 2. **Kuuntele ääni omalla koneellasi** ennen lisäämistä – git-historia muistaa jokaisen version, joten vaihda vain harkiten.
 3. Korvaa paikkamerkki `sounds/raw/`-kansiossa **täsmälleen samalla nimellä** (esim. `susi_aggro_1.mp3`). Jokaisella äänellä on kolme paikkaa
-   `_1`, `_2`, `_3`: täytä vain ne jotka haluat – peli arpoo olemassa olevista (yksi riittää, tyhjät paikat ohitetaan). Lyhyet äänet saa olla wav
+   `_1`, `_2`, `_3`: täytä vain ne jotka haluat – peli arpoo olemassa olevista (yksi riittää, tyhjät paikat ohitetaan). **Lisää versioita:**
+   tee uusi tiedosto seuraavalla numerolla (`susi_idle_4.mp3`, `_5` …) – ei rajaa, peli ottaa sen käyttöön automaattisesti.
+   **Muokattu ääni:** korvaa raaka samalla nimellä – työkalu huomaa muutoksen ja käsittelee sen uudestaan (vanha käsitelty korvautuu). Lyhyet äänet saa olla wav
    (pääte voi jäädä .mp3 – muoto tunnistetaan sisällöstä), pitkät (musiikki, loopit) mp3, alle 25 Mt.
 4. Commit ja push GitHub Desktopilla ja pyydä Claudea ajamaan `python3 tools/process_sounds.py`: hiljaisuus leikataan alusta ja lopusta,
    ääni katkaistaan lajin ylärajaan (häivytys), voimakkuus tasataan lajin tavoitteeseen ja se siirtyy peliin (`sounds/<nimi>.mp3`).
@@ -461,6 +511,15 @@ tehtyä ääntä tai on hiljaa). Varaäänet ovat vain väliaikaisia: jokaiselle
   tärkeimmät: ne täyttävät kolmen pomon puuttuvat äänet (sävelkorkeus muutettu).
 - Merkin perässä oleva luku, esim. 💎 (3) = montako olentoa lainaa tältä (myös ketjun kautta). `lainaavat:` listaa ne; "via X" = lainaa
   ketjun kautta X:n välityksellä (kun X:llä on oma ääni, se lainaa X:ltä).
+- 🌱 = **ei lainaa keneltäkään eikä kukaan lainaa siltä** (esim. Metso): ilman omaa ääntä se on hiljaa.
+- 🎯 (Tila-sarakkeessa) = **lisää tämä ääni**: se on ketjun alku, ja ilman sitä yksi tai useampi olento on tässä lajissa kokonaan ilman ääntä.
+  Kun kaikki 🎯-rivit on täytetty, **jokaisella olennolla on jokin ääni jokaiseen lajiin** (oma tai lainattu).
+- **Lisää versioita vapaasti:** paikkamerkit ovat `_1`–`_3`, mutta voit lisätä `_4`, `_5`, `_6` … samalla nimikaavalla (esim. `susi_idle_4.mp3`).
+  Peli arpoo kaikista olemassa olevista, eikä koodia tarvitse muuttaa.
+
+### Kattavuus: puuttuvat ketjun alut (🎯)
+
+{gap_txt}
 '''
     with open(LISTA, 'w', encoding='utf-8') as f:
         f.write(head + '\n'.join(rows) + '\n\n## Tulevat äänierät\n\nB pelaajan ja toimintojen äänet · C taustaäänet ja sää · D musiikki · '
