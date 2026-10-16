@@ -130,7 +130,7 @@ function updateBurn(m,dt){if(mobWet(m)){stopBurn(m);m.igniteCd=playTime+3;burst(
 // ensin ja sen loputtua taas heikoimmasta alkaen. Uusi ammus lisätään listaan oikeaan kohtaan (esim. tulevat rautanuolet).
 const AMMO=['puunuolet','nuolet','sulkanuolet','tulinuolet'];   // heikoimmasta parhaaseen (v2.06: puunuolet)
 function ammoId(){if(flags.ammo&&invCount(flags.ammo)>0)return flags.ammo;return AMMO.find(id=>invCount(id)>0)||null;}
-function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;
+function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;if(m.type==='emakko')orphanPiglets(m);if(m.fam)famEnd(m.fam);   /* v2.14 */
   if(m.def.ai==='boss'||m.def.ai==='rboss')sfx('slam',.6,.8);else if(!creSnd(m,'death'))sfx('die');   // v1.84 oma kuolinääni; v1.89 pomon kuolinääni soi vasta kuolema-animaatiossa
   if(m.sunKill){onMobKilled(m);return;}   // v1.50: auringossa tuhkaksi palanut – ei saalista, XP:tä eikä tappotilastoa
   P.kills++;bump('kills');bump('k_'+m.type);addXp(Math.round(m.def.hp/(m.type==='vartija'?2:5))+3,m.def.n);

@@ -310,6 +310,12 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Korjaus: `creAngerOk(m)` (audio.js) – olento 15 s, laji 6 s; `anger()` karjaisee vain jos `!creRes(m.type,'aggro')`. Uutta suuttumisen ääntä
   ei lisätä kahdesta paikasta: käytä aina `creAngerOk`-lupaa. Tarkistus: rivi "v2.10 emakon suuttuminen".
 
+## 43. Kaukaa suuttunut eläin rauhoittui heti (v2.14)
+- Syy: `temperAI`:n `anger()` asetti `angry` ja `chase`, mutta ei v2.08:n muistia (`seenT`). Samassa ruudussa jahdin lopetus
+  (`m.state==='chase'&&!hurt&&…!mobKnows(m)`) palautti tilan `idle` ja nollasi `angry`. Esim. emakko ei suuttunut porsaan säikähdyksestä yli ~10 m:n päästä.
+- Korjaus: `anger()` asettaa `m.seenT=playTime` ja viimeisen sijainnin (`lastPX/lastPZ`). Porsaan säikähdyksestä `lastHit=playTime-1` → jahti ~9 s.
+  Kun lisäät uuden tavan suututtaa olento, aseta aina myös `seenT` (tai käytä `anger()`/`packAlert`).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

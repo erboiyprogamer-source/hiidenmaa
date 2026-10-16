@@ -197,6 +197,13 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=creLpf(0)>15000&&creLpf(.5)<1500&&creLpf(1)===500&&/dg\.gain/.test(creDistFx.toString())&&/lg\.gain/.test(creDistFx.toString())&&/1\.8\*k/.test(creDistFx.toString())&&/src\.detune/.test(creSnd.toString());
     const c=/CRE_WOLF\.has\(m\.type\)\?\(isNight\(\)\?1\.25:3\)/.test(creTick.toString())&&/100\+Math\.random\(\)\*45/.test(farHowl.toString())&&/\*1\.25/.test(farHowl.toString());
     return a&&b&&c||`virhe kantamat ${a} efekti ${b} ulvonta ${c}`;});
+  t('v2.14 emakko: oma porsas säikähtää → emo suuttuu missä tahansa (tietää sijainnin), orpolauma 2× arempi ja pakenee yhdessä, perhehetket',()=>{const ms=[],om=msg;msg=()=>{};let res;try{
+    const sow=spawnMob('emakko',P.pos.x+45,P.pos.z+45,{noBorn:1});ms.push(sow);const k=[0,1,2].map(i=>{const q=spawnMob('porsas',P.pos.x+46+i,P.pos.z+46,{noBorn:1});q.mom=sow;ms.push(q);return q;});
+    startFlee(k[0],1,1);const dx=P.pos.x-sow.pos.x,dz=P.pos.z-sow.pos.z;temperAI(sow,1/30,dx,dz,Math.hypot(dx,dz),false,false);const a=sow.angry&&sow.state==='chase'&&mobKnows(sow);
+    sow.angry=false;sow.state='idle';const far=spawnMob('porsas',P.pos.x+100,P.pos.z+45,{noBorn:1});far.mom=sow;ms.push(far);killMob(sow);const b=k.every(q=>q.orphan&&q.orphan===k[0].orphan&&!q.mom)&&!far.orphan;
+    k.forEach(q=>q.state='idle');startFlee(k[1],1,0);const c=k.every(q=>q.state==='flee')&&/m\.orphan\)sr\*=2/.test(updateMobs.toString());
+    const s2=spawnMob('emakko',P.pos.x+60,P.pos.z+60,{noBorn:1});ms.push(s2);const kk=spawnMob('porsas',P.pos.x+61,P.pos.z+60,{noBorn:1});kk.mom=s2;ms.push(kk);s2.famT=0;famPlan(s2,.01,99);const d=!!s2.fam&&kk.fam===s2.fam&&['nuzzle','play','root'].includes(s2.fam.k);
+    res=a&&b&&c&&d||`virhe suuttuu ${a} orvot ${b} pako ${c} perhe ${d}`;}finally{msg=om;for(const m of ms)if(mobs.includes(m))mobRemove(m);}return res;});
   t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
     if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
     const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;

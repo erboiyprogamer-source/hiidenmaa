@@ -36,6 +36,7 @@ function updateMobs(dt){
     if(m.dun!==P.inDun){continue;}
     m.flash=Math.max(0,m.flash-dt);for(const mt of m.mats)mt.emissive.setHex(m.flash>0?0x661111:0x000000);
     if(m.born!==undefined&&bornTick(m,dt,dist))continue;   // v2.14 syntyanimaatio (nousee makuulta)
+    if(m.type==='emakko'&&!m.dun)famPlan(m,dt,dist);if(m.fam&&famStep(m,dt,dist))continue;   // v2.14 emakon ja porsaiden perhehetket
     if(m.burnT>0&&updateBurn(m,dt))continue;
     if(!m.dun&&!m.dead&&sunBurnAI(m,dt))continue;   // v1.50 yöolennot palavat auringossa
     if(!(m.burnT>0)&&!m.dun)for(const s of fireSrc)if(!s.torch&&s.r===7&&dist2(s.x,s.z,m.pos.x,m.pos.z)<.8*.8){igniteMob(m);break;}   // v1.37: nuotioon astuva syttyy
@@ -84,16 +85,17 @@ function updateMobs(dt){
     if(d.stalk){if(stalkAI(m,dt,dx,dz,dist,hurt))continue;}
     if(d.temper){if(temperAI(m,dt,dx,dz,dist,hurt,night))continue;}
     else if(m.mom&&!m.mom.dead&&m.state!=='flee'&&dist2(m.pos.x,m.pos.z,m.mom.pos.x,m.mom.pos.z)>16){m.wander={x:m.mom.pos.x+(Math.random()-.5)*3,z:m.mom.pos.z+(Math.random()-.5)*3};m.t=1.5;}  // porsas seuraa emoa
+    else if(m.orphan&&m.state!=='flee'){const L=mobs.find(o=>o.orphan===m.orphan&&!o.dead);if(L&&L!==m&&dist2(m.pos.x,m.pos.z,L.pos.x,L.pos.z)>9){m.wander={x:L.pos.x+(Math.random()-.5)*2.5,z:L.pos.z+(Math.random()-.5)*2.5};m.t=1.5;}}   // v2.14: orvot pysyvät laumana (seuraavat ensimmäistä)
     if(d.ai==='flee'){// säikähdysetäisyys: kävely 7 m, juoksu 16 m, ase kädessä ×1.4. Vahingoitettu pelkää 10 s.
       // Kyykyssä (v0.70): paikallaan ei huomata lainkaan; hiipiessä vain 1,5 m (eläin katsoo pelaajaa kohti) tai 0,9 m (selin), jotta
       // hiiviskelyisku ylettyy (aseen ulottuma ~2,3 m). Ennen kyykky = 3,5 m ja alle 4 m aina → eläin pakeni ennen kuin ylettyi lyömään.
       const w=curWeapon(),armed=(w.cat==='weapon'||w.cat==='bow')&&!P.crouch,mv=Math.hypot(P.vel.x,P.vel.z)>.3,face=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1)>0;
-      const pr=d.per||{};const hid=P.crouch||playTime-(P.uncrouchT||-9)<.1;let sr=hid?0:P.running?16:7;   /* v1.39 (lista 4, kohta 1): kyykyssä ei huomata lainkaan; noustessa 0,1 s viive */if(armed)sr*=1.4;sr*=pr.scare||1;
+      const pr=d.per||{};const hid=P.crouch||playTime-(P.uncrouchT||-9)<.1;let sr=hid?0:P.running?16:7;   /* v1.39 (lista 4, kohta 1): kyykyssä ei huomata lainkaan; noustessa 0,1 s viive */if(armed)sr*=1.4;sr*=pr.scare||1;if(m.orphan)sr*=2;   /* v2.14: emonsa menettäneet porsaat pelkäävät 2× kauempaa */
       // v0.85 luonteet: jänis jähmettyy ensin (ellei pelaaja ole aivan vieressä), kettu jää katsomaan matkan päästä, poro-lauma pakenee yhdessä
       const scared=hurt||(!P.dead&&dist<sr&&(m.los||P.crouch||dist<4));
       if(scared){if(m.state!=='flee'&&m.state!=='freeze'){if(pr.freeze&&!hurt&&dist>sr*.45){m.state='freeze';m.frzT=pr.freeze*(.7+Math.random()*.6);}else startFlee(m,dx,dz);}
         else if(m.state==='freeze'&&(hurt||dist<sr*.45))startFlee(m,dx,dz);}
-      else if(m.state==='flee'&&dist>(pr.safe||28)&&!m.fly)m.state='idle';
+      else if(m.state==='flee'&&dist>(pr.safe||28)*(m.orphan?2:1)&&!m.fly)m.state='idle';
       else if(pr.curious&&m.state!=='flee'&&!P.dead&&!hid&&dist<26&&m.los)m.state='watch';
       else if(m.state==='watch')m.state='idle';
       if(m.state==='freeze'){m.frzT-=dt;m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*3));if(m.frzT<=0)startFlee(m,dx,dz);moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
@@ -149,14 +151,15 @@ function temperAI(m,dt,dx,dz,dist,hurt,night){const d=m.def,t=d.temper;
   if(m.angry&&!hurt&&playTime-m.lastHit>12&&dist>(d.aggro||12)*1.3){m.angry=false;m.rolled=0;if(m.state==='chase')m.state='idle';}
   if(m.state==='flee'){if(dist>(d.per&&d.per.safe||28)&&!hurt)m.state='idle';else if(!m.angry)return false;}
   if(m.angry||P.dead||P.inDun!==!!m.dun)return false;
+  const anger=(txt,lh=6)=>{m.angry=true;m.lastHit=playTime-lh;m.state='chase';m.seenT=playTime;m.lastPX=P.pos.x;m.lastPZ=P.pos.z;   /* v2.14: suuttunut tietää pelaajan sijainnin (muuten jahti loppui heti, KORJAUKSET 43) *//* v2.10: tiedostoääni (creTick) korvaa karjaisun → ei kahta päällekkäin */if(!creRes(m.type,'aggro')&&creAngerOk(m))sfx('roar',t==='elk'?.7:t==='sow'?1.1:1.6,.5);if(txt&&playTime-(m.growlT||-99)>20){m.growlT=playTime;msg(txt,'warn');}};
+  if(t==='sow'&&playTime-(m.pigScare??-99)<3){anger('Emakko puolustaa porsaitaan!',1);return false;}   // v2.14: oma porsas säikähti pelaajaa → suuttuu missä tahansa porsas onkin
   if(P.crouch||playTime-(P.uncrouchT||-9)<.1)return false;   // v1.39: kyykyssä eläin ei huomaa
   const see=m.los&&dist<(d.aggro||12);
-  const anger=(txt)=>{m.angry=true;m.lastHit=playTime-6;m.state='chase';/* v2.10: tiedostoääni (creTick) korvaa karjaisun → ei kahta päällekkäin */if(!creRes(m.type,'aggro')&&creAngerOk(m))sfx('roar',t==='elk'?.7:t==='sow'?1.1:1.6,.5);if(txt&&playTime-(m.growlT||-99)>20){m.growlT=playTime;msg(txt,'warn');}};
   if(t==='elk'){if(dist>15)m.rolled=0;if(dist<6&&!m.rolled&&m.los){m.rolled=1;if(Math.random()<.35)anger('Hirvi suuttuu ja ryntää päin!');else startFlee(m,dx,dz);}}
   else if(t==='lynx'){if(night&&P.hp<maxHp()*.5&&see)anger('Ilves vaanii heikentynyttä saalista!');else if(dist<10&&m.los&&m.state!=='flee')startFlee(m,dx,dz);}
   else if(t==='ahma'){if(see&&invCount('liha')>0)anger('Ahma haistaa lihan ja hyökkää!');}
   else if(t==='bear'){if(see&&dist<8)anger('Karhu hyökkää!');else if(m.los&&dist<14&&playTime-(m.growlT||-99)>12){m.growlT=playTime;sfx('roar',.55,.7);msg('Karhu murisee varoittavasti – pysy kaukana!','warn');m.state='idle';m.wander=null;m.yaw=Math.atan2(dx,dz);}}
-  else if(t==='sow'){if((playTime-(m.pigScare??-99)<3&&dist<30)||mobs.some(k=>k.mom===m&&!k.dead&&dist2(k.pos.x,k.pos.z,P.pos.x,P.pos.z)<49))anger('Emakko puolustaa porsaitaan!');}   // v2.12: myös kun porsas säikähtää sinua (emo alle 30 m)
+  else if(t==='sow'){if(mobs.some(k=>k.mom===m&&!k.dead&&dist2(k.pos.x,k.pos.z,P.pos.x,P.pos.z)<49))anger('Emakko puolustaa porsaitaan!');}
   return false;}
 // v0.88 harvinaiset pelottavat (def.stalk): huomatessaan pelaajan seuraavat 30–60 s (eivät luovu jahdista näköyhteyden katketessa),
 // sitten poistuvat 5 s poispäin ja unohtavat (2 s jonka aikana eivät huomaa). Lyönti poistumisen aikana suututtaa uudelleen.
@@ -210,9 +213,33 @@ function fellAhead(m,dt){m.fellT=(m.fellT||0)-dt;if(m.fellT>0)return;m.fellT=.25
   nodesNear(ax,az,1.3,_fellN);for(const n of _fellN){if(!n.alive||n.def.kind!=='tree'||n.type==='aarnipuu')continue;killNode(n);const side=Math.random()<.5?1:-1;
     fallTree(n,m.yaw+side*(Math.PI/2)*(.6+Math.random()*.4),true,m);sfx('woodBreak',.8,clamp(1.1-Math.hypot(n.x-P.pos.x,n.z-P.pos.z)/50,.15,1));shake(.15);}}}
 // v0.85: pakoon lähtö luonteen mukaan. Metso lehahtaa 14–24 m päähän (kaari 2,5–4 m korkealla), lauma (poro) pakenee yhdessä samaan suuntaan.
+/* v2.14 EMAKON PERHE. orphanPiglets: emakon kuollessa sen porsaat, jotka seurasivat sitä (alle 30 m), muodostavat orpolauman (m.orphan = lauman
+   tunnus): pysyvät yhdessä, pakenevat yhdessä ja pelkäävät pelaajaa 2× kauempaa. Kauas eksyneet porsaat eivät kuulu laumaan.
+   Perhehetket (famPlan/famStep): rauhallinen emakko (ei vihainen, pelaaja yli 14 m) aloittaa 12–24 s välein yhteisen hetken porsaiden kanssa:
+   nuuhkaisu (porsas tulee emon kylkeen ja nyökyttää, emo laskee kärsänsä sen luo), leikki (kaksi porsasta kiertää emoa hyppien) tai tonkiminen
+   (emo tonkii maata, porsaat kerääntyvät viereen tonkimaan). Pelaaja alle 12 m, osuma, pelko tai suuttuminen keskeyttää. */
+let ORPH_N=0;
+function orphanPiglets(sow){const id=++ORPH_N;for(const k of mobs)if(k.mom===sow&&!k.dead&&dist2(k.pos.x,k.pos.z,sow.pos.x,sow.pos.z)<30*30){k.mom=null;k.orphan=id;if(k.fam)famEnd(k.fam);}}
+function famPlan(sow,dt,dist){if(sow.fam||sow.angry||sow.state!=='idle'||dist<14||sow.born!==undefined)return;sow.famT=(sow.famT??(5+Math.random()*7))-dt;if(sow.famT>0)return;sow.famT=12+Math.random()*12;
+  const kids=mobs.filter(k=>k.mom===sow&&!k.dead&&k.state==='idle'&&!k.fam&&k.born===undefined&&dist2(k.pos.x,k.pos.z,sow.pos.x,sow.pos.z)<10*10);if(!kids.length)return;
+  const r=Math.random(),k=r<.4?'nuzzle':r<.7&&kids.length>1?'play':'root';
+  const F={k,t:0,dur:k==='play'?4.5:k==='root'?5:4,sow,kids:k==='nuzzle'?[kids[Math.random()*kids.length|0]]:k==='play'?kids.slice(0,2):kids};sow.fam=F;sow.wander=null;for(const c of F.kids){c.fam=F;c.wander=null;}}
+function famEnd(F){F.sow.fam=null;for(const c of F.kids)c.fam=null;}
+function famStep(m,dt,dist){const F=m.fam,sow=F.sow;
+  if(sow.dead||F.kids.some(c=>c.dead||c.state==='flee'||c.orphan)||sow.angry||sow.state!=='idle'||(dist<12&&!P.crouch)||playTime-m.lastHit<10||F.t>F.dur){famEnd(F);return false;}
+  if(m===sow)F.t+=dt;const t=F.t,i=F.kids.indexOf(m),sp=m.def.walk||1.4;let tx=null,tz=null,spd=sp,face=null,hd=0,hop=0;
+  if(m===sow){if(F.k==='nuzzle'){face=F.kids[0];hd=.45*sstep(.8,1.4,t)*(1-sstep(F.dur-.6,F.dur,t));}else if(F.k==='root')hd=.6+Math.sin(t*6)*.12;else face=F.kids[0];}
+  else if(F.k==='nuzzle'){const a=sow.yaw+Math.PI/2,s=Math.cos(sow.yaw)*(m.pos.x-sow.pos.x)-Math.sin(sow.yaw)*(m.pos.z-sow.pos.z)>0?1:-1;tx=sow.pos.x+Math.sin(sow.yaw)*.45+Math.sin(a)*.8*s;tz=sow.pos.z+Math.cos(sow.yaw)*.45+Math.cos(a)*.8*s;face=sow;hd=.25+Math.sin(t*9)*.22;}
+  else if(F.k==='play'){const an=t*2.1+(i?Math.PI*.8:0);tx=sow.pos.x+Math.cos(an)*2.3;tz=sow.pos.z+Math.sin(an)*2.3;spd=(m.def.run||5)*.55;hop=Math.abs(Math.sin(t*11+i))*.12;}
+  else{const an=sow.yaw+(i-(F.kids.length-1)/2)*.9;tx=sow.pos.x+Math.sin(an)*1.2;tz=sow.pos.z+Math.cos(an)*1.2;face={pos:{x:sow.pos.x+Math.sin(sow.yaw)*.8,z:sow.pos.z+Math.cos(sow.yaw)*.8}};hd=.55+Math.sin(t*7+i)*.15;}
+  const fx=v=>v.pos?v.pos:v;let moving=false;
+  if(tx!==null){const ex=tx-m.pos.x,ez=tz-m.pos.z;if(ex*ex+ez*ez>.12){moveMob(m,ex,ez,spd,dt);moving=true;}}
+  if(!moving){moveMob(m,0,0,0,dt);if(face){const q=fx(face);m.yaw=lerpAngle(m.yaw,Math.atan2(q.x-m.pos.x,q.z-m.pos.z),Math.min(1,dt*4));}}
+  animMob(m,dt);if(!moving||F.k==='nuzzle'&&m===sow)m.f.head.rotation.x+=hd;if(hop)m.f.g.position.y+=hop;return true;}
 function startFlee(m,dx,dz){m.state='flee';m.fleeT=0;const pr=m.def.per||{};if(m.mom&&!m.mom.dead)m.mom.pigScare=playTime;   /* v2.12: säikähtänyt porsas → emo suuttuu (temperAI) */
   if(pr.fly&&!m.dun&&!m.fly){const a=Math.atan2(-dx,-dz)+(Math.random()-.5)*1.2,d=14+Math.random()*10,x1=m.pos.x+Math.sin(a)*d,z1=m.pos.z+Math.cos(a)*d;
     if(terrainH(x1,z1)>0){m.fly={t:0,dur:d/9,x0:m.pos.x,z0:m.pos.z,y0:m.pos.y,x1,z1,h:2.5+Math.random()*1.5};m.yaw=a;sfx('flap',1,clamp(1.2-Math.hypot(dx,dz)/40,.15,1));}}
+  if(m.orphan){const a=Math.atan2(-dx,-dz);for(const o of mobs)if(o!==m&&o.orphan===m.orphan&&!o.dead&&o.state!=='flee'){o.state='flee';o.fleeT=0;o.herdA=a;}}   // v2.14: orpolauma pakenee yhdessä
   if(pr.herd){const a=Math.atan2(-dx,-dz);for(const o of mobs)if(o!==m&&o.type===m.type&&!o.dead&&o.state!=='flee'&&dist2(o.pos.x,o.pos.z,m.pos.x,m.pos.z)<25*25){o.state='flee';o.fleeT=0;o.herdA=a;}}}
 function flyMob(m,dt){const F=m.fly;F.t+=dt;const k=Math.min(1,F.t/F.dur);m.pos.x=lerp(F.x0,F.x1,k);m.pos.z=lerp(F.z0,F.z1,k);
   m.pos.y=lerp(F.y0,terrainH(F.x1,F.z1),k)+Math.sin(k*Math.PI)*F.h;m.speedNow=0;if(k>=1){m.fly=null;m.state='idle';m.t=2+Math.random()*3;}}
