@@ -316,6 +316,12 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Korjaus: `anger()` asettaa `m.seenT=playTime` ja viimeisen sijainnin (`lastPX/lastPZ`). Porsaan säikähdyksestä `lastHit=playTime-1` → jahti ~9 s.
   Kun lisäät uuden tavan suututtaa olento, aseta aina myös `seenT` (tai käytä `anger()`/`packAlert`).
 
+## 44. Tikkaita pystyi kiipeämään seinän toiselta puolelta (v2.15)
+- Syy: `ladderAt` (player.js) tarkisti vain etäisyyden tikkaiden paikallisissa koordinaateissa (|lz − zc| < 0,95 m), ei esteitä välissä.
+- Korjaus: `ladderReach(p,pos,zc)` – pelaajan rinnalta (y + 1) tikkaiden keskilinjalle samalla korkeudella näytteet 6 cm välein, 0,18 m ennen
+  tikkaita; jos väliin osuu vähintään 0,5 m korkea laatikko (seinä, ovi), ei kiivetä. Tikkaat itse (myös jatkoketju), lattiat ja `off`-törmäimet ohitetaan.
+  Seinän sisälle (vanha sijoitus) asetettuihin tikkaisiin ylettyy edelleen molemmilta puolilta.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

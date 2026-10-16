@@ -56,7 +56,9 @@ function updateMobs(dt){
     const hostile=d.ai==='hostile'||(d.ai==='neutral'&&m.angry);
     const aggroR=(d.aggro||12)*(night?1.35:1)*(P.crouch?.5:1);
     // Näköyhteys (välimuistissa, tarkistus ~5 kertaa sekunnissa): ilman sitä ei aloiteta eikä jatketa jahtia.
-    m.losT=(m.losT||0)-dt;if(m.losT<=0){m.losT=.2+Math.random()*.1;m.los=dist<45&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true);if(m.los&&m.state==='chase'){m.seenT=playTime;m.lastPX=P.pos.x;m.lastPZ=P.pos.z;}}   // v2.08: suljettu ovi estää näkemisen (lasi ei)
+    m.losT=(m.losT||0)-dt;if(m.losT<=0){m.losT=.2+Math.random()*.1;m.los=dist<45&&!devOn('unseen')&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true);if(m.los&&m.state==='chase'){m.seenT=playTime;m.lastPX=P.pos.x;m.lastPZ=P.pos.z;}}   // v2.08: suljettu ovi estää näkemisen (lasi ei)
+    // v2.15 DEV Näkymätön: olennot eivät näe eivätkä kuule pelaajaa; jahti ja suuttumus loppuvat, ellei pelaaja ole lyönyt alle 10 s sitten
+    if(devOn('unseen')&&playTime-(m.pHit??-99)>10){m.los=false;if(m.state==='chase'){m.state='idle';m.siege=null;m.thru=0;m.seenT=-99;m.wind=0;}m.angry=false;if(playTime-m.lastHit<10)m.lastHit=-99;}
     m.noLos=m.state==='chase'&&!m.los?(m.noLos||0)+dt:0;
     // Pelko: tuli ja soihtu ajavat kaikki viholliset ja eläimet pois päin (myös vihaiset). Vartija ja ylimys eivät pelkää.
     if(m.type!=='ylimys'&&!m.guard){let fs=null,fd=1e9;   // v1.39: vartijat eivät pelkää tulta (pomot käsitellään ennen tätä)
@@ -72,7 +74,7 @@ function updateMobs(dt){
       // v1.09 (lista 2, kohta 2): paluu kävellen (d.walk, esim. 20 m ≈ 10 s), paranee vain 1 %/s. Paluu keskeytyy, jos pelaaja tulee
       // alle 8 m päähän (myös alueen ulkopuolella) tai näkyy alueen sisällä. Keskeytyksen jälkeen (m.intr) vartija taistelee alueen
       // ulkopuolellakin niin kauan kuin pelaaja on alle 8 m päässä; kun pelaaja on kauempana, arvotaan uusi 1–10 s paluuajastin.
-      if(m.ret&&!P.dead&&(dist<8||pIn&&m.los&&dist<(d.aggro||12)*1.35)){m.ret=false;m.retT=0;m.intr=gd>m.guard.r;m.state='chase';}
+      if(m.ret&&!P.dead&&!devOn('unseen')&&(dist<8||pIn&&m.los&&dist<(d.aggro||12)*1.35)){m.ret=false;m.retT=0;m.intr=gd>m.guard.r;m.state='chase';}
       const engaged=m.intr&&dist<8&&!P.dead;
       if(!m.ret&&gd>m.guard.r&&!engaged){atBorder=true;if(!(m.retT>0))m.retT=1+Math.random()*9;m.retT-=dt;if(m.retT<=0||P.dead){m.ret=true;m.retT=0;m.intr=false;}}
       else if(engaged)m.retT=0;
@@ -90,7 +92,7 @@ function updateMobs(dt){
       // Kyykyssä (v0.70): paikallaan ei huomata lainkaan; hiipiessä vain 1,5 m (eläin katsoo pelaajaa kohti) tai 0,9 m (selin), jotta
       // hiiviskelyisku ylettyy (aseen ulottuma ~2,3 m). Ennen kyykky = 3,5 m ja alle 4 m aina → eläin pakeni ennen kuin ylettyi lyömään.
       const w=curWeapon(),armed=(w.cat==='weapon'||w.cat==='bow')&&!P.crouch,mv=Math.hypot(P.vel.x,P.vel.z)>.3,face=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1)>0;
-      const pr=d.per||{};const hid=P.crouch||playTime-(P.uncrouchT||-9)<.1;let sr=hid?0:P.running?16:7;   /* v1.39 (lista 4, kohta 1): kyykyssä ei huomata lainkaan; noustessa 0,1 s viive */if(armed)sr*=1.4;sr*=pr.scare||1;if(m.orphan)sr*=2;   /* v2.14: emonsa menettäneet porsaat pelkäävät 2× kauempaa */
+      const pr=d.per||{};const hid=P.crouch||playTime-(P.uncrouchT||-9)<.1||devOn('unseen');let sr=hid?0:P.running?16:7;   /* v1.39 (lista 4, kohta 1): kyykyssä ei huomata lainkaan; noustessa 0,1 s viive */if(armed)sr*=1.4;sr*=pr.scare||1;if(m.orphan)sr*=2;   /* v2.14: emonsa menettäneet porsaat pelkäävät 2× kauempaa */
       // v0.85 luonteet: jänis jähmettyy ensin (ellei pelaaja ole aivan vieressä), kettu jää katsomaan matkan päästä, poro-lauma pakenee yhdessä
       const scared=hurt||(!P.dead&&dist<sr&&(m.los||P.crouch||dist<4));
       if(scared){if(m.state!=='flee'&&m.state!=='freeze'){if(pr.freeze&&!hurt&&dist>sr*.45){m.state='freeze';m.frzT=pr.freeze*(.7+Math.random()*.6);}else startFlee(m,dx,dz);}
@@ -153,7 +155,7 @@ function temperAI(m,dt,dx,dz,dist,hurt,night){const d=m.def,t=d.temper;
   if(m.angry||P.dead||P.inDun!==!!m.dun)return false;
   const anger=(txt,lh=6)=>{m.angry=true;m.lastHit=playTime-lh;m.state='chase';m.seenT=playTime;m.lastPX=P.pos.x;m.lastPZ=P.pos.z;   /* v2.14: suuttunut tietää pelaajan sijainnin (muuten jahti loppui heti, KORJAUKSET 43) *//* v2.10: tiedostoääni (creTick) korvaa karjaisun → ei kahta päällekkäin */if(!creRes(m.type,'aggro')&&creAngerOk(m))sfx('roar',t==='elk'?.7:t==='sow'?1.1:1.6,.5);if(txt&&playTime-(m.growlT||-99)>20){m.growlT=playTime;msg(txt,'warn');}};
   if(t==='sow'&&playTime-(m.pigScare??-99)<3){anger('Emakko puolustaa porsaitaan!',1);return false;}   // v2.14: oma porsas säikähti pelaajaa → suuttuu missä tahansa porsas onkin
-  if(P.crouch||playTime-(P.uncrouchT||-9)<.1)return false;   // v1.39: kyykyssä eläin ei huomaa
+  if(P.crouch||playTime-(P.uncrouchT||-9)<.1||devOn('unseen'))return false;   // v1.39: kyykyssä eläin ei huomaa (v2.15: DEV Näkymätön)
   const see=m.los&&dist<(d.aggro||12);
   if(t==='elk'){if(dist>15)m.rolled=0;if(dist<6&&!m.rolled&&m.los){m.rolled=1;if(Math.random()<.35)anger('Hirvi suuttuu ja ryntää päin!');else startFlee(m,dx,dz);}}
   else if(t==='lynx'){if(night&&P.hp<maxHp()*.5&&see)anger('Ilves vaanii heikentynyttä saalista!');else if(dist<10&&m.los&&m.state!=='flee')startFlee(m,dx,dz);}
@@ -254,7 +256,7 @@ const MOB_SPD=.85;
    (+ pieni hajonta), ei ennakoi liikettä → sivulle väistävä/häilyvä pelaaja jää nuolen ohi. Nuolen fysiikka sama kuin pelaajalla (shootArrow, painovoima
    ARCH_G, tuuli). v1.89: veto 1,9 s (sekunti lisää) ja jousi vasemmassa kädessä, miekka oikeassa – alle 2,4 m kalmo lyö miekalla. Jousen asento (kahva edessä, jänne poskella, nuoli) tulee pelaajan bowAimFig-funktiosta (player.js), ks. archerPose. */
 const _arF=new V3(),_arD=new V3(),_arX=new V3(),ARCH_DRAW=1.9,ARCH_SPD=32,ARCH_G=7,ARCH_TURN=1.0,ARCH_PITCH=.9;
-function archerAI(m,dt,dx,dz,dist){const d=m.def,los=losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true);
+function archerAI(m,dt,dx,dz,dist){const d=m.def,los=!devOn('unseen')&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true);
   if(m.aimT>0){
     const k=Math.min(1,dt*4);m.aimX+=(P.pos.x-m.aimX)*k;m.aimY+=(P.pos.y+1.15-m.aimY)*k;m.aimZ+=(P.pos.z-m.aimZ)*k;   // viive: tähtäyspiste seuraa pelaajaa hitaasti
     const ax=m.aimX-m.pos.x,az=m.aimZ-m.pos.z,hd=Math.hypot(ax,az)||1e-4,t=hd/ARCH_SPD,ty=m.aimY-(m.pos.y+1.35)+.5*ARCH_G*t*t;   // painovoimakorjaus nuolen lentoajalle

@@ -205,6 +205,16 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const s2=spawnMob('emakko',P.pos.x+60,P.pos.z+60,{noBorn:1});ms.push(s2);const kk=spawnMob('porsas',P.pos.x+61,P.pos.z+60,{noBorn:1});kk.mom=s2;ms.push(kk);s2.famT=0;famPlan(s2,.01,99);const d=!!s2.fam&&kk.fam===s2.fam&&['nuzzle','play','root'].includes(s2.fam.k);
     res=a&&b&&c&&d||`virhe suuttuu ${a} orvot ${b} pako ${c} perhe ${d}`;}finally{msg=om;for(const m of ms)if(mobs.includes(m))mobRemove(m);}return res;});
   t('v2.14 DEV Å: pikavalinnoissa 100 puuta (antaa reppuun)',()=>{const ok=DEV_PICKS.some(([i,n])=>i==='puu'&&n===100);const c0=invCount('puu');invAdd('puu',100);const c1=invCount('puu');invRemove('puu',c1-c0);return ok&&c1-c0===100||`virhe lista ${ok} reppu ${c1-c0}`;});
+  t('v2.15 tikkaat: seinän takaa ei voi kiivetä (ladderReach), edestä ja vapaasti seisoviin molemmilta puolilta voi',()=>{const x=P.pos.x+70,z=P.pos.z-70,y=terrainH(x,z),made=[];try{
+    const W=addPiece('seina',x,y,z,0);made.push(W);const lw=ladderWall('tikkaat',{pt:new THREE.Vector3(x,y+1,z+.1),n:new THREE.Vector3(0,0,1),piece:W},0,false);const L=addPiece('tikkaat',lw.x,lw.y,lw.z,lw.rot,undefined,undefined,0);made.push(L);
+    const F=addPiece('tikkaat',x+8,terrainH(x+8,z),z,0);made.push(F);
+    const a=!!ladderAt({x:L.x,y:L.y+.5,z:L.z+.4})&&!ladderAt({x:L.x,y:L.y+.5,z:z-.45})&&!!ladderAt({x:F.x,y:F.y+.5,z:F.z+.4})&&!!ladderAt({x:F.x,y:F.y+.5,z:F.z-.4});
+    return a||'virhe: seinän takaa ylettyy tai edestä ei';}finally{for(const q of made)if(pieces.includes(q))removePiece(q);}});
+  t('v2.15 DEV Näkymätön (Ä): olennot eivät huomaa pelaajaa, lyönti suututtaa, päälle kytkeminen lopettaa jahdin',()=>{const o=DEVF.unseen,ms=[];try{
+    DEVF.unseen=1;const w=spawnMob('susi',P.pos.x+50,P.pos.z+50,{noBorn:1});ms.push(w);w.state='chase';w.angry=true;w.losT=0;const dx=P.pos.x-w.pos.x,dz=P.pos.z-w.pos.z;
+    const a=devOn('unseen')===DEV&&/devOn\('unseen'\)&&playTime-\(m\.pHit/.test(updateMobs.toString())&&/devOn\('unseen'\)/.test(temperAI.toString())&&/devOn\('unseen'\)/.test(archerAI.toString());
+    const b='unseen' in DEVF&&/data-big="\$\{k\}"/.test(renderDev.toString())&&/'unseen','Näkymätön'/.test(renderDev.toString());
+    return a&&b||`virhe havaitseminen ${a} valikko ${b}`;}finally{DEVF.unseen=o;for(const m of ms)if(mobs.includes(m))mobRemove(m);}});
   t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
     if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
     const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;

@@ -99,7 +99,7 @@ let panelOpenedAt=0;
 // DEV-valikko (Ä): sää, kellonaika, terveys ja kylläisyys – muutokset heti. Sää pysyy valittuna 10 min.
 function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=dayT*24;return `${Math.floor(h)}:${String(Math.floor(h%1*60)).padStart(2,'0')}`;};
   const big=[['god','Kuolemattomuus','Ei kuole eikä ota vahinkoa'],['fly','Lento','V pohjassa 6× nopeampi'],['noclip','Seinien läpi','Seinät ja esineet eivät estä'],
-    ['lockTW','Lukitse aika ja sää','Kello ja sää pysyvät'],['freeze','Pysäytä maailma','Olennot, ammukset, aika ja nälkä seis']];
+    ['lockTW','Lukitse aika ja sää','Kello ja sää pysyvät'],['unseen','Näkymätön','Olennot eivät huomaa sinua (lyönti suututtaa)'],['freeze','Pysäytä maailma','Olennot, ammukset, aika ja nälkä seis']];
   B.innerHTML=`<div class="devBig">${big.map(([k,n,d])=>`<button class="btn devBigB${DEVF[k]?' on':''}" data-big="${k}"><b>${n}</b><span>${DEVF[k]?'PÄÄLLÄ':'pois'} · ${d}</span></button>`).join('')}
     <button class="btn devBigB act" data-heal="1"><b>Terveys täyteen</b><span>Terveys, kestävyys ja kylläisyys täyteen, palaminen pois</span></button></div>
   <div class="devRow"><b>Sää</b><div class="devBtns">${Object.entries(WEATHERS).map(([k,w])=>`<button class="btn${weather.cur===k?' on':''}" data-w="${k}">${w.n}</button>`).join('')}</div></div>

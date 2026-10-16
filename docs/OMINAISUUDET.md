@@ -37,7 +37,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 | Hyppy | pystynopeus 7,2 m/s, maksaa 8 kestävyyttä |
 | Painovoima | 22 m/s² |
 | Putoamisvahinko | kun alastulonopeus > 15 m/s: (nopeus − 15) × 6 hp |
-| Tikkaat | ylös/alas 2,6 m/s (eteen/hyppy = ylös, taakse = alas) |
+| Tikkaat | ylös/alas 2,6 m/s (eteen/hyppy = ylös, taakse = alas); vain samalta puolelta – seinä tai ovi välissä estää (v2.15) |
 | Kiihtyvyys | maassa nopea (×12), ilmassa hidas (×3) |
 
 - **Törmäys (collision.js):** laatikot ja ympyrät ruudukossa (`CELL` 8 m). Alle `STEPUP`-korkuiset esteet ylitetään askeltamalla.
@@ -543,7 +543,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Työkalun trimmaus/voimakkuus: pituuden rajat (idle 3 s … death 3,5 s, pomot enemmän) ja tavoite-LUFS lajeittain (idle −22 … death/aggro −16, pomo +1,5 dB).
 
 ## DEV-työkalut (vain DEV-tilassa)
-- Ä = DEV-valikko. Isot napit alussa (v1.92): Kuolemattomuus, Lento (alkaa heti), Seinien läpi, Lukitse aika ja sää, Pysäytä maailma
+- Ä = DEV-valikko. Isot napit alussa (v1.92): Kuolemattomuus, Lento (alkaa heti), Seinien läpi, Lukitse aika ja sää, Näkymätön (v2.15: olennot eivät huomaa sinua, lyönti suututtaa), Pysäytä maailma
   (vain pelaaja liikkuu), Terveys täyteen. Lisäksi sää, aika, terveys, kylläisyys, pienet täpät, esinehaku, kartta.
 - V pohjassa = 10× kävelynopeus, lennossa 6× lentonopeus (vaaka ja pysty).
 - Ö = olennot ja pomot (v1.91): luo minkä tahansa olennon 3 m eteen (pomot nousevat herätysanimaatiolla), siirry ulottuvuuspomon huoneeseen tai

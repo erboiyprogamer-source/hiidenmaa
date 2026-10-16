@@ -5,7 +5,14 @@
 /* ---------------- PLAYER UPDATE ---------------- */
 // Tikkaat: pelaaja kiipeää, kun hän on tikkaiden edessä (±.6 m sivusuunnassa, .9 m syvyyssuunnassa).
 function ladderAt(pos){for(const p of pieces){if(bt(p.t)!=='tikkaat')continue;const dx=pos.x-p.x,dz=pos.z-p.z;if(dx*dx+dz*dz>5)continue;const a=p.rot*Math.PI/4,lx=dx*Math.cos(a)-dz*Math.sin(a),lz=dx*Math.sin(a)+dz*Math.cos(a),zc=-Math.max(0,pos.y-p.y)*ladRun(p.f||0)/WH;
-  if(Math.abs(lx)<.65&&Math.abs(lz-zc)<.95&&pos.y>p.y-.3&&pos.y<p.y+WH-.05)return p;}return null;}
+  if(Math.abs(lx)<.65&&Math.abs(lz-zc)<.95&&pos.y>p.y-.3&&pos.y<p.y+WH-.05&&ladderReach(p,pos,zc))return p;}return null;}
+/* v2.15: tikkaisiin ylettyy vain samalta puolelta: pelaajan rinnalta tikkaiden keskilinjalle (samalla korkeudella, 0,18 m ennen) ei saa olla
+   seinää, ovea tai muuta korkeaa rakennetta (vähintään 0,5 m korkea laatikko; tikkaat itse, lattiat ja avoimet ovet eivät estä). Ennen tikkaita pystyi
+   kiipeämään seinän toiselta puolelta (KORJAUKSET 44). */
+function ladderReach(p,pos,zc){const a=p.rot*Math.PI/4,tx=p.x+zc*Math.sin(a),tz=p.z+zc*Math.cos(a),y=pos.y+1,dx=tx-pos.x,dz=tz-pos.z,L=Math.hypot(dx,dz);if(L<.2)return true;
+  for(let t=.05;t<L-.18;t+=.06){const x=pos.x+dx*t/L,z=pos.z+dz*t/L;gridQuery(x,z,.05,_cl);
+    for(const c of _cl){if(c.t!=='b'||c.off||c.maxY-c.minY<.5||(c.owner&&c.owner.t&&bt(c.owner.t)==='tikkaat'))continue;if(x>c.minX&&x<c.maxX&&z>c.minZ&&z<c.maxZ&&y>c.minY&&y<c.maxY)return false;}}
+  return true;}
 const _qh=new THREE.Quaternion(),_qf=new THREE.Quaternion(),_qd=new THREE.Quaternion(),_qt=new THREE.Quaternion(),_eb=new THREE.Euler();
 let torchFl=null,torchBarT=0,torchIgn=0,shDark=0;const torchPh=[Math.random()*TAU,Math.random()*TAU];
 function updatePlayer(dt){

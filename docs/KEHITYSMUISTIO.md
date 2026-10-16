@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.14)
+## Nykytila (päivitetty v2.15)
 
-- **Versio 2.14**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. v2.11 (äänierä A2), v2.12 (pitkät äänet, kuuluvuus, emakko) v2.13 (tikkaiden kulmat, JATKO-kohdistus) ja v2.14 (syntyanimaatiot, Kalmanummi, äänten kantama, emakon perhe) PR:ssä [#29](https://github.com/erboiyprogamer-source/hiidenmaa/pull/29). Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
+- **Versio 2.15**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. v2.11 (äänierä A2), v2.12 (pitkät äänet, kuuluvuus, emakko) v2.13 (tikkaiden kulmat, JATKO-kohdistus) v2.14 (syntyanimaatiot, Kalmanummi, äänten kantama, emakon perhe) ja v2.15 (DEV Näkymätön, tikkaat seinän takaa) PR:ssä [#29](https://github.com/erboiyprogamer-source/hiidenmaa/pull/29). Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -228,6 +228,13 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.15 (DEV Näkymätön, tikkaat eivät ylety seinän läpi)
+- **DEV Ä › Näkymätön** (`DEVF.unseen`, iso painike): olennot eivät näe eivätkä kuule pelaajaa – näköyhteys `m.los` aina false, eläinten säikähdys
+  (`hid`), luonteet (`temperAI`), jousikalmot (`archerAI`), vartijoiden paluun keskeytys ja ulottuvuuspomon herätys ohitetaan. Kytkettäessä päälle
+  käynnissä oleva jahti ja suuttumus loppuvat. Pelaajan osuma (`m.pHit`, damageMob) suututtaa olennon 10 s:ksi normaalisti.
+- **Tikkaat:** `ladderReach` estää kiipeämisen, jos pelaajan ja tikkaiden välissä on seinä tai ovi (KORJAUKSET 44).
+- Tarkistusrivit v2.15 (2 kpl).
 
 ### v2.14 (päivitysideat 1–7, käyttäjän vastaukset kysymyksiin)
 - **1. Syntyanimaatio** (`bornStart`/`bornTick`/`bornPose`/`bornEnd`, effects.js; kutsu `spawnMob`:ssa, tikki `updateMobs`): kaikki olennot, joilla ei

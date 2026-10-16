@@ -96,6 +96,7 @@ function doMeleeHit(w){
 const KB_V=3.75;   // mitattu: arvo 10 → 5 m (harmaasusi)
 function damageMob(m,dmg,dt,kx,kz,kb=4){
   if(m.dead||m.sinking)return;   // v0.95: vajoava/nouseva vartija on haavoittumaton
+  m.pHit=playTime;   // v2.15: pelaajan osuma (DEV Näkymätön: lyöty olento huomaa sinut 10 s)
   const mult=(m.def.weak&&m.def.weak[dt])||1;dmg*=mult;
   m.hp-=dmg;m.flash=.15;m.lastHit=playTime;m.angry=true;m.hurtT=playTime;m.seenT=playTime;m.lastPX=P.pos.x;m.lastPZ=P.pos.z;   // v2.08: osuma = muisti
   if(m.def.ai!=='boss'&&m.def.ai!=='rboss'){const l=Math.hypot(kx,kz)||1,k=kb*(m.def.r>.8?.4:m.def.r>.6?.7:1);m.vel.x+=kx/l*k;m.vel.z+=kz/l*k;m.wind=0;}

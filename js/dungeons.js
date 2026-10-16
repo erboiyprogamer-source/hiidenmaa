@@ -363,7 +363,7 @@ function realmBossAI(m,dt,dx,dz,dist){
      etäisyys + näköyhteys pomon paikalta (seinät estävät). 8 s herätys (effects.js bossRisePose); pomo huomaa pelaajan nostaessaan päänsä. */
   if(m.state==='sleep'){const gy=m.riseY??DUN.y;f.g.visible=false;m.sinking=1;
     // v1.91: herätys kun pelaaja astuu pomohuoneeseen (inBossRoom: huoneen ääriviiva tai varaetäisyys = keskim. matka keskeltä seinään)
-    if(!P.dead&&(P.spawnProt||0)<=0&&Math.abs(P.pos.y-gy)<4&&P.inDun===!!m.dun&&(m.devSpawn?dist<10:P.realm===m.realm&&inBossRoom(BUILT[m.realm],P.pos.x,P.pos.z))){m.state='rise';m.t=0;m.woke=0;sfx('slam',.45,.6);}
+    if(!P.dead&&!devOn('unseen')&&(P.spawnProt||0)<=0&&Math.abs(P.pos.y-gy)<4&&P.inDun===!!m.dun&&(m.devSpawn?dist<10:P.realm===m.realm&&inBossRoom(BUILT[m.realm],P.pos.x,P.pos.z))){m.state='rise';m.t=0;m.woke=0;sfx('slam',.45,.6);}
     return;}
   if(m.state==='rise'||m.state==='intro'){m.t+=dt;if(m.t>5.9)m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*3));   // nukkuu kunnes nostaa päänsä
     if(bossRisePose(m,dt,m.riseY??DUN.y,(d.fh||4)+1.5))return;
