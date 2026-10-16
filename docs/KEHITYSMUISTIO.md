@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.11)
+## Nykytila (päivitetty v2.12)
 
-- **Versio 2.11**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. v2.11 (äänierä A2: 80 omaa ääntä) uudessa PR:ssä. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7, `hirvi_aggro_1` +20,6, `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
+- **Versio 2.12**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. v2.11 (äänierä A2) ja v2.12 (pitkät äänet, kuuluvuus, emakko) PR:ssä [#29](https://github.com/erboiyprogamer-source/hiidenmaa/pull/29). Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -133,7 +133,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - **Kuolemaäänet:** ulottuvuuksien hirviöillä 1 paikka (`_1`), kaikilla muilla olennoilla 2 (`_1`, `_2`); `variants_of(ai, laji)` työkalussa,
   ylimääräiset paikkamerkit poistuvat `--init`:llä (oikeaan ääneen ei koskaan kosketa).
 - **Trimmaus (työkalu):** ylipäästö 40 Hz, hiljaisuus (−48 dB) pois alusta ja lopusta, pituus katkaistaan lajin ylärajaan ja häivytetään
-  (6 ms sisään, laji-kohtainen ulos). Rajat (tavallinen / pomo): idle 3 / 4 s, hurt 1,2 / 1,6 s, death 3,5 / 6 s, aggro 2,5 / 3,5 s, chase 2,5 / 4 s.
+  (6 ms sisään, laji-kohtainen ulos). **v2.12 pitkät äänet (`PITKA`, `natural_end`):** jos raaka jatkuu yli rajan, ei katkaista kesken vaan
+  luonnolliseen taukoon (≥ 0,3 s yli 30 dB huipun alla) tai pitkään ylärajaan (idle 10, death 5/8, aggro 4/5, chase 3,5/4,5, echo 10 s) 0,6 s häivytyksellä;
+  hurt aina lyhyt (varoitus, jos hurt-raaka > 3 s). **Kutsuäänet (`KUTSU`, ≥ 1,5 s) → manifestiin `far:1`** (📢 äänilistassa). PV 4, manifestissa myös `raw` (raakapituus). Rajat (tavallinen / pomo): idle 3 / 4 s, hurt 1,2 / 1,6 s, death 3,5 / 6 s, aggro 2,5 / 3,5 s, chase 2,5 / 4 s.
 - **Voimakkuus (työkalu):** mitataan LUFS ja nostetaan lajin tavoitteeseen: idle −22, hurt −17, death −16, aggro −16, chase −18 (pomot +1,5 dB,
   boss +1) ja `alimiter` (katto −1 dBFS, ei leikkaa). Samat äänet siis suunnilleen samalla tasolla ja idle hiljaisin. Manifestin `pv` = käsittelyn
   versio (`PV`): vaihtuessa kaikki ajetaan uudestaan; `gain` = käytetty vahvistus (dB). Anna raaka puhtaana ja kuivana (ei omaa kaikua).
@@ -226,6 +228,19 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.12 (pitkät äänet, kuuluvuus kauas, etäisyysefekti, emakko ja säikähtäneet porsaat)
+- **Emakko:** suuttuu myös kun sen porsas säikähtää pelaajaa ja pakenee (`startFlee` → `mom.pigScare`, emo alle 30 m, 3 s ikkuna). Ennen porsaat
+  pakenivat jo 6–14 m:stä, joten 7 m:n sääntö ei juuri koskaan lauennut.
+- **Pitkät äänet:** analyysi (raaka vs. yläraja) näytti, että 22 ääntä leikattiin kesken (suden ulvonnat 4,7–23 s → 3 s, metson soidin, hirven
+  mylvintä, aarnihirviön ääntely). Työkalu päättää ne nyt luonnolliseen taukoon (ks. Äänisuunnitelma › Trimmaus). Esim. susi_idle 4,7–7,4 s, metso_idle_1 5,6 s.
+- **Kuuluvuus (audio.js):** `CRE_FAR_R` 220 m kutsuäänille (`far`), `CRE_NEAR_R` 80 m muille; rauhallinen ääntely alle 45 m (ennen 25), kutsuääni alle
+  220 m. Panner: far ref 14 / rolloff 0,8 / max 320 m, muut ref 3 (pomo 8) / 1,1 / 150 m. **Etäisyysefekti** `creDistK`/`creDistFx`: alipäästö
+  15 kHz → 650 Hz ja ulkokaiku (sama ConvolverNode) 0,06 → 0,76 etäisyyden mukaan, päivittyy joka ruutu. Pitkän äänen jälkeen tauko ≥ kesto + 2 s,
+  kutsuäänen jälkeen 12–30 s lisää; jahtiääni ≥ kesto + 1,5 s.
+- **Kaukainen ulvonta** `farHowl`: yöllä ulkona 45–110 s välein (60 %) suden kutsuääni 150–230 m päästä satunnaisesta suunnasta (olennot poistuvat
+  yli 120 m, joten tämä tuo ulvonnan todella kaukaa). `creSnd`-valinta `farOnly`.
+- Tarkistusrivi "v2.12 emakko … kutsuäänet …"; full157 6 karttaa 0 virhettä.
 
 ### v2.11 (äänierä A2: 80 omaa ääntä, rajattomat versiot, kattavuusmerkit)
 - Käyttäjä lisäsi/muokkasi 77 raakaääntä (aarnihirviö, hiisi, hirvi, ilves, kalmo, karhu, karju, metso, susi; susi_idle_4–6 uusina) ja poisti vanhat

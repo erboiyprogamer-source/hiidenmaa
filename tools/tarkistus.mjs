@@ -163,6 +163,15 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const o=CRE.man;CRE.man={susi_idle_1:{h:'a'},susi_idle_10:{h:'b'},susi_idle_4:{h:'c'},susi_idle_2:{h:'d'},aarnihirvio_echo_3:{h:'e'}};const a=creRes('susi','idle'),b=creRes('kalmasusi','idle'),c=creRes('jaajattari','echo');CRE.man=o;
     const d=o&&Object.keys(o).length?Object.keys(o).every(n=>{const m=/^(.+)_(idle|hurt|death|aggro|chase|echo)_\d+$/.exec(n);return m&&creRes(m[1],m[2])&&creRes(m[1],m[2]).names.includes(n);}):true;
     return a&&a.names.join()==='susi_idle_1,susi_idle_2,susi_idle_4,susi_idle_10'&&b&&b.names.length===4&&c&&c.names[0]==='aarnihirvio_echo_3'&&d||`virhe ${a&&a.names} ${b&&b.names} ${c&&c.names} manifest ${d}`;});
+  t('v2.12 emakko suuttuu kun porsas säikähtää; pitkät kutsuäänet (far) kuuluvat kauas, etäisyys tummentaa ja kaiuttaa, kaukainen ulvonta',()=>{
+    const x=P.pos.x+20,z=P.pos.z+20,sow=spawnMob('emakko',x,z),pg=spawnMob('porsas',x+2,z);pg.mom=sow;const oc=P.crouch,om=msg;P.crouch=false;msg=()=>{};let a;
+    try{for(const k of mobs)if(k!==pg&&k.mom===sow)k.dead=true;startFlee(pg,1,1);const dx=P.pos.x-sow.pos.x,dz=P.pos.z-sow.pos.z;temperAI(sow,1/30,dx,dz,Math.hypot(dx,dz),false,false);a=sow.angry&&sow.state==='chase';}
+    finally{P.crouch=oc;msg=om;sow.dead=pg.dead=true;mobRemove(sow);mobRemove(pg);}
+    const o=CRE.man;CRE.man={susi_idle_1:{h:'a',far:1},susi_idle_2:{h:'b'},karju_idle_1:{h:'c'}};const b=creHasFar('routasusi','idle')&&!creHasFar('karju','idle')&&creIsFar('susi_idle_1')&&!creIsFar('susi_idle_2');CRE.man=o;
+    const c=creDistK(5,false)===0&&creDistK(80,false)===1&&creDistK(100,true)<.5&&/df\.frequency/.test(creSnd.toString())&&/sdo/.test(creSnd.toString())&&/creDistFx/.test(creTick.toString());
+    const d=/farHowl\(dt\)/.test(creTick.toString())&&/farOnly/.test(farHowl.toString());
+    const e=!o||!o.susi_idle_1||(o.susi_idle_1.far===1&&o.susi_idle_1.dur>4&&!o.susi_hurt_1.far);
+    return a&&b&&c&&d&&e||`virhe emakko ${a} far ${b} etäisyys ${c} ulvonta ${d} manifest ${e}`;});
   t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
     if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
     const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;

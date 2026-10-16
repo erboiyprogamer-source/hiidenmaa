@@ -26,7 +26,7 @@ AGGRO_AI = ('neutral', 'hostile', 'boss', 'rboss')   # suuttumisääni (aggro)
 CHASE_AI = ('hostile', 'boss', 'rboss')               # + toistuva jahtiääni (chase)
 ECHO_AI = ('rboss', 'boss')                           # v1.88: kaikuääni (echo): nukkuva ulottuvuuspomo kaikuu luolastossa kunnes pelaaja kohtaa sen; v1.95 myös Kalmanvartija maan alta
 VARIANTS = (1, 2, 3)                                  # paikkamerkit _1.._3; v2.11: lisäversiot _4, _5 … kelpaavat ilman koodimuutosta (peli arpoo kaikista)
-PV = 3                                                # käsittelyn versio: vaihtuessa kaikki äänet käsitellään uudestaan
+PV = 4                                                # käsittelyn versio: vaihtuessa kaikki äänet käsitellään uudestaan
 
 
 def variants_of(ai, kind):
@@ -49,6 +49,15 @@ PROFIILI = {
     'echo':  (5.0, 6.0, 0.80, -26),   # kaukainen kaiku: hiljainen, pitkä pehmeä häivytys (kaiku lisätään pelissä)
 }
 BOSS_DB = {'boss': 1.0, 'rboss': 1.5}
+# v2.12: PITKÄT ÄÄNET – jos raaka jatkuu yli lajin ylärajan (ulvonta, soidin, mylvintä), sitä ei katkaista kesken: ääni päättyy luonnolliseen
+# taukoon (viimeinen ≥ 0,3 s hiljainen kohta ennen pitkää ylärajaa) tai, jos taukoa ei ole, pitkään ylärajaan pitkällä häivytyksellä.
+# Osumaääni (hurt) pysyy aina lyhyenä. (pituuden yläraja s: tavallinen, pomo)
+PITKA = {'idle': (10.0, 10.0), 'death': (5.0, 8.0), 'aggro': (4.0, 5.0), 'chase': (3.5, 4.5), 'echo': (10.0, 10.0)}
+# v2.12: KUTSUÄÄNET kuuluvat pelissä kauas (manifestissa far=1, noin 220 m; muut noin 80 m hiljaisempina). Laji + äänilaji; vain vähintään
+# 1,5 s pitkät versiot (lyhyt murahdus ei kanna). Lainaajat (esim. routasusi susi-ulvonnalla) perivät tämän.
+KUTSU = {('susi', 'idle'), ('susi', 'chase'), ('hirvi', 'idle'), ('hirvi', 'aggro'), ('metso', 'idle'), ('karhu', 'aggro'),
+         ('aarnihirvio', 'aggro'), ('aarnihirvio', 'idle'), ('kalmasusi', 'idle'), ('routasusi', 'idle'), ('hiidenhirvi', 'idle')}
+KUTSU_MIN = 1.5
 
 # ---------------------------------------------------------------- olennot (äänierä A)
 # Kuvaus (millainen ääni) ja hakusanat englanniksi lajeittain. Nimet ja ai luetaan js/mobs.js:n MOBDEFistä, varaäänet js/audio.js:n VARAANIsta.
@@ -188,13 +197,43 @@ def loudness(ff, wav):
     return float(m.group(1)) - 1.0 if m else None
 
 
+def levels(ff, wav, win):
+    """RMS-taso (dB) win-sekunnin ikkunoissa."""
+    r = run([ff, '-hide_banner', '-nostats', '-i', wav, '-af', f'asetnsamples={int(44100 * win)},astats=metadata=1:reset=1,'
+             'ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-', '-f', 'null', '-'])
+    return [float(x) if x not in ('-inf', 'inf') else -120.0 for x in re.findall(r'RMS_level=(-?[\d.]+|-inf)', r.stdout + r.stderr)]
+
+
+def natural_end(ff, wav, d, cap, cap_long, win=0.1, drop=30.0, gap=3):
+    """v2.12: pitkän äänen loppukohta. Koko ääni, jos mahtuu pitkään ylärajaan; muuten viimeinen luonnollinen tauko (≥ gap ikkunaa
+    yli `drop` dB huipun alapuolella) välillä 0,6×yläraja … pitkä yläraja; jos taukoa ei ole, pitkä yläraja. Palauttaa (pituus, katkaistiinko)."""
+    if d <= cap_long:
+        return d, False
+    lv = levels(ff, wav, win)
+    if not lv:
+        return cap_long, True
+    pk = max(lv)
+    best = None
+    i = 0
+    while i < len(lv):
+        if lv[i] < pk - drop:
+            j = i
+            while j < len(lv) and lv[j] < pk - drop:
+                j += 1
+            t = i * win
+            if j - i >= gap and cap * 0.6 <= t <= cap_long:
+                best = t
+            i = j
+        else:
+            i += 1
+    return (round(best + 0.05, 3), False) if best else (cap_long, True)
+
+
 def event_end(ff, wav, win=0.025, drop=20.0, hold=4):
     """v1.97: osuma-äänen (hurt) loppuhäntä pois. Etsii ensimmäisen tapahtuman lopun: kohdan, jossa taso (RMS, 25 ms ikkunat) on pysyvästi
     (hold ikkunaa) yli `drop` dB kulkevan huipun alapuolella; palauttaa sen ajan sekunteina (+ 60 ms jättö). Raakaäänen perässä oleva hiljainen
     kohina, veden kaltainen ääni tai uusi alkava ääni jää pois. Palauttaa None, jos ei löydy (ääni jää ennalleen)."""
-    r = run([ff, '-hide_banner', '-nostats', '-i', wav, '-af', f'asetnsamples={int(44100 * win)},astats=metadata=1:reset=1,'
-             'ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-', '-f', 'null', '-'])
-    lv = [float(x) if x not in ('-inf', 'inf') else -120.0 for x in re.findall(r'RMS_level=(-?[\d.]+|-inf)', r.stdout + r.stderr)]
+    lv = levels(ff, wav, win)
     if len(lv) < hold + 2:
         return None
     m = -120.0   # kulkeva huippu: ensimmäinen tapahtuma päättyy kun taso pysyy `drop` dB sen alapuolella (myöhempi kovempi osa ei jatka ääntä)
@@ -224,11 +263,14 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle'):
             return 'ääni on käytännössä hiljaa', None
         # 2) pituuden yläraja + häivytykset (ei klikkausta alussa, pehmeä loppu)
         L = min(d, cap)
+        cut = d > cap
         if kind == 'hurt':
             ee = event_end(ff, w1)
             if ee and ee > 0.15:
                 L = min(L, ee)
-        f = min(fade, L * 0.5)
+        elif d > cap and kind in PITKA:
+            L, cut = natural_end(ff, w1, d, cap, PITKA[kind][1 if boss else 0])
+        f = min(max(fade, 0.6) if cut and L > cap else fade, L * 0.5)
         r = run([ff, '-hide_banner', '-loglevel', 'error', '-y', '-i', w1, '-af',
                  f'atrim=duration={L:.3f},afade=t=in:d=0.006,afade=t=out:st={max(L - f, 0):.3f}:d={f:.3f}', '-c:a', 'pcm_s16le', w2])
         if r.returncode != 0:
@@ -242,7 +284,7 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle'):
             return r.stderr.strip()[-300:] or 'tuntematon virhe', None
         shutil.copyfile(tmp, dst + '.tmp.mp3')
     os.replace(dst + '.tmp.mp3', dst)
-    return None, round(gain, 1)
+    return None, (round(gain, 1), round(d, 2))
 
 
 def main():
@@ -303,13 +345,20 @@ def main():
             sounds[n] = old[n]
             skipped += 1
             continue
-        err, gain = process(ff, p, dst, sniff(p), ai, kind)
+        err, res = process(ff, p, dst, sniff(p), ai, kind)
         if err:
             errors.append(f'{os.path.basename(p)}: {err}')
             continue
-        sounds[n] = {'h': sha(dst, 10), 'src': src_h, 'dur': duration(ff, dst), 'pv': PV, 'gain': gain}
-        print(f'  {n}: {sounds[n]["dur"]} s, vahvistus {gain:+.1f} dB')
+        gain, rawd = res
+        sounds[n] = {'h': sha(dst, 10), 'src': src_h, 'dur': duration(ff, dst), 'pv': PV, 'gain': gain, 'raw': rawd}
+        print(f'  {n}: {sounds[n]["dur"]} s (raaka {rawd} s), vahvistus {gain:+.1f} dB')
         done += 1
+    for n, e in sounds.items():
+        mm = re.match(r'^([a-z_0-9]+?)_(idle|hurt|death|aggro|chase|echo)_(\d+)$', n)
+        if mm and (mm.group(1), mm.group(2)) in KUTSU and e.get('dur', 0) >= KUTSU_MIN:
+            e['far'] = 1
+        else:
+            e.pop('far', None)
     # tarkistusraportti erästä: samat tiedostot eri paikoissa, ylimääräiset oikeat äänet, lyhyet ja kovat vahvistukset
     warn = []
     byh = {}
@@ -331,6 +380,8 @@ def main():
         g = sounds[n].get('gain')
         if g is not None and abs(g) > 12:
             warn.append(f'{n}: iso vahvistus {g:+.1f} dB (raaka erittäin hiljainen tai kova – tarkista kuuntelemalla)')
+        if n.split('_')[-2] == 'hurt' and sounds[n].get('raw', 0) > 3:
+            warn.append(f'{n}: osumaäänen raaka on {sounds[n]["raw"]} s pitkä (ulvonta tms.?) – osumaääni leikataan alle 1,2 s; onko oikea paikka?')
         if sounds[n].get('dur', 1) < 0.15:
             warn.append(f'{n}: erittäin lyhyt ({sounds[n]["dur"]} s)')
     # käsitellyt äänet, joiden raaka on kadonnut, poistetaan
@@ -451,6 +502,9 @@ def write_list(sounds, raws):
                 files = ', '.join(f'`{cid}_{kind}_{n}`' for n in sorted(set(vs) | set(mine)))
                 if mine:
                     st = f'✅ oma: {", ".join(f"_{n}" for n in mine)} ({len(mine)} kpl)'
+                    fr = [n for n in mine if sounds.get(f'{cid}_{kind}_{n}', {}).get('far')]
+                    if fr:
+                        st += f'<br>📢 kuuluu kauas: {", ".join(f"_{n}" for n in fr)}'
                     own += 1
                 else:
                     src, p = resolve(cid, kind, sounds, vara)
@@ -495,6 +549,11 @@ def write_list(sounds, raws):
    Kaikuääni (`<pomo>_echo_1/2`) on ulottuvuuspomoilla ja Kalmanvartijalla (maan alta Kalmankehän lähellä); **Aarnihirviön kaikuäänet ovat kaikkien pomojen varaääni**. Kuolemaäänelle on **1 paikka** ulottuvuuksien hirviöillä (Jäätär, Kalmaherra, Aarnihirviö) ja **2 paikkaa** kaikilla muilla.
 
 **Käsittelyn rajat (lajeittain):** idle ≤ 3 s (pomo 4), hurt ≤ 1,2 s (1,6), death ≤ 3,5 s (6), aggro ≤ 2,5 s (3,5), chase ≤ 2,5 s (4), echo ≤ 5 s (6).
+**Pitkät äänet (v2.12):** jos raaka jatkuu yli rajan (ulvonta, soidin, mylvintä), sitä ei katkaista kesken vaan se päättyy luonnolliseen taukoon,
+enintään idle 10 s, death 5 s (pomo 8), aggro 4 s (5), chase 3,5 s (4,5), echo 10 s. Osumaääni pysyy aina lyhyenä.
+**Kuuluvuus (v2.12):** 📢 = kutsuääni (suden ulvonta, hirven mylvintä, metson soidin, karhun karjaisu…, vähintään 1,5 s) kuuluu noin 220 m päähän;
+muut äänet noin 80 m, kaukana hiljaisempina. Kaukana ääni tummuu ja kaikuu luonnollisesti (peli lisää efektin, älä lisää sitä raakaan).
+Yöllä kuuluu lisäksi kaukaista suden ulvontaa (150–230 m) satunnaisesta suunnasta.
 Tavoiteäänekkyys (LUFS): idle −22, hurt −17, death −16, aggro −16, chase −18, echo −26; pomot +1…1,5 dB. Ulottuvuuksissa (luolasto, ulottuvuudet)
 olennot saavat pelissä kaiun (ei tiedostoon), joten anna raakaääni kuivana, ilman omaa kaikua.
 

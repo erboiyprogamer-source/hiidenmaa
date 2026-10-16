@@ -155,7 +155,7 @@ function temperAI(m,dt,dx,dz,dist,hurt,night){const d=m.def,t=d.temper;
   else if(t==='lynx'){if(night&&P.hp<maxHp()*.5&&see)anger('Ilves vaanii heikentynyttä saalista!');else if(dist<10&&m.los&&m.state!=='flee')startFlee(m,dx,dz);}
   else if(t==='ahma'){if(see&&invCount('liha')>0)anger('Ahma haistaa lihan ja hyökkää!');}
   else if(t==='bear'){if(see&&dist<8)anger('Karhu hyökkää!');else if(m.los&&dist<14&&playTime-(m.growlT||-99)>12){m.growlT=playTime;sfx('roar',.55,.7);msg('Karhu murisee varoittavasti – pysy kaukana!','warn');m.state='idle';m.wander=null;m.yaw=Math.atan2(dx,dz);}}
-  else if(t==='sow'){if(mobs.some(k=>k.mom===m&&!k.dead&&dist2(k.pos.x,k.pos.z,P.pos.x,P.pos.z)<49))anger('Emakko puolustaa porsaitaan!');}
+  else if(t==='sow'){if((playTime-(m.pigScare??-99)<3&&dist<30)||mobs.some(k=>k.mom===m&&!k.dead&&dist2(k.pos.x,k.pos.z,P.pos.x,P.pos.z)<49))anger('Emakko puolustaa porsaitaan!');}   // v2.12: myös kun porsas säikähtää sinua (emo alle 30 m)
   return false;}
 // v0.88 harvinaiset pelottavat (def.stalk): huomatessaan pelaajan seuraavat 30–60 s (eivät luovu jahdista näköyhteyden katketessa),
 // sitten poistuvat 5 s poispäin ja unohtavat (2 s jonka aikana eivät huomaa). Lyönti poistumisen aikana suututtaa uudelleen.
@@ -209,7 +209,7 @@ function fellAhead(m,dt){m.fellT=(m.fellT||0)-dt;if(m.fellT>0)return;m.fellT=.25
   nodesNear(ax,az,1.3,_fellN);for(const n of _fellN){if(!n.alive||n.def.kind!=='tree'||n.type==='aarnipuu')continue;killNode(n);const side=Math.random()<.5?1:-1;
     fallTree(n,m.yaw+side*(Math.PI/2)*(.6+Math.random()*.4),true,m);sfx('woodBreak',.8,clamp(1.1-Math.hypot(n.x-P.pos.x,n.z-P.pos.z)/50,.15,1));shake(.15);}}}
 // v0.85: pakoon lähtö luonteen mukaan. Metso lehahtaa 14–24 m päähän (kaari 2,5–4 m korkealla), lauma (poro) pakenee yhdessä samaan suuntaan.
-function startFlee(m,dx,dz){m.state='flee';m.fleeT=0;const pr=m.def.per||{};
+function startFlee(m,dx,dz){m.state='flee';m.fleeT=0;const pr=m.def.per||{};if(m.mom&&!m.mom.dead)m.mom.pigScare=playTime;   /* v2.12: säikähtänyt porsas → emo suuttuu (temperAI) */
   if(pr.fly&&!m.dun&&!m.fly){const a=Math.atan2(-dx,-dz)+(Math.random()-.5)*1.2,d=14+Math.random()*10,x1=m.pos.x+Math.sin(a)*d,z1=m.pos.z+Math.cos(a)*d;
     if(terrainH(x1,z1)>0){m.fly={t:0,dur:d/9,x0:m.pos.x,z0:m.pos.z,y0:m.pos.y,x1,z1,h:2.5+Math.random()*1.5};m.yaw=a;sfx('flap',1,clamp(1.2-Math.hypot(dx,dz)/40,.15,1));}}
   if(pr.herd){const a=Math.atan2(-dx,-dz);for(const o of mobs)if(o!==m&&o.type===m.type&&!o.dead&&o.state!=='flee'&&dist2(o.pos.x,o.pos.z,m.pos.x,m.pos.z)<25*25){o.state='flee';o.fleeT=0;o.herdA=a;}}}
