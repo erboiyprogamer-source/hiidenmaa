@@ -256,11 +256,16 @@ function archerPose(m,dt){const f=m.f,b=m.bow;if(!b)return;if(m.aimT>0&&m.state!
    Kulku ~6 s: 0–3 s paniikkiryntäily (suunta vaihtuu 0,35–0,6 s välein, 1,3× juoksu), 3–5,2 s hidastuu ja horjuu, sitten kaatuu tuhkaksi
    (killMob → tuhkakuolema, ei saalista). Ryntäilevä sytyttää pelaajan 1 m päästä (P.burnT 4 s). Tarkistus 0,5 s välein. */
 const SUN_BURN=new Set(['kalmo','ylimys','hiidenkarhu','hiidenhirvi','kalmasusi','suonakki']),SUN_SHADE={forest:1,koivu:1,aarni:1};
+// v2.14: Kalmanummen omat epäkuolleet (kalmo, ylimys) eivät pala nummella; nummelta poistuessaan palavat normaalisti
+const MOOR_UNDEAD=new Set(['kalmo','ylimys']);
+// v2.14: Kalmanvartijan taistelun ajan Kalmankehän ympärille (60 m kehästä) ei synny kalmoja itsestään – vain vartijan kutsumat
+function vartijaFight(){return !!(boss&&!boss.dead&&boss.type==='vartija');}
+function moorFightBlock(type,x,z){const L=LOC.circle;return MOOR_UNDEAD.has(type)&&vartijaFight()&&dist2(x,z,L.x,L.z)<(15+60)**2;}
 function sunExposed(m){if(lightK<.55||wDark>.35||wRain>.25)return false;const b=biomeHere(m.pos.x,m.pos.z);if(SUN_SHADE[b]||b==='sea')return false;
   return roofTopAt(m.pos.x,m.pos.z)<m.pos.y+1;}
 function sunBurnAI(m,dt){const d=m.def;
   if(!m.sunBurn){if(m.boss||m.guard||d.ai==='boss'||d.ai==='rboss'||!(SUN_BURN.has(m.type)||d.stalk))return false;
-    m.sunChk=(m.sunChk||Math.random()*.5)-dt;if(m.sunChk>0)return false;m.sunChk=.5;if(!sunExposed(m))return false;
+    m.sunChk=(m.sunChk||Math.random()*.5)-dt;if(m.sunChk>0)return false;m.sunChk=.5;if(MOOR_UNDEAD.has(m.type)&&biomeHere(m.pos.x,m.pos.z)==='moor')return false;if(!sunExposed(m))return false;
     m.sunBurn=1;m.sunT=0;m.wind=0;m.act=null;igniteMob(m);m.burnT=99;sfx('roar',1.3,.6);burst(m.pos.x,m.pos.y+1,m.pos.z,0xff9a3a,14,4);}
   m.sunT+=dt;m.burnT=Math.max(m.burnT,1);const t=m.sunT;
   if(t<3){m.panT=(m.panT||0)-dt;if(m.panT<=0){m.panT=.35+Math.random()*.25;m.panA=Math.random()*TAU;}moveMob(m,Math.sin(m.panA),Math.cos(m.panA),(d.run||4)*1.3,dt);}
@@ -427,7 +432,7 @@ function spawner(dt){
       else if(b==='aarni'||b==='forest'||b==='suo')list=list.map(([t,p])=>[t,MOBDEF[t].ai==='hostile'?p*1.4:p]);}
     if(!list.length)continue;const tot=list.reduce((a,[,p])=>a+p,0);
     let r=Math.random()*tot,type=list[0][0];for(const [t,p] of list){if(r<p){type=t;break;}r-=p;}
-    if(nearBase(x,z)||nearSite(x,z,50))continue;
+    if(nearBase(x,z)||nearSite(x,z,50)||moorFightBlock(type,x,z))continue;
     if(type==='karhu'&&mobs.some(o=>o.type==='karhu'&&!o.dead))continue;   // enintään yksi karhu
     if(MOBDEF[type].stalk){if(mobs.some(o=>o.def.stalk&&!o.dead))continue;   /* v1.97: väijyjä (Suonäkki) enintään yksi; nousee lätäköstä (lampare) tai maasta 2 s:ssa */
       let sx=x,sz=z;if(type==='suonakki'){nodesNear(x,z,12,_fellN);const pd=_fellN.find(n=>n.type==='lampare');if(pd){sx=pd.x;sz=pd.z;}}

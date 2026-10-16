@@ -188,6 +188,10 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     bornTick(b,1.2,99);const s2=b.f.g.rotation.x>.5&&b.f.armL.rotation.x<-.5;a.lastHit=playTime;bornTick(a,.05,99);for(let i=0;i<6;i++)bornTick(a,.05,99);const s3=a.born===undefined&&a.mats[0].opacity===1&&!a.mats[0].transparent;
     for(let i=0;i<40;i++)bornTick(b,.05,99);const s4=b.born===undefined&&b.f.g.rotation.x===0;
     return s0&&s1&&s2&&s3&&s4||`virhe alku ${s0} häivytys ${s1} punnerrus ${s2} keskeytys ${s3} valmis ${s4}`;}finally{for(const m of ms)if(mobs.includes(m))mobRemove(m);}});
+  t('v2.14 Kalmanummi: kalmo ja ylimys eivät pala nummella; vartijataistelun aikana ei luonnollisia kalmoja kehän ympärille (60 m)',()=>{const L=LOC.circle,ob=boss;
+    const a=/MOOR_UNDEAD\.has\(m\.type\)&&biomeHere/.test(sunBurnAI.toString())&&MOOR_UNDEAD.has('kalmo')&&MOOR_UNDEAD.has('ylimys')&&!MOOR_UNDEAD.has('kalmasusi');
+    const b=!moorFightBlock('kalmo',L.x+30,L.z);boss={type:'vartija',dead:false};const c=moorFightBlock('kalmo',L.x+30,L.z)&&moorFightBlock('ylimys',L.x+70,L.z)&&!moorFightBlock('kalmo',L.x+80,L.z)&&!moorFightBlock('karju',L.x+5,L.z);boss=ob;
+    return a&&b&&c&&/moorFightBlock\(type,x,z\)/.test(spawner.toString())||`virhe palaminen ${a} ei taistelua ${b} taistelu ${c}`;});
   t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
     if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
     const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;
