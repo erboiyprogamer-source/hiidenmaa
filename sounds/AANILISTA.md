@@ -21,9 +21,9 @@
 **Käsittelyn rajat (lajeittain):** idle ≤ 3 s (pomo 4), hurt ≤ 1,2 s (1,6), death ≤ 3,5 s (6), aggro ≤ 2,5 s (3,5), chase ≤ 2,5 s (4), echo ≤ 5 s (6).
 **Pitkät äänet (v2.12):** jos raaka jatkuu yli rajan (ulvonta, soidin, mylvintä), sitä ei katkaista kesken vaan se päättyy luonnolliseen taukoon,
 enintään idle 10 s, death 5 s (pomo 8), aggro 4 s (5), chase 3,5 s (4,5), echo 10 s. Osumaääni pysyy aina lyhyenä.
-**Kuuluvuus (v2.12):** 📢 = kutsuääni (suden ulvonta, hirven mylvintä, metson soidin, karhun karjaisu…, vähintään 1,5 s) kuuluu noin 220 m päähän;
-muut äänet noin 80 m, kaukana hiljaisempina. Kaukana ääni tummuu ja kaikuu luonnollisesti (peli lisää efektin, älä lisää sitä raakaan).
-Yöllä kuuluu lisäksi kaukaista suden ulvontaa (150–230 m) satunnaisesta suunnasta.
+**Kuuluvuus (v2.12):** 📢 = kutsuääni (suden ulvonta, hirven mylvintä, metson soidin, karhun karjaisu…, vähintään 1,5 s) kuuluu noin 150 m päähän (v2.14);
+muut äänet noin 64 m (rauhallinen ääntely 36 m), kaukana hiljaisempina. Kaukana ääni tummuu ja kaikuu luonnollisesti (peli lisää efektin, älä lisää sitä raakaan).
+Yöllä kuuluu lisäksi kaukaista suden ulvontaa (100–145 m) satunnaisesta suunnasta. Sudet ulvovat päivällä harvoin, yöllä useammin.
 Tavoiteäänekkyys (LUFS): idle −22, hurt −17, death −16, aggro −16, chase −18, echo −26; pomot +1…1,5 dB. Ulottuvuuksissa (luolasto, ulottuvuudet)
 olennot saavat pelissä kaiun (ei tiedostoon), joten anna raakaääni kuivana, ilman omaa kaikua.
 

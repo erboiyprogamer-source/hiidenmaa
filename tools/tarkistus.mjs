@@ -178,7 +178,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     try{for(const k of mobs)if(k!==pg&&k.mom===sow)k.dead=true;startFlee(pg,1,1);const dx=P.pos.x-sow.pos.x,dz=P.pos.z-sow.pos.z;temperAI(sow,1/30,dx,dz,Math.hypot(dx,dz),false,false);a=sow.angry&&sow.state==='chase';}
     finally{P.crouch=oc;msg=om;sow.dead=pg.dead=true;mobRemove(sow);mobRemove(pg);}
     const o=CRE.man;CRE.man={susi_idle_1:{h:'a',far:1},susi_idle_2:{h:'b'},karju_idle_1:{h:'c'}};const b=creHasFar('routasusi','idle')&&!creHasFar('karju','idle')&&creIsFar('susi_idle_1')&&!creIsFar('susi_idle_2');CRE.man=o;
-    const c=creDistK(5,false)===0&&creDistK(80,false)===1&&creDistK(100,true)<.5&&/df\.frequency/.test(creSnd.toString())&&/sdo/.test(creSnd.toString())&&/creDistFx/.test(creTick.toString());
+    const c=creDistK(5,false)===0&&creDistK(80,false)===1&&creDistK(60,true)<.5&&creDistK(150,true)===1&&/df\.frequency/.test(creSnd.toString())&&/sdo/.test(creSnd.toString())&&/creDistFx/.test(creTick.toString());
     const d=/farHowl\(dt\)/.test(creTick.toString())&&/farOnly/.test(farHowl.toString());
     const e=!o||!o.susi_idle_1||(o.susi_idle_1.far===1&&o.susi_idle_1.dur>4&&!o.susi_hurt_1.far);
     return a&&b&&c&&d&&e||`virhe emakko ${a} far ${b} etäisyys ${c} ulvonta ${d} manifest ${e}`;});
@@ -192,6 +192,11 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const a=/MOOR_UNDEAD\.has\(m\.type\)&&biomeHere/.test(sunBurnAI.toString())&&MOOR_UNDEAD.has('kalmo')&&MOOR_UNDEAD.has('ylimys')&&!MOOR_UNDEAD.has('kalmasusi');
     const b=!moorFightBlock('kalmo',L.x+30,L.z);boss={type:'vartija',dead:false};const c=moorFightBlock('kalmo',L.x+30,L.z)&&moorFightBlock('ylimys',L.x+70,L.z)&&!moorFightBlock('kalmo',L.x+80,L.z)&&!moorFightBlock('karju',L.x+5,L.z);boss=ob;
     return a&&b&&c&&/moorFightBlock\(type,x,z\)/.test(spawner.toString())||`virhe palaminen ${a} ei taistelua ${b} taistelu ${c}`;});
+  t('v2.14 äänet: kutsuäänet 150 m, muut 64 m, ääntely 36 m; vahvempi kaukaisuusefekti (hiljaisuus, tummuus, kaiku, huojunta); sudet ulvovat päivällä 3× ja yöllä 1,25× harvemmin',()=>{
+    const a=CRE_FAR_R===150&&CRE_NEAR_R===64&&CRE_IDLE_R===36&&CRE_WOLF.has('susi')&&CRE_WOLF.has('routasusi')&&CRE_WOLF.has('kalmasusi');
+    const b=creLpf(0)>15000&&creLpf(.5)<1500&&creLpf(1)===500&&/dg\.gain/.test(creDistFx.toString())&&/lg\.gain/.test(creDistFx.toString())&&/1\.8\*k/.test(creDistFx.toString())&&/src\.detune/.test(creSnd.toString());
+    const c=/CRE_WOLF\.has\(m\.type\)\?\(isNight\(\)\?1\.25:3\)/.test(creTick.toString())&&/100\+Math\.random\(\)\*45/.test(farHowl.toString())&&/\*1\.25/.test(farHowl.toString());
+    return a&&b&&c||`virhe kantamat ${a} efekti ${b} ulvonta ${c}`;});
   t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
     if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
     const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;
