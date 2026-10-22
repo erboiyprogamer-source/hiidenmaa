@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.10)
+## Nykytila (päivitetty v2.15)
 
-- **Versio 2.10**, haara `claude/hiidenmaa-survival-game-fmxt0m` (aloitettu uudelleen mainista PR #25:n yhdistämisen jälkeen). **PR #25** (v1.38–v1.83) on **yhdistetty**. PR #27 (v1.84–v1.95) on **yhdistetty**. Uusi PR [#28](https://github.com/erboiyprogamer-source/hiidenmaa/pull/28) (v1.96–v2.10). Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; korvattavia: `aarnihirvio_idle_1`/`chase_2` ovat sama tiedosto (käyttäjä sanoi, ettei haittaa toistaiseksi). Aiempi:
+- **Versio 2.15**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. v2.11 (äänierä A2), v2.12 (pitkät äänet, kuuluvuus, emakko) v2.13 (tikkaiden kulmat, JATKO-kohdistus) v2.14 (syntyanimaatiot, Kalmanummi, äänten kantama, emakon perhe) ja v2.15 (DEV Näkymätön, tikkaat seinän takaa) PR:ssä [#29](https://github.com/erboiyprogamer-source/hiidenmaa/pull/29). Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -123,7 +123,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   "lainaavat: …" (myös ketjun kautta, "via X").
 - Raakaäänet: lyhyet saa olla wav, pitkät (musiikki, loopit) mp3, alle 25 Mt / tiedosto. **Vaihda ääni vasta kuuntelun jälkeen** –
   git-historia muistaa vanhat versiot (repo kasvaa). Arvio: noin 300 ääntä on ok (repo alle 1 Gt).
-- Nimet: `<id>_<laji>_<n>` (lajit nyt myös `echo`, vain ulottuvuuspomot, 1–2 versiota), id = MOBDEF-avain (olennot), n = 1–3 (arpoo olemassa olevista, yksi riittää; **kuolemaäänelle 1 paikka ulottuvuuksien hirviöillä (rboss) ja 2 muilla**). Lajit: idle, hurt, death,
+- Nimet: `<id>_<laji>_<n>` (lajit nyt myös `echo`, vain ulottuvuuspomot, 1–2 versiota), id = MOBDEF-avain (olennot), n = paikkamerkit 1–3, **v2.11: lisäversiot _4, _5 … rajattomasti** (peli arpoo kaikista manifestin versioista, hakemisto `creIndex`; yksi riittää; **kuolemaäänelle 1 paikka ulottuvuuksien hirviöillä (rboss) ja 2 muilla**). Lajit: idle, hurt, death,
   aggro = suuttumisääni (ai neutral/hostile/boss/rboss; vihamielisillä ja pomoilla vain kerran), chase = toistuva jahtiääni (hostile/boss/rboss).
 - Jokainen äänierä (A–E, ks. ideajono) tehdään samalla paikkamerkkitavalla ja saa oman osion AANILISTA.md:hen.
 
@@ -133,7 +133,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - **Kuolemaäänet:** ulottuvuuksien hirviöillä 1 paikka (`_1`), kaikilla muilla olennoilla 2 (`_1`, `_2`); `variants_of(ai, laji)` työkalussa,
   ylimääräiset paikkamerkit poistuvat `--init`:llä (oikeaan ääneen ei koskaan kosketa).
 - **Trimmaus (työkalu):** ylipäästö 40 Hz, hiljaisuus (−48 dB) pois alusta ja lopusta, pituus katkaistaan lajin ylärajaan ja häivytetään
-  (6 ms sisään, laji-kohtainen ulos). Rajat (tavallinen / pomo): idle 3 / 4 s, hurt 1,2 / 1,6 s, death 3,5 / 6 s, aggro 2,5 / 3,5 s, chase 2,5 / 4 s.
+  (6 ms sisään, laji-kohtainen ulos). **v2.12 pitkät äänet (`PITKA`, `natural_end`):** jos raaka jatkuu yli rajan, ei katkaista kesken vaan
+  luonnolliseen taukoon (≥ 0,3 s yli 30 dB huipun alla) tai pitkään ylärajaan (idle 10, death 5/8, aggro 4/5, chase 3,5/4,5, echo 10 s) 0,6 s häivytyksellä;
+  hurt aina lyhyt (varoitus, jos hurt-raaka > 3 s). **Kutsuäänet (`KUTSU`, ≥ 1,5 s) → manifestiin `far:1`** (📢 äänilistassa). PV 4, manifestissa myös `raw` (raakapituus). Rajat (tavallinen / pomo): idle 3 / 4 s, hurt 1,2 / 1,6 s, death 3,5 / 6 s, aggro 2,5 / 3,5 s, chase 2,5 / 4 s.
 - **Voimakkuus (työkalu):** mitataan LUFS ja nostetaan lajin tavoitteeseen: idle −22, hurt −17, death −16, aggro −16, chase −18 (pomot +1,5 dB,
   boss +1) ja `alimiter` (katto −1 dBFS, ei leikkaa). Samat äänet siis suunnilleen samalla tasolla ja idle hiljaisin. Manifestin `pv` = käsittelyn
   versio (`PV`): vaihtuessa kaikki ajetaan uudestaan; `gain` = käytetty vahvistus (dB). Anna raaka puhtaana ja kuivana (ei omaa kaikua).
@@ -226,6 +228,73 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.15 (DEV Näkymätön, tikkaat eivät ylety seinän läpi)
+- **DEV Ä › Näkymätön** (`DEVF.unseen`, iso painike): olennot eivät näe eivätkä kuule pelaajaa – näköyhteys `m.los` aina false, eläinten säikähdys
+  (`hid`), luonteet (`temperAI`), jousikalmot (`archerAI`), vartijoiden paluun keskeytys ja ulottuvuuspomon herätys ohitetaan. Kytkettäessä päälle
+  käynnissä oleva jahti ja suuttumus loppuvat. Pelaajan osuma (`m.pHit`, damageMob) suututtaa olennon 10 s:ksi normaalisti.
+- **Tikkaat:** `ladderReach` estää kiipeämisen, jos pelaajan ja tikkaiden välissä on seinä tai ovi (KORJAUKSET 44).
+- Tarkistusrivit v2.15 (2 kpl).
+
+### v2.14 (päivitysideat 1–7, käyttäjän vastaukset kysymyksiin)
+- **1. Syntyanimaatio** (`bornStart`/`bornTick`/`bornPose`/`bornEnd`, effects.js; kutsu `spawnMob`:ssa, tikki `updateMobs`): kaikki olennot, joilla ei
+  ole omaa nousua (ei pomot, ei `def.rise`/väijyjät), häivytetään näkyviin makuulla 0,8 s (`BORN_FADE`) ja nousevat, yhteensä 2,5 s (`BORN_T`).
+  Nelijalkaiset (`BORN_Q`): jalat taitettuina rungon alla → etujalat suoristuvat (etupää nousee, istuva asento) → takajalat → pään ravistus.
+  Kaksijalkaiset (`BORN_B`, makeHumanoid): vatsallaan → punnerrus → polvilleen → seisomaan (kierto lonkan ympäri). Lintu: kyyristynyt → suora.
+  Osuma tai säikähdys (`bornScared`) → loppu 10× nopeammin (~0,2 s) ja tekoäly jatkaa. Ei-standardimateriaalit (silmät) piilossa kunnes näkyvyys > 0,6.
+  `opts.noBorn`: luolien ja ulottuvuuksien valmiit asukkaat, vartijat, valikon taustaeläin, uuden pelin peurat ja maasta nousevat väijyjät.
+- **2. Kalmanummi:** kalmo ja ylimys (`MOOR_UNDEAD`) eivät pala auringossa nummella (`biomeHere==='moor'`); muualla palavat. Kalmanvartijan
+  taistelun ajan (`vartijaFight`) ei synny luonnollisia kalmoja/ylimyksiä 75 m säteelle Kalmankehän keskeltä (`moorFightBlock`, kehä 15 + 60 m).
+- **3–5. Äänet** (audio.js): kutsuäänet (ulvonta ym.) `CRE_FAR_R` 220 → **150 m**, muut `CRE_NEAR_R` 80 → **64 m**, rauhallinen ääntely `CRE_IDLE_R`
+  45 → **36 m** (−20 %), panner ref ×0,8 (3 → 2,4, pomo 8 → 6,4; kutsu 14 → 10, max 220). Kaukaisuusefekti vahvempi: suora ääni 1 → 0,7
+  (`dg`), alipäästö `creLpf` 15 kHz·(1−k)^4 + 500 Hz (puolimatkassa ~1,4 kHz), ulkokaiku 0,08 → 1,88, sävelhuojunta LFO 0,35–0,65 Hz ≤ 30 senttiä
+  (`lg` → `src.detune`). Sudet (`CRE_WOLF`: susi, routasusi, kalmasusi) ulvovat päivällä 3× harvemmin ja yöllä 1,25× (20 %) harvemmin kuin ennen;
+  kaukainen yöulvonta 100–145 m (ennen 150–230 m), väli ×1,25.
+- **6. Emakko:** oma porsas säikähtää pelaajaa (`startFlee` → `mom.pigScare`) → emo suuttuu missä tahansa (myös kyykyssä tehdystä osumasta) ja
+  tietää pelaajan sijainnin (KORJAUKSET 43: ennen kaukaa suuttunut rauhoittui heti). Emon kuollessa sen alle 30 m päässä olevat porsaat →
+  orpolauma (`orphanPiglets`, `m.orphan`): seuraavat ensimmäistä, pakenevat yhdessä, säikähdys- ja turvaetäisyys ×2 pysyvästi. **Perhehetket**
+  (`famPlan`/`famStep`, 12–24 s välein, pelaaja yli 14 m): nuuhkaisu, leikki (porsaat kiertävät emoa hyppien), tonkiminen; keskeytyy pelaajaan alle 12 m.
+- **7. DEV Å:** pikavalinnoissa 100 puuta.
+- Tarkistusrivit v2.14 (5 kpl). Testattu kuvasarjoin (syntyminen 9 olennolla, perhehetket) ja selaimessa (äänet, emakko, orvot).
+
+### v2.13 (tikkaiden kulmat, JATKO-kohdistus tikkaille ja portaille, saumaton jatko – käyttäjän 5 vastausta)
+- **Tikkaiden kulmat** (`LADDER_RUN`/`ladRun`, pieces.js): asento 1 = pysty (suoraan 1 kerros ylös), 2 = **1:3** (sivulle G/3 per WH), 3 = **1:2**
+  (G/2 per WH) → 3 tai 2 tikasta jatkona = tasan 1 ruutu (2,5 m) sivulle ja 3 tai 2 kerrosta ylös. Ennen 0°/15°/30° (ei osunut ruudukkoon);
+  vanhat tallennukset: 15° → 1:3, 30° → 1:2. Kiipeäminen (`ladderAt`) seuraa uutta kaltevuutta; ketjua pitkin pääsee ylös asti.
+- **JATKO** (building.js: `JFAM`, `jTop`, `jPlace`, `jFree`, `jatkoFind`, tila `JK`): tikkaat (tikkaat, kivitikkaat) ja portaat (raput, portaikko,
+  kiviversiot keskenään) napsahtavat alemman yläpään jatkoksi **automaattisesti kaikissa G-tiloissa** (tähtäys alle 1,3 m yläpäästä) ja uudessa
+  G-tilassa **jatko** (haku 3 m; muut osat kuten ruudukko). Kohteen vaihtuessa kopioidaan alemman suunta ja kulma (Shift+R vaihtaa kulmaa, R
+  portailla 90° kerrallaan): suoraan / käännös 90° (tasanne yläpään taakse, seuraava sivulle) / U-käännös (paluuportaat viereiseen ruutuun,
+  puoli tähtäyksen mukaan). Tasanteeksi lisätään lattia itse (vihje rakennusrivillä). Varattu yläpää ohitetaan (`jFree`). Pystykohdistus (Q/Z) ei
+  vaikuta jatkoon.
+- **Tikkaat seinään** (`ladderWall`): seinän pintaa tähdätessä (seinä, ovi, ikkuna; ei palkki) tikkaat asettuvat seinän eteen sen alareunaan,
+  yläpää 6 cm seinästä kulman mukaan, keskelle seinää (vapaa-tilassa tähtäyskohtaan). Ennen tikkaat menivät seinän sisään.
+- **Saumaton ulkonäkö:** tikkaiden puolat tasavälein (`round(L/0,36)`), sivupuiden ja portaikon sivupalkkien puusyy venytetään kokonaiseen
+  toistomäärään (`seamLen`) → jatko alkaa samasta kuviosta. Muiden osien kohdistusta ei muutettu.
+- Tarkistusrivi "v2.13 tikkaat …"; G-tilarivi 7 tilaa. Testattu: ketjut 1:2 ja 1:3 kiivetty ylös, portaat kävelty kahden kappaleen yli.
+
+### v2.12 (pitkät äänet, kuuluvuus kauas, etäisyysefekti, emakko ja säikähtäneet porsaat)
+- **Emakko:** suuttuu myös kun sen porsas säikähtää pelaajaa ja pakenee (`startFlee` → `mom.pigScare`, emo alle 30 m, 3 s ikkuna). Ennen porsaat
+  pakenivat jo 6–14 m:stä, joten 7 m:n sääntö ei juuri koskaan lauennut.
+- **Pitkät äänet:** analyysi (raaka vs. yläraja) näytti, että 22 ääntä leikattiin kesken (suden ulvonnat 4,7–23 s → 3 s, metson soidin, hirven
+  mylvintä, aarnihirviön ääntely). Työkalu päättää ne nyt luonnolliseen taukoon (ks. Äänisuunnitelma › Trimmaus). Esim. susi_idle 4,7–7,4 s, metso_idle_1 5,6 s.
+- **Kuuluvuus (audio.js):** `CRE_FAR_R` 220 m kutsuäänille (`far`), `CRE_NEAR_R` 80 m muille; rauhallinen ääntely alle 45 m (ennen 25), kutsuääni alle
+  220 m. Panner: far ref 14 / rolloff 0,8 / max 320 m, muut ref 3 (pomo 8) / 1,1 / 150 m. **Etäisyysefekti** `creDistK`/`creDistFx`: alipäästö
+  15 kHz → 650 Hz ja ulkokaiku (sama ConvolverNode) 0,06 → 0,76 etäisyyden mukaan, päivittyy joka ruutu. Pitkän äänen jälkeen tauko ≥ kesto + 2 s,
+  kutsuäänen jälkeen 12–30 s lisää; jahtiääni ≥ kesto + 1,5 s.
+- **Kaukainen ulvonta** `farHowl`: yöllä ulkona 45–110 s välein (60 %) suden kutsuääni 150–230 m päästä satunnaisesta suunnasta (olennot poistuvat
+  yli 120 m, joten tämä tuo ulvonnan todella kaukaa). `creSnd`-valinta `farOnly`.
+- Tarkistusrivi "v2.12 emakko … kutsuäänet …"; full157 6 karttaa 0 virhettä.
+
+### v2.11 (äänierä A2: 80 omaa ääntä, rajattomat versiot, kattavuusmerkit)
+- Käyttäjä lisäsi/muokkasi 77 raakaääntä (aarnihirviö, hiisi, hirvi, ilves, kalmo, karhu, karju, metso, susi; susi_idle_4–6 uusina) ja poisti vanhat
+  käsitellyt aarnihirviön äänet → kaikki ajettiin `process_sounds.py`:llä: **80 omaa ääntä** (37/116 äänilajia), 0 virhettä. Muokatut raa'at
+  tunnistetaan `src`-tiivisteestä ja käsitellään uudelleen (vanha käsitelty korvautuu samalla nimellä).
+- **Rajattomat versiot:** peli (`creIndex`/`CRE.idx`, audio.js) kokoaa manifestista jokaiselle `<id>_<laji>` kaikki numerot järjestyksessä →
+  `_4`, `_5`, `_10` … toimivat ilman koodimuutosta. Työkalu hyväksyy `_\d+` (lisäversiot ilmoitetaan, ei varoitus), `resolve` käyttää kaikkia.
+- **Äänilista:** 🌱 = ei lainaa keneltäkään eikä lainata (metso); 🎯 = lisää tämä: ketjun alku (kukaan ylempänä ei voi antaa lajia, esim. jahtiääni
+  neutraalilta), jonka puuttuessa olento(t) ovat lajissa ilman ääntä; osio "Kattavuus" listaa ne. Kaikki 26 MOBDEF-olentoa ovat listassa.
+- Tarkistusrivi "v2.11 äänten lisäversiot".
 
 ### v2.10 (emakon suuttumisäänet eivät kerrostu)
 - Porsaita jahdatessa emakon suuttuminen soitti useita ääniä päällekkäin: `temperAI`:n `anger()` karjaisi (`sfx('roar')`) ja `creTick` soitti

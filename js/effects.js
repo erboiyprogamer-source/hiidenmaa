@@ -261,6 +261,39 @@ function bossDeathEnd(m){const D=m.da;if(!D||!D.boss)return;
   if(D.mm){for(const k in D.mm)D.mm[k].dispose();D.mm=null;}
   if(D.loot&&!D.lootDone){D.lootDone=1;for(const [id,c] of D.loot)beaconAdd(spawnDrop(id,c,P.pos.x,P.pos.y+1,P.pos.z),bossCol(m));}   // pomo poistui ennen repeämistä → saalis pelaajan luo
   BOSS_GLOW=0;updateLights();}
+/* v2.14 SYNTYANIMAATIO (BORN_T 2,5 s): olento häivytetään näkyviin makuuasennossa (0–0,8 s) ja nousee luonnollisesti.
+   Nelijalkaiset (makeAnimal): makaa jalat rungon alle taitettuina → etujalat suoristuvat (etupää nousee) → takajalat → pään ravistus.
+   Kaksijalkaiset (makeHumanoid): makaa vatsallaan → punnertaa käsillä → polvilleen → seisomaan (kierto lonkan ympäri).
+   Lintu: kyyristynyt → suoristuu. Osuma tai säikähdys keskeyttää: loput 10× nopeammin (~0,2 s) (ponnahtaa ylös) ja tekoäly jatkaa normaalisti.
+   Ei olennoille, joilla on oma nousu (Suonäkki, väijyjät, pomot), eikä valmiiksi olemassa oleville (opts.noBorn: luolat, vartijat, valikko). */
+const BORN_T=2.5,BORN_FADE=.8;
+function bornStart(m){const f=m.f;m.born=0;m.bornK=1;f.g.rotation.order='YXZ';m.bornHid=[];
+  f.g.traverse(o=>{if(o.isMesh&&o.visible&&!(o.material&&o.material.isMeshStandardMaterial)){o.visible=false;m.bornHid.push(o);}});   // silmät ym. vasta kun näkyvissä
+  m.bornOp=m.mats.map(mt=>[mt.transparent,mt.opacity]);for(const mt of m.mats){mt.transparent=true;mt.opacity=0;mt.needsUpdate=true;}bornPose(m,0);}
+function bornEnd(m){const f=m.f;m.mats.forEach((mt,i)=>{const o=m.bornOp&&m.bornOp[i];mt.transparent=o?o[0]:false;mt.opacity=o?o[1]:1;mt.needsUpdate=true;});
+  for(const o of m.bornHid||[])o.visible=true;f.g.rotation.x=f.g.rotation.z=0;if(f.head)f.head.rotation.z=0;
+  if(f.animal)for(const l of f.legs){l.rotation.x=0;l.userData.knee.rotation.x=0;}
+  if(f.legL){f.legL.rotation.x=f.legR.rotation.x=f.armL.rotation.x=f.armR.rotation.x=0;if(f.kneeL)f.kneeL.rotation.x=f.kneeR.rotation.x=0;if(f.elbowL)f.elbowL.rotation.x=f.elbowR.rotation.x=0;}
+  if(f.bird&&f.legs)for(const l of f.legs)l.rotation.x=0;delete m.born;m.bornHid=m.bornOp=null;}
+function bornScared(m,dist){const d=m.def;if(P.dead||P.crouch)return false;if(d.ai==='flee')return dist<7*(P.running?2.3:1)*((d.per&&d.per.scare)||1);
+  return dist<(d.ai==='hostile'?(d.aggro||12)*.6:4);}
+// joka ruutu syntymän ajan; palauttaa true, kun tekoäly ohitetaan (olento nousee vielä)
+function bornTick(m,dt,dist){if(m.bornK===1&&(playTime-m.lastHit<.5||bornScared(m,dist)))m.bornK=10;
+  m.born+=dt*m.bornK;const t=m.born,op=m.bornK>1?1:clamp(t/BORN_FADE,0,1);for(const mt of m.mats)mt.opacity=op;
+  if(op>.6&&m.bornHid&&m.bornHid.length){for(const o of m.bornHid)o.visible=true;m.bornHid.length=0;}
+  if(t>=BORN_T){bornEnd(m);return false;}bornPose(m,t);return true;}
+// kehysten välinen pehmeä interpolointi: K = [[aika, {arvot}], …]
+function bornKey(K,t){if(t<=K[0][0])return K[0][1];for(let i=1;i<K.length;i++)if(t<=K[i][0]){const a=K[i-1],b=K[i],u=sstep(a[0],b[0],t),o={};for(const k in a[1])o[k]=lerp(a[1][k],b[1][k],u);return o;}return K[K.length-1][1];}
+const BORN_Q=[[BORN_FADE,{fu:-1.35,fk:2.8,hu:-1.2,hk:2.6,dr:1,pi:0,hd:.35}],[1.55,{fu:0,fk:0,hu:-1.2,hk:2.6,dr:.72,pi:-.36,hd:.15}],[2.2,{fu:0,fk:0,hu:0,hk:0,dr:0,pi:0,hd:0}]];
+const BORN_B=[[BORN_FADE,{a:1.45,h:.3,lg:0,kn:.15,ar:.25,el:0}],[1.45,{a:.95,h:.46,lg:.05,kn:.5,ar:-1.2,el:-.45}],[2.0,{a:.32,h:.62,lg:-.1,kn:1.5,ar:-.3,el:-.3}],[BORN_T,{a:0,h:1,lg:0,kn:0,ar:0,el:0}]];
+function bornPose(m,t){const f=m.f,g=f.g,sc=g.scale.y,yw=m.yaw;g.rotation.y=yw;
+  if(f.animal){const k=bornKey(BORN_Q,t),dH=f.legs[0].position.y*.68*sc;   /* lonkkanivelen korkeus × 0,68 → vatsa maassa */
+    for(const l of f.legs){const fr=l.userData.front;l.rotation.x=fr?k.fu:k.hu;l.userData.knee.rotation.x=fr?k.fk:k.hk;}
+    g.rotation.x=k.pi;g.position.set(m.pos.x,m.pos.y-dH*k.dr,m.pos.z);f.head.rotation.x=k.hd;f.head.rotation.z=t>2.2?Math.sin((t-2.2)*38)*.28*(1-sstep(2.2,BORN_T,t)):0;return;}
+  if(f.legL&&f.kneeL){const k=bornKey(BORN_B,t),hip=f.legL.position.y*sc,sa=Math.sin(k.a),ca=Math.cos(k.a);g.rotation.x=k.a;
+    g.position.set(m.pos.x-hip*sa*Math.sin(yw),m.pos.y+hip*k.h-hip*ca,m.pos.z-hip*sa*Math.cos(yw));
+    f.legL.rotation.x=f.legR.rotation.x=k.lg;f.kneeL.rotation.x=f.kneeR.rotation.x=k.kn;f.armL.rotation.x=f.armR.rotation.x=k.ar;if(f.elbowL)f.elbowL.rotation.x=f.elbowR.rotation.x=k.el;return;}
+  const u=sstep(BORN_FADE,2.1,t);g.position.set(m.pos.x,m.pos.y-(f.bird?.2:.35)*sc*(1-u),m.pos.z);if(f.bird&&f.legs)for(const l of f.legs)l.rotation.x=-.9*(1-u);}
 function mobDeathAnim(m,dt){const f=m.f,g=f.g,t=m.deadT;
   if((m.def.ai==='boss'||m.def.ai==='rboss')&&!m.sunKill)return bossDeathAnim(m,dt);   // v1.89: pomoilla oma kuolema-animaatio
   if(!m.da){m.da={dir:Math.random()<.5?-1:1,ash:!!m.ashDeath,pool:false,y0:m.pos.y,legs:(f.legs||[]).map(()=>(Math.random()-.5)*.8)};if(m.da.ash)m.da.flames=ashFlames(m);}

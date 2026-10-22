@@ -75,7 +75,7 @@ function updateHUD(dt){
   if(hudT>0)return;hudT=.1;
   if(((playTime*10)|0)%10===0)for(const x of inv)if(x&&x.shBrk!=null){shieldOk(x);invDirty=true;}   // v1.33: rikkinäisen kilven korjautuminen ja palkki
   const w=curWeapon();
-  if(w.cat==='hammer'){const bh=$('#buildhint');bh.hidden=false;const h=buildSel?`<b>${PIECES[buildSel].n}</b> · ${reqText(PIECES[buildSel].req)} · <span class="kb">Hiiri V</span>rakenna <span class="kb">R</span>käännä 45° <span class="kb">Shift+R</span>asento <span class="kb">G</span>kohdistus: ${SNAP_NAMES[snapMode]} <span class="kb">X</span>pura <span class="kb">F</span>korjaa <span class="kb">B</span>valikko`+(ghost&&ghost.visible&&!ghostOk&&lastInvalid?` · <span style="color:var(--bad)">${lastInvalid}</span>`:''):`<span class="kb">B</span> tai hiiren oikea: valitse rakennus`;if(bh._h!==h){bh._h=h;bh.innerHTML=h;}}else $('#buildhint').hidden=true;
+  if(w.cat==='hammer'){const bh=$('#buildhint');bh.hidden=false;const h=buildSel?`<b>${PIECES[buildSel].n}</b> · ${reqText(PIECES[buildSel].req)} · <span class="kb">Hiiri V</span>rakenna <span class="kb">R</span>käännä 45° <span class="kb">Shift+R</span>asento <span class="kb">G</span>kohdistus: ${SNAP_NAMES[snapMode]}${JK.tgt&&ghost&&ghost.visible?` · <b style="color:var(--frost)">Jatko</b>: ${JK.desc}`:''} <span class="kb">X</span>pura <span class="kb">F</span>korjaa <span class="kb">B</span>valikko`+(ghost&&ghost.visible&&!ghostOk&&lastInvalid?` · <span style="color:var(--bad)">${lastInvalid}</span>`:''):`<span class="kb">B</span> tai hiiren oikea: valitse rakennus`;if(bh._h!==h){bh._h=h;bh.innerHTML=h;}}else $('#buildhint').hidden=true;
   $('#lockhint').hidden=!(state==='play'&&!locked&&!lockFailed&&!P.dead);
   const hp=$('.bar.hp'),st=$('.bar.st'),hu=$('.bar.hu');
   hp.firstChild.style.width=(P.hp/maxHp()*100)+'%';hp.lastChild.textContent=`TERVEYS ${Math.ceil(P.hp)}/${maxHp()}`;hp.classList.toggle('low',P.hp<maxHp()*.25);
@@ -99,7 +99,7 @@ let panelOpenedAt=0;
 // DEV-valikko (Ä): sää, kellonaika, terveys ja kylläisyys – muutokset heti. Sää pysyy valittuna 10 min.
 function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=dayT*24;return `${Math.floor(h)}:${String(Math.floor(h%1*60)).padStart(2,'0')}`;};
   const big=[['god','Kuolemattomuus','Ei kuole eikä ota vahinkoa'],['fly','Lento','V pohjassa 6× nopeampi'],['noclip','Seinien läpi','Seinät ja esineet eivät estä'],
-    ['lockTW','Lukitse aika ja sää','Kello ja sää pysyvät'],['freeze','Pysäytä maailma','Olennot, ammukset, aika ja nälkä seis']];
+    ['lockTW','Lukitse aika ja sää','Kello ja sää pysyvät'],['unseen','Näkymätön','Olennot eivät huomaa sinua (lyönti suututtaa)'],['freeze','Pysäytä maailma','Olennot, ammukset, aika ja nälkä seis']];
   B.innerHTML=`<div class="devBig">${big.map(([k,n,d])=>`<button class="btn devBigB${DEVF[k]?' on':''}" data-big="${k}"><b>${n}</b><span>${DEVF[k]?'PÄÄLLÄ':'pois'} · ${d}</span></button>`).join('')}
     <button class="btn devBigB act" data-heal="1"><b>Terveys täyteen</b><span>Terveys, kestävyys ja kylläisyys täyteen, palaminen pois</span></button></div>
   <div class="devRow"><b>Sää</b><div class="devBtns">${Object.entries(WEATHERS).map(([k,w])=>`<button class="btn${weather.cur===k?' on':''}" data-w="${k}">${w.n}</button>`).join('')}</div></div>
@@ -124,7 +124,7 @@ function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=d
 let devQ='',devN=1;
 const WIND_WARN=8;   // v2.01 tuulivaroituksen raja (m/s)
 /* v2.00 DEV-valikko Å: esineet. Pikavalinnat (yksi painallus antaa ehdotetun määrän, "Anna kaikki" kaikki kerralla) + esinehaku määrällä. */
-const DEV_PICKS=[['hiidenmiekka',1],['hiidenpanssari',1],['rautakilpi',1],['hiidenjousi',1],['sulkanuolet',100],['tulinuolet',100],['pihka',100],
+const DEV_PICKS=[['hiidenmiekka',1],['hiidenpanssari',1],['rautakilpi',1],['hiidenjousi',1],['sulkanuolet',100],['tulinuolet',100],['pihka',100],['puu',100],
   ['hiidenkivi',3],['jaaavain',1],['luuavain',1],['aarniavain',1],['kruunusirpale',3],['parannusjuoma',5],['elpymisjuoma',5],['sisujuoma',5]];
 function renderDevI(){const B=$('#devIBody');if(!B)return;
   B.innerHTML=`<div class="devRow"><b>Pikavalinnat</b><div class="devList devPicks">${DEV_PICKS.map(([id,n])=>`<div class="devIt"><span class="ic" style="background-image:url(${icon(id)})"></span><span class="nm">${esc(ITEMS[id].n)} × ${n}</span><button class="btn" data-pick="${id}" data-n="${n}">Anna</button></div>`).join('')}</div>

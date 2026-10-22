@@ -12,7 +12,17 @@ await p.route('**/fonts.googleapis.com/**',r=>r.abort());
 await p.goto('http://localhost:8977/index.html');await p.waitForFunction('window.__game',null,{timeout:120000});
 const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play');document.getElementById('menu').hidden=true;for(let i=0;i<10;i++)g.update(1/30);
   const chk={},t=(k,f)=>{try{chk[k]=!!f();}catch(e){chk[k]='ERR '+e.message;}};
-  t('G-tilat 6 (ruudukko,1 m,puoli,3D,vapaa,reuna)',()=>SNAP_NAMES.join()==='ruudukko,1 m,puoli,3D,vapaa,reuna');
+  t('G-tilat 7 (ruudukko,1 m,puoli,3D,vapaa,reuna,jatko)',()=>SNAP_NAMES.join()==='ruudukko,1 m,puoli,3D,vapaa,reuna,jatko');
+  t('v2.13 tikkaat 1:3/1:2 jatkona tasan 1 ruutu sivulle, portaiden jatko suoraan/90°/U, tikkaat seinään, saumaton puusyy',()=>{const x=P.pos.x+40,z=P.pos.z+40,y=terrainH(x,z),made=[];
+    try{const ch=(f,n)=>{let q=addPiece('tikkaat',x,y,z,0,undefined,undefined,f);made.push(q);const q0=q;for(let i=1;i<n;i++){const j=jPlace(q,'tikkaat',f,0,1);q=addPiece('tikkaat',j.x,j.y,j.z,0,undefined,undefined,f);made.push(q);}const T=jTop(q);return [T.x-q0.x,T.z-q0.z,T.y-q0.y].map(v=>+v.toFixed(3)).join();};
+      const a=ch(2,2)==='0,-2.5,5.2'&&ch(1,3)==='0,-2.5,7.8'&&ch(0,2)==='0,0,5.2';
+      const S=addPiece('portaat_ontelo',x+20,y,z,0,undefined,undefined,0);made.push(S);const r=k=>{const j=jPlace(S,'portaat_ontelo',0,k,1);return [j.x-S.x,j.y-S.y,j.z-S.z].map(v=>+v.toFixed(2)).join();};
+      const b=r(0)==='0,2.6,-2.5'&&r(2)==='-2.5,2.6,-2.5'&&r(4)==='2.5,2.6,0'&&jPlace(S,'portaat_ontelo',0,1,1)===null;
+      const W=addPiece('seina',x-20,y,z,0);made.push(W);const lw=ladderWall('tikkaat',{pt:new THREE.Vector3(x-20,y+1,z+.1),n:new THREE.Vector3(0,0,1),piece:W},2,false);const c=lw&&lw.rot===0&&Math.abs(lw.z-(z+.1+.06+G/2))<1e-6&&Math.abs(lw.y-y)<1e-6;
+      const m=buildPieceMesh('tikkaat',2);let rail=null;m.traverse(o=>{if(o.isMesh&&!rail&&o.geometry.parameters.height>2)rail=o;});let mx=0;const uv=rail.geometry.attributes.uv;for(let i=0;i<uv.count;i++)mx=Math.max(mx,uv.getY(i));const d=Math.abs(mx-Math.round(mx))<1e-4;
+      const e=/ladRun/.test(ladderAt.toString())&&/JK\.tgt/.test(updateGhost.toString());
+      return a&&b&&c&&d&&e||`virhe tikkaat ${a} portaat ${b} seinä ${c} uv ${d} haamu ${e}`;}
+    finally{for(const q of made)if(pieces.includes(q))removePiece(q);}});
   t('H pystykohdistus auto/pysty/3D',()=>VNAMES.length===3);t('reunakohdistus smartSnap',()=>typeof smartSnap==='function');
   t('kartat 6',()=>MAPS.length===6);t('ulottuvuudet 3',()=>Object.keys(REALMS).length===3);t('tehtävät 13',()=>QUESTS.length>=13);
   t('asetussivut (grafiikka + varjot väliotsikkona, ohjaus)',()=>SET_PAGES&&Object.keys(SET_PAGES).length>=2&&SET_PAGES.gfx.includes('shadow'));t('oletusasetukset SET_DEF',()=>Object.keys(SET_DEF).length>10);
@@ -159,6 +169,52 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.84–85 olentojen äänet: VARAANI-ketju eheä, 1–3 versiota (creRes), varaääni, suuttumis- ja jahtiääni, kytkennät, voimakkuusasetus',()=>{const ids=Object.keys(MOBDEF);for(const [k,v] of Object.entries(VARAANI)){if(!ids.includes(k)||!ids.includes(v.to)||!(v.p>0))return 'huono '+k;let c=k,n=0;while(VARAANI[c]&&n<8){c=VARAANI[c].to;n++;}if(n>=8)return 'silmukka '+k;}
     const o=CRE.man;CRE.man={susi_aggro_1:{h:'x'},kalmo_idle_1:{h:'y'},kalmo_idle_3:{h:'z'},susi_chase_2:{h:'w'}};const a=creRes('kalmasusi','aggro'),b=creRes('kalmo','idle'),c=creRes('peura','idle'),d=creRes('kalmasusi','chase');CRE.man=o;
     return a&&a.names[0]==='susi_aggro_1'&&Math.abs(a.p-.88)<1e-9&&b&&b.names.join()==='kalmo_idle_1,kalmo_idle_3'&&c===null&&d&&d.names[0]==='susi_chase_2'&&/creSnd\(m,'death'\)/.test(killMob.toString())&&/creSnd\(m,'hurt'\)/.test(damageMob.toString())&&/creLoad/.test(spawnMob.toString())&&/creTick/.test(update.toString())&&/angerDone/.test(creTick.toString())&&'creVol' in SET_DEF||'virhe';});
+  t('v2.11 äänten lisäversiot: _4, _5 … _10 käytössä ilman koodimuutosta (numerojärjestys), manifestin äänet löytyvät',()=>{
+    const o=CRE.man;CRE.man={susi_idle_1:{h:'a'},susi_idle_10:{h:'b'},susi_idle_4:{h:'c'},susi_idle_2:{h:'d'},aarnihirvio_echo_3:{h:'e'}};const a=creRes('susi','idle'),b=creRes('kalmasusi','idle'),c=creRes('jaajattari','echo');CRE.man=o;
+    const d=o&&Object.keys(o).length?Object.keys(o).every(n=>{const m=/^(.+)_(idle|hurt|death|aggro|chase|echo)_\d+$/.exec(n);return m&&creRes(m[1],m[2])&&creRes(m[1],m[2]).names.includes(n);}):true;
+    return a&&a.names.join()==='susi_idle_1,susi_idle_2,susi_idle_4,susi_idle_10'&&b&&b.names.length===4&&c&&c.names[0]==='aarnihirvio_echo_3'&&d||`virhe ${a&&a.names} ${b&&b.names} ${c&&c.names} manifest ${d}`;});
+  t('v2.12 emakko suuttuu kun porsas säikähtää; pitkät kutsuäänet (far) kuuluvat kauas, etäisyys tummentaa ja kaiuttaa, kaukainen ulvonta',()=>{
+    const x=P.pos.x+20,z=P.pos.z+20,sow=spawnMob('emakko',x,z),pg=spawnMob('porsas',x+2,z);pg.mom=sow;const oc=P.crouch,om=msg;P.crouch=false;msg=()=>{};let a;
+    try{for(const k of mobs)if(k!==pg&&k.mom===sow)k.dead=true;startFlee(pg,1,1);const dx=P.pos.x-sow.pos.x,dz=P.pos.z-sow.pos.z;temperAI(sow,1/30,dx,dz,Math.hypot(dx,dz),false,false);a=sow.angry&&sow.state==='chase';}
+    finally{P.crouch=oc;msg=om;sow.dead=pg.dead=true;mobRemove(sow);mobRemove(pg);}
+    const o=CRE.man;CRE.man={susi_idle_1:{h:'a',far:1},susi_idle_2:{h:'b'},karju_idle_1:{h:'c'}};const b=creHasFar('routasusi','idle')&&!creHasFar('karju','idle')&&creIsFar('susi_idle_1')&&!creIsFar('susi_idle_2');CRE.man=o;
+    const c=creDistK(5,false)===0&&creDistK(80,false)===1&&creDistK(60,true)<.5&&creDistK(150,true)===1&&/df\.frequency/.test(creSnd.toString())&&/sdo/.test(creSnd.toString())&&/creDistFx/.test(creTick.toString());
+    const d=/farHowl\(dt\)/.test(creTick.toString())&&/farOnly/.test(farHowl.toString());
+    const e=!o||!o.susi_idle_1||(o.susi_idle_1.far===1&&o.susi_idle_1.dur>4&&!o.susi_hurt_1.far);
+    return a&&b&&c&&d&&e||`virhe emakko ${a} far ${b} etäisyys ${c} ulvonta ${d} manifest ${e}`;});
+  t('v2.14 syntyanimaatio: häivytys makuulla → nousu (2,5 s), osuma keskeyttää, ei pomoille/Suonäkille/noBorn',()=>{const ms=[];try{
+    const a=spawnMob('peura',P.pos.x+60,P.pos.z+60);ms.push(a);const b=spawnMob('kalmo',P.pos.x+64,P.pos.z+60);ms.push(b);const c=spawnMob('suonakki',P.pos.x+68,P.pos.z+60,{noBorn:0});ms.push(c);const d=spawnMob('susi',P.pos.x+72,P.pos.z+60,{noBorn:1});ms.push(d);
+    const s0=a.born===0&&a.mats[0].opacity===0&&b.born===0&&c.born===undefined&&d.born===undefined;bornTick(a,.4,99);const s1=Math.abs(a.mats[0].opacity-.5)<.01&&a.f.legs[0].rotation.x<-1;
+    bornTick(b,1.2,99);const s2=b.f.g.rotation.x>.5&&b.f.armL.rotation.x<-.5;a.lastHit=playTime;bornTick(a,.05,99);for(let i=0;i<6;i++)bornTick(a,.05,99);const s3=a.born===undefined&&a.mats[0].opacity===1&&!a.mats[0].transparent;
+    for(let i=0;i<40;i++)bornTick(b,.05,99);const s4=b.born===undefined&&b.f.g.rotation.x===0;
+    return s0&&s1&&s2&&s3&&s4||`virhe alku ${s0} häivytys ${s1} punnerrus ${s2} keskeytys ${s3} valmis ${s4}`;}finally{for(const m of ms)if(mobs.includes(m))mobRemove(m);}});
+  t('v2.14 Kalmanummi: kalmo ja ylimys eivät pala nummella; vartijataistelun aikana ei luonnollisia kalmoja kehän ympärille (60 m)',()=>{const L=LOC.circle,ob=boss;
+    const a=/MOOR_UNDEAD\.has\(m\.type\)&&biomeHere/.test(sunBurnAI.toString())&&MOOR_UNDEAD.has('kalmo')&&MOOR_UNDEAD.has('ylimys')&&!MOOR_UNDEAD.has('kalmasusi');
+    const b=!moorFightBlock('kalmo',L.x+30,L.z);boss={type:'vartija',dead:false};const c=moorFightBlock('kalmo',L.x+30,L.z)&&moorFightBlock('ylimys',L.x+70,L.z)&&!moorFightBlock('kalmo',L.x+80,L.z)&&!moorFightBlock('karju',L.x+5,L.z);boss=ob;
+    return a&&b&&c&&/moorFightBlock\(type,x,z\)/.test(spawner.toString())||`virhe palaminen ${a} ei taistelua ${b} taistelu ${c}`;});
+  t('v2.14 äänet: kutsuäänet 150 m, muut 64 m, ääntely 36 m; vahvempi kaukaisuusefekti (hiljaisuus, tummuus, kaiku, huojunta); sudet ulvovat päivällä 3× ja yöllä 1,25× harvemmin',()=>{
+    const a=CRE_FAR_R===150&&CRE_NEAR_R===64&&CRE_IDLE_R===36&&CRE_WOLF.has('susi')&&CRE_WOLF.has('routasusi')&&CRE_WOLF.has('kalmasusi');
+    const b=creLpf(0)>15000&&creLpf(.5)<1500&&creLpf(1)===500&&/dg\.gain/.test(creDistFx.toString())&&/lg\.gain/.test(creDistFx.toString())&&/1\.8\*k/.test(creDistFx.toString())&&/src\.detune/.test(creSnd.toString());
+    const c=/CRE_WOLF\.has\(m\.type\)\?\(isNight\(\)\?1\.25:3\)/.test(creTick.toString())&&/100\+Math\.random\(\)\*45/.test(farHowl.toString())&&/\*1\.25/.test(farHowl.toString());
+    return a&&b&&c||`virhe kantamat ${a} efekti ${b} ulvonta ${c}`;});
+  t('v2.14 emakko: oma porsas säikähtää → emo suuttuu missä tahansa (tietää sijainnin), orpolauma 2× arempi ja pakenee yhdessä, perhehetket',()=>{const ms=[],om=msg;msg=()=>{};let res;try{
+    const sow=spawnMob('emakko',P.pos.x+45,P.pos.z+45,{noBorn:1});ms.push(sow);const k=[0,1,2].map(i=>{const q=spawnMob('porsas',P.pos.x+46+i,P.pos.z+46,{noBorn:1});q.mom=sow;ms.push(q);return q;});
+    startFlee(k[0],1,1);const dx=P.pos.x-sow.pos.x,dz=P.pos.z-sow.pos.z;temperAI(sow,1/30,dx,dz,Math.hypot(dx,dz),false,false);const a=sow.angry&&sow.state==='chase'&&mobKnows(sow);
+    sow.angry=false;sow.state='idle';const far=spawnMob('porsas',P.pos.x+100,P.pos.z+45,{noBorn:1});far.mom=sow;ms.push(far);killMob(sow);const b=k.every(q=>q.orphan&&q.orphan===k[0].orphan&&!q.mom)&&!far.orphan;
+    k.forEach(q=>q.state='idle');startFlee(k[1],1,0);const c=k.every(q=>q.state==='flee')&&/m\.orphan\)sr\*=2/.test(updateMobs.toString());
+    const s2=spawnMob('emakko',P.pos.x+60,P.pos.z+60,{noBorn:1});ms.push(s2);const kk=spawnMob('porsas',P.pos.x+61,P.pos.z+60,{noBorn:1});kk.mom=s2;ms.push(kk);s2.famT=0;famPlan(s2,.01,99);const d=!!s2.fam&&kk.fam===s2.fam&&['nuzzle','play','root'].includes(s2.fam.k);
+    res=a&&b&&c&&d||`virhe suuttuu ${a} orvot ${b} pako ${c} perhe ${d}`;}finally{msg=om;for(const m of ms)if(mobs.includes(m))mobRemove(m);}return res;});
+  t('v2.14 DEV Å: pikavalinnoissa 100 puuta (antaa reppuun)',()=>{const ok=DEV_PICKS.some(([i,n])=>i==='puu'&&n===100);const c0=invCount('puu');invAdd('puu',100);const c1=invCount('puu');invRemove('puu',c1-c0);return ok&&c1-c0===100||`virhe lista ${ok} reppu ${c1-c0}`;});
+  t('v2.15 tikkaat: seinän takaa ei voi kiivetä (ladderReach), edestä ja vapaasti seisoviin molemmilta puolilta voi',()=>{const x=P.pos.x+70,z=P.pos.z-70,y=terrainH(x,z),made=[];try{
+    const W=addPiece('seina',x,y,z,0);made.push(W);const lw=ladderWall('tikkaat',{pt:new THREE.Vector3(x,y+1,z+.1),n:new THREE.Vector3(0,0,1),piece:W},0,false);const L=addPiece('tikkaat',lw.x,lw.y,lw.z,lw.rot,undefined,undefined,0);made.push(L);
+    const F=addPiece('tikkaat',x+8,terrainH(x+8,z),z,0);made.push(F);
+    const a=!!ladderAt({x:L.x,y:L.y+.5,z:L.z+.4})&&!ladderAt({x:L.x,y:L.y+.5,z:z-.45})&&!!ladderAt({x:F.x,y:F.y+.5,z:F.z+.4})&&!!ladderAt({x:F.x,y:F.y+.5,z:F.z-.4});
+    return a||'virhe: seinän takaa ylettyy tai edestä ei';}finally{for(const q of made)if(pieces.includes(q))removePiece(q);}});
+  t('v2.15 DEV Näkymätön (Ä): olennot eivät huomaa pelaajaa, lyönti suututtaa, päälle kytkeminen lopettaa jahdin',()=>{const o=DEVF.unseen,ms=[];try{
+    DEVF.unseen=1;const w=spawnMob('susi',P.pos.x+50,P.pos.z+50,{noBorn:1});ms.push(w);w.state='chase';w.angry=true;w.losT=0;const dx=P.pos.x-w.pos.x,dz=P.pos.z-w.pos.z;
+    const a=devOn('unseen')===DEV&&/devOn\('unseen'\)&&playTime-\(m\.pHit/.test(updateMobs.toString())&&/devOn\('unseen'\)/.test(temperAI.toString())&&/devOn\('unseen'\)/.test(archerAI.toString());
+    const b='unseen' in DEVF&&/data-big="\$\{k\}"/.test(renderDev.toString())&&/'unseen','Näkymätön'/.test(renderDev.toString());
+    return a&&b||`virhe havaitseminen ${a} valikko ${b}`;}finally{DEVF.unseen=o;for(const m of ms)if(mobs.includes(m))mobRemove(m);}});
   t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
     if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
     const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;

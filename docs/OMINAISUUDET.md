@@ -37,7 +37,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 | Hyppy | pystynopeus 7,2 m/s, maksaa 8 kestävyyttä |
 | Painovoima | 22 m/s² |
 | Putoamisvahinko | kun alastulonopeus > 15 m/s: (nopeus − 15) × 6 hp |
-| Tikkaat | ylös/alas 2,6 m/s (eteen/hyppy = ylös, taakse = alas) |
+| Tikkaat | ylös/alas 2,6 m/s (eteen/hyppy = ylös, taakse = alas); vain samalta puolelta – seinä tai ovi välissä estää (v2.15) |
 | Kiihtyvyys | maassa nopea (×12), ilmassa hidas (×3) |
 
 - **Törmäys (collision.js):** laatikot ja ympyrät ruudukossa (`CELL` 8 m). Alle `STEPUP`-korkuiset esteet ylitetään askeltamalla.
@@ -166,7 +166,12 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Osat (58):** lattiat, seinät (täysi, ikkuna, puoli/neljännes pysty/vaaka, vino, päätykolmio), ovet, katot (olki, loiva, harja + kiviversiot),
   palkit, pylväät (ohut, lyhyt, pitkä), raput, portaat, tikkaat, paaluaita, seisova soihtu, työpisteet, sänky, arkku, tynnyri; kiviversiot.
 - **Kohdistustilat (G):** ruudukko (2,5 m), **1 m**, puoli (1,25 m), **3D** (vaaka- + pystyruudukko, korkeus WH/4 portain), vapaa (0,25 m),
-  reuna. Ruudukkotiloissa kaikki osat kohdistuvat: lattiat ruutujen keskelle, seinät reunoille, **pylväät kulmiin, muut ruudun keskelle**.
+  reuna, **jatko** (v2.13). Ruudukkotiloissa kaikki osat kohdistuvat: lattiat ruutujen keskelle, seinät reunoille, **pylväät kulmiin, muut ruudun keskelle**.
+- **Tikkaat (v2.13):** asennot pysty, 1:3 ja 1:2 (Shift+R): jokainen tikas nousee 2,6 m ja siirtyy 0 / 0,83 / 1,25 m → 3 tikasta 1:3 tai 2 tikasta
+  1:2 = tasan 1 ruutu sivulle. Seinän pintaan tähdätessä tikkaat nojaavat seinään (alareuna maassa/seinän alareunassa).
+- **Jatkokohdistus (v2.13):** tikkaat ja portaat (raput, portaikko, kiviversiot) napsahtavat alemman yläpään jatkoksi kaikissa tiloissa (alle 1,3 m),
+  G-tilassa **jatko** 3 m päästä. Jatko ottaa alemman kulman ja suunnan; portailla R = 90°: suoraan, käännös 90° tai U-käännös (tasanteeksi lattia).
+  Sivupuut, puolat ja portaiden sivupalkit jatkuvat saumattomasti.
 - **3D-tila:** näkyvä 3D-hila haamun ympärillä (pystytolpat ruudukon kulmissa, vaakaruudukot WH/2 välein kahteen kerrokseen).
 - **Pystykohdistus (H):** auto, pysty (Q/Z nostaa/laskee), 3D (seuraava kerros näkyy).
 - **Reunakohdistus (`smartSnap`, kaikki G-tilat paitsi vapaa, kaikki osat):** kohteen muoto = törmäyslaatikoiden rajaus.
@@ -228,7 +233,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Eläinten luonteet (v0.85, `per`):** jänis jähmettyy ja pakenee siksakkia, kettu jää katsomaan matkan päästä, metso antaa tulla lähelle
   ja lehahtaa 14–24 m, porolauma pakenee yhdessä. Uudet eläimet: metsäjänis, kettu, metso (sulat → sulitetut nuolet), poro.
 - **Joskus vihaiset (v0.86, `temper`):** hirvi (35 % suuttuu alle 6 m:ssä, ryntää ja tönäisee ~2 m), ilves (yöllä hyökkää haavoittuneen
-  < 50 % kimppuun, muuten väistää), ahma (suuttuu raa'asta lihasta repussa), emakko (puolustaa 2–4 porsastaan alle 7 m:ssä). Rauhoittuvat
+  < 50 % kimppuun, muuten väistää), ahma (suuttuu raa'asta lihasta repussa), emakko (puolustaa 2–4 porsastaan alle 7 m:ssä ja suuttuu aina, kun sen oma porsas säikähtää sinua, missä tahansa – v2.14; emon kuoltua sen porsaat jäävät orpolaumaksi, joka pelkää 2× kauempaa; rauhallisena perhehetket: nuuhkaisu, leikki, tonkiminen). Rauhoittuvat
   12 s:n kuluttua, kun pelaaja on kaukana.
 - **Karhu (v0.87):** 120 hp, murisee 14 m:ssä ja hyökkää alle 8 m:ssä tai lyötynä; lyö liikkeestä pysähtymättä, tönäisee ~3,5 m, kaataa
   jahdatessaan edessään olevat puut tukeiksi, palautuu (5 %/s), jos sitä ei lyödä minuuttiin. Pelaaja pääsee juosten karkuun. Saalis
@@ -247,6 +252,12 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Spawneri (`spawner`):** 2,5 s välein 38–68 m päähän biomin taulukosta (`SPAWN`), katto 10 (yö 14); ei rakennusten, löytöpaikkojen
   (50 m) eikä aloitusrannan lähelle päivällä.
 - **Vartijat (`GUARDS`):** löytöpaikkojen ja portaalien vartijat syntyvät < 75 m, pysyvät paikallaan (palaavat 15–16 m jälkeen), kaatuminen tallentuu.
+
+- **Syntyanimaatio (v2.14):** uusi olento häivytetään näkyviin makuulla (0,8 s) ja nousee: nelijalkaiset etujalat ensin (istuva asento),
+  sitten takajalat ja pään ravistus; kaksijalkaiset vatsallaan → punnerrus → polvilleen → seisomaan. Kesto 2,5 s; osuma tai säikähdys
+  nostaa heti (~0,2 s). Ei pomoille, maasta nouseville väijyjille eikä valmiiksi paikalla oleville (luolat, vartijat).
+- **Kalmanummi (v2.14):** kalmot ja ylimykset eivät pala auringossa nummella. Kalmanvartijan taistelun aikana Kalmankehän ympärille
+  (60 m kehästä) ei synny kalmoja itsestään – vain vartijan kutsumat.
 
 ## 10. Pomot
 
@@ -428,7 +439,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Jousi: seisten täysin vedettynä pieni tähtäinympyrä ja pieni hajonta; kyykyssä täysin vedettynä tähtäin pistemäinen, ei hajontaa,
   veto ja nuolen nopeus +10 %, ja näkyviin tulee tiputusristikko (20–70 m).
 - Valikon Tallenna nyt -painike näyttää "Tallennettu ✓" ja välähtää vihreänä.
-- Kalmot ja pelottavat yöolennot syttyvät auringossa avoimella alueella (ei metsässä, katoksen alla, pilvisellä/sateella eikä yöllä):
+- Kalmot ja pelottavat yöolennot syttyvät auringossa avoimella alueella (ei metsässä, katoksen alla, pilvisellä/sateella eikä yöllä; kalmot ja ylimykset eivät pala Kalmanummella – v2.14):
   ryntäilevät palaen ~3 s, hidastuvat ja muuttuvat tuhkaksi ~6 s:ssa (ei saalista). Liian lähelle mennessä syttyy itsekin.
 - Valikossa 21 animoitua taustaa (mm. kaatuvia puita myrskyssä, raivoava karhu, susilauma, hirvi järvellä, ulottuvuuksien vihjeet,
   Kalmanvartijan varjo salamoissa, nousevat kalmot, ahjo). Portaalikuva on eeppinen riimukaari, joskus hahmo portin edessä.
@@ -490,7 +501,13 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Veren fysiikka (pisarat lentävät ja jäävät maahan) on päällä Medium-esiasetuksesta ylöspäin.
 
 ## Äänet (v1.84–v1.86, äänierä A: olennot)
-- Olennoilla voi olla omat äänet (`sounds/<id>_<idle|hurt|death|aggro|chase>_<1–3>.mp3`, arpoo olemassa olevista versioista): rauhallinen
+- **v2.14 kuuluvuus:** kutsuäänet kuuluvat noin 150 m, muut 64 m, rauhallinen ääntely 36 m. Kaukana suora ääni hiljenee 30 %, tummuu
+  (puolimatkassa alle 1,5 kHz), kaikuu (jopa ~1,9 × suora) ja huojuu hieman. Sudet ulvovat päivällä 3× harvemmin, yöllä 20 % harvemmin; yön
+  kaukainen ulvonta 100–145 m.
+- **v2.12 kuuluvuus:** kutsuäänet (📢 suden ulvonta, hirven mylvintä, metson soidin, karhun karjaisu) kuuluvat noin 220 m päähän, muut äänet noin
+  80 m (rauhallinen ääntely alle 45 m). Kaukana ääni hiljenee, tummuu (alipäästö 15 kHz → 650 Hz) ja kaikuu enemmän. Yöllä ulkona kuuluu
+  45–110 s välein (60 %) kaukaista suden ulvontaa 150–230 m päästä. Pitkiä kutsuääniä ei katkaista kesken (enintään 10 s, loppu luonnolliseen taukoon).
+- Olennoilla voi olla omat äänet (`sounds/<id>_<idle|hurt|death|aggro|chase>_<n>.mp3`, n = 1, 2, 3 … rajattomasti (v2.11), arpoo kaikista olemassa olevista versioista): rauhallinen
   ääntely 6–15 s välein alle 25 m päässä, suuttumisääni (vihamieliset ja pomot vain kerran, neutraalit kerran per suuttuminen – v2.10: sama olento enintään 15 s, sama laji 6 s välein, ei karjaisua tiedostoäänen päälle), jahtiääni 4–9 s
   välein jahdin aikana (vihamieliset ja pomot), osumaääni (enintään 0,4 s välein), kuolinääni. 3D-ääni (suunta ja etäisyys), sävel ±6 %.
 - Jos olennolla ei ole omaa ääntä, käytetään väliaikaista varaääntä toiselta olennolta muutetulla sävelellä (ketju `VARAANI`), muuten
@@ -526,7 +543,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Työkalun trimmaus/voimakkuus: pituuden rajat (idle 3 s … death 3,5 s, pomot enemmän) ja tavoite-LUFS lajeittain (idle −22 … death/aggro −16, pomo +1,5 dB).
 
 ## DEV-työkalut (vain DEV-tilassa)
-- Ä = DEV-valikko. Isot napit alussa (v1.92): Kuolemattomuus, Lento (alkaa heti), Seinien läpi, Lukitse aika ja sää, Pysäytä maailma
+- Ä = DEV-valikko. Isot napit alussa (v1.92): Kuolemattomuus, Lento (alkaa heti), Seinien läpi, Lukitse aika ja sää, Näkymätön (v2.15: olennot eivät huomaa sinua, lyönti suututtaa), Pysäytä maailma
   (vain pelaaja liikkuu), Terveys täyteen. Lisäksi sää, aika, terveys, kylläisyys, pienet täpät, esinehaku, kartta.
 - V pohjassa = 10× kävelynopeus, lennossa 6× lentonopeus (vaaka ja pysty).
 - Ö = olennot ja pomot (v1.91): luo minkä tahansa olennon 3 m eteen (pomot nousevat herätysanimaatiolla), siirry ulottuvuuspomon huoneeseen tai

@@ -41,7 +41,7 @@ addEventListener('keydown',e=>{
   else if(c===BIND.menu){e.preventDefault();if(openPanel)closePanels(false);else if(state==='play'){pauseGame();releaseLock();}}
   else if(state==='play'){
     if(c===BIND.interact)interact();
-    else if(c===BIND.rot){if(isBuilding()){if(e.shiftKey)cyclePose();else buildRot=(buildRot+1)%8;}}
+    else if(c===BIND.rot){if(isBuilding()){if(e.shiftKey)cyclePose();else buildRot=(buildRot+(JK.tgt&&JFAM(buildSel)==='stair'?2:1))%8;   /* v2.13: portaiden jatkossa 90° */}}
     else if(c===BIND.snap){if(isBuilding())cycleSnap();}
     else if(c===BIND.vsnap){if(isBuilding())cycleVMode();}
     else if(c===BIND.up){if(isBuilding())liftBuild(1);else dropHot(e.shiftKey);}   // v1.57: pelissä Q pudottaa valitusta pikapaikasta 1, Shift+Q koko pinon

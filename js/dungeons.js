@@ -280,7 +280,7 @@ function exitRealm(){fadeTo(()=>{for(const f of FIRELINES)f.t=0;
   const id=P.realm,F=portalFront(id);P.inDun=false;P.realm=null;P.pos.set(F.x,terrainH(F.x,F.z),F.z);P.vy=0;P.vel.set(0,0,0);camYaw=Math.atan2(-F.fx,-F.fz);P.spawnProt=3.2;
   for(const m of [...mobs])if(m.dun){if(m.def.ai==='rboss'&&!m.dead)delete fo('rbHp')[m.realm];mobRemove(m);}});}// v1.33 (kohta 7): poistuminen parantaa pomon täyteen
 function spawnRealmMobs(id){const R=BUILT[id],dk=fo('rm')[id]||(fo('rm')[id]={});
-  R.mobs.forEach((s,i)=>{if(dk[i])return;const m=realmize(spawnMob(s.type,s.x,s.z,{y:DUN.y,dun:true}),id);m.rmIdx=i;});
+  R.mobs.forEach((s,i)=>{if(dk[i])return;const m=realmize(spawnMob(s.type,s.x,s.z,{y:DUN.y,dun:true,noBorn:1}),id);m.rmIdx=i;});
   if(!fo('rb')[id]){const b=spawnMob(REALMS[id].boss,R.boss.x,R.boss.z,{y:DUN.y,dun:true});b.realm=id;b.rmIdx='B';b.state='sleep';bossHide(b,(b.def.fh||4)+1.5);const hp=fo('rbHp')[id];if(hp)b.hp=Math.min(b.maxHp,hp);}}
 // Kutsutaan, kun mobi kuolee: tallentaa vartijoiden, sisätilojen vihollisten ja pomojen kaatumisen.
 function onMobKilled(m){
@@ -363,7 +363,7 @@ function realmBossAI(m,dt,dx,dz,dist){
      etäisyys + näköyhteys pomon paikalta (seinät estävät). 8 s herätys (effects.js bossRisePose); pomo huomaa pelaajan nostaessaan päänsä. */
   if(m.state==='sleep'){const gy=m.riseY??DUN.y;f.g.visible=false;m.sinking=1;
     // v1.91: herätys kun pelaaja astuu pomohuoneeseen (inBossRoom: huoneen ääriviiva tai varaetäisyys = keskim. matka keskeltä seinään)
-    if(!P.dead&&(P.spawnProt||0)<=0&&Math.abs(P.pos.y-gy)<4&&P.inDun===!!m.dun&&(m.devSpawn?dist<10:P.realm===m.realm&&inBossRoom(BUILT[m.realm],P.pos.x,P.pos.z))){m.state='rise';m.t=0;m.woke=0;sfx('slam',.45,.6);}
+    if(!P.dead&&!devOn('unseen')&&(P.spawnProt||0)<=0&&Math.abs(P.pos.y-gy)<4&&P.inDun===!!m.dun&&(m.devSpawn?dist<10:P.realm===m.realm&&inBossRoom(BUILT[m.realm],P.pos.x,P.pos.z))){m.state='rise';m.t=0;m.woke=0;sfx('slam',.45,.6);}
     return;}
   if(m.state==='rise'||m.state==='intro'){m.t+=dt;if(m.t>5.9)m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*3));   // nukkuu kunnes nostaa päänsä
     if(bossRisePose(m,dt,m.riseY??DUN.y,(d.fh||4)+1.5))return;

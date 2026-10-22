@@ -1,7 +1,7 @@
 /* Hiidenmaa – main.js
    Valikko, pääsilmukka ja testirajapinta window.__game */
 'use strict';
-window.__JSV2='2.10';   // v1.58: versiotarkistus (viimeinen skripti)
+window.__JSV2='2.15';   // v1.58: versiotarkistus (viimeinen skripti)
 // v1.24 KORJAUS (KORJAUKSET 22): valikkokameran tila esitellään ennen kuin startPlay voidaan kutsua (karttavaihdon jälkeinen automaattinen
 // aloitus tapahtuu jo tiedoston alussa; ennen let-muuttujat olivat vielä alustamatta → ReferenceError → peli jäi mustaksi).
 let frameErrShown=false;
@@ -211,7 +211,7 @@ function newMenuShot(){menuClear();if(!menuSpots)menuSpots=buildMenuSpots();if(!
       for(const [t,x,z,rot] of [['teltta',tx,tz,c.rot],['nuotio',c.x,c.z,0]]){const m=buildPieceMesh(t);m.position.set(x,terrainH(x,z),z);m.rotation.y=rot*Math.PI/4;scene.add(m);menuDeco.push(m);
         if(m.userData.flame)for(const f of m.userData.flame)f.visible=s.night;}}
     if(s.night){menuLight={x:c.x,y:terrainH(c.x,c.z)+.9,z:c.z,c:0xff8a3a,i:2.4,on:()=>true};lightSources.push(menuLight);}}
-  if(s.k==='animal'){menuMob=spawnMob(s.t,s.x,s.z);if(menuMob){menuMob.yaw=Math.random()*TAU;menuMob.menu=true;}}
+  if(s.k==='animal'){menuMob=spawnMob(s.t,s.x,s.z,{noBorn:1});if(menuMob){menuMob.yaw=Math.random()*TAU;menuMob.menu=true;}}
   P.pos.set(s.x,terrainH(s.x,s.z),s.z);updateLights();}
 function menuCam(dt){if(!started)fig.g.visible=false;
   if(!menuShot)newMenuShot();if(!menuShot){updateEnvironment(dt);return;}

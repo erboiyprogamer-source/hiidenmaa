@@ -96,6 +96,7 @@ function doMeleeHit(w){
 const KB_V=3.75;   // mitattu: arvo 10 → 5 m (harmaasusi)
 function damageMob(m,dmg,dt,kx,kz,kb=4){
   if(m.dead||m.sinking)return;   // v0.95: vajoava/nouseva vartija on haavoittumaton
+  m.pHit=playTime;   // v2.15: pelaajan osuma (DEV Näkymätön: lyöty olento huomaa sinut 10 s)
   const mult=(m.def.weak&&m.def.weak[dt])||1;dmg*=mult;
   m.hp-=dmg;m.flash=.15;m.lastHit=playTime;m.angry=true;m.hurtT=playTime;m.seenT=playTime;m.lastPX=P.pos.x;m.lastPZ=P.pos.z;   // v2.08: osuma = muisti
   if(m.def.ai!=='boss'&&m.def.ai!=='rboss'){const l=Math.hypot(kx,kz)||1,k=kb*(m.def.r>.8?.4:m.def.r>.6?.7:1);m.vel.x+=kx/l*k;m.vel.z+=kz/l*k;m.wind=0;}
@@ -130,7 +131,7 @@ function updateBurn(m,dt){if(mobWet(m)){stopBurn(m);m.igniteCd=playTime+3;burst(
 // ensin ja sen loputtua taas heikoimmasta alkaen. Uusi ammus lisätään listaan oikeaan kohtaan (esim. tulevat rautanuolet).
 const AMMO=['puunuolet','nuolet','sulkanuolet','tulinuolet'];   // heikoimmasta parhaaseen (v2.06: puunuolet)
 function ammoId(){if(flags.ammo&&invCount(flags.ammo)>0)return flags.ammo;return AMMO.find(id=>invCount(id)>0)||null;}
-function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;
+function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;if(m.type==='emakko')orphanPiglets(m);if(m.fam)famEnd(m.fam);   /* v2.14 */
   if(m.def.ai==='boss'||m.def.ai==='rboss')sfx('slam',.6,.8);else if(!creSnd(m,'death'))sfx('die');   // v1.84 oma kuolinääni; v1.89 pomon kuolinääni soi vasta kuolema-animaatiossa
   if(m.sunKill){onMobKilled(m);return;}   // v1.50: auringossa tuhkaksi palanut – ei saalista, XP:tä eikä tappotilastoa
   P.kills++;bump('kills');bump('k_'+m.type);addXp(Math.round(m.def.hp/(m.type==='vartija'?2:5))+3,m.def.n);
@@ -324,6 +325,6 @@ function showLore(t,txt){const el=$('#msgs');const d=document.createElement('div
 const dunKilled={};
 function fadeTo(cb){const f=$('#fade');f.style.opacity=1;setTimeout(()=>{cb();setTimeout(()=>f.style.opacity=0,120);},380);}
 function enterDungeon(){fadeTo(()=>{P.inDun=true;P.realm=null;P.spawnProt=3.2;P.pos.set(dunEntry.x+.6,DUN.y+.05,dunEntry.z);P.vy=0;camYaw=-Math.PI/2;P.yaw=Math.PI/2;
-  dunSpawns.forEach((s,i)=>{if(dunKilled[i])return;if(mobs.some(m=>m.dunIdx===i))return;const m=spawnMob(s.type,s.x,s.z,{y:DUN.y,dun:true});m.dunIdx=i;});
+  dunSpawns.forEach((s,i)=>{if(dunKilled[i])return;if(mobs.some(m=>m.dunIdx===i))return;const m=spawnMob(s.type,s.x,s.z,{y:DUN.y,dun:true,noBorn:1});m.dunIdx=i;});
   msg('Hautakumpu. Ilma on kylmää ja seisovaa.');});}
 function exitDungeon(){fadeTo(()=>{P.inDun=false;P.realm=null;P.spawnProt=3.2;const L=LOC.barrow;P.pos.set(L.x+12.5,terrainH(L.x+12.5,L.z),L.z);P.vy=0;camYaw=-Math.PI/2;for(const m of [...mobs])if(m.dun)mobRemove(m);});}

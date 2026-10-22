@@ -25,7 +25,7 @@ function buildRaycast(){
 }
 // Kohdistustilat (vaihto G): ruudukko (G = 2,5 m), 1 m ruudukko, puoliruudukko, 3D (vaaka- ja pystyruudukko), vapaa, reunajatko.
 // Ruudukkotiloissa kaikki osat kohdistuvat: lattiat ruutujen keskelle, seinät reunoille, pylväät kulmiin, muut ruudun keskelle.
-const SNAP_NAMES=['ruudukko','1 m','puoli','3D','vapaa','reuna'];
+const SNAP_NAMES=['ruudukko','1 m','puoli','3D','vapaa','reuna','jatko'];   // v2.13 jatko: tikkaat/portaat alemman jatkoksi laajalta (muut osat kuten ruudukko)
 let snapMode=0,ghostRot=0,gridHelper=null,gridDiv=0,gridHelper2=null,gridV=null;
 // Pystykohdistus (H): auto, pysty (korkeus .65 m:n portain, Q/Z nostaa/laskee) ja 3D (myös seuraava kerros näkyy ruudukkona).
 const VNAMES=['auto','pysty','3D'],VSTEP=WH/4;let vMode=0,buildLift=0;
@@ -100,10 +100,36 @@ function smartSnap(t,rot,pose,hit,strict,gcell){
     else{const hT=ax==='x'?hx:hz,nh=ax==='x'?nhx:nhz,o=gridN&&hT<THIN&&nh>=THIN?s*nh:nh<THIN&&hT>=THIN?s*hT:s*(hT+nh);
       if(ax==='x'){x=cx+o;z=cz+off(hz,nhz,0,cz,oz,pt.z-cz,'z');}else{z=cz+o;x=cx+off(hx,nhx,0,cx,ox,pt.x-cx,'x');}}}
   return{x:x-ncx,y,z:z-ncz,rot};}
+/* v2.13 JATKO: tikkaat ja portaat (raput, portaikko, kiviversiot) napsahtavat alemman saman perheen kappaleen yläpään jatkoksi.
+   Automaattinen kaikissa tiloissa, kun tähtäät alle 1,3 m päähän yläpäästä; JATKO-tilassa (G) haku 3 m. Jatko kopioi alemman kulman
+   (asento) ja suunnan, kun kohde vaihtuu; Shift+R vaihtaa kulmaa, R portailla 90° kerrallaan: suoraan / käännös (tasanne yläpään taakse,
+   seuraava sivulle) / U-käännös (paluuportaat viereiseen ruutuun, puoli tähtäyksen mukaan). Tasanteeksi lisätään lattia itse. */
+const JFAM=t=>{const b=bt(t);return b==='tikkaat'?'lad':b==='portaat'||b==='portaat_ontelo'?'stair':null;};
+const JK={tgt:null,desc:'',t:-9};
+function jRise(t,f){return bt(t)==='portaat_ontelo'?stairGeom(f%3).rise:WH;}
+function jRun(t,f){const b=bt(t);return b==='tikkaat'?ladRun(f):b==='portaat'?G:stairGeom(f%3).run;}
+function jRot(lx,lz,rot){const a=rot*Math.PI/4,c=Math.cos(a),s=Math.sin(a);return[lx*c+lz*s,-lx*s+lz*c];}
+// yläpää: tikkailla yläpään keskikohta, portailla ylimmän reunan keskikohta
+function jTop(p){const f=p.f||0,r=jRun(p.t,f),[ex,ez]=jRot(0,JFAM(p.t)==='lad'?-r:G/2-r,p.rot);return{x:p.x+ex,y:p.y+jRise(p.t,f),z:p.z+ez};}
+function jPlace(p,t,f,rot,side){const E=jTop(p);if(JFAM(t)==='lad')return{x:E.x,y:E.y,z:E.z,d:'tikkaat jatkuvat'};
+  const rel=((rot-p.rot)%8+8)%8;if(rel%2)return null;
+  if(!rel){const[bx,bz]=jRot(0,G/2,rot);return{x:E.x-bx,y:E.y,z:E.z-bz,d:'suoraan'};}
+  const[lx,lz]=jRot(0,-G/2,p.rot),Lx=E.x+lx,Lz=E.z+lz,[ax,az]=jRot(0,-G,rot);
+  if(rel===2||rel===6)return{x:Lx+ax,y:E.y,z:Lz+az,d:'käännös 90° – lisää tasanteeksi lattia'};
+  const[sx,sz]=jRot(side*G,0,p.rot);return{x:Lx+sx+ax,y:E.y,z:Lz+sz+az,d:'U-käännös – lisää tasanteeksi 2 lattiaa'};}
+function jFree(p,fam){const E=jTop(p);return !pieces.some(q=>q!==p&&JFAM(q.t)===fam&&Math.abs(q.y-E.y)<.3&&dist2(q.x,q.z,E.x,E.z)<(fam==='lad'?.3:3)**2);}
+function jatkoFind(t,hit,wide){const fam=JFAM(t);if(!fam)return null;let best=null,bd=(wide?3:1.3)**2;
+  for(const p of pieces){if(JFAM(p.t)!==fam)continue;const E=jTop(p),d=(E.x-hit.pt.x)**2+.5*(E.y-hit.pt.y)**2+(E.z-hit.pt.z)**2;if(d<bd&&jFree(p,fam)){bd=d;best=p;}}
+  return best;}
+// v2.13 tikkaat seinään: seinän pintaa tähdätessä tikkaat asettuvat pinnan eteen seinän alareunaan, yläpää seinää vasten (kulman mukaan)
+function ladderWall(t,hit,pose,free){const T=hit.piece;if(!T||JFAM(t)!=='lad'||Math.abs(hit.n.y)>.5||T.rot%2||PIECES[T.t].snap!=='wall'||JFAM(T.t))return null;
+  const B=unionBox(worldBoxes(T.t,T.x,T.y,T.z,T.rot,T.f||0)),ax=Math.abs(hit.n.x)>Math.abs(hit.n.z),s=Math.sign(ax?hit.n.x:hit.n.z)||1,ht=ax?(B.maxX-B.minX)/2:(B.maxZ-B.minZ)/2;
+  if((ax?(B.maxZ-B.minZ):(B.maxX-B.minX))<.8||B.maxY-B.minY<1.5)return null;const off=ht+.06+ladRun(pose),cx=(B.minX+B.maxX)/2,cz=(B.minZ+B.maxZ)/2;
+  const rot=ax?(s>0?2:6):(s>0?0:4),along=free?(ax?hit.pt.z:hit.pt.x):(ax?cz:cx);return{x:ax?cx+s*off:along,z:ax?along:cz+s*off,y:B.minY,rot};}
 function updateGhost(){
   if(!ghost){updateGrid(false);return;}const hit=buildRaycast();
   if(!hit||dist2(hit.pt.x,hit.pt.z,P.pos.x,P.pos.z)>9*9){ghost.visible=false;ghostPos=null;updateGrid(false);return;}
-  ghost.visible=true;const t=buildSel,def=PIECES[t],hx=hit.pt.x,hz=hit.pt.z,mode=SNAP_NAMES[snapMode],hf=mode==='puoli',m1=mode==='1 m',m3=mode==='3D',r1=v=>Math.round(v);let x,y,z,rot=buildRot,ox=0,oz=0,yAlign=null;
+  ghost.visible=true;const t=buildSel,def=PIECES[t],hx=hit.pt.x,hz=hit.pt.z,mode0=SNAP_NAMES[snapMode],mode=mode0==='jatko'?'ruudukko':mode0,hf=mode==='puoli',m1=mode==='1 m',m3=mode==='3D',r1=v=>Math.round(v);let x,y,z,rot=buildRot,ox=0,oz=0,yAlign=null;
   // Maahan tähdätessä viereinen lattia määrää ruudukon paikan ja korkeuden.
   if(!hit.piece){let best=null,bd=(1.6*G)**2;for(const p of pieces){if(!isFloor(p))continue;const d=dist2(p.x,p.z,hx,hz);if(d<bd&&Math.abs(terrainH(hx,hz)-p.y)<1.6){bd=d;best=p;}}if(best){ox=best.x-G/2;oz=best.z-G/2;yAlign=best.y;}}
   else if(isFloor(hit.piece)){ox=hit.piece.x-G/2;oz=hit.piece.z-G/2;}
@@ -114,8 +140,16 @@ function updateGhost(){
   if(def.wallMount){const okW=hit.piece&&Math.abs(hit.n.y)<.5;if(okW){rot=((Math.round(Math.atan2(hit.n.x,hit.n.z)/(Math.PI/4))%8)+8)%8;x=hit.pt.x+hit.n.x*.02;z=hit.pt.z+hit.n.z*.02;y=hit.pt.y-.35;}else{x=hx;z=hz;y=hit.pt.y;}
     ghost.position.set(x,y,z);ghost.rotation.y=rot*Math.PI/4;ghostPos={x,y,z};ghostRot=rot;ghostOk=okW&&validPlace(t,x,y,z,rot,0);if(!okW)lastInvalid='Seinäsoihtu kiinnitetään seinään – tähtää seinään.';
     const mw=ghostOk?MAT.ghostOk:MAT.ghostBad;ghost.traverse(o=>{if(o.isMesh)o.material=mw;});updateGrid(false);return;}
-  const es=hit.piece&&mode!=='vapaa'?smartSnap(t,rot,poseOf(t),hit,mode==='reuna',gcell):null;
-  if(es){x=es.x;z=es.z;y=es.y;if(es.rot!==undefined)rot=es.rot;}
+  // v2.13 jatko (tikkaat, portaat): kohteen vaihtuessa kopioidaan alemman suunta ja kulma
+  const jt=P.inDun?null:jatkoFind(t,hit,mode0==='jatko');let jp=null;
+  if(jt){if(JK.tgt!==jt){JK.tgt=jt;buildRot=rot=jt.rot;if(bt(jt.t)===bt(t)&&def.poses&&poseOf(t)!==(jt.f||0)){buildPose=jt.f||0;setBuildSel(t);ghost.visible=true;}}
+    const E=jTop(jt),[sx,sz]=jRot(1,0,jt.rot),side=Math.sign((hx-E.x)*sx+(hz-E.z)*sz)||1;jp=jPlace(jt,t,poseOf(t),rot,side);if(jp)JK.desc=jp.d;}
+  else JK.tgt=null;
+  const lw=!jp&&hit.piece?ladderWall(t,hit,poseOf(t),mode==='vapaa'):null;
+  const es=!jp&&!lw&&hit.piece&&mode!=='vapaa'?smartSnap(t,rot,poseOf(t),hit,mode==='reuna',gcell):null;
+  if(jp){x=jp.x;z=jp.z;y=jp.y;}
+  else if(lw){x=lw.x;z=lw.z;y=lw.y;rot=lw.rot;}
+  else if(es){x=es.x;z=es.z;y=es.y;if(es.rot!==undefined)rot=es.rot;}
   else if(mode==='vapaa'){x=fr(hx);z=fr(hz);y=hit.piece?baseY:def.snap==='floor'?Math.round(baseY*4)/4+.1:def.snap==='cell'?baseY:terrainH(x,z);}
   else if(def.snap==='floor'||def.snap==='cell'){x=m1?r1(hx):hf?half(hx,ox):cell(hx,ox);z=m1?r1(hz):hf?half(hz,oz):cell(hz,oz);
     y=hit.piece?baseY:def.snap==='floor'?(yAlign!==null?yAlign:Math.round(baseY*4)/4+.1):baseY;}
@@ -130,7 +164,7 @@ function updateGhost(){
     const fl=floorAtEdge(x,z,y);if(fl!==null)y=fl;}
   else{if(m1){x=r1(hx);z=r1(hz);}else if(hf){x=half(hx,ox);z=half(hz,oz);}else if(def.col){x=edge(hx,ox);z=edge(hz,oz);}else{x=cell(hx,ox);z=cell(hz,oz);}y=hit.piece?baseY:terrainH(x,z);}
   if(P.inDun&&!hit.piece){x=Math.round(hx*4)/4;z=Math.round(hz*4)/4;y=DUN.y;}   // v1.99: ulottuvuudessa vapaa sijoitus lattialle
-  if(!P.inDun&&(vMode||m3)){const ref=hit.piece?hit.piece.y:0;y=es?y+buildLift*VSTEP:ref+Math.round((y-ref)/VSTEP)*VSTEP+buildLift*VSTEP;}
+  if(!P.inDun&&!jp&&!lw&&(vMode||m3)){const ref=hit.piece?hit.piece.y:0;y=es?y+buildLift*VSTEP:ref+Math.round((y-ref)/VSTEP)*VSTEP+buildLift*VSTEP;}
   ghost.position.set(x,y,z);ghost.rotation.y=rot*Math.PI/4;ghostPos={x,y,z};ghostRot=rot;
   ghostOk=validPlace(t,x,y,z,rot,poseOf(t));
   const m=ghostOk?MAT.ghostOk:MAT.ghostBad;ghost.traverse(o=>{if(o.isMesh)o.material=m;});
