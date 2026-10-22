@@ -507,11 +507,17 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **v2.12 kuuluvuus:** kutsuäänet (📢 suden ulvonta, hirven mylvintä, metson soidin, karhun karjaisu) kuuluvat noin 220 m päähän, muut äänet noin
   80 m (rauhallinen ääntely alle 45 m). Kaukana ääni hiljenee, tummuu (alipäästö 15 kHz → 650 Hz) ja kaikuu enemmän. Yöllä ulkona kuuluu
   45–110 s välein (60 %) kaukaista suden ulvontaa 150–230 m päästä. Pitkiä kutsuääniä ei katkaista kesken (enintään 10 s, loppu luonnolliseen taukoon).
-- Olennoilla voi olla omat äänet (`sounds/<id>_<idle|hurt|death|aggro|chase>_<n>.mp3`, n = 1, 2, 3 … rajattomasti (v2.11), arpoo kaikista olemassa olevista versioista): rauhallinen
+- **Toimintoäänet (v2.16):** olennot jaetaan 12 ryhmään (kaksijalkaiset, luurangot, nelijalkaiset, raskaat, kevyet nelijalkaiset, kevyet
+  kaksijalkaiset, kivivartija, jokaisella pomolla oma, yhteiset). Askeleet alustan mukaan (ruoho, kivi, hiekka, lumi, suo, puu, jää, pusikko,
+  kahlaus, uinti; Aarnimetsässä välillä oksa rasahtaa), lähimmät 6 alle 20 m (isot 40 m); pomon askel lähellä tärisyttää. Kaatuminen, törmäys
+  kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
+  ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
+  Puuttuva ääni = hiljaisuus. Kivivartija on hiljainen, kunnes sille lisätään omat äänet. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- Olennoilla voi olla omat äänet (`sounds/olennot_aanet/valmiit/<id>_<idle|hurt|death|aggro|chase>_<n>.mp3`, n = 1, 2, 3 … rajattomasti (v2.11), arpoo kaikista olemassa olevista versioista): rauhallinen
   ääntely 6–15 s välein alle 25 m päässä, suuttumisääni (vihamieliset ja pomot vain kerran, neutraalit kerran per suuttuminen – v2.10: sama olento enintään 15 s, sama laji 6 s välein, ei karjaisua tiedostoäänen päälle), jahtiääni 4–9 s
   välein jahdin aikana (vihamieliset ja pomot), osumaääni (enintään 0,4 s välein), kuolinääni. 3D-ääni (suunta ja etäisyys), sävel ±6 %.
 - Jos olennolla ei ole omaa ääntä, käytetään väliaikaista varaääntä toiselta olennolta muutetulla sävelellä (ketju `VARAANI`), muuten
-  tehtyä ääntä tai hiljaisuutta. Tila: `sounds/AANILISTA.md`.
+  tehtyä ääntä tai hiljaisuutta. Tila: `sounds/olennot_aanet/AANILISTA.md`.
 - Asetukset › Ohjaus ja ääni › Olentojen äänet (voimakkuus, oletus 80 %).
 - Varaääniketjun pääääni on Aarnihirviö (💎): Jäätär (sävel ×1,2) ja Kalmaherra (×0,85) lainaavat siltä, kunnes saavat omat. Kuolemaääniä on
   1 paikka ulottuvuuksien hirviöillä (rboss) ja 2 muilla.

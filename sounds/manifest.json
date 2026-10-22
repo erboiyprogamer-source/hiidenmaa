@@ -1,5 +1,5 @@
 {
- "v": 2,
+ "v": 3,
  "sounds": {
   "aarnihirvio_aggro_1": {
    "h": "d795f0ddd1",
@@ -8,7 +8,8 @@
    "pv": 4,
    "gain": 0.5,
    "raw": 1.85,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/aarnihirvio_aggro_1.mp3"
   },
   "aarnihirvio_aggro_2": {
    "h": "14a930a04c",
@@ -17,7 +18,8 @@
    "pv": 4,
    "gain": 0.7,
    "raw": 1.99,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/aarnihirvio_aggro_2.mp3"
   },
   "aarnihirvio_chase_1": {
    "h": "cca2f2e42e",
@@ -25,7 +27,8 @@
    "dur": 1.82,
    "pv": 4,
    "gain": -5.0,
-   "raw": 1.85
+   "raw": 1.85,
+   "f": "olennot_aanet/valmiit/aarnihirvio_chase_1.mp3"
   },
   "aarnihirvio_chase_2": {
    "h": "8a28751c9a",
@@ -33,7 +36,8 @@
    "dur": 2.82,
    "pv": 4,
    "gain": -2.2,
-   "raw": 2.83
+   "raw": 2.83,
+   "f": "olennot_aanet/valmiit/aarnihirvio_chase_2.mp3"
   },
   "aarnihirvio_death_1": {
    "h": "b8d9902ba6",
@@ -41,7 +45,8 @@
    "dur": 6.84,
    "pv": 4,
    "gain": 0.7,
-   "raw": 6.87
+   "raw": 6.87,
+   "f": "olennot_aanet/valmiit/aarnihirvio_death_1.mp3"
   },
   "aarnihirvio_echo_1": {
    "h": "dfc3fb4a42",
@@ -49,7 +54,8 @@
    "dur": 8.62,
    "pv": 4,
    "gain": 4.8,
-   "raw": 8.63
+   "raw": 8.63,
+   "f": "olennot_aanet/valmiit/aarnihirvio_echo_1.mp3"
   },
   "aarnihirvio_echo_2": {
    "h": "ee7b2ec30c",
@@ -57,7 +63,8 @@
    "dur": 4.62,
    "pv": 4,
    "gain": -9.1,
-   "raw": 4.64
+   "raw": 4.64,
+   "f": "olennot_aanet/valmiit/aarnihirvio_echo_2.mp3"
   },
   "aarnihirvio_hurt_1": {
    "h": "17af0b3710",
@@ -65,7 +72,8 @@
    "dur": 0.36,
    "pv": 4,
    "gain": 1.9,
-   "raw": 0.51
+   "raw": 0.51,
+   "f": "olennot_aanet/valmiit/aarnihirvio_hurt_1.mp3"
   },
   "aarnihirvio_hurt_2": {
    "h": "a4147d12ac",
@@ -73,7 +81,8 @@
    "dur": 1.3,
    "pv": 4,
    "gain": 5.9,
-   "raw": 1.39
+   "raw": 1.39,
+   "f": "olennot_aanet/valmiit/aarnihirvio_hurt_2.mp3"
   },
   "aarnihirvio_hurt_3": {
    "h": "0cfa26c2c4",
@@ -81,7 +90,8 @@
    "dur": 0.94,
    "pv": 4,
    "gain": 6.2,
-   "raw": 0.97
+   "raw": 0.97,
+   "f": "olennot_aanet/valmiit/aarnihirvio_hurt_3.mp3"
   },
   "aarnihirvio_idle_1": {
    "h": "ce38b904d4",
@@ -90,7 +100,8 @@
    "pv": 4,
    "gain": -1.7,
    "raw": 3.99,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/aarnihirvio_idle_1.mp3"
   },
   "aarnihirvio_idle_2": {
    "h": "dac062ad7c",
@@ -99,7 +110,8 @@
    "pv": 4,
    "gain": -3.8,
    "raw": 6.17,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/aarnihirvio_idle_2.mp3"
   },
   "hiisi_aggro_1": {
    "h": "33990453b3",
@@ -107,7 +119,8 @@
    "dur": 0.54,
    "pv": 4,
    "gain": -2.0,
-   "raw": 0.55
+   "raw": 0.55,
+   "f": "olennot_aanet/valmiit/hiisi_aggro_1.mp3"
   },
   "hiisi_chase_1": {
    "h": "c4e53eef57",
@@ -115,7 +128,8 @@
    "dur": 0.81,
    "pv": 4,
    "gain": 7.7,
-   "raw": 0.83
+   "raw": 0.83,
+   "f": "olennot_aanet/valmiit/hiisi_chase_1.mp3"
   },
   "hiisi_chase_2": {
    "h": "090f206f5e",
@@ -123,7 +137,8 @@
    "dur": 1.69,
    "pv": 4,
    "gain": -2.3,
-   "raw": 1.71
+   "raw": 1.71,
+   "f": "olennot_aanet/valmiit/hiisi_chase_2.mp3"
   },
   "hiisi_death_1": {
    "h": "ada92bb604",
@@ -131,7 +146,8 @@
    "dur": 3.97,
    "pv": 4,
    "gain": 13.3,
-   "raw": 3.99
+   "raw": 3.99,
+   "f": "olennot_aanet/valmiit/hiisi_death_1.mp3"
   },
   "hiisi_hurt_1": {
    "h": "b862ee5287",
@@ -139,7 +155,8 @@
    "dur": 0.62,
    "pv": 4,
    "gain": 5.0,
-   "raw": 0.65
+   "raw": 0.65,
+   "f": "olennot_aanet/valmiit/hiisi_hurt_1.mp3"
   },
   "hiisi_hurt_2": {
    "h": "4b9ad1d798",
@@ -147,7 +164,8 @@
    "dur": 1.04,
    "pv": 4,
    "gain": 7.2,
-   "raw": 1.06
+   "raw": 1.06,
+   "f": "olennot_aanet/valmiit/hiisi_hurt_2.mp3"
   },
   "hiisi_idle_1": {
    "h": "db0e19bc1a",
@@ -155,7 +173,8 @@
    "dur": 1.38,
    "pv": 4,
    "gain": 11.1,
-   "raw": 1.39
+   "raw": 1.39,
+   "f": "olennot_aanet/valmiit/hiisi_idle_1.mp3"
   },
   "hiisi_idle_2": {
    "h": "7201836fe2",
@@ -163,7 +182,8 @@
    "dur": 6.24,
    "pv": 4,
    "gain": -0.6,
-   "raw": 6.26
+   "raw": 6.26,
+   "f": "olennot_aanet/valmiit/hiisi_idle_2.mp3"
   },
   "hirvi_aggro_1": {
    "h": "ff01a7e8cc",
@@ -172,7 +192,8 @@
    "pv": 4,
    "gain": 3.3,
    "raw": 7.33,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/hirvi_aggro_1.mp3"
   },
   "hirvi_death_1": {
    "h": "234deed3f7",
@@ -180,7 +201,8 @@
    "dur": 0.86,
    "pv": 4,
    "gain": 3.1,
-   "raw": 0.88
+   "raw": 0.88,
+   "f": "olennot_aanet/valmiit/hirvi_death_1.mp3"
   },
   "hirvi_death_2": {
    "h": "817deecd3f",
@@ -188,7 +210,8 @@
    "dur": 0.75,
    "pv": 4,
    "gain": -2.1,
-   "raw": 0.78
+   "raw": 0.78,
+   "f": "olennot_aanet/valmiit/hirvi_death_2.mp3"
   },
   "hirvi_hurt_1": {
    "h": "c520d302e5",
@@ -196,7 +219,8 @@
    "dur": 1.17,
    "pv": 4,
    "gain": -4.9,
-   "raw": 1.3
+   "raw": 1.3,
+   "f": "olennot_aanet/valmiit/hirvi_hurt_1.mp3"
   },
   "hirvi_hurt_2": {
    "h": "96b6846aa9",
@@ -204,7 +228,8 @@
    "dur": 1.07,
    "pv": 4,
    "gain": -2.8,
-   "raw": 1.34
+   "raw": 1.34,
+   "f": "olennot_aanet/valmiit/hirvi_hurt_2.mp3"
   },
   "hirvi_idle_1": {
    "h": "fd2a19966f",
@@ -212,7 +237,8 @@
    "dur": 0.73,
    "pv": 4,
    "gain": -0.2,
-   "raw": 0.74
+   "raw": 0.74,
+   "f": "olennot_aanet/valmiit/hirvi_idle_1.mp3"
   },
   "ilves_idle_1": {
    "h": "2606b7ceaf",
@@ -220,7 +246,8 @@
    "dur": 1.17,
    "pv": 4,
    "gain": -8.2,
-   "raw": 1.2
+   "raw": 1.2,
+   "f": "olennot_aanet/valmiit/ilves_idle_1.mp3"
   },
   "ilves_idle_2": {
    "h": "8104905162",
@@ -228,7 +255,8 @@
    "dur": 1.15,
    "pv": 4,
    "gain": -7.4,
-   "raw": 1.16
+   "raw": 1.16,
+   "f": "olennot_aanet/valmiit/ilves_idle_2.mp3"
   },
   "ilves_idle_3": {
    "h": "7d4c60ba59",
@@ -236,7 +264,8 @@
    "dur": 1.17,
    "pv": 4,
    "gain": -8.2,
-   "raw": 1.2
+   "raw": 1.2,
+   "f": "olennot_aanet/valmiit/ilves_idle_3.mp3"
   },
   "kalmo_aggro_1": {
    "h": "75c5919356",
@@ -244,7 +273,8 @@
    "dur": 1.51,
    "pv": 4,
    "gain": 6.7,
-   "raw": 1.53
+   "raw": 1.53,
+   "f": "olennot_aanet/valmiit/kalmo_aggro_1.mp3"
   },
   "kalmo_aggro_2": {
    "h": "e7f0e944f4",
@@ -252,7 +282,8 @@
    "dur": 3.78,
    "pv": 4,
    "gain": 0.5,
-   "raw": 3.8
+   "raw": 3.8,
+   "f": "olennot_aanet/valmiit/kalmo_aggro_2.mp3"
   },
   "kalmo_chase_1": {
    "h": "d0aaae50ec",
@@ -260,7 +291,8 @@
    "dur": 3.47,
    "pv": 4,
    "gain": 24.0,
-   "raw": 5.24
+   "raw": 5.24,
+   "f": "olennot_aanet/valmiit/kalmo_chase_1.mp3"
   },
   "kalmo_chase_2": {
    "h": "9300d3cd8a",
@@ -268,7 +300,8 @@
    "dur": 2.77,
    "pv": 4,
    "gain": -1.0,
-   "raw": 2.78
+   "raw": 2.78,
+   "f": "olennot_aanet/valmiit/kalmo_chase_2.mp3"
   },
   "kalmo_death_1": {
    "h": "dfa7e7d301",
@@ -276,7 +309,8 @@
    "dur": 0.39,
    "pv": 4,
    "gain": 0.4,
-   "raw": 0.41
+   "raw": 0.41,
+   "f": "olennot_aanet/valmiit/kalmo_death_1.mp3"
   },
   "kalmo_death_2": {
    "h": "546dcec9d5",
@@ -284,7 +318,8 @@
    "dur": 0.73,
    "pv": 4,
    "gain": 2.5,
-   "raw": 0.74
+   "raw": 0.74,
+   "f": "olennot_aanet/valmiit/kalmo_death_2.mp3"
   },
   "kalmo_hurt_1": {
    "h": "60204d0572",
@@ -292,7 +327,8 @@
    "dur": 0.26,
    "pv": 4,
    "gain": 2.0,
-   "raw": 0.51
+   "raw": 0.51,
+   "f": "olennot_aanet/valmiit/kalmo_hurt_1.mp3"
   },
   "kalmo_hurt_2": {
    "h": "b90dd1f563",
@@ -300,7 +336,8 @@
    "dur": 0.26,
    "pv": 4,
    "gain": 1.3,
-   "raw": 0.6
+   "raw": 0.6,
+   "f": "olennot_aanet/valmiit/kalmo_hurt_2.mp3"
   },
   "kalmo_hurt_3": {
    "h": "bdf4026bf8",
@@ -308,7 +345,8 @@
    "dur": 0.34,
    "pv": 4,
    "gain": 4.7,
-   "raw": 0.55
+   "raw": 0.55,
+   "f": "olennot_aanet/valmiit/kalmo_hurt_3.mp3"
   },
   "kalmo_idle_1": {
    "h": "a49aff7e2d",
@@ -316,7 +354,8 @@
    "dur": 3.24,
    "pv": 4,
    "gain": 10.0,
-   "raw": 3.25
+   "raw": 3.25,
+   "f": "olennot_aanet/valmiit/kalmo_idle_1.mp3"
   },
   "kalmo_idle_2": {
    "h": "af920fa59c",
@@ -324,7 +363,8 @@
    "dur": 8.02,
    "pv": 4,
    "gain": 5.9,
-   "raw": 8.03
+   "raw": 8.03,
+   "f": "olennot_aanet/valmiit/kalmo_idle_2.mp3"
   },
   "karhu_aggro_1": {
    "h": "305ac902b3",
@@ -332,7 +372,8 @@
    "dur": 0.91,
    "pv": 4,
    "gain": 5.4,
-   "raw": 0.92
+   "raw": 0.92,
+   "f": "olennot_aanet/valmiit/karhu_aggro_1.mp3"
   },
   "karhu_aggro_2": {
    "h": "3b1e6139f7",
@@ -341,7 +382,8 @@
    "pv": 4,
    "gain": 1.3,
    "raw": 2.27,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/karhu_aggro_2.mp3"
   },
   "karhu_death_1": {
    "h": "ef19471200",
@@ -349,7 +391,8 @@
    "dur": 4.93,
    "pv": 4,
    "gain": -4.2,
-   "raw": 5.15
+   "raw": 5.15,
+   "f": "olennot_aanet/valmiit/karhu_death_1.mp3"
   },
   "karhu_hurt_1": {
    "h": "b3fba946ad",
@@ -357,7 +400,8 @@
    "dur": 1.17,
    "pv": 4,
    "gain": -4.2,
-   "raw": 2.83
+   "raw": 2.83,
+   "f": "olennot_aanet/valmiit/karhu_hurt_1.mp3"
   },
   "karhu_hurt_2": {
    "h": "cbaf5498cf",
@@ -365,7 +409,8 @@
    "dur": 0.94,
    "pv": 4,
    "gain": -4.0,
-   "raw": 0.97
+   "raw": 0.97,
+   "f": "olennot_aanet/valmiit/karhu_hurt_2.mp3"
   },
   "karhu_idle_1": {
    "h": "58a4769c06",
@@ -373,7 +418,8 @@
    "dur": 1.64,
    "pv": 4,
    "gain": 0.8,
-   "raw": 1.67
+   "raw": 1.67,
+   "f": "olennot_aanet/valmiit/karhu_idle_1.mp3"
   },
   "karhu_idle_2": {
    "h": "974bf3daa6",
@@ -381,7 +427,8 @@
    "dur": 2.06,
    "pv": 4,
    "gain": 2.3,
-   "raw": 2.08
+   "raw": 2.08,
+   "f": "olennot_aanet/valmiit/karhu_idle_2.mp3"
   },
   "karhu_idle_3": {
    "h": "e7b72bcf15",
@@ -389,7 +436,8 @@
    "dur": 1.64,
    "pv": 4,
    "gain": 1.6,
-   "raw": 1.67
+   "raw": 1.67,
+   "f": "olennot_aanet/valmiit/karhu_idle_3.mp3"
   },
   "karju_aggro_1": {
    "h": "a134b5cfa3",
@@ -397,7 +445,8 @@
    "dur": 1.28,
    "pv": 4,
    "gain": 7.9,
-   "raw": 1.3
+   "raw": 1.3,
+   "f": "olennot_aanet/valmiit/karju_aggro_1.mp3"
   },
   "karju_aggro_2": {
    "h": "b6dd6c1917",
@@ -405,7 +454,8 @@
    "dur": 2.53,
    "pv": 4,
    "gain": -1.7,
-   "raw": 5.57
+   "raw": 5.57,
+   "f": "olennot_aanet/valmiit/karju_aggro_2.mp3"
   },
   "karju_aggro_3": {
    "h": "e90c00acd3",
@@ -413,7 +463,8 @@
    "dur": 2.53,
    "pv": 4,
    "gain": 1.8,
-   "raw": 2.55
+   "raw": 2.55,
+   "f": "olennot_aanet/valmiit/karju_aggro_3.mp3"
   },
   "karju_death_1": {
    "h": "30aa422c7b",
@@ -421,7 +472,8 @@
    "dur": 0.68,
    "pv": 4,
    "gain": 2.9,
-   "raw": 0.69
+   "raw": 0.69,
+   "f": "olennot_aanet/valmiit/karju_death_1.mp3"
   },
   "karju_hurt_1": {
    "h": "319a9e15f2",
@@ -429,7 +481,8 @@
    "dur": 1.17,
    "pv": 4,
    "gain": 1.6,
-   "raw": 1.39
+   "raw": 1.39,
+   "f": "olennot_aanet/valmiit/karju_hurt_1.mp3"
   },
   "karju_hurt_2": {
    "h": "39bd710f4e",
@@ -437,7 +490,8 @@
    "dur": 1.17,
    "pv": 4,
    "gain": 1.1,
-   "raw": 2.08
+   "raw": 2.08,
+   "f": "olennot_aanet/valmiit/karju_hurt_2.mp3"
   },
   "karju_hurt_3": {
    "h": "905ebfa390",
@@ -445,7 +499,8 @@
    "dur": 0.83,
    "pv": 4,
    "gain": -3.3,
-   "raw": 1.67
+   "raw": 1.67,
+   "f": "olennot_aanet/valmiit/karju_hurt_3.mp3"
   },
   "karju_idle_1": {
    "h": "8eaf1e3046",
@@ -453,7 +508,8 @@
    "dur": 0.21,
    "pv": 4,
    "gain": 7.0,
-   "raw": 0.23
+   "raw": 0.23,
+   "f": "olennot_aanet/valmiit/karju_idle_1.mp3"
   },
   "karju_idle_2": {
    "h": "63302b1ff9",
@@ -461,7 +517,8 @@
    "dur": 0.15,
    "pv": 4,
    "gain": 7.5,
-   "raw": 0.18
+   "raw": 0.18,
+   "f": "olennot_aanet/valmiit/karju_idle_2.mp3"
   },
   "karju_idle_3": {
    "h": "49790d290a",
@@ -469,7 +526,8 @@
    "dur": 0.54,
    "pv": 4,
    "gain": 0.5,
-   "raw": 0.55
+   "raw": 0.55,
+   "f": "olennot_aanet/valmiit/karju_idle_3.mp3"
   },
   "metso_death_1": {
    "h": "d20d4192c3",
@@ -477,7 +535,8 @@
    "dur": 0.44,
    "pv": 4,
    "gain": 4.2,
-   "raw": 0.46
+   "raw": 0.46,
+   "f": "olennot_aanet/valmiit/metso_death_1.mp3"
   },
   "metso_death_2": {
    "h": "771a26ef27",
@@ -485,7 +544,8 @@
    "dur": 0.44,
    "pv": 4,
    "gain": 2.1,
-   "raw": 0.46
+   "raw": 0.46,
+   "f": "olennot_aanet/valmiit/metso_death_2.mp3"
   },
   "metso_hurt_1": {
    "h": "19e799ee7b",
@@ -493,7 +553,8 @@
    "dur": 0.39,
    "pv": 4,
    "gain": 13.6,
-   "raw": 0.41
+   "raw": 0.41,
+   "f": "olennot_aanet/valmiit/metso_hurt_1.mp3"
   },
   "metso_hurt_2": {
    "h": "1912bb58c4",
@@ -501,7 +562,8 @@
    "dur": 0.54,
    "pv": 4,
    "gain": 12.5,
-   "raw": 0.55
+   "raw": 0.55,
+   "f": "olennot_aanet/valmiit/metso_hurt_2.mp3"
   },
   "metso_idle_1": {
    "h": "f556accc4e",
@@ -510,7 +572,8 @@
    "pv": 4,
    "gain": 9.2,
    "raw": 5.61,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/metso_idle_1.mp3"
   },
   "metso_idle_2": {
    "h": "bbf1b4f354",
@@ -518,7 +581,8 @@
    "dur": 0.26,
    "pv": 4,
    "gain": 5.9,
-   "raw": 0.27
+   "raw": 0.27,
+   "f": "olennot_aanet/valmiit/metso_idle_2.mp3"
   },
   "metso_idle_3": {
    "h": "765888487e",
@@ -527,7 +591,8 @@
    "pv": 4,
    "gain": 1.5,
    "raw": 2.27,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/metso_idle_3.mp3"
   },
   "susi_aggro_1": {
    "h": "2cb79ce8f0",
@@ -535,7 +600,8 @@
    "dur": 0.39,
    "pv": 4,
    "gain": 2.7,
-   "raw": 0.41
+   "raw": 0.41,
+   "f": "olennot_aanet/valmiit/susi_aggro_1.mp3"
   },
   "susi_aggro_2": {
    "h": "511763d55b",
@@ -543,7 +609,8 @@
    "dur": 1.01,
    "pv": 4,
    "gain": -0.3,
-   "raw": 1.02
+   "raw": 1.02,
+   "f": "olennot_aanet/valmiit/susi_aggro_2.mp3"
   },
   "susi_aggro_3": {
    "h": "4cf081a355",
@@ -551,7 +618,8 @@
    "dur": 0.86,
    "pv": 4,
    "gain": 1.0,
-   "raw": 0.88
+   "raw": 0.88,
+   "f": "olennot_aanet/valmiit/susi_aggro_3.mp3"
   },
   "susi_chase_1": {
    "h": "76c932bbb1",
@@ -560,7 +628,8 @@
    "pv": 4,
    "gain": 5.6,
    "raw": 8.35,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/susi_chase_1.mp3"
   },
   "susi_chase_2": {
    "h": "0787e44a1f",
@@ -569,7 +638,8 @@
    "pv": 4,
    "gain": 0.5,
    "raw": 7.47,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/susi_chase_2.mp3"
   },
   "susi_death_1": {
    "h": "7282f9e69b",
@@ -577,7 +647,8 @@
    "dur": 1.28,
    "pv": 4,
    "gain": -5.1,
-   "raw": 1.3
+   "raw": 1.3,
+   "f": "olennot_aanet/valmiit/susi_death_1.mp3"
   },
   "susi_death_2": {
    "h": "26605713de",
@@ -585,7 +656,8 @@
    "dur": 1.38,
    "pv": 4,
    "gain": -4.6,
-   "raw": 1.39
+   "raw": 1.39,
+   "f": "olennot_aanet/valmiit/susi_death_2.mp3"
   },
   "susi_hurt_1": {
    "h": "bab52d62b3",
@@ -593,7 +665,8 @@
    "dur": 0.23,
    "pv": 4,
    "gain": 3.4,
-   "raw": 0.55
+   "raw": 0.55,
+   "f": "olennot_aanet/valmiit/susi_hurt_1.mp3"
   },
   "susi_hurt_2": {
    "h": "1b5b4e18e8",
@@ -601,7 +674,8 @@
    "dur": 0.18,
    "pv": 4,
    "gain": 23.7,
-   "raw": 7.47
+   "raw": 7.47,
+   "f": "olennot_aanet/valmiit/susi_hurt_2.mp3"
   },
   "susi_idle_1": {
    "h": "de13d4af32",
@@ -610,7 +684,8 @@
    "pv": 4,
    "gain": -4.6,
    "raw": 4.69,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/susi_idle_1.mp3"
   },
   "susi_idle_2": {
    "h": "04885cc7e7",
@@ -619,7 +694,8 @@
    "pv": 4,
    "gain": 3.0,
    "raw": 6.78,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/susi_idle_2.mp3"
   },
   "susi_idle_3": {
    "h": "ef0abd28a1",
@@ -628,7 +704,8 @@
    "pv": 4,
    "gain": 0.8,
    "raw": 7.29,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/susi_idle_3.mp3"
   },
   "susi_idle_4": {
    "h": "159804c5c2",
@@ -637,7 +714,8 @@
    "pv": 4,
    "gain": 3.2,
    "raw": 6.54,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/susi_idle_4.mp3"
   },
   "susi_idle_5": {
    "h": "68c0e8578a",
@@ -646,7 +724,8 @@
    "pv": 4,
    "gain": 5.5,
    "raw": 23.26,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/susi_idle_5.mp3"
   },
   "susi_idle_6": {
    "h": "4a2795f462",
@@ -655,7 +734,8 @@
    "pv": 4,
    "gain": -2.3,
    "raw": 4.96,
-   "far": 1
+   "far": 1,
+   "f": "olennot_aanet/valmiit/susi_idle_6.mp3"
   }
  }
 }

@@ -132,7 +132,7 @@ function updateBurn(m,dt){if(mobWet(m)){stopBurn(m);m.igniteCd=playTime+3;burst(
 const AMMO=['puunuolet','nuolet','sulkanuolet','tulinuolet'];   // heikoimmasta parhaaseen (v2.06: puunuolet)
 function ammoId(){if(flags.ammo&&invCount(flags.ammo)>0)return flags.ammo;return AMMO.find(id=>invCount(id)>0)||null;}
 function killMob(m){m.dead=true;m.deadT=0;m.ashDeath=m.burnT>0||!!m.fireHit;if(m.type==='emakko')orphanPiglets(m);if(m.fam)famEnd(m.fam);   /* v2.14 */
-  if(m.def.ai==='boss'||m.def.ai==='rboss')sfx('slam',.6,.8);else if(!creSnd(m,'death'))sfx('die');   // v1.84 oma kuolinääni; v1.89 pomon kuolinääni soi vasta kuolema-animaatiossa
+  if(m.def.ai==='boss'||m.def.ai==='rboss')sfx('slam',.6,.8);else if(!creSnd(m,'death')&&!CRE_SILENT.has(m.type))sfx('die');   /* v2.16: kivivartija hiljainen kunnes omat */   // v1.84 oma kuolinääni; v1.89 pomon kuolinääni soi vasta kuolema-animaatiossa
   if(m.sunKill){onMobKilled(m);return;}   // v1.50: auringossa tuhkaksi palanut – ei saalista, XP:tä eikä tappotilastoa
   P.kills++;bump('kills');bump('k_'+m.type);addXp(Math.round(m.def.hp/(m.type==='vartija'?2:5))+3,m.def.n);
   for(const [id,lo,hi] of [...m.def.drops,...(m.rv&&REALM_LOOT[m.realm]||[])]){const c=rint(rng,lo,hi);if(c>0){if(m.def.ai==='boss'||m.def.ai==='rboss')(m.bossLoot||(m.bossLoot=[])).push([id,c]);else spawnDrop(id,c,m.pos.x,m.pos.y+1,m.pos.z);}}   // v0.91: ulottuvuusversioilla lisäsaalis; v1.90 pomon saalis ilmestyy kuolema-animaatiossa
