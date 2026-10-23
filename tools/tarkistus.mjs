@@ -239,6 +239,8 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/P\.inWater&&!P\.inDun\)\{ts\.lit=false/.test(updatePlayer.toString())&&/cont===2\)arrowOut/.test(updateProjs.toString());
     const c=/mobBurning\(m\)/.test(creTick.toString())&&/1\.7\+Math\.random\(\)\*\.4/.test(creTick.toString())&&/!mobBurning\(m\)/.test(damageMob.toString())&&mobBurning({burnT:2})&&!mobBurning({burnT:0})&&!mobBurning({burnT:2,dead:true});
     return a&&b&&c||`virhe vesi ${a} soihtu/nuoli ${b} äänet ${c}`;});
+  t('v2.19 valikko ei piirrä 3D:tä (kuvatausta): frame()-ketjussa valikon haara on else if heti menuCamOld-haaran jälkeen (KORJAUKSET 47)',()=>{const f=frame.toString();
+    return /menuCamOld\(dt\);\s*else if\(state==='menu'\)\{/.test(f)&&/mbgFrame\(now\);skip3d=true/.test(f)&&!/\n\s*if\(state==='menu'\)/.test(f)||'valikon haara rikki';});
   t('v2.18 uinti: välilyönti pohjassa kelluu (heti 1 + 5/s, jäähy 1 s), ilman vajoaa, pää veden alla >1 s = 10 HP/s, hauta rantaan, raja 3× kauempana, jyrkkä pohja',()=>{
     const sv=[P.pos.clone(),P.vy,P.stam,P.hp,P.maxHp,state,P.swim,P.underT,P.drownT,P.swCd,keys[BIND.jump]];let res;
     try{let sx=0,sz=0;for(let r=60;r<600;r+=3){const x=r*.6,z=r*.8;if(terrainH(x,z)<-8&&Math.hypot(x,z)<seaBorder(x,z)-15){sx=x;sz=z;break;}}

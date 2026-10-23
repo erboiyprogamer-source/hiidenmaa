@@ -334,6 +334,13 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Korjaus: uintitila pohjan syvyydestä (`groundAt` yli 1,5 m pinnan alla) hystereesillä (1,35 m / vartalo 0,6 m pinnan alla, kun jo uidaan);
   kellunta vain välilyönnillä, muuten hidas vajoaminen. Älä palauta uintitilaa pelkästään pelaajan korkeudesta.
 
+## 47. Valikossa näkyi 3D-maailma kuvataustan sijaan ja valikko oli raskas (v2.18 → korjattu v2.19)
+- Syy: `frame()`-silmukan (main.js) `if / else if` -ketjun keskelle lisättiin oma rivi `if(state==='menu')uwOverlayOff();`. Seuraava
+  `else if(state==='menu'){… mbgFrame … skip3d=true}` liittyi siihen, eikä koskaan suoritunut → kuvatausta ei piirretty ja koko maailma
+  (pilvet, vesi, maasto) renderöitiin valikossa joka ruutu.
+- Korjaus: kutsu valikon haaran sisään (`else if(state==='menu'){uwOverlayOff(); …}`). **Älä lisää omia `if`-rivejä `frame()`:n ketjun
+  keskelle** – lisää kutsu oikean haaran sisään. Tarkistusrivi v2.19 valvoo.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`
