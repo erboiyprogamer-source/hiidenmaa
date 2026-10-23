@@ -202,32 +202,35 @@ function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='u
     }}}
 
 /* ================================================================ v2.16 OLENTOJEN TOIMINNOT (äänierä B1)
-   Projekti sounds/olennot_toiminnot/ (raw/<ryhmä>/, valmiit/<ryhmä>/, AANILISTA_TOIMINNOT.md); manifestin avaimet t/<ryhmä>/<ääni>_<n>.
+   Projekti sounds/olennot_toiminnot/ (raw/<ryhmä>/, valmiit/<ryhmä>_valmis/, AANILISTA_TOIMINNOT.md); manifestin avaimet t/<ryhmä>/<ääni>_<n>.
    Ryhmät (TG, sama jako kuin tools/process_sounds.py:n TG_GROUPS) jakavat äänet; puuttuva ääni = hiljaisuus (ei lainauksia).
    Askeleet kuljetun matkan mukaan (TG_STRIDE, juostessa ×1,25) alustan mukaan (tgSurface), lähimmät 6 alle 20 m (isot 40 m);
    pomon askel alle 15 m tärisyttää kameraa. Muut: oksa (Aarnimetsä 15 %), kahina (juostessa metsässä), loiskahdus ja ravistus (vesi),
    palaminen (silmukka), kalina (luurangot), lentoonlähtö, kaatuminen, törmäys, huitaisu, osuma, nousu, nuuhkiminen, syöminen. Oma budjetti TGV. */
 const TG={hiisi:'kaksijalkaiset',suonakki:'kaksijalkaiset',kalmo:'luurangot',ylimys:'luurangot',peura:'nelijalkaiset',poro:'nelijalkaiset',hirvi:'nelijalkaiset',
   karju:'nelijalkaiset',emakko:'nelijalkaiset',susi:'nelijalkaiset',routasusi:'nelijalkaiset',kalmasusi:'nelijalkaiset',ilves:'nelijalkaiset',ahma:'nelijalkaiset',
-  karhu:'raskaat',hiidenkarhu:'raskaat',hiidenhirvi:'raskaat',janis:'kevyet_nelijalkaiset',kettu:'kevyet_nelijalkaiset',porsas:'kevyet_nelijalkaiset',
+  karhu:'raskaat_nelijalkaiset',hiidenkarhu:'raskaat_nelijalkaiset',hiidenhirvi:'raskaat_nelijalkaiset',janis:'kevyet_nelijalkaiset',kettu:'kevyet_nelijalkaiset',porsas:'kevyet_nelijalkaiset',
   metso:'kevyet_kaksijalkaiset',kivivartija:'kivivartija',vartija:'kalmanvartija',jaajattari:'jaatar',kalmaherra:'kalmaherra',aarnihirvio:'aarnihirvio'};
-const TG_STRIDE={kaksijalkaiset:.75,luurangot:.75,nelijalkaiset:.9,raskaat:1.15,kevyet_nelijalkaiset:.45,kevyet_kaksijalkaiset:.3,kivivartija:1,
+const TG_STRIDE={kaksijalkaiset:.75,luurangot:.75,nelijalkaiset:.9,raskaat_nelijalkaiset:1.15,kevyet_nelijalkaiset:.45,kevyet_kaksijalkaiset:.3,kivivartija:1,
   kalmanvartija:1.9,jaatar:1.6,kalmaherra:1.5,aarnihirvio:1.8};
-const TG_BIG=new Set(['raskaat','kivivartija','kalmanvartija','jaatar','kalmaherra','aarnihirvio']),TG_BOSS=new Set(['kalmanvartija','jaatar','kalmaherra','aarnihirvio']);
+const TG_BIG=new Set(['raskaat_nelijalkaiset','kivivartija','kalmanvartija','jaatar','kalmaherra','aarnihirvio']),TG_BOSS=new Set(['kalmanvartija','jaatar','kalmaherra','aarnihirvio']);
 const TG_EAT={karju:'tonkiminen',emakko:'tonkiminen',porsas:'tonkiminen',susi:'rouskutus',routasusi:'rouskutus',kalmasusi:'rouskutus',karhu:'rouskutus',
   ahma:'rouskutus',peura:'laidun',poro:'laidun',hirvi:'laidun',janis:'nakerrus'};
-const TG_SHAKE=new Set(['nelijalkaiset','raskaat','kevyet_nelijalkaiset']),TG_RUSTLE={forest:1,koivu:1,aarni:1,suo:1};
+const TG_SHAKE=new Set(['nelijalkaiset','raskaat_nelijalkaiset','kevyet_nelijalkaiset']),TG_RUSTLE={forest:1,koivu:1,aarni:1,suo:1};
 const TGV={v:[],last:{},max:8,steps:6,loaded:{}};
+// v2.17: pomot lainaavat yhteisestä pääkansiosta `pomot/` (sävel pomon mukaan), jos pomon omassa kansiossa ei ole samannimistä ääntä (oma voittaa).
+// Raskaat nelijalkaiset (karhu, hiidenkarhu, hiidenhirvi) ovat oma ryhmänsä eivätkä liity pomoihin.
+const TG_BORROW={kalmanvartija:'pomot',jaatar:'pomot',kalmaherra:'pomot',aarnihirvio:'pomot'},TG_BP={kalmanvartija:.85,jaatar:1.12,kalmaherra:.95,aarnihirvio:.9};
 function tgRes(g,ev){if(!CRE.man)return null;if(CRE.idxOf!==CRE.man)creIndex();return CRE.idx[`t/${g}/${ev}`]||null;}
-function tgLoad(type){const g=TG[type];if(!CRE.ok||!g||TGV.loaded[g])return;TGV.loaded[g]=1;for(const n in CRE.man)if(n.startsWith(`t/${g}/`)||n.startsWith('t/yhteiset/'))creBuf(n);}
+function tgLoad(type){const g=TG[type];if(!CRE.ok||!g||TGV.loaded[g])return;TGV.loaded[g]=1;const b=TG_BORROW[g];for(const n in CRE.man)if(n.startsWith(`t/${g}/`)||n.startsWith('t/yhteiset/')||(b&&n.startsWith(`t/${b}/`)))creBuf(n);}
 function tgSize(m){return clamp(1.35-(m.def.r||.5)*.55,.6,1.4);}   // yhteisten äänten sävel koon mukaan
 // soittaa ryhmän äänen 3D:nä olennon kohdalta (o: g ryhmä, v voimakkuus, p sävel, loop silmukka, pos kiinteä paikka). Palauttaa keston (silmukalla äänen), muuten false.
-function tgSnd(m,ev,o){o=o||{};const g=o.g||TG[m.type];if(!g)return false;const L0=tgRes(g,ev);if(!L0)return false;
+function tgSnd(m,ev,o){o=o||{};const g=o.g||TG[m.type];if(!g)return false;let L0=tgRes(g,ev),bp=1;if(!L0&&TG_BORROW[g]){L0=tgRes(TG_BORROW[g],ev);bp=TG_BP[g]||1;}if(!L0)return false;
   const L=L0.filter(n=>CRE.buf[n]);if(!L.length){for(const n of L0)creBuf(n);return false;}
   const a=actx;if(!a||a.state!=='running'||!soundOn)return false;const vol=typeof SET!=='undefined'?+SET.creVol:1;if(!(vol>0))return false;
   const step=ev.startsWith('askel_');let cnt=0;for(const v of TGV.v)if(v.step===step)cnt++;if(cnt>=(step?TGV.steps:TGV.max))return false;
-  const key=g+'/'+ev;let pick=L;if(L.length>1&&TGV.last[key])pick=L.filter(x=>x!==TGV.last[key]);const name=pick[Math.random()*pick.length|0];TGV.last[key]=name;
-  const B=CRE.buf[name],rate=(o.p||1)*(1+(Math.random()*2-1)*.06),q=o.pos||m.pos,md=Math.sqrt(dist2(q.x,q.z,P.pos.x,P.pos.z)),k0=creDistK(md,false),big=TG_BIG.has(g);
+  const key=L0[0].replace(/_\d+$/,'');let pick=L;if(L.length>1&&TGV.last[key])pick=L.filter(x=>x!==TGV.last[key]);const name=pick[Math.random()*pick.length|0];TGV.last[key]=name;
+  const B=CRE.buf[name],rate=(o.p||1)*bp*(1+(Math.random()*2-1)*.06),q=o.pos||m.pos,md=Math.sqrt(dist2(q.x,q.z,P.pos.x,P.pos.z)),k0=creDistK(md,false),big=TG_BIG.has(g);
   if(!CRE.gain){CRE.gain=a.createGain();CRE.gain.connect(a.destination);}CRE.gain.gain.value=vol;
   const src=a.createBufferSource();src.buffer=B;src.playbackRate.value=rate;if(o.loop)src.loop=true;
   const gn=a.createGain();gn.gain.value=o.v??1;const df=a.createBiquadFilter();df.type='lowpass';df.Q.value=.5;df.frequency.value=creLpf(k0);const dg=a.createGain();dg.gain.value=1-.3*k0;

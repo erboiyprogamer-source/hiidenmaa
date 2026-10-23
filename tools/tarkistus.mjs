@@ -228,6 +228,12 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       const d=/tgSnd\(m,'huitaisu'\)/.test(updateMobs.toString())&&/tgSnd\(m,'osuma'\)/.test(mobHurtP.toString())&&/'kaatuminen'/.test(mobDeathAnim.toString())&&/'nousu'/.test(bornTick.toString())&&/lentoonlahto/.test(startFlee.toString())&&/'tormays'/.test(moveMob.toString())&&/loiskahdus/.test(tgTick.toString())&&/ravistus/.test(tgTick.toString());
       const e=TG_EAT.karju==='tonkiminen'&&TG_EAT.susi==='rouskutus'&&TG_EAT.peura==='laidun'&&TG_EAT.janis==='nakerrus'&&typeof eatStep==='function'&&TGV.steps===6&&TG_BIG.has('kalmanvartija');
       res=a&&b&&c&&d&&e||`virhe askeleet ${a} alustat ${b} palaminen ${c} kytkennät ${d} syöminen ${e}`;}finally{tgSnd=o;CRE.ok=ok;state=st;for(const m of ms)if(mobs.includes(m))mobRemove(m);}return res;});
+  t('v2.17 pomot: yhteinen pomot/-kansio (oma voittaa), ryntäyksen lataus- ja ryntäysääni, raskaat_nelijalkaiset ei liity pomoihin',()=>{const o=CRE.man;let res;
+    try{CRE.man={'t/pomot/askel_kivi_1':{h:'a'},'t/kalmaherra/askel_kivi_1':{h:'b'},'t/pomot/ryntays_1':{h:'c'}};
+      const a=tgRes('jaatar','askel_kivi')===null&&TG_BORROW.jaatar==='pomot'&&tgRes(TG_BORROW.jaatar,'askel_kivi')[0]==='t/pomot/askel_kivi_1'&&tgRes('kalmaherra','askel_kivi')[0]==='t/kalmaherra/askel_kivi_1';
+      const b=['karhu','hiidenkarhu','hiidenhirvi'].every(k=>TG[k]==='raskaat_nelijalkaiset')&&!TG_BORROW.raskaat_nelijalkaiset&&['vartija','jaajattari','kalmaherra','aarnihirvio'].every(k=>TG_BORROW[TG[k]]==='pomot');
+      const c=/ryntays_lataus/.test(bossAI.toString())&&/ryntays_lataus/.test(realmBossAI.toString())&&/'ryntays'/.test(realmBossAI.toString())&&/TG_BORROW\[g\]/.test(tgSnd.toString());
+      res=a&&b&&c||`virhe lainaus ${a} ryhmät ${b} ryntäys ${c}`;}finally{CRE.man=o;}return res;});
   t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
     if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
     const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;

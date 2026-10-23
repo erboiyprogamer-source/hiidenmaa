@@ -513,6 +513,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
   Puuttuva ääni = hiljaisuus. Kivivartija on hiljainen, kunnes sille lisätään omat äänet. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **Pomojen toimintoäänet (v2.17):** yhteinen `pomot/`-kansio, josta kaikki pomot lainaavat (sävel pomon mukaan); pomon oma samanniminen ääni
+  voittaa. Ryntäyksessä lataus- ja syöksyääni. Raskaat nelijalkaiset (karhu, hiidenkarhu, hiidenhirvi) ovat oma ryhmänsä.
 - Olennoilla voi olla omat äänet (`sounds/olennot_aanet/valmiit/<id>_<idle|hurt|death|aggro|chase>_<n>.mp3`, n = 1, 2, 3 … rajattomasti (v2.11), arpoo kaikista olemassa olevista versioista): rauhallinen
   ääntely 6–15 s välein alle 25 m päässä, suuttumisääni (vihamieliset ja pomot vain kerran, neutraalit kerran per suuttuminen – v2.10: sama olento enintään 15 s, sama laji 6 s välein, ei karjaisua tiedostoäänen päälle), jahtiääni 4–9 s
   välein jahdin aikana (vihamieliset ja pomot), osumaääni (enintään 0,4 s välein), kuolinääni. 3D-ääni (suunta ja etäisyys), sävel ±6 %.
