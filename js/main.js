@@ -251,6 +251,7 @@ function frame(now){
   try{
     if(state==='play'||state==='ui')update(dt);
     else if(state==='menu'&&MENU_V2_OFF)menuCamOld(dt);
+    if(state==='menu')uwOverlayOff();   // v2.18: vedenalainen sävy ja hukkumisreunat eivät jää valikon päälle
     else if(state==='menu'){if(SET.menuBg==='3d'){mbgShow(false);menuCam(Math.min(.25,raw));}else{mbgFrame(now);skip3d=true;}}   // v1.25: kuvat = ei 3D-piirtoa valikossa
     else if(state==='intro'){update(dt);introCam(dt);}
     else if(state==='paused'&&pauseRun)update(dt);   // v1.43: Käynnissä-tila

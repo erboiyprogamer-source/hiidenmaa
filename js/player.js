@@ -33,10 +33,23 @@ function updatePlayer(dt){
   let upK=1;if(dl>0&&!P.inDun){const sl=(terrainH(P.pos.x+dx*.6,P.pos.z+dz*.6)-terrainH(P.pos.x,P.pos.z))/.6;if(sl>.1)upK=1.3+clamp((sl-.35)*.6,0,.3);}P.upK=upK;
   if(wantRun&&dl>0&&!over&&P.stam>0&&!P.blocking&&!P.drawing){speed=8;P.running=true;P.stam-=13*dt*upK;P.stamDelay=.8;}
   if(P.blocking||P.drawing)speed=2.4;if(over)speed*=.55;if(armor&&ITEMS[armor.id].slow)speed*=1-ITEMS[armor.id].slow;if(P.atk)speed*=.45;if(P.crouch)speed=Math.min(speed,2.3);if(P.zone==='suo'&&!P.inDun&&!P.swim)speed*=.85;speed*=P.fx.speed;if(DEV&&keys.KeyV)speed*=10;// DEV: V pohjassa 10× nopeampi
-  P.inWater=P.pos.y<-.9&&!P.inDun;P.swim=P.pos.y<-1.3&&!P.inDun;
-  if(P.swim){speed=2.6;P.stam-=(dl>0?6:2)*dt;P.stamDelay=.6;if(P.stam<=0){P.hp-=4*dt;if(P.hp<=0)playerDie();}}
+  /* v2.18 UINTI (KORJAUKSET 46): syvä vesi = jalat eivät yllä pohjaan (pohja yli 1,5 m pinnan alla, hystereesi 1,35 m → tila ei vilku pinnassa).
+     Välilyönti pohjassa: kellut pinnassa (aallon mukana, rauhallinen keinunta), 5 kestävyyttä/s + painallus heti 1 (jäähy 1 s). Ilman välilyöntiä
+     tai kestävyyttä vajoat hitaasti. Pää veden alla yli 1 s → hukkuminen 10 HP/s (reunat tummuvat, kuplia suusta). Kestävyys palautuu syvässä
+     vedessä 25 % nopeudella, kun välilyönti ei ole pohjassa. */
+  const wy=water.position.y;
+  if(P.inDun||P.flying||P.dead){P.swim=false;P.inWater=false;}
+  else{const bot=groundAt(P.pos.x,P.pos.z,.38,P.pos.y),deep=bot<wy-(P.swim?1.35:1.5);P.inWater=P.pos.y<wy-.9;P.swim=deep&&P.pos.y<wy-(P.swim?.6:1);}
+  P.swUp=false;
+  if(P.swim){const jk=state==='play'&&kd('jump');if(jk&&!P.swJk&&playTime>=(P.swCd||0)&&P.stam>0){P.stam-=1;P.swCd=playTime+1;}P.swJk=jk;
+    P.swUp=jk&&P.stam>0;speed=P.underT>0?2.1:2.6;if(P.swUp){P.stam-=5*dt;P.stamDelay=1;}
+    if(!flags.first.swim){flags.first.swim=1;msg('Syvä vesi: pidä välilyönti pohjassa pysyäksesi pinnalla (kuluttaa kestävyyttä). Muuten vajoat.','warn');}}
+  else P.swJk=false;
+  {const head=P.pos.y+1.62,surf=wy+(P.inDun?0:waveAt(P.pos.x,P.pos.z));const under=!P.inDun&&!P.dead&&head<surf-.05;P.subm=!P.inDun&&P.pos.y+1.82<surf;   /* v2.18: koko pelaaja pinnan alla → kameran zoomi */
+   if(under){P.underT=(P.underT||0)+dt;if(P.underT>1){P.drownT=(P.drownT||0)+dt;if(!devOn('god')){P.hp-=10*dt;P.deathCause='drown';if(P.hp<=0){P.hp=0;playerDie();}}}}
+   else{P.underT=0;P.drownT=Math.max(0,(P.drownT||0)-dt*2);}}
   // stamina regen
-  P.stamDelay-=dt;if(P.stamDelay<=0&&!P.swim){let r=22*P.fx.stamRegen;P.stam=Math.min(maxStam(),P.stam+r*dt);}
+  P.stamDelay-=dt;if(P.stamDelay<=0&&!P.swUp){let r=22*P.fx.stamRegen*(P.swim?.25:1);P.stam=Math.min(maxStam(),P.stam+r*dt);}
   if(P.blocking&&P.stam<=0)P.blocking=false;
   P.stam=Math.max(0,P.stam);if(devOn('stam')||P.buffs.sisu)P.stam=maxStam();// DEV: kestävyys ei kulu
   // velocity
@@ -49,7 +62,8 @@ function updatePlayer(dt){
   if(state==='play'&&kd('jump')&&P.onGround&&!P.swim&&P.stam>=8&&!over&&!P.flying){P.vy=7.2;P.onGround=false;P.stam-=8*(P.upK||1);P.stamDelay=.8;}
   const lad=!P.swim&&!P.dead&&ladderAt(P.pos);P.onLadder=!!lad;
   if(P.flying){P.vy=lerp(P.vy,((kd('jump')?9:0)-(keys.ShiftLeft||keys.ShiftRight?9:0))*vK,Math.min(1,dt*6));P.onGround=false;}
-  else if(P.swim){P.vy=lerp(P.vy,(-1.25-P.pos.y)*3,dt*4);}
+  else if(P.swim){if(P.swUp){const top=wy+waveAt(P.pos.x,P.pos.z)-1.3+Math.sin(playTime*1.7)*.06;P.vy=lerp(P.vy,clamp((top-P.pos.y)*2.2,-1.5,2.6),Math.min(1,dt*3));}
+    else P.vy=lerp(P.vy,-.42,Math.min(1,dt*1.5));}   // v2.18: hidas vajoaminen ilman välilyöntiä
   else if(lad&&(kd('fwd')||kd('jump')||kd('back'))){P.vy=kd('back')&&!kd('fwd')&&!kd('jump')?-2.6:2.6;P.onGround=false;}
   else if(lad&&!P.onGround){P.vy=Math.max(P.vy,-1);}
   else P.vy-=22*dt;
@@ -67,7 +81,7 @@ function updatePlayer(dt){
   else if(P.pos.y>g+.3)P.onGround=false;
   if(P.pos.y<g&&P.vy<=0)P.pos.y=g;
   // world bounds
-  const R=Math.hypot(P.pos.x,P.pos.z),RM=HALF+15;if(!P.inDun&&R>RM){P.pos.x*=RM/R;P.pos.z*=RM/R;}
+  if(!P.inDun){const R=Math.hypot(P.pos.x,P.pos.z),RM=seaBorder(P.pos.x,P.pos.z);if(R>RM){P.pos.x*=RM/R;P.pos.z*=RM/R;if(playTime-(P.edgeMsg||-99)>12){P.edgeMsg=playTime;msg('Avomeri on liian vaarallinen – käänny takaisin.','warn');}}}   // v2.18: raja 3× kauempana rannasta
   // facing
   if(P.atk||P.blocking||P.drawing){P.yaw=lerpAngle(P.yaw,camYaw+Math.PI,Math.min(1,dt*((P.turnWait||0)>0?9:18)));}
   else if(dl>0)P.yaw=lerpAngle(P.yaw,Math.atan2(P.vel.x,P.vel.z),Math.min(1,dt*10));
@@ -303,13 +317,18 @@ function playerDie(){if(state==='paused'||state==='intro'){P.hp=Math.max(P.hp,1)
   {let kb=null,bd=45*45;for(const m of mobs){if(m.dead||!(m.def.ai==='boss'||m.def.ai==='rboss')||!!m.dun!==!!P.inDun)continue;const d=dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z);if(d<bd){bd=d;kb=m;}}
    if(kb){const B=flags.bossDeaths||(flags.bossDeaths={});B[kb.type]=(B[kb.type]||0)+1;P.bossKill={n:kb.def.n,c:B[kb.type]};}else P.bossKill=null;}
   const items=inv.filter(Boolean).map(s=>({id:s.id,n:s.n,q:s.q}));inv=new Array(invN()).fill(null);invDirty=true;updateGear();setBuildSel(null);
-  if(items.length){const y=P.inDun?DUN.y:terrainH(P.pos.x,P.pos.z);makeGrave({x:P.pos.x,y,z:P.pos.z,items});}
+  const wd=!P.inDun&&(P.swim||P.pos.y+1.62<water.position.y);P.waterDeath=wd;   // v2.18: hukkuminen / kuolema vedessä
+  if(items.length){let gx=P.pos.x,gz=P.pos.z,y=P.inDun?DUN.y:terrainH(gx,gz);if(!P.inDun&&y<.2){const sp=shorePoint(gx,gz);if(sp){gx=sp.x;gz=sp.z;y=sp.y;}}makeGrave({x:gx,y,z:gz,items});}
   startPlayerDeath();   // v1.37: kaatumis-/tuhka-animaatio (effects.js)
   /* v1.70: kuolinsyyn vihje kuolinruudussa (nyt: kaatuva puu) */
   const bk=P.bossKill,bTip=bk?(bk.c>=3?`<b>${bk.n} on voittanut sinut ${bk.c} kertaa.</b> Se ei enää palauta terveyttään – jatka siitä, mihin jäit!`:`<b>${bk.n} kaatoi sinut (${bk.c}/3).</b> Jos kaadut sille kolme kertaa, se ei enää palauta terveyttään.`):'';
-  const tip=bTip||{tree:'<b>Puu kaatui päällesi.</b> Ole ensi kerralla varovainen: kun puu alkaa narista ja kallistua, astu nopeasti sivuun – älä jää sen kaatumissuuntaan. Myös myrskytuuli ja pedot voivat kaataa puita.'}[P.deathCause];P.bossKill=null;P.deathCause=null;
-  closeAllForDeath();setTimeout(()=>{closeAllForDeath();state='dead';releaseLock();const dt=$('#deadTip');if(dt){dt.hidden=!tip;dt.innerHTML=tip||'';}$('#deadS').hidden=false;$('#hud').hidden=true;},1400);
+  const tip=bTip||{drown:'<b>Hukuit.</b> Syvässä vedessä pidä välilyönti pohjassa – se pitää sinut pinnalla, mutta kuluttaa kestävyyttä. Ilman sitä vajoat, ja veden alla terveys alkaa laskea sekunnin kuluttua. Tavarasi ovat hautakasassa lähimmällä rannalla.',tree:'<b>Puu kaatui päällesi.</b> Ole ensi kerralla varovainen: kun puu alkaa narista ja kallistua, astu nopeasti sivuun – älä jää sen kaatumissuuntaan. Myös myrskytuuli ja pedot voivat kaataa puita.'}[P.deathCause];P.bossKill=null;P.deathCause=null;
+  closeAllForDeath();setTimeout(()=>{closeAllForDeath();if(!P.dead)return;state='dead';releaseLock();const dt=$('#deadTip');if(dt){dt.hidden=!tip;dt.innerHTML=tip||'';}$('#deadS').hidden=false;$('#hud').hidden=true;},wd?3800:1400);   // v2.18: vedessä veltto vajoaminen ja ruudun tummuminen ennen kuolinruutua
 }
+/* v2.18: lähin rantapiste (maata vähintään 0,5 m vedenpinnan yläpuolella) hautakasalle, kun kuolee vedessä: renkaat 1,5 m välein ulospäin. */
+function shorePoint(x,z){for(let r=1.5;r<700;r+=1.5){const n=Math.max(10,Math.round(r*1.2));let best=null,bh=1e9;
+    for(let i=0;i<n;i++){const a=i/n*TAU,px=x+Math.sin(a)*r,pz=z+Math.cos(a)*r,h=terrainH(px,pz);if(h>=.5&&h<bh&&Math.hypot(px,pz)<seaBorder(px,pz)){bh=h;best={x:px,y:h,z:pz};}}
+    if(best)return best;}return null;}
 // Hautakasa: kivet + pieni valomajakka (läpikuultava pylväs + himmeä pistevalo), joka näkyy lähellä (updateStations).
 function makeGrave(g){const m=new THREE.Group();m.add(bx(1,.5,1,mat(0x6a6862),0,.25,0),bx(.5,1.2,.2,mat(0x8f8d86),0,.9,-.3));
   const bm=new THREE.MeshBasicMaterial({color:0x8fffee,transparent:true,opacity:.35,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide});
@@ -321,7 +340,7 @@ function removeGrave(g,keepMesh){if(!keepMesh)scene.remove(g.mesh);const i=grave
 // v0.80: kuollessa kaikki valikot (reppu, kartta, arkku, DEV, päävalikko, asetukset, näppäinikkuna) suljetaan – vain kuoleman ruutu jää.
 function closeAllForDeath(){if(openPanel)closePanels(false,true);if(state==='paused'||state==='ui')state='play';for(const id of ['#menu','#settings','#keyDlg'])if($(id))$(id).hidden=true;mouseL=mouseR=false;P.drawing=false;}
 function respawn(){if(!P.dead||state!=='dead')return;endPlayerDeath();
-  $('#deadS').hidden=true;$('#hud').hidden=false;P.dead=false;P.kbx=P.kbz=0;P.hp=maxHp()*.6;P.stam=maxStam();P.hunger=Math.max(P.hunger,40);P.buffs={};P.wetT=0;
+  $('#deadS').hidden=true;$('#hud').hidden=false;P.dead=false;P.kbx=P.kbz=0;P.underT=P.drownT=0;P.swim=P.subm=false;P.hp=maxHp()*.6;P.stam=maxStam();P.hunger=Math.max(P.hunger,40);P.buffs={};P.wetT=0;
   if(P.inDun){P.inDun=false;P.realm=null;for(const m of [...mobs])if(m.dun)mobRemove(m);}
   const bed=pieces.find(p=>p.t==='sanky'&&P.spawn&&p.x===P.spawn.x&&p.z===P.spawn.z);
   if(bed)P.pos.set(bed.x+1.3,groundAt(bed.x+1.3,bed.z,.3,bed.y+2),bed.z);else P.pos.set(LOC.spawn.x,terrainH(LOC.spawn.x,LOC.spawn.z),LOC.spawn.z);

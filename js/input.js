@@ -10,11 +10,10 @@ addEventListener('keydown',e=>{
   if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT'||e.target.tagName==='SELECT'){if(e.code==='Enter'&&e.target.classList.contains('search')){e.target.blur();return;}if(e.code!=='Tab'||e.target.tagName==='TEXTAREA')return;e.target.blur();}
   // Paneelissa kirjoittaminen menee suoraan hakukenttään (ei tarvitse napsauttaa sitä ensin); toimintonäppäimet toimivat kuten ennen.
   if(state==='ui'&&openPanel&&e.key.length===1&&e.key!==' '&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat){const sf={inv:'#craftSearch',build:'#buildSearch',devi:'#devQ'}[openPanel],el=sf&&$(sf);
-    const skip=[BIND.interact,BIND.inv,'KeyI',BIND.menu,BIND.build,BIND.map,BIND.prog,BIND.log,BIND.full,BIND.hud,'KeyQ','Quote','Semicolon','BracketLeft'];
+    const skip=[BIND.interact,BIND.inv,'KeyI',BIND.menu,BIND.build,BIND.map,BIND.prog,BIND.log,BIND.hud,'KeyQ','Quote','Semicolon','BracketLeft'];
     if(el&&!skip.includes(e.code)){e.preventDefault();el.focus();el.value+=e.key;el.dispatchEvent(new Event('input'));setTimeout(()=>{const n=el.value.length;try{el.setSelectionRange(n,n);}catch(err){}},5);return;}}
   keys[e.code]=true;
   if(e.code==='Tab'){e.preventDefault();}
-  if(e.code===BIND.full&&!e.repeat&&(state==='play'||state==='ui'||state==='paused'))toggleFullscreen();
   // v1.40 (lista 4, kohta 7): Esc ei tee pelissä mitään (selain vapauttaa silti hiiren lukituksen). P = päävalikko ja yleinen sulkunäppäin.
   if(state==='paused'&&e.code===BIND.menu&&!e.repeat&&performance.now()-pausedAt>250){e.preventDefault();if(!$('#keyDlg').hidden)return;if(!menuBack())$('#bResume').click();return;}
   if(state==='menu'&&(e.code===BIND.menu||e.code==='Escape')&&!e.repeat){if($('#keyDlg').hidden&&menuBack())e.preventDefault();return;}   // v1.46: P/Esc palaa päänäkymään
@@ -73,17 +72,13 @@ addEventListener('mousemove',e=>{
 // Rulla: zoom tai (asetus) pikapaikan vaihto – valittu pikapaikka varustetaan heti jos esine on varustettava
 canvas.addEventListener('wheel',e=>{if(state!=='play')return;
   if(SET.wheelHotbar){hotSel=((hotSel+Math.sign(e.deltaY))%8+8)%8;invDirty=true;const s=inv[hotSel];if(s&&ITEMS[s.id].cat&&!s.eq)toggleEquip(s);}
-  else camDist=clamp(camDist+Math.sign(e.deltaY)*.6,2.2,10);},{passive:true});
+  else if(!P.subm)camDist=clamp(camDist+Math.sign(e.deltaY)*.6,2.2,10);},{passive:true});   // v2.18: veden alla zoomi lukittu lähimpään
 let lockFails=0;
 function lockFail(fromClick){if(!fromClick)return;lockFails++;if(lockFails>=2&&!lockFailed){lockFailed=true;msg('Hiiren lukitus ei ole käytössä: käännä kameraa vetämällä hiirellä.','warn');}}
 function requestLock(fromClick){try{const r=canvas.requestPointerLock();if(r&&r.catch)r.catch(()=>lockFail(fromClick));}catch(e){lockFail(fromClick);}}
 document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===canvas;if(locked)lockFails=0;vcSync();if(!locked&&state==='play'&&!openPanel&&performance.now()-panelClosedAt<600)requestLock();   /* v1.36: yritetään heti takaisin */if(!locked&&state==='play'&&!openPanel&&!suppressPause&&performance.now()-panelClosedAt>600)pauseGame();suppressPause=false;});
 document.addEventListener('pointerlockerror',()=>{});
 let suppressPause=false,panelClosedAt=-9999,pausedAt=-9999;
-// Koko näyttö: Chromessa Esc tulee pelille (ei poistu koko näytöstä) kun näppäimistö on lukittu.
-function toggleFullscreen(){try{if(document.fullscreenElement){document.exitFullscreen();return;}
-  const p=document.documentElement.requestFullscreen();const lk=()=>{if(navigator.keyboard&&navigator.keyboard.lock)navigator.keyboard.lock(['Escape']).catch(()=>{});};
-  if(p&&p.then)p.then(lk).catch(()=>{});else lk();}catch(e){}}
 function releaseLock(){if(document.pointerLockElement){suppressPause=true;document.exitPointerLock();}}
 
 /* ---------------- VIRTUAALINEN OSOITIN (v1.36, lista 3 kohta 22) ---------------- */

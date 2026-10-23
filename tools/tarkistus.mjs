@@ -239,6 +239,26 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/P\.inWater&&!P\.inDun\)\{ts\.lit=false/.test(updatePlayer.toString())&&/cont===2\)arrowOut/.test(updateProjs.toString());
     const c=/mobBurning\(m\)/.test(creTick.toString())&&/1\.7\+Math\.random\(\)\*\.4/.test(creTick.toString())&&/!mobBurning\(m\)/.test(damageMob.toString())&&mobBurning({burnT:2})&&!mobBurning({burnT:0})&&!mobBurning({burnT:2,dead:true});
     return a&&b&&c||`virhe vesi ${a} soihtu/nuoli ${b} äänet ${c}`;});
+  t('v2.18 uinti: välilyönti pohjassa kelluu (heti 1 + 5/s, jäähy 1 s), ilman vajoaa, pää veden alla >1 s = 10 HP/s, hauta rantaan, raja 3× kauempana, jyrkkä pohja',()=>{
+    const sv=[P.pos.clone(),P.vy,P.stam,P.hp,P.maxHp,state,P.swim,P.underT,P.drownT,P.swCd,keys[BIND.jump]];let res;
+    try{let sx=0,sz=0;for(let r=60;r<600;r+=3){const x=r*.6,z=r*.8;if(terrainH(x,z)<-8&&Math.hypot(x,z)<seaBorder(x,z)-15){sx=x;sz=z;break;}}
+      state='play';P.hp=P.maxHp=1e4;P.stam=100;P.swCd=0;P.underT=P.drownT=0;P.pos.set(sx,-1.3,sz);P.vy=0;keys[BIND.jump]=true;
+      for(let i=0;i<30;i++){P.pos.x=sx;P.pos.z=sz;updatePlayer(1/30);}const a=P.swim&&Math.abs(P.stam-(100-1-5))<1.2&&Math.abs(P.pos.y+1.3)<.25;
+      keys[BIND.jump]=false;updatePlayer(1/30);keys[BIND.jump]=true;updatePlayer(1/30);const b=P.stam>100-6-1-.6;   /* uusi painallus jäähyllä: ei toista välitöntä veloitusta */
+      keys[BIND.jump]=false;const y0=P.pos.y;let hp0=null,t=0;for(let i=0;i<30*5;i++){P.pos.x=sx;P.pos.z=sz;updatePlayer(1/30);t+=1/30;if(P.underT>1.05&&hp0===null){hp0=P.hp;t=0;}}
+      const c=P.pos.y<y0-1&&hp0!==null&&Math.abs((hp0-P.hp)/t-10)<1.5;
+      const sp=shorePoint(sx,sz),d=!!sp&&sp.y>=.5&&terrainH(sp.x,sp.z)>=.5;
+      const e=Math.min(...SEA_B)>=HALF+15&&terrainH(HALF+200,0)===SEA_FLOOR&&heightFn(0,0)>-99&&typeof seaBorder==='function'&&/seaBorder/.test(updatePlayer.toString());
+      const f=/waterDeath/.test(playerDie.toString())&&/shorePoint/.test(playerDie.toString())&&/D\.water/.test(updatePlayerDeath.toString())&&/uwMouthBubble/.test(updatePlayerDeath.toString());
+      res=a&&b&&c&&d&&e&&f||`virhe kellunta ${a} jäähy ${b} hukkuminen ${c} hauta ${d} raja ${e} kuolema ${f}`;}
+    finally{P.pos.copy(sv[0]);P.vy=sv[1];P.stam=sv[2];P.hp=sv[3];P.maxHp=sv[4];state=sv[5];P.swim=sv[6];P.underT=sv[7];P.drownT=sv[8];P.swCd=sv[9];keys[BIND.jump]=sv[10];P.subm=false;}return res;});
+  t('v2.18 vesi: syvyyskartta + varjostin (läpinäkyvä, tummuu syvällä, rantahäivytys), aallot tuulen mukaan, veden alla sumu/kuplat/zoomi, asetukset esiasetuksissa, K ei tee mitään',()=>{
+    const a=WATER_DEP.image.width===HN&&typeof waveAt==='function'&&water.material.isShaderMaterial&&/wDep/.test(water.material.fragmentShader)&&/smoothstep\(2\.,22\.,d\)/.test(water.material.fragmentShader)&&/waterDepSet/.test(terraSetVertex.toString());
+    const b=/WIND\.spd/.test(updateWater.toString())&&/waterFx/.test(updateWater.toString())&&/CAM_UW/.test(updateCamera.toString())&&/skyDome/.test(updateCamera.toString())&&/uwZoomK/.test(updateCamera.toString())&&/P\.subm/.test(updatePlayer.toString())&&water.geometry.attributes.position.count===(SET.waterMega?161*161:97*97)&&!PRESETS.some(p=>'waterMega' in p);
+    const c=PRESETS[3].waterFx===false&&PRESETS[4].waterFx===true&&PRESETS[5].uwFx===false&&PRESETS[6].uwFx===true&&PRESETS[5].waterOpt===true&&PRESETS[6].waterOpt===false&&SET_DEF.waterFx===false&&SET_PAGES.gfx.includes('uwFx');
+    const d=!ACTIONS.some(x=>x[0]==='full')&&!('full' in BIND)&&typeof toggleFullscreen==='undefined';
+    const e=typeof updateWaterFx==='function'&&/SET\.uwFx/.test(updateWaterFx.toString())&&/waterOpt/.test(updateWaterFx.toString())&&!!document.getElementById('uwTint')&&!!document.getElementById('drownV');
+    return a&&b&&c&&d&&e||`virhe varjostin ${a} päivitys ${b} esiasetukset ${c} K ${d} efektit ${e}`;});
   t('v2.17 tulen spämmisuoja: sama tuli sytyttää enintään 1 s välein, ääni/ilmoitus/sammutusefekti jäähyllä; kova sade sammuttaa nuotion taivasalla (ei katon alla)',()=>{
     const a=/p\.igP/.test(updatePlayerBurn.toString())&&/P\.igSnd/.test(updatePlayerBurn.toString())&&/P\.exFx/.test(updatePlayerBurn.toString())&&/m\.exFx/.test(updateBurn.toString());
     const b=typeof fireLit==='function'&&fireLit({data:{fuel:5}})&&!fireLit({data:{fuel:5,out:1}})&&!fireLit({data:{fuel:0}});

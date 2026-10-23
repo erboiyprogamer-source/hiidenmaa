@@ -251,11 +251,11 @@ function respawnNode(n){const kind=n.def.kind;
 // Palauttaa solmun alkuperäiseen paikkaan ja kokoon (uusi peli / lataus).
 function syncNodeY(n){const y=terrainH(n.x,n.z);if(Math.abs(y-n.y)<.001)return;n.y=y;if(n.alive)setNodeMatrix(n,true);if(n.col){n.col.minY=y-1;n.col.maxY=n.def.kind==='tree'?y+6*n.s:y+1.2*n.s;}}
 // Maanmuokkaus (lapio): korkeuskartta, maastoverkko, solmujen korkeudet. Muokatut kärjet tallentuvat (`TERRA`).
-function terraSetVertex(i,h){if(Math.abs(h-HGT0[i])<.005){delete TERRA[i];h=HGT0[i];}else TERRA[i]=h;HGT[i]=h;terrainMesh.geometry.attributes.position.array[i*3+1]=h;}
-function terraFlush(){terrainMesh.geometry.attributes.position.needsUpdate=true;terrainMesh.geometry.computeBoundingSphere();}
+function terraSetVertex(i,h){if(Math.abs(h-HGT0[i])<.005){delete TERRA[i];h=HGT0[i];}else TERRA[i]=h;HGT[i]=h;terrainMesh.geometry.attributes.position.array[i*3+1]=h;waterDepSet(i);}
+function terraFlush(){terrainMesh.geometry.attributes.position.needsUpdate=true;WATER_DEP.needsUpdate=true;   /* v2.18: veden syvyyskartta seuraa lapiota */terrainMesh.geometry.computeBoundingSphere();}
 function terraList(){return Object.entries(TERRA).map(([i,h])=>[+i,+h.toFixed(2)]);}
 function applyTerra(list){for(const [i,h] of list)terraSetVertex(i,h);terraFlush();for(const n of nodes)syncNodeY(n);}
-function resetTerra(){for(const i in TERRA){HGT[i]=HGT0[i];terrainMesh.geometry.attributes.position.array[i*3+1]=HGT0[i];delete TERRA[i];}terraFlush();resetMud();}
+function resetTerra(){for(const i in TERRA){HGT[i]=HGT0[i];terrainMesh.geometry.attributes.position.array[i*3+1]=HGT0[i];waterDepSet(+i);delete TERRA[i];}terraFlush();resetMud();}
 // Multaisuus (0–1) maaston kärjissä: lapio lisää (tummat polut), kuokka vähentää. Väri sekoittuu alkuperäisestä kohti tummaa multaa.
 const MUD=new Float32Array(HN*HN),TCOL0=terrainColors.slice(),MUDC=[.25,.18,.12];
 function mudSet(i,v){v=clamp(v,0,1);if(v<.01)v=0;MUD[i]=v;const c=terrainMesh.geometry.attributes.color.array,j=((i*2654435761)>>>0)%100/100*.16+.92;for(let k=0;k<3;k++)c[i*3+k]=lerp(TCOL0[i*3+k],MUDC[k]*j,v);}

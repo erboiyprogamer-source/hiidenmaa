@@ -125,8 +125,17 @@ function updateEnvironment(dt){
   updateClouds(dt,wCloud,light,el);updateSky(light,sd,el,sunK);
   rain.visible=wRain>.15;if(rain.visible){rain.material.opacity=.45*Math.min(1,wRain);updateRain(dt);}
   snow.visible=wSnow>.1&&P.pos.y>10;if(snow.visible){snow.material.opacity=.9*Math.min(1,wSnow);updateSnow(dt);}
-  water.position.y=Math.sin(playTime*.6)*.04;
+  water.position.y=Math.sin(playTime*.6)*.04;updateWater(dt,sd);
 }
+/* v2.18: veden varjostimen päivitys. Aallon korkeus tuulen mukaan (WV.a: tyyni ~7 cm, 8 m/s ~21 cm, myrsky 15–22 m/s ~0,6–1,3 m), vaiheet
+   kiertävät 0…2π (ei tarkkuusongelmaa pitkissä peleissä). Verkko seuraa kameraa keskisolun kokoisin askelin (1,25 m / Mega 1,125 m → aallot eivät "ui").
+   Vaahto (rantamaininki, vaahtopäät) vain SET.waterFx. */
+function updateWater(dt,sd){const U=WATER_U,ta=.05+.0025*WIND.spd*WIND.spd;WV.a=lerp(WV.a,Math.min(1.35,ta),Math.min(1,dt*.25));
+  for(let i=0;i<3;i++)WV.ph[i]=(WV.ph[i]+dt*WV.S[i])%TAU;U.uPh.value.set(WV.ph[0],WV.ph[1],WV.ph[2]);U.uAmp.value=WV.a;U.uT.value=playTime%600;
+  const st=water.geometry.userData.st||1.25;water.position.x=Math.round(camera.position.x/st)*st;water.position.z=Math.round(camera.position.z/st)*st;
+  U.uFar.value=clamp(scene.fog.far*1.1,60,200);U.uSun.value.copy(sd);U.uSunC.value.copy(sun.color).multiplyScalar(sun.intensity);
+  U.uAmbC.value.copy(hemi.color).multiplyScalar(hemi.intensity*1.1).addScalar(amb.intensity);U.uSkyTop.value.copy(SKY_U.uTop.value);U.uSkyHor.value.copy(SKY_U.uHor.value);
+  const fx=!!SET.waterFx;U.uFoam.value=fx?1:0;U.uCap.value=fx?sstep(10,18,WIND.spd):0;}
 // Myrsky kaataa harvoin puun pelaajan lähellä (3–40 m). Puun alle jäävä menettää 80 % terveydestä.
 const _sl=[];
 // v1.19: myrsky voi kaataa myös pelaajan vieressä olevan puun (ennen > 9 m); 70 % kaatuu tuulen suuntaan (±25°), 30 % satunnaisesti.

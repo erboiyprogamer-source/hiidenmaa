@@ -11,7 +11,7 @@ const ACTIONS=[
   ['build','Rakennusvalikko (vasara)','Rakentaminen','KeyB'],['rot','Käännä rakennetta (Shift = asento)','Rakentaminen','KeyR'],['snap','Sivuttaiskohdistus','Rakentaminen','KeyG'],['vsnap','Pystykohdistus','Rakentaminen','KeyH'],
   ['up','Nosta haamua (rakentaessa) / pudota pikapaikasta (Shift = koko pino)','Rakentaminen','KeyQ'],['down','Laske haamua','Rakentaminen','KeyZ'],['remove','Pura','Rakentaminen','KeyX'],['repair','Korjaa','Rakentaminen','KeyF'],
   ['menu','Päävalikko / sulje valikot','Valikot ja paneelit','KeyP'],['inv','Reppu ja valmistus','Valikot ja paneelit','Tab'],['map','Kartta','Valikot ja paneelit','KeyM'],['prog','Taso, saavutukset, tavoitteet','Valikot ja paneelit','KeyJ'],['log','Viimeiset ilmoitukset','Valikot ja paneelit','KeyL'],['hud','Tehtävä ja tavoite näkyviin / piiloon','Valikot ja paneelit','KeyT'],
-  ['full','Koko näyttö','Näkymä','KeyK'],['minizoom','Minikartan zoom','Näkymä','KeyN'],
+  ['minizoom','Minikartan zoom','Näkymä','KeyN'],   // v2.18: K (koko näyttö) poistettu kokonaan
 ];
 const BIND_DEF={};for(const a of ACTIONS)BIND_DEF[a[0]]=a[3];
 const BIND=Object.assign({},BIND_DEF);
@@ -38,24 +38,24 @@ function validateKey(action,code){
 // shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
 const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,grass:1,particles:1,detail:'high',bldDetail:true,
   renderDist:165,lights:6,lightDist:60,lightRange:17,mist:.6,clouds:1,drop3d:true,blood:1,bloodFx:true,keyHints:true,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
-  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,sens:1,curSens:1,hudMode:0,creVol:.8,arrowLight:false,menuBg:'img',shUltra:'off',menuAnimKeep:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
+  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,sens:1,curSens:1,hudMode:0,creVol:.8,arrowLight:false,menuBg:'img',shUltra:'off',menuAnimKeep:false,waterFx:false,waterOpt:true,uwFx:false,waterMega:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
 // Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
 // v1.35 (lista 3, kohta 16): varjot ovat Grafiikka-sivun väliotsikko (ei omaa sivua).
-const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','lightDist','lightRange','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar','shUltra'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep','creVol']};
+const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','lightDist','lightRange','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','waterFx','uwFx','waterOpt','waterMega','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar','shUltra'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep','creVol']};
 /* v1.35 (lista 3, kohta 17): esiasetukset Low … Ultra (8 tasoa, oletus Medium = SET_DEF:n grafiikka). Esiasetus muuttaa kaikki alla
    luetellut asetukset; Low–Medium kytkee automaattisäädön päälle, High–Ultra pois. Ultra ylittää aiemmat maksimit (piirtoetäisyys 520 m,
    ruoho Ultra, varjoalue 140 m, tulien varjot 1024). Jos jotain säädetään käsin, nimi on "Custom".
    v1.76: tulinuolten valo päällä High+ ja Ultra; automaattisäädöt pois High-tasosta ylöspäin. Erittäin tarkat varjot (shUltra) eivät kuulu esiasetuksiin. */
 const PRESET_N=['Low','Low+','Medium-','Medium','Medium+','High','High+','Ultra'];
 const PRESETS=[
-  {res:.55,renderDist:60,detail:'low',grass:0,sway:false,clouds:.3,lightDist:40,lightRange:17,lights:2,shafts:false,particles:.25,mist:0,bldDetail:false,drop3d:false,shadow:'off',sunRes:1024,shDist:35,shRate:'slow',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
-  {res:.7,renderDist:90,detail:'low',grass:0,sway:true,clouds:.3,lightDist:40,lightRange:17,lights:2,shafts:false,particles:.5,mist:.3,bldDetail:false,drop3d:false,shadow:'low',sunRes:1024,shDist:35,shRate:'slow',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
-  {res:.85,renderDist:120,detail:'high',grass:1,sway:true,clouds:.6,lightDist:60,lightRange:17,lights:4,shafts:false,particles:.5,mist:.3,bldDetail:true,drop3d:false,shadow:'low',sunRes:1024,shDist:55,shRate:'normal',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
-  {res:1,renderDist:165,detail:'high',grass:1,sway:true,clouds:1,lightDist:60,lightRange:17,lights:6,shafts:true,particles:1,mist:.6,bldDetail:true,drop3d:true,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
-  {res:1,renderDist:210,detail:'high',grass:1,sway:true,clouds:1,lightDist:90,lightRange:20,lights:6,shafts:true,particles:1,mist:1,bldDetail:true,drop3d:true,shadow:'high',sunRes:2048,shDist:80,shRate:'normal',ptShadow:true,ptRes:384,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false},
-  {res:'native',renderDist:260,detail:'high',grass:2,sway:true,clouds:1,lightDist:150,lightRange:24,lights:6,shafts:true,particles:1,mist:1,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:110,shRate:'normal',ptShadow:true,ptRes:768,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,autoRes:false,autoFx:false,autoDist:false,autoQ:false,arrowLight:false},
-  {res:'native',renderDist:400,detail:'high',grass:2,sway:true,clouds:1,lightDist:300,lightRange:28,lights:6,shafts:true,particles:1,mist:2,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:160,shRate:'fast',ptShadow:true,ptRes:768,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,autoRes:false,autoFx:false,autoDist:false,autoQ:false,arrowLight:true},
-  {res:'native',renderDist:520,detail:'high',grass:3,sway:true,clouds:1,lightDist:800,lightRange:32,lights:6,shafts:true,particles:1,mist:2,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:220,shRate:'fast',ptShadow:true,ptRes:1024,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,autoRes:false,autoFx:false,autoDist:false,autoQ:false,arrowLight:true}];
+  {res:.55,renderDist:60,detail:'low',grass:0,sway:false,clouds:.3,lightDist:40,lightRange:17,lights:2,shafts:false,particles:.25,mist:0,bldDetail:false,drop3d:false,shadow:'off',sunRes:1024,shDist:35,shRate:'slow',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false,waterFx:false,waterOpt:true,uwFx:false},
+  {res:.7,renderDist:90,detail:'low',grass:0,sway:true,clouds:.3,lightDist:40,lightRange:17,lights:2,shafts:false,particles:.5,mist:.3,bldDetail:false,drop3d:false,shadow:'low',sunRes:1024,shDist:35,shRate:'slow',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false,waterFx:false,waterOpt:true,uwFx:false},
+  {res:.85,renderDist:120,detail:'high',grass:1,sway:true,clouds:.6,lightDist:60,lightRange:17,lights:4,shafts:false,particles:.5,mist:.3,bldDetail:true,drop3d:false,shadow:'low',sunRes:1024,shDist:55,shRate:'normal',ptShadow:false,ptRes:256,bloodFx:false,terrLod:true,mergeSt:true,shFar:true,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false,waterFx:false,waterOpt:true,uwFx:false},
+  {res:1,renderDist:165,detail:'high',grass:1,sway:true,clouds:1,lightDist:60,lightRange:17,lights:6,shafts:true,particles:1,mist:.6,bldDetail:true,drop3d:true,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false,waterFx:false,waterOpt:true,uwFx:false},
+  {res:1,renderDist:210,detail:'high',grass:1,sway:true,clouds:1,lightDist:90,lightRange:20,lights:6,shafts:true,particles:1,mist:1,bldDetail:true,drop3d:true,shadow:'high',sunRes:2048,shDist:80,shRate:'normal',ptShadow:true,ptRes:384,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:true,autoRes:true,autoFx:true,autoDist:true,autoQ:true,arrowLight:false,waterFx:true,waterOpt:true,uwFx:false},
+  {res:'native',renderDist:260,detail:'high',grass:2,sway:true,clouds:1,lightDist:150,lightRange:24,lights:6,shafts:true,particles:1,mist:1,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:110,shRate:'normal',ptShadow:true,ptRes:768,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,autoRes:false,autoFx:false,autoDist:false,autoQ:false,arrowLight:false,waterFx:true,waterOpt:true,uwFx:false},
+  {res:'native',renderDist:400,detail:'high',grass:2,sway:true,clouds:1,lightDist:300,lightRange:28,lights:6,shafts:true,particles:1,mist:2,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:160,shRate:'fast',ptShadow:true,ptRes:768,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,autoRes:false,autoFx:false,autoDist:false,autoQ:false,arrowLight:true,waterFx:true,waterOpt:false,uwFx:true},
+  {res:'native',renderDist:520,detail:'high',grass:3,sway:true,clouds:1,lightDist:800,lightRange:32,lights:6,shafts:true,particles:1,mist:2,bldDetail:true,drop3d:true,shadow:'high',sunRes:4096,shDist:220,shRate:'fast',ptShadow:true,ptRes:1024,bloodFx:true,terrLod:false,mergeSt:true,shFar:false,autoAll:false,autoRes:false,autoFx:false,autoDist:false,autoQ:false,arrowLight:true,waterFx:true,waterOpt:false,uwFx:true}];
 function presetIdx(){return PRESETS.findIndex(p=>Object.keys(p).every(k=>String(SET[k])===String(p[k])));}
 function applyPreset(i){Object.assign(SET,PRESETS[i]);saveSet();applyGfx();}
 const SET=Object.assign({},SET_DEF);
@@ -73,6 +73,8 @@ if(!(SET._v>=3)){const OLD_SH={5:80,6:110,7:140};const i=PRESETS.findIndex((p,j)
 if(!(SET._v>=3)){const MK=['autoRes','autoFx','autoDist','autoQ','arrowLight'],i=PRESETS.findIndex(p=>Object.keys(p).every(k=>MK.includes(k)||String(SET[k])===String(p[k])));if(i>=0)for(const k of MK)SET[k]=PRESETS[i][k];SET._v=3;}
 /* v1.83: veren fysiikka (bloodFx) päällä Mediumista ylöspäin; kertasiirto kuten v1.79 */
 if(!(SET._v>=4)){const i=PRESETS.findIndex(p=>Object.keys(p).every(k=>k==='bloodFx'||String(SET[k])===String(p[k])));if(i>=0)SET.bloodFx=PRESETS[i].bloodFx;SET._v=4;}
+/* v2.18: veden efektit (waterFx Medium+, vedenalaiset partikkelit uwFx High+, veden efektien optimointi waterOpt pois High+:sta); kertasiirto kuten v1.79 */
+if(!(SET._v>=5)){const MK=['waterFx','waterOpt','uwFx'],i=PRESETS.findIndex(p=>Object.keys(p).every(k=>MK.includes(k)||String(SET[k])===String(p[k])));if(i>=0)for(const k of MK)SET[k]=PRESETS[i][k];SET._v=5;}
 function saveSet(){try{localStorage.setItem('hiidenmaa_set',JSON.stringify(SET));}catch(e){}}
 let RDK=1,DETK=1,PF=1,hotSel=0,lastShadowOn=null;
 /* v1.12 automaattisäätö: tasot nousevat kun peli nykii (main.js autoQuality), kertoimet otetaan käyttöön applyGfx:ssä.
@@ -105,6 +107,7 @@ function applyGfx(){
   {const f=$('#fps');if(f){f.hidden=SET.fps==='off';f.className='num fps_'+SET.fps;}}if(typeof refreshKeyHints==='function')refreshKeyHints();
   rain.geometry.setDrawRange(0,Math.floor(900*PF)*2);snow.geometry.setDrawRange(0,Math.floor(700*PF));
   for(const p of pieces)applyPieceDetail(p.mesh);
+  if(typeof water!=='undefined'&&!!SET.waterMega!==!!water.geometry.userData.mega){const og=water.geometry;water.geometry=waterGeo(!!SET.waterMega);og.dispose();}   // v2.18 Mega-aallot (vain käsin)
   if(SET.wheelHotbar)camDist=clamp(SET.zoom,2.2,10);
 }
 function applyPieceDetail(mesh){const v=!!SET.bldDetail;mesh.traverse(o=>{if(o.userData&&o.userData.detail)o.visible=v;});}
@@ -184,6 +187,10 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       setRow('Hiukkaset (kipinät, sade, lumi)','particles',[[1,'Kaikki'],[.5,'Puolet'],[.25,'Vähän'],[0,'Pois']])+
       setRow('Usva ja höyry','mist',[[2,'Ultra'],[1,'Korkea'],[.6,'Normaali'],[.3,'Matala'],[0,'Pois']])+
       setRow('Veri','blood',[[1,'Normaali'],[.5,'Vähän'],[0,'Pois']],'veripisarat, läntit ja haavat')+
+      setRow('Veden efektit','waterFx',[['true','Rantamaininki, vaahtopäät, roiskeet'],['false','Kevyt']],'aallot ja sää vedessä (Medium+ ja ylemmät)')+
+      setRow('Vedenalaiset partikkelit','uwFx',[['true','Kuplat ja leijuvat hiukkaset'],['false','Pois']],'kun kamera on veden alla (High+ ja Ultra)')+
+      setRow('Veden efektien optimointi','waterOpt',[['true','Vain lähellä ja näkyvissä'],['false','Aina']],'roiskeet piiloon kaukana tai metsän takana (pois High+:sta)')+
+      setRow('Mega-aallot','waterMega',[['true','Tiheä vesiverkko (raskas)'],['false','Normaali']],'tarkemmat aallot lähellä; ei kuulu esiasetuksiin, laita käsin')+
       setRow('Veren fysiikka','bloodFx',[['true','Pisarat lentävät ja jäävät maahan'],['false','Kevyt']],'lyönnin suuntaan, lammikko kasvaa (Medium ja ylemmät)')+
       setRow('– Hiukkaset, usva ja ruoho automaattisesti','autoFx',null,'puolittaa / neljännes, ruoho pois raskaimmillaan'+autoN())+
       sub('Esineet ja rakennukset')+
@@ -251,7 +258,7 @@ const ALL_KEYS=[
     ['crouch',0,'kyykky / hiipiminen (jousella kyykyssä tarkka tähtäin)'],['interact',0,'poimi, avaa, puhu, nuku, käytä'],[null,'Hiiren vasen','isku; jousella pidä pohjassa = jännitä, päästä = ammu'],
     [null,'Hiiren oikea','torju kilvellä (pohjassa)'],[null,'1–8','valitse pikapaikka; ruoka syödään, varuste otetaan käteen'],[null,'Hiiren rulla','kameran zoom (tai pikapaikat, Asetukset › Ohjaus)'],
     ['up',0,'pudota valitusta pikapaikasta 1 (Shift = koko pino)'],['remove',0,'pura katsottu rakennusosa (jousta jännittäessä: tähtäimen vilkkuminen päälle/pois)'],['repair',0,'korjaa katsottu rakennusosa'],
-    ['hud',0,'tehtävä ja tavoite näkyviin / piiloon'],['minizoom',0,'minikartan zoom'],['full',0,'koko näyttö'],[null,'Esc','vapauttaa hiiren (selain) – käytä mieluummin P:tä']]],
+    ['hud',0,'tehtävä ja tavoite näkyviin / piiloon'],['minizoom',0,'minikartan zoom'],[null,'Esc','vapauttaa hiiren (selain) – käytä mieluummin P:tä']]],
   ['Rakentaessa (vasara kädessä)',[['build',0,'rakennusvalikko'],[null,'Hiiren vasen','aseta rakennusosa'],[null,'Hiiren oikea','rakennusvalikko'],['rot',0,'käännä osaa'],[null,'Shift + R','osan asento / kaltevuus'],
     ['snap',0,'sivuttaiskohdistus (tilat)'],['vsnap',0,'pystykohdistus'],['up',0,'nosta haamua'],['down',0,'laske haamua'],['remove',0,'pura'],['repair',0,'korjaa']]],
   ['Lapio ja kuokka',[[null,'Hiiren vasen','lapio: kaiva · kuokka: nosta maata'],[null,'Hiiren oikea','lapio: tee polku · kuokka: palauta maasto']]],

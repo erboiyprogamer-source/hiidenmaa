@@ -133,8 +133,84 @@ const terrainMesh=(function buildTerrain(){
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(terrainColors,3));g.setIndex(new THREE.BufferAttribute(idx,1));g.computeVertexNormals();
   const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:1}));m.receiveShadow=true;scene.add(m);return m;
 })();
-const water=new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),new THREE.MeshStandardMaterial({color:0x2c6474,transparent:true,opacity:.8,roughness:.25,metalness:.1}));
-water.rotation.x=-Math.PI/2;scene.add(water);
+/* ---------------- VESI (v2.18) ----------------
+   Vedenpinta on oma varjostin: syvyys luetaan maaston korkeuskartasta (WATER_DEP, 1 tekseli / maaston kärki), joten vesi on matalassa
+   läpinäkyvä ja sinertävä, tummuu yli 2 m syvyydessä ja häipyy rantaviivalla (ei välkkyvää leikkausviivaa maaston kanssa). Pinta heijastaa
+   taivaan (Fresnel) ja auringon. Aallot: 3 siniaaltoa (WV), korkeus tuulen mukaan (tyyni ~7 cm, myrsky ~1,3 m), vaimenevat matalassa ja
+   kaukana. Samat aallot JS:ssä (waveAt) pelaajan kellumiseen. Verkko seuraa kameraa (tiheä keskellä, harva reunoilla). Vaahto: rantamaininki
+   ja myrskyn vaahtopäät vain asetuksella SET.waterFx (Medium+). */
+const WATER_DEP=(function(){const d=new Uint8Array(HN*HN*4);const t=new THREE.DataTexture(d,HN,HN,THREE.RGBAFormat,THREE.UnsignedByteType);
+  t.magFilter=t.minFilter=THREE.LinearFilter;t.generateMipmaps=false;t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;t.flipY=false;return t;})();
+function waterDepSet(i){const dep=clamp(-HGT[i]+1,0,64);WATER_DEP.image.data[i*4]=Math.round(Math.sqrt(dep/64)*255);}
+for(let i=0;i<HN*HN;i++)waterDepSet(i);WATER_DEP.needsUpdate=true;
+const WV={a:.07,K:[.2856,.4833,.8976],S:[1.674,2.177,2.967],D:[[.8,.6],[-.45,.89],[.96,-.28]],W:[.55,.3,.15],ph:[0,0,0]};
+// Aallon korkeus pisteessä (m, suhteessa vedenpintaan). Vaimenee rannan matalikossa kuten varjostimessa.
+function waveAt(x,z){const dep=water.position.y-terrainH(x,z),a=WV.a*sstep(.2,7,dep);if(a<.001)return 0;let h=0;
+  for(let i=0;i<3;i++){const D=WV.D[i];h+=WV.W[i]*Math.sin((D[0]*x+D[1]*z)*WV.K[i]+WV.ph[i]);}return a*h;}
+const WATER_U=Object.assign(THREE.UniformsUtils.clone(THREE.UniformsLib.fog),{uDep:{value:WATER_DEP},uPh:{value:new THREE.Vector3()},uAmp:{value:.07},uFar:{value:260},
+  uSun:{value:new THREE.Vector3(0,1,0)},uSunC:{value:new THREE.Color(1,1,1)},uAmbC:{value:new THREE.Color(.5,.5,.5)},uSkyTop:{value:new THREE.Color(0x3d6fa8)},uSkyHor:{value:new THREE.Color(0x8fbfe0)},
+  uShal:{value:new THREE.Color(0x2f8f8c)},uDeep:{value:new THREE.Color(0x06222e)},uFoam:{value:0},uCap:{value:0},uT:{value:0}});
+const WATER_GLSL=`uniform sampler2D uDep;uniform vec3 uPh;uniform float uAmp;
+  const float WH=${HALF.toFixed(1)},WGS=${GS.toFixed(4)},WHN=${HN.toFixed(1)};
+  float wDep(vec2 p){vec2 uv=((p+WH)/WGS+.5)/WHN;float e=texture2D(uDep,uv).r;return e*e*64.-1.;}
+  vec3 wWave(vec2 p,float a){vec2 D1=vec2(.8,.6),D2=vec2(-.45,.89),D3=vec2(.96,-.28);
+    float f1=dot(D1,p)*${WV.K[0]}+uPh.x,f2=dot(D2,p)*${WV.K[1]}+uPh.y,f3=dot(D3,p)*${WV.K[2]}+uPh.z;
+    float h=a*(.55*sin(f1)+.3*sin(f2)+.15*sin(f3));vec2 g=a*(.55*${WV.K[0]}*cos(f1)*D1+.3*${WV.K[1]}*cos(f2)*D2+.15*${WV.K[2]}*cos(f3)*D3);return vec3(h,g);}`;
+/* Kameraa seuraava ruudukko (±1300 m), tiheä keskellä ja harva reunoilla. Oletus 96×96 solua (solu 1,25 m keskellä, ~9 400 kärkeä);
+   asetus SET.waterMega (ei esiasetuksissa, vain käsin) = 160×160 (1,125 m, ~26 000 kärkeä). Askel userData.st = keskisolun koko (kameran seuranta). */
+function waterGeo(mega){const N=mega?160:96,A=mega?90:60,R=1300,v=[],idx=[],f=u=>Math.sign(u)*(A*Math.abs(u)+(R-A)*Math.abs(u)**4);
+  for(let j=0;j<=N;j++)for(let i=0;i<=N;i++)v.push(f(i/N*2-1),0,f(j/N*2-1));
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const a=j*(N+1)+i,b=a+N+1;idx.push(a,b,a+1,a+1,b,b+1);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setIndex(idx);g.userData.st=2*A/N;g.userData.mega=!!mega;return g;}
+const water=(function(){const g=waterGeo(false);
+  const m=new THREE.ShaderMaterial({uniforms:WATER_U,transparent:true,fog:true,side:THREE.DoubleSide,
+    vertexShader:WATER_GLSL+`uniform float uFar;varying vec3 vW;varying vec2 vG;varying float vH;
+      #include <fog_pars_vertex>
+      void main(){vec4 w=modelMatrix*vec4(position,1.);float d=wDep(w.xz);float dist=length(w.xz-cameraPosition.xz);
+        float a=uAmp*smoothstep(.2,7.,d)*(1.-smoothstep(uFar*.45,uFar,dist));vec3 wv=wWave(w.xz,a);w.y+=wv.x;vW=w.xyz;vG=wv.yz;vH=wv.x/max(uAmp,.02);
+        vec4 mvPosition=viewMatrix*w;gl_Position=projectionMatrix*mvPosition;
+        #include <fog_vertex>
+      }`,
+    fragmentShader:WATER_GLSL+`uniform vec3 uSun,uSunC,uAmbC,uSkyTop,uSkyHor,uShal,uDeep;uniform float uFoam,uCap,uT;varying vec3 vW;varying vec2 vG;varying float vH;
+      #include <fog_pars_fragment>
+      float hs(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+      float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hs(i),hs(i+vec2(1,0)),f.x),mix(hs(i+vec2(0,1)),hs(i+vec2(1,1)),f.x),f.y);}
+      void main(){float d=wDep(vW.xz);vec3 V=normalize(cameraPosition-vW);float cd=length(cameraPosition-vW);
+        float rk=(1.-smoothstep(25.,120.,cd))*(.05+uAmp*.08);
+        vec2 rp=vW.xz*.55+vec2(uT*.35,uT*.22),rq=vW.xz*.9-vec2(uT*.28,-uT*.31);
+        vec2 rg=vec2(vn(rp+vec2(.5,0.))-vn(rp-vec2(.5,0.)),vn(rp+vec2(0.,.5))-vn(rp-vec2(0.,.5)))+.6*vec2(vn(rq+vec2(.5,0.))-vn(rq-vec2(.5,0.)),vn(rq+vec2(0.,.5))-vn(rq-vec2(0.,.5)));
+        vec2 g=vG+rg*rk;vec3 N=normalize(vec3(-g.x,1.,-g.y));
+        float shore=smoothstep(0.,.35,d);
+        if(!gl_FrontFacing){vec3 up=mix(uShal*1.7,uSkyHor,.25)*(uAmbC+uSunC*.35);gl_FragColor=vec4(up,1.);
+          #include <fog_fragment>
+          return;}
+        float nv=max(dot(N,V),0.),fres=.02+.98*pow(1.-nv,5.);
+        float vy=max(V.y,.1),path=max(d,0.)/vy;
+        float alpha=1.-exp(-path*.5);
+        float dk=smoothstep(2.,22.,d);
+        vec3 lit=uAmbC+uSunC*max(uSun.y,0.)*.55;
+        vec3 body=mix(uShal,uDeep,clamp(dk+(1.-exp(-path*.08))*.35,0.,1.))*lit;
+        alpha=clamp(mix(alpha,.985,dk),0.,.985);
+        vec3 R=reflect(-V,N);R.y=abs(R.y);vec3 sky=mix(uSkyHor,uSkyTop,pow(clamp(R.y,0.,1.),.55));
+        float sr=max(dot(R,normalize(uSun)),0.);vec3 spec=uSunC*(pow(sr,260.)*2.5+pow(sr,40.)*.18)*step(0.,uSun.y);
+        vec3 col=mix(body,sky,fres*.85)+spec;
+        alpha=max(alpha,fres*.8);
+        float n1=vn(vW.xz*.12);
+        float foam=0.;
+        float edge=(1.-smoothstep(.04,.3,d))*smoothstep(-.02,.06,d);
+        foam+=edge*(.25+.25*sin(uT*1.3+n1*9.))*(.4+uFoam*.6);
+        if(uFoam>0.){float sh=1.-smoothstep(.15,1.6,d);float come=smoothstep(.35,.75,sin(uT*.42+n1*5.)*.5+.5);
+          float ln=smoothstep(.72,.97,sin(d*4.2-uT*1.7+n1*6.)*.5+.5)*sh*smoothstep(.03,.2,d)*come;
+          foam+=ln*.65*uFoam;
+          if(uCap>0.)foam+=uCap*smoothstep(.45,.9,vH)*smoothstep(.45,.85,vn(vW.xz*.35+uT*.15))*smoothstep(3.,8.,d);}
+        foam=clamp(foam,0.,1.);col=mix(col,vec3(.92,.95,.96)*(lit*.8+.2),foam);alpha=max(alpha,foam*.9);
+        alpha*=shore;
+        gl_FragColor=vec4(col,alpha);
+        #include <fog_fragment>
+      }`});
+  const w=new THREE.Mesh(g,m);w.frustumCulled=false;w.renderOrder=-1;scene.add(w);return w;})();
+/* Merenpohja maastoverkon ulkopuolella (maailman raja on nyt kauempana kuin maasto ±HALF). */
+const seaFloor=new THREE.Mesh(new THREE.PlaneGeometry(2800,2800).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x4a5048}));seaFloor.position.y=SEA_FLOOR-2;scene.add(seaFloor);
 const stars=(function(){const g=new THREE.BufferGeometry(),p=[];const r=mulberry32(5);for(let i=0;i<700;i++){const u=r()*TAU,v=r()*.9+.05;p.push(Math.cos(u)*Math.sin(Math.acos(1-v))*400,(1-v)*400,Math.sin(u)*Math.sin(Math.acos(1-v))*400);}g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));const m=new THREE.Points(g,new THREE.PointsMaterial({color:0xdde8ff,size:1.6,sizeAttenuation:false,transparent:true,opacity:0,fog:false}));scene.add(m);return m;})();
 const moonTex=canvasTex((g,s)=>{g.fillStyle='#dfe3ea';g.fillRect(0,0,s,s);const r=mulberry32(31);for(let i=0;i<14;i++){g.fillStyle=`rgba(120,128,145,${.25+r()*.3})`;g.beginPath();g.arc(r()*s,r()*s,2+r()*8,0,TAU);g.fill();}});
 const moon=new THREE.Mesh(new THREE.SphereGeometry(12,16,12),new THREE.MeshBasicMaterial({map:moonTex,fog:false}));scene.add(moon);

@@ -311,7 +311,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## 15. Asetukset ja näppäimet (settings.js)
 
 - **Näppäimet** vaihdettavissa vahvistuksella (ei varattuja eikä päällekkäisiä); oletus mm. WASD, Shift juoksu, Välilyönti hyppy, C kyykky,
-  E käytä, B rakennus, R/G/H/Q/Z/X/F rakentaminen, Tab reppu, M kartta, J taso, L ilmoitukset, T tehtävä/tavoite piiloon, K koko näyttö, N minikartan zoom.
+  E käytä, B rakennus, R/G/H/Q/Z/X/F rakentaminen, Tab reppu, M kartta, J taso, L ilmoitukset, T tehtävä/tavoite piiloon, (K ei tee mitään – koko näytön näppäin poistettu v2.18; käytä selaimen F11:tä), N minikartan zoom.
 - **Grafiikka:** 3D-resoluutio, automaattinen laatu, piirtoetäisyys 60–400 m, yksityiskohdat, rakennusten yksityiskohdat, hiukkaset,
   valonlähteiden määrä, usva ja höyry, pilvet, valonsäteet, puiden heiluminen.
   **Väliotsikot (v1.12):** Yleiset, Luonto, Valo, Partikkelit, Rakennukset; Varjot-sivulla Auringon varjot ja Tulien varjot.
