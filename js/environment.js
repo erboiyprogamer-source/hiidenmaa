@@ -6,7 +6,7 @@
 const DAY_LEN=720;
 function isNight(){return dayT<.21||dayT>.79;}
 function sheltered(x,y,z){if(P.inDun)return true;raycaster.set(_tmpV.set(x,y+1.7,z),_tmpV2.set(0,1,0));raycaster.far=14;return raycaster.intersectObjects(pieceRoots,true).length>0;}
-function nearFire(x,z,r=5.5){for(const p of pieces)if(isFirePiece(p.t)&&p.data.fuel>0&&dist2(p.x,p.z,x,z)<r*r)return true;return false;}
+function nearFire(x,z,r=5.5){for(const p of pieces)if(isFirePiece(p.t)&&fireLit(p)&&dist2(p.x,p.z,x,z)<r*r)return true;return false;}
 let shelterCache=false,fireCache=false,envTick=0,indoorT=0,indoorK=0;
 const cIndoor=new THREE.Color(0x6a5a48);
 // Yksinkertainen valofysiikka: suojassa ja seinien ympäröimänä taivaanvalo himmenee ja sininen sävy poistuu.
@@ -125,8 +125,17 @@ function updateEnvironment(dt){
   updateClouds(dt,wCloud,light,el);updateSky(light,sd,el,sunK);
   rain.visible=wRain>.15;if(rain.visible){rain.material.opacity=.45*Math.min(1,wRain);updateRain(dt);}
   snow.visible=wSnow>.1&&P.pos.y>10;if(snow.visible){snow.material.opacity=.9*Math.min(1,wSnow);updateSnow(dt);}
-  water.position.y=Math.sin(playTime*.6)*.04;
+  water.position.y=Math.sin(playTime*.6)*.04;updateWater(dt,sd);
 }
+/* v2.18: veden varjostimen päivitys. Aallon korkeus tuulen mukaan (WV.a: tyyni ~7 cm, 8 m/s ~21 cm, myrsky 15–22 m/s ~0,6–1,3 m), vaiheet
+   kiertävät 0…2π (ei tarkkuusongelmaa pitkissä peleissä). Verkko seuraa kameraa keskisolun kokoisin askelin (1,25 m / Mega 1,125 m → aallot eivät "ui").
+   Vaahto (rantamaininki, vaahtopäät) vain SET.waterFx. */
+function updateWater(dt,sd){const U=WATER_U,ta=.05+.0025*WIND.spd*WIND.spd;WV.a=lerp(WV.a,Math.min(1.35,ta),Math.min(1,dt*.25));
+  for(let i=0;i<3;i++)WV.ph[i]=(WV.ph[i]+dt*WV.S[i])%TAU;U.uPh.value.set(WV.ph[0],WV.ph[1],WV.ph[2]);U.uAmp.value=WV.a;U.uT.value=playTime%600;
+  const st=water.geometry.userData.st||1.25;water.position.x=Math.round(camera.position.x/st)*st;water.position.z=Math.round(camera.position.z/st)*st;
+  U.uFar.value=clamp(scene.fog.far*1.1,60,200);U.uSun.value.copy(sd);U.uSunC.value.copy(sun.color).multiplyScalar(sun.intensity);
+  U.uAmbC.value.copy(hemi.color).multiplyScalar(hemi.intensity*1.1).addScalar(amb.intensity);U.uSkyTop.value.copy(SKY_U.uTop.value);U.uSkyHor.value.copy(SKY_U.uHor.value);
+  const fx=!!SET.waterFx;U.uFoam.value=fx?1:0;U.uCap.value=fx?sstep(10,18,WIND.spd):0;}
 // Myrsky kaataa harvoin puun pelaajan lähellä (3–40 m). Puun alle jäävä menettää 80 % terveydestä.
 const _sl=[];
 // v1.19: myrsky voi kaataa myös pelaajan vieressä olevan puun (ennen > 9 m); 70 % kaatuu tuulen suuntaan (±25°), 30 % satunnaisesti.
@@ -210,7 +219,7 @@ function homeScan(closedDoors){const x0=P.pos.x,z0=P.pos.z,y0=P.pos.y,dist=[];
   for(let i=0;i<HOME_DIRS;i++){const a=i/HOME_DIRS*TAU+.031,dx=Math.cos(a),dz=Math.sin(a);let dmin=HOME_R;   // pieni kulmasiirto: säde ei kulje saumaa pitkin
     for(const h of [.6,1.5,2.2]){let hit=null,ter=false;for(let t=.3;t<HOME_R;t+=.15){const r=homeHit(x0+dx*t,y0+h,z0+dz*t,closedDoors);if(r){hit=t;ter=r===2;break;}}if(hit===null)return null;if(ter&&hit>6)return null;if(h===1.5)dmin=hit;}dist.push(dmin);}   // maasto kelpaa seinäksi vain lähellä (rinteeseen rakennettu talo)
   for(const [ox,oz] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]])if(!sheltered(x0+ox,y0,z0+oz))return null;return dist;}
-function homeHeat(dist){for(const p of pieces){const fire=isFirePiece(p.t)&&p.data.fuel>0,torch=(p.t==='soihtuteline'||p.t==='seinasoihtu')&&p.data.burn>0;if(!fire&&!torch)continue;
+function homeHeat(dist){for(const p of pieces){const fire=isFirePiece(p.t)&&fireLit(p),torch=(p.t==='soihtuteline'||p.t==='seinasoihtu')&&p.data.burn>0;if(!fire&&!torch)continue;
     const dx=p.x-P.pos.x,dz=p.z-P.pos.z,d=Math.hypot(dx,dz);if(d>HOME_R||Math.abs((p.y||0)-P.pos.y)>3)continue;if(d<homeEdge(dist,dx,dz)-.05)return true;}return false;}
 // talon reunan etäisyys suunnassa (viereisten säteiden suurin – esine itse voi katkaista yhden säteen)
 function homeEdge(dist,dx,dz){const i=Math.round(((Math.atan2(dz,dx)-.031+TAU)%TAU)/TAU*HOME_DIRS)%HOME_DIRS,n=HOME_DIRS;return Math.max(dist[(i+n-1)%n],dist[i],dist[(i+1)%n]);}

@@ -336,12 +336,12 @@ const _ashC=new THREE.Color(0x0e0c0b);
 // veriläntti jää 60 s; palokuolemassa hahmo mustuu ja muuttuu tuhkakasaksi (näkyy taas herätessä).
 /* v1.97: märkä = ulkona sateessa (ei katon alla; shelterCache) tai vedessä. Märkä pelaaja EI syty lainkaan (ei ilmoitusta, ei ääntä) eikä liekki pala
    märkänä; katon alla sade ei kastele, joten sielläkin voi syttyä ja palaa. Sateen sammutus: 3 s jäähy ennen uutta syttymistä, ilmoitus enintään 12 s välein. */
-function playerWet(){return P.inWater||(wRain>.5&&!P.inDun&&!shelterCache);}
+function playerWet(){return P.inWater||(!P.inDun&&P.pos.y<water.position.y-.3)||(wRain>.5&&!P.inDun&&!shelterCache);}   // v2.17: vedessä yli 0,3 m sammuu heti / ei syty
 function canIgnitePlayer(){return !P.dead&&!(P.burnT>0)&&!playerWet()&&playTime>=(P.igniteCd||0);}
 function updatePlayerBurn(dt){if(P.dead)return;
-  if(!P.inDun&&canIgnitePlayer()){for(const p of pieces){if(!isFirePiece(p.t)||!(p.data.fuel>0))continue;if(dist2(p.x,p.z,P.pos.x,P.pos.z)<.8*.8&&Math.abs(P.pos.y-(p.y||0))<1.2){P.burnT=4;P.igniteCd=playTime+3;if(playTime-(P.igMsgT||-99)>12){P.igMsgT=playTime;msg('Syttyit tuleen! Pois tulesta – vesi tai sade sammuttaa.','warn');}sfx('build',1.4,.6);break;}}}
+  if(!P.inDun&&canIgnitePlayer()){for(const p of pieces){if(!isFirePiece(p.t)||!fireLit(p)||playTime<(p.igP||0))continue;if(dist2(p.x,p.z,P.pos.x,P.pos.z)<.8*.8&&Math.abs(P.pos.y-(p.y||0))<1.2){P.burnT=4;P.igniteCd=playTime+1;p.igP=playTime+1;   /* v2.17: sama tuli sytyttää enintään 1 s välein */if(playTime-(P.igMsgT||-99)>12){P.igMsgT=playTime;msg('Syttyit tuleen! Pois tulesta – vesi tai sade sammuttaa.','warn');}if(playTime-(P.igSnd||-99)>2.5){P.igSnd=playTime;sfx('build',1.4,.6);}break;}}}
   if(!(P.burnT>0)){if(P.fireFx){fig.g.remove(P.fireFx);P.fireFx=null;}return;}
-  if(playerWet()){P.burnT=0;P.igniteCd=playTime+3;burst(P.pos.x,P.pos.y+1,P.pos.z,0x9a9a9a,6,2);return;}
+  if(playerWet()){P.burnT=0;P.igniteCd=playTime+1;if(playTime-(P.exFx||-99)>2.5){P.exFx=playTime;burst(P.pos.x,P.pos.y+1,P.pos.z,0x9a9a9a,6,2);}return;}   // v2.17: efekti enintään 2,5 s välein
   P.burnT-=dt;if(!devOn('god')){P.hp-=4*dt;P.hurtFlash=Math.max(P.hurtFlash,.2);}P.lastFire=playTime;
   if(!P.fireFx){const g=new THREE.Group();for(let i=0;i<7;i++){const a=i/7*TAU,c=new THREE.Mesh(new THREE.ConeGeometry(.12,.45+Math.random()*.25,6),i%2?MAT.flame2:MAT.flame);c.position.set(Math.cos(a)*.22,.5+Math.random()*.9,Math.sin(a)*.18);g.add(c);}fig.g.add(g);P.fireFx=g;}
   P.fireFx.children.forEach((c,i)=>{c.scale.y=.7+.5*Math.abs(Math.sin(playTime*11+i*1.3));});
@@ -349,8 +349,15 @@ function updatePlayerBurn(dt){if(P.dead)return;
   if(P.hp<=0){P.ashDeath=true;playerDie();}}
 let pDeath=null;
 function startPlayerDeath(){const ash=!!P.ashDeath||(playTime-(P.lastFire||-99)<1.2);P.ashDeath=false;if(P.fireFx){fig.g.remove(P.fireFx);P.fireFx=null;}P.burnT=0;
-  pDeath={t:0,ash,dir:Math.random()<.5?-1:1,y0:fig.g.position.y,pool:false,saved:null};}
+  pDeath={t:0,ash:ash&&!P.waterDeath,water:!!P.waterDeath,dir:Math.random()<.5?-1:1,y0:fig.g.position.y,pool:false,saved:null};P.waterDeath=false;}
 function updatePlayerDeath(dt){const D=pDeath;if(!D)return;D.t+=dt;const t=D.t,f=fig;
+  /* v2.18: kuolema vedessä – ohjaus pois, veltto keho vajoaa kohti pohjaa 1,5× uppoamisnopeudella (0,63 m/s), kädet nousevat, kuplia suusta
+     2,5 s; ruutu tummuu hitaasti (updateWaterFx, #drownV). Kuolinruutu 3,8 s:n kuluttua (playerDie). */
+  if(D.water){const k=sstep(0,1.4,t),lk=Math.min(1,dt*2.5);f.g.rotation.x=-Math.PI/2*.5*k;f.g.rotation.z=D.dir*.3*k;
+    const bot=groundAt(P.pos.x,P.pos.z,.38,P.pos.y);if(P.pos.y>bot)P.pos.y=Math.max(bot,P.pos.y-.63*dt);f.g.position.set(P.pos.x,P.pos.y+.4*k,P.pos.z);
+    f.armL.rotation.x=lerp(f.armL.rotation.x,-2.1,lk);f.armR.rotation.x=lerp(f.armR.rotation.x,-1.7,lk);f.armL.rotation.z=lerp(f.armL.rotation.z,.5,lk);f.armR.rotation.z=lerp(f.armR.rotation.z,-.4,lk);
+    f.legL.rotation.x=lerp(f.legL.rotation.x,.35,lk);f.legR.rotation.x=lerp(f.legR.rotation.x,.1,lk);if(f.kneeL){f.kneeL.rotation.x=lerp(f.kneeL.rotation.x,.6,lk);f.kneeR.rotation.x=lerp(f.kneeR.rotation.x,.4,lk);}f.head.rotation.x=lerp(f.head.rotation.x,.45,lk);
+    if(t<2.5&&Math.random()<dt*(9-t*3))uwMouthBubble();return;}
   const k=sstep(0,.7,t);f.g.rotation.x=-Math.PI/2*k;f.g.rotation.z=D.dir*.25*k;f.g.position.y=D.y0+.15*k;
   const lk=Math.min(1,dt*5);f.armL.rotation.x=lerp(f.armL.rotation.x,-.6,lk);f.armR.rotation.x=lerp(f.armR.rotation.x,.2,lk);f.armL.rotation.z=lerp(f.armL.rotation.z,.6,lk);f.armR.rotation.z=lerp(f.armR.rotation.z,-.5,lk);
   f.legL.rotation.x=lerp(f.legL.rotation.x,.25,lk);f.legR.rotation.x=lerp(f.legR.rotation.x,-.1,lk);if(f.kneeL){f.kneeL.rotation.x=lerp(f.kneeL.rotation.x,.5,lk);f.kneeR.rotation.x=lerp(f.kneeR.rotation.x,.15,lk);}f.head.rotation.x=lerp(f.head.rotation.x,-.3,lk);
@@ -369,4 +376,51 @@ function addSlash(m){if(!SET.bloodFx||!(+(SET.blood??1))||(m.slashes|0)>=5)retur
   m.bleedT=5;}
 function updateBleeders(dt){if(!SET.bloodFx)return;for(const m of mobs){if(!(m.bleedT>0)||m.dead)continue;m.bleedT-=dt;if(Math.random()<dt*5&&drips.length<120){const C=BLEED_C[bleedKind(m.type)]||BLEED_C.blood,h=(m.barH||m.def.r*2)*.5;
   const d=new THREE.Mesh(_drGeo,dripMat(C[0]));d.position.set(m.pos.x+(Math.random()-.5)*m.def.r,m.pos.y+h,m.pos.z+(Math.random()-.5)*m.def.r);scene.add(d);drips.push({m:d,c:C[0],dun:m.dun,vx:0,vz:0,vy:-.5});}}}
-function updateEffects(dt){updateSplats(dt);if(drips.length)updateDrips(dt);updateBleeders(dt);updatePuffs(dt);updatePlayerDeath(dt);}
+function updateEffects(dt){updateSplats(dt);if(drips.length)updateDrips(dt);updateBleeders(dt);updatePuffs(dt);updatePlayerDeath(dt);updateWaterFx(dt);}
+/* ---------------- VEDEN ALLA (v2.18) ----------------
+   CAM_UW = kameran syvyys pinnan alla (m, 0 = pinnan yläpuolella; camera.js). Kun kamera on veden alla: ruutu sinertyy ja tummuu syvemmällä
+   (#uwTint), sumu tihenee (camera.js). Asetuksella SET.uwFx (High+): vaaleat kuplat nousevat satunnaisesti pohjasta hiljaa vähän pinnan alle ja
+   katoavat; tummat leijuvat hiukkaset ajelehtivat virran mukana ja väistävät pelaajaa. Hukkuessa suusta nousee isoja kuplia pintaan (aina).
+   #drownV: reunat tummuvat hukkuessa (P.drownT) ja vedessä kuollessa koko ruutu tummuu hitaasti. */
+let CAM_UW=0;const _uwN=[];
+function uwOverlayOff(){CAM_UW=0;for(const id of ['uwTint','drownV']){const el=document.getElementById(id);if(el&&el.style.opacity!=='0'){el.style.opacity='0';el._o=0;el._v='';}}}
+const UWF=(function(){const tex=canvasTex((g,s)=>{const r=g.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.55,'rgba(255,255,255,.55)');r.addColorStop(.8,'rgba(255,255,255,.9)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,s,s);},32);tex.magFilter=THREE.LinearFilter;
+  const mk=(n,c,sz,op)=>{const g=new THREE.BufferGeometry(),p=new Float32Array(n*3).fill(-999);g.setAttribute('position',new THREE.BufferAttribute(p,3));
+    const m=new THREE.Points(g,new THREE.PointsMaterial({color:c,size:sz,map:tex,transparent:true,opacity:op,depthWrite:false}));m.frustumCulled=false;m.visible=false;scene.add(m);return {m,p,a:[],n};};
+  return {bub:mk(70,0xdff4ff,.13,.75),mote:mk(160,0x24332c,.07,.6),mouth:mk(40,0xeaf8ff,.3,.85),spray:mk(240,0xeef6f8,.26,.9)};})();
+function uwPush(L,x,y,z,o){if(L.a.length>=L.n)return null;const q=Object.assign({x,y,z,t:0},o);L.a.push(q);return q;}
+function uwMouthBubble(){const hx=P.pos.x+Math.sin(P.yaw)*.18,hz=P.pos.z+Math.cos(P.yaw)*.18,hy=(pDeath&&pDeath.water?P.pos.y+.6:P.pos.y+1.55);
+  uwPush(UWF.mouth,hx+(Math.random()-.5)*.15,hy,hz+(Math.random()-.5)*.15,{v:1+Math.random()*.5,w:Math.random()*TAU});}
+function uwFlush(L){const p=L.p;for(let i=0;i<L.n;i++){const q=L.a[i];if(q){p[i*3]=q.x;p[i*3+1]=q.y;p[i*3+2]=q.z;}else{p[i*3]=0;p[i*3+1]=-999;p[i*3+2]=0;}}L.m.geometry.attributes.position.needsUpdate=true;L.m.visible=L.a.length>0;}
+function updateWaterFx(dt){const wy=water.position.y,uw=CAM_UW>0&&!P.inDun,cx=camera.position.x,cy=camera.position.y,cz=camera.position.z;
+  {const el=document.getElementById('uwTint');if(el){const o=uw?.18+.62*sstep(1,30,CAM_UW):0;if(el._o!==o){el._o=o;el.style.opacity=o.toFixed(3);}}}
+  {const el=document.getElementById('drownV');if(el){const D=pDeath;let o=Math.min(1,(P.drownT||0)/1.5)*.75,full=0;if(D&&D.water)full=sstep(.3,3.6,D.t);if(state==='dead'&&D&&D.water)full=1;
+    const v=(o+full*.25).toFixed(3)+'|'+full.toFixed(3);if(el._v!==v){el._v=v;el.style.opacity=Math.max(o,full).toFixed(3);el.style.background=full>0?`rgba(0,6,12,${(full*.92).toFixed(3)})`:'transparent';}}}
+  // suun kuplat: hukkuessa ~5/s
+  if(!P.dead&&(P.drownT||0)>0&&(P.underT||0)>1&&Math.random()<dt*5)uwMouthBubble();
+  {const L=UWF.mouth;for(let i=L.a.length-1;i>=0;i--){const q=L.a[i];q.t+=dt;q.y+=q.v*dt;q.x+=Math.sin(q.t*5+q.w)*.12*dt;if(q.y>wy-.08||q.t>12)L.a.splice(i,1);}uwFlush(L);}
+  /* myrskyn roiskeet aallonharjoilta (SET.waterFx, Medium+). Optimointi SET.waterOpt (pois High+:sta): vain alle 60 m päässä ja ei, jos
+     tiheä metsä on kameran ja roiskeen välissä (puita näytepisteissä). Ilman optimointia 110 m asti, ei metsätarkistusta. */
+  if(SET.waterFx&&!uw&&!P.inDun&&WIND.spd>10&&Math.random()<dt*7*sstep(10,20,WIND.spd)){const opt=SET.waterOpt!==false,R=opt?60:110,a=camYaw+Math.PI+(Math.random()-.5)*1.6,r=12+Math.random()*(R-12);
+    const x=cx+Math.sin(a)*r,z=cz+Math.cos(a)*r;if(wy-terrainH(x,z)>3){let ok=true;if(opt){let n=0;for(let i=1;i<=4&&ok;i++){const t=i/5;for(const o of nodesNear(cx+(x-cx)*t,cz+(z-cz)*t,3,_uwN))if(o.alive&&o.def.kind==='tree'&&++n>=3){ok=false;break;}}}
+      if(ok)burst(x,wy+waveAt(x,z)+.25,z,0xe6f0f2,4+(Math.random()*4|0),2.5+WIND.spd*.08);}}
+  /* v2.20 (Extra-grafiikka SET.shoreSpray): isot aallot iskevät rantaan – matalikossa (0,05–1,4 m) aallonharjan kohdalla pisaroita lentää
+     korkealle (nousu 3–11 m/s aallon mukaan) ja painovoima (9,8 m/s²) tuo ne alas; katoavat osuessaan veteen tai maahan. */
+  {const L=UWF.spray;if(SET.shoreSpray&&!P.inDun&&!uw){
+     if(WV.a>.28&&Math.random()<dt*14*sstep(.28,1,WV.a))for(let tr=0;tr<16;tr++){const a=Math.random()*TAU,r=5+Math.random()*60,x=cx+Math.sin(a)*r,z=cz+Math.cos(a)*r,d=wy-terrainH(x,z);if(!(d>.05&&d<1.4))continue;
+       let raw=0;for(let i=0;i<3;i++){const D=WV.D[i];raw+=WV.W[i]*Math.sin((D[0]*x+D[1]*z)*WV.K[i]+WV.ph[i]);}if(raw<.3)continue;
+       const n=5+(Math.random()*9*WV.a|0);for(let k=0;k<n;k++){const aa=Math.random()*TAU,hs=.6+Math.random()*1.6;uwPush(L,x+(Math.random()-.5)*1.5,wy+.1,z+(Math.random()-.5)*1.5,{vx:Math.sin(aa)*hs,vz:Math.cos(aa)*hs,vy:3+Math.random()*7*WV.a});}break;}
+     for(let i=L.a.length-1;i>=0;i--){const q=L.a[i];q.t+=dt;q.vy-=9.8*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.z+=q.vz*dt;if((q.vy<0&&q.y<Math.max(wy,terrainH(q.x,q.z)))||q.t>4)L.a.splice(i,1);}uwFlush(L);}
+   else if(L.a.length){L.a.length=0;uwFlush(L);}}
+  const fx=uw&&!!SET.uwFx;
+  if(!fx){for(const L of [UWF.bub,UWF.mote])if(L.a.length){L.a.length=0;uwFlush(L);}return;}
+  // kuplat pohjasta
+  {const L=UWF.bub;if(Math.random()<dt*7){const a=Math.random()*TAU,r=2+Math.random()*13,x=cx+Math.sin(a)*r,z=cz+Math.cos(a)*r,g=terrainH(x,z);if(g<wy-1)uwPush(L,x,g+.05,z,{v:.25+Math.random()*.35,w:Math.random()*TAU,top:wy-.25-Math.random()*.5});}
+   for(let i=L.a.length-1;i>=0;i--){const q=L.a[i];q.t+=dt;q.y+=q.v*dt;q.x+=Math.sin(q.t*2.3+q.w)*.08*dt;q.z+=Math.cos(q.t*1.9+q.w)*.08*dt;if(q.y>=q.top||dist2(q.x,q.z,cx,cz)>20*20)L.a.splice(i,1);}uwFlush(L);}
+  // tummat leijuvat hiukkaset
+  {const L=UWF.mote;while(L.a.length<L.n){const a=Math.random()*TAU,r=Math.random()*12,x=cx+Math.sin(a)*r,z=cz+Math.cos(a)*r,g=terrainH(x,z),top=Math.min(wy-.2,cy+5),bot=Math.max(g+.1,cy-5);if(top<=bot)break;uwPush(L,x,bot+Math.random()*(top-bot),z,{w:Math.random()*TAU});}
+   const T=playTime*.15;for(let i=L.a.length-1;i>=0;i--){const q=L.a[i];q.t+=dt;
+     let vx=Math.sin(q.z*.11+T+q.w*.2)*.12,vy=Math.sin(q.t*.4+q.w)*.03,vz=Math.cos(q.x*.13-T)*.12;const dx=q.x-P.pos.x,dy=q.y-(P.pos.y+.9),dz=q.z-P.pos.z,d2=dx*dx+dy*dy+dz*dz;
+     if(d2<1.6*1.6){const d=Math.sqrt(d2)||1,f=(1.6-d)*1.8*(.4+Math.min(1.5,Math.hypot(P.vel.x,P.vel.z,P.vy)*.4));vx+=dx/d*f;vy+=dy/d*f;vz+=dz/d*f;}
+     q.x+=vx*dt;q.y+=vy*dt;q.z+=vz*dt;if(q.y>wy-.1)q.y=wy-.1;
+     if(dist2(q.x,q.z,cx,cz)>13*13||Math.abs(q.y-cy)>7)L.a.splice(i,1);}uwFlush(L);}}

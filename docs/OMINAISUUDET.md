@@ -19,6 +19,16 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Koko:** noin ±350 m (`HALF`), korkeusruudukko 2 m (`GS`), skaala `WS` = 1,75. Reunat laskevat mereen.
 - **Biomit (`biomeAt`):** meri, ranta, niitty, metsä, aarnimetsä (sumuinen, pimeä, 14–22 m puut), vuori (yli `mtnH` 23 m, lumi yli 33 m),
   kalmanummi. Kartoittain säädettävä: `moorR` (nummen säde), `mtnH` (vuoriraja), `meadowT` (niittyjen osuus).
+- **Meri (v2.18):** pohja syvenee jyrkästi rannan jälkeen (−9 → −23 m, avomeri −40 m) ja on kiinteä. Maailman raja merellä on 3× kauempana
+  rannasta kuin ennen (kartasta riippuen noin 435–640 m keskeltä); rajalla ilmoitus.
+- **Vesi (v2.18):** läpinäkyvä ja sinertävä matalassa, tummuu yli 2 m syvyydessä; ranta häipyy pehmeästi; taivas ja aurinko heijastuvat;
+  aallot tuulen mukaan (tyyni ~7 cm, myrsky ~1,3 m). Medium+: rantamaininki, vaahtopäät ja myrskyroiskeet (optimointi: roiskeet vain lähellä
+  eikä metsän takana; pois High+:sta). Veden alla (kamera pinnan alla): sininen sumu tummuu syvemmällä, High+: kuplat ja leijuvat hiukkaset.
+  Koko pelaaja veden alla → kamera lähimpään zoomiin, rulla ei zoomaa.
+- **Vesi (v2.20):** oletuksena kevyt low poly -vesi (tahkot, ~4 200 kärkeä). Asetukset › Extra-grafiikka: Realistinen vesi (heijastukset,
+  väreily), Mega-aallot (tiheä verkko, raskain) ja Aallot iskevät rantaan (myrskyssä pisaroita korkealle, putoavat painovoimalla).
+- **Rinteet (v2.20):** ylämäki hidastaa pelaajaa ja kaikkia olentoja: nopeus × (1 − 0,5 · kulma/90°) (45° = 75 %, 90° = 50 %), alamäki ei.
+  Kivet, malmit, poimittavat ja pensaat kallistuvat maan muodon mukaan; puut pysyvät pystyssä, tyvi upotettuna rinteeseen.
 - **Kiinteät paikat (`LOC`):** aloitusranta, 3 raunioita arkkuineen, 3 riimukiveä, Hautakumpu, Kalmankehä.
 - **Arvotut paikat (`SITE_DEFS`):** 3 portaalia, 4 rauniotaloa, 3 arkkukiveä, 6 lisäriimukiveä. Sama siemen → samat paikat samalla kartalla;
   maasto tasoitetaan (`flatten`). Metsä väistää kaikkia paikkoja 20 m (riimukivet 4 m).
@@ -33,7 +43,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 | Kävely / juoksu / kyykky / torjunta tai jousen veto | 4,6 / 8 / 2,3 / 2,4 m/s |
 | Isku käynnissä | nopeus × 0,45 |
 | Ylikuormitus (paino > `MAXW` 160) | nopeus × 0,55, ei juoksua eikä hyppyä |
-| Uinti (vesi alle −1,3 m) | 2,6 m/s, kestävyys −6/s liikkuessa (−2/s paikallaan), tyhjällä kestävyydellä −4 hp/s |
+| Uinti (v2.18: pohja yli 1,5 m pinnan alla) | 2,6 m/s (veden alla 2,1); välilyönti pohjassa kelluu pinnassa: painallus −1 kestävyys (jäähy 1 s) + −5/s; ilman vajoaa 0,42 m/s; kestävyys palautuu 25 % nopeudella kun välilyönti ei ole pohjassa |
+| Hukkuminen (v2.18) | pää veden alla yli 1 s → −10 HP/s, reunat tummuvat, kuplia; vedessä kuollessa keho vajoaa 0,63 m/s, ruutu tummuu, kuolinruutu 3,8 s; hautakasa lähimmälle rannalle |
 | Hyppy | pystynopeus 7,2 m/s, maksaa 8 kestävyyttä |
 | Painovoima | 22 m/s² |
 | Putoamisvahinko | kun alastulonopeus > 15 m/s: (nopeus − 15) × 6 hp |
@@ -311,7 +322,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## 15. Asetukset ja näppäimet (settings.js)
 
 - **Näppäimet** vaihdettavissa vahvistuksella (ei varattuja eikä päällekkäisiä); oletus mm. WASD, Shift juoksu, Välilyönti hyppy, C kyykky,
-  E käytä, B rakennus, R/G/H/Q/Z/X/F rakentaminen, Tab reppu, M kartta, J taso, L ilmoitukset, T tehtävä/tavoite piiloon, K koko näyttö, N minikartan zoom.
+  E käytä, B rakennus, R/G/H/Q/Z/X/F rakentaminen, Tab reppu, M kartta, J taso, L ilmoitukset, T tehtävä/tavoite piiloon, (K ei tee mitään – koko näytön näppäin poistettu v2.18; käytä selaimen F11:tä), N minikartan zoom.
 - **Grafiikka:** 3D-resoluutio, automaattinen laatu, piirtoetäisyys 60–400 m, yksityiskohdat, rakennusten yksityiskohdat, hiukkaset,
   valonlähteiden määrä, usva ja höyry, pilvet, valonsäteet, puiden heiluminen.
   **Väliotsikot (v1.12):** Yleiset, Luonto, Valo, Partikkelit, Rakennukset; Varjot-sivulla Auringon varjot ja Tulien varjot.
@@ -513,6 +524,15 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
   Puuttuva ääni = hiljaisuus. Kivivartija on hiljainen, kunnes sille lisätään omat äänet. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **Palavan olennon äänet (v2.17):** liekeissä olennon ääntely on tauolla; kipuääni kuuluu 1,7–2,1 s välein, kunnes palo sammuu tai olento kuolee.
+- **Vesi sammuttaa (v2.17):** palava pelaaja tai olento sammuu heti vedessä (yli 0,3 m syvyys) eikä syty siellä; soihtu sammuu vedessä; tulinuoli
+  sammuu heti veteen osuessaan.
+- **Sade ja nuotio (v2.17):** kova sade tai myrsky sammuttaa taivasalla olevan nuotion noin 4 s:ssa (savuaa ensin); katon alla nuotio palaa.
+  Polttoaine säilyy; sytytä uudelleen E:llä (ei onnistu, jos sade sammuttaisi heti) tai lisäämällä puuta. Sammunut nuotio ei valaise, lämmitä eikä kypsennä.
+- **Tulen jäähyt (v2.17):** sama tuli sytyttää pelaajan enintään 1 s välein; syttymisääni enintään 2,5 s ja ilmoitus 12 s välein;
+  sammumisen höyrypöllähdys enintään 2,5 s välein (pelaaja ja olennot).
+- **Pomojen toimintoäänet (v2.17):** yhteinen `pomot/`-kansio, josta kaikki pomot lainaavat (sävel pomon mukaan); pomon oma samanniminen ääni
+  voittaa. Ryntäyksessä lataus- ja syöksyääni. Raskaat nelijalkaiset (karhu, hiidenkarhu, hiidenhirvi) ovat oma ryhmänsä.
 - Olennoilla voi olla omat äänet (`sounds/olennot_aanet/valmiit/<id>_<idle|hurt|death|aggro|chase>_<n>.mp3`, n = 1, 2, 3 … rajattomasti (v2.11), arpoo kaikista olemassa olevista versioista): rauhallinen
   ääntely 6–15 s välein alle 25 m päässä, suuttumisääni (vihamieliset ja pomot vain kerran, neutraalit kerran per suuttuminen – v2.10: sama olento enintään 15 s, sama laji 6 s välein, ei karjaisua tiedostoäänen päälle), jahtiääni 4–9 s
   välein jahdin aikana (vihamieliset ja pomot), osumaääni (enintään 0,4 s välein), kuolinääni. 3D-ääni (suunta ja etäisyys), sävel ±6 %.

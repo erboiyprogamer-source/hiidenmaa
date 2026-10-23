@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'2.16';
+:root{--css-v:'2.20';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -58,6 +58,8 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 #buildhint{position:absolute;left:50%;bottom:86px;transform:translateX(-50%);font-size:13px;background:rgba(19,17,14,.78);padding:5px 12px;border-radius:3px;white-space:nowrap}
 #lockhint{position:absolute;left:50%;top:40%;transform:translateX(-50%);font-weight:800;font-size:16px;background:rgba(19,17,14,.82);border:1px solid var(--ember);padding:8px 16px;border-radius:3px}
 #fade{position:fixed;inset:0;background:#000;opacity:0;transition:opacity .35s;pointer-events:none}
+#uwTint{position:fixed;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at 50% 30%,rgba(10,40,55,.55),rgba(0,6,12,.95))}   /* v2.18 veden alla */
+#drownV{position:fixed;inset:0;pointer-events:none;opacity:0;box-shadow:inset 0 0 220px 90px rgba(0,4,10,.95)}
 #hurt{position:fixed;inset:0;pointer-events:none;opacity:0;box-shadow:inset 0 0 160px 40px rgba(170,30,20,.75);transition:opacity .3s}
 .floater{position:absolute;font-weight:800;font-size:16px;text-shadow:0 1px 3px #000;pointer-events:none;transform:translate(-50%,-50%);white-space:nowrap}
 .mobbar{position:absolute;width:56px;transform:translate(-50%,-100%);pointer-events:none}   /* v1.21: pino kasvaa ylöspäin */

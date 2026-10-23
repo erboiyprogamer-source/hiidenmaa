@@ -80,6 +80,7 @@ function heightFn(x,z){
   let h=baseHeight(x,z);
   for(const f of FLATS){const t=sstep(f.r+12,f.r,Math.hypot(x-f.x,z-f.z));if(t>0)h=lerp(h,f.h,t);}
   const bd=Math.hypot(x-LOC.barrow.x,z-LOC.barrow.z); if(bd<10)h+=6.5*(1-(bd/10)**2);
+  if(h<-.6)h*=1+1.6*sstep(-.6,-6,h);   // v2.18: pohja syvenee jyrkästi rannan jälkeen (−9 → −23 m, −14 → −36 m); ranta ja maa ennallaan
   return h;
 }
 function inAarni(x,z){const u=x/WS,v=z/WS;for(const A of AARNI)if(Math.hypot(u-A.x,v-A.z)<A.r+(fbm(u*.06+5,v*.06,2)-.5)*16)return true;return false;}
@@ -125,13 +126,22 @@ for(let iz=0;iz<HN;iz++)for(let ix=0;ix<HN;ix++)HGT[iz*HN+ix]=heightFn(-HALF+ix*
 const HGT0=HGT.slice(),TERRA={}; // alkuperäinen korkeuskartta ja lapiolla muokatut kärjet (indeksi → korkeus)
 function terrainH(x,z){
   const gx=(x+HALF)/GS,gz=(z+HALF)/GS;
-  if(gx<0||gz<0||gx>=GN||gz>=GN)return -14;
+  if(gx<0||gz<0||gx>=GN||gz>=GN)return SEA_FLOOR;
   const ix=gx|0,iz=gz|0,fx=gx-ix,fz=gz-iz,i=iz*HN+ix;
   const h00=HGT[i],h10=HGT[i+1],h01=HGT[i+HN],h11=HGT[i+HN+1];
   if(fx+fz<1)return h00+(h10-h00)*fx+(h01-h00)*fz;
   return h11+(h01-h11)*(1-fx)+(h10-h11)*(1-fz);
 }
 function biomeHere(x,z){return biomeAt(x,z,terrainH(x,z));}
+/* v2.20: ylämäen hidastus (pelaaja ja kaikki olennot). Rinteen kulma liikkeen suuntaan (0,6 m näyte): 0° = täysi nopeus, 90° = puolet,
+   väliltä suoraan kulman mukaan (nopeus × (1 − 0,5 · kulma/90°)). Alamäki ei hidasta. (dx,dz) = liikesuunta (yksikkövektori). */
+function uphillK(x,z,dx,dz){const sl=(terrainH(x+dx*.6,z+dz*.6)-terrainH(x,z))/.6;return sl>0?1-.5*Math.atan(sl)/(Math.PI/2):1;}
+/* v2.18: MAAILMAN RAJA MERELLÄ. Raja on 3× kauempana rannasta kuin ennen (vanha raja HALF + 15 m). Jokaiseen suuntaan (360 lohkoa) haetaan
+   uloin maa (korkeus > −0,4), raja = ranta + 3 × (vanha raja − ranta), rajattu 365…640 m ja pehmennetty naapurilohkoilla. seaBorder(x,z) = säde. */
+const SEA_FLOOR=-40,SEA_OLD=HALF+15,SEA_B=(function(){const N=360,c=new Float32Array(N),o=new Float32Array(N);
+  for(let i=0;i<N;i++){const a=i/N*Math.PI*2,sx=Math.sin(a),cz=Math.cos(a);let r0=0;for(let r=SEA_OLD;r>=0;r-=2)if(terrainH(sx*r,cz*r)>-.4){r0=r;break;}c[i]=r0;}
+  for(let i=0;i<N;i++){let s=0;for(let j=-6;j<=6;j++)s+=c[(i+j+N)%N];const cr=s/13;o[i]=clamp(cr+3*(SEA_OLD-cr),SEA_OLD,640);}return o;})();
+function seaBorder(x,z){const a=Math.atan2(x,z),f=((a/(Math.PI*2))*360+360)%360,i=f|0,t=f-i;return lerp(SEA_B[i],SEA_B[(i+1)%360],t);}
 
 /* ---------------- LÖYTÖPAIKAT: portaalit, rauniot, arkkukivet, lisäriimukivet ---------------- */
 // Sijainnit arvotaan kartan mukaan (sama joka kerta samalla kartalla), maasto tasoitetaan ja paikat lisätään LOC:iin,

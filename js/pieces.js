@@ -80,6 +80,7 @@ const PIECES={
 const bt=t=>PIECES[t]&&PIECES[t].base||t;
 const DET=m=>{m.userData.detail=true;return m;}; // yksityiskohtameshit (asetus: rakennusten yksityiskohdat)
 const isFirePiece=t=>t==='nuotio'||t==='grilli';
+const fireLit=p=>p.data.fuel>0&&!p.data.out;   // v2.17: nuotio palaa (polttoainetta ja ei sateen sammuttama)
 // Tulen jäljellä oleva palamisaika prosentteina täydestä (FUEL_MAX yksikköä × 90 s); yli 50 % ei voi lisätä.
 // 100 % = palamisaika heti viimeisen polttoaineen lisäyksen jälkeen (p.data.full, s). fireRem/torchRem = jäljellä olevat sekunnit.
 const fireRem=p=>Math.max(0,p.data.fuel*90-p.data.burn),torchRem=p=>Math.max(0,p.data.burn);
@@ -250,7 +251,7 @@ function addPiece(t,x,y,z,rot,hp,data,f=0){
   const p={t,x,y,z,rot,f,hp:hp??def.hp,mesh,data:data||{},cols:[],dmgLv:0};
   mesh.userData.piece=p;mesh.traverse(m=>{m.userData.piece=p;});if(typeof applyPieceDetail==='function')applyPieceDetail(mesh);
   for(const b of worldBoxes(t,x,y,z,rot,f)){const c=addBox(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ,p);c.door=b.door;c.glass=b.glass;p.cols.push(c);}
-  if(isFirePiece(t)){p.data.fuel=p.data.fuel??4;p.data.burn=p.data.burn??0;if(!p.data.full)p.data.full=Math.max(90,fireRem(p));p.data.cook=(p.data.cook||[]).map(c=>typeof c==='number'?{id:'liha',t:0,need:10}:c);lightSources.push(p.light={x,y:y+.8,z,c:0xff8c3a,i:2,on:()=>p.data.fuel>0,piece:p});}
+  if(isFirePiece(t)){p.data.fuel=p.data.fuel??4;p.data.burn=p.data.burn??0;if(!p.data.full)p.data.full=Math.max(90,fireRem(p));p.data.cook=(p.data.cook||[]).map(c=>typeof c==='number'?{id:'liha',t:0,need:10}:c);lightSources.push(p.light={x,y:y+.8,z,c:0xff8c3a,i:2,on:()=>fireLit(p),piece:p});}
   // Seisova soihtu palaa p.data.burn sekuntia (5 min aluksi; puu nollaa 10 min, hiili 30 min).
   if(t==='seinasoihtu'){p.data.burn=p.data.burn??900;if(!p.data.full)p.data.full=Math.max(60,p.data.burn);const a=(p.rot||0)*Math.PI/4;lightSources.push(p.light={x:x+Math.sin(a)*.45,y:y+.7,z:z+Math.cos(a)*.45,c:0xffa04a,i:1.5,on:()=>p.data.burn>0,piece:p});}
   if(t==='soihtuteline'){p.data.burn=p.data.burn??300;if(!p.data.full)p.data.full=Math.max(60,p.data.burn);lightSources.push(p.light={x,y:y+1.8,z,c:0xffa04a,i:1.5,on:()=>p.data.burn>0,piece:p});}

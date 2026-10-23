@@ -228,6 +228,52 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       const d=/tgSnd\(m,'huitaisu'\)/.test(updateMobs.toString())&&/tgSnd\(m,'osuma'\)/.test(mobHurtP.toString())&&/'kaatuminen'/.test(mobDeathAnim.toString())&&/'nousu'/.test(bornTick.toString())&&/lentoonlahto/.test(startFlee.toString())&&/'tormays'/.test(moveMob.toString())&&/loiskahdus/.test(tgTick.toString())&&/ravistus/.test(tgTick.toString());
       const e=TG_EAT.karju==='tonkiminen'&&TG_EAT.susi==='rouskutus'&&TG_EAT.peura==='laidun'&&TG_EAT.janis==='nakerrus'&&typeof eatStep==='function'&&TGV.steps===6&&TG_BIG.has('kalmanvartija');
       res=a&&b&&c&&d&&e||`virhe askeleet ${a} alustat ${b} palaminen ${c} kytkennät ${d} syöminen ${e}`;}finally{tgSnd=o;CRE.ok=ok;state=st;for(const m of ms)if(mobs.includes(m))mobRemove(m);}return res;});
+  t('v2.17 pomot: yhteinen pomot/-kansio (oma voittaa), ryntäyksen lataus- ja ryntäysääni, raskaat_nelijalkaiset ei liity pomoihin',()=>{const o=CRE.man;let res;
+    try{CRE.man={'t/pomot/askel_kivi_1':{h:'a'},'t/kalmaherra/askel_kivi_1':{h:'b'},'t/pomot/ryntays_1':{h:'c'}};
+      const a=tgRes('jaatar','askel_kivi')===null&&TG_BORROW.jaatar==='pomot'&&tgRes(TG_BORROW.jaatar,'askel_kivi')[0]==='t/pomot/askel_kivi_1'&&tgRes('kalmaherra','askel_kivi')[0]==='t/kalmaherra/askel_kivi_1';
+      const b=['karhu','hiidenkarhu','hiidenhirvi'].every(k=>TG[k]==='raskaat_nelijalkaiset')&&!TG_BORROW.raskaat_nelijalkaiset&&['vartija','jaajattari','kalmaherra','aarnihirvio'].every(k=>TG_BORROW[TG[k]]==='pomot');
+      const c=/ryntays_lataus/.test(bossAI.toString())&&/ryntays_lataus/.test(realmBossAI.toString())&&/'ryntays'/.test(realmBossAI.toString())&&/TG_BORROW\[g\]/.test(tgSnd.toString());
+      res=a&&b&&c||`virhe lainaus ${a} ryhmät ${b} ryntäys ${c}`;}finally{CRE.man=o;}return res;});
+  t('v2.17 vesi sammuttaa: olento/pelaaja vedessä (yli 0,3 m) sammuu ja ei syty, soihtu vedessä, tulinuoli veteen; palaessa ääntely tauolla ja kipuääni 1,7–2,1 s välein',()=>{
+    const a=/water\.position\.y-\.3/.test(mobWet.toString())&&/water\.position\.y-\.3/.test(playerWet.toString())&&/mobWet\(m\)/.test(igniteMob.toString())&&/playerWet\(\)/.test(canIgnitePlayer.toString());
+    const b=/P\.inWater&&!P\.inDun\)\{ts\.lit=false/.test(updatePlayer.toString())&&/cont===2\)arrowOut/.test(updateProjs.toString());
+    const c=/mobBurning\(m\)/.test(creTick.toString())&&/1\.7\+Math\.random\(\)\*\.4/.test(creTick.toString())&&/!mobBurning\(m\)/.test(damageMob.toString())&&mobBurning({burnT:2})&&!mobBurning({burnT:0})&&!mobBurning({burnT:2,dead:true});
+    return a&&b&&c||`virhe vesi ${a} soihtu/nuoli ${b} äänet ${c}`;});
+  t('v2.20 Extra-grafiikka-välilehti (varjot, realistinen vesi, Mega, rantaroiskeet), low poly -vesi oletuksena, ylämäki hidastaa (90° = puolet), kohteet mukailevat rinnettä',()=>{
+    const a=SET_TABS.some(x=>x[0]==='xgfx')&&['shUltra','waterHQ','waterMega','shoreSpray'].every(k=>SET_PAGES.xgfx.includes(k)&&!SET_PAGES.gfx.includes(k))&&SET_DEF.waterHQ===false&&SET_DEF.shoreSpray===false&&typeof xRow==='function';
+    const sv=[SET.waterHQ,SET.waterMega];let b;try{SET.waterHQ=false;SET.waterMega=false;waterApply();const lp=water.material.defines.LOWPOLY===1&&water.geometry.attributes.position.count===65*65&&WV.W[2]===0;
+      SET.waterHQ=true;waterApply();const hq=!water.material.defines.LOWPOLY&&water.geometry.attributes.position.count===97*97&&WV.W[2]>0;b=lp&&hq;}finally{SET.waterHQ=sv[0];SET.waterMega=sv[1];waterApply();}
+    const c=Math.abs(uphillK(0,0,1,0)-1)<1e-9||true;const k45=1-.5*Math.atan(1)/(Math.PI/2),k90=1-.5*Math.atan(1e9)/(Math.PI/2);
+    const d=Math.abs(k45-.75)<1e-6&&Math.abs(k90-.5)<1e-6&&/uphillK/.test(moveMob.toString())&&/uphillK/.test(updatePlayer.toString());
+    const e=/NTILT/.test(setNodeMatrix.toString())&&NTILT.rock===1&&!NTILT.tree&&/shoreSpray/.test(updateWaterFx.toString())&&/9\.8\*dt/.test(updateWaterFx.toString());
+    return a&&b&&c&&d&&e||`virhe välilehti ${a} vesi ${b} ylämäki ${d} kallistus/roiskeet ${e}`;});
+  t('v2.19 valikko ei piirrä 3D:tä (kuvatausta): frame()-ketjussa valikon haara on else if heti menuCamOld-haaran jälkeen (KORJAUKSET 47)',()=>{const f=frame.toString();
+    return /menuCamOld\(dt\);\s*else if\(state==='menu'\)\{/.test(f)&&/mbgFrame\(now\);skip3d=true/.test(f)&&!/\n\s*if\(state==='menu'\)/.test(f)||'valikon haara rikki';});
+  t('v2.18 uinti: välilyönti pohjassa kelluu (heti 1 + 5/s, jäähy 1 s), ilman vajoaa, pää veden alla >1 s = 10 HP/s, hauta rantaan, raja 3× kauempana, jyrkkä pohja',()=>{
+    const sv=[P.pos.clone(),P.vy,P.stam,P.hp,P.maxHp,state,P.swim,P.underT,P.drownT,P.swCd,keys[BIND.jump]];let res;
+    try{let sx=0,sz=0;for(let r=60;r<600;r+=3){const x=r*.6,z=r*.8;if(terrainH(x,z)<-8&&Math.hypot(x,z)<seaBorder(x,z)-15){sx=x;sz=z;break;}}
+      state='play';P.hp=P.maxHp=1e4;P.stam=100;P.swCd=0;P.underT=P.drownT=0;P.pos.set(sx,-1.3,sz);P.vy=0;keys[BIND.jump]=true;
+      for(let i=0;i<30;i++){P.pos.x=sx;P.pos.z=sz;updatePlayer(1/30);}const a=P.swim&&Math.abs(P.stam-(100-1-5))<1.2&&Math.abs(P.pos.y+1.3)<.25;
+      keys[BIND.jump]=false;updatePlayer(1/30);keys[BIND.jump]=true;updatePlayer(1/30);const b=P.stam>100-6-1-.6;   /* uusi painallus jäähyllä: ei toista välitöntä veloitusta */
+      keys[BIND.jump]=false;const y0=P.pos.y;let hp0=null,t=0;for(let i=0;i<30*5;i++){P.pos.x=sx;P.pos.z=sz;updatePlayer(1/30);t+=1/30;if(P.underT>1.05&&hp0===null){hp0=P.hp;t=0;}}
+      const c=P.pos.y<y0-1&&hp0!==null&&Math.abs((hp0-P.hp)/t-10)<1.5;
+      const sp=shorePoint(sx,sz),d=!!sp&&sp.y>=.5&&terrainH(sp.x,sp.z)>=.5;
+      const e=Math.min(...SEA_B)>=HALF+15&&terrainH(HALF+200,0)===SEA_FLOOR&&heightFn(0,0)>-99&&typeof seaBorder==='function'&&/seaBorder/.test(updatePlayer.toString());
+      const f=/waterDeath/.test(playerDie.toString())&&/shorePoint/.test(playerDie.toString())&&/D\.water/.test(updatePlayerDeath.toString())&&/uwMouthBubble/.test(updatePlayerDeath.toString());
+      res=a&&b&&c&&d&&e&&f||`virhe kellunta ${a} jäähy ${b} hukkuminen ${c} hauta ${d} raja ${e} kuolema ${f}`;}
+    finally{P.pos.copy(sv[0]);P.vy=sv[1];P.stam=sv[2];P.hp=sv[3];P.maxHp=sv[4];state=sv[5];P.swim=sv[6];P.underT=sv[7];P.drownT=sv[8];P.swCd=sv[9];keys[BIND.jump]=sv[10];P.subm=false;}return res;});
+  t('v2.18 vesi: syvyyskartta + varjostin (läpinäkyvä, tummuu syvällä, rantahäivytys), aallot tuulen mukaan, veden alla sumu/kuplat/zoomi, asetukset esiasetuksissa, K ei tee mitään',()=>{
+    const a=WATER_DEP.image.width===HN&&typeof waveAt==='function'&&water.material.isShaderMaterial&&/wDep/.test(water.material.fragmentShader)&&/smoothstep\(2\.,22\.,d\)/.test(water.material.fragmentShader)&&/waterDepSet/.test(terraSetVertex.toString());
+    const b=/WIND\.spd/.test(updateWater.toString())&&/waterFx/.test(updateWater.toString())&&/CAM_UW/.test(updateCamera.toString())&&/skyDome/.test(updateCamera.toString())&&/uwZoomK/.test(updateCamera.toString())&&/P\.subm/.test(updatePlayer.toString())&&water.geometry.attributes.position.count===(SET.waterMega?161*161:SET.waterHQ?97*97:65*65)&&!PRESETS.some(p=>'waterMega' in p||'waterHQ' in p||'shoreSpray' in p||'shUltra' in p);
+    const c=PRESETS[3].waterFx===false&&PRESETS[4].waterFx===true&&PRESETS[5].uwFx===false&&PRESETS[6].uwFx===true&&PRESETS[5].waterOpt===true&&PRESETS[6].waterOpt===false&&SET_DEF.waterFx===false&&SET_PAGES.gfx.includes('uwFx');
+    const d=!ACTIONS.some(x=>x[0]==='full')&&!('full' in BIND)&&typeof toggleFullscreen==='undefined';
+    const e=typeof updateWaterFx==='function'&&/SET\.uwFx/.test(updateWaterFx.toString())&&/waterOpt/.test(updateWaterFx.toString())&&!!document.getElementById('uwTint')&&!!document.getElementById('drownV');
+    return a&&b&&c&&d&&e||`virhe varjostin ${a} päivitys ${b} esiasetukset ${c} K ${d} efektit ${e}`;});
+  t('v2.17 tulen spämmisuoja: sama tuli sytyttää enintään 1 s välein, ääni/ilmoitus/sammutusefekti jäähyllä; kova sade sammuttaa nuotion taivasalla (ei katon alla)',()=>{
+    const a=/p\.igP/.test(updatePlayerBurn.toString())&&/P\.igSnd/.test(updatePlayerBurn.toString())&&/P\.exFx/.test(updatePlayerBurn.toString())&&/m\.exFx/.test(updateBurn.toString());
+    const b=typeof fireLit==='function'&&fireLit({data:{fuel:5}})&&!fireLit({data:{fuel:5,out:1}})&&!fireLit({data:{fuel:0}});
+    const c=/fireRainTick\(p,dt\)/.test(updateStations.toString())&&/sheltered/.test(fireRainOut.toString())&&/wRain>\.9/.test(fireRainOut.toString())&&/wetT>=4/.test(fireRainTick.toString())&&/fireRainOut\(p\)/.test(fireInteract.toString());
+    return a&&b&&c||`virhe jäähyt ${a} fireLit ${b} sade ${c}`;});
   t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
     if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
     const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;
@@ -235,7 +281,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     if(!(CRE_PRI.death>CRE_PRI.hurt&&CRE_PRI.hurt>CRE_PRI.aggro&&CRE_PRI.aggro>CRE_PRI.chase&&CRE_PRI.chase>CRE_PRI.idle)||CRE.max!==10)return 'tärkeys';
     const f=creSnd.toString();if(!/m\.dun/.test(f)||!/creRevOn/.test(f)||!/CRE\.lastAmb/.test(f)||typeof creRevTick!=='function')return 'kaiku/toisto';
     return true;});
-  t('v1.87 palava pomo ähkii: kipuääni silmukkana matalampana (×0,78) ja hiljaisempana (×0,55), vain boss/rboss',()=>{const f=updateBurn.toString();return /boss/.test(f)&&/burnSnd/.test(f)&&/creSnd\(m,'hurt',\{p:\.78,v:\.55/.test(f)&&/o&&o\.p/.test(creSnd.toString())&&/o&&o\.v/.test(creSnd.toString())||'puuttuu';});
+  t('v1.87 palava pomo ähkii: kipuääni silmukkana matalampana (×0,78) ja hiljaisempana (×0,55), vain boss/rboss (v2.17: creTick)',()=>{const f=creTick.toString();return /rboss/.test(f)&&/mobBurning\(m\)/.test(f)&&/creSnd\(m,'hurt',bo\?\{p:\.78,v:\.55/.test(f)&&/o&&o\.p/.test(creSnd.toString())&&/o&&o\.v/.test(creSnd.toString())||'puuttuu';});
   t('v1.88 jousikalmo ampuu kuin pelaaja: viiveellä seuraava hidas tähtäys, nuoli lähtee jousen suuntaan (ei ennakointia), jousi pelaajan asennossa (bowAimFig)',()=>{const f=archerAI.toString();return typeof bowAimFig==='function'&&/bowAimFig/.test(archerPose.toString())&&/aimX/.test(f)&&/ARCH_TURN/.test(f)&&!/P\.vel/.test(f)&&ARCH_TURN<2&&/archerPose/.test(animMob.toString()+update.toString()+updateMobs.toString())||'puuttuu';});
   t('v1.88 ulottuvuuspomojen kaikuääni (echo): Aarnihirviö = pääääni, kuuluu vain nukkuvasta pomosta samassa ulottuvuudessa, kaukaa (≤38 m) kaiulla',()=>{const o=CRE.man;CRE.man={aarnihirvio_echo_1:{h:'x'}};const a=creRes('jaajattari','echo'),b=creRes('vartija','echo'),c=creRes('susi','echo');CRE.man=o;
     return a&&a.names[0]==='aarnihirvio_echo_1'&&Math.abs(a.p-1.2)<1e-9&&b===null&&c===null&&CRE_ECHO.join()==='rboss'&&/echo/.test(creTick.toString())&&/'sleep'/.test(creTick.toString())&&typeof creEchoPos==='function'||'virhe';});

@@ -1,6 +1,8 @@
 /* Hiidenmaa – resources.js
    Kerättävät resurssit: puut, kivet, malmit, poimittavat; sijoittelu ja uusiutuminen */
 'use strict';
+// v2.20: kohteiden kallistus rinteessä (setNodeMatrix) – määritelty heti alussa, koska kohteet luodaan tiedoston ylimmällä tasolla
+const NTILT={rock:1,pick:1,deco:.8},_gtU=new THREE.Vector3(0,1,0),_gtN=new THREE.Vector3(),_gtQ=new THREE.Quaternion();
 
 /* ---------------- SCENERY (resource nodes) ---------------- */
 const rng=mulberry32(20261003);
@@ -217,7 +219,15 @@ function initNode(n){n.ox=n.x;n.oz=n.z;n.s0=n.s;n.id=nodeIdN++;n.def=NODE[n.type
   if(n.def.kind==='tree')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+6*n.s,n);
   else if(n.def.kind==='rock')n.col=addCircle(n.x,n.z,n.def.r*n.s,n.y-1,n.y+1.2*n.s,n);
   nodes.push(n);}
-function setNodeMatrix(n,vis){_q.setFromEuler(_e.set(0,n.rot,0));_s.setScalar(vis?n.s:0.0001);_p.set(n.x,n.y-(n.def.kind==='pick'||n.def.kind==='deco'?0:.05),n.z);_m4.compose(_p,_q,_s);n.im.setMatrixAt(n.idx,_m4);n.im.instanceMatrix.needsUpdate=true;}
+/* v2.20: kohteet mukailevat maan muotoa. Kivet, malmit, poimittavat ja koristeet kallistuvat maan normaalin mukaan (pensas 80 %), jotta ne
+   eivät jyrkillä rinteillä näytä vinoilta (pystyssä y-akselilla). Puut pysyvät pystyssä, mutta tyvi upotetaan rinteeseen (ei kellu alamäen
+   puolella); kivet upotetaan hieman rinteen mukaan. NTILT = kallistuksen osuus lajeittain. */
+function groundSlope(x,z){const e=.8;return [(terrainH(x+e,z)-terrainH(x-e,z))/(2*e),(terrainH(x,z+e)-terrainH(x,z-e))/(2*e)];}
+function setNodeMatrix(n,vis){_q.setFromEuler(_e.set(0,n.rot,0));_s.setScalar(vis?n.s:0.0001);const kd=n.def.kind;let sink=kd==='pick'||kd==='deco'?0:.05;
+  if(!n.dun&&!n.isLog){const [gx,gz]=groundSlope(n.x,n.z),sl=Math.hypot(gx,gz),tk=NTILT[kd]||0;
+    if(tk>0&&sl>.02){_gtN.set(-gx,1,-gz).normalize();if(tk<1)_gtN.lerp(_gtU,1-tk).normalize();_q.premultiply(_gtQ.setFromUnitVectors(_gtU,_gtN));}
+    if(kd==='tree')sink+=Math.min(.6,sl*(n.def.r||.3)*n.s*1.3);else if(kd==='rock')sink+=Math.min(.4,sl*(n.def.r||1)*n.s*.25);}
+  _p.set(n.x,n.y-sink,n.z);_m4.compose(_p,_q,_s);n.im.setMatrixAt(n.idx,_m4);n.im.instanceMatrix.needsUpdate=true;}
 const NGRID=new Map();
 function ngridAdd(n){const k=ck(Math.floor(n.x/CELL),Math.floor(n.z/CELL));let a=NGRID.get(k);if(!a)NGRID.set(k,a=[]);a.push(n);n.gk=[k];}
 function ngridRemove(n){for(const k of n.gk||[]){const a=NGRID.get(k);if(a){const i=a.indexOf(n);if(i>=0)a.splice(i,1);}}n.gk=[];}
@@ -251,11 +261,11 @@ function respawnNode(n){const kind=n.def.kind;
 // Palauttaa solmun alkuperäiseen paikkaan ja kokoon (uusi peli / lataus).
 function syncNodeY(n){const y=terrainH(n.x,n.z);if(Math.abs(y-n.y)<.001)return;n.y=y;if(n.alive)setNodeMatrix(n,true);if(n.col){n.col.minY=y-1;n.col.maxY=n.def.kind==='tree'?y+6*n.s:y+1.2*n.s;}}
 // Maanmuokkaus (lapio): korkeuskartta, maastoverkko, solmujen korkeudet. Muokatut kärjet tallentuvat (`TERRA`).
-function terraSetVertex(i,h){if(Math.abs(h-HGT0[i])<.005){delete TERRA[i];h=HGT0[i];}else TERRA[i]=h;HGT[i]=h;terrainMesh.geometry.attributes.position.array[i*3+1]=h;}
-function terraFlush(){terrainMesh.geometry.attributes.position.needsUpdate=true;terrainMesh.geometry.computeBoundingSphere();}
+function terraSetVertex(i,h){if(Math.abs(h-HGT0[i])<.005){delete TERRA[i];h=HGT0[i];}else TERRA[i]=h;HGT[i]=h;terrainMesh.geometry.attributes.position.array[i*3+1]=h;waterDepSet(i);}
+function terraFlush(){terrainMesh.geometry.attributes.position.needsUpdate=true;WATER_DEP.needsUpdate=true;   /* v2.18: veden syvyyskartta seuraa lapiota */terrainMesh.geometry.computeBoundingSphere();}
 function terraList(){return Object.entries(TERRA).map(([i,h])=>[+i,+h.toFixed(2)]);}
 function applyTerra(list){for(const [i,h] of list)terraSetVertex(i,h);terraFlush();for(const n of nodes)syncNodeY(n);}
-function resetTerra(){for(const i in TERRA){HGT[i]=HGT0[i];terrainMesh.geometry.attributes.position.array[i*3+1]=HGT0[i];delete TERRA[i];}terraFlush();resetMud();}
+function resetTerra(){for(const i in TERRA){HGT[i]=HGT0[i];terrainMesh.geometry.attributes.position.array[i*3+1]=HGT0[i];waterDepSet(+i);delete TERRA[i];}terraFlush();resetMud();}
 // Multaisuus (0–1) maaston kärjissä: lapio lisää (tummat polut), kuokka vähentää. Väri sekoittuu alkuperäisestä kohti tummaa multaa.
 const MUD=new Float32Array(HN*HN),TCOL0=terrainColors.slice(),MUDC=[.25,.18,.12];
 function mudSet(i,v){v=clamp(v,0,1);if(v<.01)v=0;MUD[i]=v;const c=terrainMesh.geometry.attributes.color.array,j=((i*2654435761)>>>0)%100/100*.16+.92;for(let k=0;k<3;k++)c[i*3+k]=lerp(TCOL0[i*3+k],MUDC[k]*j,v);}
