@@ -323,7 +323,7 @@ function moveMob(m,tx,tz,spd,dt){
   if(m.def.stride)spd*=1.1;   // v0.92 harppovat hirviöt 10 % nopeampia
   const l=Math.hypot(tx,tz);
   if(l>.01){const ty=Math.atan2(tx,tz);m.yaw=lerpAngle(m.yaw,ty,Math.min(1,dt*8));}
-  let vx=0,vz=0;if(l>.01&&spd>0){vx=Math.sin(m.yaw)*spd;vz=Math.cos(m.yaw)*spd;}
+  let vx=0,vz=0;if(l>.01&&spd>0){const sx=Math.sin(m.yaw),sz=Math.cos(m.yaw),uk=m.dun||m.fly?1:uphillK(m.pos.x,m.pos.z,sx,sz);vx=sx*spd*uk;vz=sz*spd*uk;}   // v2.20: ylämäki hidastaa (90° = puolet)
   m.vel.x*=Math.max(0,1-dt*6);m.vel.z*=Math.max(0,1-dt*6);
   const nx=m.pos.x+(vx+m.vel.x)*dt,nz=m.pos.z+(vz+m.vel.z)*dt;
   if(!m.dun&&terrainH(nx,nz)<-.7&&terrainH(m.pos.x,m.pos.z)>=-.7){m.wander=null;if(m.state!=='chase')m.yaw+=Math.PI*.5;return;}

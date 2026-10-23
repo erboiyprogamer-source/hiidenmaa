@@ -38,10 +38,10 @@ function validateKey(action,code){
 // shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
 const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,grass:1,particles:1,detail:'high',bldDetail:true,
   renderDist:165,lights:6,lightDist:60,lightRange:17,mist:.6,clouds:1,drop3d:true,blood:1,bloodFx:true,keyHints:true,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
-  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,sens:1,curSens:1,hudMode:0,creVol:.8,arrowLight:false,menuBg:'img',shUltra:'off',menuAnimKeep:false,waterFx:false,waterOpt:true,uwFx:false,waterMega:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
+  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,sens:1,curSens:1,hudMode:0,creVol:.8,arrowLight:false,menuBg:'img',shUltra:'off',menuAnimKeep:false,waterFx:false,waterOpt:true,uwFx:false,waterMega:false,waterHQ:false,shoreSpray:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
 // Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
 // v1.35 (lista 3, kohta 16): varjot ovat Grafiikka-sivun väliotsikko (ei omaa sivua).
-const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','lightDist','lightRange','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','waterFx','uwFx','waterOpt','waterMega','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar','shUltra'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep','creVol']};
+const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','lightDist','lightRange','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','waterFx','uwFx','waterOpt','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar'],xgfx:['shUltra','waterHQ','waterMega','shoreSpray'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep','creVol']};
 /* v1.35 (lista 3, kohta 17): esiasetukset Low … Ultra (8 tasoa, oletus Medium = SET_DEF:n grafiikka). Esiasetus muuttaa kaikki alla
    luetellut asetukset; Low–Medium kytkee automaattisäädön päälle, High–Ultra pois. Ultra ylittää aiemmat maksimit (piirtoetäisyys 520 m,
    ruoho Ultra, varjoalue 140 m, tulien varjot 1024). Jos jotain säädetään käsin, nimi on "Custom".
@@ -107,7 +107,7 @@ function applyGfx(){
   {const f=$('#fps');if(f){f.hidden=SET.fps==='off';f.className='num fps_'+SET.fps;}}if(typeof refreshKeyHints==='function')refreshKeyHints();
   rain.geometry.setDrawRange(0,Math.floor(900*PF)*2);snow.geometry.setDrawRange(0,Math.floor(700*PF));
   for(const p of pieces)applyPieceDetail(p.mesh);
-  if(typeof water!=='undefined'&&!!SET.waterMega!==!!water.geometry.userData.mega){const og=water.geometry;water.geometry=waterGeo(!!SET.waterMega);og.dispose();}   // v2.18 Mega-aallot (vain käsin)
+  if(typeof water!=='undefined')waterApply();   // v2.18 Mega-aallot, v2.20 low poly / realistinen vesi (Extra-grafiikka)
   if(SET.wheelHotbar)camDist=clamp(SET.zoom,2.2,10);
 }
 function applyPieceDetail(mesh){const v=!!SET.bldDetail;mesh.traverse(o=>{if(o.userData&&o.userData.detail)o.visible=v;});}
@@ -130,7 +130,7 @@ addEventListener('focusin',e=>{const t=e.target;if(t&&t.tagName==='INPUT'&&/^(te
 
 /* ---------------- ASETUSVALIKKO ---------------- */
 let setTab='keys',capture=null;
-const SET_TABS=[['keys','Näppäimet'],['gfx','Grafiikka'],['ctl','Ohjaus ja ääni'],['prof','Profiilit'],['save','Tallennus']];
+const SET_TABS=[['keys','Näppäimet'],['gfx','Grafiikka'],['xgfx','Extra-grafiikka'],['ctl','Ohjaus ja ääni'],['prof','Profiilit'],['save','Tallennus']];
 const row=(l,c,n='')=>`<div class="setRow"><label>${l}</label>${c}<span class="note">${n}</span></div>`;
 const optSel=(id,opts,cur,def)=>`<select id="${id}"${String(cur)===String(def)?' class="isdef"':''}>${opts.map(([v,t])=>{const d=def!==undefined&&String(v)===String(def);return `<option value="${v}"${d?' class="def"':''}${String(v)===String(cur)?' selected':''}>${t}${d?' · oletus':''}</option>`;}).join('')}</select>`;
 // Asetusrivi asetusavaimelle: valikko (opts) tai valintaruutu. Oletusarvo näkyy vaaleana ja merkinnällä "oletus".
@@ -190,14 +190,13 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       setRow('Veden efektit','waterFx',[['true','Rantamaininki, vaahtopäät, roiskeet'],['false','Kevyt']],'aallot ja sää vedessä (Medium+ ja ylemmät)')+
       setRow('Vedenalaiset partikkelit','uwFx',[['true','Kuplat ja leijuvat hiukkaset'],['false','Pois']],'kun kamera on veden alla (High+ ja Ultra)')+
       setRow('Veden efektien optimointi','waterOpt',[['true','Vain lähellä ja näkyvissä'],['false','Aina']],'roiskeet piiloon kaukana tai metsän takana (pois High+:sta)')+
-      setRow('Mega-aallot','waterMega',[['true','Tiheä vesiverkko (raskas)'],['false','Normaali']],'tarkemmat aallot lähellä; ei kuulu esiasetuksiin, laita käsin')+
       setRow('Veren fysiikka','bloodFx',[['true','Pisarat lentävät ja jäävät maahan'],['false','Kevyt']],'lyönnin suuntaan, lammikko kasvaa (Medium ja ylemmät)')+
       setRow('– Hiukkaset, usva ja ruoho automaattisesti','autoFx',null,'puolittaa / neljännes, ruoho pois raskaimmillaan'+autoN())+
       sub('Esineet ja rakennukset')+
       setRow('Maassa olevat esineet','drop3d',[['true','3D-kuvake (syvyys)'],['false','Kevyt (kuutio)']],'koskee uusia pudotuksia')+
       setRow('Rakennusten yksityiskohdat','bldDetail')+
       sub('Varjot')+
-      setRow('Varjot','shadow',[['high','Hyvät'],['low','Kevyet'],['off','Pois']])+ultraShRow()+
+      setRow('Varjot','shadow',[['high','Hyvät'],['low','Kevyet'],['off','Pois']],shUltraOn()?'Extra-grafiikassa erittäin tarkat varjot päällä':'')+
       setRow('Auringon varjojen tarkkuus','sunRes',[[1024,'Matala (1024)'],[2048,'Normaali (2048)'],[4096,'Korkea (4096)']])+
       setRow('Auringon varjojen etäisyys','shDist',[[35,'Lähellä (35 m)'],[55,'Normaali (55 m)'],[80,'Kaukana (80 m)'],[110,'Hyvin kaukana (110 m)'],[140,'Erittäin kaukana (140 m)'],[160,'Laaja (160 m)'],[220,'Ultra (220 m)']],'kauempana varjot ovat epätarkempia')+
       setRow('Varjojen päivitystiheys','shRate',[['fast','Nopea'],['normal','Normaali'],['slow','Hidas']],'hidas = kevyempi, varjot liikkuvat nykien')+
@@ -210,9 +209,21 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       setRow('Auringon varjot harvemmin paikallaan','shFar',null,'kun et liiku, auringon varjot päivittyvät joka 4. kuva (liikkeessä joka kuva)')
     }</div><p class="note">Vaaleana näkyvä valinta on oletus. Asetukset tulevat voimaan heti ja tallentuvat selaimeen.</p>`+resetBtn;
     bindSet(SET_PAGES.gfx);$('#bPageReset').onclick=()=>resetPage('gfx');
-    body.querySelectorAll('[data-ush]').forEach(b=>b.onclick=()=>{SET.shUltra=b.dataset.ush;saveSet();applyGfx();renderSettings();});
     if(shUltraOn())for(const k of SHU_OVR){const el=$('#s_'+k),r=el&&el.closest('.setRow');if(!r)continue;r.classList.add('ovr');if(el.tagName==='SELECT')el.disabled=true;const n=r.querySelector('.note');if(n)n.textContent='ohitettu: erittäin tarkat varjot päällä';}   // v1.80
     bindSld('sPreset',i=>{$('#presetName').textContent=PRESET_N[i];$('#presetName').className='';pvTheme(i);},i=>{applyPreset(i);renderSettings();});pvFxStart();
+  }else if(setTab==='xgfx'){
+    /* v2.20: Extra-grafiikka – asetukset, jotka ovat oletuksena pois kaikissa esiasetuksissa (eivät kuulu esiasetuksiin, laitetaan käsin).
+       Violetti = vaativa, punainen = raskain. */
+    body.innerHTML=`<p class="note">Nämä asetukset eivät kuulu esiasetuksiin, ja ne ovat oletuksena pois. Ne on tarkoitettu tehokkaille koneille: <b style="color:#c8a8ff">violetti</b> = vaativa, <b style="color:#ff8a70">punainen</b> = raskain.</p><div class="setGrid">${
+      `<h4 class="setSub">Varjot</h4>`+ultraShRow()+
+      `<h4 class="setSub">Vesi</h4>`+
+      xRow('Realistinen vesi','waterHQ',[['false','Pois (low poly)'],['true','Realistinen','']],'heijastukset, väreily, läpinäkyvyys ja vaahto – oletuksena kevyt low poly -vesi')+
+      xRow('Mega-aallot','waterMega',[['false','Pois'],['true','Tiheä vesiverkko','red']],'noin 26 000 kärkeä – tarkimmat aallot lähellä')+
+      xRow('Aallot iskevät rantaan','shoreSpray',[['false','Pois'],['true','Roiskeet','']],'isot aallot heittävät vesipisaroita korkealle rannassa (painovoima tuo ne alas)')
+    }</div>`+resetBtn;
+    $('#bPageReset').onclick=()=>resetPage('xgfx');
+    body.querySelectorAll('[data-ush]').forEach(b=>b.onclick=()=>{SET.shUltra=b.dataset.ush;saveSet();applyGfx();renderSettings();});
+    body.querySelectorAll('[data-xk]').forEach(b=>b.onclick=()=>{const k=b.dataset.xk,v=b.dataset.xv;SET[k]=v==='true'?true:v==='false'?false:v;saveSet();applyGfx();renderSettings();});
   }else if(setTab==='prof'){
     const P0=loadProfiles(),names=Object.keys(P0);
     body.innerHTML=`<p class="note">Profiili tallentaa kaikki asetukset: grafiikan, varjot, ohjauksen, äänet ja näppäimet. Valitse nimi ja tallenna – profiiliin voi palata myöhemmin.</p>
@@ -274,6 +285,9 @@ function showAllKeys(){let d=$('#allKeys');if(!d){d=document.createElement('div'
   d.innerHTML=`<div class="dlgBox akBox"><div class="akHead"><b>Kaikki toiminnot</b><button class="btn" id="akClose">Sulje</button></div><p class="note">Oletusnäppäimet. Jos olet vaihtanut näppäimen, nykyinen näkyy perässä.</p>
     <div class="akGrid">${ALL_KEYS.map(([h,R])=>`<div class="akCat"><h3>${h}</h3>${R.map(row).join('')}</div>`).join('')}${DEV?`<div class="akCat"><h3>DEV-tila</h3>${[[null,'V (pohjassa)','10× nopeus'],[null,'Ä','DEV-valikko'],[null,'Ö','olennot (luo 3 m eteen) ja pomot (pomohuone, portin eteen, ääriviiva)'],[null,'Å','esineet: pikavalinnat (varusteet, nuolet, pihka, avaimet, juomat) ja esinehaku'],[null,'Välilyönti ×2','lento (jos päällä DEV-valikossa): välilyönti ylös, Shift alas, Ctrl nopeammin']].map(row).join('')}</div>`:''}</div></div>`;
   d.hidden=false;$('#akClose').onclick=()=>{d.hidden=true;};}
+/* v2.20: Extra-grafiikan valintarivi (napit kuten erittäin tarkoissa varjoissa). opts: [arvo, teksti, luokka]; luokka '' = violetti (vaativa), 'red' = raskain. */
+function xRow(label,key,opts,note){const v=String(SET[key]),on=v!==String(SET_DEF[key]);
+  return `<div class="setRow ultraRow${on?' on':''}"><label>${label}${on?' <span class="ultraBang" title="Vaativa asetus päällä">!</span>':' <span class="defTag">oletus</span>'}</label><div class="ultraOpts">${opts.map(([k,t,c])=>`<button class="uo${String(k)===v?' sel':''}${c?' '+c:''}" data-xk="${key}" data-xv="${k}">${t}</button>`).join('')}</div><span class="note">${note}</span></div>`;}
 function ultraShRow(){const v=SET.shUltra||'off',on=v!=='off',O=[['off','Pois'],['sharp','Terävä 8192'],['soft','Terävä + pehmeät reunat'],['wide','Terävä + laaja alue']];
   return `<div class="setRow ultraRow${on?' on':''}"><label>Erittäin tarkat varjot${on?' <span class="ultraBang" title="Erittäin raskas asetus päällä">!</span>':' <span class="defTag">oletus</span>'}</label><div class="ultraOpts">${O.map(([k,t])=>`<button class="uo${k===v?' sel':''}${k==='wide'?' red':''}" data-ush="${k}">${t}</button>`).join('')}</div><span class="note">${on?SHU[v].n+' – ohittaa alla harmaana näkyvät varjoasetukset':'ei kuulu esiasetuksiin – vain hyvin tehokkaille koneille; punainen on raskain'}</span></div>`;}
 function keyDialog(text,btns,note){const d=$('#keyDlg');d.hidden=false;$('#keyDlgT').textContent=text;$('#keyDlgN').textContent=note||'';

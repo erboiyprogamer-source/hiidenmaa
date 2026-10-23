@@ -24,7 +24,11 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Vesi (v2.18):** läpinäkyvä ja sinertävä matalassa, tummuu yli 2 m syvyydessä; ranta häipyy pehmeästi; taivas ja aurinko heijastuvat;
   aallot tuulen mukaan (tyyni ~7 cm, myrsky ~1,3 m). Medium+: rantamaininki, vaahtopäät ja myrskyroiskeet (optimointi: roiskeet vain lähellä
   eikä metsän takana; pois High+:sta). Veden alla (kamera pinnan alla): sininen sumu tummuu syvemmällä, High+: kuplat ja leijuvat hiukkaset.
-  Koko pelaaja veden alla → kamera lähimpään zoomiin, rulla ei zoomaa. Mega-aallot (tiheä verkko) vain käsin asetuksista.
+  Koko pelaaja veden alla → kamera lähimpään zoomiin, rulla ei zoomaa.
+- **Vesi (v2.20):** oletuksena kevyt low poly -vesi (tahkot, ~4 200 kärkeä). Asetukset › Extra-grafiikka: Realistinen vesi (heijastukset,
+  väreily), Mega-aallot (tiheä verkko, raskain) ja Aallot iskevät rantaan (myrskyssä pisaroita korkealle, putoavat painovoimalla).
+- **Rinteet (v2.20):** ylämäki hidastaa pelaajaa ja kaikkia olentoja: nopeus × (1 − 0,5 · kulma/90°) (45° = 75 %, 90° = 50 %), alamäki ei.
+  Kivet, malmit, poimittavat ja pensaat kallistuvat maan muodon mukaan; puut pysyvät pystyssä, tyvi upotettuna rinteeseen.
 - **Kiinteät paikat (`LOC`):** aloitusranta, 3 raunioita arkkuineen, 3 riimukiveä, Hautakumpu, Kalmankehä.
 - **Arvotut paikat (`SITE_DEFS`):** 3 portaalia, 4 rauniotaloa, 3 arkkukiveä, 6 lisäriimukiveä. Sama siemen → samat paikat samalla kartalla;
   maasto tasoitetaan (`flatten`). Metsä väistää kaikkia paikkoja 20 m (riimukivet 4 m).

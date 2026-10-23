@@ -39,14 +39,14 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | --- | --- |
 | `js/boot.js` | (ladataan `index.html`:ssä ennen muita) aloitusjakso, suorituskykytesti omassa näkymässä (`__boot`), pelin skriptien lataus listasta `window.__GJS` (uusi tiedosto lisätään SINNE) |
 | `js/core.js` | `DEV` (oletus pois, `localStorage.hiidenmaa_devon` / `?dev=1`, kytkin Asetukset › Ohjaus ja ääni; Ä = DEV-valikko (Näkymätön `DEVF.unseen`), Ö = olennot ja pomot `renderDevM`, Å = esineet `renderDevI`/`DEV_PICKS`, täpät `DEVF`), `$`, `clamp`, `lerp`, `sstep`, kohina (`fbm`, `ridge`), `mulberry32` |
-| `js/world.js` | `WS` (skaala), `MAPS`/`MAP`/`MAP_ID` (6 karttaa), `dirIn`, `HALF`, `LOC` (+ arvotut `SITE_DEFS`-paikat), `AARNI`, `DUN`, `heightFn`, `biomeAt`, `zoneAt`, `BIOMES` (nimet + ominaisuudet), `terrainH`, merenpohja `SEA_FLOOR`, meren raja `seaBorder` |
-| `js/render.js` | renderer, scene, camera, valot, tekstuurit, `MAT`, `mat()`, `bx()`, maasto, vesi (varjostin `WATER_U`, syvyyskartta `WATER_DEP`/`waterDepSet`, aallot `WV`/`waveAt`, verkko `waterGeo`), taivas, sade |
+| `js/world.js` | `WS` (skaala), `MAPS`/`MAP`/`MAP_ID` (6 karttaa), `dirIn`, `HALF`, `LOC` (+ arvotut `SITE_DEFS`-paikat), `AARNI`, `DUN`, `heightFn`, `biomeAt`, `zoneAt`, `BIOMES` (nimet + ominaisuudet), `terrainH`, merenpohja `SEA_FLOOR`, meren raja `seaBorder`, ylämäen hidastus `uphillK` |
+| `js/render.js` | renderer, scene, camera, valot, tekstuurit, `MAT`, `mat()`, `bx()`, maasto, vesi (varjostin `WATER_U`, syvyyskartta `WATER_DEP`/`waterDepSet`, aallot `WV`/`waveAt`, verkko `waterGeo`, low poly / realistinen `waterApply`), taivas, sade |
 | `js/collision.js` | törmäysruudukko: `addBox`, `addCircle`, `groundAt`, `collideXZ`, `pointBlocked`, `STEPUP` |
 | `js/items.js` | `ITEMS`, `RECIPES`, `RECIPE_BY`, `icon(id)` (canvas-kuvakkeet) |
 | `js/audio.js` | `sfx(nimi, sävel, voimakkuus)` – proseduraaliset äänet; olentojen tiedostoäänet: varaääniketju `VARAANI`, `creLoad`/`creSnd`/`creTick` (3D); toimintoäänet `TG` (ryhmät; pomot lainaavat `pomot/`-kansiosta `TG_BORROW`), `tgSnd`/`tgTick`/`tgSurface` (askeleet, budjetti `TGV`) |
 | `js/models.js` | `makeHumanoid` (yksityiskohtaiset kaksijalkaiset), `makeAnimal` (eläimet), `makeBiped`, `makeQuad`, `makeHeld`, `makeShield`, `makeBird` (metso), pelaaja `makePlayer`, haarniskat `buildArmor` |
 | `js/bossmodels.js` | pomojen korkealaatuiset mallit (`figVartija`, `figJaatar`, `figKalmaherra`, `figAarni`), apurit `bqLump`/`bqTaper`/`bqCloth`/`bqCrystal`…, Ultra-efektit `f.fx` + `bossUltra()` |
-| `js/resources.js` | `NODE`, `NGEO`, sijoittelu ruutuihin (`CHN`, `VIS_R`), `nodes`, tukit (`logs`), `regrowForest`, kohteiden suoja `siteBlocked`, ruoho `rebuildGrass`, maaston LOD `terrLodTick`, staattisten yhdistäminen `mergeStatics`/`mergeTick` |
+| `js/resources.js` | `NODE`, `NGEO`, sijoittelu ruutuihin (`CHN`, `VIS_R`), `nodes`, tukit (`logs`), `regrowForest`, kohteiden suoja `siteBlocked`, ruoho `rebuildGrass`, maaston LOD `terrLodTick`, staattisten yhdistäminen `mergeStatics`/`mergeTick`, kallistus rinteessä `NTILT`/`groundSlope` |
 | `js/landmarks.js` | riimukivet, rauniot, Hautakumpu, Kalmankehä, luolasto (`DMAP`), `wallTorch`, `brazier`, `rockC`, liekkirekisteri `FLAMES`, arkut `makeChest`/`openLid`/`syncChests` |
 | `js/pieces.js` | `G`, `WH`, `DOOR_W/H`, tikkaiden kulmat `LADDER_RUN`/`ladRun`, saumaton puusyy `seamLen`, `PIECES`, `pieceBoxes` (tagit `door`/`glass`), `buildPieceMesh` (`GLASS_MAT`, `IRON_MAT`), `addPiece`, `removePiece` |
 | `js/mobs.js` | `MOBDEF`, mallit (`figGolem` kivivartija, `figYlimys`, `figKalmo`, `figHiisi`; pomot bossmodels.js:ssä), `spawnMob`, `mobs`, `boss` |
@@ -106,6 +106,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 
 ## Grafiikka-asetukset
 
+- Oletuksena pois olevat, vain käsin laitettavat (raskaat) asetukset kuuluvat Extra-grafiikka-välilehdelle (`SET_PAGES.xgfx`, rivi `xRow()`; ei esiasetuksiin).
 - Uusi asetus: lisää `SET_DEF`:iin (oletus = nykyinen ulkoasu), sivun avainlistaan `SET_PAGES` ja riviksi `setRow()`:lla
   (oletusmerkintä ja sivun palautus tulevat automaattisesti). Ota käyttöön `applyGfx()`:ssa.
 

@@ -133,6 +133,9 @@ function terrainH(x,z){
   return h11+(h01-h11)*(1-fx)+(h10-h11)*(1-fz);
 }
 function biomeHere(x,z){return biomeAt(x,z,terrainH(x,z));}
+/* v2.20: ylämäen hidastus (pelaaja ja kaikki olennot). Rinteen kulma liikkeen suuntaan (0,6 m näyte): 0° = täysi nopeus, 90° = puolet,
+   väliltä suoraan kulman mukaan (nopeus × (1 − 0,5 · kulma/90°)). Alamäki ei hidasta. (dx,dz) = liikesuunta (yksikkövektori). */
+function uphillK(x,z,dx,dz){const sl=(terrainH(x+dx*.6,z+dz*.6)-terrainH(x,z))/.6;return sl>0?1-.5*Math.atan(sl)/(Math.PI/2):1;}
 /* v2.18: MAAILMAN RAJA MERELLÄ. Raja on 3× kauempana rannasta kuin ennen (vanha raja HALF + 15 m). Jokaiseen suuntaan (360 lohkoa) haetaan
    uloin maa (korkeus > −0,4), raja = ranta + 3 × (vanha raja − ranta), rajattu 365…640 m ja pehmennetty naapurilohkoilla. seaBorder(x,z) = säde. */
 const SEA_FLOOR=-40,SEA_OLD=HALF+15,SEA_B=(function(){const N=360,c=new Float32Array(N),o=new Float32Array(N);

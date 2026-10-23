@@ -387,7 +387,7 @@ function uwOverlayOff(){CAM_UW=0;for(const id of ['uwTint','drownV']){const el=d
 const UWF=(function(){const tex=canvasTex((g,s)=>{const r=g.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.55,'rgba(255,255,255,.55)');r.addColorStop(.8,'rgba(255,255,255,.9)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,s,s);},32);tex.magFilter=THREE.LinearFilter;
   const mk=(n,c,sz,op)=>{const g=new THREE.BufferGeometry(),p=new Float32Array(n*3).fill(-999);g.setAttribute('position',new THREE.BufferAttribute(p,3));
     const m=new THREE.Points(g,new THREE.PointsMaterial({color:c,size:sz,map:tex,transparent:true,opacity:op,depthWrite:false}));m.frustumCulled=false;m.visible=false;scene.add(m);return {m,p,a:[],n};};
-  return {bub:mk(70,0xdff4ff,.13,.75),mote:mk(160,0x24332c,.07,.6),mouth:mk(40,0xeaf8ff,.3,.85)};})();
+  return {bub:mk(70,0xdff4ff,.13,.75),mote:mk(160,0x24332c,.07,.6),mouth:mk(40,0xeaf8ff,.3,.85),spray:mk(240,0xeef6f8,.26,.9)};})();
 function uwPush(L,x,y,z,o){if(L.a.length>=L.n)return null;const q=Object.assign({x,y,z,t:0},o);L.a.push(q);return q;}
 function uwMouthBubble(){const hx=P.pos.x+Math.sin(P.yaw)*.18,hz=P.pos.z+Math.cos(P.yaw)*.18,hy=(pDeath&&pDeath.water?P.pos.y+.6:P.pos.y+1.55);
   uwPush(UWF.mouth,hx+(Math.random()-.5)*.15,hy,hz+(Math.random()-.5)*.15,{v:1+Math.random()*.5,w:Math.random()*TAU});}
@@ -404,6 +404,14 @@ function updateWaterFx(dt){const wy=water.position.y,uw=CAM_UW>0&&!P.inDun,cx=ca
   if(SET.waterFx&&!uw&&!P.inDun&&WIND.spd>10&&Math.random()<dt*7*sstep(10,20,WIND.spd)){const opt=SET.waterOpt!==false,R=opt?60:110,a=camYaw+Math.PI+(Math.random()-.5)*1.6,r=12+Math.random()*(R-12);
     const x=cx+Math.sin(a)*r,z=cz+Math.cos(a)*r;if(wy-terrainH(x,z)>3){let ok=true;if(opt){let n=0;for(let i=1;i<=4&&ok;i++){const t=i/5;for(const o of nodesNear(cx+(x-cx)*t,cz+(z-cz)*t,3,_uwN))if(o.alive&&o.def.kind==='tree'&&++n>=3){ok=false;break;}}}
       if(ok)burst(x,wy+waveAt(x,z)+.25,z,0xe6f0f2,4+(Math.random()*4|0),2.5+WIND.spd*.08);}}
+  /* v2.20 (Extra-grafiikka SET.shoreSpray): isot aallot iskevät rantaan – matalikossa (0,05–1,4 m) aallonharjan kohdalla pisaroita lentää
+     korkealle (nousu 3–11 m/s aallon mukaan) ja painovoima (9,8 m/s²) tuo ne alas; katoavat osuessaan veteen tai maahan. */
+  {const L=UWF.spray;if(SET.shoreSpray&&!P.inDun&&!uw){
+     if(WV.a>.28&&Math.random()<dt*14*sstep(.28,1,WV.a))for(let tr=0;tr<16;tr++){const a=Math.random()*TAU,r=5+Math.random()*60,x=cx+Math.sin(a)*r,z=cz+Math.cos(a)*r,d=wy-terrainH(x,z);if(!(d>.05&&d<1.4))continue;
+       let raw=0;for(let i=0;i<3;i++){const D=WV.D[i];raw+=WV.W[i]*Math.sin((D[0]*x+D[1]*z)*WV.K[i]+WV.ph[i]);}if(raw<.3)continue;
+       const n=5+(Math.random()*9*WV.a|0);for(let k=0;k<n;k++){const aa=Math.random()*TAU,hs=.6+Math.random()*1.6;uwPush(L,x+(Math.random()-.5)*1.5,wy+.1,z+(Math.random()-.5)*1.5,{vx:Math.sin(aa)*hs,vz:Math.cos(aa)*hs,vy:3+Math.random()*7*WV.a});}break;}
+     for(let i=L.a.length-1;i>=0;i--){const q=L.a[i];q.t+=dt;q.vy-=9.8*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.z+=q.vz*dt;if((q.vy<0&&q.y<Math.max(wy,terrainH(q.x,q.z)))||q.t>4)L.a.splice(i,1);}uwFlush(L);}
+   else if(L.a.length){L.a.length=0;uwFlush(L);}}
   const fx=uw&&!!SET.uwFx;
   if(!fx){for(const L of [UWF.bub,UWF.mote])if(L.a.length){L.a.length=0;uwFlush(L);}return;}
   // kuplat pohjasta

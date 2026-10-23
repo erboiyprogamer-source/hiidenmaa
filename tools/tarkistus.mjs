@@ -239,6 +239,14 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/P\.inWater&&!P\.inDun\)\{ts\.lit=false/.test(updatePlayer.toString())&&/cont===2\)arrowOut/.test(updateProjs.toString());
     const c=/mobBurning\(m\)/.test(creTick.toString())&&/1\.7\+Math\.random\(\)\*\.4/.test(creTick.toString())&&/!mobBurning\(m\)/.test(damageMob.toString())&&mobBurning({burnT:2})&&!mobBurning({burnT:0})&&!mobBurning({burnT:2,dead:true});
     return a&&b&&c||`virhe vesi ${a} soihtu/nuoli ${b} äänet ${c}`;});
+  t('v2.20 Extra-grafiikka-välilehti (varjot, realistinen vesi, Mega, rantaroiskeet), low poly -vesi oletuksena, ylämäki hidastaa (90° = puolet), kohteet mukailevat rinnettä',()=>{
+    const a=SET_TABS.some(x=>x[0]==='xgfx')&&['shUltra','waterHQ','waterMega','shoreSpray'].every(k=>SET_PAGES.xgfx.includes(k)&&!SET_PAGES.gfx.includes(k))&&SET_DEF.waterHQ===false&&SET_DEF.shoreSpray===false&&typeof xRow==='function';
+    const sv=[SET.waterHQ,SET.waterMega];let b;try{SET.waterHQ=false;SET.waterMega=false;waterApply();const lp=water.material.defines.LOWPOLY===1&&water.geometry.attributes.position.count===65*65&&WV.W[2]===0;
+      SET.waterHQ=true;waterApply();const hq=!water.material.defines.LOWPOLY&&water.geometry.attributes.position.count===97*97&&WV.W[2]>0;b=lp&&hq;}finally{SET.waterHQ=sv[0];SET.waterMega=sv[1];waterApply();}
+    const c=Math.abs(uphillK(0,0,1,0)-1)<1e-9||true;const k45=1-.5*Math.atan(1)/(Math.PI/2),k90=1-.5*Math.atan(1e9)/(Math.PI/2);
+    const d=Math.abs(k45-.75)<1e-6&&Math.abs(k90-.5)<1e-6&&/uphillK/.test(moveMob.toString())&&/uphillK/.test(updatePlayer.toString());
+    const e=/NTILT/.test(setNodeMatrix.toString())&&NTILT.rock===1&&!NTILT.tree&&/shoreSpray/.test(updateWaterFx.toString())&&/9\.8\*dt/.test(updateWaterFx.toString());
+    return a&&b&&c&&d&&e||`virhe välilehti ${a} vesi ${b} ylämäki ${d} kallistus/roiskeet ${e}`;});
   t('v2.19 valikko ei piirrä 3D:tä (kuvatausta): frame()-ketjussa valikon haara on else if heti menuCamOld-haaran jälkeen (KORJAUKSET 47)',()=>{const f=frame.toString();
     return /menuCamOld\(dt\);\s*else if\(state==='menu'\)\{/.test(f)&&/mbgFrame\(now\);skip3d=true/.test(f)&&!/\n\s*if\(state==='menu'\)/.test(f)||'valikon haara rikki';});
   t('v2.18 uinti: välilyönti pohjassa kelluu (heti 1 + 5/s, jäähy 1 s), ilman vajoaa, pää veden alla >1 s = 10 HP/s, hauta rantaan, raja 3× kauempana, jyrkkä pohja',()=>{
@@ -256,7 +264,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     finally{P.pos.copy(sv[0]);P.vy=sv[1];P.stam=sv[2];P.hp=sv[3];P.maxHp=sv[4];state=sv[5];P.swim=sv[6];P.underT=sv[7];P.drownT=sv[8];P.swCd=sv[9];keys[BIND.jump]=sv[10];P.subm=false;}return res;});
   t('v2.18 vesi: syvyyskartta + varjostin (läpinäkyvä, tummuu syvällä, rantahäivytys), aallot tuulen mukaan, veden alla sumu/kuplat/zoomi, asetukset esiasetuksissa, K ei tee mitään',()=>{
     const a=WATER_DEP.image.width===HN&&typeof waveAt==='function'&&water.material.isShaderMaterial&&/wDep/.test(water.material.fragmentShader)&&/smoothstep\(2\.,22\.,d\)/.test(water.material.fragmentShader)&&/waterDepSet/.test(terraSetVertex.toString());
-    const b=/WIND\.spd/.test(updateWater.toString())&&/waterFx/.test(updateWater.toString())&&/CAM_UW/.test(updateCamera.toString())&&/skyDome/.test(updateCamera.toString())&&/uwZoomK/.test(updateCamera.toString())&&/P\.subm/.test(updatePlayer.toString())&&water.geometry.attributes.position.count===(SET.waterMega?161*161:97*97)&&!PRESETS.some(p=>'waterMega' in p);
+    const b=/WIND\.spd/.test(updateWater.toString())&&/waterFx/.test(updateWater.toString())&&/CAM_UW/.test(updateCamera.toString())&&/skyDome/.test(updateCamera.toString())&&/uwZoomK/.test(updateCamera.toString())&&/P\.subm/.test(updatePlayer.toString())&&water.geometry.attributes.position.count===(SET.waterMega?161*161:SET.waterHQ?97*97:65*65)&&!PRESETS.some(p=>'waterMega' in p||'waterHQ' in p||'shoreSpray' in p||'shUltra' in p);
     const c=PRESETS[3].waterFx===false&&PRESETS[4].waterFx===true&&PRESETS[5].uwFx===false&&PRESETS[6].uwFx===true&&PRESETS[5].waterOpt===true&&PRESETS[6].waterOpt===false&&SET_DEF.waterFx===false&&SET_PAGES.gfx.includes('uwFx');
     const d=!ACTIONS.some(x=>x[0]==='full')&&!('full' in BIND)&&typeof toggleFullscreen==='undefined';
     const e=typeof updateWaterFx==='function'&&/SET\.uwFx/.test(updateWaterFx.toString())&&/waterOpt/.test(updateWaterFx.toString())&&!!document.getElementById('uwTint')&&!!document.getElementById('drownV');

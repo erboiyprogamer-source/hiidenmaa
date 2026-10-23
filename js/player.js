@@ -33,6 +33,8 @@ function updatePlayer(dt){
   let upK=1;if(dl>0&&!P.inDun){const sl=(terrainH(P.pos.x+dx*.6,P.pos.z+dz*.6)-terrainH(P.pos.x,P.pos.z))/.6;if(sl>.1)upK=1.3+clamp((sl-.35)*.6,0,.3);}P.upK=upK;
   if(wantRun&&dl>0&&!over&&P.stam>0&&!P.blocking&&!P.drawing){speed=8;P.running=true;P.stam-=13*dt*upK;P.stamDelay=.8;}
   if(P.blocking||P.drawing)speed=2.4;if(over)speed*=.55;if(armor&&ITEMS[armor.id].slow)speed*=1-ITEMS[armor.id].slow;if(P.atk)speed*=.45;if(P.crouch)speed=Math.min(speed,2.3);if(P.zone==='suo'&&!P.inDun&&!P.swim)speed*=.85;speed*=P.fx.speed;if(DEV&&keys.KeyV)speed*=10;// DEV: V pohjassa 10× nopeampi
+  // v2.20: ylämäki hidastaa kävelyä ja juoksua jyrkkyyden mukaan (90° = puolet, uphillK); vain maastolla (ei rakennuksen lattialla, ei uidessa)
+  if(dl>0&&!P.inDun&&!P.swim&&!P.flying&&P.pos.y<terrainH(P.pos.x,P.pos.z)+.35)speed*=uphillK(P.pos.x,P.pos.z,dx,dz);
   /* v2.18 UINTI (KORJAUKSET 46): syvä vesi = jalat eivät yllä pohjaan (pohja yli 1,5 m pinnan alla, hystereesi 1,35 m → tila ei vilku pinnassa).
      Välilyönti pohjassa: kellut pinnassa (aallon mukana, rauhallinen keinunta), 5 kestävyyttä/s + painallus heti 1 (jäähy 1 s). Ilman välilyöntiä
      tai kestävyyttä vajoat hitaasti. Pää veden alla yli 1 s → hukkuminen 10 HP/s (reunat tummuvat, kuplia suusta). Kestävyys palautuu syvässä

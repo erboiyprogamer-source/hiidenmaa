@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.19)
+## Nykytila (päivitetty v2.20)
 
-- **Versio 2.19**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47). Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
+- **Versio 2.20**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -233,6 +233,23 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.20 (Extra-grafiikka-välilehti, low poly -vesi, rantaroiskeet, ylämäki hidastaa, kohteet mukailevat rinnettä – käyttäjän pyynnöt)
+- **Extra-grafiikka** (asetuksissa oma välilehti `xgfx`): asetukset, jotka ovat oletuksena pois kaikissa esiasetuksissa ja laitetaan käsin
+  (eivät vaikuta esiasetuksen nimeen). Napit kuten erittäin tarkoissa varjoissa (`xRow`): violetti = vaativa, punainen = raskain.
+  Sisältö: Erittäin tarkat varjot (`shUltra`, siirretty Grafiikka-sivulta), **Realistinen vesi** (`waterHQ`), **Mega-aallot** (`waterMega`,
+  punainen), **Aallot iskevät rantaan** (`shoreSpray`). Päätös: uudet "vain käsin" -asetukset lisätään tänne (`SET_PAGES.xgfx`).
+- **Low poly -vesi oletuksena** (`waterApply`, render.js): `LOWPOLY`-define – tasaiset tahkot (dFdx/dFdy-normaali), väri portaittain,
+  ei väreilyä, heikompi heijastus; verkko 64×64 (solu 2,8 m, ~4 200 kärkeä), lyhyin aalto pois (`WV.W` [0,62, 0,38, 0]). Realistinen vesi =
+  v2.18:n varjostin (96×96), Mega 160×160. Syvyysväri, läpinäkyvyys ja rantahäivytys toimivat molemmissa (ei välkkyvää rantaa).
+- **Aallot iskevät rantaan** (`shoreSpray`, `updateWaterFx`): kun aallot ovat isoja (`WV.a` > 0,28), matalikossa (0,05–1,4 m) aallonharjan
+  kohdalla 5–15 pisaraa lentää ylös 3–11 m/s ja putoaa painovoimalla 9,8 m/s² (testi: enintään 45 pisaraa, korkein 4,2 m).
+- **Ylämäki hidastaa** (`uphillK`, world.js): pelaaja ja kaikki olennot (`moveMob`), kävely ja juoksu × (1 − 0,5 · kulma/90°) liikkeen suuntaan
+  (45° = 75 %, 90° = 50 %); alamäki ei hidasta. Pelaajalla vain maastolla (ei rakennuksen lattialla, ei uidessa). Testi: 55° rinne → 3,19 m/s (4,6 × 0,69).
+- **Kohteet mukailevat rinnettä** (`setNodeMatrix`, `NTILT`, `groundSlope`): kivet, malmit, poimittavat 100 % ja pensaat 80 % kallistuvat maan
+  normaalin mukaan; puut pysyvät pystyssä, mutta tyvi upotetaan rinteeseen (≤ 0,6 m), kivet ≤ 0,4 m. `NTILT` määritellään resources.js:n
+  alussa, koska kohteet luodaan ylimmällä tasolla (muuten latausvirhe "Cannot access … before initialization", ks. Herkät kohdat).
+- Tarkistusrivi v2.20. Testattu: asetussivu (kuva), Mega-valinta 9 409 → 25 921 kärkeä (esiasetus pysyy Medium), low poly -kuvat tyyni/myrsky.
 
 ### v2.19 (korjaus: valikko piirsi 3D-maailman)
 - Käyttäjä: valikossa ei näkynyt taustakuvaa, vaan harmaa 3D-näkymä, ja valikko oli raskas (pilvet ja maailma latautuivat jo valikossa).
@@ -2604,6 +2621,7 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
 ### Vesi (v2.18)
+- [x] Low poly -vesi oletukseksi, realistinen vesi + Mega + rantaroiskeet Extra-grafiikkaan (v2.20).
 - [ ] **Idea (käyttäjä):** vedelle kevyempi oletusverkko tehty; seuraavaksi voisi tehdä kuun heijastuksen, sateen renkaat pinnalle (Medium+),
   vedenalaiset kasvit/kivet ja pelaajan uintiäänet (äänierä B2). Mega-aallot pysyy käsin päälle laitettavana.
 
