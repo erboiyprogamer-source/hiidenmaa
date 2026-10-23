@@ -62,6 +62,7 @@ const VARAANI=/*VARAANI-ALKU*/{
 }/*VARAANI-LOPPU*/;
 // v2.16: täysin hiljaiset kunnes omat tiedostoäänet (ei lainausta eikä pelin tekemää varaääntä)
 const CRE_SILENT=new Set(['kivivartija']);
+function mobBurning(m){return !m.dead&&(m.burnT>0||!!m.sunBurn);}   // v2.17
 const CRE_AGGRO=['neutral','hostile','boss','rboss'];   // niillä on suuttumisääni (aggro)
 const CRE_CHASE=['hostile','boss','rboss'];             // niillä on lisäksi toistuva jahtiääni (chase) ja suuttumisääni vain kerran
 const CRE_ECHO=['rboss','boss'];                         // v1.88: pomoilla lisäksi kaikuääni (echo, 1–2 versiota): kuuluu kaukaa kunnes pelaaja kohtaa pomon (v1.95: myös Kalmanvartija maan alta)
@@ -177,6 +178,12 @@ function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='u
     // rauhallinen ääntely 6–15 s välein alle 25 m päässä (ei jahdin aikana, jos olennolla on jahtiääni)
     // v2.12: tavallinen ääntely alle CRE_IDLE_R (36 m, v2.14), kutsuäänet (ulvonta ym.) alle CRE_FAR_R (150 m); pitkän äänen jälkeen tauko
     // vähintään äänen pituus + 2 s, kutsuäänen jälkeen 12–30 s lisää (ei jatkuvaa ulvontaa)
+    // v2.17 PALAMINEN: liekeissä olennon ääntely (idle, suuttuminen, jahti) on tauolla – kesken soiva katkaistaan; kipuääni soi 1,7–2,1 s välein
+    // kunnes palo sammuu tai olento kuolee (kuolinhuuto soi normaalisti). Sammuttua ääntely jatkuu tavalliseen tapaan.
+    const burn=mobBurning(m);
+    if(burn){if(!m.brS){m.brS=1;m.brT=.15;for(const v of CRE.voices.slice())if(v.m===m&&v.pri<=3){creStop(v);CRE.voices.splice(CRE.voices.indexOf(v),1);}}
+      if((m.brT-=dt)<=0){m.brT=1.7+Math.random()*.4;const bo=m.def.ai==='boss'||m.def.ai==='rboss';if(d2<(bo?60:CRE_NEAR_R)**2)creSnd(m,'hurt',bo?{p:.78,v:.55,key:'burn'}:undefined);}m.sndT=Math.max(m.sndT||0,2);continue;}
+    else if(m.brS){m.brS=0;m.sndT=2+Math.random()*4;}
     if(m.sndT===undefined)m.sndT=2+Math.random()*13;m.sndT-=dt;if(m.sndT<=0){m.sndT=6+Math.random()*9;const fr=creHasFar(m.type,'idle');
       if(d2<(fr?CRE_FAR_R:CRE_IDLE_R)**2&&m.state!=='sleep'&&m.state!=='rise'&&!hasChase){const du=creSnd(m,'idle');const ln=CRE.last[m.type+'_idle'];
         if(du){if(creIsFar(ln))m.sndT=(du+12+Math.random()*18)*(CRE_WOLF.has(m.type)?(isNight()?1.25:3):1);   /* v2.14: sudet ulvovat päivällä 3× harvemmin, yöllä 20 % harvemmin */

@@ -513,6 +513,13 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
   Puuttuva ääni = hiljaisuus. Kivivartija on hiljainen, kunnes sille lisätään omat äänet. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **Palavan olennon äänet (v2.17):** liekeissä olennon ääntely on tauolla; kipuääni kuuluu 1,7–2,1 s välein, kunnes palo sammuu tai olento kuolee.
+- **Vesi sammuttaa (v2.17):** palava pelaaja tai olento sammuu heti vedessä (yli 0,3 m syvyys) eikä syty siellä; soihtu sammuu vedessä; tulinuoli
+  sammuu heti veteen osuessaan.
+- **Sade ja nuotio (v2.17):** kova sade tai myrsky sammuttaa taivasalla olevan nuotion noin 4 s:ssa (savuaa ensin); katon alla nuotio palaa.
+  Polttoaine säilyy; sytytä uudelleen E:llä (ei onnistu, jos sade sammuttaisi heti) tai lisäämällä puuta. Sammunut nuotio ei valaise, lämmitä eikä kypsennä.
+- **Tulen jäähyt (v2.17):** sama tuli sytyttää pelaajan enintään 1 s välein; syttymisääni enintään 2,5 s ja ilmoitus 12 s välein;
+  sammumisen höyrypöllähdys enintään 2,5 s välein (pelaaja ja olennot).
 - **Pomojen toimintoäänet (v2.17):** yhteinen `pomot/`-kansio, josta kaikki pomot lainaavat (sävel pomon mukaan); pomon oma samanniminen ääni
   voittaa. Ryntäyksessä lataus- ja syöksyääni. Raskaat nelijalkaiset (karhu, hiidenkarhu, hiidenhirvi) ovat oma ryhmänsä.
 - Olennoilla voi olla omat äänet (`sounds/olennot_aanet/valmiit/<id>_<idle|hurt|death|aggro|chase>_<n>.mp3`, n = 1, 2, 3 … rajattomasti (v2.11), arpoo kaikista olemassa olevista versioista): rauhallinen

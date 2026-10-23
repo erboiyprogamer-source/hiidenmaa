@@ -190,7 +190,7 @@ function updatePlayer(dt){
       else if(ts.fuel<=0){ts.fuel=0;ts.lit=false;msg('Soihtusi paloi loppuun! Avaa reppu (Tab) ja napsauta soihtua – sieltä voit lisätä siihen pihkaa. Sen jälkeen sytytä se toisen liekin avulla.','warn');invDirty=true;}}
     else if(ts.fuel>0){// v1.41 (lista 4, kohdat 21–22): uudelleensytytys alle 2,5 m nuotiosta, soihtutelineestä, seinäsoihdusta tai
       // ulottuvuuden/Hautakummun soihdusta; heti viesti "Pysy paikallasi hetki…", 1–1,5 s paikallaan → syttyy (liike nollaa).
-      let near=false;const R2=2.5*2.5;for(const p of pieces){if(isFirePiece(p.t)?p.data.fuel>0:(p.t==='soihtuteline'||p.t==='seinasoihtu')&&p.data.burn>0){if(dist2(p.x,p.z,P.pos.x,P.pos.z)<R2&&Math.abs((p.y||0)-P.pos.y)<3){near=true;break;}}}
+      let near=false;const R2=2.5*2.5;for(const p of pieces){if(isFirePiece(p.t)?fireLit(p):(p.t==='soihtuteline'||p.t==='seinasoihtu')&&p.data.burn>0){if(dist2(p.x,p.z,P.pos.x,P.pos.z)<R2&&Math.abs((p.y||0)-P.pos.y)<3){near=true;break;}}}
       if(!near&&P.inDun){const dim=curDim();for(const f of FLAMES)if(f.dim===dim&&dist2(f.x,f.z,P.pos.x,P.pos.z)<R2&&Math.abs(f.y-P.pos.y-1.5)<2.5){near=true;break;}}
       const still=Math.hypot(P.vel.x,P.vel.z)<.6;
       if(near&&!P.inWater&&!(wRain>.5&&!shelterCache&&!P.inDun)){if(torchIgn<=0){msg('Pysy paikallasi hetki – soihtu syttyy…');P.ignNeed=1+Math.random()*.5;}if(still)torchIgn+=dt;else torchIgn=Math.max(.001,torchIgn-dt);if(torchIgn>=(P.ignNeed||1.2)){ts.lit=true;torchIgn=0;msg('Sytytit soihdun!','loot');sfx('pickup');}}else torchIgn=0;}

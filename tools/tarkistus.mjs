@@ -234,6 +234,16 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       const b=['karhu','hiidenkarhu','hiidenhirvi'].every(k=>TG[k]==='raskaat_nelijalkaiset')&&!TG_BORROW.raskaat_nelijalkaiset&&['vartija','jaajattari','kalmaherra','aarnihirvio'].every(k=>TG_BORROW[TG[k]]==='pomot');
       const c=/ryntays_lataus/.test(bossAI.toString())&&/ryntays_lataus/.test(realmBossAI.toString())&&/'ryntays'/.test(realmBossAI.toString())&&/TG_BORROW\[g\]/.test(tgSnd.toString());
       res=a&&b&&c||`virhe lainaus ${a} ryhmät ${b} ryntäys ${c}`;}finally{CRE.man=o;}return res;});
+  t('v2.17 vesi sammuttaa: olento/pelaaja vedessä (yli 0,3 m) sammuu ja ei syty, soihtu vedessä, tulinuoli veteen; palaessa ääntely tauolla ja kipuääni 1,7–2,1 s välein',()=>{
+    const a=/water\.position\.y-\.3/.test(mobWet.toString())&&/water\.position\.y-\.3/.test(playerWet.toString())&&/mobWet\(m\)/.test(igniteMob.toString())&&/playerWet\(\)/.test(canIgnitePlayer.toString());
+    const b=/P\.inWater&&!P\.inDun\)\{ts\.lit=false/.test(updatePlayer.toString())&&/cont===2\)arrowOut/.test(updateProjs.toString());
+    const c=/mobBurning\(m\)/.test(creTick.toString())&&/1\.7\+Math\.random\(\)\*\.4/.test(creTick.toString())&&/!mobBurning\(m\)/.test(damageMob.toString())&&mobBurning({burnT:2})&&!mobBurning({burnT:0})&&!mobBurning({burnT:2,dead:true});
+    return a&&b&&c||`virhe vesi ${a} soihtu/nuoli ${b} äänet ${c}`;});
+  t('v2.17 tulen spämmisuoja: sama tuli sytyttää enintään 1 s välein, ääni/ilmoitus/sammutusefekti jäähyllä; kova sade sammuttaa nuotion taivasalla (ei katon alla)',()=>{
+    const a=/p\.igP/.test(updatePlayerBurn.toString())&&/P\.igSnd/.test(updatePlayerBurn.toString())&&/P\.exFx/.test(updatePlayerBurn.toString())&&/m\.exFx/.test(updateBurn.toString());
+    const b=typeof fireLit==='function'&&fireLit({data:{fuel:5}})&&!fireLit({data:{fuel:5,out:1}})&&!fireLit({data:{fuel:0}});
+    const c=/fireRainTick\(p,dt\)/.test(updateStations.toString())&&/sheltered/.test(fireRainOut.toString())&&/wRain>\.9/.test(fireRainOut.toString())&&/wetT>=4/.test(fireRainTick.toString())&&/fireRainOut\(p\)/.test(fireInteract.toString());
+    return a&&b&&c||`virhe jäähyt ${a} fireLit ${b} sade ${c}`;});
   t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
     if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
     const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;
@@ -241,7 +251,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     if(!(CRE_PRI.death>CRE_PRI.hurt&&CRE_PRI.hurt>CRE_PRI.aggro&&CRE_PRI.aggro>CRE_PRI.chase&&CRE_PRI.chase>CRE_PRI.idle)||CRE.max!==10)return 'tärkeys';
     const f=creSnd.toString();if(!/m\.dun/.test(f)||!/creRevOn/.test(f)||!/CRE\.lastAmb/.test(f)||typeof creRevTick!=='function')return 'kaiku/toisto';
     return true;});
-  t('v1.87 palava pomo ähkii: kipuääni silmukkana matalampana (×0,78) ja hiljaisempana (×0,55), vain boss/rboss',()=>{const f=updateBurn.toString();return /boss/.test(f)&&/burnSnd/.test(f)&&/creSnd\(m,'hurt',\{p:\.78,v:\.55/.test(f)&&/o&&o\.p/.test(creSnd.toString())&&/o&&o\.v/.test(creSnd.toString())||'puuttuu';});
+  t('v1.87 palava pomo ähkii: kipuääni silmukkana matalampana (×0,78) ja hiljaisempana (×0,55), vain boss/rboss (v2.17: creTick)',()=>{const f=creTick.toString();return /rboss/.test(f)&&/mobBurning\(m\)/.test(f)&&/creSnd\(m,'hurt',bo\?\{p:\.78,v:\.55/.test(f)&&/o&&o\.p/.test(creSnd.toString())&&/o&&o\.v/.test(creSnd.toString())||'puuttuu';});
   t('v1.88 jousikalmo ampuu kuin pelaaja: viiveellä seuraava hidas tähtäys, nuoli lähtee jousen suuntaan (ei ennakointia), jousi pelaajan asennossa (bowAimFig)',()=>{const f=archerAI.toString();return typeof bowAimFig==='function'&&/bowAimFig/.test(archerPose.toString())&&/aimX/.test(f)&&/ARCH_TURN/.test(f)&&!/P\.vel/.test(f)&&ARCH_TURN<2&&/archerPose/.test(animMob.toString()+update.toString()+updateMobs.toString())||'puuttuu';});
   t('v1.88 ulottuvuuspomojen kaikuääni (echo): Aarnihirviö = pääääni, kuuluu vain nukkuvasta pomosta samassa ulottuvuudessa, kaukaa (≤38 m) kaiulla',()=>{const o=CRE.man;CRE.man={aarnihirvio_echo_1:{h:'x'}};const a=creRes('jaajattari','echo'),b=creRes('vartija','echo'),c=creRes('susi','echo');CRE.man=o;
     return a&&a.names[0]==='aarnihirvio_echo_1'&&Math.abs(a.p-1.2)<1e-9&&b===null&&c===null&&CRE_ECHO.join()==='rboss'&&/echo/.test(creTick.toString())&&/'sleep'/.test(creTick.toString())&&typeof creEchoPos==='function'||'virhe';});

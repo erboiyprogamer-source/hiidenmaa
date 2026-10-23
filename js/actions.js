@@ -67,7 +67,7 @@ function doMeleeHit(w){
     if(sneak)floatText('Hiiviskelyisku!',m.pos.x,m.pos.y+2.6,m.pos.z,'#ffd36a');
     m.fireHit=torchLit();damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz,(w.kb||1.5)*KB_V*PCOMBAT);m.fireHit=false;hitMob=true;if(torchLit())igniteMob(m);}
   // Tulta ja seisovaa soihtua lyömällä ne sammuvat.
-  if(!hitMob)for(const p of pieces){const lit=isFirePiece(p.t)?p.data.fuel>0:(p.t==='soihtuteline'||p.t==='seinasoihtu')&&p.data.burn>0;if(!lit)continue;const dx=p.x-P.pos.x,dz=p.z-P.pos.z,d=Math.hypot(dx,dz);
+  if(!hitMob)for(const p of pieces){const lit=isFirePiece(p.t)?fireLit(p):(p.t==='soihtuteline'||p.t==='seinasoihtu')&&p.data.burn>0;if(!lit)continue;const dx=p.x-P.pos.x,dz=p.z-P.pos.z,d=Math.hypot(dx,dz);
     if(d>w.range+.5||(d>.6&&(dx*fx+dz*fz)/d<.5))continue;if(isFirePiece(p.t)){p.data.fuel=0;p.data.burn=0;}else p.data.burn=0;
     burst(p.x,p.y+1,p.z,0x555555,10,3);sfx('hit');msg('Sammutit tulen.');return;}
   if(hitSpawner(w)&&w.pick)return;
@@ -102,12 +102,12 @@ function damageMob(m,dmg,dt,kx,kz,kb=4){
   if(m.def.ai!=='boss'&&m.def.ai!=='rboss'){const l=Math.hypot(kx,kz)||1,k=kb*(m.def.r>.8?.4:m.def.r>.6?.7:1);m.vel.x+=kx/l*k;m.vel.z+=kz/l*k;m.wind=0;}
   floatText(Math.round(dmg)+'',m.pos.x,m.pos.y+(m.type==='vartija'?6:(m.def.fh||1.8)),mult>1.2?'#ffd36a':mult<.9?'#a99d89':'#eee5d3');
   sfx('hit');bleed(m.pos.x,m.pos.y+Math.min(3,(m.barH||m.def.r*2.4)*.55),m.pos.z,bleedKind(m.type),m.def.r,dmg,m.dun,kx,kz,kb);if(dt==='slash'&&SET.bloodFx)addSlash(m);else if(Math.random()<.6)addWound(m);   // v1.37 (kohta 24): veri ja haavat
-  if(m.hp<=0)killMob(m);else if(playTime-(m.sndHurt??-9)>.4){m.sndHurt=playTime;creSnd(m,'hurt');}   // v1.84 osumaääni, tauko 0,4 s
+  if(m.hp<=0)killMob(m);else if(playTime-(m.sndHurt??-9)>.4&&!mobBurning(m)){m.sndHurt=playTime;creSnd(m,'hurt');}   /* v2.17: palaessa kipuääni tulee creTick:stä 1,7–2,1 s välein */   // v1.84 osumaääni, tauko 0,4 s
 }
 // Tuli (v0.75): soihdulla lyöty tai tulinuolella osuttu mobi/eläin palaa 5–10 s, 5 hp/s. Sade tai vesi sammuttaa heti.
 /* v1.97: mobi on märkä, kun sataa eikä se ole katon alla (suoja tarkistetaan korkeintaan 1 s välein, vain kun sataa) tai se on vedessä.
    Märkä mobi ei syty; sateen sammuttama mobi ei syty uudelleen 3 s:iin; "Syttyi!"-ääni ja -teksti enintään 4 s välein per mobi. */
-function mobWet(m){if(m.dun)return false;if(m.pos.y<-.9)return true;if(!(wRain>.5))return false;if(playTime>=(m.shU||0)){m.shU=playTime+1;m.shd=sheltered(m.pos.x,m.pos.y,m.pos.z);}return !m.shd;}
+function mobWet(m){if(m.dun)return false;if(m.pos.y<water.position.y-.3)return true;   /* v2.17: vedessä (yli 0,3 m) sammuu heti eikä syty */if(!(wRain>.5))return false;if(playTime>=(m.shU||0)){m.shU=playTime+1;m.shd=sheltered(m.pos.x,m.pos.y,m.pos.z);}return !m.shd;}
 function igniteMob(m){if(m.dead)return;if(mobWet(m)||playTime<(m.igniteCd||0))return;const fresh=!(m.burnT>0);m.burnT=5+Math.random()*5;
   if(!m.fireFx){const g=new THREE.Group(),h=(m.barH||m.def.r*2.8)*.55,r=Math.max(.25,m.def.r*.7);
     for(const [x,z,s] of [[0,0,1],[r*.6,.1,.7],[-r*.6,-.1,.75],[.05,r*.5,.6]]){const a=new THREE.Mesh(new THREE.ConeGeometry(.16*s*r*2,.6*s*r*2,6),MAT.flame),b=new THREE.Mesh(new THREE.ConeGeometry(.09*s*r*2,.4*s*r*2,6),MAT.flame2);a.position.set(x,h,z);b.position.set(x,h-.03,z);g.add(a,b);}
@@ -119,10 +119,10 @@ function igniteMob(m){if(m.dead)return;if(mobWet(m)||playTime<(m.igniteCd||0))re
   if(fresh&&playTime-(m.igFx||-99)>4){m.igFx=playTime;sfx('build',1.4,.6);floatText('Syttyi!',m.pos.x,m.pos.y+(m.barH||2)+.6,m.pos.z,'#ff9a3a');}m.hurtT=playTime;}
 function stopBurn(m){m.burnT=0;if(m.fireFx){m.f.g.remove(m.fireFx);m.fireFx=null;}if(m.fireLight){const i=lightSources.indexOf(m.fireLight);if(i>=0)lightSources.splice(i,1);m.fireLight=null;updateLights();}}
 // Palavan mobin päivitys: palauttaa true, jos mobi kuoli tulessa.
-function updateBurn(m,dt){if(mobWet(m)){stopBurn(m);m.igniteCd=playTime+3;burst(m.pos.x,m.pos.y+1,m.pos.z,0x9a9a9a,6,2);return false;}
+function updateBurn(m,dt){if(mobWet(m)){stopBurn(m);m.igniteCd=playTime+3;if(playTime-(m.exFx||-99)>2.5){m.exFx=playTime;burst(m.pos.x,m.pos.y+1,m.pos.z,0x9a9a9a,6,2);}return false;}   /* v2.17: sammumisefekti enintään 2,5 s välein */
   m.burnT-=dt;if(!m.sunBurn)m.hp-=5*dt;m.hurtT=playTime;m.lastHit=playTime;
   // v1.87: palava pomo (boss/rboss) ähkii silmukkana: oma kipuääni (hurt) matalampana (×0,78) ja hiljaisempana (×0,55), 1,4–2,2 s välein, alle 60 m päässä
-  if(m.def.ai==='boss'||m.def.ai==='rboss'){m.burnSnd=(m.burnSnd??.3)-dt;if(m.burnSnd<=0){m.burnSnd=1.4+Math.random()*.8;if(dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<60*60)creSnd(m,'hurt',{p:.78,v:.55,pri:1.5,key:'burn'});}}
+  /* v2.17: palamisen kipuääni (myös pomot, matalampi ja hiljaisempi) soi creTick:ssä 1,7–2,1 s välein */
   if(m.fireFx){const t=playTime*9;m.fireFx.children.forEach((c,i)=>{if(c.userData.glow){c.material.opacity=.14+.08*Math.abs(Math.sin(t*.7+i));return;}c.scale.y=.8+.35*Math.abs(Math.sin(t+i*1.7));});if(Math.random()<dt*24)emitEmber(m.pos.x+(Math.random()-.5)*.7,m.pos.y+(m.barH||1.5)*(.3+Math.random()*.6),m.pos.z+(Math.random()-.5)*.7,'spark');if(Math.random()<dt*3)emitEmber(m.pos.x,m.pos.y+(m.barH||1.5),m.pos.z,'smoke');if(Math.random()<dt*5)smokePuff(m.pos.x+(Math.random()-.5)*m.def.r,m.pos.y+(m.barH||1.5)*.9,m.pos.z+(Math.random()-.5)*m.def.r,1.1+m.def.r,.2);}   // v1.37 (kohta 36): isoja savupilviä
   if(m.fireLight){m.fireLight.x=m.pos.x;m.fireLight.y=m.pos.y+.4;m.fireLight.z=m.pos.z;}
   if(m.hp<=0){stopBurn(m);killMob(m);return true;}
@@ -250,7 +250,7 @@ function findInteract(){
 function pieceLabel(p){if(PIECES[p.t].store)return 'Avaa '+PIECES[p.t].n.toLowerCase();if(bt(p.t)==='ovi')return p.data.open?'Sulje ovi':'Avaa ovi';switch(p.t){
   case 'tikkaat':case 'kivitikkaat':return 'Kiipeä: pidä W (alas S)';
   case 'ovi':return p.data.open?'Sulje ovi':'Avaa ovi';
-  case 'nuotio':case 'grilli':{if(p.data.cook.some(c=>c.t>=c.need))return 'Ota ruoka tulelta';const raw=Object.keys(COOKABLE).some(id=>invCount(id)>0);return raw&&p.data.fuel>0&&p.data.cook.length<(p.t==='grilli'?4:3)?'Paista ruokaa':`Polttoainetta ${fuelText(fireRem(p),firePct(p))} – lisää`;}
+  case 'nuotio':case 'grilli':{if(p.data.cook.some(c=>c.t>=c.need))return 'Ota ruoka tulelta';const raw=Object.keys(COOKABLE).some(id=>invCount(id)>0);return p.data.out&&p.data.fuel>0?'Sytytä nuotio uudelleen':raw&&fireLit(p)&&p.data.cook.length<(p.t==='grilli'?4:3)?'Paista ruokaa':`Polttoainetta ${fuelText(fireRem(p),firePct(p))} – lisää`;}
   case 'soihtuteline':case 'seinasoihtu':return `Polttoainetta ${fuelText(torchRem(p),torchPct(p))} – lisää`;
   case 'sanky':return isNight()?'Nuku':'Aseta herätyspaikka';
   case 'arkku':return 'Avaa arkku';
@@ -286,9 +286,10 @@ function fireInteract(p){const cap=p.t==='grilli'?4:3,d=p.data;
   const done=d.cook.filter(c=>c.t>=c.need);
   if(done.length){for(const c of done){const burnt=c.t>=c.need*2;giveOrDrop(burnt?'hiili':COOKABLE[c.id],1,p.x,p.y+.8,p.z);if(!burnt)bump('cooked');}d.cook=d.cook.filter(c=>c.t<c.need);sfx('pickup');return;}
   const raw=Object.keys(COOKABLE).find(id=>invCount(id)>0);
-  if(raw&&d.fuel>0&&d.cook.length<cap){invRemove(raw,1);d.cook.push({id:raw,t:0,need:9+Math.random()*5});msg(`${ITEMS[raw].n} paistuu… (ota ajoissa, muuten palaa hiileksi)`);sfx('craft');return;}
+  if(d.out&&d.fuel>0){if(fireRainOut(p)){msg('Kova sade sammuttaisi tulen heti – suojaa nuotio katolla.','warn');return;}d.out=0;d.wetT=0;msg('Sytytit nuotion uudelleen.');sfx('build');return;}   // v2.17
+  if(raw&&fireLit(p)&&d.cook.length<cap){invRemove(raw,1);d.cook.push({id:raw,t:0,need:9+Math.random()*5});msg(`${ITEMS[raw].n} paistuu… (ota ajoissa, muuten palaa hiileksi)`);sfx('craft');return;}
   if(firePct(p)>50){msg(`Tulessa on jo tarpeeksi polttoainetta (${firePct(p)} %).`);return;}
-  if(invCount('puu')>0){invRemove('puu',1);d.fuel++;markFull(p);sfx('build');return;}
+  if(invCount('puu')>0){invRemove('puu',1);d.fuel++;d.out=0;markFull(p);sfx('build');return;}
   if(d.fuel<=FUEL_MAX-10&&invCount('hiili')>0){invRemove('hiili',1);d.fuel+=10;markFull(p);msg('Hiili palaa pitkään.');sfx('build');return;}
   msg(invCount('puu')>0||invCount('hiili')>0?'Tulessa on tarpeeksi polttoainetta.':'Tarvitset puuta tai hiiltä.','warn');}
 // Tukin hakkuu: osumakohtaan kuoren pintaa pitkin litteä, kuoren sisävärinen lohkeama (kasvaa samaan kohtaan lyötäessä, 4 tasoa) + halkeamia kuoreen;

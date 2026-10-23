@@ -58,7 +58,7 @@ const GOALS=[
   {id:'seinat',t:'Pystytä neljä seinää',d:'Seinät, ikkunaseinät ja ovet lasketaan. R kääntää, G vaihtaa kohdistusta.',xp:10,ok:()=>pieces.filter(p=>PIECES[p.t].snap==='wall').length>=4},
   {id:'ovi',t:'Lisää ovi',d:'Ovi aukeaa sinusta poispäin. E avaa ja sulkee.',xp:10,ok:()=>anyP(p=>bt(p.t)==='ovi')},
   {id:'katto',t:'Laita katto',d:'Olkikatto pitää sateen ja lumen pois. Katon alla voit levätä.',xp:10,ok:()=>anyP(p=>PIECES[p.t].roof)},
-  {id:'nuotio',t:'Sytytä nuotio',d:'Rakenna nuotio (kiveä ja puuta) ja lisää siihen puuta E:llä.',xp:10,ok:()=>anyP(p=>isFirePiece(p.t)&&p.data.fuel>0)},
+  {id:'nuotio',t:'Sytytä nuotio',d:'Rakenna nuotio (kiveä ja puuta) ja lisää siihen puuta E:llä.',xp:10,ok:()=>anyP(p=>isFirePiece(p.t)&&fireLit(p))},
   {id:'lepo',t:'Lepää tulen ääressä',d:'Seiso nuotion ja katon alla noin 12 sekuntia, niin saat Levännyt-tilan.',xp:15,ok:()=>flags.rested||P.buffs.levannyt},
   {id:'marjat',t:'Poimi kolme kasvia',d:'Marjat ja sienet kasvavat metsissä. Paina E niiden luona.',xp:10,ok:()=>cnt('picked')>=3},
   {id:'paista',t:'Metsästä ja paista lihaa',d:'Peurat pakenevat – hiivi lähelle tai käytä keihästä tai jousta. Paista liha nuotiolla (E) ja ota se ajoissa.',xp:20,ok:()=>invCount('paisti')||invCount('varras')||flags.ate||cnt('cooked')>0},

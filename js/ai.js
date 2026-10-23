@@ -9,7 +9,7 @@ const _hitl=[];
 // Tulenarat viholliset: palava nuotio/grilli (7 m), seisova soihtu (5 m) ja pelaajan kädessä oleva soihtu (6 m; ei luolastossa). Lista päivittyy 0,4 s välein.
 let fireSrc=[],fireT=0;
 function refreshFire(dt){fireT-=dt;if(fireT>0)return;fireT=.4;fireSrc.length=0;
-  for(const p of pieces){if(isFirePiece(p.t)&&p.data.fuel>0)fireSrc.push({x:p.x,z:p.z,r:7});else if((p.t==='soihtuteline'||p.t==='seinasoihtu')&&p.data.burn>0)fireSrc.push({x:p.x,z:p.z,r:5});}
+  for(const p of pieces){if(isFirePiece(p.t)&&fireLit(p))fireSrc.push({x:p.x,z:p.z,r:7});else if((p.t==='soihtuteline'||p.t==='seinasoihtu')&&p.data.burn>0)fireSrc.push({x:p.x,z:p.z,r:5});}
   if(torchLit()&&!P.inDun)fireSrc.push({x:P.pos.x,z:P.pos.z,r:6,torch:1});}
 // Lähin avaus (ovi tai ikkuna), jonka mobi voi hajottaa päästäkseen pelaajan luo.
 function nearestOpening(m){let best=null,bd=1e9;for(const p of pieces){const b=bt(p.t);if((b!=='ovi'&&b!=='ikkunaseina')||PIECES[p.t].mobProof||(b==='ovi'&&p.data.open))continue;
@@ -486,11 +486,20 @@ function spawner(dt){
 function respawnNodes(){for(const n of nodes)if(!n.alive&&n.def.kind!=='tree'&&n.respawnAt<=playTime&&dist2(n.x,n.z,P.pos.x,P.pos.z)>40*40&&!nearBase(n.x,n.z))respawnNode(n);}
 const LIGHT_CAP=3.0;let shFrame=0,shNearPrev=false;const ALL_LIGHTS=[...LIGHTS,torchLight,torchFill];
 let shYaw0=null;
+/* v2.17 KOVA SADE SAMMUTTAA NUOTION: sateessa (wRain > 0,9, sade tai myrsky) taivasalla oleva nuotio/grilli sihisee ja sammuu 4 s:ssa
+   (d.out = 1, polttoaine säilyy). Katon alla (sheltered, tarkistus 1 s välein) ei sammu. Uudelleen: E (fireInteract) tai puun lisääminen, kun sade ei osu.
+   Ilmoitus enintään 20 s välein ja vain alle 25 m päässä; sihinä ja höyry. */
+function fireRainOut(p){if(P.inDun||!(wRain>.9))return false;const d=p.data;if(playTime>=(d.shU||0)){d.shU=playTime+1;d.shd=sheltered(p.x,p.y-.5,p.z);   /* säde lähtee 1,2 m korkeudelta, liekkien yläpuolelta */}return !d.shd;}
+let fireRainMsgT=-99;
+function fireRainTick(p,dt){const d=p.data;if(!fireLit(p)){d.wetT=0;return;}if(!fireRainOut(p)){d.wetT=0;return;}d.wetT=(d.wetT||0)+dt;
+  if(dist2(p.x,p.z,P.pos.x,P.pos.z)<35*35&&Math.random()<dt*4)emitEmber(p.x+(Math.random()-.5)*.5,p.y+.5,p.z+(Math.random()-.5)*.5,'smoke');
+  if(d.wetT>=4){d.out=1;d.wetT=0;const near=dist2(p.x,p.z,P.pos.x,P.pos.z)<25*25;if(near){burst(p.x,p.y+.5,p.z,0x9a9a9a,10,2);sfx('hit',.6,.5);}
+    if(near&&playTime-fireRainMsgT>20){fireRainMsgT=playTime;msg('Kova sade sammutti nuotion – sytytä se uudelleen katon alla tai sateen tauottua (E).','warn');}}}
 function updateStations(dt){
   for(const p of pieces){
     // piirtoetäisyys: kaukana (sumun takana) olevia rakennuksia ei piirretä
     {const far=dist2(p.x,p.z,P.pos.x,P.pos.z)>(scene.fog.far+25)**2;if(far===p.mesh.visible)p.mesh.visible=!far;}
-    if(isFirePiece(p.t)){const f=p.mesh.userData.flame,d=p.data;const lit=d.fuel>0;f[0].visible=f[1].visible=lit;
+    if(isFirePiece(p.t)){const f=p.mesh.userData.flame,d=p.data;fireRainTick(p,dt);const lit=fireLit(p);f[0].visible=f[1].visible=lit;
       if(lit){const u=p.fl||(p.fl={cur:1,target:1,t:Math.random()*.2}),s=flick(u,dt);f[0].scale.set(.9+s*.12,.7+s*.45,.9+s*.12);f[1].scale.set(1,.8+s*.35,1);d.burn+=dt;
         if(dist2(p.x,p.z,P.pos.x,P.pos.z)<35*35){if(Math.random()<dt*3.2)emitEmber(p.x+(Math.random()-.5)*.4,p.y+.7,p.z+(Math.random()-.5)*.4,'spark');if(Math.random()<dt*.9)emitEmber(p.x+(Math.random()-.5)*.2,p.y+1.1,p.z+(Math.random()-.5)*.2,'smoke');}if(d.burn>=90){d.burn=0;d.fuel--;}for(const c of d.cook)c.t+=dt;}
       const fm=p.mesh.userData.food;if(fm)for(let i=0;i<4;i++){const c=d.cook[i],m=fm[i];m.visible=!!c;if(c){const r=c.t/c.need;m.material.color.setHex(r<1?(r<.6?0xc9554e:0xb06a42):r<2?0x7a4524:0x15110f);}}}

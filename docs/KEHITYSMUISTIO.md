@@ -234,7 +234,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
 
-### v2.17 (pomojen yhteinen toimintokansio, ryntäysäänet)
+### v2.17 (pomojen yhteinen toimintokansio, ryntäysäänet, vesi sammuttaa, palavan olennon äänet, sade sammuttaa nuotion, tulen spämmisuoja)
 - **👑 `pomot/`** (sounds/olennot_toiminnot/raw/pomot/): kaikkien pomojen yhteinen pääkansio (💎). Pomojen omissa kansioissa (kalmanvartija,
   jaatar, kalmaherra, aarnihirvio) on samat paikat; **oma ääni voittaa**, muuten lainataan pomot-kansiosta sävelellä `TG_BP` (vartija ×0,85,
   Jäätär ×1,12, Kalmaherra ×0,95, Aarnihirviö ×0,9). Ainoa lainaus toimintoäänissä (`TG_BORROW`, audio.js ja työkalu); listassa 🔁.
@@ -243,7 +243,21 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 - **Valmiit-kansiot:** käsitellyt toimintoäänet menevät `valmiit/<ryhmä>_valmis/` (pääte erottaa raa'oista `raw/<ryhmä>/`); työkalu luo kaikki
   ryhmäkansiot valmiiksi (tyhjiin `.gitkeep`) ja siirtää vanhat päätteettömät automaattisesti (`VALMIS`, `out_dir_t`).
 - Kansio `raskaat` → **`raskaat_nelijalkaiset`** (karhu, hiidenkarhu, hiidenhirvi); ei liity pomoihin eikä lainaa.
-- 58 uutta paikkamerkkiä. Tarkistusrivi v2.17. Testattu testikopiolla: Jäätär lainaa pomot-äänen (×1,11), Kalmaherra käyttää omaa, karhu ei lainaa,
+- **Vesi sammuttaa kaiken tulen:** palava olento tai pelaaja sammuu heti ja on syttymätön, kun vettä on yli 0,3 m (`mobWet`: `m.pos.y <
+  water.y − 0,3`; `playerWet` samoin; ennen vasta 0,9 m). Soihtu kädessä sammuu vedessä (`P.inWater`, ennallaan) ja tulinuoli heti veteen osuessaan
+  (`arrowContact` = 2 → `arrowOut`, ennallaan). Testattu: susi sammuu vedessä, ei syty uudelleen; pelaaja sammuu; nuoli vedessä = 2.
+- **Palavan olennon äänet** (`mobBurning`, creTick): liekeissä ääntely (idle, suuttuminen, jahti) on tauolla ja kesken soiva katkaistaan;
+  kipuääni (`hurt`) soi 1,7–2,1 s välein kunnes palo sammuu tai olento kuolee (iskut eivät lisää kipuääniä palaessa, `damageMob`). Kuolinhuuto soi normaalisti.
+- **Kova sade sammuttaa nuotion taivasalla** (ai.js `fireRainOut`/`fireRainTick`, kutsu `updateStations`): kun `wRain > 0,9` (sade/myrsky) eikä nuotion
+  yllä ole kattoa (`sheltered` 0,5 m tulen yläpuolelta, välimuisti 1 s, `d.shU`/`d.shd`), nuotio savuaa ja sammuu 4 s:ssa (`d.out = 1`, polttoaine
+  säilyy). Ilmoitus enintään 20 s välein (vain lähellä), ääni + savupöllähdys vain alle 25 m. Uusi apu `fireLit(p)` (pieces.js) = polttoainetta
+  JA ei sammunut; käytössä valossa, lämmössä, kodin lämmössä, ruoanlaitossa, soihdun sytytyksessä, pelaajan/olennon syttymisessä ja tavoitteessa.
+  Sammunut nuotio: E = "Sytytä nuotio uudelleen" (estetty ilmoituksella, jos sade sammuttaisi heti); puun lisäys sytyttää myös.
+- **Tulen spämmisuoja** (sytytys vs. sammutus): sama tuli sytyttää pelaajan enintään 1 s välein (`p.igP`, `P.igniteCd = +1 s` syttyessä ja
+  sammuessa); syttymisääni 2,5 s välein (`P.igSnd`), ilmoitus 12 s (ennallaan); sammutuksen höyrypöllähdys 2,5 s välein (pelaaja `P.exFx`,
+  olento `m.exFx`). Palavan pomon ähkiminen siirtyi `updateBurn`:sta `creTick`:iin (sama ×0,78/×0,55), ettei kahta kipuäänijonoa soi. KORJAUKSET 45.
+- 58 uutta paikkamerkkiä. Tarkistusrivit v2.17 (3 kpl; v1.87-rivi tarkistaa nyt creTickin). Testattu: avonuotio sammui myrskyssä, katon alla palaa,
+  uudelleensytytys sateessa estetty / poutana onnistuu, pelaaja nuotiolla syttyi 1,03 s välein, ilmoitus 1 kerran. Testattu testikopiolla: Jäätär lainaa pomot-äänen (×1,11), Kalmaherra käyttää omaa, karhu ei lainaa,
   ryntäyksen lataus ja syöksy soivat.
 
 ### v2.16 (kivivartija omiin ääniin, ääniprojektien kansiot, äänierä B1: olentojen toiminnot – käyttäjän vastaukset)

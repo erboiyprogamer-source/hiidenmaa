@@ -322,6 +322,13 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   tikkaita; jos väliin osuu vähintään 0,5 m korkea laatikko (seinä, ovi), ei kiivetä. Tikkaat itse (myös jatkoketju), lattiat ja `off`-törmäimet ohitetaan.
   Seinän sisälle (vanha sijoitus) asetettuihin tikkaisiin ylettyy edelleen molemmilta puolilta.
 
+## 45. Tuli sytytti ja sammutti vuorotellen (palaa–sammuu–palaa), äänet ja efektit spämmäsivät (v2.17)
+- Syy: nuotiolla seisova pelaaja syttyi heti, kun jäähy loppui, ja vedessä/sateessa sammui heti → syttymisääni ja höyrypöllähdys toistuivat.
+  Palavalla pomolla soi kaksi kipuäänijonoa (`updateBurn` + `creTick`). Sade ei koskaan sammuttanut nuotiota (vain pelaajan).
+- Korjaus: sama tuli sytyttää enintään 1 s välein (`p.igP`), ääni 2,5 s (`P.igSnd`), sammutusefekti 2,5 s (`P.exFx`/`m.exFx`), pomon ähkintä vain
+  `creTick`:issä; nuotion tila `fireLit(p)` ja sateen sammutus `fireRainTick` (4 s, ilmoitus 20 s välein). Uudelleensytytys sateessa taivasalla estetty.
+  Uusissa tulen lähteissä käytä `fireLit(p)`:tä, älä pelkkää `p.data.fuel > 0`:aa.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`
