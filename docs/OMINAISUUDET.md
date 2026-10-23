@@ -19,6 +19,12 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Koko:** noin ±350 m (`HALF`), korkeusruudukko 2 m (`GS`), skaala `WS` = 1,75. Reunat laskevat mereen.
 - **Biomit (`biomeAt`):** meri, ranta, niitty, metsä, aarnimetsä (sumuinen, pimeä, 14–22 m puut), vuori (yli `mtnH` 23 m, lumi yli 33 m),
   kalmanummi. Kartoittain säädettävä: `moorR` (nummen säde), `mtnH` (vuoriraja), `meadowT` (niittyjen osuus).
+- **Meri (v2.18):** pohja syvenee jyrkästi rannan jälkeen (−9 → −23 m, avomeri −40 m) ja on kiinteä. Maailman raja merellä on 3× kauempana
+  rannasta kuin ennen (kartasta riippuen noin 435–640 m keskeltä); rajalla ilmoitus.
+- **Vesi (v2.18):** läpinäkyvä ja sinertävä matalassa, tummuu yli 2 m syvyydessä; ranta häipyy pehmeästi; taivas ja aurinko heijastuvat;
+  aallot tuulen mukaan (tyyni ~7 cm, myrsky ~1,3 m). Medium+: rantamaininki, vaahtopäät ja myrskyroiskeet (optimointi: roiskeet vain lähellä
+  eikä metsän takana; pois High+:sta). Veden alla (kamera pinnan alla): sininen sumu tummuu syvemmällä, High+: kuplat ja leijuvat hiukkaset.
+  Koko pelaaja veden alla → kamera lähimpään zoomiin, rulla ei zoomaa. Mega-aallot (tiheä verkko) vain käsin asetuksista.
 - **Kiinteät paikat (`LOC`):** aloitusranta, 3 raunioita arkkuineen, 3 riimukiveä, Hautakumpu, Kalmankehä.
 - **Arvotut paikat (`SITE_DEFS`):** 3 portaalia, 4 rauniotaloa, 3 arkkukiveä, 6 lisäriimukiveä. Sama siemen → samat paikat samalla kartalla;
   maasto tasoitetaan (`flatten`). Metsä väistää kaikkia paikkoja 20 m (riimukivet 4 m).
@@ -33,7 +39,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 | Kävely / juoksu / kyykky / torjunta tai jousen veto | 4,6 / 8 / 2,3 / 2,4 m/s |
 | Isku käynnissä | nopeus × 0,45 |
 | Ylikuormitus (paino > `MAXW` 160) | nopeus × 0,55, ei juoksua eikä hyppyä |
-| Uinti (vesi alle −1,3 m) | 2,6 m/s, kestävyys −6/s liikkuessa (−2/s paikallaan), tyhjällä kestävyydellä −4 hp/s |
+| Uinti (v2.18: pohja yli 1,5 m pinnan alla) | 2,6 m/s (veden alla 2,1); välilyönti pohjassa kelluu pinnassa: painallus −1 kestävyys (jäähy 1 s) + −5/s; ilman vajoaa 0,42 m/s; kestävyys palautuu 25 % nopeudella kun välilyönti ei ole pohjassa |
+| Hukkuminen (v2.18) | pää veden alla yli 1 s → −10 HP/s, reunat tummuvat, kuplia; vedessä kuollessa keho vajoaa 0,63 m/s, ruutu tummuu, kuolinruutu 3,8 s; hautakasa lähimmälle rannalle |
 | Hyppy | pystynopeus 7,2 m/s, maksaa 8 kestävyyttä |
 | Painovoima | 22 m/s² |
 | Putoamisvahinko | kun alastulonopeus > 15 m/s: (nopeus − 15) × 6 hp |

@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.17)
+## Nykytila (päivitetty v2.18)
 
-- **Versio 2.17**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen yhteinen toimintokansio, ryntäysäänet) uudessa PR:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
+- **Versio 2.18**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) uudessa PR:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -233,6 +233,41 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.18 (vesiuudistus: uinti ja hukkuminen, vesivarjostin, aallot, vedenalaiset efektit, maailman raja, K pois – käyttäjän suunnitelma)
+- **Käyttäjän suunnitelma (tallennettu):** uinnista luonnollinen ja ilman pinnassa nykimistä; välilyönti pohjassa = kellut pinnassa (heti −1
+  kestävyys, jäähy 1 s, sitten −5/s), muuten vajoat hitaasti; veden alla 1 s → hukkuminen 10 HP/s, reunat tummuvat, suusta kuplia; vedessä
+  kuollessa ohjaus pois, veltto keho vajoaa 50 % nopeammin pohjaa kohti ja ruutu tummuu ennen kuolinruutua; hautakasa rantaan (maan puolelle);
+  maailman raja vedessä 3× kauempana; pohja syvenee jyrkästi ja on kiinteä; vesi läpinäkyvä ja sinertävä, tummuu yli 2 m syvyydessä ja
+  kameran mennessä syvemmälle; ranta ei välky; elävät aallot, rantamaininki tasaisilla rannoilla, myrskyssä isot aallot; sää/aaltoefektit vain
+  Medium+, optimointi (kaukana tai metsän takana ei roiskeita) pois High+:sta; vedenalaiset partikkelit High+ (kuplat pohjasta, tummat
+  ajelehtivat hiukkaset väistävät pelaajaa); kamera menee pinnan läpi (efektit kameran mukaan); kokonaan veden alla kamera zoomaa lähimpään
+  eikä zoomia voi muuttaa; K-näppäimen koko näyttö pois kokonaan; vähemmän vesiverkon kärkiä + Mega-asetus vain käsin.
+- **Uinti (player.js, KORJAUKSET 46):** syvä vesi = pohja (`groundAt`) yli 1,5 m pinnan alla (hystereesi 1,35 m) ja vartalo pinnan alla →
+  `P.swim`. Välilyönti (`P.swUp`): painallus −1 (jäähy `P.swCd` 1 s), pohjassa −5/s, kellunta pinnassa `waveAt` − 1,3 m ± 6 cm keinunta.
+  Ilman: vajoaa 0,42 m/s. Kestävyys palautuu syvässä vedessä 25 % nopeudella, kun välilyönti ei ole pohjassa (päätös: muuten järven yli ei pääse).
+  Uinti 2,6 m/s (veden alla 2,1). Vanha −6/−2 kestävyyttä/s ja −4 HP/s tyhjällä poistettu. Ensimmäisellä kerralla ohje (`flags.first.swim`).
+- **Hukkuminen:** pää (y + 1,62) pinnan alla → `P.underT`; yli 1 s → −10 HP/s (`P.drownT`, kuolinsyy `drown` + vihje kuolinruudussa),
+  `#drownV` reunat tummuvat, suusta kuplia ~5/s (`uwMouthBubble`). Kuolema vedessä (`P.waterDeath`): `updatePlayerDeath` tila `D.water`
+  – veltto asento, vajoaa 0,63 m/s pohjaan, kuplia 2,5 s, ruutu tummuu 0,3–3,6 s; kuolinruutu 3,8 s (muuten 1,4 s). Hautakasa
+  `shorePoint`: lähin maa ≥ 0,5 m vedenpinnan yläpuolella (renkaat 1,5 m välein, rajan sisällä).
+- **Merenpohja ja raja (world.js):** `heightFn`: alle −0,6 m syvyys × (1 + 1,6 · sstep(−0,6, −6, h)) → −9 → −23 m, −14 → −36 m (maa ja ranta
+  ennallaan). Maaston ulkopuolella `SEA_FLOOR` −40 (+ `seaFloor`-taso render.js). Raja `SEA_B`/`seaBorder(x,z)`: 360 suuntaa, uloin maa,
+  raja = ranta + 3 × (365 − ranta), 365…640 m, pehmennetty (kartta 0: 435–540 m). Rajalla ilmoitus 12 s välein.
+- **Vesivarjostin (render.js):** syvyyskartta `WATER_DEP` (HN×HN, R = √((syvyys+1)/64), lapio päivittää `waterDepSet`), `ShaderMaterial`:
+  läpinäkyvyys katselukulman mukaan (polku = syvyys / V.y), väri matala turkoosi → syvä `smoothstep(2, 22, d)`, rantahäivytys 0…0,35 m (ei
+  leikkausviivaa), taivaan heijastus (Fresnel) + aurinko, väreily lähellä. Aallot `WV` (3 siniaaltoa λ 22/13/7 m, syvän veden nopeudet),
+  korkeus `0,05 + 0,0025 · tuuli²` (≤ 1,35), vaimenevat matalassa (0,2–7 m) ja kaukana; `waveAt` JS:ssä samat. Verkko seuraa kameraa
+  (`waterGeo`: 96×96, keskisolu 1,25 m; **Mega-aallot** `SET.waterMega` 160×160, ei esiasetuksissa). Alapuoli (veden alta) läpinäkymätön.
+- **Efektit:** `SET.waterFx` (Medium+): rantamaininki (viivat kulkevat rantaan välillä), myrskyn vaahtopäät, roiskeet myrskyssä
+  (`updateWaterFx`); `SET.waterOpt` (pois High+:sta): roiskeet vain < 60 m ja ei, jos ≥ 3 puuta näkölinjalla (muuten 110 m). Veden alla
+  (`CAM_UW`, camera.js): sumu 30 → 9 m ja tummuu syvyyden ja yön mukaan, taivas/pilvet/sade piiloon, `#uwTint`. `SET.uwFx` (High+): kuplat
+  pohjasta vähän pinnan alle (`UWF.bub`), tummat hiukkaset virran mukana ja väistävät pelaajaa (`UWF.mote`). Kokonaan veden alla
+  (`P.subm`) kamera liukuu 2,2 m:iin (`P.uwZoomK`), rulla ei zoomaa.
+- **K pois:** koko näyttö -toiminto (`full`, `toggleFullscreen`) poistettu; K ei tee mitään (selaimen F11 toimii).
+- Asetukset: `SET._v` 5 (kertasiirto waterFx/waterOpt/uwFx esiasetuksesta). Tarkistusrivit v2.18 (2 kpl). Testattu: kellunta −1,30 m ±0,03,
+  kestävyys 100 → 84 / 3 s, pää veden alle 1,7 s, vahinko 1 s myöhemmin, kuolema 8,9 s, hautakasa rannalla (0,7 m, 25 m päässä),
+  vajoaminen 0,63 m/s, kuolinruutu ja vihje, Mega 9 409 → 25 921 kärkeä, K ei tee mitään, tallennus/lataus; full157 6 karttaa 0 virhettä.
 
 ### v2.17 (pomojen yhteinen toimintokansio, ryntäysäänet, vesi sammuttaa, palavan olennon äänet, sade sammuttaa nuotion, tulen spämmisuoja)
 - **👑 `pomot/`** (sounds/olennot_toiminnot/raw/pomot/): kaikkien pomojen yhteinen pääkansio (💎). Pomojen omissa kansioissa (kalmanvartija,
@@ -2562,6 +2597,10 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 ## Ideajono
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+### Vesi (v2.18)
+- [ ] **Idea (käyttäjä):** vedelle kevyempi oletusverkko tehty; seuraavaksi voisi tehdä kuun heijastuksen, sateen renkaat pinnalle (Medium+),
+  vedenalaiset kasvit/kivet ja pelaajan uintiäänet (äänierä B2). Mega-aallot pysyy käsin päälle laitettavana.
 
 ### Äänierät (äänisuunnitelma, ks. "Äänisuunnitelma")
 - [x] **A olennot** (v1.84): paikkamerkit kaikille 26 olennolle, varaääniketju, 3D-ääni, idle/aggro/hurt/death, voimakkuusasetus.

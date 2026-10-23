@@ -329,6 +329,11 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   `creTick`:issä; nuotion tila `fireLit(p)` ja sateen sammutus `fireRainTick` (4 s, ilmoitus 20 s välein). Uudelleensytytys sateessa taivasalla estetty.
   Uusissa tulen lähteissä käytä `fireLit(p)`:tä, älä pelkkää `p.data.fuel > 0`:aa.
 
+## 46. Pelaaja nyki uidessa pinnassa (v2.18)
+- Syy: uintitila oli `P.pos.y < −1,3`, mutta kellunta veti pelaajan −1,25 m:iin → tila vaihtui joka ruutu (uinti ↔ painovoima) ja pelaaja nyki.
+- Korjaus: uintitila pohjan syvyydestä (`groundAt` yli 1,5 m pinnan alla) hystereesillä (1,35 m / vartalo 0,6 m pinnan alla, kun jo uidaan);
+  kellunta vain välilyönnillä, muuten hidas vajoaminen. Älä palauta uintitilaa pelkästään pelaajan korkeudesta.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`
