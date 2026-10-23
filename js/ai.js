@@ -37,6 +37,7 @@ function updateMobs(dt){
     m.flash=Math.max(0,m.flash-dt);for(const mt of m.mats)mt.emissive.setHex(m.flash>0?0x661111:0x000000);
     if(m.born!==undefined&&bornTick(m,dt,dist))continue;   // v2.14 syntyanimaatio (nousee makuulta)
     if(m.type==='emakko'&&!m.dun)famPlan(m,dt,dist);if(m.fam&&famStep(m,dt,dist))continue;   // v2.14 emakon ja porsaiden perhehetket
+    if(TG_EAT[m.type]&&!m.dun){if(m.eatT>0){if(eatStep(m,dt,dist))continue;}else eatPlan(m,dt,dist);}   // v2.16 syöminen
     if(m.burnT>0&&updateBurn(m,dt))continue;
     if(!m.dun&&!m.dead&&sunBurnAI(m,dt))continue;   // v1.50 yöolennot palavat auringossa
     if(!(m.burnT>0)&&!m.dun)for(const s of fireSrc)if(!s.torch&&s.r===7&&dist2(s.x,s.z,m.pos.x,m.pos.z)<.8*.8){igniteMob(m);break;}   // v1.37: nuotioon astuva syttyy
@@ -101,7 +102,7 @@ function updateMobs(dt){
       else if(pr.curious&&m.state!=='flee'&&!P.dead&&!hid&&dist<26&&m.los)m.state='watch';
       else if(m.state==='watch')m.state='idle';
       if(m.state==='freeze'){m.frzT-=dt;m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*3));if(m.frzT<=0)startFlee(m,dx,dz);moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
-      if(m.state==='watch'){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*2.5));moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
+      if(m.state==='watch'){if((m.snT=(m.snT??.5)-dt)<=0){m.snT=4+Math.random()*3;if(dist<25)tgSnd(m,'nuuhkiminen',{v:.8});}   /* v2.16 */m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*2.5));moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
       if(m.fly){flyMob(m,dt);animMob(m,dt);continue;}}
     else if(hostile&&!P.dead&&!(P.spawnProt>0)&&!(m.forgetT>0)&&((m.los&&dist<aggroR)||hurt)&&Math.abs(P.pos.y-m.pos.y)<6){if(m.state!=='chase'){m.seenT=playTime;m.lastPX=P.pos.x;m.lastPZ=P.pos.z;packAlert(m);}m.state='chase';}
     /* v2.08: jahti jatkuu niin kauan kuin vihollinen muistaa pelaajan (MOB_MEM 30 s viimeisestä näkemisestä/osumasta), vaikka näköyhteys katkeaisi
@@ -117,7 +118,7 @@ function updateMobs(dt){
       const ar=m.archer&&dist>3.2&&dist<22&&m.wind<=0?archerAI(m,dt,dx,dz,dist):null;   // v1.42 jousikalmo
       if(ar){if(ar.aim){tx=0;tz=0;}else{tx=dx;tz=dz;}spd=ar.spd;}else{
       if(!m.siege&&!m.thru&&!m.los&&m.noLos>1&&dist<30&&m.wind<=0&&(m.sgT=(m.sgT||0)-dt)<=0){m.sgT=.5;m.siege=siegeTarget(m);if(m.siege)packAlert(m);}   // v2.08: ei näe (talossa) → piiritys (haku 0,5 s välein)
-      if(m.wind>0){m.wind-=dt;if(m.wind<=0){if(mobReach(m,dist)<d.range+.25&&!P.dead&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){const f=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(f>.5){hurtPlayer(d.dmg,m.pos.x,m.pos.z);if(d.kb&&!P.dead){P.kbx=dx/(dist||1)*d.kb;P.kbz=dz/(dist||1)*d.kb;P.vy=Math.max(P.vy,d.kb*.25);}}}m.atkCd=d.cd;}}
+      if(m.wind>0){m.wind-=dt;if(m.wind<=0){tgSnd(m,'huitaisu');if(mobReach(m,dist)<d.range+.25&&!P.dead&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){const f=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(f>.5){mobHurtP(m,d.dmg,m.pos.x,m.pos.z);if(d.kb&&!P.dead){P.kbx=dx/(dist||1)*d.kb;P.kbz=dz/(dist||1)*d.kb;P.vy=Math.max(P.vy,d.kb*.25);}}}m.atkCd=d.cd;}}
       else if(mobReach(m,dist)<d.range+.2&&m.atkCd<=0&&losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true)){m.wind=MOB_WIND;}
       else if(!m.siege&&m.atkCd<=0&&mobReach(m,dist)<d.range+1&&!losClear(m.pos.x,mobEyeY(m),m.pos.z,P.pos.x,P.pos.y+1.3,P.pos.z,true))m.siege=siegeTarget(m);
       else if(dist>d.range*.8){tx=dx;tz=dz;spd=d.run;}
@@ -237,10 +238,20 @@ function famStep(m,dt,dist){const F=m.fam,sow=F.sow;
   const fx=v=>v.pos?v.pos:v;let moving=false;
   if(tx!==null){const ex=tx-m.pos.x,ez=tz-m.pos.z;if(ex*ex+ez*ez>.12){moveMob(m,ex,ez,spd,dt);moving=true;}}
   if(!moving){moveMob(m,0,0,0,dt);if(face){const q=fx(face);m.yaw=lerpAngle(m.yaw,Math.atan2(q.x-m.pos.x,q.z-m.pos.z),Math.min(1,dt*4));}}
+  if(m===sow&&F.k==='root'&&(m.eatS=(m.eatS??.5)-dt)<=0){m.eatS=2.4;if(dist<25)tgSnd(m,'syominen_tonkiminen',{v:.85});}   // v2.16
   animMob(m,dt);if(!moving||F.k==='nuzzle'&&m===sow)m.f.head.rotation.x+=hd;if(hop)m.f.g.position.y+=hop;return true;}
+// v2.16: olennon isku osuu pelaajaan → osumaääni (purema/kynsi/isku), vain jos vahinko meni läpi (ei torjuttu)
+function mobHurtP(m,dmg,x,z){const h=P.hp;hurtPlayer(dmg,x,z);if(P.hp<h||P.dead)tgSnd(m,'osuma');}
+/* v2.16 SYÖMINEN (TG_EAT, audio.js): rauhallinen eläin (ei vihainen, pelaaja yli 12 m, ei osumaa 10 s:iin) pysähtyy 20–50 s välein (55 %) syömään 3–6 s:
+   pää alhaalla nyökkien, syömisääni lajin tavan mukaan (laidun, tonkiminen, rouskutus, nakerrus) noin 2,5 s välein. Pelaaja lähelle tai osuma keskeyttää. */
+function eatPlan(m,dt,dist){if(m.state!=='idle'||m.angry||m.fam||m.born!==undefined||(dist<12&&!devOn('unseen'))||playTime-m.lastHit<10)return;
+  m.eatCd=(m.eatCd??(8+Math.random()*20))-dt;if(m.eatCd>0)return;m.eatCd=20+Math.random()*30;if(Math.random()<.55){m.eatT=3+Math.random()*3;m.eatS=.3;m.wander=null;}}
+function eatStep(m,dt,dist){if((dist<10&&!P.crouch&&!devOn('unseen'))||m.state!=='idle'||m.angry||m.fam||playTime-m.lastHit<1){m.eatT=0;return false;}
+  m.eatT-=dt;moveMob(m,0,0,0,dt);animMob(m,dt);m.f.head.rotation.x+=.65+Math.sin(playTime*7)*.09;
+  if((m.eatS-=dt)<=0){m.eatS=2.2+Math.random()*.8;if(dist<25)tgSnd(m,'syominen_'+TG_EAT[m.type],{v:.85});}return true;}
 function startFlee(m,dx,dz){m.state='flee';m.fleeT=0;const pr=m.def.per||{};if(m.mom&&!m.mom.dead)m.mom.pigScare=playTime;   /* v2.12: säikähtänyt porsas → emo suuttuu (temperAI) */
   if(pr.fly&&!m.dun&&!m.fly){const a=Math.atan2(-dx,-dz)+(Math.random()-.5)*1.2,d=14+Math.random()*10,x1=m.pos.x+Math.sin(a)*d,z1=m.pos.z+Math.cos(a)*d;
-    if(terrainH(x1,z1)>0){m.fly={t:0,dur:d/9,x0:m.pos.x,z0:m.pos.z,y0:m.pos.y,x1,z1,h:2.5+Math.random()*1.5};m.yaw=a;sfx('flap',1,clamp(1.2-Math.hypot(dx,dz)/40,.15,1));}}
+    if(terrainH(x1,z1)>0){m.fly={t:0,dur:d/9,x0:m.pos.x,z0:m.pos.z,y0:m.pos.y,x1,z1,h:2.5+Math.random()*1.5};m.yaw=a;if(!tgSnd(m,'lentoonlahto'))sfx('flap',1,clamp(1.2-Math.hypot(dx,dz)/40,.15,1));   /* v2.16: oma lentoonlähtöääni */}}
   if(m.orphan){const a=Math.atan2(-dx,-dz);for(const o of mobs)if(o!==m&&o.orphan===m.orphan&&!o.dead&&o.state!=='flee'){o.state='flee';o.fleeT=0;o.herdA=a;}}   // v2.14: orpolauma pakenee yhdessä
   if(pr.herd){const a=Math.atan2(-dx,-dz);for(const o of mobs)if(o!==m&&o.type===m.type&&!o.dead&&o.state!=='flee'&&dist2(o.pos.x,o.pos.z,m.pos.x,m.pos.z)<25*25){o.state='flee';o.fleeT=0;o.herdA=a;}}}
 function flyMob(m,dt){const F=m.fly;F.t+=dt;const k=Math.min(1,F.t/F.dur);m.pos.x=lerp(F.x0,F.x1,k);m.pos.z=lerp(F.z0,F.z1,k);
@@ -319,6 +330,8 @@ function moveMob(m,tx,tz,spd,dt){
   const ox=m.pos.x,oz=m.pos.z;m.pos.x=nx;m.pos.z=nz;
   _hitl.length=0;collideXZ(m.pos,m.def.r,m.type==='vartija'?6:1.6,m.pos.y,_hitl);
   const moved=Math.hypot(m.pos.x-ox,m.pos.z-oz);
+  // v2.16: törmäys kovassa vauhdissa (juoksu tai tönäisy) esteeseen → törmäysääni (1,2 s tauko)
+  {const want=Math.hypot(vx+m.vel.x,vz+m.vel.z);if(want>4.5&&_hitl.length&&moved<want*dt*.35&&playTime-(m.tmT??-9)>1.2){m.tmT=playTime;tgSnd(m,'tormays');}}
   // stuck at player's buildings -> attack them
   if(m.state==='chase'&&spd>0&&moved<spd*dt*.3){m.stuck+=dt;if(m.stuck>.8&&m.atkCd<=0){const c=_hitl.find(c=>c.owner&&c.owner.t&&PIECES[c.owner.t]);if(c){damagePiece(c.owner,m.def.dmg,'mob');m.atkCd=m.def.cd;m.anim=.4;if(c.owner.t==='aita'){damageMob(m,6,'pierce',-(c.owner.x-m.pos.x),-(c.owner.z-m.pos.z));}}}}else m.stuck=0;
   const g=groundAt(m.pos.x,m.pos.z,m.def.r,m.pos.y);m.pos.y=lerp(m.pos.y,Math.max(g,m.dun?DUN.y:-1.4),Math.min(1,dt*10));
@@ -362,9 +375,9 @@ function bossAI(m,dt,dx,dz,dist){
   // v0.89 (kohta 6): kaikkien hyökkäysten ajoitus +10 % (kiviä heittävä pomo: a.t etenee dt/1,1), huitaisun ja maahaniskun ennakko +40 %
   // (0,8 → 1,12 s ja 1,1 → 1,54 s), iskujen väli +20 %, ryntäys puolet harvemmin (25 %, vähintään 8 s välein).
   if(m.act){m.act.t+=dt/BOSS_SLOW;const a=m.act;const f=m.f;
-    if(a.k==='swipe'){f.armR.rotation.x=a.t<1.12?-2.6*a.t/1.12:lerp(-2.6,-.2,Math.min(1,(a.t-1.12)/.2));if(a.t>=1.12&&!a.hit){a.hit=1;sfx('swing');if(dist<4.8+.4){const fc=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(fc>.1)hurtPlayer(22,m.pos.x,m.pos.z);}}if(a.t>1.75)m.act=null;}
+    if(a.k==='swipe'){f.armR.rotation.x=a.t<1.12?-2.6*a.t/1.12:lerp(-2.6,-.2,Math.min(1,(a.t-1.12)/.2));if(a.t>=1.12&&!a.hit){a.hit=1;if(!tgSnd(m,'huitaisu'))sfx('swing');if(dist<4.8+.4){const fc=(Math.sin(m.yaw)*dx+Math.cos(m.yaw)*dz)/(dist||1);if(fc>.1)mobHurtP(m,22,m.pos.x,m.pos.z);}}if(a.t>1.75)m.act=null;}
     else if(a.k==='slam'){slamArms(f,a.t,1.54);if(a.t>=1.54&&!a.hit){a.hit=1;sfx('slam');shake(.6);const fx=m.pos.x+Math.sin(m.yaw)*2.5,fz=m.pos.z+Math.cos(m.yaw)*2.5;shockwave(fx,m.pos.y,fz,7);burst(fx,m.pos.y+.3,fz,0x5d5a54,16,7);if(dist2(fx,fz,P.pos.x,P.pos.z)<7*7&&P.pos.y-m.pos.y<1.5)hurtPlayer(28,fx,fz);}if(a.t>2.35)m.act=null;}
-    else if(a.k==='charge'){bossChargePose(m,a);if(a.t<.6){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*6);}else{moveMob(m,Math.sin(m.yaw),Math.cos(m.yaw),15*spd,dt);if(!a.hit&&dist<2.8){a.hit=1;hurtPlayer(26,m.pos.x,m.pos.z);P.vel.x+=Math.sin(m.yaw)*10;P.vel.z+=Math.cos(m.yaw)*10;}}if(a.t>1.6){m.act=null;bossChargeReset(m);}}   // v1.90: etukeno + silmät
+    else if(a.k==='charge'){bossChargePose(m,a);if(a.t<.6){m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),dt*6);}else{moveMob(m,Math.sin(m.yaw),Math.cos(m.yaw),15*spd,dt);if(!a.hit&&dist<2.8){a.hit=1;mobHurtP(m,26,m.pos.x,m.pos.z);P.vel.x+=Math.sin(m.yaw)*10;P.vel.z+=Math.cos(m.yaw)*10;}}if(a.t>1.6){m.act=null;bossChargeReset(m);}}   // v1.90: etukeno + silmät
     else if(a.k==='throw'){f.armR.rotation.x=-2.8*Math.min(1,a.t/.8);if(a.t>=.8&&!a.hit){a.hit=1;const hp=new V3();f.hand.getWorldPosition(hp);throwRock(hp,new V3(P.pos.x+P.vel.x*.6,P.pos.y,P.pos.z+P.vel.z*.6),20);}if(a.t>1.3)m.act=null;}
     m.f.g.position.copy(m.pos);m.f.g.rotation.y=m.yaw;return;}
   // v0.95 (kohta 10): yli 90 m:n päässä vartija pysähtyy ja vajoaa 3 s:ssa maahan (multaa, jyrinä), vajoamisen ajan haavoittumaton.

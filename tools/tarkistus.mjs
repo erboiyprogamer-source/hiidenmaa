@@ -215,6 +215,19 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const a=devOn('unseen')===DEV&&/devOn\('unseen'\)&&playTime-\(m\.pHit/.test(updateMobs.toString())&&/devOn\('unseen'\)/.test(temperAI.toString())&&/devOn\('unseen'\)/.test(archerAI.toString());
     const b='unseen' in DEVF&&/data-big="\$\{k\}"/.test(renderDev.toString())&&/'unseen','Näkymätön'/.test(renderDev.toString());
     return a&&b||`virhe havaitseminen ${a} valikko ${b}`;}finally{DEVF.unseen=o;for(const m of ms)if(mobs.includes(m))mobRemove(m);}});
+  t('v2.16 ääniprojektit kansioissa: olennot_aanet/ ja olennot_toiminnot/ (raw, valmiit, lista), manifestin f-polku, kivivartija hiljainen ilman lainausta',()=>{
+    const M=CRE.man||{},ks=Object.keys(M),a=!ks.length||ks.filter(k=>!k.startsWith('t/')).every(k=>M[k].f===`olennot_aanet/valmiit/${k}.mp3`)&&ks.filter(k=>k.startsWith('t/')).every(k=>M[k].f.startsWith('olennot_toiminnot/valmiit/'));
+    const b=/e\.f\|\|name\+'\.mp3'/.test(creBuf.toString())&&!VARAANI.kivivartija&&CRE_SILENT.has('kivivartija')&&/CRE_SILENT\.has\(m\.type\)/.test(killMob.toString());
+    const c=Object.keys(MOBDEF).every(k=>TG[k]&&TG_STRIDE[TG[k]]);
+    return a&&b&&c||`virhe polut ${a} kivivartija ${b} ryhmät ${c}`;});
+  t('v2.16 toimintoäänet: askeleet matkan mukaan alustan mukaan (lähimmät 6), isku ja osuma, kaatuminen, palaminen, syöminen, nousu, lento, törmäys, vesi',()=>{const ms=[],L=[],o=tgSnd,ok=CRE.ok,st=state;let res;
+    try{tgSnd=(m,ev)=>{L.push(ev);return ev==='palaminen'?{src:null}:1;};CRE.ok=true;state='play';
+      const w=spawnMob('susi',P.pos.x+8,P.pos.z+8,{noBorn:1});ms.push(w);for(let i=0;i<30;i++){w.pos.x+=.15;tgTick(1/30);}const a=L.filter(e=>e.startsWith('askel_')).length>=4;
+      const b=tgSurface({pos:{x:0,y:0,z:0},dun:true,realm:'portal1'},'nelijalkaiset')==='jaa'&&tgSurface({pos:{x:0,y:0,z:0},dun:true,realm:'portal2'},'luurangot')==='kivi';
+      L.length=0;w.burnT=5;tgTick(1/30);const c=L.includes('palaminen')&&!!w.tgBurn;w.burnT=0;w.tgBurn=null;
+      const d=/tgSnd\(m,'huitaisu'\)/.test(updateMobs.toString())&&/tgSnd\(m,'osuma'\)/.test(mobHurtP.toString())&&/'kaatuminen'/.test(mobDeathAnim.toString())&&/'nousu'/.test(bornTick.toString())&&/lentoonlahto/.test(startFlee.toString())&&/'tormays'/.test(moveMob.toString())&&/loiskahdus/.test(tgTick.toString())&&/ravistus/.test(tgTick.toString());
+      const e=TG_EAT.karju==='tonkiminen'&&TG_EAT.susi==='rouskutus'&&TG_EAT.peura==='laidun'&&TG_EAT.janis==='nakerrus'&&typeof eatStep==='function'&&TGV.steps===6&&TG_BIG.has('kalmanvartija');
+      res=a&&b&&c&&d&&e||`virhe askeleet ${a} alustat ${b} palaminen ${c} kytkennät ${d} syöminen ${e}`;}finally{tgSnd=o;CRE.ok=ok;state=st;for(const m of ms)if(mobs.includes(m))mobRemove(m);}return res;});
   t('v1.86 äänet: Aarnihirviö = pääääni (💎), Jäätär ja Kalmaherra lainaavat siltä; kaiku vain m.dun-olennoille; tärkeysjärjestys, 1 ääni/olento, äänimäärän raja',()=>{
     if(VARAANI.aarnihirvio||VARAANI.jaajattari.to!=='aarnihirvio'||VARAANI.kalmaherra.to!=='aarnihirvio')return 'ketju';
     const o=CRE.man;CRE.man={aarnihirvio_death_1:{h:'x'},hirvi_death_1:{h:'y'}};const a=creRes('jaajattari','death'),b=creRes('hiidenhirvi','death');CRE.man=o;
