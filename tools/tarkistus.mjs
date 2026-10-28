@@ -232,13 +232,19 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     try{CRE.man={'t/pomot/askel_kivi_1':{h:'a'},'t/kalmaherra/askel_kivi_1':{h:'b'},'t/pomot/ryntays_1':{h:'c'}};
       const a=tgRes('jaatar','askel_kivi')===null&&TG_BORROW.jaatar==='pomot'&&tgRes(TG_BORROW.jaatar,'askel_kivi')[0]==='t/pomot/askel_kivi_1'&&tgRes('kalmaherra','askel_kivi')[0]==='t/kalmaherra/askel_kivi_1';
       const b=['karhu','hiidenkarhu','hiidenhirvi'].every(k=>TG[k]==='raskaat_nelijalkaiset')&&!TG_BORROW.raskaat_nelijalkaiset&&['vartija','jaajattari','kalmaherra','aarnihirvio'].every(k=>TG_BORROW[TG[k]]==='pomot');
-      const c=/ryntays_lataus/.test(bossAI.toString())&&/ryntays_lataus/.test(realmBossAI.toString())&&/'ryntays'/.test(realmBossAI.toString())&&/TG_BORROW\[g\]/.test(tgSnd.toString());
+      const c=/ryntays_lataus/.test(bossAI.toString())&&/ryntays_lataus/.test(realmBossAI.toString())&&/'ryntays'/.test(realmBossAI.toString())&&/TG_BORROW\[g\]/.test(tgPlay.toString());
       res=a&&b&&c||`virhe lainaus ${a} ryhmät ${b} ryntäys ${c}`;}finally{CRE.man=o;}return res;});
   t('v2.17 vesi sammuttaa: olento/pelaaja vedessä (yli 0,3 m) sammuu ja ei syty, soihtu vedessä, tulinuoli veteen; palaessa ääntely tauolla ja kipuääni 1,7–2,1 s välein',()=>{
     const a=/water\.position\.y-\.3/.test(mobWet.toString())&&/water\.position\.y-\.3/.test(playerWet.toString())&&/mobWet\(m\)/.test(igniteMob.toString())&&/playerWet\(\)/.test(canIgnitePlayer.toString());
     const b=/P\.inWater&&!P\.inDun\)\{ts\.lit=false/.test(updatePlayer.toString())&&/cont===2\)arrowOut/.test(updateProjs.toString());
     const c=/mobBurning\(m\)/.test(creTick.toString())&&/1\.7\+Math\.random\(\)\*\.4/.test(creTick.toString())&&/!mobBurning\(m\)/.test(damageMob.toString())&&mobBurning({burnT:2})&&!mobBurning({burnT:0})&&!mobBurning({burnT:2,dead:true});
     return a&&b&&c||`virhe vesi ${a} soihtu/nuoli ${b} äänet ${c}`;});
+  t('v2.21 toimintoäänten kerrostus: raskaat/kevyet/luurangot/kivivartija/pomot soittavat pohjaryhmän äänen + oman päälle, tömistys/kalina joka askeleella, oksa hiljaa 2 s välein',()=>{
+    const a=TG_BASE.raskaat_nelijalkaiset==='nelijalkaiset'&&TG_BASE.kevyet_nelijalkaiset==='nelijalkaiset'&&TG_BASE.luurangot==='kaksijalkaiset'&&TG_BASE.kivivartija==='kaksijalkaiset'
+      &&['kalmanvartija','jaatar','kalmaherra','aarnihirvio'].every(g=>TG_BASE[g]==='kaksijalkaiset')&&!TG_BASE.kaksijalkaiset&&!TG_BASE.nelijalkaiset&&TG_BASEP.raskaat_nelijalkaiset[0]<1&&TG_BASEP.kevyet_nelijalkaiset[0]>1;
+    const b=TG_STEP_LAYER.raskaat_nelijalkaiset==='tomistys'&&TG_STEP_LAYER.kivivartija==='tomistys'&&TG_STEP_LAYER.luurangot==='kalina'&&TG_STEP_LAYER.jaatar==='tomistys'&&/TG_STEP_LAYER/.test(tgStep.toString())&&!/klT/.test(tgTick.toString());
+    const c=/TG_BASE\[g\]/.test(tgSnd.toString())&&/lay\?TGV\.v\.length>=24/.test(tgPlay.toString())&&/m\.okT/.test(tgStep.toString())&&/'oksa',\{v:\.45\}/.test(tgStep.toString());
+    return a&&b&&c||`virhe pohja ${a} kerros ${b} toisto/oksa ${c}`;});
   t('v2.20 Extra-grafiikka-välilehti (varjot, realistinen vesi, Mega, rantaroiskeet), low poly -vesi oletuksena, ylämäki hidastaa (90° = puolet), kohteet mukailevat rinnettä',()=>{
     const a=SET_TABS.some(x=>x[0]==='xgfx')&&['shUltra','waterHQ','waterMega','shoreSpray'].every(k=>SET_PAGES.xgfx.includes(k)&&!SET_PAGES.gfx.includes(k))&&SET_DEF.waterHQ===false&&SET_DEF.shoreSpray===false&&typeof xRow==='function';
     const sv=[SET.waterHQ,SET.waterMega];let b;try{SET.waterHQ=false;SET.waterMega=false;waterApply();const lp=water.material.defines.LOWPOLY===1&&water.geometry.attributes.position.count===65*65&&WV.W[2]===0;

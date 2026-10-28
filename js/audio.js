@@ -210,10 +210,11 @@ function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='u
 
 /* ================================================================ v2.16 OLENTOJEN TOIMINNOT (äänierä B1)
    Projekti sounds/olennot_toiminnot/ (raw/<ryhmä>/, valmiit/<ryhmä>_valmis/, AANILISTA_TOIMINNOT.md); manifestin avaimet t/<ryhmä>/<ääni>_<n>.
-   Ryhmät (TG, sama jako kuin tools/process_sounds.py:n TG_GROUPS) jakavat äänet; puuttuva ääni = hiljaisuus (ei lainauksia).
+   Ryhmät (TG, sama jako kuin tools/process_sounds.py:n TG_GROUPS) jakavat äänet; puuttuva ääni = hiljaisuus (pomot lainaavat pomot/-kansiosta,
+   v2.21: kerrostuvat ryhmät TG_BASE soittavat pohjaryhmän äänet + omat päälle).
    Askeleet kuljetun matkan mukaan (TG_STRIDE, juostessa ×1,25) alustan mukaan (tgSurface), lähimmät 6 alle 20 m (isot 40 m);
    pomon askel alle 15 m tärisyttää kameraa. Muut: oksa (Aarnimetsä 15 %), kahina (juostessa metsässä), loiskahdus ja ravistus (vesi),
-   palaminen (silmukka), kalina (luurangot), lentoonlähtö, kaatuminen, törmäys, huitaisu, osuma, nousu, nuuhkiminen, syöminen. Oma budjetti TGV. */
+   palaminen (silmukka), kalina (luurangot, joka askeleella v2.21), tömistys (raskaat, kivivartija, pomot), lentoonlähtö, kaatuminen, törmäys, huitaisu, osuma, nousu, nuuhkiminen, syöminen. Oma budjetti TGV. */
 const TG={hiisi:'kaksijalkaiset',suonakki:'kaksijalkaiset',kalmo:'luurangot',ylimys:'luurangot',peura:'nelijalkaiset',poro:'nelijalkaiset',hirvi:'nelijalkaiset',
   karju:'nelijalkaiset',emakko:'nelijalkaiset',susi:'nelijalkaiset',routasusi:'nelijalkaiset',kalmasusi:'nelijalkaiset',ilves:'nelijalkaiset',ahma:'nelijalkaiset',
   karhu:'raskaat_nelijalkaiset',hiidenkarhu:'raskaat_nelijalkaiset',hiidenhirvi:'raskaat_nelijalkaiset',janis:'kevyet_nelijalkaiset',kettu:'kevyet_nelijalkaiset',porsas:'kevyet_nelijalkaiset',
@@ -228,16 +229,28 @@ const TGV={v:[],last:{},max:8,steps:6,loaded:{}};
 // v2.17: pomot lainaavat yhteisestä pääkansiosta `pomot/` (sävel pomon mukaan), jos pomon omassa kansiossa ei ole samannimistä ääntä (oma voittaa).
 // Raskaat nelijalkaiset (karhu, hiidenkarhu, hiidenhirvi) ovat oma ryhmänsä eivätkä liity pomoihin.
 const TG_BORROW={kalmanvartija:'pomot',jaatar:'pomot',kalmaherra:'pomot',aarnihirvio:'pomot'},TG_BP={kalmanvartija:.85,jaatar:1.12,kalmaherra:.95,aarnihirvio:.9};
+/* v2.21 KERROSTUS (käyttäjän päätös): raskaat ja kevyet eläimet, luurangot, kivivartija ja pomot soittavat pohjaryhmän äänen (TG_BASE, sävel ja
+   voimakkuus TG_BASEP) ja oman samannimisen äänensä PÄÄLLE, jos sellainen on (pomoilla oma > pomot-kansio). Joka askeleella soi lisäksi
+   ryhmän kerros TG_STEP_LAYER (tömistys / luurankojen kalina), ei uidessa (tömistys ei kahlatessa). Sama taulu tools/process_sounds.py:ssä. */
+const TG_BASE={raskaat_nelijalkaiset:'nelijalkaiset',kevyet_nelijalkaiset:'nelijalkaiset',kevyet_kaksijalkaiset:'kaksijalkaiset',luurangot:'kaksijalkaiset',
+  kivivartija:'kaksijalkaiset',kalmanvartija:'kaksijalkaiset',jaatar:'kaksijalkaiset',kalmaherra:'kaksijalkaiset',aarnihirvio:'kaksijalkaiset'};
+const TG_BASEP={raskaat_nelijalkaiset:[.8,1],kevyet_nelijalkaiset:[1.3,.55],kevyet_kaksijalkaiset:[1.5,.45],luurangot:[1.05,.8],kivivartija:[.8,1],
+  kalmanvartija:[.62,1],jaatar:[.75,1],kalmaherra:[.72,1],aarnihirvio:[.68,1]};
+const TG_STEP_LAYER={raskaat_nelijalkaiset:'tomistys',kivivartija:'tomistys',luurangot:'kalina',kalmanvartija:'tomistys',jaatar:'tomistys',kalmaherra:'tomistys',aarnihirvio:'tomistys'};
 function tgRes(g,ev){if(!CRE.man)return null;if(CRE.idxOf!==CRE.man)creIndex();return CRE.idx[`t/${g}/${ev}`]||null;}
-function tgLoad(type){const g=TG[type];if(!CRE.ok||!g||TGV.loaded[g])return;TGV.loaded[g]=1;const b=TG_BORROW[g];for(const n in CRE.man)if(n.startsWith(`t/${g}/`)||n.startsWith('t/yhteiset/')||(b&&n.startsWith(`t/${b}/`)))creBuf(n);}
+function tgLoad(type){const g=TG[type];if(!CRE.ok||!g||TGV.loaded[g])return;TGV.loaded[g]=1;const b=TG_BORROW[g],ba=TG_BASE[g];for(const n in CRE.man)if(n.startsWith(`t/${g}/`)||n.startsWith('t/yhteiset/')||(b&&n.startsWith(`t/${b}/`))||(ba&&n.startsWith(`t/${ba}/`)))creBuf(n);}
 function tgSize(m){return clamp(1.35-(m.def.r||.5)*.55,.6,1.4);}   // yhteisten äänten sävel koon mukaan
 // soittaa ryhmän äänen 3D:nä olennon kohdalta (o: g ryhmä, v voimakkuus, p sävel, loop silmukka, pos kiinteä paikka). Palauttaa keston (silmukalla äänen), muuten false.
-function tgSnd(m,ev,o){o=o||{};const g=o.g||TG[m.type];if(!g)return false;let L0=tgRes(g,ev),bp=1;if(!L0&&TG_BORROW[g]){L0=tgRes(TG_BORROW[g],ev);bp=TG_BP[g]||1;}if(!L0)return false;
+// v2.21: ilman o.g:tä kerrostuva ryhmä soittaa pohjaryhmän äänen + oman päälle (TG_BASE). Kerros (lay) ei kuluta äänibudjettia (yläraja 24 ääntä).
+function tgSnd(m,ev,o){o=o||{};if(o.g)return tgPlay(m,ev,o.g,o,false);const g=TG[m.type];if(!g)return false;const b=TG_BASE[g];let r0=false;
+  if(b){const q=TG_BASEP[g];r0=tgPlay(m,ev,b,Object.assign({},o,{p:(o.p||1)*q[0],v:(o.v??1)*q[1]}),false,g);}
+  const r1=tgPlay(m,ev,g,o,!!r0);return r1||r0;}
+function tgPlay(m,ev,g,o,lay,own){let L0=tgRes(g,ev),bp=1;if(!L0&&TG_BORROW[g]){L0=tgRes(TG_BORROW[g],ev);bp=TG_BP[g]||1;}if(!L0)return false;
   const L=L0.filter(n=>CRE.buf[n]);if(!L.length){for(const n of L0)creBuf(n);return false;}
   const a=actx;if(!a||a.state!=='running'||!soundOn)return false;const vol=typeof SET!=='undefined'?+SET.creVol:1;if(!(vol>0))return false;
-  const step=ev.startsWith('askel_');let cnt=0;for(const v of TGV.v)if(v.step===step)cnt++;if(cnt>=(step?TGV.steps:TGV.max))return false;
+  const step=ev.startsWith('askel_');let cnt=0;for(const v of TGV.v)if(v.step===step&&!v.lay)cnt++;if(lay?TGV.v.length>=24:cnt>=(step?TGV.steps:TGV.max))return false;
   const key=L0[0].replace(/_\d+$/,'');let pick=L;if(L.length>1&&TGV.last[key])pick=L.filter(x=>x!==TGV.last[key]);const name=pick[Math.random()*pick.length|0];TGV.last[key]=name;
-  const B=CRE.buf[name],rate=(o.p||1)*bp*(1+(Math.random()*2-1)*.06),q=o.pos||m.pos,md=Math.sqrt(dist2(q.x,q.z,P.pos.x,P.pos.z)),k0=creDistK(md,false),big=TG_BIG.has(g);
+  const B=CRE.buf[name],rate=(o.p||1)*bp*(1+(Math.random()*2-1)*.06),q=o.pos||m.pos,md=Math.sqrt(dist2(q.x,q.z,P.pos.x,P.pos.z)),k0=creDistK(md,false),big=TG_BIG.has(own||g);
   if(!CRE.gain){CRE.gain=a.createGain();CRE.gain.connect(a.destination);}CRE.gain.gain.value=vol;
   const src=a.createBufferSource();src.buffer=B;src.playbackRate.value=rate;if(o.loop)src.loop=true;
   const gn=a.createGain();gn.gain.value=o.v??1;const df=a.createBiquadFilter();df.type='lowpass';df.Q.value=.5;df.frequency.value=creLpf(k0);const dg=a.createGain();dg.gain.value=1-.3*k0;
@@ -245,7 +258,7 @@ function tgSnd(m,ev,o){o=o||{};const g=o.g||TG[m.type];if(!g)return false;let L0
   src.connect(gn);gn.connect(df);df.connect(dg);dg.connect(pn);pn.connect(CRE.gain);crePos(pn,q.x,(q.y??m.pos.y)+.3,q.z);
   let sd=null,sdo=null;if(m.dun){const Rv=creRevOn(a);sd=a.createGain();sd.gain.value=big?.5:.35;pn.connect(sd);sd.connect(Rv.inp);}
   else if(!step&&md>8){const Rv=creRevOn(a);sd=sdo=a.createGain();sdo.gain.value=.08+1.8*k0;pn.connect(sdo);sdo.connect(Rv.inp);}
-  const v={src,pn,g:gn,sd,sdo,df,dg,far:false,m,step,loop:!!o.loop,fixed:!!o.pos,ev};TGV.v.push(v);
+  const v={src,pn,g:gn,sd,sdo,df,dg,far:false,m,step,loop:!!o.loop,fixed:!!o.pos,ev,lay:!!lay};TGV.v.push(v);
   src.onended=()=>{const i=TGV.v.indexOf(v);if(i>=0)TGV.v.splice(i,1);try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return o.loop?v:B.duration/rate;}
 function tgStop(v){if(!v||!v.src)return;try{v.g.gain.setTargetAtTime(0,actx.currentTime,.08);v.src.stop(actx.currentTime+.35);}catch(e){}v.loop=false;}
 // alusta olennon jalkojen alla (askeleet)
@@ -254,8 +267,9 @@ function tgSurface(m,g){if(m.dun)return m.realm==='portal1'?'jaa':m.realm==='por
   if(m.pos.y>th+.15){gridQuery(x,z,.1,_cl);for(const c of _cl){if(c.t!=='b'||c.off)continue;if(x>=c.minX&&x<=c.maxX&&z>=c.minZ&&z<=c.maxZ&&Math.abs(c.maxY-m.pos.y)<.35){const o=c.owner;return o&&o.t&&PIECES[o.t]?(PIECES[o.t].stone?'kivi':'puu'):'kivi';}}}
   const dep=water.position.y-th;if(dep>.05)return dep>(TG_BIG.has(g)?1.1:g.startsWith('kevyet')?.3:.6)?'uinti':'kahlaus';
   const b=biomeAt(x,z,th);return b==='beach'?'hiekka':b==='mountain'||b==='rakka'?'kivi':b==='peak'?'lumi':b==='suo'?'suo':b==='aarni'?'pusikko':'ruoho';}
-function tgStep(m,g,d,spd){const sf=tgSurface(m,g),run=spd>(m.def.walk||1.5)*1.4;tgSnd(m,'askel_'+sf,{v:.55+.45*clamp(spd/(m.def.run||4),0,1)});
-  if(sf==='pusikko'&&Math.random()<.15)tgSnd(m,'oksa',{v:.8});
+function tgStep(m,g,d,spd){const sf=tgSurface(m,g),run=spd>(m.def.walk||1.5)*1.4,sv=.55+.45*clamp(spd/(m.def.run||4),0,1);tgSnd(m,'askel_'+sf,{v:sv});
+  {const ly=TG_STEP_LAYER[g];if(ly&&sf!=='uinti'&&!(ly==='tomistys'&&sf==='kahlaus'))tgPlay(m,ly,g,{v:ly==='kalina'?.7:sv},true);}   // v2.21: tömistys / kalina askeleen päälle
+  if(sf==='pusikko'&&Math.random()<.15&&playTime-(m.okT??-9)>=2){m.okT=playTime;tgSnd(m,'oksa',{v:.45});}   // v2.21: hiljempaa (0,8 → 0,45), enintään 2 s välein
   if(run&&!m.dun&&TG_RUSTLE[biomeHere(m.pos.x,m.pos.z)]&&Math.random()<.35&&playTime-(m.khT??-9)>.7){m.khT=playTime;tgSnd(m,'kahina',{g:'yhteiset',p:tgSize(m),v:.8});}
   if(TG_BOSS.has(g)&&d<15)shake(.12*(1-d/15));}
 function tgTick(dt){if(!CRE.ok||state!=='play')return;
@@ -271,7 +285,6 @@ function tgTick(dt){if(!CRE.ok||state!=='play')return;
     if(d2<40*40&&!m.dun&&!m.fly){const dep=water.position.y-terrainH(m.pos.x,m.pos.z),wet=dep>.2;
       if(wet&&!m.tgWet){m.tgWet=1;tgSnd(m,'loiskahdus',{g:'yhteiset',p:tgSize(m)});}
       else if(m.tgWet&&dep<0){m.tgWet=0;if(TG_SHAKE.has(g)){m.shakeT=.7;tgSnd(m,'ravistus');}}}
-    if(g==='luurangot'&&spd>.5&&d2<15*15&&(m.klT=(m.klT??Math.random())-dt)<=0){m.klT=1+Math.random()*.6;tgSnd(m,'kalina',{v:.7});}
     m.tgAcc=(m.tgAcc||0)+mv;const st=TG_STRIDE[g]*(spd>(m.def.walk||1.5)*1.4?1.25:1);
     if(m.tgAcc>=st){m.tgAcc=Math.min(m.tgAcc-st,st);const R=TG_BIG.has(g)?40:20;if(d2<R*R&&!m.fly)C.push([d2,m,g,spd]);}}
   C.sort((a,b)=>a[0]-b[0]);for(let i=0;i<C.length&&i<TGV.steps;i++)tgStep(C[i][1],C[i][2],Math.sqrt(C[i][0]),C[i][3]);}

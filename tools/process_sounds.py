@@ -450,19 +450,30 @@ def _steps(surfs):
     return [f'askel_{x}' for x in surfs]
 COMMON_ATK = ['huitaisu', 'osuma']
 # v2.17: pomot jakavat yhteisen pääkansion `pomot/`; jokaisen pomon omassa kansiossa on samat paikat – oma ääni voittaa, muuten lainataan pomot-kansiosta
-BOSS_EV = _steps(['ruoho', 'kivi', 'suo', 'puu', 'jaa']) + ['kaatuminen'] + COMMON_ATK + ['ryntays_lataus', 'ryntays']
+# v2.21: pomojen askeleet tulevat kaksijalkaisilta (kerrostus, TG_BASE) + tömistys päälle, joten askelpaikkoja ei enää ole
+BOSS_EV = ['tomistys', 'kaatuminen'] + COMMON_ATK + ['ryntays_lataus', 'ryntays']
+# v2.21 KERROSTUS (käyttäjän päätös): raskaat ja kevyet eläimet, luurangot, kivivartija ja pomot eivät tarvitse omia ääniä jokaiselle
+# tapahtumalle. Peli soittaa pohjaryhmän äänen (kaksijalkaiset / nelijalkaiset, sävel ja voimakkuus ryhmän mukaan) ja ryhmän oman
+# samannimisen äänen PÄÄLLE, jos sellainen on. Paikkamerkit vain ryhmän omille kerroksille (tömistys, kalina) ja ainutlaatuisille äänille;
+# pohjaryhmän ääniä saa lisätä kansioon vapaasti samalla nimellä (soivat päällekkäin). Pidä samana kuin audio.js:n TG_BASE/TG_BASEP.
+TG_BASE = {'raskaat_nelijalkaiset': 'nelijalkaiset', 'kevyet_nelijalkaiset': 'nelijalkaiset', 'kevyet_kaksijalkaiset': 'kaksijalkaiset',
+           'luurangot': 'kaksijalkaiset', 'kivivartija': 'kaksijalkaiset', 'pomot': 'kaksijalkaiset', 'kalmanvartija': 'kaksijalkaiset',
+           'jaatar': 'kaksijalkaiset', 'kalmaherra': 'kaksijalkaiset', 'aarnihirvio': 'kaksijalkaiset'}
+TG_BASEP = {'raskaat_nelijalkaiset': (.8, 1), 'kevyet_nelijalkaiset': (1.3, .55), 'kevyet_kaksijalkaiset': (1.5, .45), 'luurangot': (1.05, .8),
+            'kivivartija': (.8, 1), 'pomot': (.7, 1), 'kalmanvartija': (.62, 1), 'jaatar': (.75, 1), 'kalmaherra': (.72, 1), 'aarnihirvio': (.68, 1)}
+# kerros joka askeleella (soi askeleen kanssa yhtä aikaa; ei uidessa, tömistys ei kahlatessa)
+TG_STEP_LAYER = {'raskaat_nelijalkaiset': 'tomistys', 'kivivartija': 'tomistys', 'luurangot': 'kalina', 'pomot': 'tomistys',
+                 'kalmanvartija': 'tomistys', 'jaatar': 'tomistys', 'kalmaherra': 'tomistys', 'aarnihirvio': 'tomistys'}
 TG_BORROW = {'kalmanvartija': 'pomot', 'jaatar': 'pomot', 'kalmaherra': 'pomot', 'aarnihirvio': 'pomot'}
 TG_GROUPS = [   # (id, nimi, emoji, jäsenet, tapahtumat, iso)
     ('kaksijalkaiset', 'Kaksijalkaiset', '🦶', ['hiisi', 'suonakki'], _steps(SURF[:-1]) + ['oksa', 'kaatuminen', 'tormays'] + COMMON_ATK + ['nousu'], False),
-    ('luurangot', 'Luurangot', '💀', ['kalmo', 'ylimys'], _steps(SURF[:-1]) + ['oksa', 'kaatuminen', 'tormays'] + COMMON_ATK + ['nousu', 'kalina'], False),
+    ('luurangot', 'Luurangot', '💀', ['kalmo', 'ylimys'], ['kalina'], False),
     ('nelijalkaiset', 'Nelijalkaiset', '🐾', ['peura', 'poro', 'hirvi', 'karju', 'emakko', 'susi', 'routasusi', 'kalmasusi', 'ilves', 'ahma'],
      _steps(SURF) + ['oksa', 'kaatuminen', 'tormays'] + COMMON_ATK + ['nousu', 'ravistus', 'nuuhkiminen', 'syominen_laidun', 'syominen_tonkiminen', 'syominen_rouskutus'], False),
-    ('raskaat_nelijalkaiset', 'Raskaat nelijalkaiset (ei pomoja)', '🐻', ['karhu', 'hiidenkarhu', 'hiidenhirvi'],
-     _steps(SURF) + ['oksa', 'kaatuminen', 'tormays'] + COMMON_ATK + ['nousu', 'ravistus', 'syominen_rouskutus'], True),
-    ('kevyet_nelijalkaiset', 'Kevyet nelijalkaiset', '🐇', ['janis', 'kettu', 'porsas'],
-     _steps(SURF) + ['oksa', 'kaatuminen', 'tormays', 'nousu', 'ravistus', 'nuuhkiminen', 'syominen_tonkiminen', 'syominen_nakerrus'], False),
-    ('kevyet_kaksijalkaiset', 'Kevyet kaksijalkaiset', '🐦', ['metso'], _steps(LAND) + ['kaatuminen', 'tormays', 'nousu', 'lentoonlahto'], False),
-    ('kivivartija', 'Kivivartija', '🪨', ['kivivartija'], _steps(SURF[:-1]) + ['kaatuminen', 'tormays'] + COMMON_ATK + ['nousu'], True),
+    ('raskaat_nelijalkaiset', 'Raskaat nelijalkaiset (ei pomoja)', '🐻', ['karhu', 'hiidenkarhu', 'hiidenhirvi'], ['tomistys'], True),
+    ('kevyet_nelijalkaiset', 'Kevyet nelijalkaiset', '🐇', ['janis', 'kettu', 'porsas'], ['syominen_nakerrus'], False),
+    ('kevyet_kaksijalkaiset', 'Kevyet kaksijalkaiset', '🐦', ['metso'], ['lentoonlahto'], False),
+    ('kivivartija', 'Kivivartija', '🪨', ['kivivartija'], ['tomistys'], True),
     ('pomot', 'Pomot – yhteinen pääkansio', '👑', ['vartija', 'jaajattari', 'kalmaherra', 'aarnihirvio'], BOSS_EV, True),
     ('kalmanvartija', 'Kalmanvartija (oma, muuten pomot)', '🗿', ['vartija'], BOSS_EV, True),
     ('jaatar', 'Jäätär (oma, muuten pomot)', '❄️', ['jaajattari'], BOSS_EV, True),
@@ -476,20 +487,21 @@ T_PROF = {'askel': (.5, .8, .05, -27), 'kahlaus': (1.2, 1.5, .15, -25), 'uinti':
           'kaatuminen': (1.5, 2.5, .25, -19), 'tormays': (.8, 1.0, .1, -19), 'huitaisu': (.7, 1.0, .1, -21), 'osuma': (.8, 1.0, .1, -17),
           'nousu': (1.5, 2.0, .2, -25), 'kalina': (1.0, 1.0, .15, -27), 'ravistus': (1.5, 1.5, .2, -23), 'nuuhkiminen': (1.5, 1.5, .2, -27),
           'syominen': (2.5, 2.5, .3, -25), 'lentoonlahto': (2.0, 2.0, .3, -19), 'palaminen': (3.0, 3.0, .15, -24), 'kahina': (1.2, 1.2, .15, -25),
-          'loiskahdus': (1.2, 1.5, .2, -21), 'ryntays': (2.0, 2.5, .25, -18)}
+          'loiskahdus': (1.2, 1.5, .2, -21), 'ryntays': (2.0, 2.5, .25, -18), 'tomistys': (.6, .9, .08, -26)}
 def t_prof(ev, big):
     k = 'kahlaus' if ev == 'askel_kahlaus' else 'uinti' if ev == 'askel_uinti' else ev.split('_')[0]
     a, b, f, t = T_PROF[k]
     return (a, b, f, t + (2 if big else 0))
 T_SLOTS = 2   # paikkamerkkejä per ääni (_1, _2); lisää _3, _4 … vapaasti
 EV_FI = {   # kuvaus ja oletushakusanat (englanniksi)
-    'oksa': ('oksa rasahtaa jalan alla (Aarnimetsä, välillä)', 'twig snap, branch crack footstep'),
+    'oksa': ('oksa rasahtaa jalan alla (Aarnimetsä, välillä; soi hiljaa, enintään 2 s välein)', 'twig snap, branch crack footstep'),
     'kaatuminen': ('ruumis kaatuu maahan kuollessa', 'body fall thud, animal collapse'),
     'tormays': ('törmää kovassa vauhdissa seinään, puuhun tai kiveen (myös tönäistynä)', 'body impact wall, thud bump'),
     'huitaisu': ('hyökkäyksen viuhahdus iskun hetkellä', 'swipe whoosh, claw swing'),
     'osuma': ('osuu pelaajaan (purema, kynsi, isku)', 'bite impact, claw hit flesh'),
     'nousu': ('nousee makuulta syntyessään (ähkäisy, rapina)', 'creature getting up, rustle grunt'),
-    'kalina': ('luut kalisevat liikkuessa (hiljainen, 1–1,6 s välein)', 'bones rattle, skeleton clatter soft'),
+    'kalina': ('luut kalisevat joka askeleella (soi askeleen päällä, lyhyt ja hiljainen)', 'bones rattle, skeleton clatter soft'),
+    'tomistys': ('matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni)', 'low thump footstep, heavy stomp, deep impact'),
     'ravistus': ('ravistaa turkin vedestä noustessa', 'dog shake off water, fur shake'),
     'nuuhkiminen': ('nuuhkii uteliaana (kun katsoo sinua)', 'animal sniffing, sniff'),
     'syominen_laidun': ('laiduntaa: repii ja jauhaa ruohoa (peura, poro, hirvi)', 'deer grazing, grass chewing'),
@@ -529,6 +541,12 @@ def t_info(g, ev):
     d, k = EV_FI[ev]
     return d, (f'{k}, {G_KEYS[g]}' if g in G_KEYS else k)
 
+def t_allowed(g):
+    """Ryhmän kansioon kelpaavat äänet: omat paikat + kerrostuvan ryhmän pohjaryhmän äänet (soivat pohjaäänen päällä)."""
+    evs = list(TG_BY[g][4])
+    b = TG_BASE.get(g)
+    return evs + [e for e in TG_BY[b][4] if e not in evs] if b else evs
+
 def t_expected():
     return [f't/{g}/{ev}_{n}' for g, _, _, _, evs, _ in TG_GROUPS for ev in evs for n in range(1, T_SLOTS + 1)]
 
@@ -540,17 +558,22 @@ def process_toiminnot(ff, init, old):
         with tempfile.TemporaryDirectory() as td:
             ph = os.path.join(td, 'ph.mp3')
             make_placeholder(ff, ph)
-            made = 0
+            made = dropped = 0
             for g, _, _, _, evs, _ in TG_GROUPS:
                 d = os.path.join(RAW_T, g)
                 os.makedirs(d, exist_ok=True)
+                for f in sorted(os.listdir(d)):   # v2.21: paikkamerkki äänelle, jota ryhmällä ei enää ole (kerrostus) → pois; oikeat äänet jäävät
+                    fp, mm2 = os.path.join(d, f), re.match(r'^(.+)_(\d+)\.mp3$', f)
+                    if mm2 and mm2.group(1) not in evs and os.path.getsize(fp) <= PLACEHOLDER_MAX:
+                        os.remove(fp)
+                        dropped += 1
                 have = {os.path.splitext(f)[0] for f in os.listdir(d)}
                 for ev in evs:
                     for n in range(1, T_SLOTS + 1):
                         if f'{ev}_{n}' not in have:
                             shutil.copyfile(ph, os.path.join(d, f'{ev}_{n}.mp3'))
                             made += 1
-            print(f'Toimintojen paikkamerkkejä luotu: {made}')
+            print(f'Toimintojen paikkamerkkejä luotu: {made}' + (f', vanhentuneita poistettu: {dropped}' if dropped else ''))
     if not os.path.isdir(RAW_T):
         return sounds, (0, 0, 0), warn, errors
     raws = {}
@@ -577,8 +600,8 @@ def process_toiminnot(ff, init, old):
                 os.remove(dst)
                 removed += 1
             continue
-        if not mm or mm.group(1) not in TG_BY[g][4]:
-            warn.append(f'{n}: tuntematon ääni ryhmälle {g} (peli ei käytä) – sallitut: {", ".join(TG_BY[g][4])}')
+        if not mm or mm.group(1) not in t_allowed(g):
+            warn.append(f'{n}: tuntematon ääni ryhmälle {g} (peli ei käytä) – sallitut: {", ".join(t_allowed(g))}')
             continue
         ev = mm.group(1)
         src_h = sha(p)
@@ -640,6 +663,12 @@ def write_list_t(sounds):
             rows.append('💎 **Pääkansio:** kaikki pomot lainaavat nämä äänet (sävel pomon mukaan), ellei pomon omassa kansiossa ole samannimistä ääntä.\n')
         elif g in TG_BORROW:
             rows.append(f'🔁 Lainaa `{TG_BORROW[g]}/`-kansiosta. Lisää tähän oma ääni samalla nimellä, niin se valitaan ensin.\n')
+        if g in TG_BASE:
+            bp, bv = TG_BASEP[g]
+            ly = TG_STEP_LAYER.get(g)
+            rows.append(f'➕ **Kerrostuu:** soittaa `{TG_BASE[g]}/`-kansion äänet (sävel ×{bp:g}, voimakkuus ×{bv:g}) ja tämän kansion samannimisen äänen päälle. '
+                        + (f'`{ly}` soi joka askeleella askeleen kanssa yhtä aikaa. ' if ly else '')
+                        + f'Voit lisätä tähän myös `{TG_BASE[g]}`-ryhmän ääniä samalla nimellä (esim. `askel_ruoho_1`) – ne soivat pohjaäänen päällä.\n')
         rows.append(f'Jäsenet: {mems}.' + (' Iso: kovempi, askeleet kuuluvat 40 m.' if big else '') + (' Pomo: askeleet tärisyttävät maata (kamera tärähtää alle 15 m:ssä).' if g in BOSS_G else '') + '\n')
         rows.append('| Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |')
         rows.append('| --- | --- | --- | --- | --- |')
@@ -653,6 +682,8 @@ def write_list_t(sounds):
                 st = f'🔁 lainaa: {bg}/{ev}'
             elif bg:
                 st = f'⬜ puuttuu (lainaa {bg}-kansiosta, kun sinne lisätään)'
+            elif ev == TG_STEP_LAYER.get(g):
+                st = '⬜ puuttuu (askel soi ilman tätä kerrosta)'
             else:
                 st = '⬜ puuttuu (hiljaa)'
             if not mine and not bg and (ev in PRIO_T or ev == PRIO_STEP.get(g)):
@@ -669,22 +700,26 @@ Olentojen omat äänet (ääntely, kipu, kuolema, suuttuminen, jahti, kaiku) ova
 - `raw/<ryhmä>/<ääni>_<n>.mp3` – **sinun raa'at äänesi** (korvaa paikkamerkki täsmälleen samalla nimellä, esim. `raw/nelijalkaiset/askel_ruoho_1.mp3`).
   Paikkoja on kaksi (`_1`, `_2`); lisää versioita vapaasti `_3`, `_4` … – peli arpoo kaikista.
 - `valmiit/<ryhmä>_valmis/…` – työkalun käsittelemät äänet, jotka peli lataa (älä muokkaa). Pääte `_valmis` erottaa ne raa'oista.
-- Ryhmän olennot jakavat äänet (sävel vaihtelee hieman). **Puuttuva ääni = hiljaisuus** – ryhmät eivät lainaa toisiltaan.
+- Ryhmän olennot jakavat äänet (sävel vaihtelee hieman). **Puuttuva ääni = hiljaisuus**, paitsi kerrostuvilla ryhmillä (➕), jotka käyttävät
+  pohjaryhmän ääniä (kaksijalkaiset tai nelijalkaiset) ja soittavat omat äänensä niiden päälle (v2.21).
 
 ## Merkit
 
 - Ryhmät: 🦶 kaksijalkaiset · 💀 luurangot · 🐾 nelijalkaiset · 🐻 raskaat nelijalkaiset (karhu, hiidenkarhu, hiidenhirvi – ei pomoja) · 🐇 kevyet
   nelijalkaiset · 🐦 kevyet kaksijalkaiset · 🪨 kivivartija · 👑 pomot (yhteinen pääkansio) · 🗿 Kalmanvartija · ❄️ Jäätär · 🔥 Kalmaherra ·
   🌳 Aarnihirviö · 🌐 yhteiset.
-- Tila: ✅ oma ääni · 🔁 lainaa pomot-kansiosta · ⬜ puuttuu (hiljaa) · 💎 pääkansio (muut lainaavat) · 🎯 lisää ensin (kuuluu usein).
-- **Pomot:** ainoa lainaus. Kaikki pomot käyttävät `pomot/`-kansion ääniä, ellei pomon omassa kansiossa ole samannimistä ääntä (oma voittaa).
-  Muut ryhmät eivät lainaa – puuttuva ääni = hiljaisuus.
+- Tila: ✅ oma ääni · 🔁 lainaa pomot-kansiosta · ⬜ puuttuu (hiljaa) · 💎 pääkansio (muut lainaavat) · ➕ kerrostuu pohjaryhmän päälle · 🎯 lisää ensin (kuuluu usein).
+- **Pomot:** kaikki pomot käyttävät `pomot/`-kansion ääniä, ellei pomon omassa kansiossa ole samannimistä ääntä (oma voittaa).
+- ➕ **Kerrostus (v2.21):** 🐻 raskaat ja 🐇 kevyet nelijalkaiset soittavat 🐾 nelijalkaisten äänet; 🐦 kevyet kaksijalkaiset, 💀 luurangot,
+  🪨 kivivartija ja 👑 pomot soittavat 🦶 kaksijalkaisten äänet (sävel ja voimakkuus koon mukaan). Ryhmän oma samanniminen ääni soi päälle.
+  Kerrokset joka askeleella: **tömistys** (🐻, 🪨, 👑 – pieni matala tömähdys) ja **kalina** (💀 – luut kalisevat). Ne eivät soi uidessa
+  (tömistys ei myöskään kahlatessa).
 
 ## Alustat (askeleet)
 
 {chr(10).join(f'- `askel_{x}`: {SURF_FI[x]}' for x in SURF)}
 
-**Käsittely:** askel ≤ 0,5 s (iso 0,8), −27 LUFS; kahlaus/uinti ≤ 1,2–1,8 s; kaatuminen ≤ 1,5 s (iso 2,5); isku/osuma ≤ 0,7–1,0 s; syöminen ≤ 2,5 s;
+**Käsittely:** askel ≤ 0,5 s (iso 0,8), −27 LUFS; tömistys ≤ 0,6 s (iso 0,9), −26 LUFS; kahlaus/uinti ≤ 1,2–1,8 s; kaatuminen ≤ 1,5 s (iso 2,5); isku/osuma ≤ 0,7–1,0 s; syöminen ≤ 2,5 s;
 palaminen ≤ 3 s (soi silmukkana). Isot ryhmät +2 dB. Anna raaka kuivana ja puhtaana (peli lisää etäisyyden ja kaiun).
 
 ## Ryhmät ({own}/{tot} ääntä omilla äänillä)
@@ -699,9 +734,8 @@ MEM_FI = {'hiisi': 'Sammalhiisi', 'suonakki': 'Suonäkki', 'kalmo': 'Kalmo', 'yl
           'jaajattari': 'Jäätär', 'kalmaherra': 'Kalmaherra', 'aarnihirvio': 'Aarnihirviö', 'kaikki': 'kaikki olennot'}
 BOSS_G = {'pomot', 'kalmanvartija', 'jaatar', 'kalmaherra', 'aarnihirvio'}
 PRIO_T = {'kaatuminen'}
-PRIO_STEP = {'kaksijalkaiset': 'askel_ruoho', 'luurangot': 'askel_ruoho', 'nelijalkaiset': 'askel_ruoho', 'raskaat_nelijalkaiset': 'askel_ruoho', 'pomot': 'askel_kivi',
-             'kevyet_nelijalkaiset': 'askel_ruoho', 'kevyet_kaksijalkaiset': 'askel_ruoho', 'kivivartija': 'askel_kivi',
-             'kalmanvartija': 'askel_ruoho', 'jaatar': 'askel_jaa', 'kalmaherra': 'askel_kivi', 'aarnihirvio': 'askel_ruoho', 'yhteiset': 'palaminen'}
+PRIO_STEP = {'kaksijalkaiset': 'askel_ruoho', 'luurangot': 'kalina', 'nelijalkaiset': 'askel_ruoho', 'raskaat_nelijalkaiset': 'tomistys', 'pomot': 'tomistys',
+             'kevyet_nelijalkaiset': '', 'kevyet_kaksijalkaiset': 'lentoonlahto', 'kivivartija': 'tomistys', 'yhteiset': 'palaminen'}
 
 def own_versions_t(sounds, g, ev):
     pre = f't/{g}/{ev}_'
