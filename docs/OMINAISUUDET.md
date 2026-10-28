@@ -523,7 +523,10 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kahlaus, uinti; Aarnimetsässä välillä oksa rasahtaa), lähimmät 6 alle 20 m (isot 40 m); pomon askel lähellä tärisyttää. Kaatuminen, törmäys
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
-  Puuttuva ääni = hiljaisuus. Kivivartija on hiljainen, kunnes sille lisätään omat äänet. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+  Puuttuva ääni = hiljaisuus. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **Toimintoäänten kerrostus (v2.21):** raskaat ja kevyet nelijalkaiset käyttävät nelijalkaisten ääniä; metso, luurangot, kivivartija ja pomot
+  kaksijalkaisten ääniä (sävel ja voimakkuus koon mukaan). Ryhmän oma samanniminen ääni soi päälle. Joka askeleella soi lisäksi tömistys
+  (raskaat, kivivartija, pomot) tai luiden kalina (luurangot); ei uidessa. Oksan rasahdus Aarnimetsässä soi hiljaa, enintään 2 s välein.
 - **Palavan olennon äänet (v2.17):** liekeissä olennon ääntely on tauolla; kipuääni kuuluu 1,7–2,1 s välein, kunnes palo sammuu tai olento kuolee.
 - **Vesi sammuttaa (v2.17):** palava pelaaja tai olento sammuu heti vedessä (yli 0,3 m syvyys) eikä syty siellä; soihtu sammuu vedessä; tulinuoli
   sammuu heti veteen osuessaan.

@@ -43,7 +43,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 | `js/render.js` | renderer, scene, camera, valot, tekstuurit, `MAT`, `mat()`, `bx()`, maasto, vesi (varjostin `WATER_U`, syvyyskartta `WATER_DEP`/`waterDepSet`, aallot `WV`/`waveAt`, verkko `waterGeo`, low poly / realistinen `waterApply`), taivas, sade |
 | `js/collision.js` | törmäysruudukko: `addBox`, `addCircle`, `groundAt`, `collideXZ`, `pointBlocked`, `STEPUP` |
 | `js/items.js` | `ITEMS`, `RECIPES`, `RECIPE_BY`, `icon(id)` (canvas-kuvakkeet) |
-| `js/audio.js` | `sfx(nimi, sävel, voimakkuus)` – proseduraaliset äänet; olentojen tiedostoäänet: varaääniketju `VARAANI`, `creLoad`/`creSnd`/`creTick` (3D); toimintoäänet `TG` (ryhmät; pomot lainaavat `pomot/`-kansiosta `TG_BORROW`), `tgSnd`/`tgTick`/`tgSurface` (askeleet, budjetti `TGV`) |
+| `js/audio.js` | `sfx(nimi, sävel, voimakkuus)` – proseduraaliset äänet; olentojen tiedostoäänet: varaääniketju `VARAANI`, `creLoad`/`creSnd`/`creTick` (3D); toimintoäänet `TG` (ryhmät; pomot lainaavat `pomot/`-kansiosta `TG_BORROW`; kerrostus pohjaryhmän päälle `TG_BASE`/`TG_BASEP`, askelkerros `TG_STEP_LAYER`), `tgSnd`/`tgPlay`/`tgTick`/`tgSurface` (askeleet, budjetti `TGV`) |
 | `js/models.js` | `makeHumanoid` (yksityiskohtaiset kaksijalkaiset), `makeAnimal` (eläimet), `makeBiped`, `makeQuad`, `makeHeld`, `makeShield`, `makeBird` (metso), pelaaja `makePlayer`, haarniskat `buildArmor` |
 | `js/bossmodels.js` | pomojen korkealaatuiset mallit (`figVartija`, `figJaatar`, `figKalmaherra`, `figAarni`), apurit `bqLump`/`bqTaper`/`bqCloth`/`bqCrystal`…, Ultra-efektit `f.fx` + `bossUltra()` |
 | `js/resources.js` | `NODE`, `NGEO`, sijoittelu ruutuihin (`CHN`, `VIS_R`), `nodes`, tukit (`logs`), `regrowForest`, kohteiden suoja `siteBlocked`, ruoho `rebuildGrass`, maaston LOD `terrLodTick`, staattisten yhdistäminen `mergeStatics`/`mergeTick`, kallistus rinteessä `NTILT`/`groundSlope` |
@@ -91,7 +91,8 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 ## Äänet
 
 - Työtapa ja säännöt: `docs/KEHITYSMUISTIO.md` → "Äänisuunnitelma". Projektit omissa kansioissaan `sounds/<projekti>/` (`raw/`, `valmiit/`, oma lista):
-  `olennot_aanet/` (AANILISTA.md) ja `olennot_toiminnot/` (ryhmäkansiot `raw/<ryhmä>/` → `valmiit/<ryhmä>_valmis/`, AANILISTA_TOIMINNOT.md); `sounds/manifest.json` yhteinen (`f`-polku).
+  `olennot_aanet/` (AANILISTA.md) ja `olennot_toiminnot/` (ryhmäkansiot `raw/<ryhmä>/` → `valmiit/<ryhmä>_valmis/`, AANILISTA_TOIMINNOT.md; kerrostuvissa ryhmissä vain
+  kerrokset kuten tömistys/kalina – pohjaääni kaksi- tai nelijalkaisilta); `sounds/manifest.json` yhteinen (`f`-polku).
 - Käyttäjä korvaa paikkamerkin projektin `raw/`-kansiossa samalla nimellä (lisäversiot `_4`, `_5` … ilman rajaa) → aja `python3 tools/process_sounds.py` (uudet nimet: `--init`).
   Peli lukee vain `sounds/manifest.json`:n käsitellyt äänet. Uusi olento → aja `--init` (tekee sen paikkamerkit).
 - **Äänierä (uudet äänet):** noudata kehitysmuistion "Äänierän rutiini" (pull → `process_sounds.py` → lue HUOM-rivit → muistio, versio, `tarkistus.mjs` → PR). Pelkkä äänidata ei vaadi
