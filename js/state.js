@@ -324,8 +324,9 @@ function updateProjs(dt){updateHitMarks(dt);
     let cont=0;if(p.kind==='arrow'){cont=arrowStep(p,dt);p.m.lookAt(_tmpV.copy(p.m.position).add(p.v));}else{p.m.position.addScaledVector(p.v,dt);p.m.rotation.x+=dt*5;}
     const pos=p.m.position;let hit=false;
     if(p.owner==='player'){const hm=headShot(p,pos,dt);if(hm){const m=hm;m.fireHit=!!p.fire;damageMob(m,p.dmg*1.1,'pierce',p.v.x,p.v.z);hitMarker(pos.x,pos.y,pos.z,true);m.fireHit=false;if(p.fire)igniteMob(m);floatText('Pääosuma!',pos.x,pos.y+.4,pos.z,'#ff5a4a');hit=true;}
-     if(!hit)for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){m.fireHit=!!p.fire;damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);hitMarker(pos.x,pos.y,pos.z);m.fireHit=false;if(p.fire)igniteMob(m);hit=true;break;}}}
-    else{if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<(p.kind==='rock'?2.2*2.2:.6)&&pos.y<P.pos.y+2.2&&pos.y>P.pos.y-.5){hurtPlayer(p.dmg,pos.x-p.v.x,pos.z-p.v.z);hit=true;}}
+     if(!hit)for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){m.fireHit=!!p.fire;damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);hitMarker(pos.x,pos.y,pos.z);m.fireHit=false;if(p.fire)igniteMob(m);hit=true;break;}}
+     if(hit)tgHit('nuoli',pos.x,pos.y,pos.z);}   // v2.22: nuoli osuu olentoon
+    else{if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<(p.kind==='rock'?2.2*2.2:.6)&&pos.y<P.pos.y+2.2&&pos.y>P.pos.y-.5){const h0=P.hp;hurtPlayer(p.dmg,pos.x-p.v.x,pos.z-p.v.z);hit=true;if(P.hp<h0||P.dead)tgHit(p.kind==='rock'?'murskaus':'nuoli',P.pos.x,P.pos.y+1.1,P.pos.z);}}   // v2.22
     const g=P.inDun?DUN.y:terrainH(pos.x,pos.z);
     if(!hit&&cont){p.stuck=true;p.t=0;const tx=pos.x+_aD.x*.45,ty=pos.y+_aD.y*.45,tz=pos.z+_aD.z*.45;
       if(p.light){if(cont===2)arrowOut(p,tx,ty,tz);else{const rain=cont!==2&&arrowRainHit(tx,ty,tz);p.light.x=pos.x;p.light.y=pos.y;p.light.z=pos.z;   /* v2.01: kohteessa kirkkaampi (2,8); sateessa palaa 1,6 s ja hiipuu pehmeästi */

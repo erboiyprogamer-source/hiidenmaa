@@ -241,7 +241,7 @@ function famStep(m,dt,dist){const F=m.fam,sow=F.sow;
   if(m===sow&&F.k==='root'&&(m.eatS=(m.eatS??.5)-dt)<=0){m.eatS=2.4;if(dist<25)tgSnd(m,'syominen_tonkiminen',{v:.85});}   // v2.16
   animMob(m,dt);if(!moving||F.k==='nuzzle'&&m===sow)m.f.head.rotation.x+=hd;if(hop)m.f.g.position.y+=hop;return true;}
 // v2.16: olennon isku osuu pelaajaan → osumaääni (purema/kynsi/isku), vain jos vahinko meni läpi (ei torjuttu)
-function mobHurtP(m,dmg,x,z){const h=P.hp;hurtPlayer(dmg,x,z);if(P.hp<h||P.dead)tgSnd(m,'osuma');}
+function mobHurtP(m,dmg,x,z){const h=P.hp;hurtPlayer(dmg,x,z);if(P.hp<h||P.dead)tgHit(TG_HIT[m.type]||'isku',P.pos.x,P.pos.y+1.1,P.pos.z,clamp(tgSize(m),.85,1.15));}   // v2.22: osumat/-kansion kategoria
 /* v2.16 SYÖMINEN (TG_EAT, audio.js): rauhallinen eläin (ei vihainen, pelaaja yli 12 m, ei osumaa 10 s:iin) pysähtyy 20–50 s välein (55 %) syömään 3–6 s:
    pää alhaalla nyökkien, syömisääni lajin tavan mukaan (laidun, tonkiminen, rouskutus, nakerrus) noin 2,5 s välein. Pelaaja lähelle tai osuma keskeyttää. */
 function eatPlan(m,dt,dist){if(m.state!=='idle'||m.angry||m.fam||m.born!==undefined||(dist<12&&!devOn('unseen'))||playTime-m.lastHit<10)return;
@@ -331,7 +331,9 @@ function moveMob(m,tx,tz,spd,dt){
   _hitl.length=0;collideXZ(m.pos,m.def.r,m.type==='vartija'?6:1.6,m.pos.y,_hitl);
   const moved=Math.hypot(m.pos.x-ox,m.pos.z-oz);
   // v2.16: törmäys kovassa vauhdissa (juoksu tai tönäisy) esteeseen → törmäysääni (1,2 s tauko)
-  {const want=Math.hypot(vx+m.vel.x,vz+m.vel.z);if(want>4.5&&_hitl.length&&moved<want*dt*.35&&playTime-(m.tmT??-9)>1.2){m.tmT=playTime;tgSnd(m,'tormays');}}
+  // v2.22: juoksuvauhdissa (yli 1,3 × kävely ja yli 2,5 m/s, tai tönäisy) esteeseen (puu, kivi, seinä) → törmäys: kevyt tai raskas (tormaykset/)
+  {const want=Math.hypot(vx+m.vel.x,vz+m.vel.z);if(want>Math.max(2.5,(m.def.walk||1.5)*1.3)&&_hitl.length&&moved<want*dt*.35&&playTime-(m.tmT??-9)>1.2){m.tmT=playTime;const hv=tgHeavy(m);
+    tgSnd(m,hv?'tormays_raskas':'tormays_kevyt',{g:'tormaykset',p:hv?clamp(tgSize(m)*1.1,.75,1.05):clamp(tgSize(m),.85,1.3),v:clamp(want/6,.55,1)});}}
   // stuck at player's buildings -> attack them
   if(m.state==='chase'&&spd>0&&moved<spd*dt*.3){m.stuck+=dt;if(m.stuck>.8&&m.atkCd<=0){const c=_hitl.find(c=>c.owner&&c.owner.t&&PIECES[c.owner.t]);if(c){damagePiece(c.owner,m.def.dmg,'mob');m.atkCd=m.def.cd;m.anim=.4;if(c.owner.t==='aita'){damageMob(m,6,'pierce',-(c.owner.x-m.pos.x),-(c.owner.z-m.pos.z));}}}}else m.stuck=0;
   const g=groundAt(m.pos.x,m.pos.z,m.def.r,m.pos.y);m.pos.y=lerp(m.pos.y,Math.max(g,m.dun?DUN.y:-1.4),Math.min(1,dt*10));
