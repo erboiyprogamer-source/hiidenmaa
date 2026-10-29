@@ -37,6 +37,7 @@ AGGRO_AI = ('neutral', 'hostile', 'boss', 'rboss')   # suuttumisääni (aggro)
 CHASE_AI = ('hostile', 'boss', 'rboss')               # + toistuva jahtiääni (chase)
 ECHO_AI = ('rboss', 'boss')                           # v1.88: kaikuääni (echo): nukkuva ulottuvuuspomo kaikuu luolastossa kunnes pelaaja kohtaa sen; v1.95 myös Kalmanvartija maan alta
 VARIANTS = (1, 2, 3)                                  # paikkamerkit _1.._3; v2.11: lisäversiot _4, _5 … kelpaavat ilman koodimuutosta (peli arpoo kaikista)
+PV_T = 5   # v2.22: toimintoäänten käsittelyversio (huippunormalisointi ennen leikkausta, saumattomat silmukat)
 PV = 4                                                # käsittelyn versio: vaihtuessa kaikki äänet käsitellään uudestaan
 
 
@@ -178,6 +179,12 @@ def sha(path, n=12):
         return hashlib.sha1(f.read()).hexdigest()[:n]
 
 
+def peak_db(ff, inp):
+    """Raa'an huipputaso (dBFS) volumedetectillä; None jos ei saatu."""
+    r = subprocess.run([ff, '-hide_banner'] + inp + ['-af', 'volumedetect', '-f', 'null', '-'], capture_output=True, text=True)
+    m = re.search(r'max_volume: (-?[\d.]+) dB', r.stderr)
+    return float(m.group(1)) if m else None
+
 def duration(ff, path):
     r = subprocess.run([ff, '-hide_banner', '-i', path, '-f', 'null', '-'], capture_output=True, text=True)
     t = re.findall(r'time=(\d+):(\d+):([\d.]+)', r.stderr)
@@ -255,7 +262,7 @@ def event_end(ff, wav, win=0.025, drop=20.0, hold=4):
     return None
 
 
-def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False):
+def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, loop=False):
     """prof (toiminnot): (yläraja, iso yläraja, häivytys, LUFS) – isojen +2 dB on jo mukana; big valitsee ison ylärajan."""
     cap_n, cap_b, fade, target = prof or PROFIILI.get(kind, PROFIILI['idle'])
     boss = ai in BOSS_DB or big
@@ -266,13 +273,26 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False):
     with tempfile.TemporaryDirectory() as td:
         w1, w2, tmp = os.path.join(td, 'a.wav'), os.path.join(td, 'b.wav'), os.path.join(td, 'o.mp3')
         # 1) mono, rumina pois, hiljaisuus pois alusta ja lopusta
-        r = run([ff, '-hide_banner', '-loglevel', 'error', '-y'] + inp + ['-af', f'highpass=f=40,{trim},areverse,{trim},areverse',
+        # v2.22: hiljainen raaka (huippu −30 dB) katosi −48 dB:n leikkauksessa → huippu ensin −1 dBFS:ään (leikkaus suhteessa huippuun)
+        pk = peak_db(ff, inp)
+        pre = f'volume={max(0.0, -1.0 - pk):.2f}dB,' if pk is not None and pk < -1.0 else ''
+        r = run([ff, '-hide_banner', '-loglevel', 'error', '-y'] + inp + ['-af', pre + ('highpass=f=40' if loop else f'highpass=f=40,{trim},areverse,{trim},areverse'),
                 '-ac', '1', '-ar', '44100', '-c:a', 'pcm_s16le', w1])
         if r.returncode != 0 or not os.path.exists(w1):
             return r.stderr.strip()[-300:] or 'tuntematon virhe', None
         d = duration(ff, w1)
         if d < 0.05:
             return 'ääni on käytännössä hiljaa', None
+        # 2b) v2.22 silmukka: ei häivytyksiä; loppu ristihäivytetään alkuun (pituus enintään 6 s, sauma xf), jolloin silmukka on saumaton
+        if loop:
+            L = min(d, 6.0)
+            xf = min(0.25, L * 0.15)
+            r = run([ff, '-hide_banner', '-loglevel', 'error', '-y', '-i', w1, '-i', w1, '-filter_complex',
+                     f'[0:a]atrim=start={xf:.3f}:end={L:.3f},asetpts=PTS-STARTPTS[body];'
+                     f'[1:a]atrim=end={xf:.3f},asetpts=PTS-STARTPTS[head];[body][head]acrossfade=d={xf:.3f}:c1=qsin:c2=qsin[o]',
+                     '-map', '[o]', '-c:a', 'pcm_s16le', w2])   # kaksi syötettä (asplit + atrim jumitti → tyhjä tiedosto)
+            if r.returncode != 0:
+                return r.stderr.strip()[-300:], None
         # 2) pituuden yläraja + häivytykset (ei klikkausta alussa, pehmeä loppu)
         L = min(d, cap)
         cut = d > cap
@@ -283,10 +303,11 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False):
         elif d > cap and kind in PITKA:
             L, cut = natural_end(ff, w1, d, cap, PITKA[kind][1 if boss else 0])
         f = min(max(fade, 0.6) if cut and L > cap else fade, L * 0.5)
-        r = run([ff, '-hide_banner', '-loglevel', 'error', '-y', '-i', w1, '-af',
-                 f'atrim=duration={L:.3f},afade=t=in:d=0.006,afade=t=out:st={max(L - f, 0):.3f}:d={f:.3f}', '-c:a', 'pcm_s16le', w2])
-        if r.returncode != 0:
-            return r.stderr.strip()[-300:], None
+        if not loop:
+            r = run([ff, '-hide_banner', '-loglevel', 'error', '-y', '-i', w1, '-af',
+                     f'atrim=duration={L:.3f},afade=t=in:d=0.006,afade=t=out:st={max(L - f, 0):.3f}:d={f:.3f}', '-c:a', 'pcm_s16le', w2])
+            if r.returncode != 0:
+                return r.stderr.strip()[-300:], None
         # 3) äänekkyyden mittaus → vahvistus tavoitteeseen (−24…+24 dB) + alimiter (katto −1 dBFS)
         lu = loudness(ff, w2)
         gain = 0.0 if lu is None else max(-24.0, min(24.0, target - lu))
@@ -448,7 +469,7 @@ SURF_FI = {'ruoho': 'ruoho, maa, kangas, nummi', 'kivi': 'vuoret, rakka, luolat 
 LAND = [x for x in SURF if x not in ('kahlaus', 'uinti')]
 def _steps(surfs):
     return [f'askel_{x}' for x in surfs]
-COMMON_ATK = ['huitaisu', 'osuma']
+COMMON_ATK = ['huitaisu']   # v2.22: osuma → osumat/-kansio (6 kategoriaa), törmäys → tormaykset/-kansio (kevyt/raskas)
 # v2.17: pomot jakavat yhteisen pääkansion `pomot/`; jokaisen pomon omassa kansiossa on samat paikat – oma ääni voittaa, muuten lainataan pomot-kansiosta
 # v2.21: pomojen askeleet tulevat kaksijalkaisilta (kerrostus, TG_BASE) + tömistys päälle, joten askelpaikkoja ei enää ole
 BOSS_EV = ['tomistys', 'kaatuminen'] + COMMON_ATK + ['ryntays_lataus', 'ryntays']
@@ -465,11 +486,20 @@ TG_BASEP = {'raskaat_nelijalkaiset': (.8, 1), 'kevyet_nelijalkaiset': (1.3, .55)
 TG_STEP_LAYER = {'raskaat_nelijalkaiset': 'tomistys', 'kivivartija': 'tomistys', 'luurangot': 'kalina', 'pomot': 'tomistys',
                  'kalmanvartija': 'tomistys', 'jaatar': 'tomistys', 'kalmaherra': 'tomistys', 'aarnihirvio': 'tomistys'}
 TG_BORROW = {'kalmanvartija': 'pomot', 'jaatar': 'pomot', 'kalmaherra': 'pomot', 'aarnihirvio': 'pomot'}
+# v2.22 (käyttäjän päätös): osumaäänet omassa kansiossaan 6 kategoriaan; jokainen olento käyttää yhtä (pelin TG_HIT, audio.js)
+HIT_CATS = ['raapaisu', 'purema', 'murskaus', 'sarvet', 'isku', 'nuoli']
+HIT_FI = {'raapaisu': ('kynnet raapaisevat (ilves, karhut, Suonäkki)', 'claw scratch hit, slash flesh'),
+          'purema': ('purema (sudet, ahma, emakko, porsas, kettu, jänis)', 'bite hit, animal bite snap'),
+          'murskaus': ('raskas murskaava isku (kivivartija, Kalmanvartija, Jäätär, Aarnihirviö, Jäätären heittokivi)', 'heavy crush impact, smash hit'),
+          'sarvet': ('sarvet tai torahampaat iskevät (peura, poro, hirvi, hiidenhirvi, karju)', 'antler horn hit, ram impact'),
+          'isku': ('ase tai nyrkki osuu (hiisi, kalmot, ylimys, Kalmaherra, metso nokkaisee)', 'weapon hit body, punch impact'),
+          'nuoli': ('nuoli osuu (jousikalmon nuoli pelaajaan, pelaajan nuoli olentoon)', 'arrow hit flesh, arrow impact thud')}
+LOOP_EV = {'palaminen'}   # v2.22: silmukat – ei hiljaisuuden leikkausta eikä häivytyksiä; sauma ristihäivytetään (saumaton silmukka)
 TG_GROUPS = [   # (id, nimi, emoji, jäsenet, tapahtumat, iso)
-    ('kaksijalkaiset', 'Kaksijalkaiset', '🦶', ['hiisi', 'suonakki'], _steps(SURF[:-1]) + ['oksa', 'kaatuminen', 'tormays'] + COMMON_ATK + ['nousu'], False),
+    ('kaksijalkaiset', 'Kaksijalkaiset', '🦶', ['hiisi', 'suonakki'], _steps(SURF[:-1]) + ['oksa', 'kaatuminen'] + COMMON_ATK + ['nousu'], False),
     ('luurangot', 'Luurangot', '💀', ['kalmo', 'ylimys'], ['kalina'], False),
     ('nelijalkaiset', 'Nelijalkaiset', '🐾', ['peura', 'poro', 'hirvi', 'karju', 'emakko', 'susi', 'routasusi', 'kalmasusi', 'ilves', 'ahma'],
-     _steps(SURF) + ['oksa', 'kaatuminen', 'tormays'] + COMMON_ATK + ['nousu', 'ravistus', 'nuuhkiminen', 'syominen_laidun', 'syominen_tonkiminen', 'syominen_rouskutus'], False),
+     _steps(SURF) + ['oksa', 'kaatuminen'] + COMMON_ATK + ['nousu', 'ravistus', 'nuuhkiminen', 'syominen_laidun', 'syominen_tonkiminen', 'syominen_rouskutus'], False),
     ('raskaat_nelijalkaiset', 'Raskaat nelijalkaiset (ei pomoja)', '🐻', ['karhu', 'hiidenkarhu', 'hiidenhirvi'], ['tomistys'], True),
     ('kevyet_nelijalkaiset', 'Kevyet nelijalkaiset', '🐇', ['janis', 'kettu', 'porsas'], ['syominen_nakerrus'], False),
     ('kevyet_kaksijalkaiset', 'Kevyet kaksijalkaiset', '🐦', ['metso'], ['lentoonlahto'], False),
@@ -479,6 +509,8 @@ TG_GROUPS = [   # (id, nimi, emoji, jäsenet, tapahtumat, iso)
     ('jaatar', 'Jäätär (oma, muuten pomot)', '❄️', ['jaajattari'], BOSS_EV, True),
     ('kalmaherra', 'Kalmaherra (oma, muuten pomot)', '🔥', ['kalmaherra'], BOSS_EV, True),
     ('aarnihirvio', 'Aarnihirviö (oma, muuten pomot)', '🌳', ['aarnihirvio'], BOSS_EV, True),
+    ('osumat', 'Osumat – kun olento osuu toiseen (esim. pelaajaan) tai nuoli osuu', '💥', ['kaikki'], ['osuma_' + k for k in HIT_CATS], False),
+    ('tormaykset', 'Törmäykset – juoksuvauhdissa esteeseen (puu, kivi, seinä)', '🧱', ['kaikki'], ['tormays_kevyt', 'tormays_raskas'], False),
     ('yhteiset', 'Yhteiset (kaikki olennot, sävel koon mukaan)', '🌐', ['kaikki'], ['palaminen', 'kahina', 'loiskahdus'], False),
 ]
 TG_BY = {g[0]: g for g in TG_GROUPS}
@@ -538,6 +570,12 @@ def t_info(g, ev):
         return (f'askel: {SURF_FI[x]}' + (' – raskas, kuuluu 40 m' if big else ''), f'{STEP_KEYS[x]}, {G_KEYS.get(g, "")}'.strip(', '))
     if (g, ev) in G_OVER:
         return G_OVER[(g, ev)]
+    if ev.startswith('osuma_'):
+        return HIT_FI[ev[6:]]
+    if ev == 'tormays_kevyt':
+        return ('tavallinen olento juoksee esteeseen (puu, kivi, seinä) – tömähdys, rasahdus', 'body bump into tree, thud collision light')
+    if ev == 'tormays_raskas':
+        return ('raskas olento tai pomo juoksee esteeseen (karhu, kivivartija, pomot) – kova rysähdys', 'heavy body crash into tree, big impact thud')
     d, k = EV_FI[ev]
     return d, (f'{k}, {G_KEYS[g]}' if g in G_KEYS else k)
 
@@ -606,16 +644,17 @@ def process_toiminnot(ff, init, old):
         ev = mm.group(1)
         src_h = sha(p)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        if n in old and old[n].get('src') == src_h and old[n].get('pv') == PV and os.path.exists(dst):
+        if n in old and old[n].get('src') == src_h and old[n].get('pv') == PV_T and os.path.exists(dst):
             sounds[n] = old[n]
             skipped += 1
         else:
-            err, res = process(ff, p, dst, sniff(p), 'hostile', ev, prof=t_prof(ev, TG_BY[g][5]), big=TG_BY[g][5])
+            big_ev = TG_BY[g][5] or ev.endswith('_raskas')
+            err, res = process(ff, p, dst, sniff(p), 'hostile', ev, prof=t_prof(ev, big_ev), big=big_ev, loop=ev in LOOP_EV)
             if err:
                 errors.append(f'{n}: {err}')
                 continue
             gain, rawd = res
-            sounds[n] = {'h': sha(dst, 10), 'src': src_h, 'dur': duration(ff, dst), 'pv': PV, 'gain': gain, 'raw': rawd}
+            sounds[n] = {'h': sha(dst, 10), 'src': src_h, 'dur': duration(ff, dst), 'pv': PV_T, 'gain': gain, 'raw': rawd}
             print(f'  {n}: {sounds[n]["dur"]} s (raaka {rawd} s), vahvistus {gain:+.1f} dB')
             done += 1
         sounds[n]['f'] = f'{PROJ_T}/valmiit/{g}{VALMIS}/{base}.mp3'
@@ -734,7 +773,7 @@ MEM_FI = {'hiisi': 'Sammalhiisi', 'suonakki': 'Suonäkki', 'kalmo': 'Kalmo', 'yl
           'jaajattari': 'Jäätär', 'kalmaherra': 'Kalmaherra', 'aarnihirvio': 'Aarnihirviö', 'kaikki': 'kaikki olennot'}
 BOSS_G = {'pomot', 'kalmanvartija', 'jaatar', 'kalmaherra', 'aarnihirvio'}
 PRIO_T = {'kaatuminen'}
-PRIO_STEP = {'kaksijalkaiset': 'askel_ruoho', 'luurangot': 'kalina', 'nelijalkaiset': 'askel_ruoho', 'raskaat_nelijalkaiset': 'tomistys', 'pomot': 'tomistys',
+PRIO_STEP = {'osumat': 'osuma_purema', 'tormaykset': 'tormays_kevyt', 'kaksijalkaiset': 'askel_ruoho', 'luurangot': 'kalina', 'nelijalkaiset': 'askel_ruoho', 'raskaat_nelijalkaiset': 'tomistys', 'pomot': 'tomistys',
              'kevyet_nelijalkaiset': '', 'kevyet_kaksijalkaiset': 'lentoonlahto', 'kivivartija': 'tomistys', 'yhteiset': 'palaminen'}
 
 def own_versions_t(sounds, g, ev):

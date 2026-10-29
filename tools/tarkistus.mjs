@@ -44,7 +44,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('kyykyssä paikallaan eläin ei säikähdä',()=>{for(const m of [...mobs])mobRemove(m);const d=spawnMob('peura',P.pos.x,P.pos.z+2.5);keys[BIND.crouch]=true;for(let i=0;i<20;i++)g.update(1/30);keys[BIND.crouch]=false;return d.state!=='flee';});
   t('yksityiskohtaiset pomot/humanoidit (makeHumanoid)',()=>['vartija','ylimys','kalmo','hiisi','kivivartija','jaajattari','kalmaherra','aarnihirvio'].every(k=>{const m=spawnMob(k,P.pos.x+20,P.pos.z+20);const ok=m.f.human&&!!m.f.kneeL;mobRemove(m);return ok;}));
   t('koivun runko segmentoitu (täplät heiluvat)',()=>NGEO.koivu&&NGEO.koivu.attributes.position.count>400);
-  t('puun äänet: sama isku, tumma tömähdys',()=>['chop','chopFinal','logBreak','thud'].every(k=>/case '/.test(sfx.toString())&&sfx.toString().includes("case '"+k+"'")));
+  t('v2.22 ei generoituja ääniä: sfx on hiljainen koukku (ei oskillaattoria/kohinaa), koukut tallessa (puun äänet chop, chopFinal, logBreak, thud ym.)',()=>['chop','chopFinal','logBreak','thud','roar','pickup'].every(k=>SFX_HOOKS.has(k))&&!/createOscillator|createBuffer|case '/.test(sfx.toString())||'sfx generoi yhä ääntä');
   t('yksityiskohtaiset eläimet (makeAnimal)',()=>['peura','karju','susi','routasusi'].every(k=>{const m=spawnMob(k,P.pos.x+20,P.pos.z+20);const ok=m.f.animal&&!!m.f.legs[0].userData.knee;mobRemove(m);return ok;}));
   t('vasara roikkuu vyöllä takana',()=>{g.invAdd('vasara',1);g.invAdd('kirves',1);const kv=inv.find(s=>s&&s.id==='kirves');if(!kv.eq)toggleEquip(kv);updateGear();return !!backHang&&Math.abs(backHang.position.y-.94)<.05;});
   t('lyönti ei mene vartalon läpi (armClear)',()=>{const kv=inv.find(s=>s&&s.id==='kirves');if(!kv.eq)toggleEquip(kv);updateGear();locked=true;let bad=0;for(let sw=0;sw<2;sw++){P.atk=null;P.stam=100;for(let i=0;i<10;i++)g.update(1/30);mouseL=true;g.update(1/30);mouseL=false;for(let f=0;f<30&&P.atk;f++){g.update(1/30);if(bodyPen(fig.hand,.05)>0||bodyPen(fig.handL,.05)>0||bodyPen(fig.elbowL,.04)>0||bodyPen(fig.elbowR,.04)>0)bad++;}}return bad===0;});
@@ -239,6 +239,12 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/P\.inWater&&!P\.inDun\)\{ts\.lit=false/.test(updatePlayer.toString())&&/cont===2\)arrowOut/.test(updateProjs.toString());
     const c=/mobBurning\(m\)/.test(creTick.toString())&&/1\.7\+Math\.random\(\)\*\.4/.test(creTick.toString())&&/!mobBurning\(m\)/.test(damageMob.toString())&&mobBurning({burnT:2})&&!mobBurning({burnT:0})&&!mobBurning({burnT:2,dead:true});
     return a&&b&&c||`virhe vesi ${a} soihtu/nuoli ${b} äänet ${c}`;});
+  t('v2.22 osumat (6 kategoriaa, osumat/) ja törmäykset (kevyt/raskas, tormaykset/), saumaton silmukka',()=>{
+    const cats=new Set(Object.values(TG_HIT));const a=['raapaisu','purema','murskaus','sarvet','isku','nuoli'].every(c=>c==='nuoli'||cats.has(c))&&Object.keys(MOBDEF).every(k=>TG_HIT[k]);
+    const b=/tgHit\(TG_HIT\[m\.type\]/.test(mobHurtP.toString())&&/tgHit\('nuoli'/.test(updateProjs.toString())&&/'murskaus':'nuoli'/.test(updateProjs.toString());
+    const c=/tormays_raskas/.test(moveMob.toString())&&/tormaykset/.test(moveMob.toString())&&/m\.def\.walk\|\|1\.5\)\*1\.3/.test(moveMob.toString())&&tgHeavy({type:'karhu',def:{ai:'neutral'}})&&!tgHeavy({type:'susi',def:{ai:'hostile'}});
+    const d=/tgLoopPts/.test(tgPlay.toString())&&typeof tgLoopPts==='function';
+    return a&&b&&c&&d||`virhe kategoriat ${a} osumat ${b} törmäys ${c} silmukka ${d}`;});
   t('v2.21 toimintoäänten kerrostus: raskaat/kevyet/luurangot/kivivartija/pomot soittavat pohjaryhmän äänen + oman päälle, tömistys/kalina joka askeleella, oksa hiljaa 2 s välein',()=>{
     const a=TG_BASE.raskaat_nelijalkaiset==='nelijalkaiset'&&TG_BASE.kevyet_nelijalkaiset==='nelijalkaiset'&&TG_BASE.luurangot==='kaksijalkaiset'&&TG_BASE.kivivartija==='kaksijalkaiset'
       &&['kalmanvartija','jaatar','kalmaherra','aarnihirvio'].every(g=>TG_BASE[g]==='kaksijalkaiset')&&!TG_BASE.kaksijalkaiset&&!TG_BASE.nelijalkaiset&&TG_BASEP.raskaat_nelijalkaiset[0]<1&&TG_BASEP.kevyet_nelijalkaiset[0]>1;

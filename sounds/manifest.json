@@ -736,6 +736,150 @@
    "raw": 4.96,
    "far": 1,
    "f": "olennot_aanet/valmiit/susi_idle_6.mp3"
+  },
+  "t/kaksijalkaiset/askel_pusikko_1": {
+   "h": "076a914acf",
+   "src": "87f6d2f0ef94",
+   "dur": 0.49,
+   "pv": 5,
+   "gain": -9.3,
+   "raw": 0.83,
+   "f": "olennot_toiminnot/valmiit/kaksijalkaiset_valmis/askel_pusikko_1.mp3"
+  },
+  "t/kaksijalkaiset/askel_ruoho_1": {
+   "h": "bafd4b8ae6",
+   "src": "4ed650b35adb",
+   "dur": 0.31,
+   "pv": 5,
+   "gain": -2.7,
+   "raw": 0.32,
+   "f": "olennot_toiminnot/valmiit/kaksijalkaiset_valmis/askel_ruoho_1.mp3"
+  },
+  "t/kaksijalkaiset/askel_ruoho_2": {
+   "h": "ccfd6e48f1",
+   "src": "08326cc99e38",
+   "dur": 0.36,
+   "pv": 5,
+   "gain": -5.5,
+   "raw": 0.37,
+   "f": "olennot_toiminnot/valmiit/kaksijalkaiset_valmis/askel_ruoho_2.mp3"
+  },
+  "t/kaksijalkaiset/askel_ruoho_3": {
+   "h": "85aa12c62f",
+   "src": "26991bf9b98a",
+   "dur": 0.31,
+   "pv": 5,
+   "gain": -0.4,
+   "raw": 0.32,
+   "f": "olennot_toiminnot/valmiit/kaksijalkaiset_valmis/askel_ruoho_3.mp3"
+  },
+  "t/kivivartija/tomistys_1": {
+   "h": "97b3999f3d",
+   "src": "14210c4715c1",
+   "dur": 0.49,
+   "pv": 5,
+   "gain": -6.7,
+   "raw": 0.51,
+   "f": "olennot_toiminnot/valmiit/kivivartija_valmis/tomistys_1.mp3"
+  },
+  "t/luurangot/kalina_1": {
+   "h": "9d499c88a6",
+   "src": "eedb5ddddbbf",
+   "dur": 0.54,
+   "pv": 5,
+   "gain": -5.3,
+   "raw": 0.55,
+   "f": "olennot_toiminnot/valmiit/luurangot_valmis/kalina_1.mp3"
+  },
+  "t/luurangot/kalina_2": {
+   "h": "b64efb7069",
+   "src": "3603fa2e2f35",
+   "dur": 0.57,
+   "pv": 5,
+   "gain": -6.8,
+   "raw": 0.6,
+   "f": "olennot_toiminnot/valmiit/luurangot_valmis/kalina_2.mp3"
+  },
+  "t/nelijalkaiset/askel_pusikko_1": {
+   "h": "076a914acf",
+   "src": "87f6d2f0ef94",
+   "dur": 0.49,
+   "pv": 5,
+   "gain": -9.3,
+   "raw": 0.83,
+   "f": "olennot_toiminnot/valmiit/nelijalkaiset_valmis/askel_pusikko_1.mp3"
+  },
+  "t/nelijalkaiset/askel_ruoho_1": {
+   "h": "bafd4b8ae6",
+   "src": "4ed650b35adb",
+   "dur": 0.31,
+   "pv": 5,
+   "gain": -2.7,
+   "raw": 0.32,
+   "f": "olennot_toiminnot/valmiit/nelijalkaiset_valmis/askel_ruoho_1.mp3"
+  },
+  "t/nelijalkaiset/askel_ruoho_2": {
+   "h": "ccfd6e48f1",
+   "src": "08326cc99e38",
+   "dur": 0.36,
+   "pv": 5,
+   "gain": -5.5,
+   "raw": 0.37,
+   "f": "olennot_toiminnot/valmiit/nelijalkaiset_valmis/askel_ruoho_2.mp3"
+  },
+  "t/nelijalkaiset/askel_ruoho_3": {
+   "h": "85aa12c62f",
+   "src": "26991bf9b98a",
+   "dur": 0.31,
+   "pv": 5,
+   "gain": -0.4,
+   "raw": 0.32,
+   "f": "olennot_toiminnot/valmiit/nelijalkaiset_valmis/askel_ruoho_3.mp3"
+  },
+  "t/yhteiset/kahina_1": {
+   "h": "c1b04c58ba",
+   "src": "6dbad79dc4ca",
+   "dur": 1.15,
+   "pv": 5,
+   "gain": -2.7,
+   "raw": 1.16,
+   "f": "olennot_toiminnot/valmiit/yhteiset_valmis/kahina_1.mp3"
+  },
+  "t/yhteiset/loiskahdus_1": {
+   "h": "a547c3adb7",
+   "src": "92567a2966cf",
+   "dur": 1.17,
+   "pv": 5,
+   "gain": -0.7,
+   "raw": 3.62,
+   "f": "olennot_toiminnot/valmiit/yhteiset_valmis/loiskahdus_1.mp3"
+  },
+  "t/yhteiset/loiskahdus_2": {
+   "h": "bf550576b0",
+   "src": "798639ac1ca4",
+   "dur": 1.15,
+   "pv": 5,
+   "gain": -3.1,
+   "raw": 1.16,
+   "f": "olennot_toiminnot/valmiit/yhteiset_valmis/loiskahdus_2.mp3"
+  },
+  "t/yhteiset/palaminen_1": {
+   "h": "7465bef56e",
+   "src": "108e650a17e1",
+   "dur": 1.72,
+   "pv": 5,
+   "gain": -4.6,
+   "raw": 1.99,
+   "f": "olennot_toiminnot/valmiit/yhteiset_valmis/palaminen_1.mp3"
+  },
+  "t/yhteiset/palaminen_2": {
+   "h": "b5f340d54e",
+   "src": "83d872c4c892",
+   "dur": 1.72,
+   "pv": 5,
+   "gain": 7.9,
+   "raw": 1.99,
+   "f": "olennot_toiminnot/valmiit/yhteiset_valmis/palaminen_2.mp3"
   }
  }
 }

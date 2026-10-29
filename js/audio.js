@@ -1,55 +1,23 @@
 /* Hiidenmaa – audio.js
-   Proseduraaliset ääniefektit (WebAudio) */
+   Äänet: vain käyttäjän omat tiedostoäänet (olennot, toiminnot); sfx() on hiljainen koukku tuleville projekteille (v2.22) */
 'use strict';
 
 /* ---------------- AUDIO ---------------- */
 let actx=null, soundOn=true;
 function audio(){if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}return actx;}
-// sfx(nimi, sävelkerroin = 1, voimakkuus = 1). Jokaisella soitolla sävelkorkeus vaihtelee satunnaisesti ±3,5 % (elävämpi toisto:
-// jokainen kirveen- tai hakunisku kuulostaa hieman erilaiselta). Viimeinen isku ja tuhoutuminen omilla äänillään (chopFinal, logBreak, rockBreak, crumble),
-// kaatuneen puun tömähdys matala (thud, sävel puun koon mukaan, voimakkuus etäisyyden mukaan).
-function sfx(type,pitch=1,vol=1){
-  if(!soundOn)return;const a=audio();if(!a||a.state!=='running'){if(a)a.resume();if(!a||a.state!=='running')return;}
-  const t=a.currentTime,o=a.createGain();o.connect(a.destination);const R=pitch*(1+(Math.random()*2-1)*.035);
-  const noise=(dur,f0,f1,vol0,q=1,at=0)=>{const g=a.createGain();g.connect(o);const b=a.createBuffer(1,a.sampleRate*dur|0,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=a.createBufferSource();s.buffer=b;s.playbackRate.value=Math.min(4,R);const f=a.createBiquadFilter();f.type='bandpass';f.Q.value=q;f.frequency.setValueAtTime(f0*R,t+at);f.frequency.exponentialRampToValueAtTime(Math.max(20,f1*R),t+at+dur);s.connect(f);f.connect(g);g.gain.setValueAtTime(vol0*vol,t+at);g.gain.exponentialRampToValueAtTime(.001,t+at+dur);s.start(t+at);};
-  const tone=(f0,f1,dur,vol0,type='sine',at=0)=>{const g=a.createGain();g.connect(o);const s=a.createOscillator();s.type=type;s.frequency.setValueAtTime(f0*R,t+at);s.frequency.exponentialRampToValueAtTime(Math.max(20,f1*R),t+at+dur);s.connect(g);g.gain.setValueAtTime(vol0*vol,t+at);g.gain.exponentialRampToValueAtTime(.001,t+at+dur);s.start(t+at);s.stop(t+at+dur);};
-  switch(type){
-    case 'swing':noise(.18,2200,500,.12,.8);break;
-    case 'hit':noise(.12,900,200,.35,2);break;
-    case 'chop':noise(.1,500,180,.4,3);tone(180,90,.1,.2,'triangle');break;
-    case 'pick':noise(.08,3000,1500,.3,5);tone(900,600,.06,.08,'square');break;
-    case 'pickup':tone(660,990,.09,.1,'triangle');break;
-    case 'hurt':tone(220,90,.25,.25,'sawtooth');break;
-    case 'block':noise(.1,1800,900,.3,4);tone(400,300,.08,.12,'square');break;
-    case 'build':noise(.09,400,150,.45,2);break;
-    case 'eat':noise(.15,1200,700,.15,1.5);break;
-    case 'craft':tone(440,660,.12,.1,'triangle');break;
-    case 'howl':tone(280,520,1.4,.09,'sine');tone(520,240,1.8,.08,'sine',1.3);tone(140,260,1.6,.03,'triangle',.2);break; // v0.88 kalmasuden ulvonta
-    case 'flap':for(let i=0;i<6;i++)noise(.07,1400,500,.16-i*.018,1.2,i*.075);break; // v0.85 metson lehahdus
-    case 'discover':tone(392,392,1.1,.06,'sine');tone(587,587,1.3,.05,'sine',.18);tone(784,784,1.6,.035,'sine',.36);break; // v0.82 uusi alue: hiljainen kolmisointu
-    case 'bow':tone(300,120,.15,.18,'triangle');break;
-    case 'roar':tone(110,45,1.2,.4,'sawtooth');break;
-    case 'slam':noise(.5,300,60,.6,1);tone(80,30,.5,.4,'sine');break;
-    case 'die':tone(300,80,.4,.2,'triangle');break;
-    // Puun ja tukin äänet (v0.71, käyttäjän toive): jokainen isku on sama kirveenisku (sävel vaihtelee joka lyönnillä). Viimeinen isku
-    // pystypuuhun on lähes sama, vain hiljainen ritinä perään. Tukin viimeinen isku = sama isku + pehmeä tumma tömähdys.
-    case 'chopFinal':noise(.1,500,180,.4,3);tone(180,90,.1,.2,'triangle');noise(.3,700,250,.05,1.5,.06);break;
-    case 'chopLog':noise(.1,500,180,.4,3);tone(180,90,.1,.2,'triangle');break;
-    case 'logBreak':noise(.1,500,180,.4,3);tone(180,90,.1,.2,'triangle');noise(.38,170,45,.38,.9,.05);tone(72,32,.32,.26,'sine',.05);break;
-    // kaatuneen puun tömähdys maahan: tumma matala jytinä
-    case 'thud':noise(.7,170,38,.65,.9);tone(66,26,.7,.5,'sine');noise(.4,380,110,.1,1,.05);break;
-    // kiven viimeinen isku = sama hakkuääni + pehmeä tumma murtuminen
-    case 'rockBreak':noise(.08,3000,1500,.3,5);tone(900,600,.06,.08,'square');noise(.45,300,70,.35,1,.05);tone(90,38,.3,.2,'sine',.05);break;
-    case 'crumble':noise(.6,500,70,.55,1);noise(.4,1800,500,.2,1.5,.08);tone(80,32,.5,.35,'sine');break;
-    case 'woodBreak':noise(.25,800,200,.45,2);noise(.35,350,80,.3,1,.05);break;
-  }
-}
+/* v2.22 (käyttäjän päätös): KOODILLA GENEROIDUT ÄÄNET POISTETTU KOKONAAN. Peli soittaa vain käyttäjän omia ääniä (sounds/-projektit,
+   manifest.json). sfx(nimi) on hiljainen koukku: kutsut jäävät paikoilleen, jotta tulevat ääniprojektit (pelaaja, maailma, käyttöliittymä)
+   voidaan kytkeä samoihin kohtiin. Koukkujen nimet (KEHITYSMUISTIO "Äänikoukut"): pickup, build, craft, hit, slam, roar, crumble, die,
+   swing, hurt, eat, bow, thud, pick, howl, flap, discover, block, chop, chopFinal, chopLog, logBreak, rockBreak, woodBreak. */
+const SFX_HOOKS=new Set(['pickup','build','craft','hit','slam','roar','crumble','die','swing','hurt','eat','bow','thud','pick','howl','flap','discover','block',
+  'chop','chopFinal','chopLog','logBreak','rockBreak','woodBreak']);
+function sfx(type,pitch=1,vol=1){}   // hiljainen koukku (ei generoitua ääntä)
 
 /* ---------------- OLENTOJEN ÄÄNET (v1.84, äänierä A – ks. KEHITYSMUISTIO "Äänisuunnitelma", sounds/AANILISTA.md) ----------------
    Tiedostoäänet sounds/<id>_<laji>_<n>.mp3 (käsitelty tools/process_sounds.py:llä; peli lukee vain manifest.json:ssa olevat).
    Lajit: idle (1–2), hurt, death, aggro (hyökkäävät). Laiska lataus kun olento ilmestyy, 3D-ääni (PannerNode), sävel ±6 %.
    VARAANI: väliaikainen varaääniketju, jos olennolla ei ole omaa ääntä (to = mistä, p = sävelkerroin). Ketju seurataan useampi
-   askel (kerroin kertautuu). Jos idle_2 puuttuu → idle_1. Jos mitään ei löydy → tehty ääni (sfx) tai hiljaisuus.
+   askel (kerroin kertautuu). Jos idle_2 puuttuu → idle_1. Jos mitään ei löydy → hiljaisuus (v2.22: ei generoituja ääniä).
    Lohko VARAANI-ALKU…LOPPU on tiukkaa JSONia: tools/process_sounds.py lukee sen taulukkoa varten – pidä muoto. */
 const VARAANI=/*VARAANI-ALKU*/{
   "kalmasusi":{"to":"susi","p":0.88},"routasusi":{"to":"susi","p":1.06},"kettu":{"to":"susi","p":1.35},"janis":{"to":"kettu","p":1.2},
@@ -236,9 +204,17 @@ const TG_BASE={raskaat_nelijalkaiset:'nelijalkaiset',kevyet_nelijalkaiset:'nelij
   kivivartija:'kaksijalkaiset',kalmanvartija:'kaksijalkaiset',jaatar:'kaksijalkaiset',kalmaherra:'kaksijalkaiset',aarnihirvio:'kaksijalkaiset'};
 const TG_BASEP={raskaat_nelijalkaiset:[.8,1],kevyet_nelijalkaiset:[1.3,.55],kevyet_kaksijalkaiset:[1.5,.45],luurangot:[1.05,.8],kivivartija:[.8,1],
   kalmanvartija:[.62,1],jaatar:[.75,1],kalmaherra:[.72,1],aarnihirvio:[.68,1]};
+/* v2.22 OSUMAT JA TÖRMÄYKSET (käyttäjän päätös): osumaäänet omassa kansiossaan osumat/ kuuteen kategoriaan (TG_HIT: olento → kategoria;
+   soi kun olento osuu pelaajaan, jousikalmon nuoli tai Jäätären kivi osuu, ja pelaajan nuoli osuu olentoon). Törmäykset tormaykset/-kansiossa:
+   kevyt (tavalliset) ja raskas (raskaat, kivivartija, pomot) – kaikki lainaavat näistä kahdesta. */
+const TG_HIT={hiisi:'isku',suonakki:'raapaisu',kalmo:'isku',ylimys:'isku',peura:'sarvet',poro:'sarvet',hirvi:'sarvet',hiidenhirvi:'sarvet',karju:'sarvet',
+  emakko:'purema',porsas:'purema',susi:'purema',routasusi:'purema',kalmasusi:'purema',ahma:'purema',kettu:'purema',janis:'purema',ilves:'raapaisu',
+  karhu:'raapaisu',hiidenkarhu:'raapaisu',metso:'isku',kivivartija:'murskaus',vartija:'murskaus',jaajattari:'murskaus',kalmaherra:'isku',aarnihirvio:'murskaus'};
+function tgHit(cat,x,y,z,p){const q={x,y,z};return tgPlay({pos:q,dun:P.inDun,type:'_osuma'},'osuma_'+cat,'osumat',{pos:q,p:p||1},false);}
+function tgHeavy(m){return TG_BIG.has(TG[m.type])||m.def.ai==='boss'||m.def.ai==='rboss';}
 const TG_STEP_LAYER={raskaat_nelijalkaiset:'tomistys',kivivartija:'tomistys',luurangot:'kalina',kalmanvartija:'tomistys',jaatar:'tomistys',kalmaherra:'tomistys',aarnihirvio:'tomistys'};
 function tgRes(g,ev){if(!CRE.man)return null;if(CRE.idxOf!==CRE.man)creIndex();return CRE.idx[`t/${g}/${ev}`]||null;}
-function tgLoad(type){const g=TG[type];if(!CRE.ok||!g||TGV.loaded[g])return;TGV.loaded[g]=1;const b=TG_BORROW[g],ba=TG_BASE[g];for(const n in CRE.man)if(n.startsWith(`t/${g}/`)||n.startsWith('t/yhteiset/')||(b&&n.startsWith(`t/${b}/`))||(ba&&n.startsWith(`t/${ba}/`)))creBuf(n);}
+function tgLoad(type){const g=TG[type];if(!CRE.ok||!g||TGV.loaded[g])return;TGV.loaded[g]=1;const b=TG_BORROW[g],ba=TG_BASE[g];for(const n in CRE.man)if(n.startsWith(`t/${g}/`)||n.startsWith('t/yhteiset/')||n.startsWith('t/osumat/')||n.startsWith('t/tormaykset/')||(b&&n.startsWith(`t/${b}/`))||(ba&&n.startsWith(`t/${ba}/`)))creBuf(n);}
 function tgSize(m){return clamp(1.35-(m.def.r||.5)*.55,.6,1.4);}   // yhteisten äänten sävel koon mukaan
 // soittaa ryhmän äänen 3D:nä olennon kohdalta (o: g ryhmä, v voimakkuus, p sävel, loop silmukka, pos kiinteä paikka). Palauttaa keston (silmukalla äänen), muuten false.
 // v2.21: ilman o.g:tä kerrostuva ryhmä soittaa pohjaryhmän äänen + oman päälle (TG_BASE). Kerros (lay) ei kuluta äänibudjettia (yläraja 24 ääntä).
@@ -252,7 +228,7 @@ function tgPlay(m,ev,g,o,lay,own){let L0=tgRes(g,ev),bp=1;if(!L0&&TG_BORROW[g]){
   const key=L0[0].replace(/_\d+$/,'');let pick=L;if(L.length>1&&TGV.last[key])pick=L.filter(x=>x!==TGV.last[key]);const name=pick[Math.random()*pick.length|0];TGV.last[key]=name;
   const B=CRE.buf[name],rate=(o.p||1)*bp*(1+(Math.random()*2-1)*.06),q=o.pos||m.pos,md=Math.sqrt(dist2(q.x,q.z,P.pos.x,P.pos.z)),k0=creDistK(md,false),big=TG_BIG.has(own||g);
   if(!CRE.gain){CRE.gain=a.createGain();CRE.gain.connect(a.destination);}CRE.gain.gain.value=vol;
-  const src=a.createBufferSource();src.buffer=B;src.playbackRate.value=rate;if(o.loop)src.loop=true;
+  const src=a.createBufferSource();src.buffer=B;src.playbackRate.value=rate;if(o.loop){src.loop=true;const lp=tgLoopPts(B);src.loopStart=lp[0];src.loopEnd=lp[1];}
   const gn=a.createGain();gn.gain.value=o.v??1;const df=a.createBiquadFilter();df.type='lowpass';df.Q.value=.5;df.frequency.value=creLpf(k0);const dg=a.createGain();dg.gain.value=1-.3*k0;
   const pn=a.createPanner();pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=big?5:step?1.6:2.4;pn.maxDistance=120;pn.rolloffFactor=step?1.4:1.1;
   src.connect(gn);gn.connect(df);df.connect(dg);dg.connect(pn);pn.connect(CRE.gain);crePos(pn,q.x,(q.y??m.pos.y)+.3,q.z);
@@ -260,6 +236,9 @@ function tgPlay(m,ev,g,o,lay,own){let L0=tgRes(g,ev),bp=1;if(!L0&&TG_BORROW[g]){
   else if(!step&&md>8){const Rv=creRevOn(a);sd=sdo=a.createGain();sdo.gain.value=.08+1.8*k0;pn.connect(sdo);sdo.connect(Rv.inp);}
   const v={src,pn,g:gn,sd,sdo,df,dg,far:false,m,step,loop:!!o.loop,fixed:!!o.pos,ev,lay:!!lay};TGV.v.push(v);
   src.onended=()=>{const i=TGV.v.indexOf(v);if(i>=0)TGV.v.splice(i,1);try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return o.loop?v:B.duration/rate;}
+// v2.22: silmukan sauma – mp3-pakkaus lisää alkuun ja loppuun täytehiljaisuutta; silmukka soi vain äänen kohdalta (ei hiljaista raoa)
+function tgLoopPts(B){if(B._lp)return B._lp;const d=B.getChannelData(0),n=d.length,th=1e-4;let a=0,b=n-1;while(a<Math.min(n,8192)&&Math.abs(d[a])<th)a++;while(b>n-8192&&b>a&&Math.abs(d[b])<th)b--;
+  return B._lp=[a/B.sampleRate,(b+1)/B.sampleRate];}
 function tgStop(v){if(!v||!v.src)return;try{v.g.gain.setTargetAtTime(0,actx.currentTime,.08);v.src.stop(actx.currentTime+.35);}catch(e){}v.loop=false;}
 // alusta olennon jalkojen alla (askeleet)
 function tgSurface(m,g){if(m.dun)return m.realm==='portal1'?'jaa':m.realm==='portal3'?'ruoho':'kivi';
