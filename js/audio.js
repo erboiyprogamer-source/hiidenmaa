@@ -28,8 +28,8 @@ const VARAANI=/*VARAANI-ALKU*/{
   "ylimys":{"to":"kalmo","p":0.85},"vartija":{"to":"aarnihirvio","p":0.7},
   "jaajattari":{"to":"aarnihirvio","p":1.2},"kalmaherra":{"to":"aarnihirvio","p":0.85},"suonakki":{"to":"hiisi","p":0.7}
 }/*VARAANI-LOPPU*/;
-// v2.16: täysin hiljaiset kunnes omat tiedostoäänet (ei lainausta eikä pelin tekemää varaääntä)
-const CRE_SILENT=new Set(['kivivartija']);
+// v2.16: täysin hiljaiset kunnes omat tiedostoäänet (ei lainausta). v2.23: kivivartija sai omat äänet → lista tyhjä (pidetään tuleville)
+const CRE_SILENT=new Set([]);
 function mobBurning(m){return !m.dead&&(m.burnT>0||!!m.sunBurn);}   // v2.17
 const CRE_AGGRO=['neutral','hostile','boss','rboss'];   // niillä on suuttumisääni (aggro)
 const CRE_CHASE=['hostile','boss','rboss'];             // niillä on lisäksi toistuva jahtiääni (chase) ja suuttumisääni vain kerran
@@ -70,12 +70,17 @@ function creAngerOk(m){const t=playTime;if(t-(m.agT??-99)<15||t-(CRE_AGT[m.type]
 const CRE_FAR_R=150,CRE_NEAR_R=64,CRE_IDLE_R=36,CRE_WOLF=new Set(['susi','routasusi','kalmasusi']);
 function creIsFar(name){const e=CRE.man&&CRE.man[name];return !!(e&&e.far);}
 function creHasFar(type,kind){const r=creRes(type,kind);return !!(r&&r.names.some(creIsFar));}
-function creAgR(m){return (creHasFar(m.type,'aggro')?CRE_FAR_R:CRE_NEAR_R)**2;}   // suuttumisäänen kantama (neliö)
-function creDistK(d,far){return clamp((d-8)/((far?CRE_FAR_R:CRE_NEAR_R)-8),0,1);}
+/* v2.25 (käyttäjä): susien (CRE_WOLF) suuttumis- ja jahtiäänet 30 % hiljempaa ja kantama −20 %, ulvonnan (kutsuääni, far) kantama −15 %.
+   creRK = kantamakerroin (laukaisusäde, etäisyysefekti, 3D-viite), CRE_WOLF_V = voimakkuus. Kaukainen yöulvonta 85–123 m (ennen 100–145). */
+const CRE_WOLF_V={aggro:.7,chase:.7},CRE_WOLF_R={aggro:.8,chase:.8};
+function creRK(type,kind,far){return CRE_WOLF.has(type)?(CRE_WOLF_R[kind]||(kind==='idle'&&far?.85:1)):1;}
+function creAgR(m){const f=creHasFar(m.type,'aggro');return ((f?CRE_FAR_R:CRE_NEAR_R)*creRK(m.type,'aggro',f))**2;}   // suuttumisäänen kantama (neliö)
+function creDistK(d,far,rk){return clamp((d-8)/((far?CRE_FAR_R:CRE_NEAR_R)*(rk||1)-8),0,1);}
 function creLpf(k){return 15000*Math.pow(1-k,4)+500;}
-function creDistFx(v,d){const k=creDistK(d,v.far),now=actx.currentTime;if(v.df)v.df.frequency.setTargetAtTime(creLpf(k),now,.1);
-  if(v.dg)v.dg.gain.setTargetAtTime(1-.3*k,now,.1);if(v.lg)v.lg.gain.setTargetAtTime(30*k,now,.2);if(v.sdo)v.sdo.gain.setTargetAtTime(.08+1.8*k,now,.1);}
+function creDistFx(v,d){const k=v.tg?tgDistK(d):creDistK(d,v.far,v.rk),now=actx.currentTime;if(v.df)v.df.frequency.setTargetAtTime(creLpf(k),now,.1);
+  if(v.dg)v.dg.gain.setTargetAtTime(1-(v.tg?TG_DG:.3)*k,now,.1);if(v.lg)v.lg.gain.setTargetAtTime(30*k,now,.2);if(v.sdo)v.sdo.gain.setTargetAtTime(.08+1.8*k,now,.1);}
 const CRE_PRI={idle:1,chase:2,aggro:3,hurt:4,death:5},CRE_G={idle:.75,chase:.9,aggro:1,hurt:1,death:1};
+const CRE_VK=.8;   // v2.24 (käyttäjä): kaikki olentojen äänet 20 % hiljempaa
 // Kaiku (vain ulottuvuuksien ja luolaston olennoille m.dun): yksi yhteinen ConvolverNode + proseduraalinen vastaus (1,2 s; ConvolverNode vaatii saman näytetaajuuden kuin ääni-AudioContext),
 // pimeä (alipäästö 3,2 kHz). Kytkeytyy vain kun jokin kaiullinen ääni soi ja irtoaa 3 s sen jälkeen → ei kuormaa maailmassa.
 function creRevMake(a){if(CRE.rev)return CRE.rev;const sr=a.sampleRate,len=Math.floor(sr*1.2),buf=a.createBuffer(2,len,sr);
@@ -108,24 +113,24 @@ function creSnd(m,kind,o){if(!m)return false;const r=creRes(m.type,kind);if(!r)r
     if(!w||w.pri>pri)return dur;creStop(w,.08);CRE.voices.splice(CRE.voices.indexOf(w),1);}
   if(amb)CRE.lastAmb=now;CRE.last[key]=name;
   const src=a.createBufferSource(),g=a.createGain(),pn=a.createPanner();src.buffer=B;src.playbackRate.value=rate;
-  const far=!ec&&creIsFar(name),md=Math.sqrt(dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z));
-  pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=far?10:boss?6.4:2.4;pn.maxDistance=far?220:120;pn.rolloffFactor=ec?.7:far?.8:1.1;
-  g.gain.value=(CRE_G[kind]||1)*(o&&o.v||1);src.connect(g);let df=null,dg=null,lfo=null,lg=null;
+  const far=!ec&&creIsFar(name),md=Math.sqrt(dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)),rk=creRK(m.type,kind,far);
+  pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=(far?10:boss?6.4:2.4)*rk;pn.maxDistance=(far?220:120)*rk;pn.rolloffFactor=ec?.7:far?.8:1.1;
+  g.gain.value=(CRE_G[kind]||1)*(o&&o.v||1)*CRE_VK*(CRE_WOLF.has(m.type)&&CRE_WOLF_V[kind]||1);   /* v2.25 sudet */src.connect(g);let df=null,dg=null,lfo=null,lg=null;
   if(ec){const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1500;g.connect(lp);lp.connect(pn);}   // kaikuääni: tumma, kaukainen
-  else{const k0=creDistK(md,far);df=a.createBiquadFilter();df.type='lowpass';df.Q.value=.5;df.frequency.value=creLpf(k0);dg=a.createGain();dg.gain.value=1-.3*k0;g.connect(df);df.connect(dg);dg.connect(pn);   // v2.12/v2.14: etäisyys tummentaa ja hiljentää
+  else{const k0=creDistK(md,far,rk);df=a.createBiquadFilter();df.type='lowpass';df.Q.value=.5;df.frequency.value=creLpf(k0);dg=a.createGain();dg.gain.value=1-.3*k0;g.connect(df);df.connect(dg);dg.connect(pn);   // v2.12/v2.14: etäisyys tummentaa ja hiljentää
     if(src.detune){lfo=a.createOscillator();lfo.frequency.value=.35+Math.random()*.3;lg=a.createGain();lg.gain.value=30*k0;lfo.connect(lg);lg.connect(src.detune);lfo.start();}}   // kaukana pieni huojunta (utuisuus)
   pn.connect(CRE.gain);if(ec)creEchoPos(m,pn);else crePos(pn,m.pos.x,m.pos.y+(m.def.r||.5)*1.6,m.pos.z);
   let sd=null,sdo=null;if(m.dun||rv){const R=creRevOn(a);sd=a.createGain();sd.gain.value=rv||(ec?1.3:m.def.ai==='rboss'?.75:boss?.6:.45);pn.connect(sd);sd.connect(R.inp);}
-  else if(!ec&&md>8){const R=creRevOn(a);sd=sdo=a.createGain();sdo.gain.value=.08+1.8*creDistK(md,far);pn.connect(sdo);sdo.connect(R.inp);}   // v2.12: ulkona kaukana kaikuu
-  const v={src,pn,g,sd,sdo,df,dg,lg,far,m,pri,t0:now,key,ec};CRE.voices.push(v);src.onended=()=>{const i=CRE.voices.indexOf(v);if(i>=0)CRE.voices.splice(i,1);try{pn.disconnect();}catch(e){}if(lfo)try{lfo.stop();lfo.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return dur;}
+  else if(!ec&&md>8){const R=creRevOn(a);sd=sdo=a.createGain();sdo.gain.value=.08+1.8*creDistK(md,far,rk);pn.connect(sdo);sdo.connect(R.inp);}   // v2.12: ulkona kaukana kaikuu
+  const v={src,pn,g,sd,sdo,df,dg,lg,far,rk,m,pri,t0:now,key,ec};CRE.voices.push(v);src.onended=()=>{const i=CRE.voices.indexOf(v);if(i>=0)CRE.voices.splice(i,1);try{pn.disconnect();}catch(e){}if(lfo)try{lfo.stop();lfo.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return dur;}
 // v1.95: Kalmanvartijan kaikuääni maan alta: ennen ensimmäistä voittoa, kun vartija ei ole hereillä ja pelaaja on alle 80 m Kalmankehästä
 // (maailmassa). Soi 24–48 s välein (ensimmäinen 4–10 s), tumma ja kaiullinen; jos ääni latautuu vielä, uusi yritys 3 s päästä.
 // Ilman omaa kaikuääntä lainaa Aarnihirviön (💎) kaikuäänen; jos sitäkään ei ole, on hiljaa.
-// v2.12: kaukainen ulvonta: yöllä ulkona (ei luolassa) susien kutsuääni kuuluu 100–145 m päästä (v2.14; ennen 150–230) satunnaisesta suunnasta 56–138 s välein
+// v2.12: kaukainen ulvonta: yöllä ulkona (ei luolassa) susien kutsuääni kuuluu 100–145 m päästä (v2.14; ennen 150–230; v2.25 ×0,85 → 85–123 m) satunnaisesta suunnasta 56–138 s välein
 // (60 %:n todennäköisyydellä) – tumma ja kaikuinen etäisyysefektin ansiosta. Vain jos suden ulvontaääniä (far) on.
 const FHW={t:20,m:null};
 function farHowl(dt){if(P.inDun||P.dead||!isNight()){FHW.t=Math.max(FHW.t,15);return;}if((FHW.t-=dt)>0)return;FHW.t=(45+Math.random()*65)*1.25;   /* v2.14: 20 % harvemmin */
-  if(Math.random()>.6||!creHasFar('susi','idle'))return;creLoad('susi');const a=Math.random()*TAU,d=100+Math.random()*45,x=P.pos.x+Math.cos(a)*d,z=P.pos.z+Math.sin(a)*d;
+  if(Math.random()>.6||!creHasFar('susi','idle'))return;creLoad('susi');const a=Math.random()*TAU,d=(100+Math.random()*45)*.85,x=P.pos.x+Math.cos(a)*d,z=P.pos.z+Math.sin(a)*d;
   FHW.m={type:'susi',def:MOBDEF.susi,pos:{x,y:Math.max(terrainH(x,z),0)+1,z},dead:false,dun:false};creSnd(FHW.m,'idle',{farOnly:1,key:'farhowl'});}
 const VEC={t:-1,m:null};
 function vartijaEcho(dt){const L=typeof LOC!=='undefined'&&LOC.circle;if(!L||P.inDun||P.dead||flags.boss||mobs.some(m=>m.type==='vartija'&&!m.dead)){VEC.t=-1;return;}
@@ -138,7 +143,7 @@ const _creF=new THREE.Vector3();
 function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='undefined')return;const L=a.listener,c=camera.position;camera.getWorldDirection(_creF);
   if(L.positionX){L.positionX.value=c.x;L.positionY.value=c.y;L.positionZ.value=c.z;L.forwardX.value=_creF.x;L.forwardY.value=_creF.y;L.forwardZ.value=_creF.z;L.upX.value=0;L.upY.value=1;L.upZ.value=0;}
   else{L.setPosition(c.x,c.y,c.z);L.setOrientation(_creF.x,_creF.y,_creF.z,0,1,0);}
-  creRevTick(dt);tgTick(dt);
+  creRevTick(dt);tgTick(dt);plTick(dt);
   for(const v of CRE.voices){if(v.ec)creEchoPos(v.m,v.pn);else if(!v.m.dead){crePos(v.pn,v.m.pos.x,v.m.pos.y+(v.m.def.r||.5)*1.6,v.m.pos.z);creDistFx(v,Math.sqrt(dist2(v.m.pos.x,v.m.pos.z,P.pos.x,P.pos.z)));}}
   if(state!=='play'||!soundOn)return;
   vartijaEcho(dt);farHowl(dt);
@@ -153,7 +158,7 @@ function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='u
       if((m.brT-=dt)<=0){m.brT=1.7+Math.random()*.4;const bo=m.def.ai==='boss'||m.def.ai==='rboss';if(d2<(bo?60:CRE_NEAR_R)**2)creSnd(m,'hurt',bo?{p:.78,v:.55,key:'burn'}:undefined);}m.sndT=Math.max(m.sndT||0,2);continue;}
     else if(m.brS){m.brS=0;m.sndT=2+Math.random()*4;}
     if(m.sndT===undefined)m.sndT=2+Math.random()*13;m.sndT-=dt;if(m.sndT<=0){m.sndT=6+Math.random()*9;const fr=creHasFar(m.type,'idle');
-      if(d2<(fr?CRE_FAR_R:CRE_IDLE_R)**2&&m.state!=='sleep'&&m.state!=='rise'&&!hasChase){const du=creSnd(m,'idle');const ln=CRE.last[m.type+'_idle'];
+      if(d2<(fr?CRE_FAR_R*creRK(m.type,'idle',1):CRE_IDLE_R)**2&&m.state!=='sleep'&&m.state!=='rise'&&!hasChase){const du=creSnd(m,'idle');const ln=CRE.last[m.type+'_idle'];
         if(du){if(creIsFar(ln))m.sndT=(du+12+Math.random()*18)*(CRE_WOLF.has(m.type)?(isNight()?1.25:3):1);   /* v2.14: sudet ulvovat päivällä 3× harvemmin, yöllä 20 % harvemmin */
           else m.sndT=Math.max(m.sndT,du+2);}}}
     // v1.88: nukkuvan ulottuvuuspomon kaikuääni: kuuluu satunnaisesti (24–48 s välein, ensimmäinen 5–14 s sisääntulosta) vain tässä ulottuvuudessa kunnes pomo herää
@@ -167,7 +172,7 @@ function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='u
           else{const ar=creAgR(m),dur=d2<ar?creSnd(m,'aggro'):0;if(dur){m.angerDone=1;m.chT=dur+1+Math.random()*2;}else if(d2>=ar){m.angerDone=1;m.chT=0;}}}
         else if(!m.inChase)m.chT=1+Math.random()*2;
         m.inChase=1;
-        if(chasing&&m.angerDone){m.chT-=dt;if(m.chT<=0){m.chT=4+Math.random()*5;if(d2<(creHasFar(m.type,'chase')?CRE_FAR_R:CRE_NEAR_R)**2){const du=creSnd(m,'chase');if(du)m.chT=Math.max(m.chT,du+1.5);}}}
+        if(chasing&&m.angerDone){m.chT-=dt;if(m.chT<=0){m.chT=4+Math.random()*5;if(d2<((creHasFar(m.type,'chase')?CRE_FAR_R:CRE_NEAR_R)*creRK(m.type,'chase'))**2){const du=creSnd(m,'chase');if(du)m.chT=Math.max(m.chT,du+1.5);}}}
       }else m.inChase=0;
     }else if(ai==='neutral'){
       // neutraali: suuttumisääni aina kun suuttuu (uusi vasta 5 s jahdin päättymisen jälkeen), ei jahtiääntä
@@ -180,7 +185,7 @@ function creTick(dt){const a=actx;if(!a||a.state!=='running'||typeof camera==='u
    Projekti sounds/olennot_toiminnot/ (raw/<ryhmä>/, valmiit/<ryhmä>_valmis/, AANILISTA_TOIMINNOT.md); manifestin avaimet t/<ryhmä>/<ääni>_<n>.
    Ryhmät (TG, sama jako kuin tools/process_sounds.py:n TG_GROUPS) jakavat äänet; puuttuva ääni = hiljaisuus (pomot lainaavat pomot/-kansiosta,
    v2.21: kerrostuvat ryhmät TG_BASE soittavat pohjaryhmän äänet + omat päälle).
-   Askeleet kuljetun matkan mukaan (TG_STRIDE, juostessa ×1,25) alustan mukaan (tgSurface), lähimmät 6 alle 20 m (isot 40 m);
+   Askeleet kuljetun matkan mukaan (TG_STRIDE, v2.24: kävellessä ×1,2, juostessa ×1,375) alustan mukaan (tgSurface), lähimmät 6 alle 16 m (isot 32 m);
    pomon askel alle 15 m tärisyttää kameraa. Muut: oksa (Aarnimetsä 15 %), kahina (juostessa metsässä), loiskahdus ja ravistus (vesi),
    palaminen (silmukka), kalina (luurangot, joka askeleella v2.21), tömistys (raskaat, kivivartija, pomot), lentoonlähtö, kaatuminen, törmäys, huitaisu, osuma, nousu, nuuhkiminen, syöminen. Oma budjetti TGV. */
 const TG={hiisi:'kaksijalkaiset',suonakki:'kaksijalkaiset',kalmo:'luurangot',ylimys:'luurangot',peura:'nelijalkaiset',poro:'nelijalkaiset',hirvi:'nelijalkaiset',
@@ -189,11 +194,18 @@ const TG={hiisi:'kaksijalkaiset',suonakki:'kaksijalkaiset',kalmo:'luurangot',yli
   metso:'kevyet_kaksijalkaiset',kivivartija:'kivivartija',vartija:'kalmanvartija',jaajattari:'jaatar',kalmaherra:'kalmaherra',aarnihirvio:'aarnihirvio'};
 const TG_STRIDE={kaksijalkaiset:.75,luurangot:.75,nelijalkaiset:.9,raskaat_nelijalkaiset:1.15,kevyet_nelijalkaiset:.45,kevyet_kaksijalkaiset:.3,kivivartija:1,
   kalmanvartija:1.9,jaatar:1.6,kalmaherra:1.5,aarnihirvio:1.8};
+/* v2.24 (käyttäjä): kävellessä askeleet 20 % harvemmin (×1,2), juostessa 10 % harvemmin kuin ennen (ennen ×1,25 → ×1,25·1,1) */
+const TG_WALK_K=1.2,TG_RUN_K=1.25*1.1;
 const TG_BIG=new Set(['raskaat_nelijalkaiset','kivivartija','kalmanvartija','jaatar','kalmaherra','aarnihirvio']),TG_BOSS=new Set(['kalmanvartija','jaatar','kalmaherra','aarnihirvio']);
 const TG_EAT={karju:'tonkiminen',emakko:'tonkiminen',porsas:'tonkiminen',susi:'rouskutus',routasusi:'rouskutus',kalmasusi:'rouskutus',karhu:'rouskutus',
   ahma:'rouskutus',peura:'laidun',poro:'laidun',hirvi:'laidun',janis:'nakerrus'};
 const TG_SHAKE=new Set(['nelijalkaiset','raskaat_nelijalkaiset','kevyet_nelijalkaiset']),TG_RUSTLE={forest:1,koivu:1,aarni:1,suo:1};
 const TGV={v:[],last:{},max:8,steps:6,loaded:{}};
+/* v2.24 (käyttäjä): toimintoäänten kuuluvuus 20 % lyhyempi ja vaimeneminen jyrkempi: kaikki säteet ×0,8 (TG_RK), 3D-viite ×0,8, rolloff
+   askel 1,4 → 1,8 ja muut 1,1 → 1,45, maxDistance 120 → 96; etäisyysefekti oma (tgDistK: reuna 51 m eikä 64 m, suora ääni −50 % reunalla eikä −30 %). */
+const TG_RK=.8,TG_R=64*TG_RK,TG_DG=.5;
+function tgDistK(d){return clamp((d-6)/(TG_R-6),0,1);}
+function tgR2(r){return (r*TG_RK)**2;}
 // v2.17: pomot lainaavat yhteisestä pääkansiosta `pomot/` (sävel pomon mukaan), jos pomon omassa kansiossa ei ole samannimistä ääntä (oma voittaa).
 // Raskaat nelijalkaiset (karhu, hiidenkarhu, hiidenhirvi) ovat oma ryhmänsä eivätkä liity pomoihin.
 const TG_BORROW={kalmanvartija:'pomot',jaatar:'pomot',kalmaherra:'pomot',aarnihirvio:'pomot'},TG_BP={kalmanvartija:.85,jaatar:1.12,kalmaherra:.95,aarnihirvio:.9};
@@ -220,50 +232,139 @@ function tgSize(m){return clamp(1.35-(m.def.r||.5)*.55,.6,1.4);}   // yhteisten 
 // v2.21: ilman o.g:tä kerrostuva ryhmä soittaa pohjaryhmän äänen + oman päälle (TG_BASE). Kerros (lay) ei kuluta äänibudjettia (yläraja 24 ääntä).
 function tgSnd(m,ev,o){o=o||{};if(o.g)return tgPlay(m,ev,o.g,o,false);const g=TG[m.type];if(!g)return false;const b=TG_BASE[g];let r0=false;
   if(b){const q=TG_BASEP[g];r0=tgPlay(m,ev,b,Object.assign({},o,{p:(o.p||1)*q[0],v:(o.v??1)*q[1]}),false,g);}
-  const r1=tgPlay(m,ev,g,o,!!r0);return r1||r0;}
+  const r1=tgPlay(m,ev,g,o,!!r0);if(o.loop){const L=[r0,r1].filter(x=>x&&x.src);return L.length?L:false;}return r1||r0;}
 function tgPlay(m,ev,g,o,lay,own){let L0=tgRes(g,ev),bp=1;if(!L0&&TG_BORROW[g]){L0=tgRes(TG_BORROW[g],ev);bp=TG_BP[g]||1;}if(!L0)return false;
   const L=L0.filter(n=>CRE.buf[n]);if(!L.length){for(const n of L0)creBuf(n);return false;}
   const a=actx;if(!a||a.state!=='running'||!soundOn)return false;const vol=typeof SET!=='undefined'?+SET.creVol:1;if(!(vol>0))return false;
   const step=ev.startsWith('askel_');let cnt=0;for(const v of TGV.v)if(v.step===step&&!v.lay)cnt++;if(lay?TGV.v.length>=24:cnt>=(step?TGV.steps:TGV.max))return false;
   const key=L0[0].replace(/_\d+$/,'');let pick=L;if(L.length>1&&TGV.last[key])pick=L.filter(x=>x!==TGV.last[key]);const name=pick[Math.random()*pick.length|0];TGV.last[key]=name;
-  const B=CRE.buf[name],rate=(o.p||1)*bp*(1+(Math.random()*2-1)*.06),q=o.pos||m.pos,md=Math.sqrt(dist2(q.x,q.z,P.pos.x,P.pos.z)),k0=creDistK(md,false),big=TG_BIG.has(own||g);
+  const B=CRE.buf[name],rate=(o.p||1)*bp*(1+(Math.random()*2-1)*.06),q=o.pos||m.pos,md=Math.sqrt(dist2(q.x,q.z,P.pos.x,P.pos.z)),k0=tgDistK(md),big=TG_BIG.has(own||g);
   if(!CRE.gain){CRE.gain=a.createGain();CRE.gain.connect(a.destination);}CRE.gain.gain.value=vol;
   const src=a.createBufferSource();src.buffer=B;src.playbackRate.value=rate;if(o.loop){src.loop=true;const lp=tgLoopPts(B);src.loopStart=lp[0];src.loopEnd=lp[1];}
-  const gn=a.createGain();gn.gain.value=o.v??1;const df=a.createBiquadFilter();df.type='lowpass';df.Q.value=.5;df.frequency.value=creLpf(k0);const dg=a.createGain();dg.gain.value=1-.3*k0;
-  const pn=a.createPanner();pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=big?5:step?1.6:2.4;pn.maxDistance=120;pn.rolloffFactor=step?1.4:1.1;
+  const gn=a.createGain();gn.gain.value=o.v??1;const df=a.createBiquadFilter();df.type='lowpass';df.Q.value=.5;df.frequency.value=creLpf(k0);const dg=a.createGain();dg.gain.value=1-TG_DG*k0;
+  const pn=a.createPanner();pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=(big?5:step?1.6:2.4)*TG_RK;pn.maxDistance=120*TG_RK;pn.rolloffFactor=step?1.8:1.45;
   src.connect(gn);gn.connect(df);df.connect(dg);dg.connect(pn);pn.connect(CRE.gain);crePos(pn,q.x,(q.y??m.pos.y)+.3,q.z);
   let sd=null,sdo=null;if(m.dun){const Rv=creRevOn(a);sd=a.createGain();sd.gain.value=big?.5:.35;pn.connect(sd);sd.connect(Rv.inp);}
   else if(!step&&md>8){const Rv=creRevOn(a);sd=sdo=a.createGain();sdo.gain.value=.08+1.8*k0;pn.connect(sdo);sdo.connect(Rv.inp);}
-  const v={src,pn,g:gn,sd,sdo,df,dg,far:false,m,step,loop:!!o.loop,fixed:!!o.pos,ev,lay:!!lay};TGV.v.push(v);
-  src.onended=()=>{const i=TGV.v.indexOf(v);if(i>=0)TGV.v.splice(i,1);try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return o.loop?v:B.duration/rate;}
+  const v={src,pn,g:gn,sd,sdo,df,dg,far:false,tg:1,m,step,loop:!!o.loop,fixed:!!o.pos,ev,lay:!!lay};TGV.v.push(v);
+  src.onended=()=>{const i=TGV.v.indexOf(v);if(i>=0)TGV.v.splice(i,1);try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};
+  if(o.loop&&o.rnd){const lp=tgLoopPts(B);src.start(0,lp[0]+Math.random()*Math.max(0,lp[1]-lp[0]-.05));gn.gain.setValueAtTime(0,a.currentTime);gn.gain.linearRampToValueAtTime(o.v??1,a.currentTime+.25);}else src.start();return o.loop?v:B.duration/rate;}
 // v2.22: silmukan sauma – mp3-pakkaus lisää alkuun ja loppuun täytehiljaisuutta; silmukka soi vain äänen kohdalta (ei hiljaista raoa)
 function tgLoopPts(B){if(B._lp)return B._lp;const d=B.getChannelData(0),n=d.length,th=1e-4;let a=0,b=n-1;while(a<Math.min(n,8192)&&Math.abs(d[a])<th)a++;while(b>n-8192&&b>a&&Math.abs(d[b])<th)b--;
   return B._lp=[a/B.sampleRate,(b+1)/B.sampleRate];}
-function tgStop(v){if(!v||!v.src)return;try{v.g.gain.setTargetAtTime(0,actx.currentTime,.08);v.src.stop(actx.currentTime+.35);}catch(e){}v.loop=false;}
+function tgStop(v){if(Array.isArray(v)){for(const x of v)tgStop(x);return;}if(!v||!v.src)return;try{v.g.gain.setTargetAtTime(0,actx.currentTime,.08);v.src.stop(actx.currentTime+.35);}catch(e){}v.loop=false;}
 // alusta olennon jalkojen alla (askeleet)
 function tgSurface(m,g){if(m.dun)return m.realm==='portal1'?'jaa':m.realm==='portal3'?'ruoho':'kivi';
   const x=m.pos.x,z=m.pos.z,th=terrainH(x,z);
   if(m.pos.y>th+.15){gridQuery(x,z,.1,_cl);for(const c of _cl){if(c.t!=='b'||c.off)continue;if(x>=c.minX&&x<=c.maxX&&z>=c.minZ&&z<=c.maxZ&&Math.abs(c.maxY-m.pos.y)<.35){const o=c.owner;return o&&o.t&&PIECES[o.t]?(PIECES[o.t].stone?'kivi':'puu'):'kivi';}}}
   const dep=water.position.y-th;if(dep>.05)return dep>(TG_BIG.has(g)?1.1:g.startsWith('kevyet')?.3:.6)?'uinti':'kahlaus';
   const b=biomeAt(x,z,th);return b==='beach'?'hiekka':b==='mountain'||b==='rakka'?'kivi':b==='peak'?'lumi':b==='suo'?'suo':b==='aarni'?'pusikko':'ruoho';}
-function tgStep(m,g,d,spd){const sf=tgSurface(m,g),run=spd>(m.def.walk||1.5)*1.4,sv=.55+.45*clamp(spd/(m.def.run||4),0,1);tgSnd(m,'askel_'+sf,{v:sv});
+function tgStep(m,g,d,spd){const sf=tgSurface(m,g),run=spd>(m.def.walk||1.5)*1.4,sb=.55+.45*clamp(spd/(m.def.run||4),0,1),sv=sb*(.82+Math.random()*.18);   /* v2.23: askelten voimakkuus vaihtelee luonnollisesti */tgSnd(m,'askel_'+sf,sf==='pusikko'?{v:sb*.91*(1+(Math.random()*2-1)*.1),p:1+(Math.random()*2-1)*.09}:{v:sv});   /* v2.27 Aarnimetsän askel ±10 %, sävel ±9 % */
   {const ly=TG_STEP_LAYER[g];if(ly&&sf!=='uinti'&&!(ly==='tomistys'&&sf==='kahlaus'))tgPlay(m,ly,g,{v:ly==='kalina'?.7:sv},true);}   // v2.21: tömistys / kalina askeleen päälle
-  if(sf==='pusikko'&&Math.random()<.15&&playTime-(m.okT??-9)>=2){m.okT=playTime;tgSnd(m,'oksa',{v:.45});}   // v2.21: hiljempaa (0,8 → 0,45), enintään 2 s välein
+  if(playTime-(m.okT??-9)>=2&&!m.dun&&plNodeAt('oksa',m.pos.x,m.pos.z,(m.def.r||.5)*.5)){m.okT=playTime;tgSnd(m,'oksa',{v:.7});}   // v2.27 astuu oksan päälle
+  else if(sf==='pusikko'&&Math.random()<.12&&playTime-(m.okT??-9)>=2){m.okT=playTime;tgSnd(m,'oksa',{v:.18});}   // v2.27 satunnaisesti tosi hiljaa (ennen 0,45)
+  if(!m.dun&&playTime-(m.puT??-9)>=2&&plBush(m.pos.x,m.pos.z,(m.def.r||.5)*.6)){m.puT=playTime;tgSnd(m,'kahina',{g:'yhteiset',p:tgSize(m),v:.8});}   // v2.25 pensaan läpi (2 s välein)   // v2.21: hiljempaa (0,8 → 0,45), enintään 2 s välein
   if(run&&!m.dun&&TG_RUSTLE[biomeHere(m.pos.x,m.pos.z)]&&Math.random()<.35&&playTime-(m.khT??-9)>.7){m.khT=playTime;tgSnd(m,'kahina',{g:'yhteiset',p:tgSize(m),v:.8});}
   if(TG_BOSS.has(g)&&d<15)shake(.12*(1-d/15));}
 function tgTick(dt){if(!CRE.ok||state!=='play')return;
-  for(const v of TGV.v.slice()){const m=v.m;if(v.loop&&!mobs.includes(m)){tgStop(v);continue;}if(v.fixed)continue;crePos(v.pn,m.pos.x,m.pos.y+.3,m.pos.z);if(actx)creDistFx(v,Math.sqrt(dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)));}
+  for(const v of TGV.v.slice()){const m=v.m;if(v.loop&&(!mobs.includes(m)||(m.dead&&v.ev!=='palaminen'))){tgStop(v);continue;}if(v.fixed)continue;crePos(v.pn,m.pos.x,m.pos.y+.3,m.pos.z);if(actx)creDistFx(v,Math.sqrt(dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)));}
   const C=[];
   for(const m of mobs){const g=TG[m.type];if(!g||m.menu)continue;const d2=dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z);
     // palaminen: rätinä silmukkana niin kauan kuin olento palaa (myös tuhkaksi palaessa 2 s)
-    const burning=(m.burnT>0||m.sunBurn||(m.dead&&m.ashDeath&&m.deadT<2))&&d2<45*45&&m.dun===P.inDun;
+    const burning=(m.burnT>0||m.sunBurn||(m.dead&&m.ashDeath&&m.deadT<2))&&d2<tgR2(45)&&m.dun===P.inDun;
     if(burning&&!m.tgBurn){const v=tgSnd(m,'palaminen',{g:'yhteiset',loop:1,v:.8,p:tgSize(m)});if(v)m.tgBurn=v;}else if(!burning&&m.tgBurn){tgStop(m.tgBurn);m.tgBurn=null;}
+    /* v2.23 TOIMINTOSILMUKAT: syöminen, tonkiminen ja nuuhkiminen soivat silmukkana (satunnaisesta kohdasta, 0,25 s sisäänhäivytys) niin
+       kauan kuin AI pitää toimintoa yllä (m.actSnd/m.actT päivittyy joka ruutu); 0,3 s ilman päivitystä → pehmeä pysäytys. Alle 30 m. */
+    {const act=m.actSnd&&playTime-(m.actT??-9)<.3&&!m.dead&&m.dun===P.inDun&&d2<tgR2(30)?m.actSnd:null;
+     if(m.tgActV&&m.tgActEv!==act){tgStop(m.tgActV);m.tgActV=null;m.tgActEv=null;}
+     if(act&&!m.tgActV&&playTime>=(m.tgActRetry||0)){const v=tgSnd(m,act,{loop:1,rnd:1,v:act==='nuuhkiminen'?.55:.75});if(v){m.tgActV=v;m.tgActEv=act;}else m.tgActRetry=playTime+1;}}
     if(m.shakeT>0){m.shakeT-=dt;m.f.g.rotation.z=m.shakeT>0?Math.sin(m.shakeT*42)*.2*Math.min(1,m.shakeT/.25):0;}
     if(m.dead||m.dun!==P.inDun||m.born!==undefined)continue;
     const px=m.tgX??m.pos.x,pz=m.tgZ??m.pos.z,mv=Math.hypot(m.pos.x-px,m.pos.z-pz);m.tgX=m.pos.x;m.tgZ=m.pos.z;if(mv>3)continue;const spd=mv/Math.max(dt,1e-3);
-    if(d2<40*40&&!m.dun&&!m.fly){const dep=water.position.y-terrainH(m.pos.x,m.pos.z),wet=dep>.2;
+    if(d2<tgR2(40)&&!m.dun&&!m.fly){const dep=water.position.y-terrainH(m.pos.x,m.pos.z),wet=dep>.2;
       if(wet&&!m.tgWet){m.tgWet=1;tgSnd(m,'loiskahdus',{g:'yhteiset',p:tgSize(m)});}
       else if(m.tgWet&&dep<0){m.tgWet=0;if(TG_SHAKE.has(g)){m.shakeT=.7;tgSnd(m,'ravistus');}}}
-    m.tgAcc=(m.tgAcc||0)+mv;const st=TG_STRIDE[g]*(spd>(m.def.walk||1.5)*1.4?1.25:1);
-    if(m.tgAcc>=st){m.tgAcc=Math.min(m.tgAcc-st,st);const R=TG_BIG.has(g)?40:20;if(d2<R*R&&!m.fly)C.push([d2,m,g,spd]);}}
+    m.tgAcc=(m.tgAcc||0)+mv;const st=TG_STRIDE[g]*(spd>(m.def.walk||1.5)*1.4?TG_RUN_K:TG_WALK_K);
+    if(m.tgAcc>=st){m.tgAcc=Math.min(m.tgAcc-st,st);if(d2<tgR2(TG_BIG.has(g)?40:20)&&!m.fly)C.push([d2,m,g,spd]);}}
   C.sort((a,b)=>a[0]-b[0]);for(let i=0;i<C.length&&i<TGV.steps;i++)tgStep(C[i][1],C[i][2],Math.sqrt(C[i][0]),C[i][3]);}
+/* v2.24 PELAAJAN TOIMINTOÄÄNET (käyttäjän pyyntö): projekti sounds/pelaaja_toiminnot/ (raw/<ryhmä>/, valmiit/<ryhmä>_valmis/,
+   AANILISTA_PELAAJA.md), manifestin avaimet p/<ryhmä>/<ääni>_<n> (sama käsittely kuin olentojen toiminnoilla, P_GROUPS työkalussa).
+   askeleet/: askel jalan osuessa maahan (kävelyvaihe P.walkPh: kerran π:ssä, ~2,6/s kävellen, ~3,3/s juosten; alusta plSurface, kyykyssä hiljaa)
+   ja hypyn alastulo; vesi/: kahlaus askeleittain, uintiveto joka toisella vaiheella, loiskahdus veteen mennessä (kova pudotus kovempi);
+   osumat/: pelaajan isku osuu olentoon (nuija = murskaus, muut = isku) ja pelaajan nuoli osuu (nuoli). Soi pelaajan kohdalta ilman
+   kaukoefektiä (luolastossa pieni kaiku), voimakkuus SET.plVol (Asetukset › Ohjaus ja ääni › Pelaajan äänet). Oma budjetti 6 ääntä. */
+const PLV={v:[],last:{},loaded:0,gain:null,ph:null,wet:0,og:1,vy0:0,loops:{},lpRetry:{},cd:{},hp0:null,st:{},bushT:-9,oksaT:-9};
+function plRes(g,ev){if(!CRE.man)return null;if(CRE.idxOf!==CRE.man)creIndex();return CRE.idx[`p/${g}/${ev}`]||null;}
+function plLoad(){if(PLV.loaded||!CRE.ok)return;PLV.loaded=1;for(const n in CRE.man)if(n.startsWith('p/'))creBuf(n);}
+function plSnd(g,ev,o){o=o||{};creInit();if(!CRE.ok)return false;plLoad();const L0=plRes(g,ev);if(!L0)return false;const L=L0.filter(n=>CRE.buf[n]);if(!L.length)return false;
+  const a=actx;if(!a||a.state!=='running'||!soundOn)return false;const vol=typeof SET!=='undefined'?+(SET.plVol??.8):.8;if(!(vol>0))return false;
+  PLV.v=PLV.v.filter(v=>!v.done);if(!o.loop&&PLV.v.length>=6)return false;
+  const key=g+'/'+ev;let pick=L;if(L.length>1&&PLV.last[key])pick=L.filter(x=>x!==PLV.last[key]);const name=pick[Math.random()*pick.length|0];PLV.last[key]=name;
+  if(!PLV.gain){PLV.gain=a.createGain();PLV.gain.connect(a.destination);}PLV.gain.gain.value=vol;
+  const B=CRE.buf[name],q=o.pos||P.pos,src=a.createBufferSource();src.buffer=B;src.playbackRate.value=(o.p||1)*(o.loop?1:1+(Math.random()*2-1)*.05);
+  if(o.loop){src.loop=true;const lp=tgLoopPts(B);src.loopStart=lp[0];src.loopEnd=lp[1];}
+  const gn=a.createGain();gn.gain.value=o.loop?0:(o.v??1)*(1+(Math.random()*2-1)*(o.vj??.05));   /* v2.26: voimakkuus ±5 % joka kerta (o.vj: oma vaihtelu) */if(o.loop)gn.gain.linearRampToValueAtTime(o.v??1,a.currentTime+.4);const pn=a.createPanner();pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=4;pn.maxDistance=60;pn.rolloffFactor=1;
+  src.connect(gn);gn.connect(pn);pn.connect(PLV.gain);crePos(pn,q.x,(q.y??P.pos.y)+.2,q.z);
+  let sd=null;if(P.inDun){const R=creRevOn(a);sd=a.createGain();sd.gain.value=.25;pn.connect(sd);sd.connect(R.inp);}
+  const v={src,sd,g:gn,loop:!!o.loop};if(!o.loop)PLV.v.push(v);src.onended=()=>{v.done=1;try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return o.loop?v:B.duration;}
+// v2.25 silmukka (sydämen syke): plLoop(avain, ryhmä, ääni, päällä, voimakkuus, sävel) – käynnistää, säätää tai häivyttää pois (0,4 s)
+function plLoop(k,g,ev,on,v,p){const L=PLV.loops[k];if(!on||!actx){if(L){try{L.g.gain.setTargetAtTime(0,actx.currentTime,.15);L.src.stop(actx.currentTime+.8);}catch(e){}delete PLV.loops[k];}return;}
+  if(L){L.g.gain.setTargetAtTime(v,actx.currentTime,.3);L.src.playbackRate.setTargetAtTime(p,actx.currentTime,.4);return;}
+  if(playTime<(PLV.lpRetry[k]||0))return;const r=plSnd(g,ev,{loop:1,v,p});if(r&&r.src)PLV.loops[k]=r;else PLV.lpRetry[k]=playTime+1;}
+// alusta pelaajan jalkojen alla (sama jako kuin olentojen tgSurface)
+function plSurface(){if(P.inDun)return P.realm==='portal1'?'jaa':P.realm==='portal3'?'ruoho':'kivi';
+  const x=P.pos.x,z=P.pos.z,th=terrainH(x,z);
+  if(P.pos.y>th+.15){gridQuery(x,z,.4,_cl);for(const c of _cl){if(c.t!=='b'||c.off)continue;if(x>=c.minX-.4&&x<=c.maxX+.4&&z>=c.minZ-.4&&z<=c.maxZ+.4&&Math.abs(c.maxY-P.pos.y)<.35){const o=c.owner;return o&&o.t&&PIECES[o.t]?(PIECES[o.t].stone?'kivi':'puu'):'kivi';}}}
+  const b=biomeAt(x,z,th);return b==='beach'?'hiekka':b==='mountain'||b==='rakka'?'kivi':b==='peak'?'lumi':b==='suo'?'suo':b==='aarni'?'pusikko':'ruoho';}
+function plTick(dt){plBody(dt);if(state!=='play'||P.dead||P.flying){PLV.ph=null;return;}if(!CRE.ok){creInit();return;}plLoad();
+  const hv=Math.hypot(P.vel.x,P.vel.z),wy=water.position.y,dep=P.inDun?0:wy-terrainH(P.pos.x,P.pos.z),inW=!P.inDun&&(P.swim||(dep>.3&&P.pos.y<wy-.15));
+  if(inW&&!PLV.wet){PLV.wet=1;if(playTime-(PLV.splT??-9)>.6){PLV.splT=playTime;const hard=Math.min(PLV.vy0,P.vy)<-6;plSnd('vesi','loiskahdus',{v:hard?1:.55,p:hard?.9:1.08});}}
+  else if(!inW&&dep<.15)PLV.wet=0;
+  if(P.onGround&&!PLV.og&&PLV.vy0<-4&&!inW){const lv=clamp(-PLV.vy0/9,.6,1);if(!plSnd('askeleet','alastulo',{v:lv}))plSnd('askeleet','askel_'+plSurface(),{v:lv,p:.92});}   // hypyn alastulo (v2.25 oma ääni, muuten askel)
+  PLV.og=P.onGround;PLV.vy0=P.vy;
+  if(!P.inDun&&!inW&&hv>.6&&P.onGround&&playTime-PLV.bushT>=2&&plBush(P.pos.x,P.pos.z,.3)){PLV.bushT=playTime;plSnd('askeleet','puska');plSnd('askeleet','askel_pusikko',{v:.72*PL_STEP_V});}   // v2.25 pensaan läpi heti
+  const k=Math.floor(((P.walkPh||0)+Math.PI/2)/Math.PI);if(PLV.ph===null){PLV.ph=k;return;}if(k===PLV.ph)return;PLV.ph=k;if(hv<.6)return;
+  if(P.swim){if(k%2===0)plSnd('vesi','askel_uinti',{v:.8});return;}
+  if(!P.onGround||P.onLadder)return;const v=(P.crouch?.4:hv>5.5?1:.72)*PL_STEP_V;
+  if(dep>.05&&P.pos.y<wy+.05)plSnd('vesi','askel_kahlaus',{v});else{const sf=plSurface(),pu=sf==='pusikko';
+    plSnd('askeleet','askel_'+sf,pu?{v,vj:.1,p:1+(Math.random()*2-1)*.09}:{v});   // v2.27 Aarnimetsän askel: voimakkuus ±10 %, sävel ±9 %
+    if(playTime-PLV.oksaT>=2&&plNodeAt('oksa',P.pos.x,P.pos.z,.3)){PLV.oksaT=playTime;plSnd('askeleet','oksa',{v:.9});}   // astut oksan päälle: normaali ääni
+    else if(pu&&Math.random()<.12&&playTime-PLV.oksaT>=2){PLV.oksaT=playTime;plSnd('askeleet','oksa',{v:.2,vj:.15});}   // Aarnimetsässä satunnaisesti tosi hiljaa
+    if(pu&&Math.random()<.07&&playTime-PLV.bushT>=2){PLV.bushT=playTime;plSnd('askeleet','puska',{v:.9});}}}
+/* v2.25 PENSAAT (käyttäjä): pelaaja kävelee pensaan läpi → heti pusikkoaskel + puska-ääni (täysi voimakkuus), enintään 2 s välein (PLV.bushT);
+   Aarnimetsässä lisäksi satunnaisesti (14 % askelista) oksa tai puska samalla 2 s tauolla. Pelaajan askeleet 20 % hiljempaa (PL_STEP_V). */
+const PL_STEP_V=.8,_plN=[];
+function plBush(x,z,r){nodesNear(x,z,2.2,_plN);for(const n of _plN)if(n.type==='pensas'&&Math.hypot(n.x-x,n.z-z)<.9*n.s+r)return true;return false;}
+// v2.27: maassa oleva kohde (esim. oksa, joka ei ole kerätty) jalkojen alla (säde 0,45 × koko + r)
+function plNodeAt(type,x,z,r){nodesNear(x,z,1.5,_plN);for(const n of _plN)if(n.type===type&&n.alive!==false&&Math.hypot(n.x-x,n.z-z)<.45*(n.s||1)+r)return true;return false;}
+/* v2.25 OSA 3 – PELAAJAN ÄÄNET (sounds/pelaaja_3_aanet/): kipu terveyden laskusta syyn mukaan (palaminen → kipu_tuli 1,6 s välein,
+   hukkuminen → kipu_hukkuminen 1,5 s, nälkä → kipu_nalka 7 s, putoaminen, iso osuma yli 20 % → kipu_kova, muuten kipu 0,35 s tauolla),
+   kuolema (hukkuessa oma). Keho: sydämen syke silmukkana kun terveys alle 30 % tai iso paha olento (stalk: hiidenkarhu, hiidenhirvi,
+   kalmasusi, suonäkki – ei pomot) alle 35 m (voimakkuus ja tahti kasvavat); hengästys kun kestävyys loppuu; haukkoo henkeä pintaan
+   noustessa (yli 2 s sukelluksessa); hytinä palellessa 20–35 s välein; vatsan kurina nälkäisenä (alle 20) 40–70 s välein; pahoinvointi
+   alkaessa ja 15 s välein; kylläinen kun syöt itsesi täyteen; lämmin kun pääset palelemasta lämpöön; levännyt kun levon vaikutus alkaa.
+   Mahakipu soi ähkyn kouristuksessa (environment.js). PLV.st muistaa edelliset tilat (siirtymät). */
+const PL_SCARY_R=35;
+function plCd(k,t){if(playTime<(PLV.cd[k]||0))return false;PLV.cd[k]=playTime+t;return true;}
+function plBody(dt){const S=PLV.st;if(state!=='play'&&state!=='ui'){plLoop('sydan',null,null,false);return;}
+  if(P.dead){if(!S.dead){S.dead=1;plLoop('sydan',null,null,false);plSnd('kipu',P.deathCause==='drown'||P.waterDeath?'kuolema_hukkuminen':'kuolema')||plSnd('kipu','kuolema');}PLV.hp0=null;return;}S.dead=0;
+  // kipu: terveyden lasku
+  const hp=P.hp,mx=maxHp();if(PLV.hp0!==null&&hp<PLV.hp0-.01){const d=PLV.hp0-hp;
+    if(P.burnT>0&&d<2){if(plCd('tuli',1.6))plSnd('kipu','kipu_tuli')||plSnd('kipu','kipu');}
+    else if((P.drownT||0)>0&&P.underT>1&&d<2){if(plCd('huk',1.5))plSnd('kipu','kipu_hukkuminen')||plSnd('kipu','kipu');}
+    else if(P.hunger<=0&&d<1){if(plCd('nalka',7))plSnd('kipu','kipu_nalka')||plSnd('kipu','kipu');}
+    else if(plCd('kipu',.35)){const fall=P.landT>.2;if(!(fall&&plSnd('kipu','kipu_putoaminen'))&&!plSnd('kipu',d>mx*.2?'kipu_kova':'kipu'))plSnd('kipu','kipu');}}   // puuttuva erikoisääni → tavallinen kipu
+  PLV.hp0=hp;
+  // sydämen syke
+  let k=hp<mx*.3?clamp((mx*.3-hp)/(mx*.3),.25,1):0;
+  if(!P.inDun)for(const m of mobs){if(m.dead||!m.def.stalk||m.def.ai==='boss'||m.def.ai==='rboss')continue;const dd=Math.sqrt(dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z));if(dd<PL_SCARY_R)k=Math.max(k,clamp(1.15-dd/PL_SCARY_R,.3,1));}
+  plLoop('sydan','keho','sydan',k>0,.35+.65*k,.9+.35*k);
+  // tilat (siirtymät)
+  if(P.stam<1&&S.stam>=1&&plCd('heng',6))plSnd('keho','hengastys');S.stam=P.stam;
+  const und=(P.underT||0)>0;if(!und&&S.under>2&&!P.dead)plSnd('keho','haukkoo_henkea');S.under=und?P.underT:0;
+  if(P.cold){S.coldT=(S.coldT||0)+dt;if(S.coldT>4&&plCd('hyt',20+Math.random()*15))plSnd('keho','hytina');}
+  else{if(S.coldT>8&&(fireCache||HOME.lvl===2)&&plCd('lam',60))plSnd('keho','lammin');S.coldT=0;}
+  if(P.hunger<20&&!P.buffs.taysi&&plCd('vatsa',40+Math.random()*30))plSnd('keho','vatsa_kurisee');
+  const pv=!!P.buffs.pahoinvointi;if(pv&&(!S.pv||plCd('pv',15)))plSnd('keho','pahoinvointi');if(pv&&!S.pv)PLV.cd.pv=playTime+15;S.pv=pv;
+  const ty=!!P.buffs.taysi;if(ty&&!S.ty)plSnd('keho','kylla');S.ty=ty;
+  const lv=!!P.buffs.levannyt;if(lv&&!S.lv)plSnd('keho','levannyt');S.lv=lv;}

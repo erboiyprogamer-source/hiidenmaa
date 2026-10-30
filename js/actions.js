@@ -10,7 +10,7 @@ function onPrimary(){
   const w=curWeapon();
   if(w.cat==='hammer'){placeBuild();return;}
   if(w.cat==='shovel'){useTool(false);return;}
-  if(w.cat==='bow'){if(!ammoId()){msg('Ei nuolia.','warn');showAmmo(2,true);return;}P.drawing=true;P.bowDraw=0;P.drawT=0;showAmmo(2,true);return;}
+  if(w.cat==='bow'){if(!ammoId()){msg('Ei nuolia.','warn');showAmmo(2,true);return;}P.drawing=true;P.bowDraw=0;P.drawT=0;showAmmo(2,true);plSnd('jousi','veto');return;}
   startAttack();
 }
 // v0.96 (kohta 11) maanmuokkaustyökalut, vasen = ensisijainen, oikea = toissijainen (pohjassa pitäen toistuu 0,45 s välein, kestävyys −6):
@@ -42,7 +42,7 @@ function startAttack(){
   if(P.atk||P.inWater&&P.swim)return;
   const w=curWeapon();
   const stc=w.st*matStamK(w.id);if(P.stam<stc){if(playTime-lastStamMsgT>1.2){msg('Liian uupunut.','warn');lastStamMsgT=playTime;}return;}
-  P.stam-=stc;P.stamDelay=1;P.atk={t:0,dur:(w.spd+.2)/PCOMBAT,hitAt:w.spd*.55/PCOMBAT,done:false,w,offBusy:!!equipped('offhand')};
+  P.stam-=stc;P.stamDelay=1;P.atk={t:0,dur:(w.spd+.2)/PCOMBAT,hitAt:w.spd*.55/PCOMBAT,done:false,w,offBusy:!!equipped('offhand')};plSnd('lyonnit','lataus',{v:.8});   /* v2.25 iskun alku */
   // Vuorotellen vasen-ylhäältä / oikea-ylhäältä viistoiskut
   P.swingSide=-(P.swingSide||1);P.atk.side=P.swingSide;
   // Kääntyminen kursorin suuntaan ei ole hetkellinen: pieni viive (iskun ajastin odottaa)
@@ -65,7 +65,7 @@ function doMeleeHit(w){
     if(!losClear(P.pos.x,P.pos.y+1.3,P.pos.z,m.pos.x,mobEyeY(m),m.pos.z))continue;
     const sneak=P.crouch&&m.def.ai!=='boss'&&m.state!=='chase'&&m.state!=='flee';
     if(sneak)floatText('Hiiviskelyisku!',m.pos.x,m.pos.y+2.6,m.pos.z,'#ffd36a');
-    m.fireHit=torchLit();damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz,(w.kb||1.5)*KB_V*PCOMBAT);m.fireHit=false;hitMob=true;if(torchLit())igniteMob(m);}
+    m.fireHit=torchLit();damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz,(w.kb||1.5)*KB_V*PCOMBAT);m.fireHit=false;if(!hitMob)plSnd('osumat',w.dt==='blunt'?'osuma_murskaus':'osuma_isku',{pos:{x:m.pos.x,y:m.pos.y+Math.min(1.6,m.def.r*1.6),z:m.pos.z},p:sneak?.9:1});hitMob=true;if(torchLit())igniteMob(m);}   // v2.24 pelaajan osumaääni (kerran per isku)
   // Tulta ja seisovaa soihtua lyömällä ne sammuvat.
   if(!hitMob)for(const p of pieces){const lit=isFirePiece(p.t)?fireLit(p):(p.t==='soihtuteline'||p.t==='seinasoihtu')&&p.data.burn>0;if(!lit)continue;const dx=p.x-P.pos.x,dz=p.z-P.pos.z,d=Math.hypot(dx,dz);
     if(d>w.range+.5||(d>.6&&(dx*fx+dz*fz)/d<.5))continue;if(isFirePiece(p.t)){p.data.fuel=0;p.data.burn=0;}else p.data.burn=0;
@@ -80,15 +80,15 @@ function doMeleeHit(w){
     if(d<bd&&losClear(P.pos.x,P.pos.y+1.3,P.pos.z,tx,n.y+(n.isLog?.3:1),tz)){bd=d;best=n;}}
   if(!best)return;
   const n=best;
-  if(n.def.kind==='tree'||n.def.kind==='log'){if(!w.chop){if(!hitMob){msg('Tarvitset kirveen kaataaksesi puun.','warn');sfx('hit');}return;}
-    const tier=n.isLog?n.tier:(n.def.tier||1);if(w.chop<tier){if(!hitMob){msg('Tarvitset vahvemman kirveen.','warn');sfx('hit');}return;}
-    n.hp-=(5+w.chop*4)*(1+.25*((w.q||1)-1));sfx(n.hp<=0?(n.isLog?'logBreak':'chopFinal'):n.isLog?'chopLog':'chop');shake(.08);
+  if(n.def.kind==='tree'||n.def.kind==='log'){if(!w.chop){if(!hitMob){msg('Tarvitset kirveen kaataaksesi puun.','warn');sfx('hit');plSnd('osumat','ei_tehoa');}return;}
+    const tier=n.isLog?n.tier:(n.def.tier||1);if(w.chop<tier){if(!hitMob){msg('Tarvitset vahvemman kirveen.','warn');sfx('hit');plSnd('osumat','ei_tehoa');}return;}
+    n.hp-=(5+w.chop*4)*(1+.25*((w.q||1)-1));sfx(n.hp<=0?(n.isLog?'logBreak':'chopFinal'):n.isLog?'chopLog':'chop');shake(.08);{const q={x:n.isLog?P.pos.x+fx:n.x,y:n.y+1,z:n.isLog?P.pos.z+fz:n.z};plSnd('osumat','osuma_puu',{pos:q});if(n.hp<=0)plSnd('osumat',n.isLog?'tukki_hajoaa':'puu_kaatuu',{pos:q});}   /* v2.25 */
     if(n.isLog)chopLog(n);else burst(n.x,n.y+1.2,n.z,0x8a5a32,5,3);
     if(n.hp<=0){if(n.isLog){removeLog(n);const c=Math.max(1,Math.round(rint(rng,3,4)*n.s));for(let j=0;j<c;j++){const t=(j+.5)/c;spawnDrop(n.dropId,1,n.ax+(n.bx-n.ax)*t,n.y+.8,n.az+(n.bz-n.az)*t);}burst(n.x,n.y+.4,n.z,0x6b4527,12,4);}
       else{killNode(n);fallTree(n,undefined,true);bump('trees');}}}
-  else if(n.def.kind==='rock'){if(!w.pick){if(!hitMob){msg('Tarvitset hakun louhiaksesi kiveä.','warn');sfx('hit');}return;}
-    if(w.pick<(n.def.tier||1)){if(!hitMob){msg('Tarvitset paremman hakun.','warn');sfx('hit');}return;}
-    n.hp-=(9+w.pick*3)*(1+.25*((w.q||1)-1));sfx(n.hp<=0?'rockBreak':'pick');burst(n.x,n.y+.8,n.z,n.type==='kuparisuoni'?0xd9874a:n.type==='rautasuoni'?0x8a4f3c:0x8f8d86,6,4);shake(.08);
+  else if(n.def.kind==='rock'){if(!w.pick){if(!hitMob){msg('Tarvitset hakun louhiaksesi kiveä.','warn');sfx('hit');plSnd('osumat','ei_tehoa');}return;}
+    if(w.pick<(n.def.tier||1)){if(!hitMob){msg('Tarvitset paremman hakun.','warn');sfx('hit');plSnd('osumat','ei_tehoa');}return;}
+    n.hp-=(9+w.pick*3)*(1+.25*((w.q||1)-1));sfx(n.hp<=0?'rockBreak':'pick');{const q={x:n.x,y:n.y+.8,z:n.z};plSnd('osumat','osuma_kivi',{pos:q});if(n.hp<=0)plSnd('osumat','kivi_hajoaa',{pos:q});}   /* v2.25 */burst(n.x,n.y+.8,n.z,n.type==='kuparisuoni'?0xd9874a:n.type==='rautasuoni'?0x8a4f3c:0x8f8d86,6,4);shake(.08);
     if(n.hp<=0){killNode(n);bump('rocks');burst(n.x,n.y+.6,n.z,0x8f8d86,16,6);for(const [id,lo,hi] of n.def.drops){const c=rint(rng,lo,hi);for(let j=0;j<c;j++)spawnDrop(id,1,n.x,n.y+.8,n.z);}}}
 }
 // v0.92: kb = tönäisyn alkunopeus (m/s, oletus 4); vaimenee 6/s → matka ≈ kb/7,5 m (mitattu). Isot olennot vastustavat (säde > 0,6 / 0,8).
@@ -197,7 +197,7 @@ function fireBow(){
   {const sp=bowSpread()*Math.PI/180;if(sp>1e-4){const r=Math.sqrt(Math.random())*Math.tan(sp),ph=Math.random()*TAU,ux=_tmpV2.set(-dir.z,0,dir.x).normalize(),vy=new V3().crossVectors(dir,ux);
     dir.addScaledVector(ux,Math.cos(ph)*r).addScaledVector(vy,Math.sin(ph)*r).normalize();}}   // vajaa veto: nuoli lähtee tähtäysympyrän alueelle
   const a=AMMO_STATS[am]||AMMO_STATS.nuolet,bs=bowShot(k,am);shootArrow(from,dir,bs.v,weaponDmg(w)*(.2+.8*k)*a.dmg,'player',bs.g,!!a.fire,!!a.wood);
-  projs[projs.length-1].windK=a.wind;   // v2.06: nuolikohtainen tuulikerroin (sulitettu .5, puu 1.2)sfx('bow');P.yaw=camYaw+Math.PI;
+  projs[projs.length-1].windK=a.wind;   /* v2.06: nuolikohtainen tuulikerroin (sulitettu .5, puu 1.2) */sfx('bow');plSnd('jousi','laukaus');P.yaw=camYaw+Math.PI;
 }
 // v1.39 (lista 4, kohdat 8–9): vahinkokerroin sille, joka parhaillaan päivittyy (ai.js asettaa): pomot ×1,2, vartijat ×1,8.
 let HURT_K=1;
@@ -206,7 +206,7 @@ function hurtPlayer(dmg,fx,fz){if(state==='paused'||state==='intro')return;   //
   if(P.dead||P.invul>0||P.spawnProt>0||devOn('god'))return;
   let d=dmg;const dx=fx-P.pos.x,dz=fz-P.pos.z,l=Math.hypot(dx,dz)||1;
   if(P.blocking){const facing=(Math.sin(P.yaw)*dx+Math.cos(P.yaw)*dz)/l;let sh=equipped('shield');if(sh&&!shieldOk(sh))sh=null;const blk=sh?ITEMS[sh.id].block*(1+.1*((sh.q||1)-1)):.3;
-    if(facing>.2){const cost=d*(sh?SHIELD_COST[sh.id]||.9:.9);if(P.stam>=cost){P.stam-=cost;P.stamDelay=1;d*=1-Math.min(.95,blk);sfx('block');if(sh)shieldWear(sh);burst(P.pos.x+dx/l*.7,P.pos.y+1.2,P.pos.z+dz/l*.7,0xffe08a,6,3);}else{P.stam=0;P.stagger=1.2;msg('Torjunta murtui!','warn');}}}
+    if(facing>.2){const cost=d*(sh?SHIELD_COST[sh.id]||.9:.9);if(P.stam>=cost){P.stam-=cost;P.stamDelay=1;d*=1-Math.min(.95,blk);sfx('block');plSnd('lyonnit','torjunta');if(sh)shieldWear(sh);burst(P.pos.x+dx/l*.7,P.pos.y+1.2,P.pos.z+dz/l*.7,0xffe08a,6,3);}else{P.stam=0;P.stagger=1.2;msg('Torjunta murtui!','warn');}}}
   const a=equipped('armor');if(a)d*=20/(20+ITEMS[a.id].arm*(1+.2*((a.q||1)-1)));
   if(d>=1){bleed(P.pos.x,P.pos.y+1.2,P.pos.z,'blood',.45,d,P.inDun,-dx,-dz,8);P.hp-=d;P.hurtFlash=.6;sfx('hurt');shake(.25);floatText('-'+Math.round(d),P.pos.x,P.pos.y+2.2,'#e0614f');P.vel.x-=dx/l*5;P.vel.z-=dz/l*5;}
   P.invul=.25;
@@ -220,7 +220,7 @@ function eat(s){const f=ITEMS[s.id].food;
   if(f.hp)P.heal+=f.hp;if(f.st)P.stam=Math.min(maxStam(),P.stam+f.st);
   if(f.raw&&Math.random()<.45){P.buffs.pahoinvointi=40;msg('Raaka liha kääntää vatsaa.','warn');}
   if(f.buff)P.buffs[f.buff]=300;if(!f.raw)flags.ate=1;
-  s.n--;if(s.n<=0)inv[inv.indexOf(s)]=null;invDirty=true;sfx('eat');msg(`Söit: ${ITEMS[s.id].n}`);
+  s.n--;if(s.n<=0)inv[inv.indexOf(s)]=null;invDirty=true;sfx('eat');plSnd('kaytto','syominen');msg(`Söit: ${ITEMS[s.id].n}`);
 }
 // v2.00 juomat: parannus = terveys heti täyteen; elpyminen = +1 terveys/s 60 s; sisu = kylläisyys täynnä 5 min (+ 60 s ennen pudotusta) ja kestävyys täynnä 30 s.
 function drink(s){const d=ITEMS[s.id],p=d.potion;
@@ -228,7 +228,7 @@ function drink(s){const d=ITEMS[s.id],p=d.potion;
   if(p.regen)P.buffs.elpyminen=p.regen;
   if(p.sisu){P.buffs.kylla=300;P.buffs.sisu=30;P.hunger=100;P.stam=maxStam();}
   burst(P.pos.x,P.pos.y+1.2,P.pos.z,new THREE.Color(d.c).getHex(),10,2);
-  s.n--;if(s.n<=0)inv[inv.indexOf(s)]=null;invDirty=true;sfx('eat',1.5,.8);msg(`Joit: ${d.n}`,'loot');}
+  s.n--;if(s.n<=0)inv[inv.indexOf(s)]=null;invDirty=true;sfx('eat',1.5,.8);plSnd('kaytto','juominen');msg(`Joit: ${d.n}`,'loot');}
 // v1.20 (lista 2, kohta 12): perusterveys kasvaa tasoilla 2–5: 60 / 70 / 80 / 90 / 100 (+ saavutukset ja voima päälle)
 function lvlHp(){return Math.min(4,Math.max(0,lvlInfo().L-1))*10;}
 function maxHp(){return 60+lvlHp()+(P.buffs.voima?15:0)+BON.hp;}
@@ -261,12 +261,12 @@ function pieceLabel(p){if(PIECES[p.t].store)return 'Avaa '+PIECES[p.t].n.toLower
   default:return null;}}
 function interact(){
   if(P.dead)return;const t=lookTarget;if(!t)return;
-  if(t.kind==='node'){const n=t.n,d=n.def;const c=rint(rng,d.n[0],d.n[1]);const left=invAdd(d.item,c);if(left>0){if(left<c)invRemove(d.item,c-left);msg('Reppu on täynnä – et voi poimia.','warn');return;}   /* v1.17: ei osittaista poimintaa (ennen loput hävisivät) */bump('picked');msg(`+${c-left} ${ITEMS[d.item].n}`,'loot');sfx('pickup');killNode(n);return;}
+  if(t.kind==='node'){const n=t.n,d=n.def;const c=rint(rng,d.n[0],d.n[1]);const left=invAdd(d.item,c);if(left>0){if(left<c)invRemove(d.item,c-left);msg('Reppu on täynnä – et voi poimia.','warn');return;}   /* v1.17: ei osittaista poimintaa (ennen loput hävisivät) */bump('picked');msg(`+${c-left} ${ITEMS[d.item].n}`,'loot');sfx('pickup');plSnd('kaytto','poiminta');killNode(n);return;}
   if(t.kind==='it'){t.it.use();return;}
   // v0.93: hautakasa ei katoa koskaan itsestään. Jos kaikki mahtuu reppuun, tavarat otetaan kerralla; muuten kasa avautuu arkkuikkunaan
   // (ota mitä mahtuu, loput jäävät). Kun kasa on tyhjä, se vajoaa maahan (graveVanish) ja pääkallo poistuu kartalta.
   if(t.kind==='grave'){const g=t.g;if(fitsAll(g.items.filter(Boolean))){for(const s of g.items)if(s)invAdd(s.id,s.n,s.q||1);g.items.length=0;graveVanish(g);msg('Sait tavarasi takaisin.','loot');sfx('pickup');return;}
-    while(g.items.length<Math.max(16,g.items.length))g.items.push(null);if(openPanel)closePanels(true);togglePanel('chest');curChest={found:true,grave:g,title:'Hautakasa',data:{items:g.items}};sfx('pickup');renderChest();
+    while(g.items.length<Math.max(16,g.items.length))g.items.push(null);if(openPanel)closePanels(true);togglePanel('chest');curChest={found:true,grave:g,title:'Hautakasa',data:{items:g.items}};sfx('pickup');plSnd('kaytto','arkku_auki');renderChest();
     msg('Kaikki ei mahdu reppuun – ota mitä tarvitset, loput jäävät kasaan.','warn');return;}
   if(t.kind==='piece'){const p=t.p;if(bt(p.t)==='ovi'){const a=p.rot*Math.PI/4,lz=(P.pos.x-p.x)*Math.sin(a)+(P.pos.z-p.z)*Math.cos(a);setDoor(p,!p.data.open,p.data.open?p.data.dir:(lz>0?1:-1));sfx('build');return;}if(PIECES[p.t].store){openChest(p);return;}switch(p.t){
     case 'nuotio':case 'grilli':fireInteract(p);break;

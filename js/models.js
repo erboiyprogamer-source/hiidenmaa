@@ -75,6 +75,7 @@ function makeHumanoid(o){
 // kuono-osineen, silmät, korvat, nivelletyt jalat (reisi, polvi, sääri, kavio/tassu) ja häntä. Rajapinta kuten makeQuad
 // (g, legs[4], head, body, s, quad) – tekoälyn animaatio toimii; jalan polvi on legs[i].userData.knee (animMob koukistaa).
 // kind: 'deer' (peura), 'boar' (villikarju), 'wolf' (susi); ice: routasusi (jääpiikit). Mitat kuten makeQuad (legH, len).
+const NK_HP=1.2;   // v2.24: pään asento maailmassa kaulan ollessa alhaalla (rad alaspäin; kuono kohti maata)
 function makeAnimal(o){
   const s=o.s||1,L=o.len||1,lh=o.legH||.7,g=new THREE.Group(),k=o.kind,F=c=>smat(c,{flatShading:true});
   const mB=F(o.body),mD=F(o.dark||o.legs||o.body),mL=F(o.legs||o.body),mBel=F(o.belly||o.body),mH=F(o.headC||o.body),mHoof=F(o.hoof||0x2a2420);
@@ -91,8 +92,9 @@ function makeAnimal(o){
   const neckUp=k==='deer'?(o.rein?.24:.32):k==='boar'?.02:k==='hare'?.04:k==='bear'?-.05:.12;
   head.position.y+=neckUp*s;
   // v0.81: kaula lasketaan rinnasta (A) pään tyveen (B) → pää ei leiju irti (ennen kiinteä 0,42 m putki jäi peuralla 0,2 m vajaaksi).
-  {const ay=by+.1*s,az=bz-.16*s,byH=head.position.y+.02*s,bzH=head.position.z,dy=byH-ay,dz=bzH-az,len=Math.hypot(dy,dz)+.12*s,nr=k==='boar'?1.4:1;
-   tube(g,.12*s*nr*(k==='bear'?1.7:1),.17*s*nr*(k==='bear'?1.6:1),len,mB,0,(ay+byH)/2,(az+bzH)/2,1,1,8).rotation.x=Math.atan2(dz,dy);}
+  const nkY=by+.1*s,nkZ=bz-.16*s,nkO=[head];   // v2.24: kaulan nivel (rinnan kohdalla); kaula, pää ja kaulaparta kääntyvät sen ympäri (laskeutuvat syömään ja juomaan)
+  {const ay=nkY,az=nkZ,byH=head.position.y+.02*s,bzH=head.position.z,dy=byH-ay,dz=bzH-az,len=Math.hypot(dy,dz)+.12*s,nr=k==='boar'?1.4:1;
+   const nt=tube(g,.12*s*nr*(k==='bear'?1.7:1),.17*s*nr*(k==='bear'?1.6:1),len,mB,0,(ay+byH)/2,(az+bzH)/2,1,1,8);nt.rotation.x=Math.atan2(dz,dy);nkO.push(nt);}
   rnd(head,0,.08*s,.06*s,(k==='bear'?.22:.17)*s,mH,1,1,1.15,10);                        // kallo
   const sn=k==='wolf'?(o.fox?[.06,.05,.26]:o.lynx?[.08,.08,.12]:o.ahma?[.08,.075,.17]:[.09,.08,.28]):k==='boar'?[.11,.1,.3]:k==='hare'?[.075,.07,.1]:k==='bear'?[.1,.12,.2]:o.elk?[.1,.11,.36]:[.08,.08,.24];
   tube(head,sn[0]*s,sn[1]*s*1.5,sn[2]*s,mH,0,.01*s,.22*s+sn[2]*s/2,1,1,8).rotation.x=Math.PI/2; // kuono
@@ -111,7 +113,7 @@ function makeAnimal(o){
     if(o.earTip){const t=new THREE.Mesh(new THREE.ConeGeometry(er[0]*s*.55,er[1]*s*.3,5),F(o.earTip));t.position.y=er[1]*s*.36;e.add(t);}
     if(o.lynx){const t=new THREE.Mesh(new THREE.ConeGeometry(.012*s,.12*s,4),F(0x151210));t.position.y=er[1]*s*.62;e.add(t);}}   // ilveksen tupsut
   if(o.lynx)for(const sd of [-1,1])rnd(head,sd*.12*s,-.02*s,.04*s,.09*s,F(o.ruff||0xe6dccb),.7,1.1,.8,7);   // poskiparta
-  if(o.elk){rnd(head,0,-.02*s,.5*s,.075*s,mH,1.1,.9,1,7);const bl=tube(g,.03*s,.05*s,.26*s,mD,0,by-.02*s,bz+.05*s,1,1,6);bl.rotation.x=.2;   // roikkuva kuono + kaulaparta
+  if(o.elk){rnd(head,0,-.02*s,.5*s,.075*s,mH,1.1,.9,1,7);const bl=tube(g,.03*s,.05*s,.26*s,mD,0,by-.02*s,bz+.05*s,1,1,6);bl.rotation.x=.2;nkO.push(bl);   // roikkuva kuono + kaulaparta
     rnd(g,0,by+.24*s,.32*s*L,.2*s,mD,.9,.8,1.3,8);}   // lapojen kyttyrä
   // v0.86 hirven lapiosarvet: leveä litteä lapa sivulle ja piikit reunalla
   if(k==='deer'&&o.elk&&o.antlers){const am=F(0xc8b48a);for(const sd of [-1,1]){const b=new THREE.Group();b.position.set(sd*.1*s,.2*s,-.02*s);b.rotation.set(-.15,0,-sd*1.15);head.add(b);
@@ -164,7 +166,18 @@ function makeAnimal(o){
   if(o.stripes){const sm=F(o.stripes);for(const sd of [-1,0,1])rnd(g,sd*.12*s,by+.2*s-Math.abs(sd)*.06*s,0,.05*s,sm,.4,.4,5.5*L,6);}   // porsaan raidat
   if(o.band){const bm=F(o.band);for(const sd of [-1,1])rnd(g,sd*.245*s,by-.02*s,-.05*s*L,.075*s,bm,.35,.55,4*L,6);}   // ahman vaalea kylkijuova   // vaalea rinta (kettu)
   g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
-  return{g,legs,head,body,tail:tl,s,quad:true,animal:true,hop:k==='hare'};
+  // v2.24 kaulan nivel: siirretään kaula ja pää ryhmään nk (lepoasento ennallaan). Laskeutuessa kaula kääntyy eteen-alas (kulma a, enintään
+  // 2,45 rad – kaula osoittaa levossa lähes ylös – ja korkeintaan ~16° pystysuoran eteen) ja pää kääntyy vastaan niin, että sen asento maailmassa on NK_HP (kuono kohti maata).
+  // Kaula venyy enintään nkE (pitkäjalkaiset: peura, hirvi), jotta kuono ylettyy maahan – nkE on pienin venymä, jolla kärki ylettyy maahan.
+  // nkTab: kuonon kärjen korkeus ja etäisyys (g:n koordinaatit) kaulan kulmille 0…2,45 rad täydellä venymällä – headDown (ai.js) valitsee kulman.
+  const nk=new THREE.Group();nk.position.set(0,nkY,nkZ);g.add(nk);for(const q of nkO){g.remove(q);q.position.y-=nkY;q.position.z-=nkZ;nk.add(q);}
+  const hy=head.position.y,hz=head.position.z,hl=Math.hypot(hy,hz),uy=hy/hl,uz=hz/hl,ty=-.03*s,tz=tip,ch=Math.cos(NK_HP),sh=Math.sin(NK_HP),wy=ty*ch-tz*sh,wz=ty*sh+tz*ch;
+  const tipAt=(a,e)=>{const py=hy+uy*e,pz=hz+uz*e,c=Math.cos(a),si=Math.sin(a);return[nkY+py*c-pz*si+wy,nkZ+py*si+pz*c+wz];};
+  const aMax=Math.min(2.45,2.85-Math.atan2(uz,uy));   // kaula enintään ~16° pystysuoran eteen (ei käänny etujalkojen alle)
+  let nkE=hl*1.2;for(let e=0;e<=hl*1.2;e+=.02*s){let lo=9;for(let a=0;a<=aMax;a+=.05)lo=Math.min(lo,tipAt(a,e)[0]);if(lo<=.01){nkE=e;break;}}
+  const nkTab=[];for(let a=0;a<=aMax+.001;a+=.05){const q=tipAt(a,nkE);nkTab.push([a,q[0],q[1]]);}
+  const nt=nkO[1],nkRig={nt,hy,hz,uy,uz,E:nkE,ty0:nt.position.y,tz0:nt.position.z,len:nt.geometry.parameters.height};
+  return{g,legs,head,body,tail:tl,s,quad:true,animal:true,hop:k==='hare',nk,nkTab,nkRig};
 }
 // v0.85 Metso (maassa kävelevä kanalintu): tumma runko, vihreähohtoinen rinta, punainen kulmanaru, vaalea nokka, viuhkapyrstö,
 // siivet (ryhmät räpyttelyä varten) ja kaksi nivelletöntä jalkaa. Rajapinta: g, legs[2], head, body, wings[2], tail, bird:true.

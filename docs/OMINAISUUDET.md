@@ -224,6 +224,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## 9. Viholliset ja eläimet (mobs.js, ai.js)
 
 - **Nopeudet −15 %** (`MOB_SPD` 0,85 kaikessa liikkeessä).
+- **Terveyspalkit (v2.26):** piilossa, kunnes tähtäin on olennon päällä (alle 12 m, vaikeat ≥ 3 kalloa alle 70 m). Jos olento ei ole täysissä
+  voimissa, palkki näkyy myös, kun olento on 10 % ruudun leveydestä tähtäimen ympärillä (~13°, alle 20 m). Vahingon jälkeen palkki näkyy 5 s
+  katsomatta – paitsi jos olento on yli 40 m päässä ja maaston tai esteiden takana. (Alla vanhemmat säännöt; nämä korvaavat ne.)
 - **Terveyspalkit (v1.21):** rivi = 100 hp, rivit päällekkäin (enint. 5, ylin tyhjenee ensin), yli 500 hp:lla toinen värikerros (oranssi).
 - **Terveyspalkit:** mobin yläpuolella (mallin korkeus + 0,45 m), nimi ja pääkallot palkin yllä; näkyy kun katse osuu mobiin (~11°, vahvat ~9°)
   alle 12 m (vahvat 70 m) tai 10 s osuman jälkeen. Pomoilla oma palkki ruudun yläreunassa.
@@ -520,10 +523,37 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   45–110 s välein (60 %) kaukaista suden ulvontaa 150–230 m päästä. Pitkiä kutsuääniä ei katkaista kesken (enintään 10 s, loppu luonnolliseen taukoon).
 - **Toimintoäänet (v2.16):** olennot jaetaan 12 ryhmään (kaksijalkaiset, luurangot, nelijalkaiset, raskaat, kevyet nelijalkaiset, kevyet
   kaksijalkaiset, kivivartija, jokaisella pomolla oma, yhteiset). Askeleet alustan mukaan (ruoho, kivi, hiekka, lumi, suo, puu, jää, pusikko,
-  kahlaus, uinti; Aarnimetsässä välillä oksa rasahtaa), lähimmät 6 alle 20 m (isot 40 m); pomon askel lähellä tärisyttää. Kaatuminen, törmäys
+  kahlaus, uinti; Aarnimetsässä välillä oksa rasahtaa), lähimmät 6 alle 20 m (isot 40 m; v2.24: 16 / 32 m); pomon askel lähellä tärisyttää. Kaatuminen, törmäys
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
   Puuttuva ääni = hiljaisuus. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **v2.27 Aarnimetsän askel ja oksat:** pusikkoaskel lyhyempi (0,28 s), voimakkuus ±10 % ja sävel ±9 % joka askeleella. Kun astut maassa olevan
+  oksan päälle, kuuluu oksan rasahdus normaalisti; Aarnimetsässä oksa rasahtaa välillä tosi hiljaa. 2 s tauko (myös olennoilla).
+- **v2.26 pensaat ja askeleet:** pelaaja kävelee pensaan läpi → heti pusikkoaskel ja puska-ääni (täysi voimakkuus), enintään 2 s välein;
+  Aarnimetsässä lisäksi satunnaisesti oksa tai puska (14 % askelista, 2 s tauko). Olennot pensaan läpi → kahina (2 s välein). Pelaajan askeleet
+  20 % hiljempaa, ja kaikkien pelaajan äänten voimakkuus vaihtelee ±5 % joka kerta.
+- **v2.25 sudet:** suuttumis- ja jahtiääni 30 % hiljempaa ja kantama 20 % lyhyempi; ulvonta kuuluu 15 % lyhyemmälle (~128 m, yöulvonta 85–123 m).
+- **v2.25 karhun syöksyisku:** karhu ja hiidenkarhu kyyristyvät, ponnistavat takajaloilla ja loikkaavat 3–6 m:n päästä lyöden toisella käpälällä
+  (vahinko ×1,15, tönäisy); enintään 4 s välein. Puita kaatava karhu ei tömähdä kaatamiinsa puihin.
+- **v2.25 pelaajan äänet kolmessa osassa:** `sounds/pelaaja_1_liike/` (askeleet, alastulo, vesi), `sounds/pelaaja_2_toiminnot/` (lyönnit, osumat,
+  jousi, rakentaminen, käyttö, valikot), `sounds/pelaaja_3_aanet/` (kipu, kuolema, sydämen syke, hengästys, hytinä, vatsa, ähky, pahoinvointi,
+  kylläinen, lämmin, levännyt). Yksi numeroton paikkamerkki per ääni, lisäversiot `_1`, `_2` … Listat: `AANILISTA_OSA<n>.csv` ja
+  `sounds/AANILISTA_PELAAJA.xlsx`. Puuttuva ääni = hiljaisuus.
+- **v2.24 äänitasot:** olentojen äänet (ääntely, kipu, kuolema, suuttuminen, jahti, kaiku) 20 % hiljempaa. Toimintoäänet kuuluvat 20 % lyhyemmälle
+  (askeleet 16 m, isot 32 m, palaminen 36 m, syöminen/juominen 24 m, loiskahdus 32 m; 3D-viite ×0,8, maxDistance 96 m) ja vaimenevat jyrkemmin
+  (rolloff askel 1,8, muut 1,45; suora ääni −50 % kantaman reunalla 51 m). Askeleet kävellessä 20 % harvemmin (`TG_STRIDE` ×1,2), juostessa
+  10 % harvemmin kuin ennen (×1,375).
+- **v2.24 juominen:** rauhalliset eläimet (makeAnimal-mallit, ei vaanivat hirviöt eikä emoa seuraavat porsaat) lähtevät 70–160 s välein (50 %)
+  juomaan, jos alle 28 m päässä on vettä: kävelevät rannalle kaulan ulottuman päähän, kääntyvät veteen päin, laskevat kuonon veden pintaan ja
+  juovat 4–8 s (latkivat). Pelaaja alle 10 m (ellei kyykyssä), osuma, pelko tai jumiin jääminen keskeyttää. Ääni `juominen` (nelijalkaiset, silmukka).
+- **v2.24 pää alas:** eläimen kaula kääntyy rinnan kohdalta eteen-alas ja venyy pitkäjalkaisilla (peura, poro, hirvi) niin, että kuono ylettyy
+  maahan syödessä, tonkiessa ja veden pintaan juodessa; pää osoittaa alas. Laskeutuu ja nousee pehmeästi (~0,5 s).
+- **v2.24 pelaajan toimintoäänet** (v2.25 alkaen osat 1 ja 2, ks. yllä): askel jalan osuessa maahan (kävellen ~2,6/s, juosten ~3,3/s,
+  kyykyssä hiljaa) alustan mukaan (ruoho, kivi, hiekka, lumi, suo, puu, jää, pusikko; rakennuksissa puu/kivi), hypyn alastulo, kahlaus, uintiveto,
+  loiskahdus veteen mennessä (kova pudotus kovempi), pelaajan iskun osuma (nuija = murskaus, muut = isku) ja pelaajan nuolen osuma. Aloitusäänet
+  kopioitu olentojen kansiosta. Asetukset › Ohjaus ja ääni › Pelaajan äänet (oletus 80 %).
+- **Toimintosilmukat (v2.23):** syöminen, tonkiminen ja nuuhkiminen soivat koko toiminnon ajan ja hiljenevät pehmeästi, kun eläin lopettaa.
+  Askeleet: kohinanpoisto, yksi askel per ääni, voimakkuus vaihtelee hieman askeleittain. Kivivartijalla omat äänet.
 - **Osumat ja törmäykset (v2.22):** osumaäänet 6 kategoriassa (raapaisu, purema, murskaus, sarvet, isku, nuoli) – soivat kun olento osuu
   pelaajaan, nuoli tai heittokivi osuu pelaajaan, tai pelaajan nuoli osuu olentoon. Törmäys (kevyt / raskas) kun olento juoksee esteeseen.
 - **Ei generoituja ääniä (v2.22):** peli soittaa vain omia äänitiedostoja; koodilla tehdyt äänet on poistettu (puuttuva ääni = hiljaisuus).

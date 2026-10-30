@@ -278,7 +278,7 @@ function bornEnd(m){const f=m.f;m.mats.forEach((mt,i)=>{const o=m.bornOp&&m.born
 function bornScared(m,dist){const d=m.def;if(P.dead||P.crouch||devOn('unseen'))return false;   /* v2.16: DEV Näkymätön – pelaajan läheisyys ei keskeytä nousua */if(d.ai==='flee')return dist<7*(P.running?2.3:1)*((d.per&&d.per.scare)||1);
   return dist<(d.ai==='hostile'?(d.aggro||12)*.6:4);}
 // joka ruutu syntymän ajan; palauttaa true, kun tekoäly ohitetaan (olento nousee vielä)
-function bornTick(m,dt,dist){if(m.bornK===1&&(playTime-m.lastHit<.5||bornScared(m,dist)))m.bornK=10;
+function bornTick(m,dt,dist){if(m.born===undefined)return false;   /* v2.23: valmis nousu → ei NaN:ää, jos kutsutaan vielä */if(m.bornK===1&&(playTime-m.lastHit<.5||bornScared(m,dist)))m.bornK=10;
   const t0=m.born;m.born+=dt*m.bornK;if(t0<BORN_FADE+.05&&m.born>=BORN_FADE+.05&&dist<25)tgSnd(m,'nousu',{v:.85});   /* v2.16 nousuääni */
   const t=m.born,op=m.bornK>1?1:clamp(t/BORN_FADE,0,1);for(const mt of m.mats)mt.opacity=op;
   if(op>.6&&m.bornHid&&m.bornHid.length){for(const o of m.bornHid)o.visible=true;m.bornHid.length=0;}

@@ -1,0 +1,15 @@
+﻿Nro,Ryhmä,Ääni (tiedostonimi),Tila,Tiedostot nyt,Milloin soi,Hakusanat (englanniksi)
+1,👣 Askeleet,askel_ruoho,✅ valmis (3),"askel_ruoho_1, askel_ruoho_2, askel_ruoho_3","askel: ruoho, maa, kangas, nummi",player footstep grass dirt
+2,👣 Askeleet,askel_kivi,✅ valmis (3),"askel_kivi_1, askel_kivi_2, askel_kivi_3","askel: vuoret, rakka, luolat ja ulottuvuudet, kivirakennukset",player footstep stone rock
+3,👣 Askeleet,askel_hiekka,✅ valmis (3),"askel_hiekka_1, askel_hiekka_2, askel_hiekka_3",askel: hietaranta,player footstep sand
+4,👣 Askeleet,askel_lumi,✅ valmis (3),"askel_lumi_1, askel_lumi_2, askel_lumi_3",askel: routahuiput,player footstep snow crunch
+5,👣 Askeleet,askel_suo,✅ valmis (3),"askel_suo_1, askel_suo_2, askel_suo_3 (+4 pätkää)","askel: upposuo, muta",player footstep mud squelch swamp
+6,👣 Askeleet,askel_puu,✅ valmis (2),"askel_puu_1, askel_puu_2","askel: puurakennukset (lattiat, portaat)",player footstep wood floor
+7,👣 Askeleet,askel_jaa,✅ valmis (1),askel_jaa_1,askel: Routaluolan jää,player footstep ice
+8,👣 Askeleet,askel_pusikko,✅ valmis (1),askel_pusikko_1,"askel: Aarnimetsä: pusikon ja lehvien läpi kulkeminen (välillä oksa rasahtaa, ks. oksa)",walking through bushes leaves
+9,👣 Askeleet,alastulo,⬜ puuttuu,lisää: alastulo.mp3,hypyn tai pudotuksen alastulo (ilman tätä soi askel),"jump landing, land on ground thud"
+10,👣 Askeleet,puska,✅ valmis (1),puska_1,"kävelet pensaan läpi (heti, enintään 2 s välein) ja satunnaisesti Aarnimetsässä","walking through bush rustle, leaves brushing"
+11,👣 Askeleet,oksa,✅ valmis (2),"oksa_1, oksa_2",oksa rasahtaa satunnaisesti Aarnimetsässä (enintään 2 s välein),"twig snap, branch crack footstep"
+12,💧 Vesi,askel_kahlaus,✅ valmis (1),askel_kahlaus_1 (+4 pätkää),kahlaa matalassa vedessä (joka askeleella),wading water footsteps
+13,💧 Vesi,askel_uinti,✅ valmis (3),"askel_uinti_1, askel_uinti_2, askel_uinti_3",uintiveto (noin kerran sekunnissa uidessa),swimming stroke splash
+14,💧 Vesi,loiskahdus,✅ valmis (2),"loiskahdus_1, loiskahdus_2",menee tai putoaa veteen (kova pudotus = isompi),"splash into water, jump into water"

@@ -341,6 +341,28 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Korjaus: kutsu valikon haaran sisään (`else if(state==='menu'){uwOverlayOff(); …}`). **Älä lisää omia `if`-rivejä `frame()`:n ketjun
   keskelle** – lisää kutsu oikean haaran sisään. Tarkistusrivi v2.19 valvoo.
 
+## 48. Tarkistustyökalu hyväksyi epäonnistuneet rivit (v2.23)
+- Syy: `tools/tarkistus.mjs`:n `t()` tallensi tuloksen `!!f()`. Rivit palauttavat epäonnistuessaan tekstin (`return ok||'virhe …'`), ja
+  `!!'virhe'` on tosi → 17 riviä oli epäonnistunut huomaamatta (osa jo v1.x:stä), KAIKKI OK oli harhaanjohtava.
+- Korjaus: merkkijono = virhe (`typeof v==='string'?'VIRHE '+v:!!v`). Uutta riviä kirjoittaessa: palauta `true` tai virheteksti, ja testaa
+  rivi rikkomalla ominaisuus tahallaan (rivin pitää näyttää XX). Älä jätä testin luomia olentoja toisen testin tielle.
+
+## 49. Koodi `//`-kommentin perässä samalla rivillä ei suoritu (v2.23)
+- Syy: muokkauksissa lisättiin `// vX: selitys` rivin keskelle, ja saman rivin loppuosa (koodi) muuttui kommentiksi. Löytyi 4 kohtaa: toimintojen
+  askelääni (v2.23, ennen julkaisua), DEV "ei nälkää" (v2.09), jousella ammunnan jälkeen kääntyminen (v2.06), Kalmanpesän murskausefektit (v0.93).
+- Korjaus: `/* */`-kommentit. **Rivin keskellä vain `/* */`, `//` vain rivin loppuun.** Tarkistusrivi v2.23 skannaa kaikki `__GJS`-tiedostot.
+- v2.24 huomio: skanneri pitää kommentin tekstiä `; nimi = …` koodina (väärä hälytys). Kirjoita kommentteihin "–" tai "on" puolipisteen ja `=`:n sijaan.
+
+## 50. Aarnipuun läpi pääsi osittain (v2.25)
+- Syy: törmäysympyrä `NODE.r × koko` (0,66) oli pienempi kuin näkyvä runko (1,3 m laatikko → kulmat 0,92) ja juuret (1,1). Pelaaja (säde 0,38)
+  pysähtyi 1,09 m:iin keskeltä, mutta näkyi rungon sisällä.
+- Korjaus: oma törmäyssäde `NODE.cr` (Aarnipuu 1,0), `addCircle(...(n.def.cr||n.def.r)*n.s...)` molemmissa kohdissa (resources.js). `r` jäi lyöntietäisyydelle.
+  Uutta isoa mallia tehdessä: tarkista, että törmäys kattaa laatikon kulmat (puolikas × √2).
+
+## 51. Äänityökalu kaatui uuteen ääneen ilman käsittelyprofiilia (v2.26)
+- Syy: `t_prof` haki `T_PROF[ev.split('_')[0]]` suoraan → uusi äänen nimi (esim. `puska`, `kipu`) antoi KeyError ja koko ajo keskeytyi.
+- Korjaus: `T_PROF.get(k, T_DEF)` + profiilit kaikille pelaajan osien äänille. Uutta ääntä lisätessä lisää sille profiili `T_PROF`:iin (muuten käytetään `T_DEF`).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

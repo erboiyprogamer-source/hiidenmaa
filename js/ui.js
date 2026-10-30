@@ -18,18 +18,27 @@ function updateFloaters(dt){for(let i=floaters.length-1;i>=0;i--){const f=floate
 // värikerros (oranssi) rivien päällä. Nimi ja kallot nousevat rivien mukana (pino kasvaa ylöspäin, ei peitä mobia).
 // Pomot, joilla on ruudun yläreunan palkki (Kalmanvartija, ulottuvuuspomot), eivät saa palkkia pään päälle.
 const mobBars=[];for(let i=0;i<8;i++){const d=document.createElement('div');d.className='mobbar';d.innerHTML='<div class="rows">'+'<div class="r"><i class="a"></i><i class="b"></i></div>'.repeat(5)+'</div><span class="nm"></span><span class="sk"></span>';d.hidden=true;$('#floaters').appendChild(d);mobBars.push(d);}
-// Terveyspalkit: näkyvät 10 s iskusta tai kun pelaaja katsoo mobia läheltä (< 12 m); vaikeat (≥3 pääkalloa) jo kaukaa (< 70 m).
+// Terveyspalkit (v2.25, käyttäjä): piilossa, kunnes katsot olentoa suoraan (tähtäin olennon päällä; alle 12 m, vaikeat ≥3 pääkalloa alle 70 m).
+// Jos olento ei ole täysissä voimissa, palkki näkyy myös kun se on 10 % ruudun leveydestä tähtäimen ympärillä (~13°; alle 20 m, vaikeat 70 m).
+// Vahingon jälkeen (m.hurtT) palkki näkyy 5 s katsomatta (ennen 10 s) – paitsi jos olento on tosi kaukana (yli 40 m) ja maaston tai esteiden takana.
 // Yksi kerros = pelaajan perusterveys (60); useampikerroksinen palkki on pidempi ja kerrokset eri värisiä. Alla pääkallot vaikeustasosta.
-const HP_ROW=100,HP_ROWS=5,_cd=new V3();
+const HP_ROW=100,HP_ROWS=5,_cd=new V3(),BAR_HURT_T=5,BAR_AIM_K=.1,BAR_FAR=40;
+// v2.25: näkyykö olento kameralle (maasto 10 pisteestä + esteet losClear), tulos muistissa 0,3 s
+function barSeen(m){if(playTime-(m.bsT??-9)<.3)return m.bsV;m.bsT=playTime;const c=camera.position,ty=m.pos.y+m.barH*.6;let ok=true;
+  for(let i=1;i<10&&ok&&!P.inDun;i++){const k=i/10,x=c.x+(m.pos.x-c.x)*k,z=c.z+(m.pos.z-c.z)*k;if(terrainH(x,z)>c.y+(ty-c.y)*k+.1)ok=false;}
+  if(ok)ok=losClear(c.x,c.y,c.z,m.pos.x,ty,m.pos.z);return m.bsV=ok;}
 const _mbB=new THREE.Box3();
 function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
   for(const m of mobs){if(k>=mobBars.length)break;if(m.dead||m===boss||m.def.ai==='rboss'||m.dun!==P.inDun)continue;
-    const sk=MOB_SKULL[m.type]||0,d=Math.hypot(m.pos.x-P.pos.x,m.pos.z-P.pos.z),recent=playTime-m.hurtT<10;
+    const sk=MOB_SKULL[m.type]||0,d=Math.hypot(m.pos.x-P.pos.x,m.pos.z-P.pos.z),recent=playTime-m.hurtT<BAR_HURT_T,full=m.hp>=m.maxHp-.01;
     // Mallin todellinen korkeus (kerran mobia kohden): palkki 0,45 m pään/sarvien yläpuolelle (v0.73, ennen r × 2,8 + 0,8 → osui päähän).
     if(m.barH===undefined){m.f.g.updateMatrixWorld(true);_mbB.setFromObject(m.f.g);m.barH=Math.max(.6,_mbB.max.y-m.f.g.position.y);}
-    // Näkyy vain, kun katse osuu mobiin selvästi (kulma ~11°, vahvoilla ~9°) – ennen 22°/18°; lyöty mobi näkyy 10 s aina.
-    const ex=m.pos.x-camera.position.x,ey=m.pos.y+m.barH*.55-camera.position.y,ez=m.pos.z-camera.position.z,el=Math.hypot(ex,ey,ez)||1,look=(ex*_cd.x+ey*_cd.y+ez*_cd.z)/el>(sk>=3?.988:.982);
-    if(!(recent||(look&&(d<12||(sk>=3&&d<70)))))continue;
+    // v2.25: suora katse = tähtäin olennon päällä; muut säännöt yllä (vahingoittunut 10 % ympärillä, vahingon jälkeen 5 s).
+    const ex=m.pos.x-camera.position.x,ey=m.pos.y+m.barH*.55-camera.position.y,ez=m.pos.z-camera.position.z,el=Math.hypot(ex,ey,ez)||1,look=Math.acos(clamp((ex*_cd.x+ey*_cd.y+ez*_cd.z)/el,-1,1))<Math.max(.035,Math.atan2(Math.max((m.def.r||.5)*1.2,m.barH*.45)+.15,el));   /* v2.25: tähtäin olennon päällä (kulma koon mukaan, vähintään 2°) */
+    let show=look&&(d<12||(sk>=3&&d<70));
+    if(!show&&!full&&(d<20||(sk>=3&&d<70))){_tmpV.set(m.pos.x,m.pos.y+m.barH*.55,m.pos.z).project(camera);show=_tmpV.z<1&&Math.hypot(_tmpV.x*innerWidth/2,_tmpV.y*innerHeight/2)<innerWidth*BAR_AIM_K;}
+    if(!show&&recent)show=d<=BAR_FAR||barSeen(m);
+    if(!show)continue;
     _tmpV.set(m.pos.x,m.pos.y+m.barH+.45,m.pos.z).project(camera);if(_tmpV.z>1||Math.abs(_tmpV.x)>1.1||Math.abs(_tmpV.y)>1.1)continue;
     const b=mobBars[k++],cap=HP_ROW*HP_ROWS,n=Math.min(HP_ROWS,Math.ceil(Math.min(m.maxHp,cap)/HP_ROW)),hp=Math.max(0,m.hp),rows=b.firstChild.children;
     b.hidden=false;b.style.left=((_tmpV.x+1)/2*innerWidth)+'px';b.style.top=((1-_tmpV.y)/2*innerHeight)+'px';
@@ -240,9 +249,9 @@ const PANEL_KEY={inv:['#inv','inv'],build:['#build','build'],chest:['#chest','in
 function refreshKeyHints(){const on=SET.keyHints!==false;for(const k in PANEL_KEY){const [sel,a]=PANEL_KEY[k],el=$(sel);if(!el)continue;let h=el.querySelector(':scope>.pHint');
     if(!h){h=document.createElement('span');h.className='pHint';el.appendChild(h);}h.hidden=!on;h.textContent=`Sulje: ${keyLabel(BIND.menu)}${a?' / '+keyLabel(BIND[a]):k==='dev'?' / Ä':k==='devm'?' / Ö':k==='devi'?' / Å':''}`;}
   let g=$('#gameHint');if(!g){g=document.createElement('div');g.id='gameHint';$('#hud').appendChild(g);}g.hidden=!on;g.textContent=`Päävalikko: ${keyLabel(BIND.menu)}`;}
-function togglePanel(name){if(openPanel===name){closePanels();return;}if(P.dead)return;panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';if(!locked)releaseLock();else{VC.x=innerWidth/2;VC.y=innerHeight/2;}mouseL=false;mouseR=false;P.drawing=false;
+function togglePanel(name){if(openPanel===name){closePanels();return;}if(P.dead)return;{const ev={inv:'reppu',build:'rakennusvalikko',map:'kartta'}[name];if(ev)plSnd('valikot',ev);}   /* v2.25 */panelOpenedAt=performance.now();closePanels(true);openPanel=name;state='ui';if(!locked)releaseLock();else{VC.x=innerWidth/2;VC.y=innerHeight/2;}mouseL=false;mouseR=false;P.drawing=false;
   if(name==='inv'){$('#inv').hidden=false;fitInv();{const cs=$('#craftSearch');if(cs)cs.value='';}renderInv();renderBiome();}if(name==='build'){$('#build').hidden=false;{const bs=$('#buildSearch');if(bs)bs.value='';}renderBuild();}if(name==='map'){$('#mapP').hidden=false;mapZ=1;mapCX=P.pos.x;mapCZ=P.pos.z;if(!mapRAF)mapRAF=requestAnimationFrame(mapLoop);}if(name==='chest')$('#chest').hidden=false;if(name==='prog'){$('#progP').hidden=false;renderProg();}if(name==='log'){$('#logP').hidden=false;renderLog();}if(name==='dev'&&$('#devP')){$('#devP').hidden=false;renderDev();}if(name==='devi'&&$('#devIP')){devQ='';devN=1;$('#devIP').hidden=false;renderDevI();}if(name==='devm'&&$('#devMP')){$('#devMP').hidden=false;renderDevM();}refreshKeyHints();vcSync();}
-function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel)panelClosedAt=performance.now();for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP','#devMP','#devIP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;selHalf=false;selEq=null;slotDrag=null;hoverSlot=null;if(typeof updGhost==='function')updGhost();if(!keep){state='play';if(!skipLock&&!locked)requestLock();}vcSync();}
+function closePanels(keep,skipLock){upPrev=null;chestSel=null;if(openPanel){panelClosedAt=performance.now();if(!keep)plSnd('valikot','sulje');}for(const id of ['#inv','#build','#mapP','#chest','#progP','#logP','#devP','#devMP','#devIP'])if($(id))$(id).hidden=true;openPanel=null;curChest=null;selSlot=-1;selHalf=false;selEq=null;slotDrag=null;hoverSlot=null;if(typeof updGhost==='function')updGhost();if(!keep){state='play';if(!skipLock&&!locked)requestLock();}vcSync();}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closePanels()));
 function nearStations(){const s={};for(const p of pieces){const k=isFirePiece(p.t)?'nuotio':p.t;if(['tyopenkki','nuotio','ahjo'].includes(k)&&dist2(p.x,p.z,P.pos.x,P.pos.z)<(k==='nuotio'?4:8)**2&&!P.inDun){if(k==='nuotio'&&p.data.fuel<=0)continue;s[k]=1;}}return s;}
 let fxAt=0;
@@ -279,7 +288,7 @@ function renderInv(){initSearch();renderEffects();
     if(up){const x=document.createElement('button');x.className='btn'+(open?' on':'');x.textContent=open?`Piilota ★${q+1}`:`Paranna ★${q+1} …`;x.onclick=()=>{upPrev=open?null:'item'+selSlot;renderInv();};b.appendChild(x);
       if(open){const y=document.createElement('button');y.className='btn pri';y.textContent='Päivitä nyt';y.disabled=!up.ok;y.title=up.why||'';
         y.onclick=()=>{if(!upgradeInfo(s)||!upgradeInfo(s).ok)return;const m0=s.id==='soihtu'?torchMax(s):0;for(const [id,n] of Object.entries(up.req))invRemove(id,n);s.q=q+1;
-          if(s.id==='soihtu')s.fuel=(s.fuel??m0)+torchMax(s)-m0;upPrev=null;sfx('craft');msg(`${d.n} paranneltu tasolle ${q+1}.`,'loot');invDirty=true;renderInv();};
+          if(s.id==='soihtu')s.fuel=(s.fuel??m0)+torchMax(s)-m0;upPrev=null;sfx('craft');plSnd('rakentaminen','valmistus');msg(`${d.n} paranneltu tasolle ${q+1}.`,'loot');invDirty=true;renderInv();};
         det.querySelector('.upPrev').appendChild(y);if(up.why){const w=document.createElement('span');w.className='rq';w.innerHTML=` <span class="mat bad">${up.why}</span>`;det.querySelector('.upPrev').appendChild(w);}}}
     if(s.id==='soihtu'&&(s.fuel??torchMax(s))<torchMax(s)){const x=document.createElement('button');x.className='btn';x.textContent='Lisää pihkaa (+60 s)';x.disabled=invCount('pihka')<1;x.onclick=()=>{if(invCount('pihka')<1)return;invRemove('pihka',1);s.fuel=Math.min(torchMax(s),(s.fuel??0)+60);sfx('build');renderInv();};b.appendChild(x);}
     // Ammus: valinta tai automaattinen (heikoimmasta parhaaseen); valitun napin uusi painallus palauttaa automaattiseen
@@ -309,7 +318,7 @@ function renderInv(){initSearch();renderEffects();
 function upgradeInfo(s){const d=ITEMS[s.id];if(!d.cat||d.cat==='hammer')return null;const q=s.q||1;if(q>=3)return null;const r=RECIPE_BY[s.id];if(!r)return null;
   const req={};for(const [id,n] of Object.entries(r.req))req[id]=Math.ceil(n/2)*q;const st=r.st||'tyopenkki';const near=nearStations()[st];
   const ok=near&&Object.entries(req).every(([id,n])=>invCount(id)>=n);return{req,ok,why:near?'':`Tarvitset: ${STATION_NAME[st]}`};}
-function craft(r){if(!recipeOpen(r))return;for(const [id,n] of Object.entries(r.req))invRemove(id,n);bump('crafted');xpFirst('c_'+r.id,6,'uusi esine');const left=invAdd(r.id,r.n||1);if(left)spawnDrop(r.id,left,P.pos.x,P.pos.y+1,P.pos.z);sfx('craft');msg(`Valmistit: ${ITEMS[r.id].n}`,'loot');
+function craft(r){if(!recipeOpen(r))return;for(const [id,n] of Object.entries(r.req))invRemove(id,n);bump('crafted');xpFirst('c_'+r.id,6,'uusi esine');const left=invAdd(r.id,r.n||1);if(left)spawnDrop(r.id,left,P.pos.x,P.pos.y+1,P.pos.z);plSnd('rakentaminen','valmistus');sfx('craft');msg(`Valmistit: ${ITEMS[r.id].n}`,'loot');
   if(ITEMS[r.id].cat&&!equipped(ITEMS[r.id].cat==='bow'||ITEMS[r.id].cat==='hammer'?'weapon':ITEMS[r.id].cat)){const s=inv.find(s=>s&&s.id===r.id&&!s.eq);if(s)toggleEquip(s);}
   invDirty=true;renderInv();}
 let buildTab='suos';
@@ -395,7 +404,7 @@ function upBtn(el,cost,label,fn,key,chg,rerender,what,prevEl){if(!cost){el.inner
   el.innerHTML=`<button class="btn${open?' on':''}">${open?'Piilota':label+' …'}</button>`+(prevEl?'':ph);if(prevEl&&open)prevEl.innerHTML=`<h3>${label}</h3>`+ph;
   el.firstChild.onclick=()=>{upPrev=open?null:key;if(!open){selSlot=-1;selEq=null;}rerender();};
   if(open){el=prevEl||el;const ok=Object.entries(cost).every(([id,n])=>invCount(id)>=n),y=document.createElement('button');y.className='btn pri';y.textContent='Päivitä nyt';y.disabled=!ok;
-    y.onclick=()=>{if(!Object.entries(cost).every(([id,n])=>invCount(id)>=n))return;for(const [id,n] of Object.entries(cost))invRemove(id,n);upPrev=null;fn();sfx('craft');invDirty=true;rerender();};el.querySelector('.upPrev').appendChild(y);}}
+    y.onclick=()=>{if(!Object.entries(cost).every(([id,n])=>invCount(id)>=n))return;for(const [id,n] of Object.entries(cost))invRemove(id,n);upPrev=null;fn();sfx('craft');plSnd('rakentaminen','valmistus');invDirty=true;rerender();};el.querySelector('.upPrev').appendChild(y);}}
 // Tavaran ominaisuudet listana [nimi, arvo] annetulla ★-tasolla (tietopaneeli ja päivityksen vertailu).
 function itemProps(s,q){const d=ITEMS[s.id],o=[],f1=v=>v.toFixed(1).replace('.',','),pc=v=>Math.round(v*100)+' %',mss=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')} min`,mq=d.cat&&d.cat!=='hammer'&&RECIPE_BY[s.id];
   if(mq)o.push(['Taso','★'+q+' / ★3']);
@@ -416,7 +425,7 @@ function itemProps(s,q){const d=ITEMS[s.id],o=[],f1=v=>v.toFixed(1).replace('.',
   if(d.fuel)o.push(['Polttoarvo',d.fuel+'× puu']);
   o.push(['Paino',f1(d.w*s.n)+(s.n>1?` (${f1(d.w)} / kpl)`:'')]);if(d.s>1)o.push(['Määrä',`${s.n} / ${d.s}`]);
   return o;}
-function openChest(p){togglePanel('chest');curChest=p;renderChest();}
+function openChest(p){togglePanel('chest');curChest=p;plSnd('kaytto','arkku_auki');renderChest();}
 // Löydetyt arkut, kirstut ja tynnyrit avautuvat arkkuikkunaan kuten omat arkut. Sisältö luodaan ensimmäisellä avauksella saalistaulukosta
 // ja tallentuu flags.fc[avain] (myös pelaajan sinne jättämät esineet). Jos paikka on avattu vanhassa tallennuksessa (saalis jo annettu), se on tyhjä.
 function foundItems(key,loot,slots=8){const fc=fo('fc');if(!fc[key]){const it=[];for(const [id,n,q] of loot||[])if(ITEMS[id])it.push({id,n,q:q||1});while(it.length<slots)it.push(null);fc[key]=it;}return fc[key];}
@@ -424,7 +433,7 @@ function foundItems(key,loot,slots=8){const fc=fo('fc');if(!fc[key]){const it=[]
 const POTIONS=['parannusjuoma','elpymisjuoma','sisujuoma'];   // v2.00: arkkuun (ei tynnyri/säkki) 10 % / juoma ensimmäisellä avauksella
 function openFound(key,title,loot){if(loot&&!fo('fc')[key]){loot=wlLoot(key,loot).slice();const m=/^portal3:(\d+)$/.exec(key);if(m&&(flags.sirpC||[]).includes(+m[1]))loot.unshift(['kruunusirpale',1]);
     if(title!=='Tynnyri'&&title!=='Hylätty säkki')for(const id of POTIONS)if(Math.random()<.1&&loot.length<8)loot.push([id,1]);}
-  const items=foundItems(key,loot);if(openPanel)closePanels(true);togglePanel('chest');curChest={found:true,title,data:{items}};sfx('pickup');renderChest();}
+  const items=foundItems(key,loot);if(openPanel)closePanels(true);togglePanel('chest');curChest={found:true,title,data:{items}};sfx('pickup');plSnd('kaytto','arkku_auki');renderChest();}
 const foundEmpty=key=>{const it=fo('fc')[key];return !!it&&!it.some(Boolean);};
 function renderChest(){if(!curChest)return;const items=curChest.data.items;$('#chestTitle').textContent=curChest.found?curChest.title:PIECES[curChest.t].n+(curChest.data.lv?` (taso ${curChest.data.lv+1})`:'');
   if(curChest.found)$('#chestUp').innerHTML='';else

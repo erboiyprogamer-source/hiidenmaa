@@ -214,7 +214,7 @@ function updateDrops(dt){
     if(d.light){d.light.x=m.position.x;d.light.y=m.position.y+.4;d.light.z=m.position.z;d.light.i=.75+Math.sin(d.t*3.2)*.25;}
     if(d.halo){d.halo.material.opacity=.2+Math.sin(d.t*3.2)*.1;if(Math.random()<dt*5&&typeof emitEmber==='function')emitEmber(m.position.x+(Math.random()-.5)*.5,m.position.y+.1,m.position.z+(Math.random()-.5)*.5,'spark');}
     if(d.noPick&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))>2.5*2.5)d.noPick=false;   // v1.31: itse pudotettu poimitaan vasta, kun on käyty kauempana
-    if(d.t>.5&&!(d.hold>0)&&!d.noPick&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');}else if(dropFullT<=0){dropFullT=4;msg('Reppu on täynnä – et voi poimia.','warn');}d.n=left;if(left<=0){removeDrop(d);continue;}}
+    if(d.t>.5&&!(d.hold>0)&&!d.noPick&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');plSnd('kaytto','poiminta');}else if(dropFullT<=0){dropFullT=4;msg('Reppu on täynnä – et voi poimia.','warn');}d.n=left;if(left<=0){removeDrop(d);continue;}}
     if(m.position.y<-20)removeDrop(d);
   }
 }
@@ -325,7 +325,7 @@ function updateProjs(dt){updateHitMarks(dt);
     const pos=p.m.position;let hit=false;
     if(p.owner==='player'){const hm=headShot(p,pos,dt);if(hm){const m=hm;m.fireHit=!!p.fire;damageMob(m,p.dmg*1.1,'pierce',p.v.x,p.v.z);hitMarker(pos.x,pos.y,pos.z,true);m.fireHit=false;if(p.fire)igniteMob(m);floatText('Pääosuma!',pos.x,pos.y+.4,pos.z,'#ff5a4a');hit=true;}
      if(!hit)for(const m of mobs){if(m.dead)continue;const r=m.def.r+.35,cy=m.pos.y+m.def.r*1.6*(m.type==='vartija'?2.4:1);if(dist2(pos.x,pos.z,m.pos.x,m.pos.z)<r*r&&pos.y>m.pos.y-.2&&pos.y<cy+1.2){m.fireHit=!!p.fire;damageMob(m,p.dmg,'pierce',p.v.x,p.v.z);hitMarker(pos.x,pos.y,pos.z);m.fireHit=false;if(p.fire)igniteMob(m);hit=true;break;}}
-     if(hit)tgHit('nuoli',pos.x,pos.y,pos.z);}   // v2.22: nuoli osuu olentoon
+     if(hit&&!plSnd('osumat','osuma_nuoli',{pos}))tgHit('nuoli',pos.x,pos.y,pos.z);}   // v2.22: nuoli osuu olentoon; v2.24 pelaajan osumakansiosta
     else{if(!P.dead&&dist2(pos.x,pos.z,P.pos.x,P.pos.z)<(p.kind==='rock'?2.2*2.2:.6)&&pos.y<P.pos.y+2.2&&pos.y>P.pos.y-.5){const h0=P.hp;hurtPlayer(p.dmg,pos.x-p.v.x,pos.z-p.v.z);hit=true;if(P.hp<h0||P.dead)tgHit(p.kind==='rock'?'murskaus':'nuoli',P.pos.x,P.pos.y+1.1,P.pos.z);}}   // v2.22
     const g=P.inDun?DUN.y:terrainH(pos.x,pos.z);
     if(!hit&&cont){p.stuck=true;p.t=0;const tx=pos.x+_aD.x*.45,ty=pos.y+_aD.y*.45,tz=pos.z+_aD.z*.45;

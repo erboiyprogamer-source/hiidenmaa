@@ -1,0 +1,19 @@
+﻿Nro,Ryhmä,Ääni (tiedostonimi),Tila,Tiedostot nyt,Milloin soi,Hakusanat (englanniksi)
+1,🩸 Kipu ja kuolema,kipu,⬜ puuttuu,lisää: kipu.mp3,saat osuman (tavallinen),"male hurt grunt, pain"
+2,🩸 Kipu ja kuolema,kipu_kova,⬜ puuttuu,lisää: kipu_kova.mp3,kova osuma (yli 20 % terveydestä),male heavy pain scream
+3,🩸 Kipu ja kuolema,kipu_tuli,⬜ puuttuu,lisää: kipu_tuli.mp3,"palat (toistuu noin 1,6 s välein)",burning pain scream
+4,🩸 Kipu ja kuolema,kipu_hukkuminen,⬜ puuttuu,lisää: kipu_hukkuminen.mp3,hukkut veden alla (toistuu),"drowning gurgle, underwater choke"
+5,🩸 Kipu ja kuolema,kipu_nalka,⬜ puuttuu,lisää: kipu_nalka.mp3,nälkä vie terveyttä (toistuu harvoin),"weak groan, starving"
+6,🩸 Kipu ja kuolema,kipu_putoaminen,⬜ puuttuu,lisää: kipu_putoaminen.mp3,putoat korkealta,"fall damage grunt, landing pain"
+7,🩸 Kipu ja kuolema,kuolema,⬜ puuttuu,lisää: kuolema.mp3,kuolet,"male death scream, dying"
+8,🩸 Kipu ja kuolema,kuolema_hukkuminen,⬜ puuttuu,lisää: kuolema_hukkuminen.mp3,hukut,"drowning death, last breath underwater"
+9,💓 Keho ja tila,sydan,⬜ puuttuu,lisää: sydan.mp3,"sydämen syke: vähäinen terveys tai iso paha olento lähellä (silmukka, kiihtyy)","heartbeat loop, heart pounding"
+10,💓 Keho ja tila,hengastys,⬜ puuttuu,lisää: hengastys.mp3,kestävyys loppuu (väsynyt),"heavy breathing, out of breath panting"
+11,💓 Keho ja tila,haukkoo_henkea,⬜ puuttuu,lisää: haukkoo_henkea.mp3,nouset pintaan pitkän sukelluksen jälkeen,"gasp for air, surface breath"
+12,💓 Keho ja tila,hytina,⬜ puuttuu,lisää: hytina.mp3,palelet (märkä tai kylmä yö),"shivering cold, teeth chattering"
+13,💓 Keho ja tila,vatsa_kurisee,⬜ puuttuu,lisää: vatsa_kurisee.mp3,olet nälkäinen,"stomach growl, hungry"
+14,💓 Keho ja tila,mahakipu,⬜ puuttuu,lisää: mahakipu.mp3,vatsakipu (ähky) – kouristus,stomach ache groan
+15,💓 Keho ja tila,pahoinvointi,⬜ puuttuu,lisää: pahoinvointi.mp3,pahoinvointi,"nausea, retching"
+16,💓 Keho ja tila,kylla,⬜ puuttuu,lisää: kylla.mp3,söit itsesi täyteen,"satisfied sigh, content after meal"
+17,💓 Keho ja tila,lammin,⬜ puuttuu,lisää: lammin.mp3,pääset lämpimään (nuotio tai lämmin koti),"relieved sigh, warm comfort"
+18,💓 Keho ja tila,levannyt,⬜ puuttuu,lisää: levannyt.mp3,olet levännyt (levon vaikutus alkaa),"refreshed stretch, relaxed exhale"
