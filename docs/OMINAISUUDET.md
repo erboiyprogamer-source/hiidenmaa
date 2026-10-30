@@ -527,6 +527,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
   Puuttuva ääni = hiljaisuus. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **v2.27 Aarnimetsän askel ja oksat:** pusikkoaskel lyhyempi (0,28 s), voimakkuus ±10 % ja sävel ±9 % joka askeleella. Kun astut maassa olevan
+  oksan päälle, kuuluu oksan rasahdus normaalisti; Aarnimetsässä oksa rasahtaa välillä tosi hiljaa. 2 s tauko (myös olennoilla).
 - **v2.26 pensaat ja askeleet:** pelaaja kävelee pensaan läpi → heti pusikkoaskel ja puska-ääni (täysi voimakkuus), enintään 2 s välein;
   Aarnimetsässä lisäksi satunnaisesti oksa tai puska (14 % askelista, 2 s tauko). Olennot pensaan läpi → kahina (2 s välein). Pelaajan askeleet
   20 % hiljempaa, ja kaikkien pelaajan äänten voimakkuus vaihtelee ±5 % joka kerta.

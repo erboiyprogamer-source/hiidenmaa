@@ -276,13 +276,22 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.27 Aarnimetsän askel ±10 % ja sävel ±9 %; oksa: astuessa oksan päälle normaali ääni, Aarnimetsässä satunnaisesti tosi hiljaa, 2 s tauko',()=>{
+    const O=nodes.find(n=>n.type==='oksa'&&n.alive!==false);if(!O)return 'ei oksia';const a=plNodeAt('oksa',O.x,O.z,.3)&&!plNodeAt('oksa',O.x+3,O.z+3,.3);
+    const calls=[],orig=plSnd,ok0=CRE.ok,sv=[P.pos.clone(),P.onGround,P.vel.clone(),P.swim,P.inDun,P.walkPh];plSnd=(g,ev,o)=>{calls.push([g+'/'+ev,o&&o.v]);return 1;};CRE.ok=true;
+    try{P.pos.set(O.x,terrainH(O.x,O.z),O.z);P.onGround=true;P.swim=false;P.inDun=false;P.vel.set(3,0,0);PLV.oksaT=-9;PLV.bushT=playTime;PLV.ph=null;P.walkPh=.1;plTick(1/30);
+      P.walkPh=.1+Math.PI;plTick(1/30);P.walkPh=.1+2*Math.PI;plTick(1/30);}
+    finally{plSnd=orig;CRE.ok=ok0;P.pos.copy(sv[0]);P.onGround=sv[1];P.vel.copy(sv[2]);P.swim=sv[3];P.inDun=sv[4];P.walkPh=sv[5];}
+    const ok=calls.filter(c=>c[0]==='askeleet/oksa'),b=ok.length===1&&ok[0][1]===.9;
+    const src=plTick.toString(),c=/vj:\.1,p:1\+/.test(src)&&/'oksa',\{v:\.2/.test(src)&&/plNodeAt\('oksa',m\.pos\.x/.test(tgStep.toString())&&/'oksa',\{v:\.18\}/.test(tgStep.toString())&&/o\.vj\?\?\.05/.test(plSnd.toString());
+    return a&&b&&c||`virhe ${a} ${b} (${JSON.stringify(ok)}) ${c}`;});
   t('v2.26 pensaat: pensaan läpi heti puska + pusikkoaskel (2 s tauko), Aarnimetsässä satunnaisesti oksa/puska; pelaajan askeleet −20 %, ±5 %',()=>{
     const B=nodes.find(n=>n.type==='pensas');if(!B)return 'ei pensaita';const a=plBush(B.x,B.z,.3)&&!plBush(B.x+6*B.s,B.z,.3);
     const calls=[],orig=plSnd,ok0=CRE.ok,sv=[P.pos.clone(),P.onGround,P.vel.clone(),P.swim,P.inDun];plSnd=(g,ev)=>{calls.push(g+'/'+ev);return 1;};CRE.ok=true;
     try{P.pos.set(B.x,terrainH(B.x,B.z),B.z);P.onGround=true;P.swim=false;P.inDun=false;P.vel.set(3,0,0);PLV.bushT=-9;PLV.ph=null;plTick(1/30);const n1=calls.filter(c=>c==='askeleet/puska').length;plTick(1/30);
       var n2=calls.filter(c=>c==='askeleet/puska').length,b=n1===1&&n2===1&&calls.includes('askeleet/askel_pusikko');}
     finally{plSnd=orig;CRE.ok=ok0;P.pos.copy(sv[0]);P.onGround=sv[1];P.vel.copy(sv[2]);P.swim=sv[3];P.inDun=sv[4];}
-    const c=PL_STEP_V===.8&&/\*\.05\)/.test(plSnd.toString())&&/plBush\(m\.pos\.x/.test(tgStep.toString())&&/'oksa':'puska'/.test(plTick.toString());
+    const c=PL_STEP_V===.8&&/\*\.05\)/.test(plSnd.toString())&&/plBush\(m\.pos\.x/.test(tgStep.toString())&&/'puska',\{v:\.9\}/.test(plTick.toString());
     return a&&b&&c||`virhe pensas ${a} ääni ${b} (${calls.join(',')}) muut ${c}`;});
   t('v2.26 terveyspalkit: vain suora katse; vahingoittunut myös 10 % ympärillä; vahingon jälkeen 5 s; ei jos tosi kaukana ja piilossa',()=>{
     for(const q of [...mobs])mobRemove(q);const cp=camera.position.clone(),cq=camera.quaternion.clone(),pp=P.pos.clone(),bs=barSeen,L=LOC.spawn,x=L.x+30,z=L.z+30;
@@ -323,7 +332,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const a=TG_BASE.raskaat_nelijalkaiset==='nelijalkaiset'&&TG_BASE.kevyet_nelijalkaiset==='nelijalkaiset'&&TG_BASE.luurangot==='kaksijalkaiset'&&TG_BASE.kivivartija==='kaksijalkaiset'
       &&['kalmanvartija','jaatar','kalmaherra','aarnihirvio'].every(g=>TG_BASE[g]==='kaksijalkaiset')&&!TG_BASE.kaksijalkaiset&&!TG_BASE.nelijalkaiset&&TG_BASEP.raskaat_nelijalkaiset[0]<1&&TG_BASEP.kevyet_nelijalkaiset[0]>1;
     const b=TG_STEP_LAYER.raskaat_nelijalkaiset==='tomistys'&&TG_STEP_LAYER.kivivartija==='tomistys'&&TG_STEP_LAYER.luurangot==='kalina'&&TG_STEP_LAYER.jaatar==='tomistys'&&/TG_STEP_LAYER/.test(tgStep.toString())&&!/klT/.test(tgTick.toString());
-    const c=/TG_BASE\[g\]/.test(tgSnd.toString())&&/lay\?TGV\.v\.length>=24/.test(tgPlay.toString())&&/m\.okT/.test(tgStep.toString())&&/'oksa',\{v:\.45\}/.test(tgStep.toString());
+    const c=/TG_BASE\[g\]/.test(tgSnd.toString())&&/lay\?TGV\.v\.length>=24/.test(tgPlay.toString())&&/m\.okT/.test(tgStep.toString())&&/'oksa',\{v:\.18\}/.test(tgStep.toString());   /* v2.27: satunnainen oksa tosi hiljaa (ennen 0,45) */
     return a&&b&&c||`virhe pohja ${a} kerros ${b} toisto/oksa ${c}`;});
   t('v2.20 Extra-grafiikka-välilehti (varjot, realistinen vesi, Mega, rantaroiskeet), low poly -vesi oletuksena, ylämäki hidastaa (90° = puolet), kohteet mukailevat rinnettä',()=>{
     const a=SET_TABS.some(x=>x[0]==='xgfx')&&['shUltra','waterHQ','waterMega','shoreSpray'].every(k=>SET_PAGES.xgfx.includes(k)&&!SET_PAGES.gfx.includes(k))&&SET_DEF.waterHQ===false&&SET_DEF.shoreSpray===false&&typeof xRow==='function';
