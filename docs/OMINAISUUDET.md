@@ -520,10 +520,23 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   45–110 s välein (60 %) kaukaista suden ulvontaa 150–230 m päästä. Pitkiä kutsuääniä ei katkaista kesken (enintään 10 s, loppu luonnolliseen taukoon).
 - **Toimintoäänet (v2.16):** olennot jaetaan 12 ryhmään (kaksijalkaiset, luurangot, nelijalkaiset, raskaat, kevyet nelijalkaiset, kevyet
   kaksijalkaiset, kivivartija, jokaisella pomolla oma, yhteiset). Askeleet alustan mukaan (ruoho, kivi, hiekka, lumi, suo, puu, jää, pusikko,
-  kahlaus, uinti; Aarnimetsässä välillä oksa rasahtaa), lähimmät 6 alle 20 m (isot 40 m); pomon askel lähellä tärisyttää. Kaatuminen, törmäys
+  kahlaus, uinti; Aarnimetsässä välillä oksa rasahtaa), lähimmät 6 alle 20 m (isot 40 m; v2.24: 16 / 32 m); pomon askel lähellä tärisyttää. Kaatuminen, törmäys
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
   Puuttuva ääni = hiljaisuus. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **v2.24 äänitasot:** olentojen äänet (ääntely, kipu, kuolema, suuttuminen, jahti, kaiku) 20 % hiljempaa. Toimintoäänet kuuluvat 20 % lyhyemmälle
+  (askeleet 16 m, isot 32 m, palaminen 36 m, syöminen/juominen 24 m, loiskahdus 32 m; 3D-viite ×0,8, maxDistance 96 m) ja vaimenevat jyrkemmin
+  (rolloff askel 1,8, muut 1,45; suora ääni −50 % kantaman reunalla 51 m). Askeleet kävellessä 20 % harvemmin (`TG_STRIDE` ×1,2), juostessa
+  10 % harvemmin kuin ennen (×1,375).
+- **v2.24 juominen:** rauhalliset eläimet (makeAnimal-mallit, ei vaanivat hirviöt eikä emoa seuraavat porsaat) lähtevät 70–160 s välein (50 %)
+  juomaan, jos alle 28 m päässä on vettä: kävelevät rannalle kaulan ulottuman päähän, kääntyvät veteen päin, laskevat kuonon veden pintaan ja
+  juovat 4–8 s (latkivat). Pelaaja alle 10 m (ellei kyykyssä), osuma, pelko tai jumiin jääminen keskeyttää. Ääni `juominen` (nelijalkaiset, silmukka).
+- **v2.24 pää alas:** eläimen kaula kääntyy rinnan kohdalta eteen-alas ja venyy pitkäjalkaisilla (peura, poro, hirvi) niin, että kuono ylettyy
+  maahan syödessä, tonkiessa ja veden pintaan juodessa; pää osoittaa alas. Laskeutuu ja nousee pehmeästi (~0,5 s).
+- **v2.24 pelaajan toimintoäänet** (`sounds/pelaaja_toiminnot/`, AANILISTA_PELAAJA.md): askel jalan osuessa maahan (kävellen ~2,6/s, juosten ~3,3/s,
+  kyykyssä hiljaa) alustan mukaan (ruoho, kivi, hiekka, lumi, suo, puu, jää, pusikko; rakennuksissa puu/kivi), hypyn alastulo, kahlaus, uintiveto,
+  loiskahdus veteen mennessä (kova pudotus kovempi), pelaajan iskun osuma (nuija = murskaus, muut = isku) ja pelaajan nuolen osuma. Aloitusäänet
+  kopioitu olentojen kansiosta. Asetukset › Ohjaus ja ääni › Pelaajan äänet (oletus 80 %).
 - **Toimintosilmukat (v2.23):** syöminen, tonkiminen ja nuuhkiminen soivat koko toiminnon ajan ja hiljenevät pehmeästi, kun eläin lopettaa.
   Askeleet: kohinanpoisto, yksi askel per ääni, voimakkuus vaihtelee hieman askeleittain. Kivivartijalla omat äänet.
 - **Osumat ja törmäykset (v2.22):** osumaäänet 6 kategoriassa (raapaisu, purema, murskaus, sarvet, isku, nuoli) – soivat kun olento osuu

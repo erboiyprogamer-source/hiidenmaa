@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.23)
+## Nykytila (päivitetty v2.24)
 
-- **Versio 2.23**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) uudessa PR:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
+- **Versio 2.24**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) ja v2.24 (äänitasot, juominen, pää alas, pelaajan toimintoäänet) PR #34:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -116,7 +116,8 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   `valmiit/` (työkalun käsittelemät, peli lataa) ja oma äänilista. Nyt: `sounds/olennot_aanet/` (ääntely, kipu, kuolema, suuttuminen, jahti, kaiku;
   `AANILISTA.md`) ja `sounds/olennot_toiminnot/` (toiminto- ja ääniefektit ryhmäkansioittain; `AANILISTA_TOIMINNOT.md`). `sounds/manifest.json`
   on yhteinen (v 3): ääntelyn avain `<id>_<laji>_<n>`, toimintojen `t/<ryhmä>/<ääni>_<n>`; peli hakee tiedoston polusta `sounds/` + `f`.
-  Tulevat projektit (pelaaja, sää, musiikki) samalla mallilla.
+  **v2.24: `sounds/pelaaja_toiminnot/`** (pelaajan askeleet, vesi, osumat; avaimet `p/<ryhmä>/<ääni>_<n>`, `AANILISTA_PELAAJA.md`, työkalun `P_GROUPS`).
+  Tulevat projektit (sää, musiikki) samalla mallilla.
   Jos raaka palautetaan paikkamerkiksi, käsitelty ääni poistuu.
 - **Peli lukee vain käsitellyt äänet** `sounds/`-kansiosta (manifestin kautta, tiiviste osoitteessa → välimuisti ei näytä vanhaa ääntä).
   Ilman palvelinta (tuplaklikkaus, file://) tiedostoäänet eivät lataudu → peli käyttää tehtyjä ääniä / hiljaisuutta.
@@ -161,7 +162,7 @@ discover, block, chop, chopFinal, chopLog, logBreak, rockBreak, woodBreak. Uutta
 koukku tiedostoääneen – älä koskaan tee ääntä itse. Puuttuva ääni = hiljaisuus.
 
 **Äänierän rutiini (kun käyttäjä lisää uusia ääniä; v1.86, jotta isotkin erät sujuvat nopeasti):**
-1. `git pull`/fetch: katso mitä uusia tiedostoja `sounds/olennot_aanet/raw/` ja `sounds/olennot_toiminnot/raw/` saivat (`git diff --stat HEAD origin/main`). Älä lue ääniä itse – työkalu mittaa.
+1. `git pull`/fetch: katso mitä uusia tiedostoja `sounds/olennot_aanet/raw/`, `sounds/olennot_toiminnot/raw/` ja `sounds/pelaaja_toiminnot/raw/` saivat (`git diff --stat HEAD origin/main`). Älä lue ääniä itse – työkalu mittaa.
 2. `python3 tools/process_sounds.py` (tarvittaessa `--init` uusille olennoille). Lue **HUOM**-rivit: sama tiedosto kahdessa paikassa, vahvistus yli ±12 dB
    (raaka hyvin hiljainen/kova → kerro käyttäjälle), ylimääräiset paikat. Tuplatiedosto tai kova vahvistus ei estä erää; ilmoita ne ja jatka.
 3. Tarkista AANILISTA.md:n tilarivit ja VARAANI: jos olento sai omat äänet, varaääniketju voi jäädä; uusi 💎/⭐-rooli päivittyy itse.
@@ -239,6 +240,32 @@ koukku tiedostoääneen – älä koskaan tee ääntä itse. Puuttuva ääni = h
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.24 (äänitasot ja kantama, harvemmat askeleet, eläimet juovat, pää alas, pelaajan toimintoäänet – käyttäjän pyynnöt)
+- **Olentojen äänet −20 %:** `CRE_VK` 0,8 kertoo jokaisen olentoäänen (`creSnd`); asetus "Olentojen äänet" ennallaan.
+- **Toimintoäänten kuuluvuus −20 % ja jyrkempi vaimeneminen:** `TG_RK` 0,8 kertoo säteet (`tgR2`: askeleet 16 m, isot 32 m, palaminen 36 m,
+  toimintosilmukat 24 m, loiskahdus 32 m), 3D-viitteen ja maxDistancen (96 m); rolloff askel 1,4 → 1,8, muut 1,1 → 1,45; oma etäisyysefekti
+  `tgDistK` (reuna 51 m, suora ääni −50 % reunalla, ennen −30 % / 64 m; `v.tg` erottaa `creDistFx`:ssä).
+- **Askeltahti:** kävellessä `TG_STRIDE` ×1,2 (`TG_WALK_K`, 20 % harvemmin), juostessa ×1,375 (`TG_RUN_K` = ennen ×1,25 · 1,1 → 10 % harvemmin).
+- **Pää alas (käyttäjä: "pää menee tarpeeksi alas"):** ennen pää kallistui vain 0,65 rad oman tyvensä ympäri eikä kuono ylettynyt maahan
+  (peura 1,6 m ilmassa). `makeAnimal` siirtää kaulan ja pään kaulan niveleen `nk` (rinnan kohdalla); laskeutuessa kaula kääntyy eteen-alas
+  (enintään 2,45 rad, koska kaula osoittaa levossa lähes ylös) ja pää vastakkaiseen suuntaan niin, että sen asento maailmassa on `NK_HP` 1,2 rad.
+  Pitkäjalkaisilla kaula venyy (`nkRig.E`, peura 0,42 m, poro 0,36, hirvi 0,62; pienin venymä jolla kärki ylettyy). `nkTab` = kuonon kärjen
+  korkeus kulmittain, `headDown(m, vesi)` (ai.js) valitsee kulman maan / veden pinnan korkeuden mukaan joka ruutu; `animMob` laskee ja nostaa
+  pehmeästi (`m.hdK`, 0,25 s ilman kutsua → nousee). Käytössä syömisessä, emakon ja porsaiden tonkimisessa ja juomisessa. Lepoasento ennallaan.
+- **Juominen (`drinkOk`/`drinkSpot`/`drinkPlan`/`drinkStep`, ai.js):** makeAnimal-eläimet (ei vaanivat hirviöt, ei emoa seuraavat porsaat)
+  70–160 s välein 50 %:n todennäköisyydellä, jos vettä on alle 28 m päässä: 16 suunnasta lähin ranta, seisomapaikka kaulan ulottuman päähän
+  (kuiva, ei liian korkea törmä, ei esteen sisällä), kävely sinne (jumissa 2 s → luovutus, enintään 30 s), kääntyminen veteen, kuono pintaan,
+  juo 4–8 s latkien. Uusi ääni `juominen` nelijalkaisille (paikkamerkit; `ACT_EV` silmukka). Pelaaja alle 10 m (ei kyykyssä), osuma, pelko keskeyttää.
+- **Pelaajan toimintoäänet (uusi projekti `sounds/pelaaja_toiminnot/`):** ryhmät `askeleet/` (8 alustaa), `vesi/` (kahlaus, uinti, loiskahdus),
+  `osumat/` (6 kategoriaa); manifestin avaimet `p/<ryhmä>/<ääni>_<n>`, lista `AANILISTA_PELAAJA.md`. Raa'at kopioitiin olentojen kansiosta
+  (kaksijalkaisten askeleet, kahlaus, uinti, yhteinen loiskahdus, osumat; tyhjä `osuma_sarvet_1` ja puuttuvat → paikkamerkit) – git tallentaa samat
+  tiedostot kerran. Työkalu: `process_toiminnot(ff, init, old, C)` yleistettiin projektiasetuksilla (`T_CFG`, `P_CFG`), `write_list_p`.
+  Peli (audio.js): `plSnd`/`plTick`/`plSurface`, askel kävelyvaiheesta (`P.walkPh` kerran π:ssä), hypyn alastulo, uintiveto joka toisella
+  vaiheella, loiskahdus veteen mennessä, iskun osuma `doMeleeHit` (nuija = murskaus, muut = isku, kerran per isku), pelaajan nuoli `osuma_nuoli`
+  (ennen olentojen osumakansiosta). Soi pelaajan kohdalta (viite 4 m, ei kaukoefektiä), luolastossa pieni kaiku, budjetti 6. Uusi asetus
+  **Pelaajan äänet** (`SET.plVol`, 80 %). Olennon isku pelaajaan käyttää edelleen olentojen osumakansiota.
+- Tarkistusrivit v2.24 (4 kpl). Testattu: kuvat 13 eläimestä (pää lepo/alas), juominen rannalla, full157 6 karttaa.
 
 ### v2.23 (toimintoäänierä 2, kivivartijan omat äänet, pitkät äänet toiminnon ajan, luonnolliset askeleet, tarkistustyökalun korjaus)
 - **Äänierä:** 82 tiedostoa – kaksi- ja nelijalkaisten askeleet kaikille alustoille (hiekka, jää, kahlaus, kivi, lumi, puu, suo, uinti), oksa,
@@ -2698,7 +2725,8 @@ Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 - [x] **A olennot** (v1.84): paikkamerkit kaikille 26 olennolle, varaääniketju, 3D-ääni, idle/aggro/hurt/death, voimakkuusasetus.
 - [x] **B1 olentojen toiminnot** (v2.16: järjestelmä ja paikkamerkit valmiina, äänet käyttäjältä – `sounds/olennot_toiminnot/`).
 - [ ] **B2 pelaajan ja toimintojen äänet** (v2.22: generoidut äänet poistettu – koukut `SFX_HOOKS` odottavat tätä projektia): askeleet pinnan mukaan, hyppy, uinti, taistelu, keräily, työkalut, rakentaminen, työpisteet,
-  käyttöliittymä.
+  käyttöliittymä. **v2.24 aloitettu:** `sounds/pelaaja_toiminnot/` (askeleet, vesi, osumat) kytketty peliin; seuraavaksi esim. huitaisu, hyppy,
+  kipu, keräily, kaato, louhinta (koukut `SFX_HOOKS`) samaan projektiin uusiksi ryhmiksi (`P_GROUPS`).
 - [ ] **C taustaäänet ja sää:** metsä päivä/yö, Aarnimetsä, luolasto, sade, tuuli, myrsky, tuli.
 - [ ] **D musiikki:** päivä, yö, Aarnimetsä, luolasto, taistelu, pomo, voitto; pehmeä ristiinhäivytys.
 - [ ] **E äänifysiikka:** vaimennus seinän takana (lowpass + losClear), luolan kaiku (olennoille tehty v1.86; jäljellä pelaajan askeleet ym.), veden alla vaimea, askeleet

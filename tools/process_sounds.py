@@ -493,13 +493,19 @@ def main():
     t_sounds, t_stat, t_warn, t_err = process_toiminnot(ff, init, old)
     warn += t_warn
     errors += t_err
+    p_sounds, p_stat, p_warn, p_err = process_toiminnot(ff, init, old, P_CFG)   # v2.24 pelaajan toiminnot
+    warn += p_warn
+    errors += p_err
     allsnd = dict(sounds)
     allsnd.update(t_sounds)
+    allsnd.update(p_sounds)
     with open(MANIFEST, 'w', encoding='utf-8') as f:
         json.dump({'v': 3, 'sounds': dict(sorted(allsnd.items()))}, f, ensure_ascii=False, indent=1)
         f.write('\n')
     write_list(sounds, raws)
     write_list_t(t_sounds)
+    write_list_p(p_sounds)
+    print(f'Pelaaja: käsitelty {p_stat[0]}, ennallaan {p_stat[1]}, poistettu {p_stat[2]}, oikeita ääniä {len(p_sounds)}')
     print(f'Toiminnot: käsitelty {t_stat[0]}, ennallaan {t_stat[1]}, poistettu {t_stat[2]}, oikeita ääniä {len(t_sounds)}')
     print(f'Käsitelty: {done}, ennallaan: {skipped}, poistettu: {removed}, oikeita ääniä yhteensä: {len(sounds)}')
     if extra:
@@ -562,7 +568,7 @@ HIT_FI = {'raapaisu': ('kynnet raapaisevat (ilves, karhut, Suonäkki)', 'claw sc
 LOOP_EV = {'palaminen'}   # v2.22: silmukat – ei hiljaisuuden leikkausta eikä häivytyksiä; sauma ristihäivytetään (saumaton silmukka)
 # v2.23: toimintosilmukat (käyttäjän pyyntö): pitkä raaka saa olla pitkä – käsitellään saumattomaksi silmukaksi (enintään 20 s); peli soittaa
 # sitä niin kauan kuin eläin tekee toimintoa (syö, tonkii, nuuhkii) ja pysäyttää pehmeästi, kun toiminto loppuu
-ACT_EV = {'syominen_laidun', 'syominen_tonkiminen', 'syominen_rouskutus', 'syominen_nakerrus', 'nuuhkiminen'}
+ACT_EV = {'syominen_laidun', 'syominen_tonkiminen', 'syominen_rouskutus', 'syominen_nakerrus', 'nuuhkiminen', 'juominen'}   # v2.24 juominen
 def step_like(ev):
     """v2.23: askelmaiset äänet – kohinanpoisto, vain ensimmäinen tapahtuma (yksi askel), pitkästä nauhoituksesta useita pätkiä."""
     return ev.startswith('askel_') or ev in ('tomistys', 'kalina', 'oksa')
@@ -570,7 +576,7 @@ TG_GROUPS = [   # (id, nimi, emoji, jäsenet, tapahtumat, iso)
     ('kaksijalkaiset', 'Kaksijalkaiset', '🦶', ['hiisi', 'suonakki'], _steps(SURF) + ['oksa', 'kaatuminen'] + COMMON_ATK + ['nousu'], False),
     ('luurangot', 'Luurangot', '💀', ['kalmo', 'ylimys'], ['kalina'], False),
     ('nelijalkaiset', 'Nelijalkaiset', '🐾', ['peura', 'poro', 'hirvi', 'karju', 'emakko', 'susi', 'routasusi', 'kalmasusi', 'ilves', 'ahma'],
-     _steps(SURF) + ['oksa', 'kaatuminen'] + COMMON_ATK + ['nousu', 'ravistus', 'nuuhkiminen', 'syominen_laidun', 'syominen_tonkiminen', 'syominen_rouskutus'], False),
+     _steps(SURF) + ['oksa', 'kaatuminen'] + COMMON_ATK + ['nousu', 'ravistus', 'nuuhkiminen', 'syominen_laidun', 'syominen_tonkiminen', 'syominen_rouskutus', 'juominen'], False),
     ('raskaat_nelijalkaiset', 'Raskaat nelijalkaiset (ei pomoja)', '🐻', ['karhu', 'hiidenkarhu', 'hiidenhirvi'], ['tomistys'], True),
     ('kevyet_nelijalkaiset', 'Kevyet nelijalkaiset', '🐇', ['janis', 'kettu', 'porsas'], ['syominen_nakerrus'], False),
     ('kevyet_kaksijalkaiset', 'Kevyet kaksijalkaiset', '🐦', ['metso'], ['lentoonlahto'], False),
@@ -589,7 +595,7 @@ TG_BY = {g[0]: g for g in TG_GROUPS}
 T_PROF = {'askel': (.5, .8, .05, -27), 'kahlaus': (1.2, 1.5, .15, -25), 'uinti': (1.5, 1.8, .2, -25), 'oksa': (.5, .5, .05, -23),
           'kaatuminen': (1.5, 2.5, .25, -19), 'tormays': (.8, 1.0, .1, -19), 'huitaisu': (.7, 1.0, .1, -21), 'osuma': (.8, 1.0, .1, -17),
           'nousu': (1.5, 2.0, .2, -25), 'kalina': (1.0, 1.0, .15, -27), 'ravistus': (1.5, 1.5, .2, -23), 'nuuhkiminen': (1.5, 1.5, .2, -27),
-          'syominen': (2.5, 2.5, .3, -25), 'lentoonlahto': (2.0, 2.0, .3, -19), 'palaminen': (3.0, 3.0, .15, -24), 'kahina': (1.2, 1.2, .15, -25),
+          'syominen': (2.5, 2.5, .3, -25), 'juominen': (2.5, 2.5, .3, -26), 'lentoonlahto': (2.0, 2.0, .3, -19), 'palaminen': (3.0, 3.0, .15, -24), 'kahina': (1.2, 1.2, .15, -25),
           'loiskahdus': (1.2, 1.5, .2, -21), 'ryntays': (2.0, 2.5, .25, -18), 'tomistys': (.6, .9, .08, -26)}
 def t_prof(ev, big):
     k = 'kahlaus' if ev == 'askel_kahlaus' else 'uinti' if ev == 'askel_uinti' else ev.split('_')[0]
@@ -611,6 +617,7 @@ EV_FI = {   # kuvaus ja oletushakusanat (englanniksi)
     'syominen_tonkiminen': ('tonkii maata röhkien (karju, emakko, porsas)', 'pig rooting, boar snuffling dirt'),
     'syominen_rouskutus': ('kalvaa raatoa, luu rouskuu (sudet, karhu, ahma)', 'wolf gnawing bone, chewing meat'),
     'syominen_nakerrus': ('nakertaa (jänis)', 'rabbit nibbling, gnawing'),
+    'juominen': ('latkii vettä rannalla (silmukka juomisen ajan; kaikki nelijalkaiset, kevyet ja raskaat kerrostuvat)', 'animal drinking water lapping, dog lapping'),
     'ryntays_lataus': ('ryntäyksen lataus: pomo kumartuu ja kerää voimaa (0,6 s ennen syöksyä)', 'monster charge up growl, heavy breath windup'),
     'ryntays': ('ryntäys: raskas syöksy eteenpäin', 'monster charge rush roar, heavy stampede dash'),
     'lentoonlahto': ('lähtee lentoon (siivet räpyttävät)', 'grouse flush, bird wings takeoff flapping'),
@@ -656,11 +663,81 @@ def t_allowed(g):
     b = TG_BASE.get(g)
     return evs + [e for e in TG_BY[b][4] if e not in evs] if b else evs
 
+# v2.24 PELAAJAN TOIMINNOT (käyttäjän päätös): oma projekti sounds/pelaaja_toiminnot/ (raw/<ryhmä>/, valmiit/<ryhmä>_valmis/,
+# AANILISTA_PELAAJA.md); manifestin avaimet p/<ryhmä>/<ääni>_<n>. Ensimmäiset äänet kopioitiin olentojen toimintokansiosta
+# (kaksijalkaisten askeleet, kahlaus ja uinti, yhteinen loiskahdus, osumat) – käyttäjä voi korvata ne omilla pelaajan äänillä.
+PROJ_P = 'pelaaja_toiminnot'
+RAW_P = os.path.join(SND, PROJ_P, 'raw')
+OUT_P = os.path.join(SND, PROJ_P, 'valmiit')
+LISTA_P = os.path.join(SND, PROJ_P, 'AANILISTA_PELAAJA.md')
+P_GROUPS = [   # (id, nimi, emoji, jäsenet, tapahtumat, iso)
+    ('askeleet', 'Askeleet (alustan mukaan)', '👣', ['pelaaja'], _steps(LAND), False),
+    ('vesi', 'Vesi', '💧', ['pelaaja'], ['askel_kahlaus', 'askel_uinti', 'loiskahdus'], False),
+    ('osumat', 'Osumat – pelaajan isku tai nuoli osuu olentoon', '💥', ['pelaaja'], ['osuma_' + k for k in HIT_CATS], False),
+]
+P_BY = {g[0]: g for g in P_GROUPS}
+P_FI = {'askel_kahlaus': ('kahlaa matalassa vedessä (joka askeleella)', 'wading water footsteps'),
+        'askel_uinti': ('uintiveto (noin kerran sekunnissa uidessa)', 'swimming stroke splash'),
+        'loiskahdus': ('menee tai putoaa veteen (kova pudotus = isompi)', 'splash into water, jump into water'),
+        'osuma_isku': ('miekka, kirves, keihäs, hakku tai nyrkki osuu olentoon', 'sword hit flesh, axe hit body'),
+        'osuma_murskaus': ('nuija osuu olentoon (murskaava isku)', 'club hit, blunt impact body'),
+        'osuma_nuoli': ('pelaajan nuoli osuu olentoon', 'arrow hit flesh, arrow impact'),
+        'osuma_raapaisu': ('varalla (ei vielä käytössä)', 'slash flesh'), 'osuma_purema': ('varalla (ei vielä käytössä)', 'bite'),
+        'osuma_sarvet': ('varalla (ei vielä käytössä)', 'ram impact')}
+T_CFG = {'groups': TG_GROUPS, 'by': TG_BY, 'raw': RAW_T, 'out': OUT_T, 'pre': 't', 'proj': PROJ_T, 'allowed': lambda g: t_allowed(g)}
+P_CFG = {'groups': P_GROUPS, 'by': P_BY, 'raw': RAW_P, 'out': OUT_P, 'pre': 'p', 'proj': PROJ_P, 'allowed': lambda g: list(P_BY[g][4])}
+
+def write_list_p(sounds):
+    tot = own = 0
+    rows = []
+    for g, name, emo, _, evs, _ in P_GROUPS:
+        pre = f'p/{g}/'
+        rows.append(f'\n### {emo} {name} – `{g}/`\n')
+        rows.append('| Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Milloin soi | Hakusanat (englanniksi) |')
+        rows.append('| --- | --- | --- | --- | --- |')
+        for ev in evs:
+            tot += 1
+            mine = sorted(int(n[len(pre) + len(ev) + 1:]) for n in sounds if n.startswith(f'{pre}{ev}_') and n[len(pre) + len(ev) + 1:].isdigit())
+            parts = [x for x in mine if x >= 100]
+            mine = [x for x in mine if x < 100]
+            if mine:
+                own += 1
+            files = ', '.join(f'`{ev}_{n}`' for n in sorted(set(range(1, T_SLOTS + 1)) | set(mine)))
+            st = (f'✅ oma: {", ".join(f"_{n}" for n in mine)} ({len(mine)} kpl)' + (f' + {len(parts)} pätkää pitkästä nauhoituksesta' if parts else '')) if mine else '⬜ puuttuu (hiljaa)'
+            if ev.startswith('askel_') and ev[6:] in SURF_FI and ev not in P_FI:
+                d, k = f'askel: {SURF_FI[ev[6:]]}', STEP_KEYS[ev[6:]].replace('footstep', 'player footstep')
+            else:
+                d, k = P_FI.get(ev, ('', ''))
+            rows.append(f'| {ev} | {files} | {st} | {d} | {k} |')
+    head = f"""# Hiidenmaan äänilista: pelaajan toiminnot
+
+Projekti `sounds/pelaaja_toiminnot/` (v2.24). Taulukko päivittyy automaattisesti (`python3 tools/process_sounds.py`) – älä muokkaa käsin.
+Olentojen äänet: `sounds/olennot_aanet/` (AANILISTA.md) ja `sounds/olennot_toiminnot/` (AANILISTA_TOIMINNOT.md).
+
+## Kansiot
+
+- `raw/<ryhmä>/<ääni>_<n>.mp3` – **sinun raa'at äänesi** (korvaa tiedosto täsmälleen samalla nimellä). Lisää versioita vapaasti `_3`, `_4` … – peli arpoo kaikista.
+- `valmiit/<ryhmä>_valmis/…` – työkalun käsittelemät äänet, jotka peli lataa (älä muokkaa).
+- **Aloitusäänet (v2.24):** kopioitu olentojen toimintokansiosta (kaksijalkaisten askeleet, kahlaus, uinti, yhteinen loiskahdus, osumat).
+  Vaihda ne pelaajan omiin, kun löydät sopivat – olentojen äänet eivät muutu.
+- Pelaajan äänet soivat pelaajan kohdalta ilman kaukoefektiä; voimakkuus: Asetukset › Ohjaus ja ääni › **Pelaajan äänet**.
+- Askel soi jalan osuessa maahan (kävelyn tahdissa), uidessa uintiveto, veteen mennessä loiskahdus. Osumat: pelaajan isku osuu olentoon
+  (nuija = murskaus, muut aseet ja nyrkki = isku), pelaajan nuoli osuu = nuoli. Olennon isku pelaajaan käyttää olentojen osumakansiota.
+
+## Ryhmät ({{own}}/{{tot}} ääntä omilla äänillä)
+"""
+    with open(LISTA_P, 'w', encoding='utf-8') as f:
+        f.write(head.replace('{own}', str(own)).replace('{tot}', str(tot)) + '\n'.join(rows) + '\n')
+
 def t_expected():
     return [f't/{g}/{ev}_{n}' for g, _, _, _, evs, _ in TG_GROUPS for ev in evs for n in range(1, T_SLOTS + 1)]
 
-def process_toiminnot(ff, init, old):
-    """Toimintoäänet: paikkamerkit (--init), käsittely ryhmäkansioittain, poistot. Palauttaa (äänet, (tehty, ennallaan, poistettu), huom, virheet)."""
+def process_toiminnot(ff, init, old, C=None):
+    """Toimintoäänet: paikkamerkit (--init), käsittely ryhmäkansioittain, poistot. Palauttaa (äänet, (tehty, ennallaan, poistettu), huom, virheet).
+    v2.24: C = projektin asetukset (T_CFG olennot_toiminnot, P_CFG pelaaja_toiminnot) – sama käsittely kaikille toimintoprojekteille."""
+    C = C or T_CFG
+    GROUPS, BY, RAWD, OUTD, PRE, PROJ = C['groups'], C['by'], C['raw'], C['out'], C['pre'], C['proj']
+    odir = lambda g: os.path.join(OUTD, g + VALMIS)
     warn, errors, sounds = [], [], {}
     done = skipped = removed = 0
     if init:
@@ -668,8 +745,8 @@ def process_toiminnot(ff, init, old):
             ph = os.path.join(td, 'ph.mp3')
             make_placeholder(ff, ph)
             made = dropped = 0
-            for g, _, _, _, evs, _ in TG_GROUPS:
-                d = os.path.join(RAW_T, g)
+            for g, _, _, _, evs, _ in GROUPS:
+                d = os.path.join(RAWD, g)
                 os.makedirs(d, exist_ok=True)
                 for f in sorted(os.listdir(d)):   # v2.21: paikkamerkki äänelle, jota ryhmällä ei enää ole (kerrostus) → pois; oikeat äänet jäävät
                     fp, mm2 = os.path.join(d, f), re.match(r'^(.+)_(\d+)\.mp3$', f)
@@ -683,45 +760,45 @@ def process_toiminnot(ff, init, old):
                             shutil.copyfile(ph, os.path.join(d, f'{ev}_{n}.mp3'))
                             made += 1
             print(f'Toimintojen paikkamerkkejä luotu: {made}' + (f', vanhentuneita poistettu: {dropped}' if dropped else ''))
-    if not os.path.isdir(RAW_T):
+    if not os.path.isdir(RAWD):
         return sounds, (0, 0, 0), warn, errors
     raws = {}
-    for g in sorted(os.listdir(RAW_T)):
-        d = os.path.join(RAW_T, g)
+    for g in sorted(os.listdir(RAWD)):
+        d = os.path.join(RAWD, g)
         if not os.path.isdir(d):
             continue
-        if g not in TG_BY:
-            warn.append(f'toiminnot/{g}: tuntematon ryhmäkansio (ei käytetä)')
+        if g not in BY:
+            warn.append(f'{PROJ}/{g}: tuntematon ryhmäkansio (ei käytetä)')
             continue
         for f in sorted(os.listdir(d)):
             p = os.path.join(d, f)
             if not os.path.isfile(p) or f.startswith('.'):
                 continue
-            n = f't/{g}/{os.path.splitext(f)[0]}'
+            n = f'{PRE}/{g}/{os.path.splitext(f)[0]}'
             if n not in raws or os.path.getsize(p) > os.path.getsize(raws[n]):
                 raws[n] = p
     for n, p in sorted(raws.items(), key=lambda kv: natkey(kv[0])):
         _, g, base = n.split('/')
         mm = re.match(r'^(.+)_(\d+)$', base)
-        dst = os.path.join(out_dir_t(g), base + '.mp3')
+        dst = os.path.join(odir(g), base + '.mp3')
         if os.path.getsize(p) <= PLACEHOLDER_MAX:
             if os.path.exists(dst):
                 os.remove(dst)
                 removed += 1
             continue
-        if not mm or mm.group(1) not in t_allowed(g):
-            warn.append(f'{n}: tuntematon ääni ryhmälle {g} (peli ei käytä) – sallitut: {", ".join(t_allowed(g))}')
+        if not mm or mm.group(1) not in C['allowed'](g):
+            warn.append(f'{n}: tuntematon ääni ryhmälle {g} (peli ei käytä) – sallitut: {", ".join(C["allowed"](g))}')
             continue
         ev = mm.group(1)
         src_h = sha(p)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        big_ev = TG_BY[g][5] or ev.endswith('_raskas')
+        big_ev = BY[g][5] or ev.endswith('_raskas')
         mode = 'act' if ev in ACT_EV else 'step' if step_like(ev) else None if ev in LOOP_EV else 'best'
         # v2.23: pitkä askelnauhoitus (yli 3 s) → useita askelpätkiä: voimakkain = _n, muut _n01, _n02 … (peli arpoo kaikista)
         jobs = [(base, None)]
         if mode == 'step':
-            prev = [k for k in old if k.startswith(f't/{g}/{ev}_') and old[k].get('src') == src_h and old[k].get('pv') == PV_T]
-            if prev and all(os.path.exists(os.path.join(out_dir_t(g), k.split('/')[2] + '.mp3')) for k in prev):
+            prev = [k for k in old if k.startswith(f'{PRE}/{g}/{ev}_') and old[k].get('src') == src_h and old[k].get('pv') == PV_T]
+            if prev and all(os.path.exists(os.path.join(odir(g), k.split('/')[2] + '.mp3')) for k in prev):
                 jobs = [(k.split('/')[2], old[k].get('seg')) for k in sorted(prev, key=natkey)]
             elif duration(ff, p) > 3.0:
                 sg = step_segments(ff, p)
@@ -729,7 +806,7 @@ def process_toiminnot(ff, init, old):
                     num = int(mm.group(2))
                     jobs = [(base, sg[0])] + [(f'{ev}_{num * 100 + i}', x) for i, x in enumerate(sg[1:], 1)]
         for kb, sg in jobs:
-            nk, dk = f't/{g}/{kb}', os.path.join(out_dir_t(g), kb + '.mp3')
+            nk, dk = f'{PRE}/{g}/{kb}', os.path.join(odir(g), kb + '.mp3')
             if nk in old and old[nk].get('src') == src_h and old[nk].get('pv') == PV_T and os.path.exists(dk):
                 sounds[nk] = old[nk]
                 skipped += 1
@@ -747,7 +824,7 @@ def process_toiminnot(ff, init, old):
                     sounds[nk]['part'] = 1
                 print(f'  {nk}: {sounds[nk]["dur"]} s (raaka {rawd} s{", pätkä " + str(round(sg[0], 2)) + " s" if sg else ""}), vahvistus {gain:+.1f} dB')
                 done += 1
-            sounds[nk]['f'] = f'{PROJ_T}/valmiit/{g}{VALMIS}/{kb}.mp3'
+            sounds[nk]['f'] = f'{PROJ}/valmiit/{g}{VALMIS}/{kb}.mp3'
             gn = sounds[nk].get('gain')
             if gn is not None and abs(gn) > 12:
                 warn.append(f'{nk}: iso vahvistus {gn:+.1f} dB (raaka erittäin hiljainen tai kova – tarkista kuuntelemalla)')
@@ -759,21 +836,21 @@ def process_toiminnot(ff, init, old):
         if len(ns) > 1:
             warn.append('SAMA TIEDOSTO useassa paikassa: ' + ', '.join(ns))
     # valmiit-kansioon jokaiselle ryhmälle oma <ryhmä>_valmis/-kansio (myös tyhjänä, .gitkeep pitää sen gitissä)
-    for g, *_ in TG_GROUPS:
-        d = out_dir_t(g)
+    for g, *_ in GROUPS:
+        d = odir(g)
         os.makedirs(d, exist_ok=True)
         if not any(f.endswith('.mp3') for f in os.listdir(d)):
             open(os.path.join(d, '.gitkeep'), 'a').close()
         elif os.path.exists(os.path.join(d, '.gitkeep')):
             os.remove(os.path.join(d, '.gitkeep'))
-    if os.path.isdir(OUT_T):
-        for dn in os.listdir(OUT_T):
-            d = os.path.join(OUT_T, dn)
+    if os.path.isdir(OUTD):
+        for dn in os.listdir(OUTD):
+            d = os.path.join(OUTD, dn)
             if not os.path.isdir(d):
                 continue
             g = dn[:-len(VALMIS)] if dn.endswith(VALMIS) else dn
             for f in os.listdir(d):
-                if f.endswith('.mp3') and (not dn.endswith(VALMIS) or f't/{g}/{os.path.splitext(f)[0]}' not in sounds):
+                if f.endswith('.mp3') and (not dn.endswith(VALMIS) or f'{PRE}/{g}/{os.path.splitext(f)[0]}' not in sounds):
                     os.remove(os.path.join(d, f))
                     removed += 1
             if not dn.endswith(VALMIS) and not os.listdir(d):

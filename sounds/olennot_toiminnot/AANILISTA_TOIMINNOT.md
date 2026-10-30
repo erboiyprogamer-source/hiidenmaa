@@ -39,7 +39,7 @@ Olentojen omat äänet (ääntely, kipu, kuolema, suuttuminen, jahti, kaiku) ova
 **Käsittely:** askel ≤ 0,5 s (iso 0,8), −27 LUFS; tömistys ≤ 0,6 s (iso 0,9), −26 LUFS; kahlaus/uinti ≤ 1,2–1,8 s; kaatuminen ≤ 1,5 s (iso 2,5); isku/osuma ≤ 0,7–1,0 s; syöminen ≤ 2,5 s;
 palaminen ≤ 3 s (soi silmukkana). Isot ryhmät +2 dB. Anna raaka kuivana ja puhtaana (peli lisää etäisyyden ja kaiun).
 
-## Ryhmät (53/74 ääntä omilla äänillä)
+## Ryhmät (53/75 ääntä omilla äänillä)
 
 ### 🦶 Kaksijalkaiset – `kaksijalkaiset/` (12/14 ääntä)
 
@@ -72,7 +72,7 @@ Jäsenet: Kalmo, Kalmon ylimys.
 | --- | --- | --- | --- | --- |
 | kalina | `kalina_1`, `kalina_2` | ✅ oma: _1, _2 (2 kpl) | luut kalisevat joka askeleella (soi askeleen päällä, lyhyt ja hiljainen) | bones rattle, skeleton clatter soft, skeleton bony |
 
-### 🐾 Nelijalkaiset – `nelijalkaiset/` (17/19 ääntä)
+### 🐾 Nelijalkaiset – `nelijalkaiset/` (17/20 ääntä)
 
 Jäsenet: Peura, Poro, Hirvi, Karju, Emakko, Susi, Routasusi, Kalmasusi, Ilves, Ahma.
 
@@ -97,6 +97,7 @@ Jäsenet: Peura, Poro, Hirvi, Karju, Emakko, Susi, Routasusi, Kalmasusi, Ilves, 
 | syominen_laidun | `syominen_laidun_1`, `syominen_laidun_2` | ✅ oma: _1 (1 kpl) | laiduntaa: repii ja jauhaa ruohoa (peura, poro, hirvi) | deer grazing, grass chewing, animal hooves paws |
 | syominen_tonkiminen | `syominen_tonkiminen_1`, `syominen_tonkiminen_2` | ✅ oma: _1 (1 kpl) | tonkii maata röhkien (karju, emakko, porsas) | pig rooting, boar snuffling dirt, animal hooves paws |
 | syominen_rouskutus | `syominen_rouskutus_1`, `syominen_rouskutus_2` | ✅ oma: _1, _2 (2 kpl) | kalvaa raatoa, luu rouskuu (sudet, karhu, ahma) | wolf gnawing bone, chewing meat, animal hooves paws |
+| juominen | `juominen_1`, `juominen_2` | ⬜ puuttuu (hiljaa) | latkii vettä rannalla (silmukka juomisen ajan; kaikki nelijalkaiset, kevyet ja raskaat kerrostuvat) | animal drinking water lapping, dog lapping, animal hooves paws |
 
 ### 🐻 Raskaat nelijalkaiset (ei pomoja) – `raskaat_nelijalkaiset/` (0/1 ääntä)
 

@@ -38,10 +38,10 @@ function validateKey(action,code){
 // shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
 const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,grass:1,particles:1,detail:'high',bldDetail:true,
   renderDist:165,lights:6,lightDist:60,lightRange:17,mist:.6,clouds:1,drop3d:true,blood:1,bloodFx:true,keyHints:true,shafts:true,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
-  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,sens:1,curSens:1,hudMode:0,creVol:.8,arrowLight:false,menuBg:'img',shUltra:'off',menuAnimKeep:false,waterFx:false,waterOpt:true,uwFx:false,waterMega:false,waterHQ:false,shoreSpray:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
+  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,sens:1,curSens:1,hudMode:0,creVol:.8,plVol:.8,arrowLight:false,menuBg:'img',shUltra:'off',menuAnimKeep:false,waterFx:false,waterOpt:true,uwFx:false,waterMega:false,waterHQ:false,shoreSpray:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
 // Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
 // v1.35 (lista 3, kohta 16): varjot ovat Grafiikka-sivun väliotsikko (ei omaa sivua).
-const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','lightDist','lightRange','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','waterFx','uwFx','waterOpt','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar'],xgfx:['shUltra','waterHQ','waterMega','shoreSpray'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep','creVol']};
+const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','lightDist','lightRange','shafts','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','waterFx','uwFx','waterOpt','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar'],xgfx:['shUltra','waterHQ','waterMega','shoreSpray'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep','creVol','plVol']};
 /* v1.35 (lista 3, kohta 17): esiasetukset Low … Ultra (8 tasoa, oletus Medium = SET_DEF:n grafiikka). Esiasetus muuttaa kaikki alla
    luetellut asetukset; Low–Medium kytkee automaattisäädön päälle, High–Ultra pois. Ultra ylittää aiemmat maksimit (piirtoetäisyys 520 m,
    ruoho Ultra, varjoalue 140 m, tulien varjot 1024). Jos jotain säädetään käsin, nimi on "Custom".
@@ -242,6 +242,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       `<div class="note" style="grid-column:1/-1;margin:-4px 0 4px">Osoittimen herkkyys koskee pelin sisäisiä paneeleja (reppu, rakentaminen, kartta…). Päävalikossa käytetään tietokoneen omaa osoitinta, jonka nopeuden selain ei anna muuttaa.</div>`+
       setRow('Äänet','sound')+
       row('Olentojen äänet'+(isDef('creVol')?' <span class="defTag">oletus</span>':''),sldHTML('sCreVol',0,1,.05,+SET.creVol),`<span id="sCreVolV">${Math.round(SET.creVol*100)} %</span>`)+   /* v1.84 */
+      row('Pelaajan äänet'+(isDef('plVol')?' <span class="defTag">oletus</span>':''),sldHTML('sPlVol',0,1,.05,+SET.plVol),`<span id="sPlVolV">${Math.round(SET.plVol*100)} %</span>`)+   /* v2.24 askeleet, vesi, osumat */
       setRow('Käännä pystyhiiri','invY')+
       setRow('Näppäinopasteet','keyHints',null,'pienet vihjeet paneeleissa ja ruudun nurkassa (esim. Päävalikko: P)')+
       setRow('Älä pysäytä valikon animaatioita pelin aikana','menuAnimKeep',null,'oletus: valikon partikkelit ja animaatiot pysähtyvät pelissä ja häivyttyvät esiin valikkoon palatessa (kevyempi)')
@@ -250,6 +251,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
     bindSet(SET_PAGES.ctl);$('#bPageReset').onclick=()=>resetPage('ctl');
     $('#s_devOn').onclick=()=>keyDialog(DEV?'Poistetaanko kehittäjätyökalut käytöstä?':'Otetaanko kehittäjätyökalut käyttöön?',[[DEV?'Poista käytöstä':'Ota käyttöön',()=>{try{if(started&&!P.dead)saveGame(true);localStorage.setItem('hiidenmaa_devon',DEV?'0':'1');}catch(e){}location.reload();}],['Peruuta',null]],'Sivu ladataan uudelleen.');
     bindSld('sCreVol',v=>{SET.creVol=+v;$('#sCreVolV').textContent=Math.round(SET.creVol*100)+' %';},()=>saveSet());
+    bindSld('sPlVol',v=>{SET.plVol=+v;$('#sPlVolV').textContent=Math.round(SET.plVol*100)+' %';},()=>saveSet());
     bindSld('sZoom',v=>{SET.zoom=+v;$('#sZoomV').textContent=SET.zoom.toFixed(1)+' m';camDist=SET.zoom;},()=>saveSet());
     bindSld('sSens',v=>{SET.sens=+v;$('#sSensV').textContent=SET.sens.toFixed(2)+'×';},()=>saveSet());bindSld('sCur',v=>{SET.curSens=+v;$('#sCurV').textContent=SET.curSens.toFixed(2)+'×';},()=>saveSet());
   }else{

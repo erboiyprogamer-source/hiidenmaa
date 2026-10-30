@@ -351,6 +351,7 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Syy: muokkauksissa lisättiin `// vX: selitys` rivin keskelle, ja saman rivin loppuosa (koodi) muuttui kommentiksi. Löytyi 4 kohtaa: toimintojen
   askelääni (v2.23, ennen julkaisua), DEV "ei nälkää" (v2.09), jousella ammunnan jälkeen kääntyminen (v2.06), Kalmanpesän murskausefektit (v0.93).
 - Korjaus: `/* */`-kommentit. **Rivin keskellä vain `/* */`, `//` vain rivin loppuun.** Tarkistusrivi v2.23 skannaa kaikki `__GJS`-tiedostot.
+- v2.24 huomio: skanneri pitää kommentin tekstiä `; nimi = …` koodina (väärä hälytys). Kirjoita kommentteihin "–" tai "on" puolipisteen ja `=`:n sijaan.
 
 ## Herkät kohdat (lue ennen muokkausta)
 

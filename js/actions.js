@@ -65,7 +65,7 @@ function doMeleeHit(w){
     if(!losClear(P.pos.x,P.pos.y+1.3,P.pos.z,m.pos.x,mobEyeY(m),m.pos.z))continue;
     const sneak=P.crouch&&m.def.ai!=='boss'&&m.state!=='chase'&&m.state!=='flee';
     if(sneak)floatText('Hiiviskelyisku!',m.pos.x,m.pos.y+2.6,m.pos.z,'#ffd36a');
-    m.fireHit=torchLit();damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz,(w.kb||1.5)*KB_V*PCOMBAT);m.fireHit=false;hitMob=true;if(torchLit())igniteMob(m);}
+    m.fireHit=torchLit();damageMob(m,sneak?dmg*2:dmg,w.dt,dx,dz,(w.kb||1.5)*KB_V*PCOMBAT);m.fireHit=false;if(!hitMob)plSnd('osumat',w.dt==='blunt'?'osuma_murskaus':'osuma_isku',{pos:{x:m.pos.x,y:m.pos.y+Math.min(1.6,m.def.r*1.6),z:m.pos.z},p:sneak?.9:1});hitMob=true;if(torchLit())igniteMob(m);}   // v2.24 pelaajan osumaääni (kerran per isku)
   // Tulta ja seisovaa soihtua lyömällä ne sammuvat.
   if(!hitMob)for(const p of pieces){const lit=isFirePiece(p.t)?fireLit(p):(p.t==='soihtuteline'||p.t==='seinasoihtu')&&p.data.burn>0;if(!lit)continue;const dx=p.x-P.pos.x,dz=p.z-P.pos.z,d=Math.hypot(dx,dz);
     if(d>w.range+.5||(d>.6&&(dx*fx+dz*fz)/d<.5))continue;if(isFirePiece(p.t)){p.data.fuel=0;p.data.burn=0;}else p.data.burn=0;

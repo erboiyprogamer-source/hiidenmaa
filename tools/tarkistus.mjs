@@ -11,6 +11,7 @@ await p.route('**/three.min.js',r=>THREE_JS?r.fulfill({path:THREE_JS,contentType
 await p.route('**/fonts.googleapis.com/**',r=>r.abort());
 await p.goto('http://localhost:8977/index.html');await p.waitForFunction('window.__game',null,{timeout:120000});
 const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play');document.getElementById('menu').hidden=true;for(let i=0;i<10;i++)g.update(1/30);
+  const manJ=()=>{const x=new XMLHttpRequest();x.open('GET','sounds/manifest.json?'+Math.random(),false);x.send();return JSON.parse(x.responseText).sounds;};   /* v2.24: manifesti suoraan tiedostosta */
   const chk={},t=(k,f)=>{try{const v=f();chk[k]=typeof v==='string'?'VIRHE '+v:!!v;}catch(e){chk[k]='ERR '+e.message;}};   /* v2.23 (KORJAUKSET 48): virheteksti = epäonnistuminen (ennen !!'teksti' = tosi) */
   t('G-tilat 7 (ruudukko,1 m,puoli,3D,vapaa,reuna,jatko)',()=>SNAP_NAMES.join()==='ruudukko,1 m,puoli,3D,vapaa,reuna,jatko');
   t('v2.13 tikkaat 1:3/1:2 jatkona tasan 1 ruutu sivulle, portaiden jatko suoraan/90°/U, tikkaat seinään, saumaton puusyy',()=>{const x=P.pos.x+40,z=P.pos.z+40,y=terrainH(x,z),made=[];
@@ -216,7 +217,8 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b='unseen' in DEVF&&/data-big="\$\{k\}"/.test(renderDev.toString())&&/'unseen','Näkymätön'/.test(renderDev.toString());
     return a&&b||`virhe havaitseminen ${a} valikko ${b}`;}finally{DEVF.unseen=o;for(const m of ms)if(mobs.includes(m))mobRemove(m);}});
   t('v2.16 ääniprojektit kansioissa: olennot_aanet/ ja olennot_toiminnot/ (raw, valmiit, lista), manifestin f-polku, kivivartija ei lainaa (v2.23 omat äänet)',()=>{
-    const M=CRE.man||{},ks=Object.keys(M),a=!ks.length||ks.filter(k=>!k.startsWith('t/')).every(k=>M[k].f===`olennot_aanet/valmiit/${k}.mp3`)&&ks.filter(k=>k.startsWith('t/')).every(k=>M[k].f.startsWith('olennot_toiminnot/valmiit/'));
+    const M=manJ(),ks=Object.keys(M),a=ks.length>50&&ks.filter(k=>!/^[tp]\//.test(k)).every(k=>M[k].f===`olennot_aanet/valmiit/${k}.mp3`)&&ks.filter(k=>k.startsWith('t/')).every(k=>M[k].f.startsWith('olennot_toiminnot/valmiit/'))
+      &&ks.filter(k=>k.startsWith('p/')).every(k=>M[k].f.startsWith('pelaaja_toiminnot/valmiit/'));   /* v2.24: manifesti luetaan tiedostosta (CRE.man voi olla vielä lataamatta), pelaajan p/-avaimet */
     const b=/e\.f\|\|name\+'\.mp3'/.test(creBuf.toString())&&!VARAANI.kivivartija&&!CRE_SILENT.has('kivivartija')&&/CRE_SILENT\.has\(m\.type\)/.test(killMob.toString());   /* v2.23: kivivartija sai omat äänet */
     const c=Object.keys(MOBDEF).every(k=>TG[k]&&TG_STRIDE[TG[k]]);
     return a&&b&&c||`virhe polut ${a} kivivartija ${b} ryhmät ${c}`;});
@@ -245,6 +247,35 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
         if(c==="'"||c==='"'||c==='`'){q=c;continue;}if(c==='/'&&s[j+1]==='*'){bl=true;j++;continue;}if(c==='/'&&s[j+1]==='/'&&s[j-1]!==':'){const r=s.slice(j+2);
           if(/[;{}]\s*(if|const|let|for|return|[A-Za-z_$][\w$.]*\s*\(|[A-Za-z_$][\w$.]*\s*=[^=])/.test(r)&&!/^\s*v\d\.\d\d juomat|DEV seinien|Terveyspalkit|Haku ohittaa|täyden vedon|Matala usva/.test(r))bad.push(u.split('?')[0]+':'+(i+1));break;}}});}
     return !bad.length||'koodia kommentin perässä: '+bad.join(', ');});
+  t('v2.24 olentojen äänet −20 %, toimintoäänten kuuluvuus −20 % ja jyrkempi vaimeneminen, askeleet harvemmin (kävely ×1,2, juoksu ×1,375)',()=>{
+    const a=CRE_VK===.8&&/\*CRE_VK/.test(creSnd.toString()),b=TG_RK===.8&&tgDistK(TG_R)===1&&tgDistK(5)===0&&/rolloffFactor=step\?1\.8:1\.45/.test(tgPlay.toString())&&/\*TG_RK/.test(tgPlay.toString());
+    const c=TG_WALK_K===1.2&&Math.abs(TG_RUN_K-1.375)<1e-9&&/TG_RUN_K:TG_WALK_K/.test(tgTick.toString())&&/tgR2\(/.test(tgTick.toString())&&tgR2(20)===16*16;
+    return a&&b&&c||`virhe ${a}${b}${c}`;});
+  t('v2.24 kaula laskee kuonon maahan syödessä ja tonkiessa (peura, hirvi, karju, susi, jänis; kaula venyy pitkäjalkaisilla)',()=>{const out=[],_tb=new THREE.Box3(),_tv=new THREE.Vector3();
+    for(const ty of ['peura','hirvi','karju','susi','janis']){const x=P.pos.x+40,z=P.pos.z+40,m=spawnMob(ty,x,z,{noBorn:1});m.born=undefined;m.state='idle';m.yaw=.7;
+      for(let i=0;i<70;i++){playTime+=1/30;headDown(m);animMob(m,1/30);}m.f.g.updateMatrixWorld(true);let lo=1e9;m.f.head.traverse(o=>{if(o.isMesh){_tb.setFromObject(o);lo=Math.min(lo,_tb.min.y);}});
+      const h=lo-terrainH(m.f.head.getWorldPosition(_tv).x,_tv.z);if(!(h<.15&&h>-.25))out.push(ty+' '+h.toFixed(2));
+      for(let i=0;i<60;i++){playTime+=1/30;animMob(m,1/30);}if(!(m.hdK<.05&&Math.abs(m.f.nk.rotation.x)<.1))out.push(ty+' ei nouse');mobRemove(m);}
+    const src=eatStep.toString()+famStep.toString();return !out.length&&/headDown\(m\)/.test(eatStep.toString())&&/headDown\(m\)/.test(famStep.toString())||'virhe '+out.join(', ');});
+  t('v2.24 eläimet juovat: lähin ranta (drinkSpot), kävely sinne, kuono veden pintaan, ääni juominen, keskeytys',()=>{const _tb=new THREE.Box3(),wy=water.position.y,m=spawnMob('peura',P.pos.x+40,P.pos.z+40,{noBorn:1});m.born=undefined;m.state='idle';
+    let S=null;const c=LOC.spawn;for(let r=8;r<330&&!S;r+=6)for(let i=0;i<24&&!S;i++){const a=i*TAU/24,x=c.x+Math.cos(a)*r,z=c.z+Math.sin(a)*r,h=terrainH(x,z);if(h<wy+.3||h>wy+2.5)continue;m.pos.set(x,h,z);S=drinkSpot(m);}
+    if(!S){mobRemove(m);return 'rantaa ei löytynyt';}const ok1=drinkOk(m)&&wy-terrainH(S.x,S.z)<=.1;m.drink={x:S.x,z:S.z,fx:S.fx,fz:S.fz,k:'go',t:0,dur:6,ck:0,lx:m.pos.x,lz:m.pos.z};
+    let t=0;while(m.drink&&m.drink.k==='go'&&t<30){drinkStep(m,1/30,60);playTime+=1/30;t+=1/30;}
+    for(let i=0;i<90&&m.drink;i++){drinkStep(m,1/30,60);playTime+=1/30;}m.f.g.updateMatrixWorld(true);let lo=1e9;m.f.head.traverse(o=>{if(o.isMesh){_tb.setFromObject(o);lo=Math.min(lo,_tb.min.y);}});
+    const ok2=!!m.drink&&m.drink.k==='drink'&&m.hdK>.7&&m.actSnd==='juominen'&&lo<wy+.15&&lo>Math.min(wy,terrainH(S.fx,S.fz))-.4;
+    drinkStep(m,1/30,5);const ok3=!m.drink;const ok4=drinkOk(spawnMob('kalmo',P.pos.x+50,P.pos.z,{noBorn:1}))===false;
+    for(const q of [...mobs])if(q.type==='kalmo'&&dist2(q.pos.x,q.pos.z,P.pos.x+50,P.pos.z)<4)mobRemove(q);mobRemove(m);
+    return ok1&&ok2&&ok3&&ok4||`virhe ${ok1}${ok2}${ok3}${ok4} t=${t.toFixed(1)} lo-wy=${(lo-wy).toFixed(2)}`;});
+  t('v2.24 pelaajan toimintoäänet: pelaaja_toiminnot/ (askeleet, vesi, osumat), askel kävelyvaiheesta alustan mukaan, iskun osumaääni, Pelaajan äänet -asetus',()=>{
+    const M=manJ(),need=['p/askeleet/askel_ruoho_1','p/askeleet/askel_kivi_1','p/vesi/askel_kahlaus_1','p/vesi/askel_uinti_1','p/vesi/loiskahdus_1','p/osumat/osuma_isku_1','p/osumat/osuma_murskaus_1','p/osumat/osuma_nuoli_1'];
+    const miss=need.filter(n=>!M[n]||!String(M[n].f).startsWith('pelaaja_toiminnot/valmiit/'));if(miss.length)return 'manifestista puuttuu '+miss.join(', ');
+    const calls=[],orig=plSnd,ok0=CRE.ok,sv=[P.walkPh,P.onGround,P.vel.clone(),P.swim,P.crouch];plSnd=(g,ev)=>{calls.push(g+'/'+ev);return 1;};CRE.ok=true;
+    try{P.onGround=true;P.swim=false;P.vel.set(4,0,0);P.walkPh=.1;PLV.ph=null;PLV.og=1;PLV.vy0=0;plTick(1/30);P.walkPh=.1+Math.PI;plTick(1/30);P.walkPh=.2+Math.PI;plTick(1/30);}
+    finally{plSnd=orig;CRE.ok=ok0;[P.walkPh,P.onGround,,P.swim,P.crouch]=sv;P.vel.copy(sv[2]);}
+    const s0=plSurface(),a=calls.length===1&&(calls[0]==='askeleet/askel_'+s0||calls[0]==='vesi/askel_kahlaus')&&['ruoho','kivi','hiekka','lumi','suo','puu','jaa','pusikko'].includes(s0);
+    const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
+    const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
+    return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
   t('v2.22 osumat (6 kategoriaa, osumat/) ja törmäykset (kevyt/raskas, tormaykset/), saumaton silmukka',()=>{
     const cats=new Set(Object.values(TG_HIT));const a=['raapaisu','purema','murskaus','sarvet','isku','nuoli'].every(c=>c==='nuoli'||cats.has(c))&&Object.keys(MOBDEF).every(k=>TG_HIT[k]);
     const b=/tgHit\(TG_HIT\[m\.type\]/.test(mobHurtP.toString())&&/tgHit\('nuoli'/.test(updateProjs.toString())&&/'murskaus':'nuoli'/.test(updateProjs.toString());
