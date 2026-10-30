@@ -218,7 +218,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     return a&&b||`virhe havaitseminen ${a} valikko ${b}`;}finally{DEVF.unseen=o;for(const m of ms)if(mobs.includes(m))mobRemove(m);}});
   t('v2.16 ääniprojektit kansioissa: olennot_aanet/ ja olennot_toiminnot/ (raw, valmiit, lista), manifestin f-polku, kivivartija ei lainaa (v2.23 omat äänet)',()=>{
     const M=manJ(),ks=Object.keys(M),a=ks.length>50&&ks.filter(k=>!/^[tp]\//.test(k)).every(k=>M[k].f===`olennot_aanet/valmiit/${k}.mp3`)&&ks.filter(k=>k.startsWith('t/')).every(k=>M[k].f.startsWith('olennot_toiminnot/valmiit/'))
-      &&ks.filter(k=>k.startsWith('p/')).every(k=>M[k].f.startsWith('pelaaja_toiminnot/valmiit/'));   /* v2.24: manifesti luetaan tiedostosta (CRE.man voi olla vielä lataamatta), pelaajan p/-avaimet */
+      &&ks.filter(k=>k.startsWith('p/')).every(k=>/^pelaaja_[123]_[a-z]+\/valmiit\//.test(M[k].f));   /* v2.24: manifesti luetaan tiedostosta (CRE.man voi olla vielä lataamatta), pelaajan p/-avaimet */
     const b=/e\.f\|\|name\+'\.mp3'/.test(creBuf.toString())&&!VARAANI.kivivartija&&!CRE_SILENT.has('kivivartija')&&/CRE_SILENT\.has\(m\.type\)/.test(killMob.toString());   /* v2.23: kivivartija sai omat äänet */
     const c=Object.keys(MOBDEF).every(k=>TG[k]&&TG_STRIDE[TG[k]]);
     return a&&b&&c||`virhe polut ${a} kivivartija ${b} ryhmät ${c}`;});
@@ -266,9 +266,9 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     drinkStep(m,1/30,5);const ok3=!m.drink;const ok4=drinkOk(spawnMob('kalmo',P.pos.x+50,P.pos.z,{noBorn:1}))===false;
     for(const q of [...mobs])if(q.type==='kalmo'&&dist2(q.pos.x,q.pos.z,P.pos.x+50,P.pos.z)<4)mobRemove(q);mobRemove(m);
     return ok1&&ok2&&ok3&&ok4||`virhe ${ok1}${ok2}${ok3}${ok4} t=${t.toFixed(1)} lo-wy=${(lo-wy).toFixed(2)}`;});
-  t('v2.24 pelaajan toimintoäänet: pelaaja_toiminnot/ (askeleet, vesi, osumat), askel kävelyvaiheesta alustan mukaan, iskun osumaääni, Pelaajan äänet -asetus',()=>{
+  t('v2.24 pelaajan toimintoäänet: (v2.25 osat pelaaja_1_liike/ ja pelaaja_2_toiminnot/osumat), askel kävelyvaiheesta alustan mukaan, iskun osumaääni, Pelaajan äänet -asetus',()=>{
     const M=manJ(),need=['p/askeleet/askel_ruoho_1','p/askeleet/askel_kivi_1','p/vesi/askel_kahlaus_1','p/vesi/askel_uinti_1','p/vesi/loiskahdus_1','p/osumat/osuma_isku_1','p/osumat/osuma_murskaus_1','p/osumat/osuma_nuoli_1'];
-    const miss=need.filter(n=>!M[n]||!String(M[n].f).startsWith('pelaaja_toiminnot/valmiit/'));if(miss.length)return 'manifestista puuttuu '+miss.join(', ');
+    const miss=need.filter(n=>!M[n]||!new RegExp('^pelaaja_'+(n.startsWith('p/osumat/')?'2_toiminnot':'1_liike')+'/valmiit/').test(M[n].f));if(miss.length)return 'manifestista puuttuu '+miss.join(', ');
     const calls=[],orig=plSnd,ok0=CRE.ok,sv=[P.walkPh,P.onGround,P.vel.clone(),P.swim,P.crouch];plSnd=(g,ev)=>{calls.push(g+'/'+ev);return 1;};CRE.ok=true;
     try{P.onGround=true;P.swim=false;P.vel.set(4,0,0);P.walkPh=.1;PLV.ph=null;PLV.og=1;PLV.vy0=0;plTick(1/30);P.walkPh=.1+Math.PI;plTick(1/30);P.walkPh=.2+Math.PI;plTick(1/30);}
     finally{plSnd=orig;CRE.ok=ok0;[P.walkPh,P.onGround,,P.swim,P.crouch]=sv;P.vel.copy(sv[2]);}
@@ -276,6 +276,27 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.25 sudet: suuttumis- ja jahtiääni −30 % ja kantama −20 %, ulvonnan kantama −15 % (myös kaukainen ulvonta)',()=>{
+    const a=creRK('susi','aggro')===.8&&creRK('routasusi','chase')===.8&&creRK('kalmasusi','idle',1)===.85&&creRK('susi','idle',0)===1&&creRK('karhu','aggro')===1&&creRK('karhu','idle',1)===1;
+    const b=CRE_WOLF_V.aggro===.7&&CRE_WOLF_V.chase===.7&&/CRE_WOLF_V\[kind\]/.test(creSnd.toString())&&/rk=creRK\(m\.type,kind,far\)/.test(creSnd.toString())&&/\*\.85/.test(farHowl.toString());
+    const c=Math.abs(creDistK(64*.8,false,.8)-1)<1e-9&&creDistK(60,false,1)<1;return a&&b&&c||`virhe ${a}${b}${c}`;});
+  t('v2.25 Aarnipuun törmäys kattaa rungon ja juuret (cr 1 × koko): pelaaja ei mene rungon sisään',()=>{const g=window.__game,A=nodes.filter(n=>n.type==='aarnipuu'&&n.alive&&n.col);if(!A.length)return 'ei aarnipuita';
+    const bad=A.filter(n=>Math.abs(n.col.r-NODE.aarnipuu.cr*n.s)>1e-6).length;const n=A[0],p0=P.pos.clone(),a=.7;P.pos.set(n.x-Math.sin(a)*4,0,n.z-Math.cos(a)*4);P.pos.y=groundAt(P.pos.x,P.pos.z,.38,99);P.vel.set(0,0,0);
+    let md=99;try{for(let i=0;i<75;i++){P.yaw=Math.atan2(n.x-P.pos.x,n.z-P.pos.z);camYaw=P.yaw+Math.PI;keys['KeyW']=true;g.update(1/30);md=Math.min(md,Math.hypot(P.pos.x-n.x,P.pos.z-n.z));}}finally{keys['KeyW']=false;P.pos.copy(p0);P.vel.set(0,0,0);}
+    return !bad&&md>n.s*.92+.3||`virhe säde ${bad} lähin ${md.toFixed(2)} (runko ${(n.s*.92).toFixed(2)})`;});
+  t('v2.25 karhu: syöksyisku (kyyristys, loikka takajaloilla, käpälälyönti) ja ei törmäysääntä kaadettavaan puuhun',()=>{const g=window.__game,p0=P.pos.clone(),hp0=P.hp;
+    const L=LOC.spawn,x=L.x+30,z=L.z+30;P.pos.set(x,terrainH(x,z),z);P.vel.set(0,0,0);const m=spawnMob('karhu',x+9,z,{noBorn:1});m.born=undefined;m.angry=true;m.state='chase';m.atkCd=0;let lg=0,up=0,hit=0;
+    try{for(let i=0;i<60;i++){const h=P.hp;g.update(1/30);if(m.lunge){lg=1;up=Math.max(up,m.f.g.position.y-m.pos.y);}if(P.hp<h&&m.lunge)hit=1;P.hp=Math.max(P.hp,20);}}finally{mobRemove(m);P.pos.copy(p0);P.hp=hp0;P.kbx=P.kbz=0;}
+    const src=moveMob.toString(),b=/m\.def\.fells&&_hitl\.every/.test(src)&&/bearLungePose\(m,f\)/.test(animMob.toString());return lg&&up>.35&&hit&&b||`virhe syöksy ${lg} korkeus ${up.toFixed(2)} osuma ${hit} lähde ${b}`;});
+  t('v2.25 pelaajan äänet osissa 1–3 (yksi numeroton paikkamerkki per ääni), koukut: lyönti, osumat, jousi, rakentaminen, käyttö, valikot, kipu, keho',()=>{
+    const M=manJ(),a=!!M['p/askeleet/askel_ruoho_1']&&M['p/askeleet/askel_ruoho_1'].f.startsWith('pelaaja_1_liike/')&&M['p/osumat/osuma_isku_1'].f.startsWith('pelaaja_2_toiminnot/');
+    const h=[[doMeleeHit,"'osuma_puu'"],[doMeleeHit,"'kivi_hajoaa'"],[fireBow,"'laukaus'"],[togglePanel,"rakennusvalikko"],[closePanels,"'sulje'"],[craft,"'valmistus'"],[eat,"'syominen'"],[drink,"'juominen'"],[hurtPlayer,"'torjunta'"],[survival,"'mahakipu'"],[openChest,"'arkku_auki'"]];
+    const miss=h.filter(([f,k])=>!f.toString().includes(k)).map(x=>x[1]);
+    const calls=[],orig=plSnd,origL=plLoop,ok0=CRE.ok,sv=[P.hp,P.burnT,P.stam],st=state;plSnd=(g,ev,o)=>{calls.push(g+'/'+ev);return 1;};plLoop=(k,g,ev,on)=>{if(on)calls.push(g+'/'+ev);};CRE.ok=true;
+    try{state='play';PLV.hp0=null;PLV.st={};PLV.cd={};PLV.lpRetry={};plBody(.03);P.burnT=2;P.hp-=.1;plBody(.03);P.burnT=0;P.hp=maxHp()*.1;PLV.cd={};plBody(.03);P.stam=5;plBody(.03);P.stam=0;plBody(.03);}
+    finally{plSnd=orig;plLoop=origL;CRE.ok=ok0;[P.hp,P.burnT,P.stam]=sv;state=st;plLoop('sydan',null,null,false);PLV.hp0=null;}
+    const b=calls.includes('kipu/kipu_tuli')&&calls.includes('kipu/kipu_kova')&&calls.includes('keho/sydan')&&calls.includes('keho/hengastys');
+    return a&&!miss.length&&b||`virhe manifesti ${a} koukut puuttuu ${miss.join(',')} kutsut ${calls.join(',')}`;});
   t('v2.22 osumat (6 kategoriaa, osumat/) ja törmäykset (kevyt/raskas, tormaykset/), saumaton silmukka',()=>{
     const cats=new Set(Object.values(TG_HIT));const a=['raapaisu','purema','murskaus','sarvet','isku','nuoli'].every(c=>c==='nuoli'||cats.has(c))&&Object.keys(MOBDEF).every(k=>TG_HIT[k]);
     const b=/tgHit\(TG_HIT\[m\.type\]/.test(mobHurtP.toString())&&/tgHit\('nuoli'/.test(updateProjs.toString())&&/'murskaus':'nuoli'/.test(updateProjs.toString());

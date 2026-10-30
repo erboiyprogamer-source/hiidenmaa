@@ -524,6 +524,13 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
   Puuttuva ääni = hiljaisuus. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **v2.25 sudet:** suuttumis- ja jahtiääni 30 % hiljempaa ja kantama 20 % lyhyempi; ulvonta kuuluu 15 % lyhyemmälle (~128 m, yöulvonta 85–123 m).
+- **v2.25 karhun syöksyisku:** karhu ja hiidenkarhu kyyristyvät, ponnistavat takajaloilla ja loikkaavat 3–6 m:n päästä lyöden toisella käpälällä
+  (vahinko ×1,15, tönäisy); enintään 4 s välein. Puita kaatava karhu ei tömähdä kaatamiinsa puihin.
+- **v2.25 pelaajan äänet kolmessa osassa:** `sounds/pelaaja_1_liike/` (askeleet, alastulo, vesi), `sounds/pelaaja_2_toiminnot/` (lyönnit, osumat,
+  jousi, rakentaminen, käyttö, valikot), `sounds/pelaaja_3_aanet/` (kipu, kuolema, sydämen syke, hengästys, hytinä, vatsa, ähky, pahoinvointi,
+  kylläinen, lämmin, levännyt). Yksi numeroton paikkamerkki per ääni, lisäversiot `_1`, `_2` … Listat: `AANILISTA_OSA<n>.csv` ja
+  `sounds/AANILISTA_PELAAJA.xlsx`. Puuttuva ääni = hiljaisuus.
 - **v2.24 äänitasot:** olentojen äänet (ääntely, kipu, kuolema, suuttuminen, jahti, kaiku) 20 % hiljempaa. Toimintoäänet kuuluvat 20 % lyhyemmälle
   (askeleet 16 m, isot 32 m, palaminen 36 m, syöminen/juominen 24 m, loiskahdus 32 m; 3D-viite ×0,8, maxDistance 96 m) ja vaimenevat jyrkemmin
   (rolloff askel 1,8, muut 1,45; suora ääni −50 % kantaman reunalla 51 m). Askeleet kävellessä 20 % harvemmin (`TG_STRIDE` ×1,2), juostessa
@@ -533,7 +540,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   juovat 4–8 s (latkivat). Pelaaja alle 10 m (ellei kyykyssä), osuma, pelko tai jumiin jääminen keskeyttää. Ääni `juominen` (nelijalkaiset, silmukka).
 - **v2.24 pää alas:** eläimen kaula kääntyy rinnan kohdalta eteen-alas ja venyy pitkäjalkaisilla (peura, poro, hirvi) niin, että kuono ylettyy
   maahan syödessä, tonkiessa ja veden pintaan juodessa; pää osoittaa alas. Laskeutuu ja nousee pehmeästi (~0,5 s).
-- **v2.24 pelaajan toimintoäänet** (`sounds/pelaaja_toiminnot/`, AANILISTA_PELAAJA.md): askel jalan osuessa maahan (kävellen ~2,6/s, juosten ~3,3/s,
+- **v2.24 pelaajan toimintoäänet** (v2.25 alkaen osat 1 ja 2, ks. yllä): askel jalan osuessa maahan (kävellen ~2,6/s, juosten ~3,3/s,
   kyykyssä hiljaa) alustan mukaan (ruoho, kivi, hiekka, lumi, suo, puu, jää, pusikko; rakennuksissa puu/kivi), hypyn alastulo, kahlaus, uintiveto,
   loiskahdus veteen mennessä (kova pudotus kovempi), pelaajan iskun osuma (nuija = murskaus, muut = isku) ja pelaajan nuolen osuma. Aloitusäänet
   kopioitu olentojen kansiosta. Asetukset › Ohjaus ja ääni › Pelaajan äänet (oletus 80 %).

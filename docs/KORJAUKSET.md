@@ -353,6 +353,12 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Korjaus: `/* */`-kommentit. **Rivin keskellä vain `/* */`, `//` vain rivin loppuun.** Tarkistusrivi v2.23 skannaa kaikki `__GJS`-tiedostot.
 - v2.24 huomio: skanneri pitää kommentin tekstiä `; nimi = …` koodina (väärä hälytys). Kirjoita kommentteihin "–" tai "on" puolipisteen ja `=`:n sijaan.
 
+## 50. Aarnipuun läpi pääsi osittain (v2.25)
+- Syy: törmäysympyrä `NODE.r × koko` (0,66) oli pienempi kuin näkyvä runko (1,3 m laatikko → kulmat 0,92) ja juuret (1,1). Pelaaja (säde 0,38)
+  pysähtyi 1,09 m:iin keskeltä, mutta näkyi rungon sisällä.
+- Korjaus: oma törmäyssäde `NODE.cr` (Aarnipuu 1,0), `addCircle(...(n.def.cr||n.def.r)*n.s...)` molemmissa kohdissa (resources.js). `r` jäi lyöntietäisyydelle.
+  Uutta isoa mallia tehdessä: tarkista, että törmäys kattaa laatikon kulmat (puolikas × √2).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

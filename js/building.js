@@ -210,7 +210,7 @@ function placeBuild(){
   if(!ghostPos||!ghost||!ghost.visible){if(P.inDun)msg('Tähtää lattiaan – työpenkki asetetaan vapaalle lattialle.','warn');return;}
   if(!ghostOk){msg(lastInvalid||'Ei voi rakentaa tähän.','warn');return;}
   const def=PIECES[buildSel];for(const [id,n] of Object.entries(def.req))invRemove(id,n);
-  addPiece(buildSel,ghostPos.x,ghostPos.y,ghostPos.z,ghostRot,undefined,undefined,poseOf(buildSel));bump('built');xpFirst('b_'+buildSel,4);sfx('build');burst(ghostPos.x,ghostPos.y+.5,ghostPos.z,0x8a5a32,6,2);
+  addPiece(buildSel,ghostPos.x,ghostPos.y,ghostPos.z,ghostRot,undefined,undefined,poseOf(buildSel));bump('built');xpFirst('b_'+buildSel,4);sfx('build');plSnd('rakentaminen','asetus',{pos:{x:ghostPos.x,y:ghostPos.y,z:ghostPos.z}});burst(ghostPos.x,ghostPos.y+.5,ghostPos.z,0x8a5a32,6,2);
 }
 // Vasaralla korjaus: kuluma pois, maksaa vauriota vastaavan osuuden rakennusaineista (vähintään 1).
 function lookedPiece(){const {o,d}=camRay();raycaster.set(o,d);raycaster.far=camDist+7;const hits=raycaster.intersectObjects(pieceRoots,true);return hits.length?hits[0].object.userData.piece:null;}
@@ -219,7 +219,7 @@ function repairLooked(){
   const max=PIECES[p.t].hp;if(p.hp>=max-.5){msg(`${PIECES[p.t].n} on ehjä.`);return;}
   const frac=1-p.hp/max,cost={};for(const [id,n] of Object.entries(PIECES[p.t].req))cost[id]=Math.max(1,Math.ceil(n*frac));
   for(const [id,n] of Object.entries(cost))if(invCount(id)<n){msg(`Korjaukseen tarvitaan: ${reqText(cost)}`,'warn');return;}
-  for(const [id,n] of Object.entries(cost))invRemove(id,n);p.hp=max;setPieceDamage(p);sfx('build');burst(p.x,p.y+1,p.z,0xe8c070,8,3);msg(`${PIECES[p.t].n} korjattu.`,'loot');}
+  for(const [id,n] of Object.entries(cost))invRemove(id,n);p.hp=max;setPieceDamage(p);sfx('build');plSnd('rakentaminen','korjaus');burst(p.x,p.y+1,p.z,0xe8c070,8,3);msg(`${PIECES[p.t].n} korjattu.`,'loot');}
 function removeLooked(){
   const w=curWeapon();if(w.cat!=='hammer'){return;}
   const {o,d}=camRay();raycaster.set(o,d);raycaster.far=camDist+7;const hits=raycaster.intersectObjects(pieceRoots,true);if(!hits.length)return;
@@ -228,7 +228,7 @@ function removeLooked(){
   for(const [id,n] of Object.entries(PIECES[p.t].req))giveOrDrop(id,n,p.x,p.y+1,p.z);
   if(p.data.lv)for(let i=1;i<=p.data.lv;i++)for(const [id,n] of Object.entries(STORE_UP[i]))giveOrDrop(id,n,p.x,p.y+1,p.z);
   if(p.t==='sulatin'){if(p.data.ore)giveOrDrop('malmi',p.data.ore,p.x,p.y+1,p.z);if(p.data.iore)giveOrDrop('rautamalmi',p.data.iore,p.x,p.y+1,p.z);if(p.data.done)giveOrDrop('kupari',p.data.done,p.x,p.y+1,p.z);if(p.data.idone)giveOrDrop('rauta',p.data.idone,p.x,p.y+1,p.z);}
-  removePiece(p);sfx(/^kivi/.test(p.t)?'crumble':'woodBreak');burst(p.x,p.y+.5,p.z,0x8a5a32,8,3);
+  removePiece(p);sfx(/^kivi/.test(p.t)?'crumble':'woodBreak');plSnd('rakentaminen','purku',{pos:{x:p.x,y:p.y,z:p.z}});burst(p.x,p.y+.5,p.z,0x8a5a32,8,3);
 }
 function damagePiece(p,d,src){if(src==='mob'&&PIECES[p.t].mobProof)return;p.hp-=d;burst(p.x,p.y+1,p.z,0x8a5a32,4,2);if(p.hp>0)setPieceDamage(p);
   if(p.hp<=0&&PIECES[p.t].glass){shatterGlass(p);return;}
