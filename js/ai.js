@@ -102,7 +102,7 @@ function updateMobs(dt){
       else if(pr.curious&&m.state!=='flee'&&!P.dead&&!hid&&dist<26&&m.los)m.state='watch';
       else if(m.state==='watch')m.state='idle';
       if(m.state==='freeze'){m.frzT-=dt;m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*3));if(m.frzT<=0)startFlee(m,dx,dz);moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
-      if(m.state==='watch'){if((m.snT=(m.snT??.5)-dt)<=0){m.snT=4+Math.random()*3;if(dist<25)tgSnd(m,'nuuhkiminen',{v:.8});}   /* v2.16 */m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*2.5));moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
+      if(m.state==='watch'){m.actSnd='nuuhkiminen';m.actT=playTime;   /* v2.23: nuuhkiminen soi silmukkana niin kauan kuin eläin katsoo sinua (tgTick) */m.yaw=lerpAngle(m.yaw,Math.atan2(dx,dz),Math.min(1,dt*2.5));moveMob(m,0,0,0,dt);animMob(m,dt);continue;}
       if(m.fly){flyMob(m,dt);animMob(m,dt);continue;}}
     else if(hostile&&!P.dead&&!(P.spawnProt>0)&&!(m.forgetT>0)&&((m.los&&dist<aggroR)||hurt)&&Math.abs(P.pos.y-m.pos.y)<6){if(m.state!=='chase'){m.seenT=playTime;m.lastPX=P.pos.x;m.lastPZ=P.pos.z;packAlert(m);}m.state='chase';}
     /* v2.08: jahti jatkuu niin kauan kuin vihollinen muistaa pelaajan (MOB_MEM 30 s viimeisestä näkemisestä/osumasta), vaikka näköyhteys katkeaisi
@@ -238,17 +238,17 @@ function famStep(m,dt,dist){const F=m.fam,sow=F.sow;
   const fx=v=>v.pos?v.pos:v;let moving=false;
   if(tx!==null){const ex=tx-m.pos.x,ez=tz-m.pos.z;if(ex*ex+ez*ez>.12){moveMob(m,ex,ez,spd,dt);moving=true;}}
   if(!moving){moveMob(m,0,0,0,dt);if(face){const q=fx(face);m.yaw=lerpAngle(m.yaw,Math.atan2(q.x-m.pos.x,q.z-m.pos.z),Math.min(1,dt*4));}}
-  if(m===sow&&F.k==='root'&&(m.eatS=(m.eatS??.5)-dt)<=0){m.eatS=2.4;if(dist<25)tgSnd(m,'syominen_tonkiminen',{v:.85});}   // v2.16
+  if(m===sow&&F.k==='root'){m.actSnd='syominen_tonkiminen';m.actT=playTime;}   // v2.23: tonkiminen silmukkana tonkimisen ajan (tgTick)
   animMob(m,dt);if(!moving||F.k==='nuzzle'&&m===sow)m.f.head.rotation.x+=hd;if(hop)m.f.g.position.y+=hop;return true;}
 // v2.16: olennon isku osuu pelaajaan → osumaääni (purema/kynsi/isku), vain jos vahinko meni läpi (ei torjuttu)
 function mobHurtP(m,dmg,x,z){const h=P.hp;hurtPlayer(dmg,x,z);if(P.hp<h||P.dead)tgHit(TG_HIT[m.type]||'isku',P.pos.x,P.pos.y+1.1,P.pos.z,clamp(tgSize(m),.85,1.15));}   // v2.22: osumat/-kansion kategoria
 /* v2.16 SYÖMINEN (TG_EAT, audio.js): rauhallinen eläin (ei vihainen, pelaaja yli 12 m, ei osumaa 10 s:iin) pysähtyy 20–50 s välein (55 %) syömään 3–6 s:
-   pää alhaalla nyökkien, syömisääni lajin tavan mukaan (laidun, tonkiminen, rouskutus, nakerrus) noin 2,5 s välein. Pelaaja lähelle tai osuma keskeyttää. */
+   pää alhaalla nyökkien, syömisääni lajin tavan mukaan (laidun, tonkiminen, rouskutus, nakerrus) – v2.23 silmukkana syömisen ajan. Pelaaja lähelle tai osuma keskeyttää. */
 function eatPlan(m,dt,dist){if(m.state!=='idle'||m.angry||m.fam||m.born!==undefined||(dist<12&&!devOn('unseen'))||playTime-m.lastHit<10)return;
   m.eatCd=(m.eatCd??(8+Math.random()*20))-dt;if(m.eatCd>0)return;m.eatCd=20+Math.random()*30;if(Math.random()<.55){m.eatT=3+Math.random()*3;m.eatS=.3;m.wander=null;}}
 function eatStep(m,dt,dist){if((dist<10&&!P.crouch&&!devOn('unseen'))||m.state!=='idle'||m.angry||m.fam||playTime-m.lastHit<1){m.eatT=0;return false;}
   m.eatT-=dt;moveMob(m,0,0,0,dt);animMob(m,dt);m.f.head.rotation.x+=.65+Math.sin(playTime*7)*.09;
-  if((m.eatS-=dt)<=0){m.eatS=2.2+Math.random()*.8;if(dist<25)tgSnd(m,'syominen_'+TG_EAT[m.type],{v:.85});}return true;}
+  if(TG_EAT[m.type]){m.actSnd='syominen_'+TG_EAT[m.type];m.actT=playTime;}return true;}   // v2.23: syömisääni silmukkana syömisen ajan (tgTick)
 function startFlee(m,dx,dz){m.state='flee';m.fleeT=0;const pr=m.def.per||{};if(m.mom&&!m.mom.dead)m.mom.pigScare=playTime;   /* v2.12: säikähtänyt porsas → emo suuttuu (temperAI) */
   if(pr.fly&&!m.dun&&!m.fly){const a=Math.atan2(-dx,-dz)+(Math.random()-.5)*1.2,d=14+Math.random()*10,x1=m.pos.x+Math.sin(a)*d,z1=m.pos.z+Math.cos(a)*d;
     if(terrainH(x1,z1)>0){m.fly={t:0,dur:d/9,x0:m.pos.x,z0:m.pos.z,y0:m.pos.y,x1,z1,h:2.5+Math.random()*1.5};m.yaw=a;if(!tgSnd(m,'lentoonlahto'))sfx('flap',1,clamp(1.2-Math.hypot(dx,dz)/40,.15,1));   /* v2.16: oma lentoonlähtöääni */}}

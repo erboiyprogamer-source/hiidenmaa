@@ -31,6 +31,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
   tiedostojen muuttujia. Funktioiden sisällä saa viitata mihin tahansa. Uusi tiedosto lisätään
   `index.html`:n skriptilistaan oikeaan kohtaan.
 - Jokainen JS-tiedosto alkaa `'use strict';`. Samaa ylimmän tason nimeä ei saa määritellä kahdesti.
+- Rivin keskellä vain `/* */`-kommentti; `//` vain rivin loppuun (muuten perässä oleva koodi ei suoritu – KORJAUKSET 49).
 - Tyylit ovat tiedostossa `css/style.css`. Fontit: Uncial Antiqua (otsikot), Alegreya Sans (teksti).
 
 ## Tiedostot (latausjärjestyksessä)
@@ -133,7 +134,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
   Pilvisessiossa cdnjs on estetty: asenna `three@0.128.0` npm:stä testikansioon ja ohjaa
   `**/three.min.js`-pyyntö siihen `page.route`:lla (vain testiä varten, ei peliin).
 - Tarkista aina, ettei konsoliin tule virheitä, ja että tallennus + lataus toimii.
-- **Ominaisuustarkistus jokaisen erän jälkeen:** `tools/tarkistus.mjs` (pitää tulostaa `KAIKKI OK`). Lisää uudelle ominaisuudelle
+- **Ominaisuustarkistus jokaisen erän jälkeen:** `tools/tarkistus.mjs` (pitää tulostaa `KAIKKI OK`; rivi palauttaa `true` tai virhetekstin – teksti = virhe, KORJAUKSET 48). Lisää uudelle ominaisuudelle
   oma tarkistusrivi, jotta sen katoaminen huomataan. Ennen haaran nollausta tarkista, ettei yhdistämättömiä committeja katoa.
 
 ## Julkaisu

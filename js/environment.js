@@ -255,7 +255,7 @@ function survival(dt){
   calcFx();
   P.crampT-=dt;if(P.buffs.vatsakipu&&P.crampT<=0){P.crampT=8+Math.random()*6;P.stam=Math.max(0,P.stam-12);P.stamDelay=Math.max(P.stamDelay,1);floatText('Auts!',P.pos.x,P.pos.y+2,P.pos.z,'#c9a66b');}
   if(P.buffs.kylla){P.hunger=100;P.buffs.taysi=60;}   // v2.00 sisujuoma: kylläisyys täynnä 5 min
-  if(!P.buffs.taysi)P.hunger=Math.max(0,P.hunger-dt*(100/1000)*(cold?1.3:1)*(P.atk||kd('run')?1.15:1)*homeHungerK());   // v2.09: kodin lämpö hidastaa nälkääif(devOn('food'))P.hunger=100;   // DEV: ei nälkää; v2.00: täyteen syötyä 60 s ei kulu
+  if(!P.buffs.taysi)P.hunger=Math.max(0,P.hunger-dt*(100/1000)*(cold?1.3:1)*(P.atk||kd('run')?1.15:1)*homeHungerK());   /* v2.09: kodin lämpö hidastaa nälkää */if(devOn('food'))P.hunger=100;   // DEV: ei nälkää; v2.00: täyteen syötyä 60 s ei kulu
   if(P.buffs.elpyminen)P.hp=Math.min(maxHp(),P.hp+dt);   // v2.00 elpymisjuoma: +1 terveys / s
   // regen
   let reg=P.hunger>35?.35:P.hunger>0?.15:0;if(P.buffs.levannyt)reg+=.6;reg*=P.fx.hpRegen;if(P.hunger>0&&!P.buffs.pahoinvointi)reg+=homeHealRate();   // v2.09 kodin lämpö +0,5 / +1,0 hp/s

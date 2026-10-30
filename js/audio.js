@@ -28,8 +28,8 @@ const VARAANI=/*VARAANI-ALKU*/{
   "ylimys":{"to":"kalmo","p":0.85},"vartija":{"to":"aarnihirvio","p":0.7},
   "jaajattari":{"to":"aarnihirvio","p":1.2},"kalmaherra":{"to":"aarnihirvio","p":0.85},"suonakki":{"to":"hiisi","p":0.7}
 }/*VARAANI-LOPPU*/;
-// v2.16: täysin hiljaiset kunnes omat tiedostoäänet (ei lainausta eikä pelin tekemää varaääntä)
-const CRE_SILENT=new Set(['kivivartija']);
+// v2.16: täysin hiljaiset kunnes omat tiedostoäänet (ei lainausta). v2.23: kivivartija sai omat äänet → lista tyhjä (pidetään tuleville)
+const CRE_SILENT=new Set([]);
 function mobBurning(m){return !m.dead&&(m.burnT>0||!!m.sunBurn);}   // v2.17
 const CRE_AGGRO=['neutral','hostile','boss','rboss'];   // niillä on suuttumisääni (aggro)
 const CRE_CHASE=['hostile','boss','rboss'];             // niillä on lisäksi toistuva jahtiääni (chase) ja suuttumisääni vain kerran
@@ -220,7 +220,7 @@ function tgSize(m){return clamp(1.35-(m.def.r||.5)*.55,.6,1.4);}   // yhteisten 
 // v2.21: ilman o.g:tä kerrostuva ryhmä soittaa pohjaryhmän äänen + oman päälle (TG_BASE). Kerros (lay) ei kuluta äänibudjettia (yläraja 24 ääntä).
 function tgSnd(m,ev,o){o=o||{};if(o.g)return tgPlay(m,ev,o.g,o,false);const g=TG[m.type];if(!g)return false;const b=TG_BASE[g];let r0=false;
   if(b){const q=TG_BASEP[g];r0=tgPlay(m,ev,b,Object.assign({},o,{p:(o.p||1)*q[0],v:(o.v??1)*q[1]}),false,g);}
-  const r1=tgPlay(m,ev,g,o,!!r0);return r1||r0;}
+  const r1=tgPlay(m,ev,g,o,!!r0);if(o.loop){const L=[r0,r1].filter(x=>x&&x.src);return L.length?L:false;}return r1||r0;}
 function tgPlay(m,ev,g,o,lay,own){let L0=tgRes(g,ev),bp=1;if(!L0&&TG_BORROW[g]){L0=tgRes(TG_BORROW[g],ev);bp=TG_BP[g]||1;}if(!L0)return false;
   const L=L0.filter(n=>CRE.buf[n]);if(!L.length){for(const n of L0)creBuf(n);return false;}
   const a=actx;if(!a||a.state!=='running'||!soundOn)return false;const vol=typeof SET!=='undefined'?+SET.creVol:1;if(!(vol>0))return false;
@@ -235,29 +235,35 @@ function tgPlay(m,ev,g,o,lay,own){let L0=tgRes(g,ev),bp=1;if(!L0&&TG_BORROW[g]){
   let sd=null,sdo=null;if(m.dun){const Rv=creRevOn(a);sd=a.createGain();sd.gain.value=big?.5:.35;pn.connect(sd);sd.connect(Rv.inp);}
   else if(!step&&md>8){const Rv=creRevOn(a);sd=sdo=a.createGain();sdo.gain.value=.08+1.8*k0;pn.connect(sdo);sdo.connect(Rv.inp);}
   const v={src,pn,g:gn,sd,sdo,df,dg,far:false,m,step,loop:!!o.loop,fixed:!!o.pos,ev,lay:!!lay};TGV.v.push(v);
-  src.onended=()=>{const i=TGV.v.indexOf(v);if(i>=0)TGV.v.splice(i,1);try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return o.loop?v:B.duration/rate;}
+  src.onended=()=>{const i=TGV.v.indexOf(v);if(i>=0)TGV.v.splice(i,1);try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};
+  if(o.loop&&o.rnd){const lp=tgLoopPts(B);src.start(0,lp[0]+Math.random()*Math.max(0,lp[1]-lp[0]-.05));gn.gain.setValueAtTime(0,a.currentTime);gn.gain.linearRampToValueAtTime(o.v??1,a.currentTime+.25);}else src.start();return o.loop?v:B.duration/rate;}
 // v2.22: silmukan sauma – mp3-pakkaus lisää alkuun ja loppuun täytehiljaisuutta; silmukka soi vain äänen kohdalta (ei hiljaista raoa)
 function tgLoopPts(B){if(B._lp)return B._lp;const d=B.getChannelData(0),n=d.length,th=1e-4;let a=0,b=n-1;while(a<Math.min(n,8192)&&Math.abs(d[a])<th)a++;while(b>n-8192&&b>a&&Math.abs(d[b])<th)b--;
   return B._lp=[a/B.sampleRate,(b+1)/B.sampleRate];}
-function tgStop(v){if(!v||!v.src)return;try{v.g.gain.setTargetAtTime(0,actx.currentTime,.08);v.src.stop(actx.currentTime+.35);}catch(e){}v.loop=false;}
+function tgStop(v){if(Array.isArray(v)){for(const x of v)tgStop(x);return;}if(!v||!v.src)return;try{v.g.gain.setTargetAtTime(0,actx.currentTime,.08);v.src.stop(actx.currentTime+.35);}catch(e){}v.loop=false;}
 // alusta olennon jalkojen alla (askeleet)
 function tgSurface(m,g){if(m.dun)return m.realm==='portal1'?'jaa':m.realm==='portal3'?'ruoho':'kivi';
   const x=m.pos.x,z=m.pos.z,th=terrainH(x,z);
   if(m.pos.y>th+.15){gridQuery(x,z,.1,_cl);for(const c of _cl){if(c.t!=='b'||c.off)continue;if(x>=c.minX&&x<=c.maxX&&z>=c.minZ&&z<=c.maxZ&&Math.abs(c.maxY-m.pos.y)<.35){const o=c.owner;return o&&o.t&&PIECES[o.t]?(PIECES[o.t].stone?'kivi':'puu'):'kivi';}}}
   const dep=water.position.y-th;if(dep>.05)return dep>(TG_BIG.has(g)?1.1:g.startsWith('kevyet')?.3:.6)?'uinti':'kahlaus';
   const b=biomeAt(x,z,th);return b==='beach'?'hiekka':b==='mountain'||b==='rakka'?'kivi':b==='peak'?'lumi':b==='suo'?'suo':b==='aarni'?'pusikko':'ruoho';}
-function tgStep(m,g,d,spd){const sf=tgSurface(m,g),run=spd>(m.def.walk||1.5)*1.4,sv=.55+.45*clamp(spd/(m.def.run||4),0,1);tgSnd(m,'askel_'+sf,{v:sv});
+function tgStep(m,g,d,spd){const sf=tgSurface(m,g),run=spd>(m.def.walk||1.5)*1.4,sv=(.55+.45*clamp(spd/(m.def.run||4),0,1))*(.82+Math.random()*.18);   /* v2.23: askelten voimakkuus vaihtelee luonnollisesti */tgSnd(m,'askel_'+sf,{v:sv});
   {const ly=TG_STEP_LAYER[g];if(ly&&sf!=='uinti'&&!(ly==='tomistys'&&sf==='kahlaus'))tgPlay(m,ly,g,{v:ly==='kalina'?.7:sv},true);}   // v2.21: tömistys / kalina askeleen päälle
   if(sf==='pusikko'&&Math.random()<.15&&playTime-(m.okT??-9)>=2){m.okT=playTime;tgSnd(m,'oksa',{v:.45});}   // v2.21: hiljempaa (0,8 → 0,45), enintään 2 s välein
   if(run&&!m.dun&&TG_RUSTLE[biomeHere(m.pos.x,m.pos.z)]&&Math.random()<.35&&playTime-(m.khT??-9)>.7){m.khT=playTime;tgSnd(m,'kahina',{g:'yhteiset',p:tgSize(m),v:.8});}
   if(TG_BOSS.has(g)&&d<15)shake(.12*(1-d/15));}
 function tgTick(dt){if(!CRE.ok||state!=='play')return;
-  for(const v of TGV.v.slice()){const m=v.m;if(v.loop&&!mobs.includes(m)){tgStop(v);continue;}if(v.fixed)continue;crePos(v.pn,m.pos.x,m.pos.y+.3,m.pos.z);if(actx)creDistFx(v,Math.sqrt(dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)));}
+  for(const v of TGV.v.slice()){const m=v.m;if(v.loop&&(!mobs.includes(m)||(m.dead&&v.ev!=='palaminen'))){tgStop(v);continue;}if(v.fixed)continue;crePos(v.pn,m.pos.x,m.pos.y+.3,m.pos.z);if(actx)creDistFx(v,Math.sqrt(dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)));}
   const C=[];
   for(const m of mobs){const g=TG[m.type];if(!g||m.menu)continue;const d2=dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z);
     // palaminen: rätinä silmukkana niin kauan kuin olento palaa (myös tuhkaksi palaessa 2 s)
     const burning=(m.burnT>0||m.sunBurn||(m.dead&&m.ashDeath&&m.deadT<2))&&d2<45*45&&m.dun===P.inDun;
     if(burning&&!m.tgBurn){const v=tgSnd(m,'palaminen',{g:'yhteiset',loop:1,v:.8,p:tgSize(m)});if(v)m.tgBurn=v;}else if(!burning&&m.tgBurn){tgStop(m.tgBurn);m.tgBurn=null;}
+    /* v2.23 TOIMINTOSILMUKAT: syöminen, tonkiminen ja nuuhkiminen soivat silmukkana (satunnaisesta kohdasta, 0,25 s sisäänhäivytys) niin
+       kauan kuin AI pitää toimintoa yllä (m.actSnd/m.actT päivittyy joka ruutu); 0,3 s ilman päivitystä → pehmeä pysäytys. Alle 30 m. */
+    {const act=m.actSnd&&playTime-(m.actT??-9)<.3&&!m.dead&&m.dun===P.inDun&&d2<30*30?m.actSnd:null;
+     if(m.tgActV&&m.tgActEv!==act){tgStop(m.tgActV);m.tgActV=null;m.tgActEv=null;}
+     if(act&&!m.tgActV&&playTime>=(m.tgActRetry||0)){const v=tgSnd(m,act,{loop:1,rnd:1,v:act==='nuuhkiminen'?.55:.75});if(v){m.tgActV=v;m.tgActEv=act;}else m.tgActRetry=playTime+1;}}
     if(m.shakeT>0){m.shakeT-=dt;m.f.g.rotation.z=m.shakeT>0?Math.sin(m.shakeT*42)*.2*Math.min(1,m.shakeT/.25):0;}
     if(m.dead||m.dun!==P.inDun||m.born!==undefined)continue;
     const px=m.tgX??m.pos.x,pz=m.tgZ??m.pos.z,mv=Math.hypot(m.pos.x-px,m.pos.z-pz);m.tgX=m.pos.x;m.tgZ=m.pos.z;if(mv>3)continue;const spd=mv/Math.max(dt,1e-3);

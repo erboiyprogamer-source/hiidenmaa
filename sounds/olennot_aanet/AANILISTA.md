@@ -31,7 +31,7 @@ olennot saavat pelissä kaiun (ei tiedostoon), joten anna raakaääni kuivana, i
 **Tilat (Tila-sarake):** ✅ oma ääni · 🔁 väliaikainen varaääni toiselta olennolta (sävelkorkeutta muutettu) · ⬜ puuttuu (peli käyttää
 tehtyä ääntä tai on hiljaa). Varaäänet ovat vain väliaikaisia: jokaiselle olennolle kannattaa lopulta lisätä omat äänet.
 
-## Äänierä A: olennot (37/116 äänilajia omilla äänillä)
+## Äänierä A: olennot (42/116 äänilajia omilla äänillä)
 
 **Selite (Olento-sarake, varaääniketju):**
 - 💎 = **pääääni**: muut lainaavat tältä, se ei lainaa itse. Lisää nämä ensin – yksi ääni täyttää monta olentoa.
@@ -49,15 +49,10 @@ tehtyä ääntä tai on hiljaa). Varaäänet ovat vain väliaikaisia: jokaiselle
 
 ### Kattavuus: puuttuvat ketjun alut (🎯)
 
-7 ääntä puuttuu ketjujen alusta – lisää nämä, niin jokainen olento saa jokaiseen lajiin jonkin äänen:
+2 ääntä puuttuu ketjujen alusta – lisää nämä, niin jokainen olento saa jokaiseen lajiin jonkin äänen:
 
 - `hiidenkarhu_chase_1` → hiidenkarhu
 - `hiidenhirvi_chase_1` → hiidenhirvi
-- `kivivartija_idle_1` → kivivartija
-- `kivivartija_hurt_1` → kivivartija
-- `kivivartija_death_1` → kivivartija
-- `kivivartija_aggro_1` → kivivartija
-- `kivivartija_chase_1` → kivivartija
 
 ### Eläimet
 
@@ -150,11 +145,11 @@ tehtyä ääntä tai on hiljaa). Varaäänet ovat vain väliaikaisia: jokaiselle
 |  | death | `ylimys_death_1`, `ylimys_death_2` | 🔁 varaääni: kalmo_death_1, kalmo_death_2 (sävel ×0.85) | kuoleman ääni (0,8–3,5 s, pomoilla jopa 6 s; paikkoja: ulottuvuuksien hirviöt 1, muut 2) – kalmon ylimys, kuiskiva epäkuollut | undead death scream |
 |  | aggro | `ylimys_aggro_1`, `ylimys_aggro_2`, `ylimys_aggro_3` | 🔁 varaääni: kalmo_aggro_1, kalmo_aggro_2 (sävel ×0.85) | SUUTTUMISÄÄNI: huomaa sinut ensimmäistä kertaa – vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat (0,5–2 s) – kalmon ylimys, kuiskiva epäkuollut | lich shout |
 |  | chase | `ylimys_chase_1`, `ylimys_chase_2`, `ylimys_chase_3` | 🔁 varaääni: kalmo_chase_1, kalmo_chase_2 (sävel ×0.85) | JAHTIÄÄNI: toistuu 4–9 s välein kun olento jahtaa sinua suuttumisäänen jälkeen – murina, huohotus tai huuto (0,5–1,5 s) – kalmon ylimys, kuiskiva epäkuollut | lich shout |
-| **Kivivartija** (`kivivartija`) 🌱<br>ei lainaa eikä lainata | idle | `kivivartija_idle_1`, `kivivartija_idle_2`, `kivivartija_idle_3` | ⬜ puuttuu<br>🎯 lisää tämä → ääni 1 olennolle | rauhallinen ääntely, satunnaisesti 6–15 s välein (0,5–2 s) – kivivartija, kivinen golem | stone grind, rock golem rumble |
-|  | hurt | `kivivartija_hurt_1`, `kivivartija_hurt_2`, `kivivartija_hurt_3` | ⬜ puuttuu<br>🎯 lisää tämä → ääni 1 olennolle | lyhyt kivun ääni, kun olentoon osuu (0,2–0,8 s) – kivivartija, kivinen golem | rock impact crack |
-|  | death | `kivivartija_death_1`, `kivivartija_death_2` | ⬜ puuttuu<br>🎯 lisää tämä → ääni 1 olennolle | kuoleman ääni (0,8–3,5 s, pomoilla jopa 6 s; paikkoja: ulottuvuuksien hirviöt 1, muut 2) – kivivartija, kivinen golem | rock crumble collapse |
-|  | aggro | `kivivartija_aggro_1`, `kivivartija_aggro_2`, `kivivartija_aggro_3` | ⬜ puuttuu → ei erillistä suuttumisääntä, jahtiääni alkaa heti<br>🎯 lisää tämä → ääni 1 olennolle | SUUTTUMISÄÄNI: huomaa sinut ensimmäistä kertaa – vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat (0,5–2 s) – kivivartija, kivinen golem | golem roar stone |
-|  | chase | `kivivartija_chase_1`, `kivivartija_chase_2`, `kivivartija_chase_3` | ⬜ puuttuu<br>🎯 lisää tämä → ääni 1 olennolle | JAHTIÄÄNI: toistuu 4–9 s välein kun olento jahtaa sinua suuttumisäänen jälkeen – murina, huohotus tai huuto (0,5–1,5 s) – kivivartija, kivinen golem | golem roar stone |
+| **Kivivartija** (`kivivartija`) 🌱<br>ei lainaa eikä lainata | idle | `kivivartija_idle_1`, `kivivartija_idle_2`, `kivivartija_idle_3` | ✅ oma: _1 (1 kpl) | rauhallinen ääntely, satunnaisesti 6–15 s välein (0,5–2 s) – kivivartija, kivinen golem | stone grind, rock golem rumble |
+|  | hurt | `kivivartija_hurt_1`, `kivivartija_hurt_2`, `kivivartija_hurt_3` | ✅ oma: _1 (1 kpl) | lyhyt kivun ääni, kun olentoon osuu (0,2–0,8 s) – kivivartija, kivinen golem | rock impact crack |
+|  | death | `kivivartija_death_1`, `kivivartija_death_2` | ✅ oma: _1 (1 kpl) | kuoleman ääni (0,8–3,5 s, pomoilla jopa 6 s; paikkoja: ulottuvuuksien hirviöt 1, muut 2) – kivivartija, kivinen golem | rock crumble collapse |
+|  | aggro | `kivivartija_aggro_1`, `kivivartija_aggro_2`, `kivivartija_aggro_3` | ✅ oma: _1 (1 kpl) | SUUTTUMISÄÄNI: huomaa sinut ensimmäistä kertaa – vihamieliset ja pomot vain kerran, neutraalit aina kun suuttuvat (0,5–2 s) – kivivartija, kivinen golem | golem roar stone |
+|  | chase | `kivivartija_chase_1`, `kivivartija_chase_2`, `kivivartija_chase_3` | ✅ oma: _1 (1 kpl) | JAHTIÄÄNI: toistuu 4–9 s välein kun olento jahtaa sinua suuttumisäänen jälkeen – murina, huohotus tai huuto (0,5–1,5 s) – kivivartija, kivinen golem | golem roar stone |
 | **Routasusi** (`routasusi`) | idle | `routasusi_idle_1`, `routasusi_idle_2`, `routasusi_idle_3` | 🔁 varaääni: susi_idle_1, susi_idle_2, susi_idle_3, susi_idle_4, susi_idle_5, susi_idle_6 (sävel ×1.06) | rauhallinen ääntely, satunnaisesti 6–15 s välein (0,5–2 s) – routasusi, jäinen susi | wolf growl cold breath |
 |  | hurt | `routasusi_hurt_1`, `routasusi_hurt_2`, `routasusi_hurt_3` | 🔁 varaääni: susi_hurt_1, susi_hurt_2 (sävel ×1.06) | lyhyt kivun ääni, kun olentoon osuu (0,2–0,8 s) – routasusi, jäinen susi | wolf yelp |
 |  | death | `routasusi_death_1`, `routasusi_death_2` | 🔁 varaääni: susi_death_1, susi_death_2 (sävel ×1.06) | kuoleman ääni (0,8–3,5 s, pomoilla jopa 6 s; paikkoja: ulottuvuuksien hirviöt 1, muut 2) – routasusi, jäinen susi | wolf whimper death |

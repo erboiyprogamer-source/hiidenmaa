@@ -197,7 +197,7 @@ function fireBow(){
   {const sp=bowSpread()*Math.PI/180;if(sp>1e-4){const r=Math.sqrt(Math.random())*Math.tan(sp),ph=Math.random()*TAU,ux=_tmpV2.set(-dir.z,0,dir.x).normalize(),vy=new V3().crossVectors(dir,ux);
     dir.addScaledVector(ux,Math.cos(ph)*r).addScaledVector(vy,Math.sin(ph)*r).normalize();}}   // vajaa veto: nuoli lähtee tähtäysympyrän alueelle
   const a=AMMO_STATS[am]||AMMO_STATS.nuolet,bs=bowShot(k,am);shootArrow(from,dir,bs.v,weaponDmg(w)*(.2+.8*k)*a.dmg,'player',bs.g,!!a.fire,!!a.wood);
-  projs[projs.length-1].windK=a.wind;   // v2.06: nuolikohtainen tuulikerroin (sulitettu .5, puu 1.2)sfx('bow');P.yaw=camYaw+Math.PI;
+  projs[projs.length-1].windK=a.wind;   /* v2.06: nuolikohtainen tuulikerroin (sulitettu .5, puu 1.2) */sfx('bow');P.yaw=camYaw+Math.PI;
 }
 // v1.39 (lista 4, kohdat 8–9): vahinkokerroin sille, joka parhaillaan päivittyy (ai.js asettaa): pomot ×1,2, vartijat ×1,8.
 let HURT_K=1;

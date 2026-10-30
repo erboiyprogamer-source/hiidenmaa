@@ -524,6 +524,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
   Puuttuva ääni = hiljaisuus. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **Toimintosilmukat (v2.23):** syöminen, tonkiminen ja nuuhkiminen soivat koko toiminnon ajan ja hiljenevät pehmeästi, kun eläin lopettaa.
+  Askeleet: kohinanpoisto, yksi askel per ääni, voimakkuus vaihtelee hieman askeleittain. Kivivartijalla omat äänet.
 - **Osumat ja törmäykset (v2.22):** osumaäänet 6 kategoriassa (raapaisu, purema, murskaus, sarvet, isku, nuoli) – soivat kun olento osuu
   pelaajaan, nuoli tai heittokivi osuu pelaajaan, tai pelaajan nuoli osuu olentoon. Törmäys (kevyt / raskas) kun olento juoksee esteeseen.
 - **Ei generoituja ääniä (v2.22):** peli soittaa vain omia äänitiedostoja; koodilla tehdyt äänet on poistettu (puuttuva ääni = hiljaisuus).

@@ -341,6 +341,17 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Korjaus: kutsu valikon haaran sisään (`else if(state==='menu'){uwOverlayOff(); …}`). **Älä lisää omia `if`-rivejä `frame()`:n ketjun
   keskelle** – lisää kutsu oikean haaran sisään. Tarkistusrivi v2.19 valvoo.
 
+## 48. Tarkistustyökalu hyväksyi epäonnistuneet rivit (v2.23)
+- Syy: `tools/tarkistus.mjs`:n `t()` tallensi tuloksen `!!f()`. Rivit palauttavat epäonnistuessaan tekstin (`return ok||'virhe …'`), ja
+  `!!'virhe'` on tosi → 17 riviä oli epäonnistunut huomaamatta (osa jo v1.x:stä), KAIKKI OK oli harhaanjohtava.
+- Korjaus: merkkijono = virhe (`typeof v==='string'?'VIRHE '+v:!!v`). Uutta riviä kirjoittaessa: palauta `true` tai virheteksti, ja testaa
+  rivi rikkomalla ominaisuus tahallaan (rivin pitää näyttää XX). Älä jätä testin luomia olentoja toisen testin tielle.
+
+## 49. Koodi `//`-kommentin perässä samalla rivillä ei suoritu (v2.23)
+- Syy: muokkauksissa lisättiin `// vX: selitys` rivin keskelle, ja saman rivin loppuosa (koodi) muuttui kommentiksi. Löytyi 4 kohtaa: toimintojen
+  askelääni (v2.23, ennen julkaisua), DEV "ei nälkää" (v2.09), jousella ammunnan jälkeen kääntyminen (v2.06), Kalmanpesän murskausefektit (v0.93).
+- Korjaus: `/* */`-kommentit. **Rivin keskellä vain `/* */`, `//` vain rivin loppuun.** Tarkistusrivi v2.23 skannaa kaikki `__GJS`-tiedostot.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

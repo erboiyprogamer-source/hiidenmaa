@@ -37,7 +37,7 @@ AGGRO_AI = ('neutral', 'hostile', 'boss', 'rboss')   # suuttumisääni (aggro)
 CHASE_AI = ('hostile', 'boss', 'rboss')               # + toistuva jahtiääni (chase)
 ECHO_AI = ('rboss', 'boss')                           # v1.88: kaikuääni (echo): nukkuva ulottuvuuspomo kaikuu luolastossa kunnes pelaaja kohtaa sen; v1.95 myös Kalmanvartija maan alta
 VARIANTS = (1, 2, 3)                                  # paikkamerkit _1.._3; v2.11: lisäversiot _4, _5 … kelpaavat ilman koodimuutosta (peli arpoo kaikista)
-PV_T = 5   # v2.22: toimintoäänten käsittelyversio (huippunormalisointi ennen leikkausta, saumattomat silmukat)
+PV_T = 6   # toimintoäänten käsittelyversio: v2.22 huippunormalisointi + saumattomat silmukat; v2.23 askeltila, pätkät, paras kohta, toimintosilmukat
 PV = 4                                                # käsittelyn versio: vaihtuessa kaikki äänet käsitellään uudestaan
 
 
@@ -262,7 +262,53 @@ def event_end(ff, wav, win=0.025, drop=20.0, hold=4):
     return None
 
 
-def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, loop=False):
+def best_start(ff, wav, cap, win=0.02):
+    """v2.23: pitkästä raa'asta voimakkain cap-pituinen kohta (tehon liukuva summa); palauttaa alun sekunteina (30 ms ennen)."""
+    lv = levels(ff, wav, win)
+    n = max(1, int(cap / win))
+    if len(lv) <= n:
+        return 0.0
+    pw = [10 ** (x / 10) for x in lv]
+    s = sum(pw[:n])
+    best, bi = s, 0
+    for i in range(1, len(pw) - n + 1):
+        s += pw[i + n - 1] - pw[i - 1]
+        if s > best:
+            best, bi = s, i
+    return max(0.0, bi * win - 0.03)
+
+def step_segments(ff, src, k=5, win=0.01, gap=0.35, seg_max=1.2):
+    """v2.23: pitkästä askelnauhoituksesta k voimakkainta erillistä askelta (nousu kynnyksen yli ≥ 80 ms hiljaisemman jälkeen, väli ≥ gap).
+    Palauttaa [(alku, pituus)], voimakkain ensin."""
+    with tempfile.TemporaryDirectory() as td:
+        w = os.path.join(td, 'x.wav')
+        run([ff, '-hide_banner', '-loglevel', 'error', '-y', '-i', src, '-ac', '1', '-ar', '22050', '-c:a', 'pcm_s16le', w])
+        lv = levels(ff, w, win)
+    if len(lv) < 20:
+        return []
+    srt = sorted(lv)
+    floor, peak = srt[len(srt) // 5], srt[-1]
+    thr = max(floor + 12, peak - 30)
+    ons = []
+    for i in range(8, len(lv)):
+        if lv[i] >= thr and max(lv[i - 8:i]) < thr - 6:
+            ons.append((max(lv[i:i + 15]), i * win))
+    ons.sort(reverse=True)
+    pick = []
+    for st, t in ons:
+        if all(abs(t - u) >= gap for _, u in pick):
+            pick.append((st, t))
+        if len(pick) >= k:
+            break
+    ts = sorted(t for _, t in pick)
+    out = []
+    for _, t in pick:
+        nxt = [u for u in ts if u > t]
+        ln = min(seg_max, (nxt[0] - t - 0.03) if nxt else seg_max)
+        out.append((max(0.0, t - 0.02), max(0.15, ln + 0.02)))
+    return out
+
+def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, loop=False, mode=None, seg=None):
     """prof (toiminnot): (yläraja, iso yläraja, häivytys, LUFS) – isojen +2 dB on jo mukana; big valitsee ison ylärajan."""
     cap_n, cap_b, fade, target = prof or PROFIILI.get(kind, PROFIILI['idle'])
     boss = ai in BOSS_DB or big
@@ -270,13 +316,19 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, 
     target += 0 if prof else BOSS_DB.get(ai, 0)
     trim = 'silenceremove=start_periods=1:start_threshold=-48dB:start_silence=0.02'
     inp = (['-f', fmt] if fmt and fmt != 'mp4' else []) + ['-i', src]
+    if seg:   # v2.23: pätkä pitkästä raa'asta (askeleet)
+        inp = inp + ['-ss', f'{seg[0]:.3f}', '-t', f'{seg[1]:.3f}']
+    if mode == 'act':
+        loop = True
     with tempfile.TemporaryDirectory() as td:
         w1, w2, tmp = os.path.join(td, 'a.wav'), os.path.join(td, 'b.wav'), os.path.join(td, 'o.mp3')
         # 1) mono, rumina pois, hiljaisuus pois alusta ja lopusta
         # v2.22: hiljainen raaka (huippu −30 dB) katosi −48 dB:n leikkauksessa → huippu ensin −1 dBFS:ään (leikkaus suhteessa huippuun)
         pk = peak_db(ff, inp)
         pre = f'volume={max(0.0, -1.0 - pk):.2f}dB,' if pk is not None and pk < -1.0 else ''
-        r = run([ff, '-hide_banner', '-loglevel', 'error', '-y'] + inp + ['-af', pre + ('highpass=f=40' if loop else f'highpass=f=40,{trim},areverse,{trim},areverse'),
+        if mode == 'step':   # v2.23: taustakohina (suhina, kahina) pois askelista – FFT-kohinanpoisto seuraa kohinatasoa
+            pre += 'afftdn=nr=12:nf=-50:tn=1,'
+        r = run([ff, '-hide_banner', '-loglevel', 'error', '-y'] + inp + ['-af', pre + ('highpass=f=40' if loop and mode != 'act' else f'highpass=f=40,{trim},areverse,{trim},areverse'),
                 '-ac', '1', '-ar', '44100', '-c:a', 'pcm_s16le', w1])
         if r.returncode != 0 or not os.path.exists(w1):
             return r.stderr.strip()[-300:] or 'tuntematon virhe', None
@@ -284,8 +336,16 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, 
         if d < 0.05:
             return 'ääni on käytännössä hiljaa', None
         # 2b) v2.22 silmukka: ei häivytyksiä; loppu ristihäivytetään alkuun (pituus enintään 6 s, sauma xf), jolloin silmukka on saumaton
+        # v2.23: pitkästä kertaäänestä (huitaisu, lentoonlähtö …) voimakkain kohta eikä alku
+        if mode == 'best' and d > 2.5 * cap:
+            st = best_start(ff, w1, cap)
+            w1b = os.path.join(td, 'a2.wav')
+            r = run([ff, '-hide_banner', '-loglevel', 'error', '-y', '-i', w1, '-af', f'atrim=start={st:.3f}:duration={cap + 0.3:.3f}', '-c:a', 'pcm_s16le', w1b])
+            if r.returncode == 0 and os.path.exists(w1b):
+                w1 = w1b
+                d = duration(ff, w1)
         if loop:
-            L = min(d, 6.0)
+            L = min(d, 20.0 if mode == 'act' else 6.0)
             xf = min(0.25, L * 0.15)
             r = run([ff, '-hide_banner', '-loglevel', 'error', '-y', '-i', w1, '-i', w1, '-filter_complex',
                      f'[0:a]atrim=start={xf:.3f}:end={L:.3f},asetpts=PTS-STARTPTS[body];'
@@ -296,7 +356,12 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, 
         # 2) pituuden yläraja + häivytykset (ei klikkausta alussa, pehmeä loppu)
         L = min(d, cap)
         cut = d > cap
-        if kind == 'hurt':
+        if mode == 'step':   # v2.23: yksi askel – ensimmäisen tapahtuman loppuun (ei toista askelta tai jälkikohinaa)
+            ee = event_end(ff, w1, drop=18.0)
+            if ee and ee > 0.06:
+                L = min(L, ee)
+                cut = False
+        elif kind == 'hurt':
             ee = event_end(ff, w1)
             if ee and ee > 0.15:
                 L = min(L, ee)
@@ -495,8 +560,14 @@ HIT_FI = {'raapaisu': ('kynnet raapaisevat (ilves, karhut, Suonäkki)', 'claw sc
           'isku': ('ase tai nyrkki osuu (hiisi, kalmot, ylimys, Kalmaherra, metso nokkaisee)', 'weapon hit body, punch impact'),
           'nuoli': ('nuoli osuu (jousikalmon nuoli pelaajaan, pelaajan nuoli olentoon)', 'arrow hit flesh, arrow impact thud')}
 LOOP_EV = {'palaminen'}   # v2.22: silmukat – ei hiljaisuuden leikkausta eikä häivytyksiä; sauma ristihäivytetään (saumaton silmukka)
+# v2.23: toimintosilmukat (käyttäjän pyyntö): pitkä raaka saa olla pitkä – käsitellään saumattomaksi silmukaksi (enintään 20 s); peli soittaa
+# sitä niin kauan kuin eläin tekee toimintoa (syö, tonkii, nuuhkii) ja pysäyttää pehmeästi, kun toiminto loppuu
+ACT_EV = {'syominen_laidun', 'syominen_tonkiminen', 'syominen_rouskutus', 'syominen_nakerrus', 'nuuhkiminen'}
+def step_like(ev):
+    """v2.23: askelmaiset äänet – kohinanpoisto, vain ensimmäinen tapahtuma (yksi askel), pitkästä nauhoituksesta useita pätkiä."""
+    return ev.startswith('askel_') or ev in ('tomistys', 'kalina', 'oksa')
 TG_GROUPS = [   # (id, nimi, emoji, jäsenet, tapahtumat, iso)
-    ('kaksijalkaiset', 'Kaksijalkaiset', '🦶', ['hiisi', 'suonakki'], _steps(SURF[:-1]) + ['oksa', 'kaatuminen'] + COMMON_ATK + ['nousu'], False),
+    ('kaksijalkaiset', 'Kaksijalkaiset', '🦶', ['hiisi', 'suonakki'], _steps(SURF) + ['oksa', 'kaatuminen'] + COMMON_ATK + ['nousu'], False),
     ('luurangot', 'Luurangot', '💀', ['kalmo', 'ylimys'], ['kalina'], False),
     ('nelijalkaiset', 'Nelijalkaiset', '🐾', ['peura', 'poro', 'hirvi', 'karju', 'emakko', 'susi', 'routasusi', 'kalmasusi', 'ilves', 'ahma'],
      _steps(SURF) + ['oksa', 'kaatuminen'] + COMMON_ATK + ['nousu', 'ravistus', 'nuuhkiminen', 'syominen_laidun', 'syominen_tonkiminen', 'syominen_rouskutus'], False),
@@ -644,26 +715,46 @@ def process_toiminnot(ff, init, old):
         ev = mm.group(1)
         src_h = sha(p)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        if n in old and old[n].get('src') == src_h and old[n].get('pv') == PV_T and os.path.exists(dst):
-            sounds[n] = old[n]
-            skipped += 1
-        else:
-            big_ev = TG_BY[g][5] or ev.endswith('_raskas')
-            err, res = process(ff, p, dst, sniff(p), 'hostile', ev, prof=t_prof(ev, big_ev), big=big_ev, loop=ev in LOOP_EV)
-            if err:
-                errors.append(f'{n}: {err}')
-                continue
-            gain, rawd = res
-            sounds[n] = {'h': sha(dst, 10), 'src': src_h, 'dur': duration(ff, dst), 'pv': PV_T, 'gain': gain, 'raw': rawd}
-            print(f'  {n}: {sounds[n]["dur"]} s (raaka {rawd} s), vahvistus {gain:+.1f} dB')
-            done += 1
-        sounds[n]['f'] = f'{PROJ_T}/valmiit/{g}{VALMIS}/{base}.mp3'
-        gn = sounds[n].get('gain')
-        if gn is not None and abs(gn) > 12:
-            warn.append(f'{n}: iso vahvistus {gn:+.1f} dB (raaka erittäin hiljainen tai kova – tarkista kuuntelemalla)')
+        big_ev = TG_BY[g][5] or ev.endswith('_raskas')
+        mode = 'act' if ev in ACT_EV else 'step' if step_like(ev) else None if ev in LOOP_EV else 'best'
+        # v2.23: pitkä askelnauhoitus (yli 3 s) → useita askelpätkiä: voimakkain = _n, muut _n01, _n02 … (peli arpoo kaikista)
+        jobs = [(base, None)]
+        if mode == 'step':
+            prev = [k for k in old if k.startswith(f't/{g}/{ev}_') and old[k].get('src') == src_h and old[k].get('pv') == PV_T]
+            if prev and all(os.path.exists(os.path.join(out_dir_t(g), k.split('/')[2] + '.mp3')) for k in prev):
+                jobs = [(k.split('/')[2], old[k].get('seg')) for k in sorted(prev, key=natkey)]
+            elif duration(ff, p) > 3.0:
+                sg = step_segments(ff, p)
+                if sg:
+                    num = int(mm.group(2))
+                    jobs = [(base, sg[0])] + [(f'{ev}_{num * 100 + i}', x) for i, x in enumerate(sg[1:], 1)]
+        for kb, sg in jobs:
+            nk, dk = f't/{g}/{kb}', os.path.join(out_dir_t(g), kb + '.mp3')
+            if nk in old and old[nk].get('src') == src_h and old[nk].get('pv') == PV_T and os.path.exists(dk):
+                sounds[nk] = old[nk]
+                skipped += 1
+            else:
+                err, res = process(ff, p, dk, sniff(p), 'hostile', ev, prof=t_prof(ev, big_ev), big=big_ev, loop=ev in LOOP_EV, mode=mode,
+                                   seg=tuple(sg) if sg else None)
+                if err:
+                    errors.append(f'{nk}: {err}')
+                    continue
+                gain, rawd = res
+                sounds[nk] = {'h': sha(dk, 10), 'src': src_h, 'dur': duration(ff, dk), 'pv': PV_T, 'gain': gain, 'raw': rawd}
+                if sg:
+                    sounds[nk]['seg'] = [round(sg[0], 3), round(sg[1], 3)]
+                if kb != base:
+                    sounds[nk]['part'] = 1
+                print(f'  {nk}: {sounds[nk]["dur"]} s (raaka {rawd} s{", pätkä " + str(round(sg[0], 2)) + " s" if sg else ""}), vahvistus {gain:+.1f} dB')
+                done += 1
+            sounds[nk]['f'] = f'{PROJ_T}/valmiit/{g}{VALMIS}/{kb}.mp3'
+            gn = sounds[nk].get('gain')
+            if gn is not None and abs(gn) > 12:
+                warn.append(f'{nk}: iso vahvistus {gn:+.1f} dB (raaka erittäin hiljainen tai kova – tarkista kuuntelemalla)')
     byh = {}
     for n in sounds:
-        byh.setdefault(sounds[n]['src'], []).append(n)
+        if not sounds[n].get('part'):
+            byh.setdefault(sounds[n]['src'], []).append(n)
     for h, ns in byh.items():
         if len(ns) > 1:
             warn.append('SAMA TIEDOSTO useassa paikassa: ' + ', '.join(ns))
@@ -713,10 +804,12 @@ def write_list_t(sounds):
         rows.append('| --- | --- | --- | --- | --- |')
         for ev in evs:
             mine = own_versions_t(sounds, g, ev)
+            parts = [x for x in mine if x >= 100]   # v2.23: pitkästä nauhoituksesta poimitut askelpätkät (_101, _102 …)
+            mine = [x for x in mine if x < 100]
             files = ', '.join(f'`{ev}_{n}`' for n in sorted(set(range(1, T_SLOTS + 1)) | set(mine)))
             bg = TG_BORROW.get(g)
             if mine:
-                st = f'✅ oma: {", ".join(f"_{n}" for n in mine)} ({len(mine)} kpl)'
+                st = f'✅ oma: {", ".join(f"_{n}" for n in mine)} ({len(mine)} kpl)' + (f' + {len(parts)} pätkää pitkästä nauhoituksesta' if parts else '')
             elif bg and own_versions_t(sounds, bg, ev):
                 st = f'🔁 lainaa: {bg}/{ev}'
             elif bg:

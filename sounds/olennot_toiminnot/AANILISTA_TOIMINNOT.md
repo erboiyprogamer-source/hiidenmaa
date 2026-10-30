@@ -39,25 +39,26 @@ Olentojen omat äänet (ääntely, kipu, kuolema, suuttuminen, jahti, kaiku) ova
 **Käsittely:** askel ≤ 0,5 s (iso 0,8), −27 LUFS; tömistys ≤ 0,6 s (iso 0,9), −26 LUFS; kahlaus/uinti ≤ 1,2–1,8 s; kaatuminen ≤ 1,5 s (iso 2,5); isku/osuma ≤ 0,7–1,0 s; syöminen ≤ 2,5 s;
 palaminen ≤ 3 s (soi silmukkana). Isot ryhmät +2 dB. Anna raaka kuivana ja puhtaana (peli lisää etäisyyden ja kaiun).
 
-## Ryhmät (9/73 ääntä omilla äänillä)
+## Ryhmät (53/74 ääntä omilla äänillä)
 
-### 🦶 Kaksijalkaiset – `kaksijalkaiset/` (2/13 ääntä)
+### 🦶 Kaksijalkaiset – `kaksijalkaiset/` (12/14 ääntä)
 
 Jäsenet: Sammalhiisi, Suonäkki.
 
 | Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- |
 | askel_ruoho | `askel_ruoho_1`, `askel_ruoho_2`, `askel_ruoho_3` | ✅ oma: _1, _2, _3 (3 kpl) | askel: ruoho, maa, kangas, nummi | footstep grass dirt, small creature |
-| askel_kivi | `askel_kivi_1`, `askel_kivi_2` | ⬜ puuttuu (hiljaa) | askel: vuoret, rakka, luolat ja ulottuvuudet, kivirakennukset | footstep stone rock, small creature |
-| askel_hiekka | `askel_hiekka_1`, `askel_hiekka_2` | ⬜ puuttuu (hiljaa) | askel: hietaranta | footstep sand, small creature |
-| askel_lumi | `askel_lumi_1`, `askel_lumi_2` | ⬜ puuttuu (hiljaa) | askel: routahuiput | footstep snow crunch, small creature |
-| askel_suo | `askel_suo_1`, `askel_suo_2` | ⬜ puuttuu (hiljaa) | askel: upposuo, muta | footstep mud squelch swamp, small creature |
-| askel_puu | `askel_puu_1`, `askel_puu_2` | ⬜ puuttuu (hiljaa) | askel: puurakennukset (lattiat, portaat) | footstep wood floor, small creature |
-| askel_jaa | `askel_jaa_1`, `askel_jaa_2` | ⬜ puuttuu (hiljaa) | askel: Routaluolan jää | footstep ice, small creature |
+| askel_kivi | `askel_kivi_1`, `askel_kivi_2`, `askel_kivi_3` | ✅ oma: _1, _2, _3 (3 kpl) | askel: vuoret, rakka, luolat ja ulottuvuudet, kivirakennukset | footstep stone rock, small creature |
+| askel_hiekka | `askel_hiekka_1`, `askel_hiekka_2`, `askel_hiekka_3` | ✅ oma: _1, _2, _3 (3 kpl) | askel: hietaranta | footstep sand, small creature |
+| askel_lumi | `askel_lumi_1`, `askel_lumi_2`, `askel_lumi_3` | ✅ oma: _1, _2, _3 (3 kpl) | askel: routahuiput | footstep snow crunch, small creature |
+| askel_suo | `askel_suo_1`, `askel_suo_2`, `askel_suo_3` | ✅ oma: _1, _2, _3 (3 kpl) + 4 pätkää pitkästä nauhoituksesta | askel: upposuo, muta | footstep mud squelch swamp, small creature |
+| askel_puu | `askel_puu_1`, `askel_puu_2` | ✅ oma: _1, _2 (2 kpl) | askel: puurakennukset (lattiat, portaat) | footstep wood floor, small creature |
+| askel_jaa | `askel_jaa_1`, `askel_jaa_2` | ✅ oma: _1 (1 kpl) | askel: Routaluolan jää | footstep ice, small creature |
 | askel_pusikko | `askel_pusikko_1`, `askel_pusikko_2` | ✅ oma: _1 (1 kpl) | askel: Aarnimetsä: pusikon ja lehvien läpi kulkeminen (välillä oksa rasahtaa, ks. oksa) | walking through bushes leaves, small creature |
-| askel_kahlaus | `askel_kahlaus_1`, `askel_kahlaus_2` | ⬜ puuttuu (hiljaa) | askel: matala vesi | wading water footsteps, small creature |
-| oksa | `oksa_1`, `oksa_2` | ⬜ puuttuu (hiljaa) | oksa rasahtaa jalan alla (Aarnimetsä, välillä; soi hiljaa, enintään 2 s välein) | twig snap, branch crack footstep, small creature |
-| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | ⬜ puuttuu (hiljaa)<br>🎯 lisää ensin (kuuluu usein) | ruumis kaatuu maahan kuollessa | body fall thud, animal collapse, small creature |
+| askel_kahlaus | `askel_kahlaus_1`, `askel_kahlaus_2` | ✅ oma: _1 (1 kpl) + 4 pätkää pitkästä nauhoituksesta | askel: matala vesi | wading water footsteps, small creature |
+| askel_uinti | `askel_uinti_1`, `askel_uinti_2`, `askel_uinti_3` | ✅ oma: _1, _2, _3 (3 kpl) | askel: syvä vesi | animal swimming splash paddle, small creature |
+| oksa | `oksa_1`, `oksa_2` | ✅ oma: _1, _2 (2 kpl) | oksa rasahtaa jalan alla (Aarnimetsä, välillä; soi hiljaa, enintään 2 s välein) | twig snap, branch crack footstep, small creature |
+| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | ✅ oma: _1 (1 kpl) | ruumis kaatuu maahan kuollessa | body fall thud, animal collapse, small creature |
 | huitaisu | `huitaisu_1`, `huitaisu_2` | ⬜ puuttuu (hiljaa) | hyökkäyksen viuhahdus iskun hetkellä | swipe whoosh, claw swing, small creature |
 | nousu | `nousu_1`, `nousu_2` | ⬜ puuttuu (hiljaa) | nousee makuulta syntyessään (ähkäisy, rapina) | creature getting up, rustle grunt, small creature |
 
@@ -71,31 +72,31 @@ Jäsenet: Kalmo, Kalmon ylimys.
 | --- | --- | --- | --- | --- |
 | kalina | `kalina_1`, `kalina_2` | ✅ oma: _1, _2 (2 kpl) | luut kalisevat joka askeleella (soi askeleen päällä, lyhyt ja hiljainen) | bones rattle, skeleton clatter soft, skeleton bony |
 
-### 🐾 Nelijalkaiset – `nelijalkaiset/` (2/19 ääntä)
+### 🐾 Nelijalkaiset – `nelijalkaiset/` (17/19 ääntä)
 
 Jäsenet: Peura, Poro, Hirvi, Karju, Emakko, Susi, Routasusi, Kalmasusi, Ilves, Ahma.
 
 | Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- |
 | askel_ruoho | `askel_ruoho_1`, `askel_ruoho_2`, `askel_ruoho_3` | ✅ oma: _1, _2, _3 (3 kpl) | askel: ruoho, maa, kangas, nummi | footstep grass dirt, animal hooves paws |
-| askel_kivi | `askel_kivi_1`, `askel_kivi_2` | ⬜ puuttuu (hiljaa) | askel: vuoret, rakka, luolat ja ulottuvuudet, kivirakennukset | footstep stone rock, animal hooves paws |
-| askel_hiekka | `askel_hiekka_1`, `askel_hiekka_2` | ⬜ puuttuu (hiljaa) | askel: hietaranta | footstep sand, animal hooves paws |
-| askel_lumi | `askel_lumi_1`, `askel_lumi_2` | ⬜ puuttuu (hiljaa) | askel: routahuiput | footstep snow crunch, animal hooves paws |
-| askel_suo | `askel_suo_1`, `askel_suo_2` | ⬜ puuttuu (hiljaa) | askel: upposuo, muta | footstep mud squelch swamp, animal hooves paws |
-| askel_puu | `askel_puu_1`, `askel_puu_2` | ⬜ puuttuu (hiljaa) | askel: puurakennukset (lattiat, portaat) | footstep wood floor, animal hooves paws |
-| askel_jaa | `askel_jaa_1`, `askel_jaa_2` | ⬜ puuttuu (hiljaa) | askel: Routaluolan jää | footstep ice, animal hooves paws |
+| askel_kivi | `askel_kivi_1`, `askel_kivi_2`, `askel_kivi_3` | ✅ oma: _1, _2, _3 (3 kpl) | askel: vuoret, rakka, luolat ja ulottuvuudet, kivirakennukset | footstep stone rock, animal hooves paws |
+| askel_hiekka | `askel_hiekka_1`, `askel_hiekka_2`, `askel_hiekka_3` | ✅ oma: _1, _2, _3 (3 kpl) | askel: hietaranta | footstep sand, animal hooves paws |
+| askel_lumi | `askel_lumi_1`, `askel_lumi_2`, `askel_lumi_3` | ✅ oma: _1, _2, _3 (3 kpl) | askel: routahuiput | footstep snow crunch, animal hooves paws |
+| askel_suo | `askel_suo_1`, `askel_suo_2`, `askel_suo_3` | ✅ oma: _1, _2, _3 (3 kpl) + 4 pätkää pitkästä nauhoituksesta | askel: upposuo, muta | footstep mud squelch swamp, animal hooves paws |
+| askel_puu | `askel_puu_1`, `askel_puu_2` | ✅ oma: _1, _2 (2 kpl) | askel: puurakennukset (lattiat, portaat) | footstep wood floor, animal hooves paws |
+| askel_jaa | `askel_jaa_1`, `askel_jaa_2` | ✅ oma: _1 (1 kpl) | askel: Routaluolan jää | footstep ice, animal hooves paws |
 | askel_pusikko | `askel_pusikko_1`, `askel_pusikko_2` | ✅ oma: _1 (1 kpl) | askel: Aarnimetsä: pusikon ja lehvien läpi kulkeminen (välillä oksa rasahtaa, ks. oksa) | walking through bushes leaves, animal hooves paws |
-| askel_kahlaus | `askel_kahlaus_1`, `askel_kahlaus_2` | ⬜ puuttuu (hiljaa) | askel: matala vesi | wading water footsteps, animal hooves paws |
-| askel_uinti | `askel_uinti_1`, `askel_uinti_2` | ⬜ puuttuu (hiljaa) | askel: syvä vesi | animal swimming splash paddle, animal hooves paws |
-| oksa | `oksa_1`, `oksa_2` | ⬜ puuttuu (hiljaa) | oksa rasahtaa jalan alla (Aarnimetsä, välillä; soi hiljaa, enintään 2 s välein) | twig snap, branch crack footstep, animal hooves paws |
-| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | ⬜ puuttuu (hiljaa)<br>🎯 lisää ensin (kuuluu usein) | ruumis kaatuu maahan kuollessa | body fall thud, animal collapse, animal hooves paws |
+| askel_kahlaus | `askel_kahlaus_1`, `askel_kahlaus_2` | ✅ oma: _1 (1 kpl) + 4 pätkää pitkästä nauhoituksesta | askel: matala vesi | wading water footsteps, animal hooves paws |
+| askel_uinti | `askel_uinti_1`, `askel_uinti_2`, `askel_uinti_3` | ✅ oma: _1, _2, _3 (3 kpl) | askel: syvä vesi | animal swimming splash paddle, animal hooves paws |
+| oksa | `oksa_1`, `oksa_2` | ✅ oma: _1, _2 (2 kpl) | oksa rasahtaa jalan alla (Aarnimetsä, välillä; soi hiljaa, enintään 2 s välein) | twig snap, branch crack footstep, animal hooves paws |
+| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | ✅ oma: _1 (1 kpl) | ruumis kaatuu maahan kuollessa | body fall thud, animal collapse, animal hooves paws |
 | huitaisu | `huitaisu_1`, `huitaisu_2` | ⬜ puuttuu (hiljaa) | hyökkäyksen viuhahdus iskun hetkellä | swipe whoosh, claw swing, animal hooves paws |
 | nousu | `nousu_1`, `nousu_2` | ⬜ puuttuu (hiljaa) | nousee makuulta syntyessään (ähkäisy, rapina) | creature getting up, rustle grunt, animal hooves paws |
-| ravistus | `ravistus_1`, `ravistus_2` | ⬜ puuttuu (hiljaa) | ravistaa turkin vedestä noustessa | dog shake off water, fur shake, animal hooves paws |
-| nuuhkiminen | `nuuhkiminen_1`, `nuuhkiminen_2` | ⬜ puuttuu (hiljaa) | nuuhkii uteliaana (kun katsoo sinua) | animal sniffing, sniff, animal hooves paws |
-| syominen_laidun | `syominen_laidun_1`, `syominen_laidun_2` | ⬜ puuttuu (hiljaa) | laiduntaa: repii ja jauhaa ruohoa (peura, poro, hirvi) | deer grazing, grass chewing, animal hooves paws |
-| syominen_tonkiminen | `syominen_tonkiminen_1`, `syominen_tonkiminen_2` | ⬜ puuttuu (hiljaa) | tonkii maata röhkien (karju, emakko, porsas) | pig rooting, boar snuffling dirt, animal hooves paws |
-| syominen_rouskutus | `syominen_rouskutus_1`, `syominen_rouskutus_2` | ⬜ puuttuu (hiljaa) | kalvaa raatoa, luu rouskuu (sudet, karhu, ahma) | wolf gnawing bone, chewing meat, animal hooves paws |
+| ravistus | `ravistus_1`, `ravistus_2` | ✅ oma: _1 (1 kpl) | ravistaa turkin vedestä noustessa | dog shake off water, fur shake, animal hooves paws |
+| nuuhkiminen | `nuuhkiminen_1`, `nuuhkiminen_2` | ✅ oma: _1 (1 kpl) | nuuhkii uteliaana (kun katsoo sinua) | animal sniffing, sniff, animal hooves paws |
+| syominen_laidun | `syominen_laidun_1`, `syominen_laidun_2` | ✅ oma: _1 (1 kpl) | laiduntaa: repii ja jauhaa ruohoa (peura, poro, hirvi) | deer grazing, grass chewing, animal hooves paws |
+| syominen_tonkiminen | `syominen_tonkiminen_1`, `syominen_tonkiminen_2` | ✅ oma: _1 (1 kpl) | tonkii maata röhkien (karju, emakko, porsas) | pig rooting, boar snuffling dirt, animal hooves paws |
+| syominen_rouskutus | `syominen_rouskutus_1`, `syominen_rouskutus_2` | ✅ oma: _1, _2 (2 kpl) | kalvaa raatoa, luu rouskuu (sudet, karhu, ahma) | wolf gnawing bone, chewing meat, animal hooves paws |
 
 ### 🐻 Raskaat nelijalkaiset (ei pomoja) – `raskaat_nelijalkaiset/` (0/1 ääntä)
 
@@ -107,7 +108,7 @@ Jäsenet: Karhu, Hiidenkarhu, Hiidenhirvi. Iso: kovempi, askeleet kuuluvat 40 m.
 | --- | --- | --- | --- | --- |
 | tomistys | `tomistys_1`, `tomistys_2` | ⬜ puuttuu (askel soi ilman tätä kerrosta)<br>🎯 lisää ensin (kuuluu usein) | matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni) | low thump footstep, heavy stomp, deep impact, heavy animal bear |
 
-### 🐇 Kevyet nelijalkaiset – `kevyet_nelijalkaiset/` (0/1 ääntä)
+### 🐇 Kevyet nelijalkaiset – `kevyet_nelijalkaiset/` (1/1 ääntä)
 
 ➕ **Kerrostuu:** soittaa `nelijalkaiset/`-kansion äänet (sävel ×1.3, voimakkuus ×0.55) ja tämän kansion samannimisen äänen päälle. Voit lisätä tähän myös `nelijalkaiset`-ryhmän ääniä samalla nimellä (esim. `askel_ruoho_1`) – ne soivat pohjaäänen päällä.
 
@@ -115,9 +116,9 @@ Jäsenet: Jänis, Kettu, Porsas.
 
 | Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- |
-| syominen_nakerrus | `syominen_nakerrus_1`, `syominen_nakerrus_2` | ⬜ puuttuu (hiljaa) | nakertaa (jänis) | rabbit nibbling, gnawing, small animal light |
+| syominen_nakerrus | `syominen_nakerrus_1`, `syominen_nakerrus_2` | ✅ oma: _1, _2 (2 kpl) | nakertaa (jänis) | rabbit nibbling, gnawing, small animal light |
 
-### 🐦 Kevyet kaksijalkaiset – `kevyet_kaksijalkaiset/` (0/1 ääntä)
+### 🐦 Kevyet kaksijalkaiset – `kevyet_kaksijalkaiset/` (1/1 ääntä)
 
 ➕ **Kerrostuu:** soittaa `kaksijalkaiset/`-kansion äänet (sävel ×1.5, voimakkuus ×0.45) ja tämän kansion samannimisen äänen päälle. Voit lisätä tähän myös `kaksijalkaiset`-ryhmän ääniä samalla nimellä (esim. `askel_ruoho_1`) – ne soivat pohjaäänen päällä.
 
@@ -125,7 +126,7 @@ Jäsenet: Metso.
 
 | Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- |
-| lentoonlahto | `lentoonlahto_1`, `lentoonlahto_2` | ⬜ puuttuu (hiljaa)<br>🎯 lisää ensin (kuuluu usein) | lähtee lentoon (siivet räpyttävät) | grouse flush, bird wings takeoff flapping, bird hop light |
+| lentoonlahto | `lentoonlahto_1`, `lentoonlahto_2` | ✅ oma: _1, _2 (2 kpl) | lähtee lentoon (siivet räpyttävät) | grouse flush, bird wings takeoff flapping, bird hop light |
 
 ### 🪨 Kivivartija – `kivivartija/` (1/1 ääntä)
 
@@ -137,7 +138,7 @@ Jäsenet: Kivivartija. Iso: kovempi, askeleet kuuluvat 40 m.
 | --- | --- | --- | --- | --- |
 | tomistys | `tomistys_1`, `tomistys_2` | ✅ oma: _1 (1 kpl) | matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni) | low thump footstep, heavy stomp, deep impact, stone golem rock |
 
-### 👑 Pomot – yhteinen pääkansio – `pomot/` (0/5 ääntä)
+### 👑 Pomot – yhteinen pääkansio – `pomot/` (4/5 ääntä)
 
 💎 **Pääkansio:** kaikki pomot lainaavat nämä äänet (sävel pomon mukaan), ellei pomon omassa kansiossa ole samannimistä ääntä.
 
@@ -147,13 +148,13 @@ Jäsenet: Kalmanvartija, Jäätär, Kalmaherra, Aarnihirviö. Iso: kovempi, aske
 
 | Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- |
-| tomistys | `tomistys_1`, `tomistys_2` | ⬜ puuttuu (askel soi ilman tätä kerrosta)<br>🎯 lisää ensin (kuuluu usein) | matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni) | low thump footstep, heavy stomp, deep impact, giant monster heavy boss |
-| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | ⬜ puuttuu (hiljaa)<br>🎯 lisää ensin (kuuluu usein) | ruumis kaatuu maahan kuollessa | body fall thud, animal collapse, giant monster heavy boss |
+| tomistys | `tomistys_1`, `tomistys_2` | ✅ oma: _1 (1 kpl) | matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni) | low thump footstep, heavy stomp, deep impact, giant monster heavy boss |
+| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | ✅ oma: _1 (1 kpl) | ruumis kaatuu maahan kuollessa | body fall thud, animal collapse, giant monster heavy boss |
 | huitaisu | `huitaisu_1`, `huitaisu_2` | ⬜ puuttuu (hiljaa) | hyökkäyksen viuhahdus iskun hetkellä | swipe whoosh, claw swing, giant monster heavy boss |
-| ryntays_lataus | `ryntays_lataus_1`, `ryntays_lataus_2` | ⬜ puuttuu (hiljaa) | ryntäyksen lataus: pomo kumartuu ja kerää voimaa (0,6 s ennen syöksyä) | monster charge up growl, heavy breath windup, giant monster heavy boss |
-| ryntays | `ryntays_1`, `ryntays_2` | ⬜ puuttuu (hiljaa) | ryntäys: raskas syöksy eteenpäin | monster charge rush roar, heavy stampede dash, giant monster heavy boss |
+| ryntays_lataus | `ryntays_lataus_1`, `ryntays_lataus_2` | ✅ oma: _1 (1 kpl) | ryntäyksen lataus: pomo kumartuu ja kerää voimaa (0,6 s ennen syöksyä) | monster charge up growl, heavy breath windup, giant monster heavy boss |
+| ryntays | `ryntays_1`, `ryntays_2` | ✅ oma: _1 (1 kpl) | ryntäys: raskas syöksy eteenpäin | monster charge rush roar, heavy stampede dash, giant monster heavy boss |
 
-### 🗿 Kalmanvartija (oma, muuten pomot) – `kalmanvartija/` (0/5 ääntä)
+### 🗿 Kalmanvartija (oma, muuten pomot) – `kalmanvartija/` (1/5 ääntä)
 
 🔁 Lainaa `pomot/`-kansiosta. Lisää tähän oma ääni samalla nimellä, niin se valitaan ensin.
 
@@ -163,13 +164,13 @@ Jäsenet: Kalmanvartija. Iso: kovempi, askeleet kuuluvat 40 m. Pomo: askeleet t�
 
 | Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- |
-| tomistys | `tomistys_1`, `tomistys_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni) | low thump footstep, heavy stomp, deep impact, giant stone heavy boom |
-| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | kivenlohkareet putoavat maahan (kova, raskas) | huge stones falling, heavy rock impact |
+| tomistys | `tomistys_1`, `tomistys_2` | ✅ oma: _1 (1 kpl) | matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni) | low thump footstep, heavy stomp, deep impact, giant stone heavy boom |
+| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | 🔁 lainaa: pomot/kaatuminen | kivenlohkareet putoavat maahan (kova, raskas) | huge stones falling, heavy rock impact |
 | huitaisu | `huitaisu_1`, `huitaisu_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | valtava kivinen isku viuhuu | giant stone swing whoosh heavy |
-| ryntays_lataus | `ryntays_lataus_1`, `ryntays_lataus_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | ryntäyksen lataus: pomo kumartuu ja kerää voimaa (0,6 s ennen syöksyä) | monster charge up growl, heavy breath windup, giant stone heavy boom |
-| ryntays | `ryntays_1`, `ryntays_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | ryntäys: raskas syöksy eteenpäin | monster charge rush roar, heavy stampede dash, giant stone heavy boom |
+| ryntays_lataus | `ryntays_lataus_1`, `ryntays_lataus_2` | 🔁 lainaa: pomot/ryntays_lataus | ryntäyksen lataus: pomo kumartuu ja kerää voimaa (0,6 s ennen syöksyä) | monster charge up growl, heavy breath windup, giant stone heavy boom |
+| ryntays | `ryntays_1`, `ryntays_2` | 🔁 lainaa: pomot/ryntays | ryntäys: raskas syöksy eteenpäin | monster charge rush roar, heavy stampede dash, giant stone heavy boom |
 
-### ❄️ Jäätär (oma, muuten pomot) – `jaatar/` (0/5 ääntä)
+### ❄️ Jäätär (oma, muuten pomot) – `jaatar/` (2/5 ääntä)
 
 🔁 Lainaa `pomot/`-kansiosta. Lisää tähän oma ääni samalla nimellä, niin se valitaan ensin.
 
@@ -179,13 +180,13 @@ Jäsenet: Jäätär. Iso: kovempi, askeleet kuuluvat 40 m. Pomo: askeleet täris
 
 | Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- |
-| tomistys | `tomistys_1`, `tomistys_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni) | low thump footstep, heavy stomp, deep impact, ice giant crystal |
-| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | jääkappaleet putoavat ja särkyvät | ice chunks fall shatter |
-| huitaisu | `huitaisu_1`, `huitaisu_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | hyökkäyksen viuhahdus iskun hetkellä | swipe whoosh, claw swing, ice giant crystal |
-| ryntays_lataus | `ryntays_lataus_1`, `ryntays_lataus_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | ryntäyksen lataus: pomo kumartuu ja kerää voimaa (0,6 s ennen syöksyä) | monster charge up growl, heavy breath windup, ice giant crystal |
-| ryntays | `ryntays_1`, `ryntays_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | ryntäys: raskas syöksy eteenpäin | monster charge rush roar, heavy stampede dash, ice giant crystal |
+| tomistys | `tomistys_1`, `tomistys_2` | ✅ oma: _1 (1 kpl) | matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni) | low thump footstep, heavy stomp, deep impact, ice giant crystal |
+| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | 🔁 lainaa: pomot/kaatuminen | jääkappaleet putoavat ja särkyvät | ice chunks fall shatter |
+| huitaisu | `huitaisu_1`, `huitaisu_2` | ✅ oma: _1 (1 kpl) | hyökkäyksen viuhahdus iskun hetkellä | swipe whoosh, claw swing, ice giant crystal |
+| ryntays_lataus | `ryntays_lataus_1`, `ryntays_lataus_2` | 🔁 lainaa: pomot/ryntays_lataus | ryntäyksen lataus: pomo kumartuu ja kerää voimaa (0,6 s ennen syöksyä) | monster charge up growl, heavy breath windup, ice giant crystal |
+| ryntays | `ryntays_1`, `ryntays_2` | 🔁 lainaa: pomot/ryntays | ryntäys: raskas syöksy eteenpäin | monster charge rush roar, heavy stampede dash, ice giant crystal |
 
-### 🔥 Kalmaherra (oma, muuten pomot) – `kalmaherra/` (0/5 ääntä)
+### 🔥 Kalmaherra (oma, muuten pomot) – `kalmaherra/` (2/5 ääntä)
 
 🔁 Lainaa `pomot/`-kansiosta. Lisää tähän oma ääni samalla nimellä, niin se valitaan ensin.
 
@@ -195,13 +196,13 @@ Jäsenet: Kalmaherra. Iso: kovempi, askeleet kuuluvat 40 m. Pomo: askeleet täri
 
 | Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- |
-| tomistys | `tomistys_1`, `tomistys_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni) | low thump footstep, heavy stomp, deep impact, demon lord heavy |
-| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | panssarin ja luiden palat putoavat | armor pieces fall, bones clatter heavy |
-| huitaisu | `huitaisu_1`, `huitaisu_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | hyökkäyksen viuhahdus iskun hetkellä | swipe whoosh, claw swing, demon lord heavy |
-| ryntays_lataus | `ryntays_lataus_1`, `ryntays_lataus_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | ryntäyksen lataus: pomo kumartuu ja kerää voimaa (0,6 s ennen syöksyä) | monster charge up growl, heavy breath windup, demon lord heavy |
-| ryntays | `ryntays_1`, `ryntays_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | ryntäys: raskas syöksy eteenpäin | monster charge rush roar, heavy stampede dash, demon lord heavy |
+| tomistys | `tomistys_1`, `tomistys_2` | ✅ oma: _1 (1 kpl) | matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni) | low thump footstep, heavy stomp, deep impact, demon lord heavy |
+| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | 🔁 lainaa: pomot/kaatuminen | panssarin ja luiden palat putoavat | armor pieces fall, bones clatter heavy |
+| huitaisu | `huitaisu_1`, `huitaisu_2` | ✅ oma: _1 (1 kpl) | hyökkäyksen viuhahdus iskun hetkellä | swipe whoosh, claw swing, demon lord heavy |
+| ryntays_lataus | `ryntays_lataus_1`, `ryntays_lataus_2` | 🔁 lainaa: pomot/ryntays_lataus | ryntäyksen lataus: pomo kumartuu ja kerää voimaa (0,6 s ennen syöksyä) | monster charge up growl, heavy breath windup, demon lord heavy |
+| ryntays | `ryntays_1`, `ryntays_2` | 🔁 lainaa: pomot/ryntays | ryntäys: raskas syöksy eteenpäin | monster charge rush roar, heavy stampede dash, demon lord heavy |
 
-### 🌳 Aarnihirviö (oma, muuten pomot) – `aarnihirvio/` (0/5 ääntä)
+### 🌳 Aarnihirviö (oma, muuten pomot) – `aarnihirvio/` (1/5 ääntä)
 
 🔁 Lainaa `pomot/`-kansiosta. Lisää tähän oma ääni samalla nimellä, niin se valitaan ensin.
 
@@ -211,33 +212,33 @@ Jäsenet: Aarnihirviö. Iso: kovempi, askeleet kuuluvat 40 m. Pomo: askeleet tä
 
 | Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- |
-| tomistys | `tomistys_1`, `tomistys_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni) | low thump footstep, heavy stomp, deep impact, giant tree creature wood |
-| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | puun kappaleet putoavat ja natisevat | wood chunks fall, timber crash |
+| tomistys | `tomistys_1`, `tomistys_2` | ✅ oma: _1 (1 kpl) | matala tömähdys joka askeleella (soi askeleen kanssa yhtä aikaa, lyhyt ja pieni) | low thump footstep, heavy stomp, deep impact, giant tree creature wood |
+| kaatuminen | `kaatuminen_1`, `kaatuminen_2` | 🔁 lainaa: pomot/kaatuminen | puun kappaleet putoavat ja natisevat | wood chunks fall, timber crash |
 | huitaisu | `huitaisu_1`, `huitaisu_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | hyökkäyksen viuhahdus iskun hetkellä | swipe whoosh, claw swing, giant tree creature wood |
-| ryntays_lataus | `ryntays_lataus_1`, `ryntays_lataus_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | ryntäyksen lataus: pomo kumartuu ja kerää voimaa (0,6 s ennen syöksyä) | monster charge up growl, heavy breath windup, giant tree creature wood |
-| ryntays | `ryntays_1`, `ryntays_2` | ⬜ puuttuu (lainaa pomot-kansiosta, kun sinne lisätään) | ryntäys: raskas syöksy eteenpäin | monster charge rush roar, heavy stampede dash, giant tree creature wood |
+| ryntays_lataus | `ryntays_lataus_1`, `ryntays_lataus_2` | 🔁 lainaa: pomot/ryntays_lataus | ryntäyksen lataus: pomo kumartuu ja kerää voimaa (0,6 s ennen syöksyä) | monster charge up growl, heavy breath windup, giant tree creature wood |
+| ryntays | `ryntays_1`, `ryntays_2` | 🔁 lainaa: pomot/ryntays | ryntäys: raskas syöksy eteenpäin | monster charge rush roar, heavy stampede dash, giant tree creature wood |
 
-### 💥 Osumat – kun olento osuu toiseen (esim. pelaajaan) tai nuoli osuu – `osumat/` (0/6 ääntä)
+### 💥 Osumat – kun olento osuu toiseen (esim. pelaajaan) tai nuoli osuu – `osumat/` (5/6 ääntä)
 
 Jäsenet: kaikki olennot.
 
 | Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- |
-| osuma_raapaisu | `osuma_raapaisu_1`, `osuma_raapaisu_2` | ⬜ puuttuu (hiljaa) | kynnet raapaisevat (ilves, karhut, Suonäkki) | claw scratch hit, slash flesh |
-| osuma_purema | `osuma_purema_1`, `osuma_purema_2` | ⬜ puuttuu (hiljaa)<br>🎯 lisää ensin (kuuluu usein) | purema (sudet, ahma, emakko, porsas, kettu, jänis) | bite hit, animal bite snap |
-| osuma_murskaus | `osuma_murskaus_1`, `osuma_murskaus_2` | ⬜ puuttuu (hiljaa) | raskas murskaava isku (kivivartija, Kalmanvartija, Jäätär, Aarnihirviö, Jäätären heittokivi) | heavy crush impact, smash hit |
+| osuma_raapaisu | `osuma_raapaisu_1`, `osuma_raapaisu_2` | ✅ oma: _1, _2 (2 kpl) | kynnet raapaisevat (ilves, karhut, Suonäkki) | claw scratch hit, slash flesh |
+| osuma_purema | `osuma_purema_1`, `osuma_purema_2` | ✅ oma: _1, _2 (2 kpl) | purema (sudet, ahma, emakko, porsas, kettu, jänis) | bite hit, animal bite snap |
+| osuma_murskaus | `osuma_murskaus_1`, `osuma_murskaus_2` | ✅ oma: _1, _2 (2 kpl) | raskas murskaava isku (kivivartija, Kalmanvartija, Jäätär, Aarnihirviö, Jäätären heittokivi) | heavy crush impact, smash hit |
 | osuma_sarvet | `osuma_sarvet_1`, `osuma_sarvet_2` | ⬜ puuttuu (hiljaa) | sarvet tai torahampaat iskevät (peura, poro, hirvi, hiidenhirvi, karju) | antler horn hit, ram impact |
-| osuma_isku | `osuma_isku_1`, `osuma_isku_2` | ⬜ puuttuu (hiljaa) | ase tai nyrkki osuu (hiisi, kalmot, ylimys, Kalmaherra, metso nokkaisee) | weapon hit body, punch impact |
-| osuma_nuoli | `osuma_nuoli_1`, `osuma_nuoli_2` | ⬜ puuttuu (hiljaa) | nuoli osuu (jousikalmon nuoli pelaajaan, pelaajan nuoli olentoon) | arrow hit flesh, arrow impact thud |
+| osuma_isku | `osuma_isku_1`, `osuma_isku_2` | ✅ oma: _1, _2 (2 kpl) | ase tai nyrkki osuu (hiisi, kalmot, ylimys, Kalmaherra, metso nokkaisee) | weapon hit body, punch impact |
+| osuma_nuoli | `osuma_nuoli_1`, `osuma_nuoli_2` | ✅ oma: _1, _2 (2 kpl) | nuoli osuu (jousikalmon nuoli pelaajaan, pelaajan nuoli olentoon) | arrow hit flesh, arrow impact thud |
 
-### 🧱 Törmäykset – juoksuvauhdissa esteeseen (puu, kivi, seinä) – `tormaykset/` (0/2 ääntä)
+### 🧱 Törmäykset – juoksuvauhdissa esteeseen (puu, kivi, seinä) – `tormaykset/` (2/2 ääntä)
 
 Jäsenet: kaikki olennot.
 
 | Ääni | Tiedostot (paikat _1, _2; lisää _3 … vapaasti) | Tila | Millainen ääni | Hakusanat (englanniksi) |
 | --- | --- | --- | --- | --- |
-| tormays_kevyt | `tormays_kevyt_1`, `tormays_kevyt_2` | ⬜ puuttuu (hiljaa)<br>🎯 lisää ensin (kuuluu usein) | tavallinen olento juoksee esteeseen (puu, kivi, seinä) – tömähdys, rasahdus | body bump into tree, thud collision light |
-| tormays_raskas | `tormays_raskas_1`, `tormays_raskas_2` | ⬜ puuttuu (hiljaa) | raskas olento tai pomo juoksee esteeseen (karhu, kivivartija, pomot) – kova rysähdys | heavy body crash into tree, big impact thud |
+| tormays_kevyt | `tormays_kevyt_1`, `tormays_kevyt_2` | ✅ oma: _1 (1 kpl) | tavallinen olento juoksee esteeseen (puu, kivi, seinä) – tömähdys, rasahdus | body bump into tree, thud collision light |
+| tormays_raskas | `tormays_raskas_1`, `tormays_raskas_2` | ✅ oma: _1 (1 kpl) | raskas olento tai pomo juoksee esteeseen (karhu, kivivartija, pomot) – kova rysähdys | heavy body crash into tree, big impact thud |
 
 ### 🌐 Yhteiset (kaikki olennot, sävel koon mukaan) – `yhteiset/` (3/3 ääntä)
 
