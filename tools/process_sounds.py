@@ -573,7 +573,7 @@ HIT_FI = {'raapaisu': ('kynnet raapaisevat (ilves, karhut, Suonäkki)', 'claw sc
 LOOP_EV = {'palaminen'}   # v2.22: silmukat – ei hiljaisuuden leikkausta eikä häivytyksiä; sauma ristihäivytetään (saumaton silmukka)
 # v2.23: toimintosilmukat (käyttäjän pyyntö): pitkä raaka saa olla pitkä – käsitellään saumattomaksi silmukaksi (enintään 20 s); peli soittaa
 # sitä niin kauan kuin eläin tekee toimintoa (syö, tonkii, nuuhkii) ja pysäyttää pehmeästi, kun toiminto loppuu
-ACT_EV = {'syominen_laidun', 'syominen_tonkiminen', 'syominen_rouskutus', 'syominen_nakerrus', 'nuuhkiminen', 'juominen'}   # v2.24 juominen
+ACT_EV = {'syominen_laidun', 'syominen_tonkiminen', 'syominen_rouskutus', 'syominen_nakerrus', 'nuuhkiminen', 'juominen', 'sydan'}   # v2.24 juominen, v2.25 pelaajan sydämen syke (silmukka)
 def step_like(ev):
     """v2.23: askelmaiset äänet – kohinanpoisto, vain ensimmäinen tapahtuma (yksi askel), pitkästä nauhoituksesta useita pätkiä."""
     return ev.startswith('askel_') or ev in ('tomistys', 'kalina', 'oksa')
@@ -602,9 +602,18 @@ T_PROF = {'askel': (.5, .8, .05, -27), 'kahlaus': (1.2, 1.5, .15, -25), 'uinti':
           'nousu': (1.5, 2.0, .2, -25), 'kalina': (1.0, 1.0, .15, -27), 'ravistus': (1.5, 1.5, .2, -23), 'nuuhkiminen': (1.5, 1.5, .2, -27),
           'syominen': (2.5, 2.5, .3, -25), 'juominen': (2.5, 2.5, .3, -26), 'lentoonlahto': (2.0, 2.0, .3, -19), 'palaminen': (3.0, 3.0, .15, -24), 'kahina': (1.2, 1.2, .15, -25),
           'loiskahdus': (1.2, 1.5, .2, -21), 'ryntays': (2.0, 2.5, .25, -18), 'tomistys': (.6, .9, .08, -26)}
+# v2.25: pelaajan osien äänet (yläraja s, iso, häivytys s, LUFS); puuttuva avain → T_DEF (työkalu ei kaadu uuteen ääneen)
+T_PROF.update({'alastulo': (.6, .8, .08, -24), 'puska': (1.2, 1.2, .15, -24), 'lataus': (.8, .8, .1, -24), 'torjunta': (.8, .8, .1, -19), 'ei': (.6, .6, .08, -21),
+               'puu': (3.0, 3.0, .3, -18), 'tukki': (1.2, 1.2, .15, -20), 'kivi': (1.5, 1.5, .2, -19), 'veto': (1.2, 1.2, .1, -24), 'laukaus': (.8, .8, .1, -21),
+               'asetus': (1.0, 1.0, .1, -21), 'purku': (1.2, 1.2, .15, -21), 'korjaus': (1.0, 1.0, .1, -21), 'valmistus': (1.5, 1.5, .15, -22),
+               'poiminta': (.6, .6, .08, -22), 'arkku': (1.2, 1.2, .15, -22), 'reppu': (.8, .8, .1, -24), 'rakennusvalikko': (.8, .8, .1, -24), 'kartta': (.8, .8, .1, -24),
+               'sulje': (.5, .5, .08, -25), 'kipu': (1.0, 1.0, .1, -18), 'kuolema': (3.0, 3.0, .3, -17), 'sydan': (3.0, 3.0, .2, -22), 'hengastys': (3.0, 3.0, .3, -22),
+               'haukkoo': (2.0, 2.0, .2, -21), 'hytina': (2.5, 2.5, .3, -23), 'vatsa': (2.5, 2.5, .3, -24), 'mahakipu': (2.0, 2.0, .2, -21),
+               'pahoinvointi': (2.5, 2.5, .3, -21), 'kylla': (2.0, 2.0, .2, -23), 'lammin': (2.5, 2.5, .3, -23), 'levannyt': (2.5, 2.5, .3, -23)})
+T_DEF = (1.5, 1.5, .15, -22)
 def t_prof(ev, big):
     k = 'kahlaus' if ev == 'askel_kahlaus' else 'uinti' if ev == 'askel_uinti' else ev.split('_')[0]
-    a, b, f, t = T_PROF[k]
+    a, b, f, t = T_PROF.get(k, T_DEF)
     return (a, b, f, t + (2 if big else 0))
 T_SLOTS = 2   # paikkamerkkejä per ääni (_1, _2); lisää _3, _4 … vapaasti
 EV_FI = {   # kuvaus ja oletushakusanat (englanniksi)
@@ -676,7 +685,9 @@ def t_allowed(g):
 P_PARTS = [   # (osa, kansio, otsikko, [(ryhmä, nimi, emoji, [(ääni, milloin soi, hakusanat), …]), …])
     (1, 'pelaaja_1_liike', 'Osa 1 – liike', [
         ('askeleet', 'Askeleet', '👣', [(f'askel_{x}', f'askel: {SURF_FI[x]}', STEP_KEYS[x].replace('footstep', 'player footstep')) for x in LAND]
-         + [('alastulo', 'hypyn tai pudotuksen alastulo (ilman tätä soi askel)', 'jump landing, land on ground thud')]),
+         + [('alastulo', 'hypyn tai pudotuksen alastulo (ilman tätä soi askel)', 'jump landing, land on ground thud'),
+            ('puska', 'kävelet pensaan läpi (heti, enintään 2 s välein) ja satunnaisesti Aarnimetsässä', 'walking through bush rustle, leaves brushing'),
+            ('oksa', 'oksa rasahtaa satunnaisesti Aarnimetsässä (enintään 2 s välein)', 'twig snap, branch crack footstep')]),
         ('vesi', 'Vesi', '💧', [('askel_kahlaus', 'kahlaa matalassa vedessä (joka askeleella)', 'wading water footsteps'),
                                ('askel_uinti', 'uintiveto (noin kerran sekunnissa uidessa)', 'swimming stroke splash'),
                                ('loiskahdus', 'menee tai putoaa veteen (kova pudotus = isompi)', 'splash into water, jump into water')])]),

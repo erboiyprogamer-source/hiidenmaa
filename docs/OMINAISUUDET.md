@@ -224,6 +224,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## 9. Viholliset ja eläimet (mobs.js, ai.js)
 
 - **Nopeudet −15 %** (`MOB_SPD` 0,85 kaikessa liikkeessä).
+- **Terveyspalkit (v2.26):** piilossa, kunnes tähtäin on olennon päällä (alle 12 m, vaikeat ≥ 3 kalloa alle 70 m). Jos olento ei ole täysissä
+  voimissa, palkki näkyy myös, kun olento on 10 % ruudun leveydestä tähtäimen ympärillä (~13°, alle 20 m). Vahingon jälkeen palkki näkyy 5 s
+  katsomatta – paitsi jos olento on yli 40 m päässä ja maaston tai esteiden takana. (Alla vanhemmat säännöt; nämä korvaavat ne.)
 - **Terveyspalkit (v1.21):** rivi = 100 hp, rivit päällekkäin (enint. 5, ylin tyhjenee ensin), yli 500 hp:lla toinen värikerros (oranssi).
 - **Terveyspalkit:** mobin yläpuolella (mallin korkeus + 0,45 m), nimi ja pääkallot palkin yllä; näkyy kun katse osuu mobiin (~11°, vahvat ~9°)
   alle 12 m (vahvat 70 m) tai 10 s osuman jälkeen. Pomoilla oma palkki ruudun yläreunassa.
@@ -524,6 +527,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
   Puuttuva ääni = hiljaisuus. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **v2.26 pensaat ja askeleet:** pelaaja kävelee pensaan läpi → heti pusikkoaskel ja puska-ääni (täysi voimakkuus), enintään 2 s välein;
+  Aarnimetsässä lisäksi satunnaisesti oksa tai puska (14 % askelista, 2 s tauko). Olennot pensaan läpi → kahina (2 s välein). Pelaajan askeleet
+  20 % hiljempaa, ja kaikkien pelaajan äänten voimakkuus vaihtelee ±5 % joka kerta.
 - **v2.25 sudet:** suuttumis- ja jahtiääni 30 % hiljempaa ja kantama 20 % lyhyempi; ulvonta kuuluu 15 % lyhyemmälle (~128 m, yöulvonta 85–123 m).
 - **v2.25 karhun syöksyisku:** karhu ja hiidenkarhu kyyristyvät, ponnistavat takajaloilla ja loikkaavat 3–6 m:n päästä lyöden toisella käpälällä
   (vahinko ×1,15, tönäisy); enintään 4 s välein. Puita kaatava karhu ei tömähdä kaatamiinsa puihin.

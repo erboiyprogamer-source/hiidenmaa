@@ -8,6 +8,8 @@
 7,👣 Askeleet,askel_jaa,✅ valmis (1),askel_jaa_1,askel: Routaluolan jää,player footstep ice
 8,👣 Askeleet,askel_pusikko,✅ valmis (1),askel_pusikko_1,"askel: Aarnimetsä: pusikon ja lehvien läpi kulkeminen (välillä oksa rasahtaa, ks. oksa)",walking through bushes leaves
 9,👣 Askeleet,alastulo,⬜ puuttuu,lisää: alastulo.mp3,hypyn tai pudotuksen alastulo (ilman tätä soi askel),"jump landing, land on ground thud"
-10,💧 Vesi,askel_kahlaus,✅ valmis (1),askel_kahlaus_1 (+4 pätkää),kahlaa matalassa vedessä (joka askeleella),wading water footsteps
-11,💧 Vesi,askel_uinti,✅ valmis (3),"askel_uinti_1, askel_uinti_2, askel_uinti_3",uintiveto (noin kerran sekunnissa uidessa),swimming stroke splash
-12,💧 Vesi,loiskahdus,✅ valmis (2),"loiskahdus_1, loiskahdus_2",menee tai putoaa veteen (kova pudotus = isompi),"splash into water, jump into water"
+10,👣 Askeleet,puska,✅ valmis (1),puska_1,"kävelet pensaan läpi (heti, enintään 2 s välein) ja satunnaisesti Aarnimetsässä","walking through bush rustle, leaves brushing"
+11,👣 Askeleet,oksa,✅ valmis (2),"oksa_1, oksa_2",oksa rasahtaa satunnaisesti Aarnimetsässä (enintään 2 s välein),"twig snap, branch crack footstep"
+12,💧 Vesi,askel_kahlaus,✅ valmis (1),askel_kahlaus_1 (+4 pätkää),kahlaa matalassa vedessä (joka askeleella),wading water footsteps
+13,💧 Vesi,askel_uinti,✅ valmis (3),"askel_uinti_1, askel_uinti_2, askel_uinti_3",uintiveto (noin kerran sekunnissa uidessa),swimming stroke splash
+14,💧 Vesi,loiskahdus,✅ valmis (2),"loiskahdus_1, loiskahdus_2",menee tai putoaa veteen (kova pudotus = isompi),"splash into water, jump into water"

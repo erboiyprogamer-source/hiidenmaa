@@ -261,7 +261,8 @@ function tgSurface(m,g){if(m.dun)return m.realm==='portal1'?'jaa':m.realm==='por
   const b=biomeAt(x,z,th);return b==='beach'?'hiekka':b==='mountain'||b==='rakka'?'kivi':b==='peak'?'lumi':b==='suo'?'suo':b==='aarni'?'pusikko':'ruoho';}
 function tgStep(m,g,d,spd){const sf=tgSurface(m,g),run=spd>(m.def.walk||1.5)*1.4,sv=(.55+.45*clamp(spd/(m.def.run||4),0,1))*(.82+Math.random()*.18);   /* v2.23: askelten voimakkuus vaihtelee luonnollisesti */tgSnd(m,'askel_'+sf,{v:sv});
   {const ly=TG_STEP_LAYER[g];if(ly&&sf!=='uinti'&&!(ly==='tomistys'&&sf==='kahlaus'))tgPlay(m,ly,g,{v:ly==='kalina'?.7:sv},true);}   // v2.21: tömistys / kalina askeleen päälle
-  if(sf==='pusikko'&&Math.random()<.15&&playTime-(m.okT??-9)>=2){m.okT=playTime;tgSnd(m,'oksa',{v:.45});}   // v2.21: hiljempaa (0,8 → 0,45), enintään 2 s välein
+  if(sf==='pusikko'&&Math.random()<.15&&playTime-(m.okT??-9)>=2){m.okT=playTime;tgSnd(m,'oksa',{v:.45});}
+  if(!m.dun&&playTime-(m.puT??-9)>=2&&plBush(m.pos.x,m.pos.z,(m.def.r||.5)*.6)){m.puT=playTime;tgSnd(m,'kahina',{g:'yhteiset',p:tgSize(m),v:.8});}   // v2.25 pensaan läpi (2 s välein)   // v2.21: hiljempaa (0,8 → 0,45), enintään 2 s välein
   if(run&&!m.dun&&TG_RUSTLE[biomeHere(m.pos.x,m.pos.z)]&&Math.random()<.35&&playTime-(m.khT??-9)>.7){m.khT=playTime;tgSnd(m,'kahina',{g:'yhteiset',p:tgSize(m),v:.8});}
   if(TG_BOSS.has(g)&&d<15)shake(.12*(1-d/15));}
 function tgTick(dt){if(!CRE.ok||state!=='play')return;
@@ -291,7 +292,7 @@ function tgTick(dt){if(!CRE.ok||state!=='play')return;
    ja hypyn alastulo; vesi/: kahlaus askeleittain, uintiveto joka toisella vaiheella, loiskahdus veteen mennessä (kova pudotus kovempi);
    osumat/: pelaajan isku osuu olentoon (nuija = murskaus, muut = isku) ja pelaajan nuoli osuu (nuoli). Soi pelaajan kohdalta ilman
    kaukoefektiä (luolastossa pieni kaiku), voimakkuus SET.plVol (Asetukset › Ohjaus ja ääni › Pelaajan äänet). Oma budjetti 6 ääntä. */
-const PLV={v:[],last:{},loaded:0,gain:null,ph:null,wet:0,og:1,vy0:0,loops:{},lpRetry:{},cd:{},hp0:null,st:{}};
+const PLV={v:[],last:{},loaded:0,gain:null,ph:null,wet:0,og:1,vy0:0,loops:{},lpRetry:{},cd:{},hp0:null,st:{},bushT:-9};
 function plRes(g,ev){if(!CRE.man)return null;if(CRE.idxOf!==CRE.man)creIndex();return CRE.idx[`p/${g}/${ev}`]||null;}
 function plLoad(){if(PLV.loaded||!CRE.ok)return;PLV.loaded=1;for(const n in CRE.man)if(n.startsWith('p/'))creBuf(n);}
 function plSnd(g,ev,o){o=o||{};creInit();if(!CRE.ok)return false;plLoad();const L0=plRes(g,ev);if(!L0)return false;const L=L0.filter(n=>CRE.buf[n]);if(!L.length)return false;
@@ -301,7 +302,7 @@ function plSnd(g,ev,o){o=o||{};creInit();if(!CRE.ok)return false;plLoad();const 
   if(!PLV.gain){PLV.gain=a.createGain();PLV.gain.connect(a.destination);}PLV.gain.gain.value=vol;
   const B=CRE.buf[name],q=o.pos||P.pos,src=a.createBufferSource();src.buffer=B;src.playbackRate.value=(o.p||1)*(o.loop?1:1+(Math.random()*2-1)*.05);
   if(o.loop){src.loop=true;const lp=tgLoopPts(B);src.loopStart=lp[0];src.loopEnd=lp[1];}
-  const gn=a.createGain();gn.gain.value=o.loop?0:(o.v??1)*(.85+Math.random()*.15);if(o.loop)gn.gain.linearRampToValueAtTime(o.v??1,a.currentTime+.4);const pn=a.createPanner();pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=4;pn.maxDistance=60;pn.rolloffFactor=1;
+  const gn=a.createGain();gn.gain.value=o.loop?0:(o.v??1)*(1+(Math.random()*2-1)*.05);   /* v2.25: voimakkuus ±5 % joka kerta */if(o.loop)gn.gain.linearRampToValueAtTime(o.v??1,a.currentTime+.4);const pn=a.createPanner();pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=4;pn.maxDistance=60;pn.rolloffFactor=1;
   src.connect(gn);gn.connect(pn);pn.connect(PLV.gain);crePos(pn,q.x,(q.y??P.pos.y)+.2,q.z);
   let sd=null;if(P.inDun){const R=creRevOn(a);sd=a.createGain();sd.gain.value=.25;pn.connect(sd);sd.connect(R.inp);}
   const v={src,sd,g:gn,loop:!!o.loop};if(!o.loop)PLV.v.push(v);src.onended=()=>{v.done=1;try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return o.loop?v:B.duration;}
@@ -320,10 +321,16 @@ function plTick(dt){plBody(dt);if(state!=='play'||P.dead||P.flying){PLV.ph=null;
   else if(!inW&&dep<.15)PLV.wet=0;
   if(P.onGround&&!PLV.og&&PLV.vy0<-4&&!inW){const lv=clamp(-PLV.vy0/9,.6,1);if(!plSnd('askeleet','alastulo',{v:lv}))plSnd('askeleet','askel_'+plSurface(),{v:lv,p:.92});}   // hypyn alastulo (v2.25 oma ääni, muuten askel)
   PLV.og=P.onGround;PLV.vy0=P.vy;
+  if(!P.inDun&&!inW&&hv>.6&&P.onGround&&playTime-PLV.bushT>=2&&plBush(P.pos.x,P.pos.z,.3)){PLV.bushT=playTime;plSnd('askeleet','puska');plSnd('askeleet','askel_pusikko',{v:.72*PL_STEP_V});}   // v2.25 pensaan läpi heti
   const k=Math.floor(((P.walkPh||0)+Math.PI/2)/Math.PI);if(PLV.ph===null){PLV.ph=k;return;}if(k===PLV.ph)return;PLV.ph=k;if(hv<.6)return;
   if(P.swim){if(k%2===0)plSnd('vesi','askel_uinti',{v:.8});return;}
-  if(!P.onGround||P.onLadder)return;const v=P.crouch?.4:hv>5.5?1:.72;
-  if(dep>.05&&P.pos.y<wy+.05)plSnd('vesi','askel_kahlaus',{v});else plSnd('askeleet','askel_'+plSurface(),{v});}
+  if(!P.onGround||P.onLadder)return;const v=(P.crouch?.4:hv>5.5?1:.72)*PL_STEP_V;
+  if(dep>.05&&P.pos.y<wy+.05)plSnd('vesi','askel_kahlaus',{v});else{const sf=plSurface();plSnd('askeleet','askel_'+sf,{v});
+    if(sf==='pusikko'&&Math.random()<.14&&playTime-PLV.bushT>=2){PLV.bushT=playTime;plSnd('askeleet',Math.random()<.5?'oksa':'puska',{v:.9});}}}   // Aarnimetsässä satunnaisesti
+/* v2.25 PENSAAT (käyttäjä): pelaaja kävelee pensaan läpi → heti pusikkoaskel + puska-ääni (täysi voimakkuus), enintään 2 s välein (PLV.bushT);
+   Aarnimetsässä lisäksi satunnaisesti (14 % askelista) oksa tai puska samalla 2 s tauolla. Pelaajan askeleet 20 % hiljempaa (PL_STEP_V). */
+const PL_STEP_V=.8,_plN=[];
+function plBush(x,z,r){nodesNear(x,z,2.2,_plN);for(const n of _plN)if(n.type==='pensas'&&Math.hypot(n.x-x,n.z-z)<.9*n.s+r)return true;return false;}
 /* v2.25 OSA 3 – PELAAJAN ÄÄNET (sounds/pelaaja_3_aanet/): kipu terveyden laskusta syyn mukaan (palaminen → kipu_tuli 1,6 s välein,
    hukkuminen → kipu_hukkuminen 1,5 s, nälkä → kipu_nalka 7 s, putoaminen, iso osuma yli 20 % → kipu_kova, muuten kipu 0,35 s tauolla),
    kuolema (hukkuessa oma). Keho: sydämen syke silmukkana kun terveys alle 30 % tai iso paha olento (stalk: hiidenkarhu, hiidenhirvi,

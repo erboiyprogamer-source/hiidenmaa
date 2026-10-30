@@ -359,6 +359,10 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Korjaus: oma törmäyssäde `NODE.cr` (Aarnipuu 1,0), `addCircle(...(n.def.cr||n.def.r)*n.s...)` molemmissa kohdissa (resources.js). `r` jäi lyöntietäisyydelle.
   Uutta isoa mallia tehdessä: tarkista, että törmäys kattaa laatikon kulmat (puolikas × √2).
 
+## 51. Äänityökalu kaatui uuteen ääneen ilman käsittelyprofiilia (v2.26)
+- Syy: `t_prof` haki `T_PROF[ev.split('_')[0]]` suoraan → uusi äänen nimi (esim. `puska`, `kipu`) antoi KeyError ja koko ajo keskeytyi.
+- Korjaus: `T_PROF.get(k, T_DEF)` + profiilit kaikille pelaajan osien äänille. Uutta ääntä lisätessä lisää sille profiili `T_PROF`:iin (muuten käytetään `T_DEF`).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

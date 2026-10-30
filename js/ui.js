@@ -18,18 +18,27 @@ function updateFloaters(dt){for(let i=floaters.length-1;i>=0;i--){const f=floate
 // värikerros (oranssi) rivien päällä. Nimi ja kallot nousevat rivien mukana (pino kasvaa ylöspäin, ei peitä mobia).
 // Pomot, joilla on ruudun yläreunan palkki (Kalmanvartija, ulottuvuuspomot), eivät saa palkkia pään päälle.
 const mobBars=[];for(let i=0;i<8;i++){const d=document.createElement('div');d.className='mobbar';d.innerHTML='<div class="rows">'+'<div class="r"><i class="a"></i><i class="b"></i></div>'.repeat(5)+'</div><span class="nm"></span><span class="sk"></span>';d.hidden=true;$('#floaters').appendChild(d);mobBars.push(d);}
-// Terveyspalkit: näkyvät 10 s iskusta tai kun pelaaja katsoo mobia läheltä (< 12 m); vaikeat (≥3 pääkalloa) jo kaukaa (< 70 m).
+// Terveyspalkit (v2.25, käyttäjä): piilossa, kunnes katsot olentoa suoraan (tähtäin olennon päällä; alle 12 m, vaikeat ≥3 pääkalloa alle 70 m).
+// Jos olento ei ole täysissä voimissa, palkki näkyy myös kun se on 10 % ruudun leveydestä tähtäimen ympärillä (~13°; alle 20 m, vaikeat 70 m).
+// Vahingon jälkeen (m.hurtT) palkki näkyy 5 s katsomatta (ennen 10 s) – paitsi jos olento on tosi kaukana (yli 40 m) ja maaston tai esteiden takana.
 // Yksi kerros = pelaajan perusterveys (60); useampikerroksinen palkki on pidempi ja kerrokset eri värisiä. Alla pääkallot vaikeustasosta.
-const HP_ROW=100,HP_ROWS=5,_cd=new V3();
+const HP_ROW=100,HP_ROWS=5,_cd=new V3(),BAR_HURT_T=5,BAR_AIM_K=.1,BAR_FAR=40;
+// v2.25: näkyykö olento kameralle (maasto 10 pisteestä + esteet losClear), tulos muistissa 0,3 s
+function barSeen(m){if(playTime-(m.bsT??-9)<.3)return m.bsV;m.bsT=playTime;const c=camera.position,ty=m.pos.y+m.barH*.6;let ok=true;
+  for(let i=1;i<10&&ok&&!P.inDun;i++){const k=i/10,x=c.x+(m.pos.x-c.x)*k,z=c.z+(m.pos.z-c.z)*k;if(terrainH(x,z)>c.y+(ty-c.y)*k+.1)ok=false;}
+  if(ok)ok=losClear(c.x,c.y,c.z,m.pos.x,ty,m.pos.z);return m.bsV=ok;}
 const _mbB=new THREE.Box3();
 function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
   for(const m of mobs){if(k>=mobBars.length)break;if(m.dead||m===boss||m.def.ai==='rboss'||m.dun!==P.inDun)continue;
-    const sk=MOB_SKULL[m.type]||0,d=Math.hypot(m.pos.x-P.pos.x,m.pos.z-P.pos.z),recent=playTime-m.hurtT<10;
+    const sk=MOB_SKULL[m.type]||0,d=Math.hypot(m.pos.x-P.pos.x,m.pos.z-P.pos.z),recent=playTime-m.hurtT<BAR_HURT_T,full=m.hp>=m.maxHp-.01;
     // Mallin todellinen korkeus (kerran mobia kohden): palkki 0,45 m pään/sarvien yläpuolelle (v0.73, ennen r × 2,8 + 0,8 → osui päähän).
     if(m.barH===undefined){m.f.g.updateMatrixWorld(true);_mbB.setFromObject(m.f.g);m.barH=Math.max(.6,_mbB.max.y-m.f.g.position.y);}
-    // Näkyy vain, kun katse osuu mobiin selvästi (kulma ~11°, vahvoilla ~9°) – ennen 22°/18°; lyöty mobi näkyy 10 s aina.
-    const ex=m.pos.x-camera.position.x,ey=m.pos.y+m.barH*.55-camera.position.y,ez=m.pos.z-camera.position.z,el=Math.hypot(ex,ey,ez)||1,look=(ex*_cd.x+ey*_cd.y+ez*_cd.z)/el>(sk>=3?.988:.982);
-    if(!(recent||(look&&(d<12||(sk>=3&&d<70)))))continue;
+    // v2.25: suora katse = tähtäin olennon päällä; muut säännöt yllä (vahingoittunut 10 % ympärillä, vahingon jälkeen 5 s).
+    const ex=m.pos.x-camera.position.x,ey=m.pos.y+m.barH*.55-camera.position.y,ez=m.pos.z-camera.position.z,el=Math.hypot(ex,ey,ez)||1,look=Math.acos(clamp((ex*_cd.x+ey*_cd.y+ez*_cd.z)/el,-1,1))<Math.max(.035,Math.atan2(Math.max((m.def.r||.5)*1.2,m.barH*.45)+.15,el));   /* v2.25: tähtäin olennon päällä (kulma koon mukaan, vähintään 2°) */
+    let show=look&&(d<12||(sk>=3&&d<70));
+    if(!show&&!full&&(d<20||(sk>=3&&d<70))){_tmpV.set(m.pos.x,m.pos.y+m.barH*.55,m.pos.z).project(camera);show=_tmpV.z<1&&Math.hypot(_tmpV.x*innerWidth/2,_tmpV.y*innerHeight/2)<innerWidth*BAR_AIM_K;}
+    if(!show&&recent)show=d<=BAR_FAR||barSeen(m);
+    if(!show)continue;
     _tmpV.set(m.pos.x,m.pos.y+m.barH+.45,m.pos.z).project(camera);if(_tmpV.z>1||Math.abs(_tmpV.x)>1.1||Math.abs(_tmpV.y)>1.1)continue;
     const b=mobBars[k++],cap=HP_ROW*HP_ROWS,n=Math.min(HP_ROWS,Math.ceil(Math.min(m.maxHp,cap)/HP_ROW)),hp=Math.max(0,m.hp),rows=b.firstChild.children;
     b.hidden=false;b.style.left=((_tmpV.x+1)/2*innerWidth)+'px';b.style.top=((1-_tmpV.y)/2*innerHeight)+'px';

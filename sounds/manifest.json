@@ -870,6 +870,33 @@
    "raw": 0.6,
    "f": "pelaaja_1_liike/valmiit/askeleet_valmis/askel_suo_3.mp3"
   },
+  "p/askeleet/oksa_1": {
+   "h": "be1257edb6",
+   "src": "0a4c537554b1",
+   "dur": 0.49,
+   "pv": 6,
+   "gain": 9.2,
+   "raw": 0.69,
+   "f": "pelaaja_1_liike/valmiit/askeleet_valmis/oksa_1.mp3"
+  },
+  "p/askeleet/oksa_2": {
+   "h": "e2dfee5fef",
+   "src": "13fcfabcd239",
+   "dur": 0.15,
+   "pv": 6,
+   "gain": 2.0,
+   "raw": 0.18,
+   "f": "pelaaja_1_liike/valmiit/askeleet_valmis/oksa_2.mp3"
+  },
+  "p/askeleet/puska_1": {
+   "h": "12c2d76fdd",
+   "src": "6dbad79dc4ca",
+   "dur": 1.15,
+   "pv": 6,
+   "gain": -1.7,
+   "raw": 1.16,
+   "f": "pelaaja_1_liike/valmiit/askeleet_valmis/puska_1.mp3"
+  },
   "p/osumat/osuma_isku_1": {
    "h": "4d585ab5a4",
    "src": "ed40bf9961d9",

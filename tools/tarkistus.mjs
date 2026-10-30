@@ -49,7 +49,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('yksityiskohtaiset eläimet (makeAnimal)',()=>['peura','karju','susi','routasusi'].every(k=>{const m=spawnMob(k,P.pos.x+20,P.pos.z+20);const ok=m.f.animal&&!!m.f.legs[0].userData.knee;mobRemove(m);return ok;}));
   t('vasara roikkuu vyöllä takana',()=>{g.invAdd('vasara',1);g.invAdd('kirves',1);const kv=inv.find(s=>s&&s.id==='kirves');if(!kv.eq)toggleEquip(kv);updateGear();return !!backHang&&Math.abs(backHang.position.y-.94)<.05;});
   t('lyönti ei mene vartalon läpi (armClear)',()=>{const kv=inv.find(s=>s&&s.id==='kirves');if(!kv.eq)toggleEquip(kv);updateGear();locked=true;let bad=0;for(let sw=0;sw<2;sw++){P.atk=null;P.stam=100;for(let i=0;i<10;i++)g.update(1/30);mouseL=true;g.update(1/30);mouseL=false;for(let f=0;f<30&&P.atk;f++){g.update(1/30);if(bodyPen(fig.hand,.05)>0||bodyPen(fig.handL,.05)>0||bodyPen(fig.elbowL,.04)>0||bodyPen(fig.elbowR,.04)>0)bad++;}}return bad===0;});
-  t('mobin palkki mallin yläpuolella, tarkka katse',()=>/m\.barH\+\.45/.test(updateMobBars.toString())&&/\.988:\.982/.test(updateMobBars.toString()));
+  t('mobin palkki mallin yläpuolella, tarkka katse (v2.25: tähtäin olennon päällä)',()=>/m\.barH\+\.45/.test(updateMobBars.toString())&&/Math\.acos\(/.test(updateMobBars.toString()));
   t('isot pomot eivät parane (P.dead)',()=>!/m\.hp\+30\*dt/.test(bossAI.toString())&&!/m\.hp\+40\*dt/.test(realmBossAI.toString()));
   t('alttarin kivet pysyvät (altarSt)',()=>/altarSt/.test(useAltar.toString()));
   t('tuli: soihtu/tulinuoli sytyttää',()=>typeof igniteMob==='function'&&!!ITEMS.tulinuolet&&!!RECIPES.find(r=>r.id==='tulinuolet'));
@@ -276,6 +276,22 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.26 pensaat: pensaan läpi heti puska + pusikkoaskel (2 s tauko), Aarnimetsässä satunnaisesti oksa/puska; pelaajan askeleet −20 %, ±5 %',()=>{
+    const B=nodes.find(n=>n.type==='pensas');if(!B)return 'ei pensaita';const a=plBush(B.x,B.z,.3)&&!plBush(B.x+6*B.s,B.z,.3);
+    const calls=[],orig=plSnd,ok0=CRE.ok,sv=[P.pos.clone(),P.onGround,P.vel.clone(),P.swim,P.inDun];plSnd=(g,ev)=>{calls.push(g+'/'+ev);return 1;};CRE.ok=true;
+    try{P.pos.set(B.x,terrainH(B.x,B.z),B.z);P.onGround=true;P.swim=false;P.inDun=false;P.vel.set(3,0,0);PLV.bushT=-9;PLV.ph=null;plTick(1/30);const n1=calls.filter(c=>c==='askeleet/puska').length;plTick(1/30);
+      var n2=calls.filter(c=>c==='askeleet/puska').length,b=n1===1&&n2===1&&calls.includes('askeleet/askel_pusikko');}
+    finally{plSnd=orig;CRE.ok=ok0;P.pos.copy(sv[0]);P.onGround=sv[1];P.vel.copy(sv[2]);P.swim=sv[3];P.inDun=sv[4];}
+    const c=PL_STEP_V===.8&&/\*\.05\)/.test(plSnd.toString())&&/plBush\(m\.pos\.x/.test(tgStep.toString())&&/'oksa':'puska'/.test(plTick.toString());
+    return a&&b&&c||`virhe pensas ${a} ääni ${b} (${calls.join(',')}) muut ${c}`;});
+  t('v2.26 terveyspalkit: vain suora katse; vahingoittunut myös 10 % ympärillä; vahingon jälkeen 5 s; ei jos tosi kaukana ja piilossa',()=>{
+    for(const q of [...mobs])mobRemove(q);const cp=camera.position.clone(),cq=camera.quaternion.clone(),pp=P.pos.clone(),bs=barSeen,L=LOC.spawn,x=L.x+30,z=L.z+30;
+    const m=spawnMob('susi',x,z,{noBorn:1});m.born=undefined;m.f.g.updateMatrixWorld(true);m.barH=undefined;const vis=()=>{updateMobBars();return mobBars.filter(b=>!b.hidden).length;};    vis();const aim=(dist,deg)=>{const cy=m.pos.y+(m.barH||1)*.55,a=Math.PI/2+deg*Math.PI/180;camera.position.set(m.pos.x-dist,cy,m.pos.z);P.pos.set(m.pos.x-dist,m.pos.y,m.pos.z);camera.lookAt(m.pos.x-dist+Math.sin(a),cy,m.pos.z+Math.cos(a));camera.updateMatrixWorld(true);};
+    let r=[];try{m.hurtT=-99;m.hp=m.maxHp;aim(8,0);r.push(vis()===1);aim(8,9);r.push(vis()===0);m.hp=m.maxHp-5;r.push(vis()===1);aim(8,30);r.push(vis()===0);
+      m.hurtT=playTime;r.push(vis()===1);m.hurtT=playTime-5.1;r.push(vis()===0);
+      m.hurtT=playTime;aim(60,40);barSeen=()=>false;r.push(vis()===0);barSeen=()=>true;r.push(vis()===1);}
+    finally{barSeen=bs;mobRemove(m);P.pos.copy(pp);camera.position.copy(cp);camera.quaternion.copy(cq);camera.updateMatrixWorld(true);updateMobBars();}
+    return r.every(Boolean)||'virhe '+r.map(v=>v?1:0).join('');});
   t('v2.25 sudet: suuttumis- ja jahtiääni −30 % ja kantama −20 %, ulvonnan kantama −15 % (myös kaukainen ulvonta)',()=>{
     const a=creRK('susi','aggro')===.8&&creRK('routasusi','chase')===.8&&creRK('kalmasusi','idle',1)===.85&&creRK('susi','idle',0)===1&&creRK('karhu','aggro')===1&&creRK('karhu','idle',1)===1;
     const b=CRE_WOLF_V.aggro===.7&&CRE_WOLF_V.chase===.7&&/CRE_WOLF_V\[kind\]/.test(creSnd.toString())&&/rk=creRK\(m\.type,kind,far\)/.test(creSnd.toString())&&/\*\.85/.test(farHowl.toString());

@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.25)
+## Nykytila (päivitetty v2.26)
 
-- **Versio 2.25**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) ja v2.24 (äänitasot, juominen, pää alas, pelaajan toimintoäänet) ja v2.25 (sudet hiljemmaksi, Aarnipuun törmäys, karhun syöksy, pelaajan äänet osat 1–3) PR #34:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
+- **Versio 2.26**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) ja v2.24 (äänitasot, juominen, pää alas, pelaajan toimintoäänet) ja v2.25 (sudet hiljemmaksi, Aarnipuun törmäys, karhun syöksy, pelaajan äänet osat 1–3) ja v2.26 (pensasäänet, askeleet −20 %, terveyspalkkien näkyvyys) PR #34:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -244,6 +244,20 @@ koukku tiedostoääneen – älä koskaan tee ääntä itse. Puuttuva ääni = h
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.26 (pensasäänet, pelaajan askeleet −20 % ja ±5 %, terveyspalkkien uudet näkyvyyssäännöt – käyttäjän pyynnöt)
+- **Pensaat (`plBush`, audio.js):** pelaaja pensaan sisällä (etäisyys < 0,9 × koko + 0,3 m) liikkeessä → heti `puska` + `askel_pusikko`, enintään 2 s välein
+  (`PLV.bushT`); Aarnimetsän pusikkoaskeleella 14 %:n todennäköisyydellä `oksa` tai `puska` (sama 2 s tauko). Puska soi täydellä voimakkuudella.
+  Uudet äänet osaan 1 (`askeleet/puska`, `askeleet/oksa`); aloitusäänet kopioitu olentojen kansiosta (`yhteiset/kahina_1`, `kaksijalkaiset/oksa_1/2`).
+  Olennot: tgStep soittaa `kahina`-äänen pensaan läpi kulkiessa (`m.puT`, 2 s).
+- **Pelaajan askeleet:** voimakkuus ×0,8 (`PL_STEP_V`); kaikkien pelaajan kertaäänten voimakkuus vaihtelee ±5 % (ennen −15…0 %).
+- **Työkalu:** käsittelyprofiilit kaikille pelaajan osien äänille (`T_PROF.update`) + varaprofiili `T_DEF` (ennen uusi ääni kaatoi työkalun);
+  sydämen syke käsitellään saumattomaksi silmukaksi (`ACT_EV`).
+- **Terveyspalkit (`updateMobBars`, ui.js):** suora katse = tähtäin olennon päällä (kulma `atan((max(r×1,2, korkeus×0,45)+0,15)/etäisyys)`, vähintään 2°;
+  ennen kiinteä ~11°); täysissä voimissa oleva olento näkyy vain suoraan katsottaessa. Vahingoittunut myös 10 % ruudun leveydestä tähtäimen
+  ympärillä (`BAR_AIM_K`, ~13°, alle 20 m). Vahingon jälkeen 5 s (`BAR_HURT_T`, ennen 10 s), mutta yli 40 m (`BAR_FAR`) päässä vain jos näkyvissä
+  (`barSeen`: maasto 10 pisteestä + `losClear`, 0,3 s muisti).
+- Tarkistusrivit v2.26 (2 kpl) + päivitetty katserivi.
 
 ### v2.25 (sudet hiljemmaksi, Aarnipuun törmäys, karhu ei tömähdä kaatamiinsa puihin, karhun syöksyisku, pelaajan äänet osat 1–3 – käyttäjän pyynnöt)
 - **Sudet (`CRE_WOLF`):** suuttumis- ja jahtiäänet 30 % hiljempaa (`CRE_WOLF_V`) ja kantama −20 % (`creRK`: laukaisusäde, etäisyysefekti `creDistK(d,far,rk)`,
