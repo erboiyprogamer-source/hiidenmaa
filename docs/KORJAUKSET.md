@@ -376,6 +376,13 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   muuten sen napit sulkevat repun. Testaa painalluksella (mousedown + mouseup + click), ei pelkällä click-tapahtumalla.
 - **v2.30:** näppäintaulukko `keys` voi jäädä "pohjaan" (Alt+Tab) – `blur`/`visibilitychange` nollaa sen. Hiiritapahtumien muokkausnäppäimet luetaan tapahtumasta.
 
+## 53. Oikea klikkaus ei toiminut pelin osoittimella (v2.32)
+- Oire: valinta + oikea klikkaus kohderuutuun ei puolittanut (eikä Shift avannut slideria); oikea raahaus toimi.
+- Syy: hiiren ollessa lukittuna Chrome ei lähetä `contextmenu`-tapahtumaa. Headless-testissä `requestPointerLock` on korvattu, joten tapahtuma tuli ja testi meni läpi.
+- Ratkaisu (input.js): VC:n `mouseup`-käsittelijä lähettää oikeasta vapautuksesta itse `contextmenu`:n (`if(e.button===2)vcFire('contextmenu',…)`),
+  ja oikea `contextmenu` ohitetaan VC:n ollessa päällä. Älä nojaa lukituksen aikana selaimen omiin oikean napin tapahtumiin.
+- Testaa estämällä oikea `contextmenu` (`addInitScript`: kaappaava kuuntelija `e.isTrusted → stopImmediatePropagation`).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

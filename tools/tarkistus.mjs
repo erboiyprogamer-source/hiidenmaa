@@ -276,6 +276,17 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.32 lukituksessa oikea vapautus tekee contextmenun itse (valitse + oikea klikkaus ruutuun = puolitus, Shift = slider)',()=>{
+    const x=new XMLHttpRequest();x.open('GET','js/input.js?'+Date.now(),false);x.send();const src=x.responseText;
+    const s1=/if\(e\.button===2\)vcFire\('contextmenu',e,null,vcAt\(\)\)/.test(src),s2=/if\(ty==='contextmenu'\)return;/.test(src);
+    const hid=['menuBg','loadScr'].map(id=>document.getElementById(id)).filter(Boolean).map(e=>[e,e.style.display]);for(const [e] of hid)e.style.display='none';   /* peittävät paneelin (KORJAUKSET 52) */
+    const pv=locked;inv.fill(null);inv[0]={id:'puu',n:40,q:1};if(openPanel!=='inv')togglePanel('inv');locked=true;vcSync();
+    const sl=i=>document.querySelectorAll('#invGrid .slot')[i],at=i=>{const r=sl(i).getBoundingClientRect();VC.x=r.left+r.width/2;VC.y=r.top+r.height/2;vcMove(0,0,true);};
+    const pick=i=>{selSlot=-1;renderInv();at(i);vcFire('click',{button:0,buttons:0,isTrusted:true});};
+    const rup=(i,sh)=>{at(i);const e={button:2,buttons:0,shiftKey:!!sh,isTrusted:true};vcFire('mouseup',e);vcFire('contextmenu',e,null,vcAt());};   /* = VC:n mouseup-polku */
+    pick(0);rup(5,false);const a=!!(inv[0]&&inv[0].n===20&&inv[5]&&inv[5].n===20);
+    pick(0);rup(6,true);const b=SPL.on;splitClose();selSlot=-1;selHalf=false;
+    locked=pv;vcSync();closePanels();for(const [e,d] of hid)e.style.display=d;return s1&&s2&&a&&b||`virhe lähde ${s1} ${s2} puolitus ${a} slider ${b}`;});
   t('v2.31 poimintaääni: hieman kimeämpi (×1,1), sävel ±20 %, tumma alipäästö 2,4 kHz',()=>{let lo=9,hi=0;for(let i=0;i<400;i++){const q=PL_PICK();lo=Math.min(lo,q.p);hi=Math.max(hi,q.p);}
     const q=PL_PICK(),a=q.lp===2400&&q.v===.55&&lo<.92&&lo>=.88-1e-9&&hi>1.28&&hi<=1.32+1e-9,b=/o\.lp\)\{const lf=a\.createBiquadFilter\(\);lf\.type='lowpass'/.test(plSnd.toString());
     return a&&b||`virhe ${a} ${b} sävel ${lo.toFixed(3)}…${hi.toFixed(3)}`;});
