@@ -315,6 +315,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Pilvet** isoina kerroksina sään mukaan, kaukana häipyvät; pilvikansi rankassa säässä; salaman välähdys kevyt.
 - **Aurinko:** pyöreä hehku (`sunGlow`). **v2.35 säteet** selkeällä säällä: pehmeät kiilat auringosta näytöllä; kääntyvät kameran mukana eri
   nopeuksilla, osa piiloutuu ja ilmestyy katsesuunnan mukaan, mäki auringon edessä peittää. Asetus "Auringon valonsäteet" (pois Low–Medium-).
+  **v2.40:** säteet 15 % läpinäkyvämmät, epäsäännölliset ja elävät (paksuus, suunta, pituus ja kirkkaus vaihtelevat), näkyvät harvemmin.
+  Este auringon edessä: säteet katoavat lähes heti sen puolen mukaan, joka peittyy; kokonaan peitettynä kaikki säteet ja heijastus pois.
   **v2.39:** auringon hehku pienempi ja selvästi läpinäkyvämpi.
   **v2.38:** auringon hehku on pyöreä (ei suorakulmiota); kun este menee auringon eteen, osa säteistä (60 %) ja heijastus katoavat lähes heti,
   loput jäävät himmeämmiksi. Pilvet harmaanvalkoisia ja varjostettuja (kirkas yläosa, harmaampi pohja).

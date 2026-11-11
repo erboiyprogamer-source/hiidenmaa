@@ -276,23 +276,33 @@ const cloudDeck=(function(){const t=canvasTex((g,s)=>{const r=mulberry32(91);con
    nopeudellaan ja osa häipyy/ilmestyy katsesuunnan mukaan. Maasto auringon edessä peittää. SET.flare: yksinkertainen linssiheijastus
    (renkaat auringon ja ruudun keskipisteen kautta kulkevalla linjalla, näkyy kun katsoo aurinkoa kohti). Piirto main.js drawRays(). */
 const RAYS=(function(){const c=document.createElement('canvas');c.id='raysC';$('#game').appendChild(c);const g=c.getContext('2d');
-  const r=mulberry32(55),list=[];for(let i=0;i<14;i++)list.push({a:r()*TAU,k:(r()<.5?-1:1)*(.25+r()*.9),j:(r()-.5)*1.6,w:.014+r()*.04,L:.55+r()*.75,
-    f:1.4+r()*2.6,fp:(r()-.5)*3,ph:r()*TAU,s:.4+r()*.8,v:0,h:i%5<3});   /* v2.38 h: kova säde (60 %) katoaa esteen takana heti */
-  return{c,g,list,k:0,occ:1,occP:1,pix:1,pixN:0,on:false,W:0,H:0,clr:false};})();
+  /* v2.40: 18 sädettä, jokaisella omat satunnaiset rytmit: paksuus (ws), suunnan huojunta (as, aa), pituus (ls), kirkkauden vaihtelu (fs),
+     epäsymmetrinen kiila (w1/w2) */
+  const r=mulberry32(55),list=[];for(let i=0;i<18;i++)list.push({a:r()*TAU,k:(r()<.5?-1:1)*(.25+r()*.9),j:(r()-.5)*1.6,w:.012+r()*.04,L:.45+r()*.85,
+    f:1.4+r()*2.6,fp:(r()-.5)*3,ph:r()*TAU,s:.4+r()*.8,v:0,ws:.12+r()*.45,as:.05+r()*.2,aa:.03+r()*.07,ls:.08+r()*.3,fs:.2+r()*.7,
+    p2:r()*TAU,p3:r()*TAU,p4:r()*TAU,w1:.6+r()*.8,w2:.6+r()*.8,d:1});
+  return{c,g,list,k:0,occ:1,occP:1,pix:1,pixN:0,dir:new Float32Array(8).fill(1),on:false,W:0,H:0,clr:false};})();
 /* v2.37: päiväkohtainen vahvuus (päivän numerosta, sama koko päivän): 0,3–1, ei tyhjiä päiviä (v2.36:ssa 35 % päivistä oli ilman). */
-const RAYS_MIN=.3,RAYS_SOFT=.45;let raysDayN=-1,raysDayK=1;
+const RAYS_MIN=.3,RAYS_A=.136;   /* v2.40: säteen voimakkuus (v2.39 .16 → 15 % läpinäkyvämpi) */let raysDayN=-1,raysDayK=1;
 function raysDay(){const n=typeof dayN==='number'?dayN:0;if(n!==raysDayN){raysDayN=n;const r=mulberry32(Math.imul(n+977,2654435761)^0x5bd1e995);r();raysDayK=RAYS_MIN+(1-RAYS_MIN)*r();}return raysDayK;}
-/* v2.36: peitto – piirron jälkeen luetaan auringon kiekon kohdalta 5 pikseliä (keskus + 4 puolivälissä reunaa). Jos kiekko ei näy (puu, rakennus,
+/* v2.36 (v2.40: 9 pistettä, suunnittain): peitto – piirron jälkeen luetaan auringon kiekon kohdalta pikseleitä (keskus + 4 puolivälissä reunaa). Jos kiekko ei näy (puu, rakennus,
    hahmo, pilvi edessä), RAYS.pix → 0 ja säteet + linssiheijastus häipyvät. Luku vain kun säteitä piirretään, joka 3. ruutu. */
 const _rp=new THREE.Vector3(),_rpx=new Uint8Array(4),_rsc=new THREE.Color();
 function raysPeek(){const R=RAYS;if(!(R.k>.01)||!sunDisc.visible||P.inDun||(SET.shafts===false&&SET.flare!==true)){R.pix=1;return;}
   if((R.pixN=(R.pixN+1)%2)!==0)return;   /* v2.38: joka 2. ruutu (nopeampi reagointi) */_rp.copy(sunDisc.position).project(camera);if(_rp.z>1||Math.abs(_rp.x)>.98||Math.abs(_rp.y)>.98){R.pix=1;return;}
   const gl=renderer.getContext(),bw=gl.drawingBufferWidth,bh=gl.drawingBufferHeight,px=(_rp.x*.5+.5)*bw,py=(_rp.y*.5+.5)*bh;
   const rad=Math.atan(9/380)/Math.tan(camera.fov*Math.PI/360)*bh/2,o=Math.max(1,rad*.5);_rsc.copy(sunDisc.material.color);
-  let hit=0,zero=0;for(const [dx,dy] of [[0,0],[o,0],[-o,0],[0,o],[0,-o]]){const x=Math.round(px+dx),y=Math.round(py+dy);if(x<0||y<0||x>=bw||y>=bh)continue;
-    gl.readPixels(x,y,1,1,gl.RGBA,gl.UNSIGNED_BYTE,_rpx);if(!_rpx[0]&&!_rpx[1]&&!_rpx[2]&&!_rpx[3])zero++;if(_rpx[0]>=_rsc.r*255*.82&&_rpx[1]>=_rsc.g*255*.82&&_rpx[2]>=_rsc.b*255*.7&&_rpx[2]<_rpx[0]*.95)hit++;}   /* lämmin sävy: valkoinen pilvi ei käy auringosta */
-  if(zero===5){R.pix=1;return;}   /* tyhjä luku (puskuri jo tyhjennetty) = ei tietoa → ei piiloteta */
-  R.pix=hit/5;}   /* v2.38: suora luku; tasoitus R.occP:ssä (environment.js) */
+  /* v2.40: 9 pistettä: keskus + 8 suuntaa (0,65 × kiekon säde). Suunta b = kulma b·45° näytöllä (x oikealle, y alas) → GL:ssä y ylös.
+     R.dir[b] = näkyykö kiekon se puoli; säde katoaa, kun sen suunnan puoli peittyy (osa kerrallaan peiton mukaan, kokonaan peitettynä kaikki). */
+  const oo=Math.max(1,rad*.65),ok=()=>_rpx[0]>=_rsc.r*255*.82&&_rpx[1]>=_rsc.g*255*.82&&_rpx[2]>=_rsc.b*255*.7&&_rpx[2]<_rpx[0]*.95;   /* lämmin sävy: valkoinen pilvi ei käy auringosta */
+  let hit=0,zero=0,n=0,c0=0;const rd=(x,y)=>{x=Math.round(x);y=Math.round(y);if(x<0||y<0||x>=bw||y>=bh)return -1;n++;gl.readPixels(x,y,1,1,gl.RGBA,gl.UNSIGNED_BYTE,_rpx);
+    if(!_rpx[0]&&!_rpx[1]&&!_rpx[2]&&!_rpx[3])zero++;const v=ok()?1:0;hit+=v;return v;};
+  c0=rd(px,py);const dv=[];for(let b=0;b<8;b++){const an=b*Math.PI/4;dv.push(rd(px+Math.cos(an)*oo,py-Math.sin(an)*oo));}
+  if(n&&zero===n){R.pix=1;R.dir.fill(1);return;}   /* tyhjä luku (puskuri jo tyhjennetty) = ei tietoa → ei piiloteta */
+  for(let b=0;b<8;b++){const v=dv[b]<0?(c0<0?1:c0):dv[b];R.dir[b]=v;}   /* kokonaan peitettynä kaikki suunnat 0 → kaikki säteet pois; osittain vain peitetyn puolen säteet */
+  R.pix=n?hit/n:1;}
+/* v2.40: säteen oman suunnan peitto: kulma a (näytöllä) → lähin 8 suunnasta → q.d liukuu kohti R.dir (alas 22/s ≈ lähes heti, ylös 6/s) */
+function rayOcc(q,a,ddt){const an=((a%TAU)+TAU)%TAU,bi=Math.round(an/(Math.PI/4))%8,dd=RAYS.dir[bi];q.d=lerp(q.d,dd,Math.min(1,ddt*(dd<q.d?22:6)));return q.d;}
 function raysResize(){const R=RAYS,W=Math.max(2,innerWidth>>1),H=Math.max(2,innerHeight>>1);if(R.W!==W||R.H!==H){R.W=R.c.width=W;R.H=R.c.height=H;}}
 const _rv=new THREE.Vector3();
 function drawRays(dt){const R=RAYS,want=(SET.shafts!==false||SET.flare===true)&&R.k>.01&&!P.inDun&&!(typeof CAM_UW==='number'&&CAM_UW>0)&&sunDisc.visible;
@@ -300,14 +310,17 @@ function drawRays(dt){const R=RAYS,want=(SET.shafts!==false||SET.flare===true)&&
   raysResize();const g=R.g,W=R.W,H=R.H;g.clearRect(0,0,W,H);R.clr=true;
   _rv.copy(sunDisc.position).project(camera);if(_rv.z>1)return;   /* aurinko kameran takana */
   const sx=(_rv.x*.5+.5)*W,sy=(-_rv.y*.5+.5)*H,edge=Math.max(Math.abs(_rv.x),Math.abs(_rv.y)),vis=sstep(1.9,1.0,edge);if(vis<=0)return;
-  /* v2.38: R.occ = maaston peitto (rauhallinen, kaikki säteet), R.occP = este auringon kiekon edessä (nopea): kovat säteet ja heijastus
-     katoavat lähes heti, pehmeät jäävät 45 %:iin */
-  const K=R.k*R.occ*vis;if(K<.005)return;const softP=lerp(RAYS_SOFT,1,R.occP);const M=Math.min(W,H),t=playTime;g.globalCompositeOperation='lighter';
+  /* v2.40: R.occ = maaston peitto (rauhallinen), R.occP = kiekon peitto (heijastus), q.d = säteen oman suunnan peitto (R.dir, nopea: alas 22/s) */
+  const K=R.k*R.occ*vis;if(K<.005)return;const M=Math.min(W,H),t=playTime,ddt=Math.min(.1,dt||0);g.globalCompositeOperation='lighter';
   if(SET.shafts!==false)for(const q of R.list){
-    const tv=sstep(.42,.85,.5+.5*Math.sin(camYaw*q.f+camPitch*q.fp*2+q.ph+t*.05*q.s));q.v=lerp(q.v,tv,Math.min(1,(dt||0)*3));   /* osa säteistä piiloutuu kääntyessä */
-    const al=.16*K*q.v*(q.h?R.occP:softP);if(al<.004)continue;const a=q.a+camYaw*q.k+camPitch*q.j+Math.sin(t*.07*q.s+q.ph)*.03,L=M*q.L;
+    const tv=sstep(.5,.9,.5+.5*Math.sin(camYaw*q.f+camPitch*q.fp*2+q.ph+t*.05*q.s));q.v=lerp(q.v,tv,Math.min(1,ddt*3));   /* osa säteistä piiloutuu kääntyessä (v2.40 harvemmin) */
+    const a=q.a+camYaw*q.k+camPitch*q.j+Math.sin(t*q.as+q.p2)*q.aa+Math.sin(t*q.as*2.3+q.p3)*q.aa*.4;   /* suunta huojuu epäsäännöllisesti */
+    rayOcc(q,a,ddt);
+    const fl=.65+.35*(.5+.5*Math.sin(t*q.fs+q.p4))*(.7+.3*Math.sin(t*q.fs*1.7+q.p2));   /* kirkkaus elää */
+    const al=RAYS_A*K*q.v*q.d*fl;if(al<.004)continue;
+    const L=M*q.L*(.72+.4*(.5+.5*Math.sin(t*q.ls+q.ph))),wt=q.w*(.5+.85*(.5+.5*Math.sin(t*q.ws+q.p3))*(.75+.25*Math.sin(t*q.ws*2.7+q.p4)));   /* pituus ja paksuus elävät */
     const gr=g.createRadialGradient(sx,sy,0,sx,sy,L);gr.addColorStop(0,'rgba(255,244,214,1)');gr.addColorStop(.25,'rgba(255,236,196,.55)');gr.addColorStop(1,'rgba(255,230,190,0)');g.fillStyle=gr;
-    for(const m of [1,.55,.25]){const w=q.w*m;g.globalAlpha=al*.4;g.beginPath();g.moveTo(sx,sy);g.lineTo(sx+Math.cos(a-w)*L,sy+Math.sin(a-w)*L);g.lineTo(sx+Math.cos(a+w)*L,sy+Math.sin(a+w)*L);g.closePath();g.fill();}}
+    for(const m of [1,.55,.25]){const w1=wt*m*q.w1,w2=wt*m*q.w2;g.globalAlpha=al*.4;g.beginPath();g.moveTo(sx,sy);g.lineTo(sx+Math.cos(a-w1)*L,sy+Math.sin(a-w1)*L);g.lineTo(sx+Math.cos(a+w2)*L*(.85+.15*m),sy+Math.sin(a+w2)*L*(.85+.15*m));g.closePath();g.fill();}}
   if(SET.flare===true){const cx=W/2,cy=H/2,dx=cx-sx,dy=cy-sy,fk=K*R.occP*sstep(1.15,.05,Math.hypot(_rv.x,_rv.y));
     if(fk>.01)for(const [tt,rr,col,al] of RAYS_FL){const x=sx+dx*tt,y=sy+dy*tt,rad=M*rr,gr=g.createRadialGradient(x,y,0,x,y,rad);
       gr.addColorStop(0,`rgba(${col},${al})`);gr.addColorStop(.7,`rgba(${col},${al*.55})`);gr.addColorStop(1,`rgba(${col},0)`);g.globalAlpha=fk;g.fillStyle=gr;g.beginPath();g.arc(x,y,rad,0,TAU);g.fill();}}

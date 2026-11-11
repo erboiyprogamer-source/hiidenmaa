@@ -276,6 +276,17 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.40 säteet: 15 % läpinäkyvämmät, 18 epäsäännöllistä elävää sädettä, harvemmin; peitto suunnittain – kokonaan peitettynä kaikki pois',()=>{
+    const a=RAYS_A===.136&&RAYS.list.length===18&&RAYS.list.every(q=>q.ws>0&&q.as>0&&q.ls>0&&q.fs>0&&q.w1>0&&q.w2>0);
+    const src=drawRays.toString(),b=/RAYS_A\*K\*q\.v\*q\.d\*fl/.test(src)&&!/softP/.test(src)&&/sstep\(\.5,\.9,/.test(src);
+    /* peitto: kaikki suunnat 0 → säteiden q.d → 0; puolet → vain sen puolen säteet */
+    const pv=[...RAYS.dir],qs=RAYS.list.map((q,i)=>({d:1,a:i/18*TAU+.1}));let c=true;
+    try{RAYS.dir.fill(0);for(let i=0;i<20;i++)for(const q of qs)rayOcc(q,q.a,1/30);const all0=qs.every(q=>q.d<.01);RAYS.dir.fill(1);for(const q of qs)q.d=1;
+      for(let b=0;b<4;b++)RAYS.dir[b]=0;for(let i=0;i<20;i++)for(const q of qs)rayOcc(q,q.a,1/30);const lo=qs.filter(q=>q.d<.05).length,hi=qs.filter(q=>q.d>.95).length;
+      const fast=(()=>{const q={d:1};RAYS.dir.fill(0);for(let i=0;i<6;i++)rayOcc(q,0,1/60);return q.d<.15;})();
+      c=all0&&lo>0&&hi>0&&lo+hi===18&&fast||`kaikki ${all0} osa ${lo}/${hi} nopea ${fast}`;}catch(e){c=e.message;}
+    RAYS.dir.set(pv);
+    return a&&b&&c===true||`virhe ${a} ${b} ${c}`;});
   t('v2.39 auringon hehku pienempi ja läpinäkyvämpi (sprite 90, voimakkuus ×0,45, taivaan hehku kapeampi)',()=>{
     const a=SUN_GLOW_S===90&&SUN_GLOW_K===.45&&sunGlow.scale.x===90&&/pow\(s,160\.\)\*\.3\+pow\(s,24\.\)\*\.07/.test(skyDome.material.fragmentShader)&&/SUN_GLOW_K\*\(/.test(updateSky.toString());
     return a||'virhe hehkun arvot';});
@@ -283,17 +294,17 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const a=/vec3 d=normalize\(vD\)/.test(skyDome.material.fragmentShader)&&/dot\(d,normalize\(uSun\)\)/.test(skyDome.material.fragmentShader);
     const cg=CLOUDS[0].geometry,p=cg.attributes.position.array,c=cg.attributes.color.array;let lo=1e9,hi=-1e9,il=0,ih=0;for(let i=1;i<p.length;i+=3){if(p[i]<lo){lo=p[i];il=i-1;}if(p[i]>hi){hi=p[i];ih=i-1;}}
     const b=c[il]<c[ih]*.85&&cCloudDay.r<.95&&/multiplyScalar\(\.26\*light\+\.1\)/.test(updateClouds.toString());
-    const hard=RAYS.list.filter(q=>q.h).length,cc=hard>=7&&hard<=10&&RAYS_SOFT>.3&&RAYS_SOFT<.6&&/q\.h\?R\.occP:softP/.test(drawRays.toString())&&/R\.occP\*sstep/.test(drawRays.toString());
+    const cc=/R\.occP\*sstep/.test(drawRays.toString());   /* v2.40: kovat/pehmeät säteet korvattu suunnittaisella peitolla (oma rivi) */
     return a&&b&&cc||`virhe hehku ${a} pilvet ${b} säteet ${cc}`;});
   t('v2.37 säteet vahvat koko päivän (ei keskipäivän hiipumista), hiipuvat laskiessa; päivävahvuus 0,3–1 ilman tyhjiä päiviä; este piilottaa; tyhjä pikseliluku ei piilota',()=>{
     const pv=dayN,v=[];for(let n=1;n<=200;n++){dayN=n;v.push(raysDay());}dayN=pv;raysDayN=-1;
     const a=v.every(x=>x>=.3&&x<=1)&&new Set(v.map(x=>x.toFixed(2))).size>40;
     const env=updateSky.toString(),b=/sstep\(-\.04,\.35,el\)\*sunK\*\(1-indoorK\)\*\(1-aarniK\*\.7\)\*raysDay\(\)/.test(env)&&!/RAYS_NOON/.test(env)&&/RAYS\.pix/.test(env);
-    const c=/sstep\(\.42,\.85,/.test(drawRays.toString())&&/readPixels/.test(raysPeek.toString())&&/zero===5/.test(raysPeek.toString());   /* v2.38: tasoitus siirtyi occP:hen */
+    const c=/sstep\(\.5,\.9,/.test(drawRays.toString())&&/readPixels/.test(raysPeek.toString())&&/zero===n/.test(raysPeek.toString());   /* v2.38: tasoitus siirtyi occP:hen */
     let d=true;try{raysPeek();}catch(e){d=e.message;}
     return a&&b&&c&&d===true||`virhe päivät ${a} aika ${b} harvinaisuus/peitto ${c} ${d}`;});
   t('v2.35 auringonsäteet näytöllä (ei 3D-tasoja → ei neliötä), kääntyvät kameran mukana; linssiheijastus vain Ultra; Low ilman säteitä',()=>{
-    const a=typeof sunShafts==='undefined'&&!!document.getElementById('raysC')&&RAYS.list.length===14&&new Set(RAYS.list.map(q=>q.k.toFixed(3))).size>=12&&RAYS.list.some(q=>q.k<0)&&RAYS.list.some(q=>q.k>0);   /* eri kääntymisnopeudet */
+    const a=typeof sunShafts==='undefined'&&!!document.getElementById('raysC')&&RAYS.list.length===18&&new Set(RAYS.list.map(q=>q.k.toFixed(3))).size>=15&&RAYS.list.some(q=>q.k<0)&&RAYS.list.some(q=>q.k>0);   /* eri kääntymisnopeudet */
     const b=SET_DEF.flare===false&&PRESETS[0].shafts===false&&PRESETS[PRESETS.length-1].flare===true&&PRESETS.slice(0,-1).every(p=>p.flare===false)&&SET_PAGES.gfx.includes('flare');
     let c=true;try{const pv=[SET.shafts,SET.flare,RAYS.k];SET.shafts=true;SET.flare=true;RAYS.k=1;drawRays(1/30);[SET.shafts,SET.flare,RAYS.k]=pv;}catch(e){c=e.message;}
     return a&&b&&c===true||`virhe ${a} ${b} ${c}`;});
