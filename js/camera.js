@@ -27,5 +27,5 @@ function updateCamera(dt){
   {const cy=camera.position.y,s=P.inDun?-1e9:water.position.y+waveAt(camera.position.x,camera.position.z);CAM_UW=cy<s?s-cy:0;
    if(CAM_UW>0){const k=sstep(0,28,CAM_UW),l=.25+.75*(typeof lightK==='number'?lightK:1);scene.fog.color.setRGB(lerp(.11,.01,k)*l,lerp(.33,.04,k)*l,lerp(.37,.06,k)*l);
      scene.fog.near=0;scene.fog.far=lerp(30,9,k);scene.background.copy(scene.fog.color);
-     for(const o of [skyDome,stars,moon,sunDisc,sunGlow,sunShafts,cloudDeck,rain,snow])o.visible=false;for(const c of CLOUDS)c.visible=false;}}   // taivas ei näy pinnan läpi (environment palauttaa joka ruutu)
+     for(const o of [skyDome,stars,moon,sunDisc,sunGlow,cloudDeck,rain,snow])o.visible=false;for(const c of CLOUDS)c.visible=false;}}   // taivas ei näy pinnan läpi (environment palauttaa joka ruutu)
 }

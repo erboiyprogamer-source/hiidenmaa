@@ -262,12 +262,33 @@ const cloudDeck=(function(){const t=canvasTex((g,s)=>{const r=mulberry32(91);con
     const n=.55+.45*Math.sin(x*.21+Math.sin(y*.13)*2)*Math.cos(y*.17+Math.sin(x*.09)*2)+(r()-.5)*.25,al=Math.max(0,1-d*d)*clamp(n,0,1);const i=(y*s+x)*4;im.data[i]=im.data[i+1]=im.data[i+2]=225;im.data[i+3]=al*255|0;}g.putImageData(im,0,0);},128);
   t.magFilter=THREE.LinearFilter;const m=new THREE.Mesh(new THREE.PlaneGeometry(1100,1100),new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:0,depthWrite:false,fog:false,side:THREE.DoubleSide}));
   m.rotation.x=-Math.PI/2;m.renderOrder=-6;m.frustumCulled=false;m.visible=false;scene.add(m);return m;})();
-// Auringonsäteet: selkeällä säällä kapeita läpikuultavia valokeiloja auringon suunnasta (additiivinen, häivytetyt päät).
-const sunShafts=(function(){const t=canvasTex((g,s)=>{const gr=g.createLinearGradient(0,0,0,s);gr.addColorStop(0,'rgba(255,240,200,0)');gr.addColorStop(.35,'rgba(255,240,200,1)');gr.addColorStop(1,'rgba(255,240,200,0)');g.fillStyle=gr;g.fillRect(0,0,s,s);
-    const gx=g.createLinearGradient(0,0,s,0);gx.addColorStop(0,'rgba(0,0,0,1)');gx.addColorStop(.5,'rgba(0,0,0,0)');gx.addColorStop(1,'rgba(0,0,0,1)');g.globalCompositeOperation='destination-out';g.fillStyle=gx;g.fillRect(0,0,s,s);},64);
-  t.magFilter=THREE.LinearFilter;const grp=new THREE.Group(),mt=new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide});
-  const r=mulberry32(55);for(let i=0;i<7;i++){const w=6+r()*12,L=260,off=(r()-.5)*90;for(const ry of[0,Math.PI/2]){const p=new THREE.Mesh(new THREE.PlaneGeometry(w,L),mt);p.position.set(off*Math.cos(ry),L/2,off*Math.sin(ry)+(r()-.5)*40);p.rotation.y=ry;grp.add(p);}}
-  grp.visible=false;grp.frustumCulled=false;grp.renderOrder=-4;scene.add(grp);grp.userData.mat=mt;return grp;})();
+/* v2.35 AURINGONSÄTEET näytöllä (korvaa 3D-tasot, joiden päät näkyivät neliönä auringon ympärillä). Puolikkaan resoluution 2D-kangas
+   pelinäkymän päällä (mix-blend-mode: screen). Kiilat lähtevät auringon kohdasta; kukin kääntyy kameran käännöksen mukana omalla
+   nopeudellaan ja osa häipyy/ilmestyy katsesuunnan mukaan. Maasto auringon edessä peittää. SET.flare: yksinkertainen linssiheijastus
+   (renkaat auringon ja ruudun keskipisteen kautta kulkevalla linjalla, näkyy kun katsoo aurinkoa kohti). Piirto main.js drawRays(). */
+const RAYS=(function(){const c=document.createElement('canvas');c.id='raysC';$('#game').appendChild(c);const g=c.getContext('2d');
+  const r=mulberry32(55),list=[];for(let i=0;i<14;i++)list.push({a:r()*TAU,k:(r()<.5?-1:1)*(.25+r()*.9),j:(r()-.5)*1.6,w:.014+r()*.04,L:.55+r()*.75,
+    f:1.4+r()*2.6,fp:(r()-.5)*3,ph:r()*TAU,s:.4+r()*.8,v:0});
+  return{c,g,list,k:0,occ:1,on:false,W:0,H:0,clr:false};})();
+function raysResize(){const R=RAYS,W=Math.max(2,innerWidth>>1),H=Math.max(2,innerHeight>>1);if(R.W!==W||R.H!==H){R.W=R.c.width=W;R.H=R.c.height=H;}}
+const _rv=new THREE.Vector3();
+function drawRays(dt){const R=RAYS,want=(SET.shafts!==false||SET.flare===true)&&R.k>.01&&!P.inDun&&!(typeof CAM_UW==='number'&&CAM_UW>0)&&sunDisc.visible;
+  if(!want){if(R.clr){R.g.clearRect(0,0,R.W,R.H);R.clr=false;}return;}
+  raysResize();const g=R.g,W=R.W,H=R.H;g.clearRect(0,0,W,H);R.clr=true;
+  _rv.copy(sunDisc.position).project(camera);if(_rv.z>1)return;   /* aurinko kameran takana */
+  const sx=(_rv.x*.5+.5)*W,sy=(-_rv.y*.5+.5)*H,edge=Math.max(Math.abs(_rv.x),Math.abs(_rv.y)),vis=sstep(1.9,1.0,edge);if(vis<=0)return;
+  const K=R.k*R.occ*vis;if(K<.005)return;const M=Math.min(W,H),t=playTime;g.globalCompositeOperation='lighter';
+  if(SET.shafts!==false)for(const q of R.list){
+    const tv=sstep(.25,.75,.5+.5*Math.sin(camYaw*q.f+camPitch*q.fp*2+q.ph+t*.05*q.s));q.v=lerp(q.v,tv,Math.min(1,(dt||0)*3));   /* osa säteistä piiloutuu kääntyessä */
+    const al=.16*K*q.v;if(al<.004)continue;const a=q.a+camYaw*q.k+camPitch*q.j+Math.sin(t*.07*q.s+q.ph)*.03,L=M*q.L;
+    const gr=g.createRadialGradient(sx,sy,0,sx,sy,L);gr.addColorStop(0,'rgba(255,244,214,1)');gr.addColorStop(.25,'rgba(255,236,196,.55)');gr.addColorStop(1,'rgba(255,230,190,0)');g.fillStyle=gr;
+    for(const m of [1,.55,.25]){const w=q.w*m;g.globalAlpha=al*.4;g.beginPath();g.moveTo(sx,sy);g.lineTo(sx+Math.cos(a-w)*L,sy+Math.sin(a-w)*L);g.lineTo(sx+Math.cos(a+w)*L,sy+Math.sin(a+w)*L);g.closePath();g.fill();}}
+  if(SET.flare===true){const cx=W/2,cy=H/2,dx=cx-sx,dy=cy-sy,fk=K*sstep(1.15,.05,Math.hypot(_rv.x,_rv.y));
+    if(fk>.01)for(const [tt,rr,col,al] of RAYS_FL){const x=sx+dx*tt,y=sy+dy*tt,rad=M*rr,gr=g.createRadialGradient(x,y,0,x,y,rad);
+      gr.addColorStop(0,`rgba(${col},${al})`);gr.addColorStop(.7,`rgba(${col},${al*.55})`);gr.addColorStop(1,`rgba(${col},0)`);g.globalAlpha=fk;g.fillStyle=gr;g.beginPath();g.arc(x,y,rad,0,TAU);g.fill();}}
+  g.globalAlpha=1;g.globalCompositeOperation='source-over';}
+/* linssiheijastuksen osat: [paikka linjalla (0 = aurinko, 1 = keskipiste, 2 = vastapuoli), säde × ruudun lyhyempi sivu, väri, voimakkuus] */
+const RAYS_FL=[[.32,.035,'255,226,170',.34],[.62,.018,'200,255,220',.32],[1.18,.06,'170,200,255',.2],[1.45,.028,'255,190,230',.26],[1.85,.1,'190,220,255',.13],[2.25,.045,'255,235,190',.2]];
 // Auringon pehmeä pyöreä hehku: säteittäinen liukuväri (additiivinen sprite) auringon ympärillä. Säteet häivytetään, kun katse
 // osoittaa kohti aurinkoa, koska pitkien tasojen päät näkyisivät silloin neliönä.
 const sunGlow=(function(){const t=canvasTex((g,s)=>{const gr=g.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);gr.addColorStop(0,'rgba(255,246,220,1)');gr.addColorStop(.12,'rgba(255,238,200,.55)');gr.addColorStop(.35,'rgba(255,225,170,.16)');gr.addColorStop(1,'rgba(255,215,160,0)');g.fillStyle=gr;g.fillRect(0,0,s,s);},128);

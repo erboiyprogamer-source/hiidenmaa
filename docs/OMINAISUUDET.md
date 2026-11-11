@@ -313,7 +313,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Pilvet (myös kartalla) liikkuvat tuulen suuntaan, puut kallistuvat ja heiluvat, sade viistää, savu ja kipinät ajautuvat, nuolet kallistuvat
   (13 m/s ≈ 0,5 m / 30 m). Ison kartan oikeassa yläkulmassa iso kompassi, "Tuuli suunnasta / X m/s" ja voimakkuuspalkki – läpikuultava, häipyy kun hiiri viedään sen päälle, ja kartan merkit + pelaajan nuoli näkyvät sen päällä (v1.07); kartan päällä liukuvat tuuliviirut (v1.04); minikartan reunalla tuulinuoli + m/s.
 - **Pilvet** isoina kerroksina sään mukaan, kaukana häipyvät; pilvikansi rankassa säässä; salaman välähdys kevyt.
-- **Aurinko:** pyöreä hehku (`sunGlow`), säteet selkeällä säällä (häipyvät aurinkoon katsottaessa).
+- **Aurinko:** pyöreä hehku (`sunGlow`). **v2.35 säteet** selkeällä säällä: pehmeät kiilat auringosta näytöllä; kääntyvät kameran mukana eri
+  nopeuksilla, osa piiloutuu ja ilmestyy katsesuunnan mukaan, mäki auringon edessä peittää. Asetus "Auringon valonsäteet" (pois Low–Medium-).
+  **Linssiheijastus** (asetus, vain Ultra-esiasetuksessa): haaleat renkaat auringosta ruudun keskipisteen kautta, kun katsoo aurinkoa kohti.
 - **Aarnimetsässä** tiheä sumu ja pimeämpi valo.
 
 ## 14. Kartta (ui.js)

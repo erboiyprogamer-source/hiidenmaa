@@ -276,6 +276,11 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.35 auringonsäteet näytöllä (ei 3D-tasoja → ei neliötä), kääntyvät kameran mukana; linssiheijastus vain Ultra; Low ilman säteitä',()=>{
+    const a=typeof sunShafts==='undefined'&&!!document.getElementById('raysC')&&RAYS.list.length===14&&new Set(RAYS.list.map(q=>q.k.toFixed(3))).size>=12&&RAYS.list.some(q=>q.k<0)&&RAYS.list.some(q=>q.k>0);   /* eri kääntymisnopeudet */
+    const b=SET_DEF.flare===false&&PRESETS[0].shafts===false&&PRESETS[PRESETS.length-1].flare===true&&PRESETS.slice(0,-1).every(p=>p.flare===false)&&SET_PAGES.gfx.includes('flare');
+    let c=true;try{const pv=[SET.shafts,SET.flare,RAYS.k];SET.shafts=true;SET.flare=true;RAYS.k=1;drawRays(1/30);[SET.shafts,SET.flare,RAYS.k]=pv;}catch(e){c=e.message;}
+    return a&&b&&c===true||`virhe ${a} ${b} ${c}`;});
   t('v2.34 varjot: metsissä 20 % ja avoimilla 40 % vaaleammat, keskipäivällä syvyys ×0,85 ja pimeällä ×1,15',()=>{
     const g=window.__game,pv=[dayT,openK,P.pos.clone()],r={};
     const run=(t,ok)=>{dayT=t;openK=ok;g.update(1/30);return shDepth;};   /* openK liukuu vain vähän yhdessä ruudussa */

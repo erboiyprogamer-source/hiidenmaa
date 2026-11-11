@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'2.34';
+:root{--css-v:'2.35';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -11,6 +11,7 @@ html,body{height:100%;overflow:hidden}
 body{background:var(--peat);color:var(--bone);font-family:var(--font-b);font-size:15px;user-select:none;-webkit-user-select:none}
 #game{position:fixed;inset:0}
 #game canvas{display:block;width:100%;height:100%}
+#raysC{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen}   /* v2.35 auringonsäteet */
 button{font-family:var(--font-b);cursor:pointer}
 button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 .num{font-variant-numeric:tabular-nums}

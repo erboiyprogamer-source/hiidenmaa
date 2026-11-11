@@ -66,10 +66,10 @@ function updateSky(light,sd0,el,sunK){const sd=_skyS.copy(sd0);skyDome.position.
   SKY_U.uHor.value.copy(scene.background);_sky.copy(scene.background).multiplyScalar(.62);_sky.b=Math.min(1,_sky.b*1.25+.03*light);SKY_U.uTop.value.copy(_sky);
   SKY_U.uSun.value.set(sd.x,sd.y,sd.z);SKY_U.uSunC.value.copy(cSun);SKY_U.uGlow.value=sunK*(1-Math.min(1,wDark*1.4))*(1-aarniK*.7);
   const clear=(1-sstep(.35,.7,wCloud))*(1-Math.min(1,wDark*3))*sstep(.05,.25,el)*sstep(.85,.45,el)*sunK*(1-indoorK)*(1-aarniK);
-  sunShafts.visible=!P.inDun&&clear>.02&&SET.shafts!==false;if(sunShafts.visible){const hx=sd.x,hz=sd.z,hl=Math.hypot(hx,hz)||1;
-    sunShafts.position.set(camera.position.x+hx/hl*70,Math.max(0,camera.position.y-25),camera.position.z+hz/hl*70);
-    sunShafts.rotation.set(0,0,0);sunShafts.quaternion.setFromUnitVectors(_up,sd.normalize());
-    camera.getWorldDirection(_camD);const look=Math.max(0,_camD.dot(sd));sunShafts.userData.mat.opacity=.07*clear*(.85+.15*Math.sin(playTime*.3))*(1-sstep(.45,.85,look));}
+  /* v2.35 näytön säteet (render.js RAYS/drawRays): voimakkuus säästä ja auringosta, maaston peitto marssilla kohti aurinkoa */
+  RAYS.k=(1-sstep(.35,.75,wCloud))*(1-Math.min(1,wDark*3))*sstep(-.04,.14,el)*sunK*(1-indoorK)*(1-aarniK*.7)*(.65+.35*sstep(1.1,.3,el));
+  {let o=1;if(RAYS.k>.01){const s=_skyS.copy(sd0).normalize(),cp=camera.position;for(let d=6;d<=300;d*=1.32){const x=cp.x+s.x*d,z=cp.z+s.z*d;if(terrainH(x,z)>cp.y+s.y*d){o=0;break;}}}
+   RAYS.occ=lerp(RAYS.occ,o,Math.min(1,(RAYS.dt||.016)*4));}
   sunGlow.visible=!P.inDun&&el>-.08;if(sunGlow.visible){sunGlow.position.copy(sunDisc.position);sunGlow.material.opacity=(.55+.25*sstep(.3,0,el))*sunK*(1-Math.min(1,wDark*1.6))*(1-sstep(.4,.9,wCloud)*.6);}}
 // v0.84 TUULI (päivityslista kohta 4). WIND.a = suunta johon tuuli puhaltaa (rad, atan2(x,z)), WIND.x/z = yksikkövektori, WIND.spd m/s.
 // Suunta pysyy 2–6 min, sitten kääntyy 40–90 s:ssa uuteen arvottuun suuntaan (enintään ±120°), lisäksi ±8° hidas huojunta.
