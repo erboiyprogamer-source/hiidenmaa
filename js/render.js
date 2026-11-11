@@ -243,7 +243,7 @@ const sunDisc=new THREE.Mesh(new THREE.SphereGeometry(9,12,8),new THREE.MeshBasi
 const SKY_U={uTop:{value:new THREE.Color(0x3d6fa8)},uHor:{value:new THREE.Color(0x8fbfe0)},uSun:{value:new THREE.Vector3(0,1,0)},uSunC:{value:new THREE.Color(0xfff1d6)},uGlow:{value:1}};
 const skyDome=new THREE.Mesh(new THREE.SphereGeometry(470,24,14),new THREE.ShaderMaterial({uniforms:SKY_U,side:THREE.BackSide,depthWrite:false,fog:false,
   vertexShader:'varying vec3 vD;void main(){vD=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-  fragmentShader:'uniform vec3 uTop,uHor,uSunC,uSun;uniform float uGlow;varying vec3 vD;void main(){vec3 d=normalize(vD);float h=max(d.y,0.);vec3 c=mix(uHor,uTop,pow(smoothstep(0.,1.,h),.55));float s=max(dot(d,normalize(uSun)),0.);c+=uSunC*(pow(s,90.)*.55+pow(s,10.)*.16+pow(s,3.)*.05)*uGlow;gl_FragColor=vec4(c,1.);}'}));
+  fragmentShader:'uniform vec3 uTop,uHor,uSunC,uSun;uniform float uGlow;varying vec3 vD;void main(){vec3 d=normalize(vD);float h=max(d.y,0.);vec3 c=mix(uHor,uTop,pow(smoothstep(0.,1.,h),.55));float s=max(dot(d,normalize(uSun)),0.);c+=uSunC*(pow(s,160.)*.3+pow(s,24.)*.07+pow(s,4.)*.03)*uGlow;gl_FragColor=vec4(c,1.);}'}));
 /* v2.38: suunta normalisoidaan pikselissä – interpoloitu vD on kolmion sisällä lyhyempi, jolloin jyrkkä hehku (pow 90) seurasi kupolin
    nelikulmioita ja auringon ympärille piirtyi suorakulmio (KORJAUKSET 54) */
 skyDome.renderOrder=-10;skyDome.frustumCulled=false;scene.add(skyDome);
@@ -316,8 +316,10 @@ function drawRays(dt){const R=RAYS,want=(SET.shafts!==false||SET.flare===true)&&
 const RAYS_FL=[[.32,.035,'255,226,170',.34],[.62,.018,'200,255,220',.32],[1.18,.06,'170,200,255',.2],[1.45,.028,'255,190,230',.26],[1.85,.1,'190,220,255',.13],[2.25,.045,'255,235,190',.2]];
 // Auringon pehmeä pyöreä hehku: säteittäinen liukuväri (additiivinen sprite) auringon ympärillä. Säteet häivytetään, kun katse
 // osoittaa kohti aurinkoa, koska pitkien tasojen päät näkyisivät silloin neliönä.
+/* v2.39: hehku pienempi ja läpinäkyvämpi (koko 150 → 90, voimakkuus × SUN_GLOW_K; taivaan hehku kapeampi ja himmeämpi) */
+const SUN_GLOW_S=90,SUN_GLOW_K=.45;
 const sunGlow=(function(){const t=canvasTex((g,s)=>{const gr=g.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);gr.addColorStop(0,'rgba(255,246,220,1)');gr.addColorStop(.12,'rgba(255,238,200,.55)');gr.addColorStop(.35,'rgba(255,225,170,.16)');gr.addColorStop(1,'rgba(255,215,160,0)');g.fillStyle=gr;g.fillRect(0,0,s,s);},128);
-  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,opacity:.0}));sp.scale.setScalar(150);sp.renderOrder=-5;scene.add(sp);return sp;})();
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,opacity:.0}));sp.scale.setScalar(SUN_GLOW_S);sp.renderOrder=-5;scene.add(sp);return sp;})();
 // Salama: sahalaitainen valkoinen jono pilvestä maahan, näkyy lyhyen hetken (strikeBolt()).
 let boltGrp=null,boltT=0;
 function strikeBolt(){if(boltGrp){scene.remove(boltGrp);boltGrp=null;}

@@ -276,6 +276,9 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.39 auringon hehku pienempi ja läpinäkyvämpi (sprite 90, voimakkuus ×0,45, taivaan hehku kapeampi)',()=>{
+    const a=SUN_GLOW_S===90&&SUN_GLOW_K===.45&&sunGlow.scale.x===90&&/pow\(s,160\.\)\*\.3\+pow\(s,24\.\)\*\.07/.test(skyDome.material.fragmentShader)&&/SUN_GLOW_K\*\(/.test(updateSky.toString());
+    return a||'virhe hehkun arvot';});
   t('v2.38 taivaan hehku pyöreä (suunta normalisoidaan pikselissä), pilvissä syvyys (pohja tummempi, ei puhtaan valkoinen), kovat säteet katoavat esteen takana heti, pehmeät jäävät',()=>{
     const a=/vec3 d=normalize\(vD\)/.test(skyDome.material.fragmentShader)&&/dot\(d,normalize\(uSun\)\)/.test(skyDome.material.fragmentShader);
     const cg=CLOUDS[0].geometry,p=cg.attributes.position.array,c=cg.attributes.color.array;let lo=1e9,hi=-1e9,il=0,ih=0;for(let i=1;i<p.length;i+=3){if(p[i]<lo){lo=p[i];il=i-1;}if(p[i]>hi){hi=p[i];ih=i-1;}}
