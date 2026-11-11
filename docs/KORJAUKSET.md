@@ -352,6 +352,9 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   askelääni (v2.23, ennen julkaisua), DEV "ei nälkää" (v2.09), jousella ammunnan jälkeen kääntyminen (v2.06), Kalmanpesän murskausefektit (v0.93).
 - Korjaus: `/* */`-kommentit. **Rivin keskellä vain `/* */`, `//` vain rivin loppuun.** Tarkistusrivi v2.23 skannaa kaikki `__GJS`-tiedostot.
 - v2.24 huomio: skanneri pitää kommentin tekstiä `; nimi = …` koodina (väärä hälytys). Kirjoita kommentteihin "–" tai "on" puolipisteen ja `=`:n sijaan.
+- **v2.28 uusiutui:** puun tömähdyksen koukku lisättiin `// v2.28 …`-kommentilla rivin keskelle → perässä ollut `if(!P.inDun…)shake(…)` (maan tärähdys puun kaatuessa)
+  muuttui kommentiksi. Skanneri ei huomannut, koska kommentin ja koodin välissä oli `)` eikä `;`. Korjattu `/* */`:ksi; skanneri tunnistaa nyt myös `)if(`, `)for(`, `)while(`, `)return(`.
+  **Kun lisäät koodia olemassa olevan rivin keskelle, kirjoita kommentti AINA `/* */`.**
 
 ## 50. Aarnipuun läpi pääsi osittain (v2.25)
 - Syy: törmäysympyrä `NODE.r × koko` (0,66) oli pienempi kuin näkyvä runko (1,3 m laatikko → kulmat 0,92) ja juuret (1,1). Pelaaja (säde 0,38)

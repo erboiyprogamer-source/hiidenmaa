@@ -245,7 +245,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     for(const u of (window.__GJS||[])){const x=new XMLHttpRequest();x.open('GET',u,false);x.send();const L=x.responseText.split('\n');
       L.forEach((s,i)=>{let q=null,bl=false;for(let j=0;j<s.length-1;j++){const c=s[j];if(q){if(c==='\\'){j++;continue;}if(c===q)q=null;continue;}if(bl){if(s[j]==='*'&&s[j+1]==='/'){bl=false;j++;}continue;}
         if(c==="'"||c==='"'||c==='`'){q=c;continue;}if(c==='/'&&s[j+1]==='*'){bl=true;j++;continue;}if(c==='/'&&s[j+1]==='/'&&s[j-1]!==':'){const r=s.slice(j+2);
-          if(/[;{}]\s*(if|const|let|for|return|[A-Za-z_$][\w$.]*\s*\(|[A-Za-z_$][\w$.]*\s*=[^=])/.test(r)&&!/^\s*v\d\.\d\d juomat|DEV seinien|Terveyspalkit|Haku ohittaa|täyden vedon|Matala usva/.test(r))bad.push(u.split('?')[0]+':'+(i+1));break;}}});}
+          if((/[;{}]\s*(if|const|let|for|return|[A-Za-z_$][\w$.]*\s*\(|[A-Za-z_$][\w$.]*\s*=[^=])/.test(r)||/\)\s*(if|for|while|return)\s*\(/.test(r))&&!/^\s*v\d\.\d\d juomat|DEV seinien|Terveyspalkit|Haku ohittaa|täyden vedon|Matala usva/.test(r))bad.push(u.split('?')[0]+':'+(i+1));break;}}});}
     return !bad.length||'koodia kommentin perässä: '+bad.join(', ');});
   t('v2.24 olentojen äänet −20 %, toimintoäänten kuuluvuus −20 % ja jyrkempi vaimeneminen, askeleet harvemmin (kävely ×1,2, juoksu ×1,375)',()=>{
     const a=CRE_VK===.8&&/\*CRE_VK/.test(creSnd.toString()),b=TG_RK===.8&&tgDistK(TG_R)===1&&tgDistK(5)===0&&/rolloffFactor=step\?1\.8:1\.45/.test(tgPlay.toString())&&/\*TG_RK/.test(tgPlay.toString());
@@ -276,6 +276,15 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.28 äänierä osa 2 (22 ääntä) + puun tömähdys maahan, reppu kiinni = sama ääni, oman arkun sulkemisääni',()=>{
+    const M=manJ(),need=['p/jousi/laukaus_0','p/jousi/veto_0','p/kaytto/arkku_auki_2','p/kaytto/syominen_1','p/lyonnit/huitaisu_2','p/lyonnit/torjunta_0','p/osumat/puu_kaatuu_0','p/osumat/kivi_hajoaa_0'];
+    const miss=need.filter(n=>!M[n]||!M[n].f.startsWith('pelaaja_2_toiminnot/valmiit/'));if(miss.length)return 'manifestista puuttuu '+miss.join(', ');
+    const a=/'puu_tomahdys'/.test(fallTree.toString())&&/'arkku_kiinni'/.test(closePanels.toString());
+    const calls=[],orig=plSnd,cc=curChest,op=openPanel;plSnd=(g,ev)=>{calls.push(g+'/'+ev);return 1;};
+    try{openPanel='inv';closePanels();openPanel='chest';curChest={t:'arkku',data:{items:[]}};closePanels();openPanel='chest';curChest={found:true,data:{items:[]}};plSnd=(g,ev)=>{calls.push(g+'/'+ev);return ev==='sulje'?1:0;};closePanels();}
+    finally{plSnd=orig;curChest=cc;openPanel=op;}
+    const b=calls[0]==='valikot/reppu'&&calls[1]==='kaytto/arkku_kiinni'&&calls[2]==='valikot/sulje'&&calls.length===3;
+    return a&&b||`virhe koukut ${a} kutsut ${calls.join(',')}`;});
   t('v2.27 Aarnimetsän askel ±10 % ja sävel ±9 %; oksa: astuessa oksan päälle normaali ääni, Aarnimetsässä satunnaisesti tosi hiljaa, 2 s tauko',()=>{
     const O=nodes.find(n=>n.type==='oksa'&&n.alive!==false);if(!O)return 'ei oksia';const a=plNodeAt('oksa',O.x,O.z,.3)&&!plNodeAt('oksa',O.x+3,O.z+3,.3);
     const calls=[],orig=plSnd,ok0=CRE.ok,sv=[P.pos.clone(),P.onGround,P.vel.clone(),P.swim,P.inDun,P.walkPh];plSnd=(g,ev,o)=>{calls.push([g+'/'+ev,o&&o.v]);return 1;};CRE.ok=true;

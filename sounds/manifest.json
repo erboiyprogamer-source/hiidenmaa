@@ -897,6 +897,168 @@
    "raw": 1.16,
    "f": "pelaaja_1_liike/valmiit/askeleet_valmis/puska_1.mp3"
   },
+  "p/jousi/laukaus_0": {
+   "h": "02812ba07a",
+   "src": "a16f4291fb72",
+   "dur": 0.15,
+   "pv": 7,
+   "gain": -2.7,
+   "raw": 0.18,
+   "f": "pelaaja_2_toiminnot/valmiit/jousi_valmis/laukaus_0.mp3"
+  },
+  "p/jousi/veto_0": {
+   "h": "dee5b23a08",
+   "src": "d7a3c3462994",
+   "dur": 0.86,
+   "pv": 7,
+   "gain": -1.8,
+   "raw": 0.88,
+   "f": "pelaaja_2_toiminnot/valmiit/jousi_valmis/veto_0.mp3"
+  },
+  "p/kaytto/arkku_auki_0": {
+   "h": "d3ce583956",
+   "src": "096e48be4b2b",
+   "dur": 0.44,
+   "pv": 7,
+   "gain": 1.2,
+   "raw": 0.46,
+   "f": "pelaaja_2_toiminnot/valmiit/kaytto_valmis/arkku_auki_0.mp3"
+  },
+  "p/kaytto/arkku_auki_1": {
+   "h": "74623a9e2c",
+   "src": "9d1ebe37b86f",
+   "dur": 0.21,
+   "pv": 7,
+   "gain": -0.8,
+   "raw": 0.23,
+   "f": "pelaaja_2_toiminnot/valmiit/kaytto_valmis/arkku_auki_1.mp3"
+  },
+  "p/kaytto/arkku_auki_2": {
+   "h": "f9d3f06285",
+   "src": "dbc8f12b512b",
+   "dur": 0.73,
+   "pv": 7,
+   "gain": 0.6,
+   "raw": 0.74,
+   "f": "pelaaja_2_toiminnot/valmiit/kaytto_valmis/arkku_auki_2.mp3"
+  },
+  "p/kaytto/juominen_0": {
+   "h": "6427a38382",
+   "src": "0ad387ba6598",
+   "dur": 0.15,
+   "pv": 7,
+   "gain": -9.4,
+   "raw": 0.18,
+   "f": "pelaaja_2_toiminnot/valmiit/kaytto_valmis/juominen_0.mp3"
+  },
+  "p/kaytto/poiminta_0": {
+   "h": "6ee7597bae",
+   "src": "cc55b07f592e",
+   "dur": 0.57,
+   "pv": 7,
+   "gain": -4.4,
+   "raw": 0.78,
+   "f": "pelaaja_2_toiminnot/valmiit/kaytto_valmis/poiminta_0.mp3"
+  },
+  "p/kaytto/poiminta_1": {
+   "h": "e0316bfb24",
+   "src": "ef8c49b63c5a",
+   "dur": 0.57,
+   "pv": 7,
+   "gain": -3.9,
+   "raw": 0.78,
+   "f": "pelaaja_2_toiminnot/valmiit/kaytto_valmis/poiminta_1.mp3"
+  },
+  "p/kaytto/syominen_0": {
+   "h": "f749155b04",
+   "src": "41422f574896",
+   "dur": 0.68,
+   "pv": 7,
+   "gain": -2.2,
+   "raw": 0.69,
+   "f": "pelaaja_2_toiminnot/valmiit/kaytto_valmis/syominen_0.mp3"
+  },
+  "p/kaytto/syominen_1": {
+   "h": "55f46d2324",
+   "src": "98c47c5eecbf",
+   "dur": 2.48,
+   "pv": 7,
+   "gain": 3.4,
+   "raw": 5.15,
+   "f": "pelaaja_2_toiminnot/valmiit/kaytto_valmis/syominen_1.mp3"
+  },
+  "p/lyonnit/huitaisu_0": {
+   "h": "a5b5dc2cbe",
+   "src": "7d7d589e2fd2",
+   "dur": 0.07,
+   "pv": 7,
+   "gain": -2.3,
+   "raw": 0.09,
+   "f": "pelaaja_2_toiminnot/valmiit/lyonnit_valmis/huitaisu_0.mp3"
+  },
+  "p/lyonnit/huitaisu_1": {
+   "h": "a508ff42d0",
+   "src": "6d1c62c188e8",
+   "dur": 0.15,
+   "pv": 7,
+   "gain": 1.3,
+   "raw": 0.18,
+   "f": "pelaaja_2_toiminnot/valmiit/lyonnit_valmis/huitaisu_1.mp3"
+  },
+  "p/lyonnit/huitaisu_2": {
+   "h": "f2b62dd898",
+   "src": "c67c60736a9f",
+   "dur": 0.44,
+   "pv": 7,
+   "gain": 8.3,
+   "raw": 0.46,
+   "f": "pelaaja_2_toiminnot/valmiit/lyonnit_valmis/huitaisu_2.mp3"
+  },
+  "p/lyonnit/lataus_0": {
+   "h": "717f786eae",
+   "src": "7828ff07f296",
+   "dur": 0.26,
+   "pv": 7,
+   "gain": 3.8,
+   "raw": 0.27,
+   "f": "pelaaja_2_toiminnot/valmiit/lyonnit_valmis/lataus_0.mp3"
+  },
+  "p/lyonnit/torjunta_0": {
+   "h": "3faeed4ce3",
+   "src": "ba8f4c99d300",
+   "dur": 0.54,
+   "pv": 7,
+   "gain": -0.8,
+   "raw": 0.55,
+   "f": "pelaaja_2_toiminnot/valmiit/lyonnit_valmis/torjunta_0.mp3"
+  },
+  "p/lyonnit/torjunta_1": {
+   "h": "914bdb89af",
+   "src": "840a4ee632e5",
+   "dur": 0.44,
+   "pv": 7,
+   "gain": -2.0,
+   "raw": 0.46,
+   "f": "pelaaja_2_toiminnot/valmiit/lyonnit_valmis/torjunta_1.mp3"
+  },
+  "p/osumat/ei_tehoa_0": {
+   "h": "1f7c272c94",
+   "src": "e0cda7394b8c",
+   "dur": 0.57,
+   "pv": 7,
+   "gain": 3.3,
+   "raw": 1.16,
+   "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/ei_tehoa_0.mp3"
+  },
+  "p/osumat/kivi_hajoaa_0": {
+   "h": "7c0a82b167",
+   "src": "6efeb3ce3817",
+   "dur": 1.49,
+   "pv": 7,
+   "gain": -3.0,
+   "raw": 2.73,
+   "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/kivi_hajoaa_0.mp3"
+  },
   "p/osumat/osuma_isku_1": {
    "h": "4d585ab5a4",
    "src": "ed40bf9961d9",
@@ -914,6 +1076,15 @@
    "gain": 4.5,
    "raw": 0.32,
    "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/osuma_isku_2.mp3"
+  },
+  "p/osumat/osuma_kivi_0": {
+   "h": "1c3038c65e",
+   "src": "0f02c83520e3",
+   "dur": 0.36,
+   "pv": 7,
+   "gain": 0.9,
+   "raw": 0.37,
+   "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/osuma_kivi_0.mp3"
   },
   "p/osumat/osuma_murskaus_1": {
    "h": "a78aa6ba6f",
@@ -950,6 +1121,33 @@
    "gain": 10.0,
    "raw": 0.41,
    "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/osuma_nuoli_2.mp3"
+  },
+  "p/osumat/osuma_puu_0": {
+   "h": "e5b003d06e",
+   "src": "0a87d11b561f",
+   "dur": 0.26,
+   "pv": 7,
+   "gain": -1.0,
+   "raw": 0.27,
+   "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/osuma_puu_0.mp3"
+  },
+  "p/osumat/puu_kaatuu_0": {
+   "h": "601af5be84",
+   "src": "8c2b1be878c7",
+   "dur": 2.97,
+   "pv": 7,
+   "gain": 8.8,
+   "raw": 3.29,
+   "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/puu_kaatuu_0.mp3"
+  },
+  "p/osumat/tukki_hajoaa_0": {
+   "h": "1b6e8a6c0b",
+   "src": "fa6dd76c9471",
+   "dur": 1.17,
+   "pv": 7,
+   "gain": -0.1,
+   "raw": 1.71,
+   "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/tukki_hajoaa_0.mp3"
   },
   "p/vesi/askel_kahlaus_1": {
    "h": "7240ada756",

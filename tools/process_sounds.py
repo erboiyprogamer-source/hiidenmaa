@@ -604,7 +604,7 @@ T_PROF = {'askel': (.5, .8, .05, -27), 'kahlaus': (1.2, 1.5, .15, -25), 'uinti':
           'loiskahdus': (1.2, 1.5, .2, -21), 'ryntays': (2.0, 2.5, .25, -18), 'tomistys': (.6, .9, .08, -26)}
 # v2.25: pelaajan osien äänet (yläraja s, iso, häivytys s, LUFS); puuttuva avain → T_DEF (työkalu ei kaadu uuteen ääneen)
 T_PROF.update({'alastulo': (.6, .8, .08, -24), 'puska': (1.2, 1.2, .15, -24), 'lataus': (.8, .8, .1, -24), 'torjunta': (.8, .8, .1, -19), 'ei': (.6, .6, .08, -21),
-               'puu': (3.0, 3.0, .3, -18), 'tukki': (1.2, 1.2, .15, -20), 'kivi': (1.5, 1.5, .2, -19), 'veto': (1.2, 1.2, .1, -24), 'laukaus': (.8, .8, .1, -21),
+               'puu': (3.0, 3.0, .3, -18), 'puu_tomahdys': (2.0, 2.0, .3, -17), 'tukki': (1.2, 1.2, .15, -20), 'kivi': (1.5, 1.5, .2, -19), 'veto': (1.2, 1.2, .1, -24), 'laukaus': (.8, .8, .1, -21),
                'asetus': (1.0, 1.0, .1, -21), 'purku': (1.2, 1.2, .15, -21), 'korjaus': (1.0, 1.0, .1, -21), 'valmistus': (1.5, 1.5, .15, -22),
                'poiminta': (.6, .6, .08, -22), 'arkku': (1.2, 1.2, .15, -22), 'reppu': (.8, .8, .1, -24), 'rakennusvalikko': (.8, .8, .1, -24), 'kartta': (.8, .8, .1, -24),
                'sulje': (.5, .5, .08, -25), 'kipu': (1.0, 1.0, .1, -18), 'kuolema': (3.0, 3.0, .3, -17), 'sydan': (3.0, 3.0, .2, -22), 'hengastys': (3.0, 3.0, .3, -22),
@@ -613,7 +613,7 @@ T_PROF.update({'alastulo': (.6, .8, .08, -24), 'puska': (1.2, 1.2, .15, -24), 'l
 T_PROF['pusikko'] = (.3, .42, .07, -27)   # v2.27 Aarnimetsän askel lyhyemmäksi: raa'an 0,3 s hiljainen häntä pois (kuulosti venyvältä)
 T_DEF = (1.5, 1.5, .15, -22)
 def t_prof(ev, big):
-    k = 'kahlaus' if ev == 'askel_kahlaus' else 'uinti' if ev == 'askel_uinti' else 'pusikko' if ev == 'askel_pusikko' else ev.split('_')[0]
+    k = 'kahlaus' if ev == 'askel_kahlaus' else 'uinti' if ev == 'askel_uinti' else 'pusikko' if ev == 'askel_pusikko' else ev if ev in T_PROF else ev.split('_')[0]
     a, b, f, t = T_PROF.get(k, T_DEF)
     return (a, b, f, t + (2 if big else 0))
 T_SLOTS = 2   # paikkamerkkejä per ääni (_1, _2); lisää _3, _4 … vapaasti
@@ -702,7 +702,8 @@ P_PARTS = [   # (osa, kansio, otsikko, [(ryhmä, nimi, emoji, [(ääni, milloin 
                                    ('osuma_puu', 'kirves osuu puuhun tai tukkiin', 'axe chop wood, tree chop'),
                                    ('osuma_kivi', 'hakku osuu kiveen tai malmiin', 'pickaxe hit rock, stone mining'),
                                    ('ei_tehoa', 'väärä tai liian heikko työkalu (ei pure)', 'dull hit, tool bounce off'),
-                                   ('puu_kaatuu', 'kaatamasi puu kaatuu', 'tree falling crash, timber'),
+                                   ('puu_kaatuu', 'kaatamasi puu kaatuu (kaatumisen alku: rasahdus, ryske)', 'tree falling crash, timber'),
+                                   ('puu_tomahdys', 'kaatuva puu iskeytyy maahan (myös karhun kaatama; iso puu matalampi, hiljenee etäisyyden mukaan)', 'tree hits ground thud, heavy log impact'),
                                    ('tukki_hajoaa', 'tukki halkeaa puiksi', 'wood log split, wood break'),
                                    ('kivi_hajoaa', 'louhimasi kivi hajoaa', 'rock break, stone crumble')]),
         ('jousi', 'Jousi', '🏹', [('veto', 'jousen veto alkaa (lataa jousta)', 'bow draw, bowstring stretch creak'),
@@ -713,9 +714,10 @@ P_PARTS = [   # (osa, kansio, otsikko, [(ryhmä, nimi, emoji, [(ääni, milloin 
                                                            ('valmistus', 'valmistat tai parannat esineen', 'crafting sound, workbench craft')]),
         ('kaytto', 'Keräily ja käyttö', '🎒', [('poiminta', 'poimit esineen maasta tai kasvista', 'item pickup, pick up'),
                                               ('arkku_auki', 'avaat arkun tai hautakasan', 'chest open, wooden lid creak'),
+                                              ('arkku_kiinni', 'suljet oman (rakentamasi) arkun', 'chest close, wooden lid shut'),
                                               ('syominen', 'syöt ruokaa', 'eating food, chewing bite'),
                                               ('juominen', 'juot juoman', 'drinking potion, gulp')]),
-        ('valikot', 'Valikot', '📜', [('reppu', 'avaat repun (Tab)', 'backpack open, leather bag'),
+        ('valikot', 'Valikot', '📜', [('reppu', 'avaat tai suljet repun (Tab) – sama ääni molempiin', 'backpack open, leather bag'),
                                      ('rakennusvalikko', 'avaat rakennusvalikon', 'menu open, tool select'),
                                      ('kartta', 'avaat kartan', 'map unfold, paper rustle'),
                                      ('sulje', 'suljet paneelin', 'menu close, soft click')])]),
@@ -748,7 +750,7 @@ for _n, _proj, _tit, _grs in P_PARTS:
             P_EV[(gid, e[0])] = (e[1], e[2])
     _by = {x[0]: x for x in _g}
     P_CFGS.append({'part': _n, 'title': _tit, 'groups': _g, 'by': _by, 'raw': os.path.join(SND, _proj, 'raw'), 'out': os.path.join(SND, _proj, 'valmiit'),
-                   'pre': 'p', 'proj': _proj, 'single': True, 'list': os.path.join(SND, _proj, f'AANILISTA_OSA{_n}.csv'),
+                   'pre': 'p', 'proj': _proj, 'single': True, 'act': {'sydan'}, 'list': os.path.join(SND, _proj, f'AANILISTA_OSA{_n}.csv'),
                    'allowed': (lambda by: (lambda g: list(by[g][4])))(_by)})
 T_CFG = {'groups': TG_GROUPS, 'by': TG_BY, 'raw': RAW_T, 'out': OUT_T, 'pre': 't', 'proj': PROJ_T, 'allowed': lambda g: t_allowed(g)}
 
@@ -909,7 +911,7 @@ def process_toiminnot(ff, init, old, C=None):
         src_h = sha(p)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         big_ev = BY[g][5] or ev.endswith('_raskas')
-        mode = 'act' if ev in ACT_EV else 'step' if step_like(ev) else None if ev in LOOP_EV else 'best'
+        mode = 'act' if ev in C.get('act', ACT_EV) else 'step' if step_like(ev) else None if ev in LOOP_EV else 'best'   # v2.28: pelaajalla silmukka vain sydän (ei juominen)
         # v2.23: pitkä askelnauhoitus (yli 3 s) → useita askelpätkiä: voimakkain = _n, muut _n01, _n02 … (peli arpoo kaikista)
         jobs = [(base, None)]
         if mode == 'step':
