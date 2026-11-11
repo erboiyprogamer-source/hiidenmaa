@@ -243,18 +243,26 @@ const sunDisc=new THREE.Mesh(new THREE.SphereGeometry(9,12,8),new THREE.MeshBasi
 const SKY_U={uTop:{value:new THREE.Color(0x3d6fa8)},uHor:{value:new THREE.Color(0x8fbfe0)},uSun:{value:new THREE.Vector3(0,1,0)},uSunC:{value:new THREE.Color(0xfff1d6)},uGlow:{value:1}};
 const skyDome=new THREE.Mesh(new THREE.SphereGeometry(470,24,14),new THREE.ShaderMaterial({uniforms:SKY_U,side:THREE.BackSide,depthWrite:false,fog:false,
   vertexShader:'varying vec3 vD;void main(){vD=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-  fragmentShader:'uniform vec3 uTop,uHor,uSunC,uSun;uniform float uGlow;varying vec3 vD;void main(){float h=max(vD.y,0.);vec3 c=mix(uHor,uTop,pow(smoothstep(0.,1.,h),.55));float s=max(dot(vD,normalize(uSun)),0.);c+=uSunC*(pow(s,90.)*.55+pow(s,10.)*.16+pow(s,3.)*.05)*uGlow;gl_FragColor=vec4(c,1.);}'}));
+  fragmentShader:'uniform vec3 uTop,uHor,uSunC,uSun;uniform float uGlow;varying vec3 vD;void main(){vec3 d=normalize(vD);float h=max(d.y,0.);vec3 c=mix(uHor,uTop,pow(smoothstep(0.,1.,h),.55));float s=max(dot(d,normalize(uSun)),0.);c+=uSunC*(pow(s,90.)*.55+pow(s,10.)*.16+pow(s,3.)*.05)*uGlow;gl_FragColor=vec4(c,1.);}'}));
+/* v2.38: suunta normalisoidaan pikselissä – interpoloitu vD on kolmion sisällä lyhyempi, jolloin jyrkkä hehku (pow 90) seurasi kupolin
+   nelikulmioita ja auringon ympärille piirtyi suorakulmio (KORJAUKSET 54) */
 skyDome.renderOrder=-10;skyDome.frustumCulled=false;scene.add(skyDome);
 // Pilvet: isoja, leveitä ja litteäpohjaisia pilvilauttoja (70–170 m), jotka levittäytyvät taivaalle. Peitto (cover) riippuu säästä: pilvet
 // ilmestyvät järjestyksessä (kynnys th) ja kasvavat peiton mukana. Kaukana pilvet häipyvät horisontin väriin ja katoavat (ei piirretä R:n takana).
 // Pilvet ovat aurinkoa ja kuuta lähempänä, joten ne peittävät ne luonnollisesti.
 const CLOUD_R=420,CLOUDS=[];
+/* v2.38: pilviin syvyyttä – kärkivärit tummuvat alaspäin (pohja ×0,72, yläosa ×1) ja sisäänpäin kääntyvät pinnat hieman (varjoisa sisus) */
+function cloudShade(geo){const p=geo.attributes.position.array,c=geo.attributes.color.array,n=geo.attributes.normal.array;let lo=1e9,hi=-1e9;
+  for(let i=1;i<p.length;i+=3){lo=Math.min(lo,p[i]);hi=Math.max(hi,p[i]);}const H=Math.max(1,hi-lo);
+  for(let i=0;i<p.length;i+=3){const t=(p[i+1]-lo)/H,up=n[i+1],k=(.72+.28*Math.pow(t,.7))*(.92+.08*Math.max(0,up));c[i]*=k;c[i+1]*=k;c[i+2]*=k*1.02;}
+  geo.attributes.color.needsUpdate=true;}
 (function(){const r=mulberry32(77),sg=new THREE.SphereGeometry(1,10,7);
   for(let i=0;i<26;i++){const parts=[],w=70+r()*100,dpt=w*(.4+r()*.3),n=26+(r()*14|0);
     for(let k=0;k<n;k++){const a=r()*TAU,rr=Math.sqrt(r()),px=Math.cos(a)*rr*w*.5,pz=Math.sin(a)*rr*dpt*.5,core=1-rr*.6,pr=w*(.055+r()*.05)*core;
-      parts.push(part(sg,0xf4f6fa,px,pr*.35+core*w*.05*r(),pz,0,0,0,pr*1.5,pr*.75*(.8+core*.7),pr*1.3));
-      parts.push(part(sg,0xb9bfc9,px*.95,-pr*.05,pz*.95,0,0,0,pr*1.45,pr*.22,pr*1.25));}
-    const m=new THREE.Mesh(mergeParts(parts),new THREE.MeshLambertMaterial({vertexColors:true,fog:false,transparent:true,opacity:.95,depthWrite:false}));
+      const tn=.93+r()*.07;parts.push(part(sg,new THREE.Color(0xeef1f5).multiplyScalar(tn),px,pr*.35+core*w*.05*r(),pz,0,0,0,pr*1.5,pr*.75*(.8+core*.7),pr*1.3));
+      parts.push(part(sg,0xb6bcc6,px*.95,-pr*.05,pz*.95,0,0,0,pr*1.45,pr*.22,pr*1.25));}
+    const geo=mergeParts(parts);cloudShade(geo);
+    const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,fog:false,transparent:true,opacity:.95,depthWrite:false}));
     m.frustumCulled=false;m.renderOrder=-5;m.userData={th:i/26,ox:(r()*2-1)*CLOUD_R,oz:(r()*2-1)*CLOUD_R,h:96+r()*30,sp:.7+r()*.6,sc:.85+r()*.4};scene.add(m);CLOUDS.push(m);}
 })();
 // Pilvikansi: tasainen harmaa kerros koko taivaalla rankassa sateessa ja myrskyssä (läpikuultava, reunat häivytetty).
@@ -269,22 +277,22 @@ const cloudDeck=(function(){const t=canvasTex((g,s)=>{const r=mulberry32(91);con
    (renkaat auringon ja ruudun keskipisteen kautta kulkevalla linjalla, näkyy kun katsoo aurinkoa kohti). Piirto main.js drawRays(). */
 const RAYS=(function(){const c=document.createElement('canvas');c.id='raysC';$('#game').appendChild(c);const g=c.getContext('2d');
   const r=mulberry32(55),list=[];for(let i=0;i<14;i++)list.push({a:r()*TAU,k:(r()<.5?-1:1)*(.25+r()*.9),j:(r()-.5)*1.6,w:.014+r()*.04,L:.55+r()*.75,
-    f:1.4+r()*2.6,fp:(r()-.5)*3,ph:r()*TAU,s:.4+r()*.8,v:0});
-  return{c,g,list,k:0,occ:1,pix:1,pixN:0,on:false,W:0,H:0,clr:false};})();
+    f:1.4+r()*2.6,fp:(r()-.5)*3,ph:r()*TAU,s:.4+r()*.8,v:0,h:i%5<3});   /* v2.38 h: kova säde (60 %) katoaa esteen takana heti */
+  return{c,g,list,k:0,occ:1,occP:1,pix:1,pixN:0,on:false,W:0,H:0,clr:false};})();
 /* v2.37: päiväkohtainen vahvuus (päivän numerosta, sama koko päivän): 0,3–1, ei tyhjiä päiviä (v2.36:ssa 35 % päivistä oli ilman). */
-const RAYS_MIN=.3;let raysDayN=-1,raysDayK=1;
+const RAYS_MIN=.3,RAYS_SOFT=.45;let raysDayN=-1,raysDayK=1;
 function raysDay(){const n=typeof dayN==='number'?dayN:0;if(n!==raysDayN){raysDayN=n;const r=mulberry32(Math.imul(n+977,2654435761)^0x5bd1e995);r();raysDayK=RAYS_MIN+(1-RAYS_MIN)*r();}return raysDayK;}
 /* v2.36: peitto – piirron jälkeen luetaan auringon kiekon kohdalta 5 pikseliä (keskus + 4 puolivälissä reunaa). Jos kiekko ei näy (puu, rakennus,
    hahmo, pilvi edessä), RAYS.pix → 0 ja säteet + linssiheijastus häipyvät. Luku vain kun säteitä piirretään, joka 3. ruutu. */
 const _rp=new THREE.Vector3(),_rpx=new Uint8Array(4),_rsc=new THREE.Color();
 function raysPeek(){const R=RAYS;if(!(R.k>.01)||!sunDisc.visible||P.inDun||(SET.shafts===false&&SET.flare!==true)){R.pix=1;return;}
-  if((R.pixN=(R.pixN+1)%3)!==0)return;_rp.copy(sunDisc.position).project(camera);if(_rp.z>1||Math.abs(_rp.x)>.98||Math.abs(_rp.y)>.98){R.pix=1;return;}
+  if((R.pixN=(R.pixN+1)%2)!==0)return;   /* v2.38: joka 2. ruutu (nopeampi reagointi) */_rp.copy(sunDisc.position).project(camera);if(_rp.z>1||Math.abs(_rp.x)>.98||Math.abs(_rp.y)>.98){R.pix=1;return;}
   const gl=renderer.getContext(),bw=gl.drawingBufferWidth,bh=gl.drawingBufferHeight,px=(_rp.x*.5+.5)*bw,py=(_rp.y*.5+.5)*bh;
   const rad=Math.atan(9/380)/Math.tan(camera.fov*Math.PI/360)*bh/2,o=Math.max(1,rad*.5);_rsc.copy(sunDisc.material.color);
   let hit=0,zero=0;for(const [dx,dy] of [[0,0],[o,0],[-o,0],[0,o],[0,-o]]){const x=Math.round(px+dx),y=Math.round(py+dy);if(x<0||y<0||x>=bw||y>=bh)continue;
     gl.readPixels(x,y,1,1,gl.RGBA,gl.UNSIGNED_BYTE,_rpx);if(!_rpx[0]&&!_rpx[1]&&!_rpx[2]&&!_rpx[3])zero++;if(_rpx[0]>=_rsc.r*255*.82&&_rpx[1]>=_rsc.g*255*.82&&_rpx[2]>=_rsc.b*255*.7&&_rpx[2]<_rpx[0]*.95)hit++;}   /* lämmin sävy: valkoinen pilvi ei käy auringosta */
   if(zero===5){R.pix=1;return;}   /* tyhjä luku (puskuri jo tyhjennetty) = ei tietoa → ei piiloteta */
-  R.pix=lerp(R.pix,hit/5,.5);}   /* v2.37: tasoitus – yksittäinen poikkeava luku ei välkytä */
+  R.pix=hit/5;}   /* v2.38: suora luku; tasoitus R.occP:ssä (environment.js) */
 function raysResize(){const R=RAYS,W=Math.max(2,innerWidth>>1),H=Math.max(2,innerHeight>>1);if(R.W!==W||R.H!==H){R.W=R.c.width=W;R.H=R.c.height=H;}}
 const _rv=new THREE.Vector3();
 function drawRays(dt){const R=RAYS,want=(SET.shafts!==false||SET.flare===true)&&R.k>.01&&!P.inDun&&!(typeof CAM_UW==='number'&&CAM_UW>0)&&sunDisc.visible;
@@ -292,13 +300,15 @@ function drawRays(dt){const R=RAYS,want=(SET.shafts!==false||SET.flare===true)&&
   raysResize();const g=R.g,W=R.W,H=R.H;g.clearRect(0,0,W,H);R.clr=true;
   _rv.copy(sunDisc.position).project(camera);if(_rv.z>1)return;   /* aurinko kameran takana */
   const sx=(_rv.x*.5+.5)*W,sy=(-_rv.y*.5+.5)*H,edge=Math.max(Math.abs(_rv.x),Math.abs(_rv.y)),vis=sstep(1.9,1.0,edge);if(vis<=0)return;
-  const K=R.k*R.occ*vis;if(K<.005)return;const M=Math.min(W,H),t=playTime;g.globalCompositeOperation='lighter';
+  /* v2.38: R.occ = maaston peitto (rauhallinen, kaikki säteet), R.occP = este auringon kiekon edessä (nopea): kovat säteet ja heijastus
+     katoavat lähes heti, pehmeät jäävät 45 %:iin */
+  const K=R.k*R.occ*vis;if(K<.005)return;const softP=lerp(RAYS_SOFT,1,R.occP);const M=Math.min(W,H),t=playTime;g.globalCompositeOperation='lighter';
   if(SET.shafts!==false)for(const q of R.list){
     const tv=sstep(.42,.85,.5+.5*Math.sin(camYaw*q.f+camPitch*q.fp*2+q.ph+t*.05*q.s));q.v=lerp(q.v,tv,Math.min(1,(dt||0)*3));   /* osa säteistä piiloutuu kääntyessä */
-    const al=.16*K*q.v;if(al<.004)continue;const a=q.a+camYaw*q.k+camPitch*q.j+Math.sin(t*.07*q.s+q.ph)*.03,L=M*q.L;
+    const al=.16*K*q.v*(q.h?R.occP:softP);if(al<.004)continue;const a=q.a+camYaw*q.k+camPitch*q.j+Math.sin(t*.07*q.s+q.ph)*.03,L=M*q.L;
     const gr=g.createRadialGradient(sx,sy,0,sx,sy,L);gr.addColorStop(0,'rgba(255,244,214,1)');gr.addColorStop(.25,'rgba(255,236,196,.55)');gr.addColorStop(1,'rgba(255,230,190,0)');g.fillStyle=gr;
     for(const m of [1,.55,.25]){const w=q.w*m;g.globalAlpha=al*.4;g.beginPath();g.moveTo(sx,sy);g.lineTo(sx+Math.cos(a-w)*L,sy+Math.sin(a-w)*L);g.lineTo(sx+Math.cos(a+w)*L,sy+Math.sin(a+w)*L);g.closePath();g.fill();}}
-  if(SET.flare===true){const cx=W/2,cy=H/2,dx=cx-sx,dy=cy-sy,fk=K*sstep(1.15,.05,Math.hypot(_rv.x,_rv.y));
+  if(SET.flare===true){const cx=W/2,cy=H/2,dx=cx-sx,dy=cy-sy,fk=K*R.occP*sstep(1.15,.05,Math.hypot(_rv.x,_rv.y));
     if(fk>.01)for(const [tt,rr,col,al] of RAYS_FL){const x=sx+dx*tt,y=sy+dy*tt,rad=M*rr,gr=g.createRadialGradient(x,y,0,x,y,rad);
       gr.addColorStop(0,`rgba(${col},${al})`);gr.addColorStop(.7,`rgba(${col},${al*.55})`);gr.addColorStop(1,`rgba(${col},0)`);g.globalAlpha=fk;g.fillStyle=gr;g.beginPath();g.arc(x,y,rad,0,TAU);g.fill();}}
   g.globalAlpha=1;g.globalCompositeOperation='source-over';}

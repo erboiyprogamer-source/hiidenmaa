@@ -40,7 +40,7 @@ let lightK=1,wCloud=.2,wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0
 const cAarni=new THREE.Color(0x26302a);
 // Kuun kirkkaus vaihtelee 8 päivän kierrossa (uusikuu .2 … täysikuu 1).
 function moonPhase(){return .2+.8*(.5-.5*Math.cos((dayN%8)/8*TAU));}
-const cCloudDay=new THREE.Color(0xffffff),cCloudNight=new THREE.Color(0x232a3a),cCloudGrey=new THREE.Color(0x4b5058),_cc=new THREE.Color();
+const cCloudDay=new THREE.Color(0xe4e9ef),cCloudNight=new THREE.Color(0x232a3a),cCloudGrey=new THREE.Color(0x4b5058),_cc=new THREE.Color();
 // Pilvien liike, peitto, väri (valo, sää, ilta) ja salamoiden välke. cover 0–1.
 function updateClouds(dt,cover,light,el){const vis=!P.inDun;let cx=camera.position.x,cz=camera.position.z;
   _cc.copy(cCloudNight).lerp(cCloudDay,light).lerp(cCloudGrey,Math.min(1,wDark/.6)*.85);
@@ -54,7 +54,7 @@ function updateClouds(dt,cover,light,el){const vis=!P.inDun;let cx=camera.positi
     // ilmestyminen peiton mukaan; kaukana häipyy (opasiteetti + väri kohti horisonttia) eikä piirry R:n takana
     const k=sstep(u.th,u.th+.12,cover),far=sstep(R*.5,R*.97,d),op=.95*k*(1-far);c.visible=op>.03;if(!c.visible)continue;
     c.scale.set(u.sc*grow,u.sc*(.8+.4*cover),u.sc*grow);
-    const m=c.material;m.opacity=op;m.color.copy(_cc).lerp(hor,far*.75);m.emissive.copy(m.color).multiplyScalar(.55*light+.12);
+    const m=c.material;m.opacity=op;m.color.copy(_cc).lerp(hor,far*.75);m.emissive.copy(m.color).multiplyScalar(.26*light+.1);   /* v2.38: pienempi itsevalaisu → auringon puoli kirkas, varjopuoli harmaampi (syvyys) */
     if(flash>0){const near=sstep(240,60,d);m.emissive.lerp(cFlash,Math.min(1,flash*(.5+.5*near)));}}
   // pilvikansi rankassa säässä
   const deck=sstep(.82,1,cover)*Math.min(1,wDark/.4);cloudDeck.visible=vis&&deck>.02;if(cloudDeck.visible){cloudDeck.position.set(cx,128,cz);cloudDeck.material.opacity=deck*.92;cloudDeck.material.color.copy(_cc);if(flash>0)cloudDeck.material.color.lerp(cFlash,flash*.6);
@@ -71,7 +71,7 @@ function updateSky(light,sd0,el,sunK){const sd=_skyS.copy(sd0);skyDome.position.
      päiväkohtainen vahvuus raysDay() */
   RAYS.k=(1-sstep(.35,.75,wCloud))*(1-Math.min(1,wDark*3))*sstep(-.04,.35,el)*sunK*(1-indoorK)*(1-aarniK*.7)*raysDay();
   {let o=1;if(RAYS.k>.01){const s=_skyS.copy(sd0).normalize(),cp=camera.position;for(let d=6;d<=300;d*=1.32){const x=cp.x+s.x*d,z=cp.z+s.z*d;if(terrainH(x,z)>cp.y+s.y*d){o=0;break;}}}
-   RAYS.occ=lerp(RAYS.occ,o*RAYS.pix,Math.min(1,(RAYS.dt||.016)*(o*RAYS.pix<RAYS.occ?9:3)));}   /* v2.36: este auringon edessä (RAYS.pix) → nopea häivytys */
+   const rdt=RAYS.dt||.016;RAYS.occ=lerp(RAYS.occ,o,Math.min(1,rdt*3));RAYS.occP=lerp(RAYS.occP,RAYS.pix,Math.min(1,rdt*(RAYS.pix<RAYS.occP?22:6)));}   /* v2.38: maasto rauhallisesti, este kiekon edessä lähes heti (22/s) */
   sunGlow.visible=!P.inDun&&el>-.08;if(sunGlow.visible){sunGlow.position.copy(sunDisc.position);sunGlow.material.opacity=(.55+.25*sstep(.3,0,el))*sunK*(1-Math.min(1,wDark*1.6))*(1-sstep(.4,.9,wCloud)*.6);}}
 // v0.84 TUULI (päivityslista kohta 4). WIND.a = suunta johon tuuli puhaltaa (rad, atan2(x,z)), WIND.x/z = yksikkövektori, WIND.spd m/s.
 // Suunta pysyy 2–6 min, sitten kääntyy 40–90 s:ssa uuteen arvottuun suuntaan (enintään ±120°), lisäksi ±8° hidas huojunta.

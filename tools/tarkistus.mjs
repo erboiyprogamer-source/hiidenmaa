@@ -276,11 +276,17 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.38 taivaan hehku pyöreä (suunta normalisoidaan pikselissä), pilvissä syvyys (pohja tummempi, ei puhtaan valkoinen), kovat säteet katoavat esteen takana heti, pehmeät jäävät',()=>{
+    const a=/vec3 d=normalize\(vD\)/.test(skyDome.material.fragmentShader)&&/dot\(d,normalize\(uSun\)\)/.test(skyDome.material.fragmentShader);
+    const cg=CLOUDS[0].geometry,p=cg.attributes.position.array,c=cg.attributes.color.array;let lo=1e9,hi=-1e9,il=0,ih=0;for(let i=1;i<p.length;i+=3){if(p[i]<lo){lo=p[i];il=i-1;}if(p[i]>hi){hi=p[i];ih=i-1;}}
+    const b=c[il]<c[ih]*.85&&cCloudDay.r<.95&&/multiplyScalar\(\.26\*light\+\.1\)/.test(updateClouds.toString());
+    const hard=RAYS.list.filter(q=>q.h).length,cc=hard>=7&&hard<=10&&RAYS_SOFT>.3&&RAYS_SOFT<.6&&/q\.h\?R\.occP:softP/.test(drawRays.toString())&&/R\.occP\*sstep/.test(drawRays.toString());
+    return a&&b&&cc||`virhe hehku ${a} pilvet ${b} säteet ${cc}`;});
   t('v2.37 säteet vahvat koko päivän (ei keskipäivän hiipumista), hiipuvat laskiessa; päivävahvuus 0,3–1 ilman tyhjiä päiviä; este piilottaa; tyhjä pikseliluku ei piilota',()=>{
     const pv=dayN,v=[];for(let n=1;n<=200;n++){dayN=n;v.push(raysDay());}dayN=pv;raysDayN=-1;
     const a=v.every(x=>x>=.3&&x<=1)&&new Set(v.map(x=>x.toFixed(2))).size>40;
     const env=updateSky.toString(),b=/sstep\(-\.04,\.35,el\)\*sunK\*\(1-indoorK\)\*\(1-aarniK\*\.7\)\*raysDay\(\)/.test(env)&&!/RAYS_NOON/.test(env)&&/RAYS\.pix/.test(env);
-    const c=/sstep\(\.42,\.85,/.test(drawRays.toString())&&/readPixels/.test(raysPeek.toString())&&/zero===5/.test(raysPeek.toString());
+    const c=/sstep\(\.42,\.85,/.test(drawRays.toString())&&/readPixels/.test(raysPeek.toString())&&/zero===5/.test(raysPeek.toString());   /* v2.38: tasoitus siirtyi occP:hen */
     let d=true;try{raysPeek();}catch(e){d=e.message;}
     return a&&b&&c&&d===true||`virhe päivät ${a} aika ${b} harvinaisuus/peitto ${c} ${d}`;});
   t('v2.35 auringonsäteet näytöllä (ei 3D-tasoja → ei neliötä), kääntyvät kameran mukana; linssiheijastus vain Ultra; Low ilman säteitä',()=>{

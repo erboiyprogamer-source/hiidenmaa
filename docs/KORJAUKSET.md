@@ -385,6 +385,12 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   Ratkaisu: ui.js:n mouseup – pudotus omaan ruutuun palauttaa valinnan (`selectFor`). Testaa todellisella hiirellä/VC:llä niin, että painalluksen aikana liikutaan.
 - Testaa estämällä oikea `contextmenu` (`addInitScript`: kaappaava kuuntelija `e.isTrusted → stopImmediatePropagation`).
 
+## 54. Suorakulmio auringon ympärillä (v2.38)
+- Oire: auringon ympärillä vaalea suorakulmio/neliö (näkyi myös ilman 3D-säteitä).
+- Syy: taivaskupolin (`skyDome`, render.js) varjostin käytti verteksistä interpoloitua suuntaa `vD` sellaisenaan. Interpoloitu vektori on kolmion
+  sisällä lyhyempi kuin 1, ja jyrkkä hehku `pow(dot(vD,sun),90)` korostaa eron → hehku seuraa kupolin nelikulmioita.
+- Ratkaisu: normalisoi suunta pikselivarjostimessa (`vec3 d=normalize(vD)`). Sama sääntö kaikkiin suuntaa käyttäviin varjostimiin (taivas, vesi).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`
