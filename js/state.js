@@ -244,8 +244,9 @@ function updateFx(dt){updateEmbers(dt);
 // maahan osuessa; irronneet oksat putoavat ja vajoavat hitaasti maan alle. Pieni puu (koko < SMALL_TREE) ei jätä tukkeja, vaan
 // muuttuu suoraan tavaroiksi (puu ym.) maahan osuessaan. Lähellä kaatuva puu tärähdyttää ruutua.
 const SMALL_TREE=.8,BRANCH_C={koivu:0x4f4237};
+function fallDur(n){return (1+.3*n.s)*(n.type==='aarnipuu'?2:1);}   // v2.29: kaatumisen kesto (s) – narina loppuu tähän
 function fallTree(n,dir,crush,src){const g=new THREE.Group();const m=new THREE.Mesh(NGEO_FALL[n.type]||NGEO[n.type],vcMat);m.scale.setScalar(n.s);m.rotation.y=n.rot||0;g.add(m);g.position.set(n.x,n.y,n.z);scene.add(g);
-  const a=dir??Math.atan2(n.x-P.pos.x,n.z-P.pos.z),H=(TREE_H[n.type]||5)*n.s,dur=(1+.3*n.s)*(n.type==='aarnipuu'?2:1),brs=[],big=n.type==='aarnipuu',small=!big&&n.s<SMALL_TREE;
+  const a=dir??Math.atan2(n.x-P.pos.x,n.z-P.pos.z),H=(TREE_H[n.type]||5)*n.s,dur=fallDur(n),brs=[],big=n.type==='aarnipuu',small=!big&&n.s<SMALL_TREE;
   const bm=mat(BRANCH_C[n.type]||TRUNK_C[n.type]||0x5a3a22),lc=LEAF_C[n.type],lm=lc?mat(lc):null,nb=big?7:n.type==='koivu'?6:5;
   const lay=TREE_BR[n.type];
   for(let i=0;i<(lay?lay.length:nb);i++){let phi=i/nb*TAU+rng()*.8,h=H*(.28+.55*i/nb),L=(.6+rng()*.5)*n.s*(big?2.5:1),th=.07*n.s*(big?2:1),tilt=.35+rng()*.3;

@@ -37,7 +37,7 @@ AGGRO_AI = ('neutral', 'hostile', 'boss', 'rboss')   # suuttumisääni (aggro)
 CHASE_AI = ('hostile', 'boss', 'rboss')               # + toistuva jahtiääni (chase)
 ECHO_AI = ('rboss', 'boss')                           # v1.88: kaikuääni (echo): nukkuva ulottuvuuspomo kaikuu luolastossa kunnes pelaaja kohtaa sen; v1.95 myös Kalmanvartija maan alta
 VARIANTS = (1, 2, 3)                                  # paikkamerkit _1.._3; v2.11: lisäversiot _4, _5 … kelpaavat ilman koodimuutosta (peli arpoo kaikista)
-PV_T = 7   # toimintoäänten käsittelyversio: v2.22 huippunormalisointi + saumattomat silmukat; v2.23 askeltila, pätkät, paras kohta, toimintosilmukat; v2.27 pusikkoaskel lyhyemmäksi
+PV_T = 8   # v2.29 puun kaatumisnarina täyspitkäksi (peli katkaisee maahan osuessa); toimintoäänten käsittelyversio: v2.22 huippunormalisointi + saumattomat silmukat; v2.23 askeltila, pätkät, paras kohta, toimintosilmukat; v2.27 pusikkoaskel lyhyemmäksi
 PV = 4                                                # käsittelyn versio: vaihtuessa kaikki äänet käsitellään uudestaan
 
 
@@ -604,10 +604,10 @@ T_PROF = {'askel': (.5, .8, .05, -27), 'kahlaus': (1.2, 1.5, .15, -25), 'uinti':
           'loiskahdus': (1.2, 1.5, .2, -21), 'ryntays': (2.0, 2.5, .25, -18), 'tomistys': (.6, .9, .08, -26)}
 # v2.25: pelaajan osien äänet (yläraja s, iso, häivytys s, LUFS); puuttuva avain → T_DEF (työkalu ei kaadu uuteen ääneen)
 T_PROF.update({'alastulo': (.6, .8, .08, -24), 'puska': (1.2, 1.2, .15, -24), 'lataus': (.8, .8, .1, -24), 'torjunta': (.8, .8, .1, -19), 'ei': (.6, .6, .08, -21),
-               'puu': (3.0, 3.0, .3, -18), 'puu_tomahdys': (2.0, 2.0, .3, -17), 'tukki': (1.2, 1.2, .15, -20), 'kivi': (1.5, 1.5, .2, -19), 'veto': (1.2, 1.2, .1, -24), 'laukaus': (.8, .8, .1, -21),
+               'puu': (3.0, 3.0, .3, -18), 'puu_kaatuu': (8.5, 8.5, .3, -18), 'puu_tomahdys': (2.0, 2.0, .3, -17), 'tukki': (1.2, 1.2, .15, -20), 'kivi': (1.5, 1.5, .2, -19), 'veto': (1.2, 1.2, .1, -24), 'laukaus': (.8, .8, .1, -21),
                'asetus': (1.0, 1.0, .1, -21), 'purku': (1.2, 1.2, .15, -21), 'korjaus': (1.0, 1.0, .1, -21), 'valmistus': (1.5, 1.5, .15, -22),
                'poiminta': (.6, .6, .08, -22), 'arkku': (1.2, 1.2, .15, -22), 'reppu': (.8, .8, .1, -24), 'rakennusvalikko': (.8, .8, .1, -24), 'kartta': (.8, .8, .1, -24),
-               'sulje': (.5, .5, .08, -25), 'kipu': (1.0, 1.0, .1, -18), 'kuolema': (3.0, 3.0, .3, -17), 'sydan': (3.0, 3.0, .2, -22), 'hengastys': (3.0, 3.0, .3, -22),
+               'sulje': (.5, .5, .08, -25), 'siirto': (.6, .6, .08, -25), 'puolitus': (.6, .6, .08, -25), 'kipu': (1.0, 1.0, .1, -18), 'kuolema': (3.0, 3.0, .3, -17), 'sydan': (3.0, 3.0, .2, -22), 'hengastys': (3.0, 3.0, .3, -22),
                'haukkoo': (2.0, 2.0, .2, -21), 'hytina': (2.5, 2.5, .3, -23), 'vatsa': (2.5, 2.5, .3, -24), 'mahakipu': (2.0, 2.0, .2, -21),
                'pahoinvointi': (2.5, 2.5, .3, -21), 'kylla': (2.0, 2.0, .2, -23), 'lammin': (2.5, 2.5, .3, -23), 'levannyt': (2.5, 2.5, .3, -23)})
 T_PROF['pusikko'] = (.3, .42, .07, -27)   # v2.27 Aarnimetsän askel lyhyemmäksi: raa'an 0,3 s hiljainen häntä pois (kuulosti venyvältä)
@@ -702,7 +702,7 @@ P_PARTS = [   # (osa, kansio, otsikko, [(ryhmä, nimi, emoji, [(ääni, milloin 
                                    ('osuma_puu', 'kirves osuu puuhun tai tukkiin', 'axe chop wood, tree chop'),
                                    ('osuma_kivi', 'hakku osuu kiveen tai malmiin', 'pickaxe hit rock, stone mining'),
                                    ('ei_tehoa', 'väärä tai liian heikko työkalu (ei pure)', 'dull hit, tool bounce off'),
-                                   ('puu_kaatuu', 'kaatamasi puu kaatuu (kaatumisen alku: rasahdus, ryske)', 'tree falling crash, timber'),
+                                   ('puu_kaatuu', 'kaatamasi puu kaatuu: narina kaatumisen ajan, loppuu kun puu osuu maahan (pitkä ääni käy, harvoin aloitus keskeltä 0–4 s)', 'tree falling creak, timber'),
                                    ('puu_tomahdys', 'kaatuva puu iskeytyy maahan (myös karhun kaatama; iso puu matalampi, hiljenee etäisyyden mukaan)', 'tree hits ground thud, heavy log impact'),
                                    ('tukki_hajoaa', 'tukki halkeaa puiksi', 'wood log split, wood break'),
                                    ('kivi_hajoaa', 'louhimasi kivi hajoaa', 'rock break, stone crumble')]),
@@ -720,7 +720,9 @@ P_PARTS = [   # (osa, kansio, otsikko, [(ryhmä, nimi, emoji, [(ääni, milloin 
         ('valikot', 'Valikot', '📜', [('reppu', 'avaat tai suljet repun (Tab) – sama ääni molempiin', 'backpack open, leather bag'),
                                      ('rakennusvalikko', 'avaat rakennusvalikon', 'menu open, tool select'),
                                      ('kartta', 'avaat kartan', 'map unfold, paper rustle'),
-                                     ('sulje', 'suljet paneelin', 'menu close, soft click')])]),
+                                     ('sulje', 'suljet paneelin', 'menu close, soft click'),
+                                     ('siirto', 'nostat tai lasket esineen repussa tai arkussa (valinta, raahaus, siirto)', 'item move inventory, leather shuffle'),
+                                     ('puolitus', 'jaat kasan (oikea nappi puolittaa, Shift-slider valitsee määrän)', 'split stack, coins split, item separate')])]),
     (3, 'pelaaja_3_aanet', 'Osa 3 – pelaajan äänet', [
         ('kipu', 'Kipu ja kuolema', '🩸', [('kipu', 'saat osuman (tavallinen)', 'male hurt grunt, pain'),
                                           ('kipu_kova', 'kova osuma (yli 20 % terveydestä)', 'male heavy pain scream'),

@@ -277,7 +277,7 @@ const ALL_KEYS=[
   ['Lapio ja kuokka',[[null,'Hiiren vasen','lapio: kaiva · kuokka: nosta maata'],[null,'Hiiren oikea','lapio: tee polku · kuokka: palauta maasto']]],
   ['Valikot ja paneelit',[['menu',0,'päävalikko / sulje avoin paneeli'],['inv',0,'reppu ja valmistus'],[null,'I','reppu (vaihtoehto)'],['map',0,'kartta'],['prog',0,'taso, saavutukset, tavoitteet'],['log',0,'viimeiset ilmoitukset'],
     ['interact',0,'sulje avoin paneeli']]],
-  ['Repussa ja arkussa',[[null,'Hiiren vasen','valitse / siirrä esine toiseen ruutuun, raahaa'],[null,'Hiiren oikea','ota puolet pinosta'],[null,'Q / Shift + Q','pudota hiiren alla oleva tai valittu esine (Shift = koko pino)'],
+  ['Repussa ja arkussa',[[null,'Hiiren vasen','valitse / siirrä esine toiseen ruutuun, raahaa'],[null,'Hiiren oikea','ota puolet pinosta'],[null,'Shift + hiiren oikea','kohderuudussa: slider – valitse siirrettävä määrä (1–9 siirtää heti, napsautus ohi puolittaa)'],[null,'Q / Shift + Q','pudota hiiren alla oleva tai valittu esine (Shift = koko pino)'],
     [null,'Kirjoita','haku (valmistus- ja rakennusvalikko)'],[null,'Enter (haussa)','valmista ensimmäinen osuma / lopeta kirjoitus'],[null,'Esc (haussa)','tyhjennä haku'],[null,'Shift (pohjassa)','esineen lisätiedot vihjeessä']]],
   ['Päävalikossa',[[null,'P / Esc','takaisin päänäkymään'],[null,'Enter','vahvista maailman nimi']]],
   ['Erikoistilanteet',[[null,'Enter','herää uudelleen kaaduttua'],[null,'Mikä tahansa','ohita uuden maailman alkulento / avausotsikko (ei ensikäynnin esittelyä)']]],

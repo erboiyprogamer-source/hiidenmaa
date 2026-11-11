@@ -366,6 +366,13 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Syy: `t_prof` haki `T_PROF[ev.split('_')[0]]` suoraan → uusi äänen nimi (esim. `puska`, `kipu`) antoi KeyError ja koko ajo keskeytyi.
 - Korjaus: `T_PROF.get(k, T_DEF)` + profiilit kaikille pelaajan osien äänille. Uutta ääntä lisätessä lisää sille profiili `T_PROF`:iin (muuten käytetään `T_DEF`).
 
+## 52. Selaimen omat säätimet eivät toimi pelin osoittimella (v2.29, ennaltaehkäisy)
+- Syy: hiiren lukituksen aikana pelin oma osoitin (`VC`, input.js) lähettää keinotekoisia hiiritapahtumia (`dispatchEvent`). Selain ei liikuta niillä
+  `<input type="range">`-säädintä eikä valitse tekstiä tms. – vain omat JS-kuuntelijat reagoivat.
+- Ratkaisu: tee säädin itse (rata + kahva, arvo `clientX`:stä, kuten `#splitDlg`/`splitAt`). Testaa keinotekoisilla `MouseEvent`-tapahtumilla.
+  Kaappausvaiheen kuuntelijassa ohita `VC.on && e.isTrusted` (oikea tapahtuma pysäytetään ja korvataan keinotekoisella).
+- Testiympäristössä latausnäyttö `#loadScr` ja valikkotausta `#menuBg` voivat peittää paneelin (`elementFromPoint`) – piilota ne testin ajaksi.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

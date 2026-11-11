@@ -306,7 +306,12 @@ function plSnd(g,ev,o){o=o||{};creInit();if(!CRE.ok)return false;plLoad();const 
   const gn=a.createGain();gn.gain.value=o.loop?0:(o.v??1)*(1+(Math.random()*2-1)*(o.vj??.05));   /* v2.26: voimakkuus ±5 % joka kerta (o.vj: oma vaihtelu) */if(o.loop)gn.gain.linearRampToValueAtTime(o.v??1,a.currentTime+.4);const pn=a.createPanner();pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=4;pn.maxDistance=60;pn.rolloffFactor=1;
   src.connect(gn);gn.connect(pn);pn.connect(PLV.gain);crePos(pn,q.x,(q.y??P.pos.y)+.2,q.z);
   let sd=null;if(P.inDun){const R=creRevOn(a);sd=a.createGain();sd.gain.value=.25;pn.connect(sd);sd.connect(R.inp);}
-  const v={src,sd,g:gn,loop:!!o.loop};if(!o.loop)PLV.v.push(v);src.onended=()=>{v.done=1;try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};src.start();return o.loop?v:B.duration;}
+  const v={src,sd,g:gn,loop:!!o.loop};if(!o.loop)PLV.v.push(v);src.onended=()=>{v.done=1;try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};
+  /* v2.29 o.until: soi enintään näin monta sekuntia ja häivyttää 0,1 s (puun narina loppuu maahan osuessa); o.fit: harvoin (25 %) aloitus keskeltä
+     0–4 s, jos ääntä riittää koko ajaksi (+0,3 s) – vaihtelua pitkään ääneen */
+  let off=0;if(o.until&&o.fit&&Math.random()<.25){const room=B.duration/src.playbackRate.value-o.until-.3;if(room>.5)off=Math.random()*Math.min(4,room);}
+  src.start(0,off);if(o.until){const t=a.currentTime,e=t+Math.max(.15,o.until);gn.gain.setValueAtTime(gn.gain.value,e-.1);gn.gain.linearRampToValueAtTime(0,e);src.stop(e+.02);}
+  return o.loop?v:B.duration;}
 // v2.25 silmukka (sydämen syke): plLoop(avain, ryhmä, ääni, päällä, voimakkuus, sävel) – käynnistää, säätää tai häivyttää pois (0,4 s)
 function plLoop(k,g,ev,on,v,p){const L=PLV.loops[k];if(!on||!actx){if(L){try{L.g.gain.setTargetAtTime(0,actx.currentTime,.15);L.src.stop(actx.currentTime+.8);}catch(e){}delete PLV.loops[k];}return;}
   if(L){L.g.gain.setTargetAtTime(v,actx.currentTime,.3);L.src.playbackRate.setTargetAtTime(p,actx.currentTime,.4);return;}

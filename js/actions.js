@@ -82,7 +82,7 @@ function doMeleeHit(w){
   const n=best;
   if(n.def.kind==='tree'||n.def.kind==='log'){if(!w.chop){if(!hitMob){msg('Tarvitset kirveen kaataaksesi puun.','warn');sfx('hit');plSnd('osumat','ei_tehoa');}return;}
     const tier=n.isLog?n.tier:(n.def.tier||1);if(w.chop<tier){if(!hitMob){msg('Tarvitset vahvemman kirveen.','warn');sfx('hit');plSnd('osumat','ei_tehoa');}return;}
-    n.hp-=(5+w.chop*4)*(1+.25*((w.q||1)-1));sfx(n.hp<=0?(n.isLog?'logBreak':'chopFinal'):n.isLog?'chopLog':'chop');shake(.08);{const q={x:n.isLog?P.pos.x+fx:n.x,y:n.y+1,z:n.isLog?P.pos.z+fz:n.z};plSnd('osumat','osuma_puu',{pos:q});if(n.hp<=0)plSnd('osumat',n.isLog?'tukki_hajoaa':'puu_kaatuu',{pos:q});}   /* v2.25 */
+    n.hp-=(5+w.chop*4)*(1+.25*((w.q||1)-1));sfx(n.hp<=0?(n.isLog?'logBreak':'chopFinal'):n.isLog?'chopLog':'chop');shake(.08);{const q={x:n.isLog?P.pos.x+fx:n.x,y:n.y+1,z:n.isLog?P.pos.z+fz:n.z};plSnd('osumat','osuma_puu',{pos:q});if(n.hp<=0)plSnd('osumat',n.isLog?'tukki_hajoaa':'puu_kaatuu',n.isLog?{pos:q}:{pos:q,until:fallDur(n),fit:1});}   /* v2.25 */
     if(n.isLog)chopLog(n);else burst(n.x,n.y+1.2,n.z,0x8a5a32,5,3);
     if(n.hp<=0){if(n.isLog){removeLog(n);const c=Math.max(1,Math.round(rint(rng,3,4)*n.s));for(let j=0;j<c;j++){const t=(j+.5)/c;spawnDrop(n.dropId,1,n.ax+(n.bx-n.ax)*t,n.y+.8,n.az+(n.bz-n.az)*t);}burst(n.x,n.y+.4,n.z,0x6b4527,12,4);}
       else{killNode(n);fallTree(n,undefined,true);bump('trees');}}}

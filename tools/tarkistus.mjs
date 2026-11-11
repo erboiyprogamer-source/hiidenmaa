@@ -276,6 +276,25 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.29 puun narina täyspitkä (~8 s), loppuu maahan osuessa (until = fallDur), harvoin aloitus keskeltä 0–4 s',()=>{const M=manJ(),e=M['p/osumat/puu_kaatuu_0'];
+    const a=!!e&&e.dur>6,src=plSnd.toString(),b=/o\.until&&o\.fit&&Math\.random\(\)<\.25/.test(src)&&/Math\.min\(4,room\)/.test(src)&&/src\.stop\(e\+\.02\)/.test(src);
+    const c=/until:fallDur\(n\),fit:1/.test(doMeleeHit.toString())&&/dur=fallDur\(n\)/.test(fallTree.toString())&&Math.abs(fallDur({s:1,type:'kuusi'})-1.3)<1e-9&&Math.abs(fallDur({s:1,type:'aarnipuu'})-2.6)<1e-9;
+    return a&&b&&c||`virhe ääni ${a} (${e&&e.dur}) toisto ${b} kytkentä ${c}`;});
+  t('v2.29 Shift + oikea → siirtoslider (0…pino, 1–9 heti, rata + Siirrä, napsautus ohi puolittaa), siirto- ja puolitusäänet',()=>{
+    const mb=document.getElementById('menuBg'),md=mb&&mb.style.display,ls=document.getElementById('loadScr'),ld=ls&&ls.style.display;if(mb)mb.style.display='none';if(ls)ls.style.display='none';   /* testiympäristön peitot pois (pelissä piilossa) */const sv=inv.slice(),op=openPanel,sounds=[],o0=plSnd;plSnd=(g,ev)=>{sounds.push(ev);return 1;};
+    const ME=(t,type,o)=>{const r=t.getBoundingClientRect(),x=o&&o.x!=null?o.x:r.left+r.width/2,y=o&&o.y!=null?o.y:r.top+r.height/2;t.dispatchEvent(new MouseEvent(type,Object.assign({bubbles:true,cancelable:true,view:window,clientX:x,clientY:y},o||{})));};
+    const r=[];let dbg='';try{inv.fill(null);inv[0]={id:'puu',n:40,q:1};if(openPanel!=='inv')togglePanel('inv');const slot=i=>document.querySelectorAll('#invGrid .slot')[i];
+      {const q=slot(5).getBoundingClientRect(),el=document.elementFromPoint(q.left+q.width/2,q.top+q.height/2);const c=[];for(let x=el;x&&c.length<3;x=x.parentElement)c.push(x.tagName+'#'+x.id+'.'+x.className);dbg=`${state} ${openPanel} [${c.join(' < ')}]`;}
+      ME(slot(0),'mousedown',{button:2,buttons:2});ME(slot(5),'mousemove',{buttons:2});ME(slot(5),'mouseup',{button:2,shiftKey:true});r.push(SPL.on&&SPL.v===20&&SPL.n===40);dragEat=false;
+      document.dispatchEvent(new KeyboardEvent('keydown',{code:'Digit7',key:'7',bubbles:true}));r.push(!SPL.on&&inv[0].n===33&&inv[5].n===7);
+      ME(slot(0),'mousedown',{button:2,buttons:2});ME(slot(6),'mousemove',{buttons:2});ME(slot(6),'mouseup',{button:2,shiftKey:true});dragEat=false;const o2=SPL.on;
+      ME(document.querySelector('#invGrid'),'mousedown',{x:3,y:3});ME(document.body,'click',{x:3,y:3});r.push(o2&&!SPL.on&&inv[0].n===17&&inv[6].n===16);
+      ME(slot(0),'contextmenu',{button:2});ME(slot(7),'contextmenu',{button:2,shiftKey:true});const o3=SPL.on,tr=document.querySelector('#splitDlg .spTrack'),rr=tr.getBoundingClientRect();
+      ME(tr,'mousedown',{button:0,x:rr.left+rr.width*.25});ME(tr,'mouseup',{x:rr.left+rr.width*.25});ME(document.querySelector('#splitDlg .spOk'),'click');r.push(o3&&inv[7]&&inv[7].n===4&&inv[0].n===13);
+      ME(slot(0),'mousedown',{button:2,buttons:2});ME(slot(9),'mousemove',{buttons:2});ME(slot(9),'mouseup',{button:2});dragEat=false;r.push(!SPL.on&&inv[9]&&inv[9].n===6);
+      r.push(sounds.includes('siirto')&&sounds.includes('puolitus'));}
+    finally{plSnd=o0;splitClose();closePanels();inv.splice(0,inv.length,...sv);if(op)togglePanel(op);if(mb)mb.style.display=md;if(ls)ls.style.display=ld;dragEat=false;}
+    return r.every(Boolean)||'virhe '+r.map(v=>v?1:0).join('')+' '+dbg;});
   t('v2.28 äänierä osa 2 (22 ääntä) + puun tömähdys maahan, reppu kiinni = sama ääni, oman arkun sulkemisääni',()=>{
     const M=manJ(),need=['p/jousi/laukaus_0','p/jousi/veto_0','p/kaytto/arkku_auki_2','p/kaytto/syominen_1','p/lyonnit/huitaisu_2','p/lyonnit/torjunta_0','p/osumat/puu_kaatuu_0','p/osumat/kivi_hajoaa_0'];
     const miss=need.filter(n=>!M[n]||!M[n].f.startsWith('pelaaja_2_toiminnot/valmiit/'));if(miss.length)return 'manifestista puuttuu '+miss.join(', ');
