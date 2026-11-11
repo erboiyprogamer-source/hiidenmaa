@@ -304,7 +304,7 @@ function plSnd(g,ev,o){o=o||{};creInit();if(!CRE.ok)return false;plLoad();const 
   const B=CRE.buf[name],q=o.pos||P.pos,src=a.createBufferSource();src.buffer=B;src.playbackRate.value=(o.p||1)*(o.loop?1:1+(Math.random()*2-1)*.05);
   if(o.loop){src.loop=true;const lp=tgLoopPts(B);src.loopStart=lp[0];src.loopEnd=lp[1];}
   const gn=a.createGain();gn.gain.value=o.loop?0:(o.v??1)*(1+(Math.random()*2-1)*(o.vj??.05));   /* v2.26: voimakkuus ±5 % joka kerta (o.vj: oma vaihtelu) */if(o.loop)gn.gain.linearRampToValueAtTime(o.v??1,a.currentTime+.4);const pn=a.createPanner();pn.panningModel='equalpower';pn.distanceModel='inverse';pn.refDistance=4;pn.maxDistance=60;pn.rolloffFactor=1;
-  src.connect(gn);gn.connect(pn);pn.connect(PLV.gain);crePos(pn,q.x,(q.y??P.pos.y)+.2,q.z);
+  if(o.lp){const lf=a.createBiquadFilter();lf.type='lowpass';lf.frequency.value=o.lp;lf.Q.value=.6;src.connect(gn);gn.connect(lf);lf.connect(pn);}else{src.connect(gn);gn.connect(pn);}pn.connect(PLV.gain);   /* v2.31 o.lp: tumma alipäästö (Hz) */crePos(pn,q.x,(q.y??P.pos.y)+.2,q.z);
   let sd=null;if(P.inDun){const R=creRevOn(a);sd=a.createGain();sd.gain.value=.25;pn.connect(sd);sd.connect(R.inp);}
   const v={src,sd,g:gn,loop:!!o.loop};if(!o.loop)PLV.v.push(v);src.onended=()=>{v.done=1;try{pn.disconnect();}catch(e){}if(sd)try{sd.disconnect();}catch(e){}};
   /* v2.29 o.until: soi enintään näin monta sekuntia ja häivyttää 0,1 s (puun narina loppuu maahan osuessa); o.fit: harvoin (25 %) aloitus keskeltä
@@ -339,7 +339,7 @@ function plTick(dt){plBody(dt);if(state!=='play'||P.dead||P.flying){PLV.ph=null;
 /* v2.25 PENSAAT (käyttäjä): pelaaja kävelee pensaan läpi → heti pusikkoaskel + puska-ääni (täysi voimakkuus), enintään 2 s välein (PLV.bushT);
    Aarnimetsässä lisäksi satunnaisesti (14 % askelista) oksa tai puska samalla 2 s tauolla. Pelaajan askeleet 20 % hiljempaa (PL_STEP_V). */
 const PL_STEP_V=.8,_plN=[];
-const PL_PICK=()=>({v:.55,p:1+(Math.random()*2-1)*.12});   // v2.30 poiminta: hiljempaa (0,55) ja sävel ±12 % (+ yleinen ±5 %)
+const PL_PICK=()=>({v:.55,p:1.1*(1+(Math.random()*2-1)*.2),lp:2400});   // v2.31 poiminta: hiljempaa 0,55, hieman kimeämpi (×1,1), sävel ±20 % (+ yleinen ±5 %), tumma alipäästö 2,4 kHz
 function plBush(x,z,r){nodesNear(x,z,2.2,_plN);for(const n of _plN)if(n.type==='pensas'&&Math.hypot(n.x-x,n.z-z)<.9*n.s+r)return true;return false;}
 // v2.27: maassa oleva kohde (esim. oksa, joka ei ole kerätty) jalkojen alla (säde 0,45 × koko + r)
 function plNodeAt(type,x,z,r){nodesNear(x,z,1.5,_plN);for(const n of _plN)if(n.type===type&&n.alive!==false&&Math.hypot(n.x-x,n.z-z)<.45*(n.s||1)+r)return true;return false;}

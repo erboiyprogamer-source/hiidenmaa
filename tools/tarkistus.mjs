@@ -276,6 +276,9 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.31 poimintaääni: hieman kimeämpi (×1,1), sävel ±20 %, tumma alipäästö 2,4 kHz',()=>{let lo=9,hi=0;for(let i=0;i<400;i++){const q=PL_PICK();lo=Math.min(lo,q.p);hi=Math.max(hi,q.p);}
+    const q=PL_PICK(),a=q.lp===2400&&q.v===.55&&lo<.92&&lo>=.88-1e-9&&hi>1.28&&hi<=1.32+1e-9,b=/o\.lp\)\{const lf=a\.createBiquadFilter\(\);lf\.type='lowpass'/.test(plSnd.toString());
+    return a&&b||`virhe ${a} ${b} sävel ${lo.toFixed(3)}…${hi.toFixed(3)}`;});
   t('v2.30 Shift ratkaistaan vapautus-/klikkaushetkellä (oikea raahaus myös Shift pohjassa), jumiin jäänyt näppäintila ei estä puolitusta, Siirrä ei sulje reppua, poiminta lyhyempi ja hiljaisempi',()=>{
     const a=/e\.shiftKey&&e\.button===0/.test(slotUX.toString())&&/shiftKey:e&&e\.isTrusted\?!!e\.shiftKey/.test(vcInit.toString());
     keys.ShiftLeft=true;window.dispatchEvent(new Event('blur'));const b=!keys.ShiftLeft;

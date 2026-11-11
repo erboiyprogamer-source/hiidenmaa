@@ -527,6 +527,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
   Puuttuva ääni = hiljaisuus. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **v2.31 poimintaääni:** hieman kimeämpi, sävel vaihtelee ±20 % ja tumma suodin (alipäästö 2,4 kHz) pehmentää sitä.
 - **v2.30:** Shift voi olla pohjassa jo ennen valintaa tai raahausta – ratkaisevaa on Shift oikean napin vapautuksen/klikkauksen hetkellä.
   Sliderin napit eivät sulje reppua. Poimintaääni lyhyempi, hiljaisempi ja sävel vaihtelee enemmän.
 - **v2.29 repun siirtoslider:** raahaa pinoa oikealla napilla ja vapauta Shift pohjassa kohderuudussa (tai valitse pino ja Shift + oikea klikkaus
