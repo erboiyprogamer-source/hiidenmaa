@@ -276,6 +276,19 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.30 Shift ratkaistaan vapautus-/klikkaushetkellä (oikea raahaus myös Shift pohjassa), jumiin jäänyt näppäintila ei estä puolitusta, Siirrä ei sulje reppua, poiminta lyhyempi ja hiljaisempi',()=>{
+    const a=/e\.shiftKey&&e\.button===0/.test(slotUX.toString())&&/shiftKey:e&&e\.isTrusted\?!!e\.shiftKey/.test(vcInit.toString());
+    keys.ShiftLeft=true;window.dispatchEvent(new Event('blur'));const b=!keys.ShiftLeft;
+    const mb=document.getElementById('menuBg'),md=mb&&mb.style.display,ls=document.getElementById('loadScr'),ld=ls&&ls.style.display;if(mb)mb.style.display='none';if(ls)ls.style.display='none';
+    const sv=inv.slice(),op=openPanel;let c=false,d=false;
+    try{inv.fill(null);inv[0]={id:'puu',n:10,q:1};if(openPanel!=='inv')togglePanel('inv');const slot=i=>document.querySelectorAll('#invGrid .slot')[i];
+      const ME=(t,type,o)=>{const r=t.getBoundingClientRect();t.dispatchEvent(new MouseEvent(type,Object.assign({bubbles:true,cancelable:true,view:window,clientX:r.left+r.width/2,clientY:r.top+r.height/2},o||{})));};
+      keys.ShiftLeft=true;ME(slot(0),'contextmenu',{button:2});ME(slot(4),'contextmenu',{button:2});c=!SPL.on&&inv[4]&&inv[4].n===5;keys.ShiftLeft=false;selSlot=-1;selHalf=false;renderInv();
+      ME(slot(0),'contextmenu',{button:2,shiftKey:true});ME(slot(5),'contextmenu',{button:2,shiftKey:true});const o=SPL.on,bt=document.querySelector('#splitDlg .spOk');if(!bt)throw new Error('slider ei auennut');
+      ME(bt,'mousedown');ME(bt,'mouseup');ME(bt,'click');d=o&&openPanel==='inv'&&!SPL.on&&inv[5]&&inv[5].n>0;}
+    finally{splitClose();closePanels();inv.splice(0,inv.length,...sv);if(op)togglePanel(op);if(mb)mb.style.display=md;if(ls)ls.style.display=ld;keys.ShiftLeft=false;}
+    const M=manJ(),e=M['p/kaytto/poiminta_0'],f=!!e&&e.dur<=.31&&PL_PICK().v===.55&&/PL_PICK\(\)/.test(doMeleeHit.toString()+interact.toString()+updateDrops.toString());
+    return a&&b&&c&&d&&f||`virhe koodi ${a} blur ${b} puolitus ${c} siirrä ${d} poiminta ${f}`;});
   t('v2.29 puun narina täyspitkä (~8 s), loppuu maahan osuessa (until = fallDur), harvoin aloitus keskeltä 0–4 s',()=>{const M=manJ(),e=M['p/osumat/puu_kaatuu_0'];
     const a=!!e&&e.dur>6,src=plSnd.toString(),b=/o\.until&&o\.fit&&Math\.random\(\)<\.25/.test(src)&&/Math\.min\(4,room\)/.test(src)&&/src\.stop\(e\+\.02\)/.test(src);
     const c=/until:fallDur\(n\),fit:1/.test(doMeleeHit.toString())&&/dur=fallDur\(n\)/.test(fallTree.toString())&&Math.abs(fallDur({s:1,type:'kuusi'})-1.3)<1e-9&&Math.abs(fallDur({s:1,type:'aarnipuu'})-2.6)<1e-9;

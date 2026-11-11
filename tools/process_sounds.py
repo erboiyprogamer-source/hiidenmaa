@@ -37,7 +37,7 @@ AGGRO_AI = ('neutral', 'hostile', 'boss', 'rboss')   # suuttumisääni (aggro)
 CHASE_AI = ('hostile', 'boss', 'rboss')               # + toistuva jahtiääni (chase)
 ECHO_AI = ('rboss', 'boss')                           # v1.88: kaikuääni (echo): nukkuva ulottuvuuspomo kaikuu luolastossa kunnes pelaaja kohtaa sen; v1.95 myös Kalmanvartija maan alta
 VARIANTS = (1, 2, 3)                                  # paikkamerkit _1.._3; v2.11: lisäversiot _4, _5 … kelpaavat ilman koodimuutosta (peli arpoo kaikista)
-PV_T = 8   # v2.29 puun kaatumisnarina täyspitkäksi (peli katkaisee maahan osuessa); toimintoäänten käsittelyversio: v2.22 huippunormalisointi + saumattomat silmukat; v2.23 askeltila, pätkät, paras kohta, toimintosilmukat; v2.27 pusikkoaskel lyhyemmäksi
+PV_T = 9   # v2.30 poiminta lyhyemmäksi; v2.29 puun kaatumisnarina täyspitkäksi (peli katkaisee maahan osuessa); toimintoäänten käsittelyversio: v2.22 huippunormalisointi + saumattomat silmukat; v2.23 askeltila, pätkät, paras kohta, toimintosilmukat; v2.27 pusikkoaskel lyhyemmäksi
 PV = 4                                                # käsittelyn versio: vaihtuessa kaikki äänet käsitellään uudestaan
 
 
@@ -606,7 +606,8 @@ T_PROF = {'askel': (.5, .8, .05, -27), 'kahlaus': (1.2, 1.5, .15, -25), 'uinti':
 T_PROF.update({'alastulo': (.6, .8, .08, -24), 'puska': (1.2, 1.2, .15, -24), 'lataus': (.8, .8, .1, -24), 'torjunta': (.8, .8, .1, -19), 'ei': (.6, .6, .08, -21),
                'puu': (3.0, 3.0, .3, -18), 'puu_kaatuu': (8.5, 8.5, .3, -18), 'puu_tomahdys': (2.0, 2.0, .3, -17), 'tukki': (1.2, 1.2, .15, -20), 'kivi': (1.5, 1.5, .2, -19), 'veto': (1.2, 1.2, .1, -24), 'laukaus': (.8, .8, .1, -21),
                'asetus': (1.0, 1.0, .1, -21), 'purku': (1.2, 1.2, .15, -21), 'korjaus': (1.0, 1.0, .1, -21), 'valmistus': (1.5, 1.5, .15, -22),
-               'poiminta': (.6, .6, .08, -22), 'arkku': (1.2, 1.2, .15, -22), 'reppu': (.8, .8, .1, -24), 'rakennusvalikko': (.8, .8, .1, -24), 'kartta': (.8, .8, .1, -24),
+               'poiminta': (.3, .3, .06, -24),   # v2.30 lyhyemmäksi (0,57 → 0,3 s) ja hiljemmaksi
+                'arkku': (1.2, 1.2, .15, -22), 'reppu': (.8, .8, .1, -24), 'rakennusvalikko': (.8, .8, .1, -24), 'kartta': (.8, .8, .1, -24),
                'sulje': (.5, .5, .08, -25), 'siirto': (.6, .6, .08, -25), 'puolitus': (.6, .6, .08, -25), 'kipu': (1.0, 1.0, .1, -18), 'kuolema': (3.0, 3.0, .3, -17), 'sydan': (3.0, 3.0, .2, -22), 'hengastys': (3.0, 3.0, .3, -22),
                'haukkoo': (2.0, 2.0, .2, -21), 'hytina': (2.5, 2.5, .3, -23), 'vatsa': (2.5, 2.5, .3, -24), 'mahakipu': (2.0, 2.0, .2, -21),
                'pahoinvointi': (2.5, 2.5, .3, -21), 'kylla': (2.0, 2.0, .2, -23), 'lammin': (2.5, 2.5, .3, -23), 'levannyt': (2.5, 2.5, .3, -23)})

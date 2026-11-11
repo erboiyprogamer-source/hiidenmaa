@@ -339,6 +339,7 @@ function plTick(dt){plBody(dt);if(state!=='play'||P.dead||P.flying){PLV.ph=null;
 /* v2.25 PENSAAT (käyttäjä): pelaaja kävelee pensaan läpi → heti pusikkoaskel + puska-ääni (täysi voimakkuus), enintään 2 s välein (PLV.bushT);
    Aarnimetsässä lisäksi satunnaisesti (14 % askelista) oksa tai puska samalla 2 s tauolla. Pelaajan askeleet 20 % hiljempaa (PL_STEP_V). */
 const PL_STEP_V=.8,_plN=[];
+const PL_PICK=()=>({v:.55,p:1+(Math.random()*2-1)*.12});   // v2.30 poiminta: hiljempaa (0,55) ja sävel ±12 % (+ yleinen ±5 %)
 function plBush(x,z,r){nodesNear(x,z,2.2,_plN);for(const n of _plN)if(n.type==='pensas'&&Math.hypot(n.x-x,n.z-z)<.9*n.s+r)return true;return false;}
 // v2.27: maassa oleva kohde (esim. oksa, joka ei ole kerätty) jalkojen alla (säde 0,45 × koko + r)
 function plNodeAt(type,x,z,r){nodesNear(x,z,1.5,_plN);for(const n of _plN)if(n.type===type&&n.alive!==false&&Math.hypot(n.x-x,n.z-z)<.45*(n.s||1)+r)return true;return false;}

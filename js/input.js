@@ -51,6 +51,8 @@ addEventListener('keydown',e=>{
   }
 });
 addEventListener('keyup',e=>{keys[e.code]=false;});
+// v2.30: ikkuna menettää kohdistuksen (Alt+Tab ym.) → nostotapahtuma jää tulematta; nollataan, ettei esim. Shift jää pohjaan (juoksu, siirtoslider)
+addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});document.addEventListener('visibilitychange',()=>{if(document.hidden)for(const k in keys)keys[k]=false;});
 let dragLook=null;
 canvas.addEventListener('mousedown',e=>{
   audio();if(actx&&actx.state!=='running')actx.resume();
@@ -90,7 +92,7 @@ const VC={x:innerWidth/2,y:innerHeight/2,on:false,el:null,hov:null,down:null};
 (function(){const el=document.createElement('div');el.id='vcur';el.hidden=true;document.body.appendChild(el);VC.el=el;})();
 function vcSync(){const on=locked&&!!openPanel&&state==='ui';if(on!==VC.on){VC.on=on;VC.el.hidden=!on;if(!on)vcHover(null);else{VC.x=clamp(VC.x,0,innerWidth-1);VC.y=clamp(VC.y,0,innerHeight-1);vcMove(0,0,true);}}}
 const vcAt=()=>{const t=document.elementFromPoint(VC.x,VC.y);return t||document.body;};
-const vcInit=(e,extra)=>Object.assign({bubbles:true,cancelable:true,composed:true,view:window,clientX:VC.x,clientY:VC.y,screenX:VC.x,screenY:VC.y,button:e?e.button:0,buttons:e?e.buttons:0,shiftKey:!!(e&&e.shiftKey)||!!(keys.ShiftLeft||keys.ShiftRight),ctrlKey:!!(e&&e.ctrlKey)||!!(keys.ControlLeft||keys.ControlRight),altKey:!!(e&&e.altKey),metaKey:!!(e&&e.metaKey)},extra||{});
+const vcInit=(e,extra)=>Object.assign({bubbles:true,cancelable:true,composed:true,view:window,clientX:VC.x,clientY:VC.y,screenX:VC.x,screenY:VC.y,button:e?e.button:0,buttons:e?e.buttons:0,shiftKey:e&&e.isTrusted?!!e.shiftKey:!!(e&&e.shiftKey)||!!(keys.ShiftLeft||keys.ShiftRight),ctrlKey:e&&e.isTrusted?!!e.ctrlKey:!!(e&&e.ctrlKey)||!!(keys.ControlLeft||keys.ControlRight),altKey:!!(e&&e.altKey),metaKey:!!(e&&e.metaKey)},extra||{});
 function vcFire(type,e,extra,tgt){const t=tgt||vcAt();t.dispatchEvent(type==='wheel'?new WheelEvent(type,vcInit(e,extra)):new MouseEvent(type,vcInit(e,extra)));return t;}
 // :hover ei toimi keinotekoisilla tapahtumilla → hiiren alla oleva elementti ja sen vanhemmat saavat luokan .vh (CSS:ssä samat tyylit kuin :hover)
 function vcHover(t){if(t===VC.hov)return;const old=new Set();for(let a=VC.hov;a&&a!==document.body;a=a.parentElement)old.add(a);const nw=new Set();for(let a=t;a&&a!==document.body;a=a.parentElement)nw.add(a);

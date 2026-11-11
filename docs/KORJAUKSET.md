@@ -372,6 +372,9 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Ratkaisu: tee säädin itse (rata + kahva, arvo `clientX`:stä, kuten `#splitDlg`/`splitAt`). Testaa keinotekoisilla `MouseEvent`-tapahtumilla.
   Kaappausvaiheen kuuntelijassa ohita `VC.on && e.isTrusted` (oikea tapahtuma pysäytetään ja korvataan keinotekoisella).
 - Testiympäristössä latausnäyttö `#loadScr` ja valikkotausta `#menuBg` voivat peittää paneelin (`elementFromPoint`) – piilota ne testin ajaksi.
+- **v2.30:** uusi kelluva ruutu (kuten `#splitDlg`) on lisättävä ikkunan "napsautus paneelin ohi → sulje / pudota" -poikkeuksiin (ui.js `t.closest(...)`),
+  muuten sen napit sulkevat repun. Testaa painalluksella (mousedown + mouseup + click), ei pelkällä click-tapahtumalla.
+- **v2.30:** näppäintaulukko `keys` voi jäädä "pohjaan" (Alt+Tab) – `blur`/`visibilitychange` nollaa sen. Hiiritapahtumien muokkausnäppäimet luetaan tapahtumasta.
 
 ## Herkät kohdat (lue ennen muokkausta)
 
