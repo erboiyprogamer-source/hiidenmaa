@@ -276,6 +276,12 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.34 varjot: metsissä 20 % ja avoimilla 40 % vaaleammat, keskipäivällä syvyys ×0,85 ja pimeällä ×1,15',()=>{
+    const g=window.__game,pv=[dayT,openK,P.pos.clone()],r={};
+    const run=(t,ok)=>{dayT=t;openK=ok;g.update(1/30);return shDepth;};   /* openK liukuu vain vähän yhdessä ruudussa */
+    const noonO=run(.5,1),nightF=run(0,0),noonF=run(.5,0);dayT=pv[0];openK=pv[1];P.pos.copy(pv[2]);g.update(1/30);
+    const near=(a,b)=>Math.abs(a-b)<.02,a=near(noonO,.6*.85),b=near(nightF,.8*1.15),c=near(noonF,.8*.85);
+    return FOREST_SH===.2&&SH_TOD===.15&&a&&b&&c||`virhe avoin keskipäivä ${noonO.toFixed(3)} metsä yö ${nightF.toFixed(3)} metsä keskipäivä ${noonF.toFixed(3)}`;});
   t('v2.33 raahaus omaan ruutuun (pieni liike napsautuksessa) säilyttää valinnan → oikea klikkaus toiseen ruutuun puolittaa',()=>{
     const hid=['menuBg','loadScr'].map(id=>document.getElementById(id)).filter(Boolean).map(e=>[e,e.style.display]);for(const [e] of hid)e.style.display='none';
     inv.fill(null);inv[0]={id:'puu',n:40,q:1};if(openPanel!=='inv')togglePanel('inv');selSlot=-1;selHalf=false;renderInv();
