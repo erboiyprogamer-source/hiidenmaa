@@ -276,6 +276,18 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.33 raahaus omaan ruutuun (pieni liike napsautuksessa) säilyttää valinnan → oikea klikkaus toiseen ruutuun puolittaa',()=>{
+    const hid=['menuBg','loadScr'].map(id=>document.getElementById(id)).filter(Boolean).map(e=>[e,e.style.display]);for(const [e] of hid)e.style.display='none';
+    inv.fill(null);inv[0]={id:'puu',n:40,q:1};if(openPanel!=='inv')togglePanel('inv');selSlot=-1;selHalf=false;renderInv();
+    const sl=i=>document.querySelectorAll('#invGrid .slot')[i],c=i=>{const r=sl(i).getBoundingClientRect();return{clientX:r.left+r.width/2,clientY:r.top+r.height/2};};
+    slotDrag={g:'i',i:0,x:0,y:0,on:true,half:false};selectFor('i',0,false);window.dispatchEvent(new MouseEvent('mouseup',{bubbles:true,button:0,...c(0)}));
+    const a=selSlot===0;dragEat=false;sl(5).dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true,button:2,...c(5)}));
+    const b=inv[0]&&inv[0].n===20&&inv[5]&&inv[5].n===20;selSlot=-1;selHalf=false;closePanels();for(const [e,d] of hid)e.style.display=d;return a&&b||`virhe valinta ${a} puolitus ${b}`;});
+  t('v2.33 avoimissa biomeissa varjot 40 % vaaleammat (osa auringosta tasaiseksi valoksi, hidas häivytys), metsissä ennallaan',()=>{
+    const a=OPEN_SH===.4&&OPEN_BIOMES.has('meadow')&&OPEN_BIOMES.has('beach')&&!OPEN_BIOMES.has('forest')&&!OPEN_BIOMES.has('koivu')&&!OPEN_BIOMES.has('aarni')&&!OPEN_BIOMES.has('kangas');
+    const b=typeof shAmb!=='undefined'&&shAmb.isAmbientLight&&scene.children.includes(shAmb);
+    const src=updateEnvironment.toString(),c=/openK=lerp\(openK,OPEN_BIOMES\.has\(zoneAt\(P\.pos\.x,P\.pos\.z\)\)\?1:0,Math\.min\(1,dt\*OPEN_RATE\)\)/.test(src)&&/sun\.intensity\*=1-k/.test(src)&&OPEN_RATE<1;
+    return a&&b&&c||`virhe ${a} ${b} ${c}`;});
   t('v2.32 lukituksessa oikea vapautus tekee contextmenun itse (valitse + oikea klikkaus ruutuun = puolitus, Shift = slider)',()=>{
     const x=new XMLHttpRequest();x.open('GET','js/input.js?'+Date.now(),false);x.send();const src=x.responseText;
     const s1=/if\(e\.button===2\)vcFire\('contextmenu',e,null,vcAt\(\)\)/.test(src),s2=/if\(ty==='contextmenu'\)return;/.test(src);

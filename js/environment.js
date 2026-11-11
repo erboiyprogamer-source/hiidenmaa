@@ -30,6 +30,9 @@ function updateWeather(){if(playTime<weather.until)return;const r=Math.random(),
   weather.cur=w;weather.until=playTime+(w==='myrsky'?90+Math.random()*90:150+Math.random()*180);
   if(w!==prev&&!P.inDun&&WMSG[w])msg(WMSG[w]);}
 const cSkyDay=new THREE.Color(0x87a9c2),cSkyDusk=new THREE.Color(0xc98a64),cSkyNight=new THREE.Color(0x070b14),cGrey=new THREE.Color(0x7d858c),cFlash=new THREE.Color(0xe8f0ff),cTmp=new THREE.Color(),cSun=new THREE.Color(),cSunLow=new THREE.Color(0xffa060);
+/* v2.33: avoimet biomit (niitty, ranta, nummi, tunturi, rakka, vuori, huiput, suo, meri): varjot 40 % vaaleammat. Osa auringosta siirtyy
+   aurinkoväriseksi tasaiseksi valoksi (shAmb), joten valaistu maa pysyy yhtä kirkkaana. Metsissä (koivu, korpi, kangas, aarni) ennallaan. Häivytys hidas. */
+const OPEN_BIOMES=new Set(['meadow','beach','sea','moor','tunturi','rakka','mountain','peak','suo']),OPEN_SH=.4,OPEN_RATE=.35;let openK=0;const cShA=new THREE.Color();
 let lightK=1,wCloud=.2,wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0,aarniK=0,stormT=5,stormMsgT=0;
 const cAarni=new THREE.Color(0x26302a);
 // Kuun kirkkaus vaihtelee 8 päivän kierrossa (uusikuu .2 … täysikuu 1).
@@ -100,7 +103,7 @@ function updateEnvironment(dt){
   // joten valon suunta vaihtuu vasta kun voimakkuus on nolla.
   const light=sstep(-.4,.45,el);lightK=light;const sunK=sstep(-.12,.08,el),moonK=sstep(-.12,-.32,el);
   const sd=_tmpV.set(Math.sin(ang)*.9,el,.35).normalize();
-  if(P.inDun){const rf=P.realm?REALMS[P.realm].fog:0x050403;scene.background.setHex(rf);scene.fog.color.setHex(rf);scene.fog.near=3;scene.fog.far=28;hemi.intensity=.06+BOSS_GLOW*1.2;sun.intensity=0;amb.intensity=.05+BOSS_GLOW*.5;stars.visible=false;sunDisc.visible=false;moon.visible=false;rain.visible=false;snow.visible=false;water.visible=false;return;}
+  if(P.inDun){const rf=P.realm?REALMS[P.realm].fog:0x050403;scene.background.setHex(rf);scene.fog.color.setHex(rf);scene.fog.near=3;scene.fog.far=28;hemi.intensity=.06+BOSS_GLOW*1.2;sun.intensity=0;shAmb.intensity=0;amb.intensity=.05+BOSS_GLOW*.5;stars.visible=false;sunDisc.visible=false;moon.visible=false;rain.visible=false;snow.visible=false;water.visible=false;return;}
   water.visible=true;stars.visible=true;
   // Aarnimetsässä tiheä sumu ja hämärä valo.
   aarniK=lerp(aarniK,biomeHere(P.pos.x,P.pos.z)==='aarni'?1:0,Math.min(1,dt*.8));
@@ -115,6 +118,8 @@ function updateEnvironment(dt){
   else{sun.color.setHex(0x8aa2d8);sun.intensity=.2*moonK*ph*(1-wDark*.6);sun.position.set(P.pos.x-sd.x*120,P.pos.y+Math.abs(sd.y)*120+40,P.pos.z-sd.z*120);}
   indoorK=lerp(indoorK,indoorT,Math.min(1,dt*2));
   sun.intensity=sun.intensity*(1-.45*aarniK)*(1-.7*indoorK)+flash*.45*(1-indoorK);
+  openK=lerp(openK,OPEN_BIOMES.has(zoneAt(P.pos.x,P.pos.z))?1:0,Math.min(1,dt*OPEN_RATE));
+  {const k=OPEN_SH*openK;shAmb.color.copy(sun.color);shAmb.intensity=sun.intensity*k*Math.max(.15,sd.y);sun.intensity*=1-k;}
   sun.target.position.copy(P.pos);
   if(SET.shUltra==='wide'){const o=160*.45,fx=-Math.sin(camYaw)*o,fz=-Math.cos(camYaw)*o;sun.target.position.x+=fx;sun.target.position.z+=fz;sun.position.x+=fx;sun.position.z+=fz;}   // v1.76: laaja alue sovitetaan näkymän suuntaan
   hemi.intensity=((.07+.2*light*(1-wDark*.4))*(1-.45*aarniK)+flash*.55)*(1-.6*indoorK)+BOSS_GLOW*.8;amb.intensity=(.03+.025*light+flash*.22)*(1-.5*indoorK)+BOSS_GLOW*.3;
@@ -134,7 +139,7 @@ function updateWater(dt,sd){const U=WATER_U,ta=.05+.0025*WIND.spd*WIND.spd;WV.a=
   for(let i=0;i<3;i++)WV.ph[i]=(WV.ph[i]+dt*WV.S[i])%TAU;U.uPh.value.set(WV.ph[0],WV.ph[1],WV.ph[2]);U.uAmp.value=WV.a;U.uT.value=playTime%600;
   const st=water.geometry.userData.st||1.25;water.position.x=Math.round(camera.position.x/st)*st;water.position.z=Math.round(camera.position.z/st)*st;
   U.uFar.value=clamp(scene.fog.far*1.1,60,200);U.uSun.value.copy(sd);U.uSunC.value.copy(sun.color).multiplyScalar(sun.intensity);
-  U.uAmbC.value.copy(hemi.color).multiplyScalar(hemi.intensity*1.1).addScalar(amb.intensity);U.uSkyTop.value.copy(SKY_U.uTop.value);U.uSkyHor.value.copy(SKY_U.uHor.value);
+  U.uAmbC.value.copy(hemi.color).multiplyScalar(hemi.intensity*1.1).addScalar(amb.intensity).add(cShA.copy(shAmb.color).multiplyScalar(shAmb.intensity));U.uSkyTop.value.copy(SKY_U.uTop.value);U.uSkyHor.value.copy(SKY_U.uHor.value);
   const fx=!!SET.waterFx;U.uFoam.value=fx?1:0;U.uCap.value=fx?sstep(10,18,WIND.spd):0;}
 // Myrsky kaataa harvoin puun pelaajan lähellä (3–40 m). Puun alle jäävä menettää 80 % terveydestä.
 const _sl=[];

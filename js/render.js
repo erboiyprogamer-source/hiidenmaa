@@ -31,6 +31,7 @@ const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1000);
 addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
 const hemi=new THREE.HemisphereLight(0xcfe4ff,0x4a3f2a,.55); scene.add(hemi);
 const amb=new THREE.AmbientLight(0xffffff,.1); scene.add(amb);
+const shAmb=new THREE.AmbientLight(0xffffff,0); scene.add(shAmb);   // v2.33: avoimissa biomeissa osa auringosta tasaisena valona → vaaleammat varjot (environment.js OPEN_SH)
 const sun=new THREE.DirectionalLight(0xfff1d6,1); sun.castShadow=true;
 sun.shadow.mapSize.set(2048,2048); const sc=sun.shadow.camera; sc.left=-55;sc.right=55;sc.top=55;sc.bottom=-55;sc.near=1;sc.far=260; sun.shadow.bias=-.0006; sun.shadow.normalBias=.04;
 scene.add(sun); scene.add(sun.target);

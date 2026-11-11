@@ -209,6 +209,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Valot:** enintään 6 lähintä valonlähdettä kerralla (asetus), yhteisvalon katto (`LIGHT_CAP`), elävä välke.
 - **Varjot:** aurinko/kuu (varjokartta 2048, alue 55 m); lähimmän tulen varjot pimeällä (päivitys tiheä pelaajan ollessa 17 m sisällä, kerran
   poistuttaessa); käsisoihdun pieni varjo pimeällä.
+  **v2.33:** avoimissa biomeissa (niitty, ranta, meri, nummi, tunturi, rakka, vuori, huiput, suo) varjot ovat 40 % vaaleammat; metsissä
+  (koivulehto, korpi, jäkäläkangas, aarnimetsä) ennallaan. Vaihto häivyttyy hitaasti (n. 5–8 s) biomin rajalla.
 
 ## 8. Taistelu (actions.js)
 
@@ -527,6 +529,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
   Puuttuva ääni = hiljaisuus. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **v2.33:** pieni hiiren liike napsautuksen aikana ei enää tyhjennä valintaa (raahaus takaisin omaan ruutuun = valinta).
 - **v2.32:** valitse pino klikkaamalla ja klikkaa kohderuutua oikealla → puolet siirtyy (Shift pohjassa → slider); toimii nyt myös pelin
   omalla osoittimella (hiiri lukittuna), samoin arkussa.
 - **v2.31 poimintaääni:** hieman kimeämpi, sävel vaihtelee ±20 % ja tumma suodin (alipäästö 2,4 kHz) pehmentää sitä.

@@ -381,6 +381,8 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Syy: hiiren ollessa lukittuna Chrome ei lähetä `contextmenu`-tapahtumaa. Headless-testissä `requestPointerLock` on korvattu, joten tapahtuma tuli ja testi meni läpi.
 - Ratkaisu (input.js): VC:n `mouseup`-käsittelijä lähettää oikeasta vapautuksesta itse `contextmenu`:n (`if(e.button===2)vcFire('contextmenu',…)`),
   ja oikea `contextmenu` ohitetaan VC:n ollessa päällä. Älä nojaa lukituksen aikana selaimen omiin oikean napin tapahtumiin.
+- **v2.33 jatko:** sama oire jäi, kun osoitin liikkui napsautuksen aikana yli 6 px: raahaus alkoi, pudotti omaan ruutuunsa ja tyhjensi valinnan.
+  Ratkaisu: ui.js:n mouseup – pudotus omaan ruutuun palauttaa valinnan (`selectFor`). Testaa todellisella hiirellä/VC:llä niin, että painalluksen aikana liikutaan.
 - Testaa estämällä oikea `contextmenu` (`addInitScript`: kaappaava kuuntelija `e.isTrusted → stopImmediatePropagation`).
 
 ## Herkät kohdat (lue ennen muokkausta)

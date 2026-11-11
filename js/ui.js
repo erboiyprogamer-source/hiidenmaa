@@ -508,6 +508,8 @@ addEventListener('mouseup',e=>{const d=slotDrag;slotDrag=null;if(!d||!d.on)retur
   const t=document.elementFromPoint(e.clientX,e.clientY),sl=t&&t.closest('.slot[data-g]'),pan=openPanel==='chest'?$('#chest'):$('#inv');
   const hb=t&&t.closest('#hotbar .slot');   /* pikapalkki = repun 8 ensimmäistä ruutua */
   const mv=d.half?moveHalf:moveSlot;
+  /* v2.33: pieni liike napsautuksen aikana (>6 px) aloitti raahauksen, joka pudotti omaan ruutuun ja tyhjensi valinnan → valinta säilyy */
+  if(sl&&sl.dataset.g===d.g&&+sl.dataset.i===d.i){selectFor(d.g,d.i,d.half);uxRerender();updGhost();return;}
   /* v2.29: oikealla raahattu ja Shift pohjassa vapautettaessa → slider (montako siirtyy kohderuutuun) */
   if((sl||hb)&&d.half&&e.shiftKey){const da=sl?uxArr(sl.dataset.g):inv,di=sl?+sl.dataset.i:[...hb.parentNode.children].indexOf(hb);if(splitOpen(src,d.i,da,di,e.clientX,e.clientY))return;}
   if(sl){mv(src,d.i,uxArr(sl.dataset.g),+sl.dataset.i);}
