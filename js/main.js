@@ -1,7 +1,7 @@
 /* Hiidenmaa – main.js
    Valikko, pääsilmukka ja testirajapinta window.__game */
 'use strict';
-window.__JSV2='2.40';   // v1.58: versiotarkistus (viimeinen skripti)
+window.__JSV2='2.41';   // v1.58: versiotarkistus (viimeinen skripti)
 // v1.24 KORJAUS (KORJAUKSET 22): valikkokameran tila esitellään ennen kuin startPlay voidaan kutsua (karttavaihdon jälkeinen automaattinen
 // aloitus tapahtuu jo tiedoston alussa; ennen let-muuttujat olivat vielä alustamatta → ReferenceError → peli jäi mustaksi).
 let frameErrShown=false;
@@ -241,13 +241,20 @@ function autoQuality(raw){if(raw>.5)return;fAvg+=(raw-fAvg)*.05;qCool-=raw;
     else if(qGoodT>12){const c=[...C].reverse().find(c=>c[1]()>0);if(c){step(c[0],-1);qGoodT=0;}}}}
 // v1.12 FPS-näyttö (asetus fps): päivittyy 2 kertaa sekunnissa, väri sujuvuuden mukaan
 let fpsN=0,fpsT=0;
+/* v2.41 DEV-suorituskykymittari (Ä › Suorituskykymittari): piirtokutsut ja kolmiot (myös varjot), ruudun aika, varjomallit, yhdistetyt rakennukset */
+let perfEl=null,perfT=0,perfN=0,perfMs=0,perfMax=0;
+function perfTick(raw){if(!devOn('perf')){if(perfEl){perfEl.remove();perfEl=null;}return;}
+  if(!perfEl){perfEl=document.createElement('div');perfEl.id='devPerf';perfEl.style.cssText='position:fixed;left:8px;top:8px;z-index:9000;font:12px/1.35 monospace;color:#d8f0c8;background:rgba(0,0,0,.55);padding:6px 8px;border-radius:6px;pointer-events:none;white-space:pre';document.body.appendChild(perfEl);}
+  perfN++;perfMs+=raw*1000;perfMax=Math.max(perfMax,raw*1000);perfT+=raw;if(perfT<.5)return;const i=renderer.info;
+  perfEl.textContent=`ruutu ${(perfMs/perfN).toFixed(1)} ms (max ${perfMax.toFixed(0)}) · ${Math.round(perfN/perfT)} FPS\npiirtokutsut ${i.render.calls} · kolmiot ${(i.render.triangles/1000).toFixed(0)}k\ngeometriat ${i.memory.geometries} · tekstuurit ${i.memory.textures}\nvarjomallit ${typeof SHP!=='undefined'?SHP.n+' (+'+SHP.nf+' tuli, '+SHP.occ+' piilossa)':'-'}\nyhdistetyt rakennussolut ${typeof BMC!=='undefined'?BMC.size:'-'}`;
+  perfT=0;perfN=0;perfMs=0;perfMax=0;}
 function updateFps(raw){if(SET.fps==='off')return;fpsN++;fpsT+=raw;if(fpsT<.5)return;const f=Math.round(fpsN/fpsT),el=$('#fps');fpsN=0;fpsT=0;
   if(el){el.textContent=f+' FPS';el.style.color=f>=50?'#8fd8a0':f>=30?'#e8c45a':'#e0614f';}}
 const MENU_EL=$('#menu');
 function frame(now){
   requestAnimationFrame(frame);
   const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;let skip3d=false;
-  if(state==='play'&&SET.autoAll)autoQuality(raw);updateFps(raw);
+  if(state==='play'&&SET.autoAll)autoQuality(raw);updateFps(raw);if(DEV)perfTick(raw);
   try{
     if(state==='play'||state==='ui')update(dt);
     else if(state==='menu'&&MENU_V2_OFF)menuCamOld(dt);

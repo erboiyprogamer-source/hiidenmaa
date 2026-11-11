@@ -391,6 +391,13 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   sisällä lyhyempi kuin 1, ja jyrkkä hehku `pow(dot(vD,sun),90)` korostaa eron → hehku seuraa kupolin nelikulmioita.
 - Ratkaisu: normalisoi suunta pikselivarjostimessa (`vec3 d=normalize(vD)`). Sama sääntö kaikkiin suuntaa käyttäviin varjostimiin (taivas, vesi).
 
+## 55. Varjopassin kerrokset ja varjoasetusten palautus (v2.41, ennaltaehkäisy)
+- three r128 `WebGLShadowMap.renderObject` testaa `object.layers.test(camera.layers)` **pääkameraa** vasten, ei varjokameraa → kerroksilla ei voi tehdä
+  "vain varjossa näkyvää" meshiä. Ratkaisu: mesh `visible=false` ja `renderer.shadowMap.render`-kääre näyttää sen vain varjopassin ajan (resources.js `SHP`).
+- Kun optimoinnin kytkee pois, palauta **alkuperäinen** `castShadow` (`userData.cs0`) – kaikille `true` antoi varjon marjamättäille ja kasveille.
+- Instanssimeshin varjohaun säde ei saa olla kiinteä: Ultran varjoalue on 440 m leveä (220 m), 260 m raja jätti kaukaisia kuusia pois.
+- Testaa optimoinnit vertaamalla **samaa ruutua** ilman ja kanssa (ei kahta eri ajoa: huojunta ja pilvet liikkuvat ajan mukana).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

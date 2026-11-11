@@ -5,6 +5,7 @@
 /* ---------------- CAMERA ---------------- */
 let shakeAmt=0;function shake(a){shakeAmt=Math.max(shakeAmt,a);}
 let camD=null,camTY=null; // pehmennetty kameraetäisyys ja kohteen korkeus
+const _camDir=new V3();   // v2.41: uudelleenkäytettävä suunta (ei uutta oliota joka ruutu)
 function updateCamera(dt){
   /* v2.18: kun pelaaja on kokonaan veden alla (P.subm), kamera liukuu pehmeästi lähimpään zoomiin (2,2 m) ja palaa, kun pää nousee pinnalle */
   P.uwZoomK=lerp(P.uwZoomK||0,P.subm&&!P.inDun?1:0,Math.min(1,dt*2.2));
@@ -13,7 +14,7 @@ function updateCamera(dt){
   const tgt=_tmpV.set(P.pos.x,camTY,P.pos.z);
   const right=_tmpV2.set(Math.cos(camYaw),0,-Math.sin(camYaw));
   tgt.addScaledVector(right,aim?.75:.55);
-  const dir=new V3(Math.sin(camYaw)*Math.cos(camPitch),Math.sin(camPitch),Math.cos(camYaw)*Math.cos(camPitch));
+  const dir=_camDir.set(Math.sin(camYaw)*Math.cos(camPitch),Math.sin(camPitch),Math.cos(camYaw)*Math.cos(camPitch));
   // Esteen etäisyys tiheällä näytteistyksellä; kamera tulee lähemmäs nopeasti ja palaa hitaasti (ei nykimistä seinien vieressä).
   let dh=dist;for(let i=1;i<=30;i++){const t=dist*i/30;const x=tgt.x+dir.x*t,y=tgt.y+dir.y*t,z=tgt.z+dir.z*t;if(pointBlocked(x,y,z)||(!P.inDun&&y<terrainH(x,z)+.3)){dh=Math.max(.6,t-dist/30-.1);break;}}
   camD=camD===null?dh:lerp(camD,dh,Math.min(1,dt*(dh<camD?22:3.5)));const d=camD;

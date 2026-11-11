@@ -276,6 +276,38 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.41 kaukaiset puut kevyemmin: kaukomalli jakaa instanssipuskurin, sama muoto (vähemmän kolmioita), täysi malli ennallaan; esiasetukset',()=>{
+    const tri=g=>g.attributes.position.count/3,a=tri(NGEO.koivu)===388&&tri(NGEO_LOW.koivu)<tri(NGEO.koivu)*.6&&tri(NGEO.manty)===224&&tri(NGEO_LOW.manty)<150&&tri(NGEO_LOW.aarnipuu)<tri(NGEO.aarnipuu);
+    const im=nodeIM.koivu.find(m=>m.userData.low),b=!!im&&im.userData.low.instanceMatrix===im.instanceMatrix&&im.userData.low.material===im.material;
+    const c=SET_DEF.treeLod===80&&PRESETS[0].treeLod===60&&PRESETS[PRESETS.length-1].treeLod===140&&SET_PAGES.gfx.includes('treeLod');
+    /* kaukana oleva ruutu kaukomalliin, lähellä täysi */
+    const pv=SET.treeLod;SET.treeLod=80;updateChunkVis();let d=true;for(const m of CHUNK_IMS){const L=m.userData.low;if(!L||!m.userData.on)continue;const h=CHS/2,ex=Math.max(0,Math.abs(camera.position.x-m.userData.cx)-h),ez=Math.max(0,Math.abs(camera.position.z-m.userData.cz)-h),far=ex*ex+ez*ez>80*80;
+      if(far!==L.visible||far===m.visible||L.count!==m.count)d=`ruutu ${m.userData.k} far ${far} low ${L.visible} full ${m.visible}`;}SET.treeLod=pv;updateChunkVis();
+    return a&&b&&c&&d===true||`virhe mallit ${a} puskuri ${b} asetukset ${c} vaihto ${d}`;});
+  t('v2.41 varjojen optimointi: ruudut eivät heitä varjoa, varjomallit vain varjopassissa (ei pääpiirrossa), tulille omat; yksinkertaiset varjot; maaston taakse jäävät pois',()=>{
+    const pv=[SET.shOpt,SET.shLod];SET.shOpt=true;SHP.t=-1e9;updateChunkVis();
+    const a=CHUNK_IMS.filter(m=>SHP.near[m.userData.type]).every(m=>!m.castShadow&&(!m.userData.low||!m.userData.low.castShadow))&&CHUNK_IMS.filter(m=>!SHP.near[m.userData.type]).every(m=>m.castShadow===m.userData.cs0);
+    const all=SH_TYPES.flatMap(t=>[SHP.near[t],SHP.far[t],SHP.fire[t]]),b=all.every(m=>m.visible===false&&m.castShadow&&!m.frustumCulled);
+    /* varjopassin kääre näyttää auringon mallit vain sen ajan */
+    let seen=null;const o=renderer.renderBufferDirect;renderer.renderBufferDirect=function(c,s,g,m,obj,gr){if(obj.userData.shp)seen=seen||obj;return o.apply(this,arguments);};
+    try{renderer.render(scene,camera);}finally{renderer.renderBufferDirect=o;}const c=all.every(m=>m.visible===false);
+    const sh=renderer.shadowMap.enabled&&sun.castShadow,d=!sh||SHP.n>0;
+    const e=SH_TYPES.includes('kuusi')&&!!NGEO_SHF.koivu&&NGEO_SHF.koivu.attributes.position.count<NGEO.koivu.attributes.position.count/2&&typeof shpSeen==='function'&&SH_OCC>=25&&SH_EYE>0;
+    const f=SET_DEF.shOpt===true&&SET_DEF.shLod===40&&PRESETS[PRESETS.length-1].shLod===90&&SET_PAGES.gfx.includes('shOpt')&&SET_PAGES.gfx.includes('shLod');
+    /* pois kytkettynä alkuperäiset varjoasetukset */
+    SET.shOpt=false;updateChunkVis();const g2=CHUNK_IMS.every(m=>m.castShadow===m.userData.cs0);[SET.shOpt,SET.shLod]=pv;updateChunkVis();
+    return a&&b&&c&&d&&e&&f&&g2||`virhe ruudut ${a} mallit ${b} piilossa ${c} varjoja ${d}(${SHP.n}) yksinkertaiset ${e} asetukset ${f} pois ${g2}`;});
+  t('v2.41 kaukaiset rakennukset yhdistetään (ulkoasu sama), lähellä puretaan; tulet, säiliöt, ovet ja lasit ennallaan; säteiden pikseliluku taustalla',()=>{
+    const pv=P.pos.clone(),bx0=P.pos.x+300,bz0=P.pos.z,y=terrainH(bx0,bz0),ps=[];for(let i=0;i<3;i++){ps.push(addPiece('lattia',bx0+i*G,y,bz0,0));ps.push(addPiece('seina',bx0+i*G,y,bz0-G/2,0));}
+    ps.push(addPiece('ovi',bx0-G/2,y,bz0,2));ps.push(addPiece('arkku',bx0+G,y,bz0,0));
+    let ok=true;try{for(let i=0;i<6;i++)bmTick();const k=Math.floor(bx0/BM_CELL)+','+Math.floor(bz0/BM_CELL),c=[...BMC.entries()].find(([kk,cc])=>cc.pcs.includes(ps[0]));
+      if(!c)ok='ei yhdistetty';else{const pc=c[1].pcs;if(pc.some(q=>q.t==='ovi'||q.t==='arkku'))ok='ovi/arkku yhdistetty';const hidMesh=c[1].hid.every(o=>o.visible===false);if(!hidMesh)ok='piilotus';
+        const ray=new THREE.Raycaster(new THREE.Vector3(bx0,y+6,bz0),new THREE.Vector3(0,-1,0));if(!ray.intersectObjects(pieceRoots,true).length)ok='säde ei osu';
+        P.pos.set(bx0,y,bz0);bmTick();if(BMC.has(c[0]))ok='lähellä ei purettu';if(c[1].hid.some(o=>o.visible===false))ok='näkyvyys ei palannut';}}catch(e){ok=e.message;}
+    for(const q of ps)if(q)removePiece(q);P.pos.copy(pv);bmTick();
+    const r=/fenceSync/.test(raysPeek.toString())&&/getSyncParameter/.test(raysPeek.toString())&&typeof raysEval==='function';
+    const al=/_camDir\.set\(/.test(updateCamera.toString());
+    return ok===true&&r&&al||`virhe yhdistys ${ok} säteet ${r} kamera ${al}`;});
   t('v2.40 säteet: 15 % läpinäkyvämmät, 18 epäsäännöllistä elävää sädettä, harvemmin; peitto suunnittain – kokonaan peitettynä kaikki pois',()=>{
     const a=RAYS_A===.136&&RAYS.list.length===18&&RAYS.list.every(q=>q.ws>0&&q.as>0&&q.ls>0&&q.fs>0&&q.w1>0&&q.w2>0);
     const src=drawRays.toString(),b=/RAYS_A\*K\*q\.v\*q\.d\*fl/.test(src)&&!/softP/.test(src)&&/sstep\(\.5,\.9,/.test(src);
@@ -300,7 +332,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const pv=dayN,v=[];for(let n=1;n<=200;n++){dayN=n;v.push(raysDay());}dayN=pv;raysDayN=-1;
     const a=v.every(x=>x>=.3&&x<=1)&&new Set(v.map(x=>x.toFixed(2))).size>40;
     const env=updateSky.toString(),b=/sstep\(-\.04,\.35,el\)\*sunK\*\(1-indoorK\)\*\(1-aarniK\*\.7\)\*raysDay\(\)/.test(env)&&!/RAYS_NOON/.test(env)&&/RAYS\.pix/.test(env);
-    const c=/sstep\(\.5,\.9,/.test(drawRays.toString())&&/readPixels/.test(raysPeek.toString())&&/zero===n/.test(raysPeek.toString());   /* v2.38: tasoitus siirtyi occP:hen */
+    const c=/sstep\(\.5,\.9,/.test(drawRays.toString())&&/readPixels/.test(raysPeek.toString())&&/zero===n/.test(raysEval.toString());   /* v2.38: tasoitus siirtyi occP:hen; v2.41 arvio raysEval */
     let d=true;try{raysPeek();}catch(e){d=e.message;}
     return a&&b&&c&&d===true||`virhe päivät ${a} aika ${b} harvinaisuus/peitto ${c} ${d}`;});
   t('v2.35 auringonsäteet näytöllä (ei 3D-tasoja → ei neliötä), kääntyvät kameran mukana; linssiheijastus vain Ultra; Low ilman säteitä',()=>{

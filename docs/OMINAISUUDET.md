@@ -446,6 +446,14 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## Lista 4, erä F (v1.44)
 - Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
   Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+- **v2.41 optimoinnit** (Grafiikka › Suorituskyky; ulkoasu ennallaan, Ultra lähes täysin):
+  - **Kaukaiset puut kevyemmin** (`treeLod`): koivut, männyt ja aarnipuut kaukana ilman ohuita oksia ja rungon taivutusjakoja (muoto ja värit samat).
+    Etäisyys esiasetuksen mukaan: Low/Low+ 60 m, Medium- 70, Medium 80, Medium+/High 100, High+ 120, Ultra 140 m; Pois = aina täysi malli.
+  - **Varjojen optimointi** (`shOpt`, oletus päällä): varjoon piirretään vain varjoalueella olevat puut ja kivet (ennen kokonaiset 70 m ruudut);
+    maaston taakse jäävien varjot pois (ladataan ennen kuin harjanteen yli näkee). Tulien ja soihdun varjoille omat mallit.
+  - **Yksinkertaiset varjot alkaen** (`shLod`): kauempana puiden varjot yksinkertaisemmista malleista. Low 25 m … Medium 40 m … Ultra 90 m; Pois = kaikki tarkat.
+  - **Staattisten kohteiden yhdistäminen** koskee nyt myös kaukaisia rakennuksia (yli 70 m; lähellä puretaan, joten rakentaminen, purku, ovet ja tulet toimivat ennallaan).
+  - Auringonsäteiden peittotarkistus ei enää pysäytä peliä (luku taustalla). DEV › Suorituskykymittari näyttää kutsut, kolmiot ja ruutuajan.
 
 ## Latausnäyttö (v1.45)
 - Latauksen valmistuttua riimut leimahtavat 0,8 s lähes valkoisiksi ja kirkkaiksi, sitten näyttö häipyy. Reunoilla nousee hiilloshiukkasia ja tuhkaa.

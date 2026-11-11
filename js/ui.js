@@ -22,6 +22,7 @@ const mobBars=[];for(let i=0;i<8;i++){const d=document.createElement('div');d.cl
 // Jos olento ei ole täysissä voimissa, palkki näkyy myös kun se on 10 % ruudun leveydestä tähtäimen ympärillä (~13°; alle 20 m, vaikeat 70 m).
 // Vahingon jälkeen (m.hurtT) palkki näkyy 5 s katsomatta (ennen 10 s) – paitsi jos olento on tosi kaukana (yli 40 m) ja maaston tai esteiden takana.
 // Yksi kerros = pelaajan perusterveys (60); useampikerroksinen palkki on pidempi ja kerrokset eri värisiä. Alla pääkallot vaikeustasosta.
+const _prV=new V3();   // v2.41: tähtäysviivan projektio ilman uusia olioita
 const HP_ROW=100,HP_ROWS=5,_cd=new V3(),BAR_HURT_T=5,BAR_AIM_K=.1,BAR_FAR=40;
 // v2.25: näkyykö olento kameralle (maasto 10 pisteestä + esteet losClear), tulos muistissa 0,3 s
 function barSeen(m){if(playTime-(m.bsT??-9)<.3)return m.bsV;m.bsT=playTime;const c=camera.position,ty=m.pos.y+m.barH*.6;let ok=true;
@@ -108,7 +109,7 @@ let panelOpenedAt=0;
 // DEV-valikko (Ä): sää, kellonaika, terveys ja kylläisyys – muutokset heti. Sää pysyy valittuna 10 min.
 function renderDev(){const B=$('#devBody');if(!B)return;const clk=()=>{const h=dayT*24;return `${Math.floor(h)}:${String(Math.floor(h%1*60)).padStart(2,'0')}`;};
   const big=[['god','Kuolemattomuus','Ei kuole eikä ota vahinkoa'],['fly','Lento','V pohjassa 6× nopeampi'],['noclip','Seinien läpi','Seinät ja esineet eivät estä'],
-    ['lockTW','Lukitse aika ja sää','Kello ja sää pysyvät'],['unseen','Näkymätön','Olennot eivät huomaa sinua (lyönti suututtaa)'],['freeze','Pysäytä maailma','Olennot, ammukset, aika ja nälkä seis']];
+    ['lockTW','Lukitse aika ja sää','Kello ja sää pysyvät'],['unseen','Näkymätön','Olennot eivät huomaa sinua (lyönti suututtaa)'],['freeze','Pysäytä maailma','Olennot, ammukset, aika ja nälkä seis'],['perf','Suorituskykymittari','Piirtokutsut, kolmiot, ruudun aika ja optimoinnit (vasen yläkulma)']];
   B.innerHTML=`<div class="devBig">${big.map(([k,n,d])=>`<button class="btn devBigB${DEVF[k]?' on':''}" data-big="${k}"><b>${n}</b><span>${DEVF[k]?'PÄÄLLÄ':'pois'} · ${d}</span></button>`).join('')}
     <button class="btn devBigB act" data-heal="1"><b>Terveys täyteen</b><span>Terveys, kestävyys ja kylläisyys täyteen, palaminen pois</span></button></div>
   <div class="devRow"><b>Sää</b><div class="devBtns">${Object.entries(WEATHERS).map(([k,w])=>`<button class="btn${weather.cur===k?' on':''}" data-w="${k}">${w.n}</button>`).join('')}</div></div>
@@ -684,7 +685,7 @@ function aimBlinkOp(){if(!aimBlink)return 1;const t=(performance.now()/1000)%6;r
 function updDropRet(dt){const el=$('#dropRet');if(!el)return;const on=P.drawing&&bowCrouch()&&(P.bowDraw||0)>=1&&state==='play'&&!P.dead;
   aimHint(on);if(!on){if(!el.hidden){el.hidden=true;el.innerHTML='';}return;}
   if(el.hidden){el.hidden=false;dropT=0;}el.style.opacity=aimBlinkOp();dropT-=dt||.016;if(dropT>0)return;dropT=1/30;
-  const W=innerWidth,H=innerHeight,cx=W/2,cy=H/2,T=bowTraj(),pr=v=>{const q=v.clone().project(camera);return q.z>1?null:{x:(q.x+1)/2*W,y:(1-q.y)/2*H};};
+  const W=innerWidth,H=innerHeight,cx=W/2,cy=H/2,T=bowTraj(),pr=v=>{const q=_prV.copy(v).project(camera);return q.z>1?null:{x:(q.x+1)/2*W,y:(1-q.y)/2*H};};
   // v2.04: merkit suoraan tähtäyspisteen alla (x = keskikohta), korkeus todellisesta lentoradasta; viivasto symmetrinen
   const pts=[];let ly=-1e9;for(const m of T.marks){const s=pr(m.p);if(!s||s.y<cy+3||s.y>H)continue;if(s.y-ly<11)continue;ly=s.y;pts.push({d:m.d,x:cx,y:s.y});}
   const ld0=T.land&&pr(T.land.p),ld=ld0&&{x:cx,y:ld0.y},st=AIM_ST[aimSt];if(st==='Pois'){if(el.innerHTML)el.innerHTML='';return;}let h='',f=n=>n.toFixed(1);

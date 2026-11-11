@@ -27,7 +27,7 @@ const NODE={
 };
 // Aarnipuu: paksu runko ja kerroksittain leveät havuoksat, jotka roikkuvat alaspäin; alimmat
 // oksat ulottuvat ~3 m korkeuteen, joten niiden alla voi kävellä.
-function aarniGeo(){const P=[],r=mulberry32(4242);
+function aarniGeo(tipSeg=5){const P=[],r=mulberry32(4242);   /* v2.41 tipSeg: oksien kärkikartioiden sivut (kauko- ja varjomallissa vähemmän) */
   P.push(part(new THREE.BoxGeometry(1.3,21,1.3),0x4a3524,0,10.5,0));
   P.push(part(new THREE.BoxGeometry(2.2,1.4,.6),0x3e2c1e,0,.6,0,0,.4),part(new THREE.BoxGeometry(.6,1.4,2.2),0x3e2c1e,0,.6,0,0,.4));
   const tiers=[[5.8,6.2,8],[8,5.6,8],[10.2,4.8,7],[12.4,4,7],[14.6,3.2,6],[16.6,2.4,5],[18.4,1.6,4]];
@@ -35,27 +35,31 @@ function aarniGeo(){const P=[],r=mulberry32(4242);
     // oksa: kaltevasti alaspäin (paikallinen +x ulos), havukerros oksan päällä ja roikkuva kärki
     const bx0=Math.cos(droop)*len/2,by0=-Math.sin(droop)*len/2;
     P.push(part(new THREE.BoxGeometry(len*1.02,.35,len*.42),col,c*bx0,y+by0+.18,-s*bx0,0,a,-droop));
-    const tx=Math.cos(droop)*len,ty=-Math.sin(droop)*len;P.push(part(new THREE.ConeGeometry(len*.2,len*.35,5),col,c*tx,y+ty-len*.1,-s*tx,Math.PI,0,0));}});
+    const tx=Math.cos(droop)*len,ty=-Math.sin(droop)*len;P.push(part(new THREE.ConeGeometry(len*.2,len*.35,tipSeg),col,c*tx,y+ty-len*.1,-s*tx,Math.PI,0,0));}});
   P.push(part(new THREE.ConeGeometry(1.4,3.4,7),0x274b2e,0,21.5,0));
   return mergeParts(P);}
 // Koivun oksat: sama asettelu pystyssä olevassa puussa ja kaatuvassa puussa (fallTree), joten kaatuessa irtoavat oksat ovat
 // samat, jotka näkyivät pystypuussa. Rivi: [korkeus, kulma, pituus, kallistus ylöspäin] (koko s=1, ennen puun omaa kiertoa).
 const TREE_BR={koivu:[[1.7,.3,1.45,.62],[2.15,2.4,1.6,.58],[2.6,4.3,1.5,.66],[3.0,1.3,1.35,.72],[3.4,3.4,1.25,.78],[3.8,5.4,1.1,.85],[2.35,5.9,1.0,.7]]},BR_COL={koivu:[0x4f4237,0x7aa641]};
-function brParts(type){const P=[],[bc,lc]=BR_COL[type];for(const [h,phi,L,t] of TREE_BR[type]){const c=Math.cos(t),s=Math.sin(t),cp=Math.cos(phi),sp=Math.sin(phi),x0=.12*cp,z0=-.12*sp;
-  P.push(part(new THREE.BoxGeometry(L,.09,.09),bc,x0+L/2*c*cp,h+L/2*s,z0-L/2*c*sp,0,phi,t));
-  P.push(part(new THREE.IcosahedronGeometry(L*.3,0),lc,x0+L*.85*c*cp,h+L*.85*s,z0-L*.85*c*sp));}return P;}
+/* v2.41 mode: 0 = täysi, 1 = ilman ohuita oksalaatikoita (kaukomalli), 2 = lehtitupsut oktaedreina ilman oksia (yksinkertainen varjo) */
+function brParts(type,mode=0){const P=[],[bc,lc]=BR_COL[type];for(const [h,phi,L,t] of TREE_BR[type]){const c=Math.cos(t),s=Math.sin(t),cp=Math.cos(phi),sp=Math.sin(phi),x0=.12*cp,z0=-.12*sp;
+  if(!mode)P.push(part(new THREE.BoxGeometry(L,.09,.09),bc,x0+L/2*c*cp,h+L/2*s,z0-L/2*c*sp,0,phi,t));
+  P.push(part(mode===2?new THREE.OctahedronGeometry(L*.3,0):new THREE.IcosahedronGeometry(L*.3,0),lc,x0+L*.85*c*cp,h+L*.85*s,z0-L*.85*c*sp));}return P;}
 // Runko jaettu 12 korkeussegmenttiin: huojunta (swH = max(0, y − 1,5)) ei ole lineaarinen, joten yksiosainen runko taipui eri tavalla
 // kuin sen päällä olevat mustat täplät (täplät näyttivät pysyvän paikallaan). Segmentoitu runko seuraa samaa käyrää kuin täplät.
-const koivuBase=()=>[part(new THREE.BoxGeometry(.32,4.6,.32,1,12,1),0xe9e6dc,0,2.3,0),part(new THREE.BoxGeometry(.34,.1,.2),0x222222,0,1.4,.02),part(new THREE.BoxGeometry(.34,.08,.2),0x222222,0,2.6,-.02),part(new THREE.IcosahedronGeometry(1.7,0),0x7aa641,0,4.7,0),part(new THREE.IcosahedronGeometry(1.2,0),0x8bb84c,.6,5.5,.3)];
+const koivuBase=(seg=12,spots=true)=>[part(new THREE.BoxGeometry(.32,4.6,.32,1,seg,1),0xe9e6dc,0,2.3,0),...(spots?[part(new THREE.BoxGeometry(.34,.1,.2),0x222222,0,1.4,.02),part(new THREE.BoxGeometry(.34,.08,.2),0x222222,0,2.6,-.02)]:[]),part(new THREE.IcosahedronGeometry(1.7,0),0x7aa641,0,4.7,0),part(new THREE.IcosahedronGeometry(1.2,0),0x8bb84c,.6,5.5,.3)];
+/* v2.41 mänty: seg = rungon korkeusjaot (huojunta lähellä), oct = latvatupsut oktaedreina (yksinkertainen varjo) */
+function mantyGeo(seg=1,oct=false){const ico=(r)=>oct?new THREE.OctahedronGeometry(r,0):new THREE.IcosahedronGeometry(r,0),a=seg>1?4:1,b=seg>1?10:1;
+  return mergeParts([part(new THREE.BoxGeometry(.36,2.6,.36,1,a,1),0x6e5a4a,0,1.3,0),part(new THREE.BoxGeometry(.32,4.4,.32,1,b,1),0xa8643a,0,4.8,0),
+    part(new THREE.BoxGeometry(.12,1.2,.12),0xa8643a,.45,6.2,0,0,0,-.9),part(new THREE.BoxGeometry(.12,1,.12),0xa8643a,-.4,6.7,.2,0,0,.9),
+    part(ico(1.25),0x2f5530,0,7.3,0,0,0,0,1.3,.55,1.2),part(ico(.95),0x386236,.9,6.6,.2,0,0,0,1.2,.5,1),
+    part(ico(.9),0x2a4d2c,-.8,7,-.3,0,0,0,1.2,.5,1.1),part(ico(.7),0x386236,.1,8,.1,0,0,0,1.1,.6,1)]);}
 const NGEO={
   kuusi:mergeParts([part(new THREE.BoxGeometry(.4,2.2,.4),0x5a3a22,0,1.1,0),part(new THREE.ConeGeometry(1.7,2.5,7),0x2e5a2e,0,2.7,0),part(new THREE.ConeGeometry(1.3,2.1,7),0x356836,0,3.9,0),part(new THREE.ConeGeometry(.85,1.7,7),0x3b7440,0,5,0)]),
   koivu:mergeParts([...koivuBase(),...brParts('koivu')]),
   kelo:mergeParts([part(new THREE.BoxGeometry(.36,4.2,.36),0x6d665c,0,2.1,0),part(new THREE.BoxGeometry(.16,1.4,.16),0x6d665c,.5,3,0,0,0,-.8),part(new THREE.BoxGeometry(.14,1.1,.14),0x6d665c,-.4,3.6,.1,0,0,.9)]),
   // v0.82 mänty (Jäkäläkangas): pitkä punaruskea runko (alaosa harmaampi), latvus vain ylhäällä litteinä havutupsuina
-  manty:mergeParts([part(new THREE.BoxGeometry(.36,2.6,.36,1,4,1),0x6e5a4a,0,1.3,0),part(new THREE.BoxGeometry(.32,4.4,.32,1,10,1),0xa8643a,0,4.8,0),
-    part(new THREE.BoxGeometry(.12,1.2,.12),0xa8643a,.45,6.2,0,0,0,-.9),part(new THREE.BoxGeometry(.12,1,.12),0xa8643a,-.4,6.7,.2,0,0,.9),
-    part(new THREE.IcosahedronGeometry(1.25,0),0x2f5530,0,7.3,0,0,0,0,1.3,.55,1.2),part(new THREE.IcosahedronGeometry(.95,0),0x386236,.9,6.6,.2,0,0,0,1.2,.5,1),
-    part(new THREE.IcosahedronGeometry(.9,0),0x2a4d2c,-.8,7,-.3,0,0,0,1.2,.5,1.1),part(new THREE.IcosahedronGeometry(.7,0),0x386236,.1,8,.1,0,0,0,1.1,.6,1)]),
+  manty:mantyGeo(4),
   aarnipuu:aarniGeo(),
   lampare:mergeParts([part(new THREE.CylinderGeometry(1.1,1.1,.12,9),0x141b16,0,-.03,0,0,0,0,1,1,.7),part(new THREE.CylinderGeometry(.7,.7,.13,8),0x1b2620,.45,-.02,.25)]),  // suon lätäkkö (painuu maahan)
   pensas:mergeParts([part(new THREE.IcosahedronGeometry(.9,0),0x2a4a2a,0,.55,0,0,0,0,1.3,.75,1.2),part(new THREE.IcosahedronGeometry(.65,0),0x335a30,.7,.45,.3,0,0,0,1,.8,1),part(new THREE.IcosahedronGeometry(.6,0),0x24412a,-.6,.4,-.35,0,0,0,1.1,.7,1)]),
@@ -71,6 +75,12 @@ const NGEO={
 };
 // Kaatuvan puun runko ilman irtoavia oksia (oksat lisätään erikseen, jotta ne voivat irrota)
 const NGEO_FALL={koivu:mergeParts(koivuBase())};
+/* v2.41 OPTIMOINTI. NGEO_LOW = kaukomalli (ruudut, joiden lähin reuna on yli SET.treeLod m päässä): sama muoto ja värit, vain rungon
+   huojuntajaot ja ohuet oksalaatikot pois (koivu 388 → 216 kolmiota, mänty 224 → 128), aarnipuun oksankärjet 3-sivuisina.
+   NGEO_SHF = yksinkertainen varjomalli (varjokameran alueella yli SET.shLod m päässä pelaajasta): koivu 108, mänty 80, kuusi 42 kolmiota. */
+const NGEO_LOW={koivu:mergeParts([...koivuBase(1),...brParts('koivu',1)]),manty:mantyGeo(1),aarnipuu:aarniGeo(3)};
+const NGEO_SHF={koivu:mergeParts([...koivuBase(1,false),...brParts('koivu',2)]),manty:mantyGeo(1,true),aarnipuu:aarniGeo(3),
+  kuusi:mergeParts([part(new THREE.BoxGeometry(.4,2.2,.4),0x5a3a22,0,1.1,0),part(new THREE.ConeGeometry(1.7,2.5,5),0x2e5a2e,0,2.7,0),part(new THREE.ConeGeometry(1.3,2.1,5),0x356836,0,3.9,0),part(new THREE.ConeGeometry(.85,1.7,5),0x3b7440,0,5,0)])};
 const nodes=[]; const nodeIM={};
 // Puiden latvat huojuvat tuulessa (vahvemmin tuulisella säällä ja myrskyssä).
 let grassDirty=true;   // v1.00 ruoho rakennetaan uudelleen (määritelty ennen mudFlushia, ks. KORJAUKSET 1)
@@ -154,8 +164,12 @@ function chunkOf(x,z){return clamp(Math.floor((z+HALF)/CHS),0,CHN-1)*CHN+clamp(M
 })();
 function makeChunkIM(type,k,cap){const cx=k%CHN,cz=(k/CHN)|0,x0=-HALF+cx*CHS,z0=-HALF+cz*CHS;
   const geo=NGEO[type].clone();geo.boundingSphere=new THREE.Sphere(new V3(x0+CHS/2,10,z0+CHS/2),CHS*.71+30);
-  const im=new THREE.InstancedMesh(geo,NODE[type].kind==='tree'?treeMat:vcMat,cap);im.castShadow=NODE[type].kind!=='pick'&&NODE[type].kind!=='deco';im.receiveShadow=true;
-  im.userData.cx=x0+CHS/2;im.userData.cz=z0+CHS/2;im.userData.k=k;im.userData.vis=VIS_R[NODE[type].kind]||140;scene.add(im);nodeIM[type].push(im);CHUNK_IMS.push(im);return im;}
+  const im=new THREE.InstancedMesh(geo,NODE[type].kind==='tree'?treeMat:vcMat,cap);im.castShadow=NODE[type].kind!=='pick'&&NODE[type].kind!=='deco';im.userData.cs0=im.castShadow;im.receiveShadow=true;
+  im.userData.cx=x0+CHS/2;im.userData.cz=z0+CHS/2;im.userData.k=k;im.userData.chunk=true;im.userData.type=type;im.userData.vis=VIS_R[NODE[type].kind]||140;scene.add(im);nodeIM[type].push(im);CHUNK_IMS.push(im);
+  /* v2.41 kaukomalli: oma InstancedMesh, joka jakaa saman instanceMatrix-puskurin (sijainnit, kaadot ja kasvatukset näkyvät molemmissa) */
+  if(NGEO_LOW[type]){const lg=NGEO_LOW[type].clone();lg.boundingSphere=geo.boundingSphere.clone();const low=new THREE.InstancedMesh(lg,im.material,1);low.instanceMatrix=im.instanceMatrix;
+    low.count=0;low.visible=false;low.castShadow=im.castShadow;low.receiveShadow=true;low.userData.lowOf=im;scene.add(low);im.userData.low=low;}
+  return im;}
 // Kaukaiset ruudut piiloon (sumu peittää ne joka tapauksessa).
 // Staattiset kohteet (riimukivet, rauniot, portaalit, kumpu, löytöpaikat): piirtoetäisyyden (sumun) takana olevia ei piirretä.
 // Keskipiste ja säde lasketaan kerran (userData.cs). Luolaston sisätilat näkyvät vain kun pelaaja on siellä.
@@ -163,9 +177,15 @@ let statT=0;const _sb=new THREE.Box3(),_sv=new THREE.Vector3();
 function cullStatics(){const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far+30;
   for(const o of statics.children){let c=o.userData.cs;if(!c){if(o.isInstancedMesh){_sb.makeEmpty();for(let i=0;i<o.count;i++){o.getMatrixAt(i,_m4);_sb.expandByPoint(_sv.setFromMatrixPosition(_m4));}}else _sb.setFromObject(o);if(_sb.isEmpty()){o.userData.cs=c={x:o.position.x,z:o.position.z,r:1,dun:false};}else{_sb.getCenter(_sv);c=o.userData.cs={x:_sv.x,z:_sv.z,r:Math.min(400,_sb.getSize(_sv).length()/2),dun:_sb.min.y>DUN.y-5&&_sb.max.y<DUN.y+20&&Math.abs(_sb.min.x)>HALF+50};}}
     const vis=o.userData.mg?false:c.dun?P.inDun:(!P.inDun&&dist2(cx,cz,c.x,c.z)<(f+c.r)*(f+c.r));if(o.visible!==vis)o.visible=vis;}}
-function updateChunkVis(){statT-=1/30;if(statT<=0){statT=.5;cullStatics();mergeTick();}terrLodTick();
+function updateChunkVis(){statT-=1/30;if(statT<=0){statT=.5;cullStatics();mergeTick();if(typeof bmTick==='function')bmTick();}else if(bmDirty&&typeof bmTick==='function')bmTick();terrLodTick();
   const cx=camera.position.x,cz=camera.position.z,f=scene.fog.far;
-  for(const im of CHUNK_IMS){const R=Math.min(f,im.userData.vis*RDK*(im.userData.vis<80?DETK:1))+CHS*.72;im.visible=im.count>0&&!P.inDun&&dist2(cx,cz,im.userData.cx,im.userData.cz)<R*R;}}
+  const lod=+SET.treeLod||0,h=CHS/2;
+  for(const im of CHUNK_IMS){const R=Math.min(f,im.userData.vis*RDK*(im.userData.vis<80?DETK:1))+CHS*.72,on=im.count>0&&!P.inDun&&dist2(cx,cz,im.userData.cx,im.userData.cz)<R*R;im.userData.on=on;
+    const low=im.userData.low;if(!low){im.visible=on;continue;}
+    /* v2.41 LOD: koko ruutu kaukomalliin, kun sen lähin reuna on yli SET.treeLod m kamerasta (kaikki sen puut ovat vähintään niin kaukana) */
+    const ex=Math.max(0,Math.abs(cx-im.userData.cx)-h),ez=Math.max(0,Math.abs(cz-im.userData.cz)-h),far=on&&lod>0&&ex*ex+ez*ez>lod*lod;
+    im.visible=on&&!far;low.visible=far;low.count=im.count;}
+  if(typeof shpTick==='function')shpTick();}
 /* v1.44 (lista 4, kohta 30): KAUKAISEN MAASTON LOD (asetus terrLod). Kärjet pysyvät samoina (lapion muokkaukset toimivat), vain
    indeksipuskuri vaihtuu: kameran 100 m säteellä täysi 2 m ruudukko, kauempana 8 m lohkot (4×4 ruutua). Karkea lohko piirretään
    viuhkana kulmasta, ja tarkan naapurin puoleiselle sivulle otetaan kaikki reunakärjet → ei rakoja. Rakennetaan uudelleen, kun kamera
@@ -368,3 +388,63 @@ function rebuildGrass(){let lv=+(SET.grass??1);grassDirty=false;if(AUTO.fx>=2)lv
   im.count=n;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;scene.add(im);grassIM=im;}
 function updateGrass(){if(P.inDun){if(grassIM)grassIM.visible=false;return;}if(grassIM)grassIM.visible=true;
   if(grassDirty||dist2(P.pos.x,P.pos.z,grassC.x,grassC.z)>36)rebuildGrass();}
+
+/* ---------------- v2.41 VARJOJEN OPTIMOINTI (SET.shOpt) ----------------
+   Ennen: jokainen puu- ja kiviruutu (70 × 70 m) piirrettiin kokonaan auringon varjokarttaan, jos se edes osin leikkasi varjokameran –
+   3–5 × enemmän kolmioita kuin varjoalueella oli. Nyt ruutujen meshit eivät heitä varjoa, vaan varjon heittävät erilliset varjomallit:
+   - SHP.near/far (auringon varjo): ne puut ja kivet, joiden pallo leikkaa varjokameran (+ SH_MARGIN) ja joiden ruutu
+     on näkyvissä (sama joukko kuin ennen, mutta puu kerrallaan). Yli SET.shLod m päässä yksinkertainen varjomalli NGEO_SHF.
+   - Näkymättömät: yli SH_OCC m päässä olevat puut, joiden latva ei näy maaston takaa (silmä SH_EYE m kameran yläpuolella → varjo latautuu
+     ennen kuin harjanteen yli näkee), jätetään pois.
+   - SHP.fire (tulien ja soihdun varjot): täydet mallit lähimmän tulen ja soihdun kantamalta.
+   Varjomallit ovat aina piilossa (visible=false), joten pääpiirto ohittaa ne. Varjopassin kääre (renderer.shadowMap.render) näyttää
+   auringon mallit vain auringon varjon ajan ja tulien mallit vain pistevalojen varjojen ajan (three r128 testaa kerrokset pääkameraa vasten,
+   joten kerroksia ei voi käyttää). Matriisit kopioidaan ruudun instanssista (sama asento). */
+const SH_MARGIN=10,SH_MOVE=5,SH_OCC=30,SH_EYE=4,SH_TYPES=Object.keys(nodeIM).filter(t=>{const k=NODE[t].kind;return k==='tree'||k==='rock';});
+const SHP={near:{},far:{},fire:{},cx:1e9,cz:1e9,ex:1e9,ey:1e9,ez:1e9,t:-1e9,ver:-1,on:null,fx:1e9,fy:1e9,fz:1e9,tx:1e9,ty:1e9,tz:1e9,fver:-1,fon:'',fs:0,n:0,nf:0,occ:0};
+(function(){const cnt={};for(const n of nodes)if(!n.isLog)cnt[n.type]=(cnt[n.type]||0)+1;
+  const mk=(geo,t,cap)=>{const im=new THREE.InstancedMesh(geo,NODE[t].kind==='tree'?treeMat:vcMat,cap);im.count=0;im.castShadow=true;im.receiveShadow=false;
+    im.frustumCulled=false;im.matrixAutoUpdate=false;im.visible=false;im.userData.shp=1;scene.add(im);return im;};
+  for(const t of SH_TYPES){const cap=(cnt[t]||0)+(POOL[t]||0)+8;SHP.near[t]=mk(NGEO[t],t,cap);SHP.far[t]=mk(NGEO_SHF[t]||NGEO[t],t,cap);SHP.fire[t]=mk(NGEO[t],t,cap);}
+  /* varjopassin kääre: aurinko omilla malleillaan, pistevalot omillaan; muulloin kaikki piilossa */
+  const sm=renderer.shadowMap,orig=sm.render,show=k=>{for(const t of SH_TYPES){SHP.near[t].visible=SHP.far[t].visible=k===1&&SHP.near[t].count+SHP.far[t].count>0;SHP.fire[t].visible=k===2&&SHP.fire[t].count>0;}};
+  sm.render=function(lights,sc,cam){if(!SHP.on)return orig.call(this,lights,sc,cam);const d=[],p=[];for(const l of lights)(l.isDirectionalLight?d:p).push(l);
+    const nu=this.needsUpdate;try{show(1);if(d.length)orig.call(this,d,sc,cam);this.needsUpdate=nu;show(2);if(p.length)orig.call(this,p,sc,cam);}finally{show(0);}};})();
+const _shArr=[],_shFr=new THREE.Frustum(),_shSp=new THREE.Sphere(),_shN={},_shF={},_shR={};
+function shpVer(){let v=0;for(const im of CHUNK_IMS)v+=im.instanceMatrix.version;return v;}
+function shpCopy(dst,i,n){dst.instanceMatrix.array.set(n.im.instanceMatrix.array.subarray(n.idx*16,n.idx*16+16),i*16);}
+function shpH(n){return (TREE_H[n.type]||2.2)*n.s;}
+/* näkyykö kohteen latva silmästä: 10 näytettä suoralla, maasto yli → piilossa */
+function shpSeen(ex,ey,ez,x,y,z){for(let k=1;k<10;k++){const t=k/10,px=ex+(x-ex)*t,pz=ez+(z-ez)*t,py=ey+(y-ey)*t;if(terrainH(px,pz)>py+.4)return false;}return true;}
+function shpUse(on){for(const im of CHUNK_IMS){const c=im.userData.cs0&&!(on&&SHP.near[im.userData.type]);im.castShadow=c;if(im.userData.low)im.userData.low.castShadow=c;}   /* pois: alkuperäinen; päällä: varjomallityypit eivät heitä ruudusta */
+  if(!on)for(const t of SH_TYPES){SHP.near[t].count=0;SHP.far[t].count=0;SHP.fire[t].count=0;}SHP.on=on;SHP.t=-1e9;SHP.fver=-1;}
+function shpTick(){const on=SET.shOpt!==false;if(on!==SHP.on)shpUse(on);if(!on)return;
+  const ver=shpVer(),now=performance.now();shpFire(ver);
+  const sh=renderer.shadowMap.enabled&&sun.castShadow&&!P.inDun&&sun.intensity>0;
+  if(!sh){if(SHP.n){for(const t of SH_TYPES){SHP.near[t].count=0;SHP.far[t].count=0;}SHP.n=0;}SHP.t=-1e9;return;}
+  const T=sun.target.position,cp=camera.position;
+  const lodS=+SET.shLod||0,due=lodS!==SHP.lod||ver!==SHP.ver||dist2(T.x,T.z,SHP.cx,SHP.cz)>SH_MOVE*SH_MOVE||(cp.x-SHP.ex)**2+(cp.y-SHP.ey)**2+(cp.z-SHP.ez)**2>SH_MOVE*SH_MOVE||now-SHP.t>1500;
+  if(!due||(now-SHP.t<120&&ver===SHP.ver&&lodS===SHP.lod))return;
+  SHP.lod=lodS;SHP.ver=ver;SHP.t=now;SHP.cx=T.x;SHP.cz=T.z;SHP.ex=cp.x;SHP.ey=cp.y;SHP.ez=cp.z;
+  sun.updateMatrixWorld();sun.target.updateMatrixWorld();sun.shadow.updateMatrices(sun);_shFr.copy(sun.shadow.getFrustum());
+  const W=Math.max(sun.shadow.camera.right,sun.shadow.camera.top),sy=Math.max(.2,(sun.position.y-T.y)/(sun.position.distanceTo(T)||1)),Rq=W*1.42/sy+30;
+  const lod=+SET.shLod||0,eyY=cp.y+SH_EYE;for(const t of SH_TYPES){_shN[t]=0;_shF[t]=0;}let occ=0;
+  const list=Rq>160?nodes:nodesNear(T.x,T.z,Rq,_shArr);   /* laaja varjoalue (Ultra 220 m): kaikki solmut, muuten ruudukkohaku */
+  for(const n of list){if(n.isLog||!n.alive||!n.im||!n.im.userData.chunk||!n.im.userData.on||!SHP.near[n.type])continue;
+    const h=shpH(n);_shSp.center.set(n.x,n.y+h*.5,n.z);_shSp.radius=h*.6+2*n.s+SH_MARGIN;if(!_shFr.intersectsSphere(_shSp))continue;
+    const dc=dist2(n.x,n.z,cp.x,cp.z);if(!SHP.noOcc&&dc>SH_OCC*SH_OCC&&!shpSeen(cp.x,eyY,cp.z,n.x,n.y+h,n.z)&&!shpSeen(cp.x,eyY,cp.z,n.x,n.y+h*.6,n.z)){occ++;continue;}
+    const far=lod>0&&dist2(n.x,n.z,T.x,T.z)>lod*lod,dst=far?SHP.far[n.type]:SHP.near[n.type],c=far?_shF:_shN,i=c[n.type];if(i>=dst.instanceMatrix.count)continue;shpCopy(dst,i,n);c[n.type]=i+1;}
+  let tot=0;for(const t of SH_TYPES){const a=SHP.near[t],b=SHP.far[t];a.count=_shN[t];b.count=_shF[t];a.instanceMatrix.needsUpdate=true;b.instanceMatrix.needsUpdate=true;tot+=a.count+b.count;}
+  SHP.n=tot;SHP.occ=occ;sun.shadow.needsUpdate=true;}
+/* tulien ja soihdun varjot: täydet mallit valon kantamalta (päivitys, kun valo liikkuu yli 1 m tai puut muuttuvat) */
+function shpFire(ver){const L=LIGHTS[0],tl=torchLight,a=L.castShadow&&L.intensity>0&&!P.inDun,b=tl.castShadow&&tl.intensity>0&&!P.inDun,key=(a?1:0)+(b?2:0)+'';
+  if(!a&&!b){if(SHP.nf){for(const t of SH_TYPES)SHP.fire[t].count=0;SHP.nf=0;}SHP.fon=key;return;}
+  const lp=L.position,tp=tl.position;
+  if(key===SHP.fon&&ver===SHP.fver&&(!a||dist2(lp.x,lp.z,SHP.fx,SHP.fz)<1&&Math.abs(lp.y-SHP.fy)<1)&&(!b||dist2(tp.x,tp.z,SHP.tx,SHP.tz)<1&&Math.abs(tp.y-SHP.ty)<1))return;
+  SHP.fon=key;SHP.fver=ver;SHP.fx=lp.x;SHP.fy=lp.y;SHP.fz=lp.z;SHP.tx=tp.x;SHP.ty=tp.y;SHP.tz=tp.z;for(const t of SH_TYPES)_shR[t]=0;
+  const stamp=++SHP.fs;   /* sama puu kerran, vaikka kumpikin valo on lähellä */
+  const add=(p,r)=>{nodesNear(p.x,p.z,r+6,_shArr);for(const n of _shArr){if(n.isLog||!n.im||!n.im.userData.chunk||!n.im.userData.on||!SHP.fire[n.type]||n._shf===stamp)continue;n._shf=stamp;
+    const dst=SHP.fire[n.type],i=_shR[n.type];if(i>=dst.instanceMatrix.count)continue;shpCopy(dst,i,n);_shR[n.type]=i+1;}};
+  if(a)add(lp,L.shadow.camera.far);if(b)add(tp,tl.shadow.camera.far);
+  let tot=0;for(const t of SH_TYPES){const im=SHP.fire[t];im.count=_shR[t];im.instanceMatrix.needsUpdate=true;tot+=im.count;}SHP.nf=tot;
+  if(typeof shDirty!=='undefined')shDirty=true;}

@@ -11,7 +11,8 @@ let shelterCache=false,fireCache=false,envTick=0,indoorT=0,indoorK=0;
 const cIndoor=new THREE.Color(0x6a5a48);
 // Yksinkertainen valofysiikka: suojassa ja seinien ympäröimänä taivaanvalo himmenee ja sininen sävy poistuu.
 const _dirs=[];for(let i=0;i<8;i++){const a=i/8*TAU;_dirs.push(new THREE.Vector3(Math.cos(a),0,Math.sin(a)));}
-function indoorScore(){if(P.inDun||!shelterCache)return 0;let h=0;const o=new THREE.Vector3(P.pos.x,P.pos.y+1.1,P.pos.z);for(const d of _dirs){raycaster.set(o,d);raycaster.far=6;if(raycaster.intersectObjects(pieceRoots,true).length)h++;}return h>=5?1:h>=3?.5:0;}
+const _inO=new THREE.Vector3();   // v2.41
+function indoorScore(){if(P.inDun||!shelterCache)return 0;let h=0;const o=_inO.set(P.pos.x,P.pos.y+1.1,P.pos.z);for(const d of _dirs){raycaster.set(o,d);raycaster.far=6;if(raycaster.intersectObjects(pieceRoots,true).length)h++;}return h>=5?1:h>=3?.5:0;}
 const WEATHERS={
   selkea:{n:'Selkeää',fog:1,dark:0,rain:0,cloud:.2},
   pilvi:{n:'Pilvistä',fog:.85,dark:.25,rain:0,cloud:.8},

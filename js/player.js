@@ -258,7 +258,7 @@ function chopIK(dt){const w0=heldMesh&&ITEMS[heldId]&&(ITEMS[heldId].chop||ITEMS
   else{const kf=Math.min(1,(k-hk)/.16);chopLerp(H,E,sstep(0,1,kf));w=hold?1:1-sstep(0,1,Math.min(1,(k-hk-.16)/Math.max(.05,1-hk-.16)));}
   _chH.y+=.05;_chH.z+=.06;   // v1.57: kädet hieman ylempänä ja edempänä koko iskun ajan
   // v1.57: kohde ja paino pehmennetään (14/s) → ei nykäisyä iskujen välissä eikä lopussa
-  {const a=Math.min(1,dt*14);if(!P._chH||!(P.chopW>.001)){P._chH=_chH.clone();P._chD=_chD.clone();}else{P._chH.lerp(_chH,a);P._chD.lerp(_chD,a).normalize();}
+  {const a=Math.min(1,dt*14);if(!P._chH){P._chH=_chH.clone();P._chD=_chD.clone();}else if(!(P.chopW>.001)){P._chH.copy(_chH);P._chD.copy(_chD);}else{   /* v2.41: kopio, ei uutta oliota joka ruutu */P._chH.lerp(_chH,a);P._chD.lerp(_chD,a).normalize();}
    P.chopW=(P.chopW||0)+(w-(P.chopW||0))*a;w=P.chopW;_chH.copy(P._chH);_chD.copy(P._chD);}
   if(w<=.001){heldMesh.quaternion.copy(heldMesh.userData.q0);return;}chopApply(w);
   if(P._chS&&k<wk){_chQ.copy(heldMesh.quaternion);heldMesh.quaternion.copy(P._chS.q).slerp(_chQ,P._chBl);}}   // kirveen kierto kiertona (slerp), ei pyörähdystä

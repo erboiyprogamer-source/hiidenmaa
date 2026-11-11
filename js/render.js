@@ -45,7 +45,7 @@ for(const l of [LIGHTS[0],torchLight]){l.castShadow=true;l.shadow.mapSize.set(38
 // Käsisoihdun varjo: pieni (kantama 3.2 m), matalaresoluutioinen (64 px) ja pehmeä läntti, päivittyy joka kehys (halpa, koska kamera näkee vain lähimmät esineet).
 torchLight.shadow.mapSize.set(40,40);torchLight.shadow.camera.far=3.2;torchLight.shadow.camera.near=.25;torchLight.shadow.radius=3;torchLight.shadow.bias=-.01;
 // Kiinteiden valojen varjokartta päivitetään harvoin; ympäristön muuttuessa (rakennus lisätty/purettu/rikottu, ovi liikkuu, puu kaatuu) lippu nostetaan ja päivitys tehdään heti.
-let shDirty=true,bldDirty=true;const markShadowDirty=()=>{shDirty=true;bldDirty=true;};
+let shDirty=true,bldDirty=true,bmDirty=true;const markShadowDirty=()=>{shDirty=true;bldDirty=true;bmDirty=true;};   // v2.41 bmDirty: kaukaisten rakennusten yhdistäminen tarkistetaan
 const QUAL={lvl:0,pointShadow:true,sunSize:2048,max:3};
 // Kun tulien/soihdun varjot kytketään pois (laatutaso 3 tai asetus), myös valojen castShadow pois: muuten vanha varjokartta jää
 // käyttöön eikä enää päivity (varjot "jähmettyivät"). Takaisin kytkettäessä kartta päivitetään heti. Ks. docs/KORJAUKSET.md.
@@ -288,19 +288,31 @@ function raysDay(){const n=typeof dayN==='number'?dayN:0;if(n!==raysDayN){raysDa
 /* v2.36 (v2.40: 9 pistettä, suunnittain): peitto – piirron jälkeen luetaan auringon kiekon kohdalta pikseleitä (keskus + 4 puolivälissä reunaa). Jos kiekko ei näy (puu, rakennus,
    hahmo, pilvi edessä), RAYS.pix → 0 ja säteet + linssiheijastus häipyvät. Luku vain kun säteitä piirretään, joka 3. ruutu. */
 const _rp=new THREE.Vector3(),_rpx=new Uint8Array(4),_rsc=new THREE.Color();
-function raysPeek(){const R=RAYS;if(!(R.k>.01)||!sunDisc.visible||P.inDun||(SET.shafts===false&&SET.flare!==true)){R.pix=1;return;}
-  if((R.pixN=(R.pixN+1)%2)!==0)return;   /* v2.38: joka 2. ruutu (nopeampi reagointi) */_rp.copy(sunDisc.position).project(camera);if(_rp.z>1||Math.abs(_rp.x)>.98||Math.abs(_rp.y)>.98){R.pix=1;return;}
-  const gl=renderer.getContext(),bw=gl.drawingBufferWidth,bh=gl.drawingBufferHeight,px=(_rp.x*.5+.5)*bw,py=(_rp.y*.5+.5)*bh;
-  const rad=Math.atan(9/380)/Math.tan(camera.fov*Math.PI/360)*bh/2,o=Math.max(1,rad*.5);_rsc.copy(sunDisc.material.color);
-  /* v2.40: 9 pistettä: keskus + 8 suuntaa (0,65 × kiekon säde). Suunta b = kulma b·45° näytöllä (x oikealle, y alas) → GL:ssä y ylös.
-     R.dir[b] = näkyykö kiekon se puoli; säde katoaa, kun sen suunnan puoli peittyy (osa kerrallaan peiton mukaan, kokonaan peitettynä kaikki). */
-  const oo=Math.max(1,rad*.65),ok=()=>_rpx[0]>=_rsc.r*255*.82&&_rpx[1]>=_rsc.g*255*.82&&_rpx[2]>=_rsc.b*255*.7&&_rpx[2]<_rpx[0]*.95;   /* lämmin sävy: valkoinen pilvi ei käy auringosta */
-  let hit=0,zero=0,n=0,c0=0;const rd=(x,y)=>{x=Math.round(x);y=Math.round(y);if(x<0||y<0||x>=bw||y>=bh)return -1;n++;gl.readPixels(x,y,1,1,gl.RGBA,gl.UNSIGNED_BYTE,_rpx);
-    if(!_rpx[0]&&!_rpx[1]&&!_rpx[2]&&!_rpx[3])zero++;const v=ok()?1:0;hit+=v;return v;};
-  c0=rd(px,py);const dv=[];for(let b=0;b<8;b++){const an=b*Math.PI/4;dv.push(rd(px+Math.cos(an)*oo,py-Math.sin(an)*oo));}
+/* v2.41: pikseliluku ei enää pysäytä peliä. WebGL2: yksi pieni suorakulmio (kiekon kohta) luetaan puskuriin (PIXEL_PACK_BUFFER) ja
+   aidan (fenceSync) valmistuttua tulos haetaan seuraavissa ruuduissa – näytönohjainta ei jäädä odottamaan. WebGL1: yksi suorakulmioluku
+   joka 4. ruutu (ennen 9 erillistä lukua joka 2. ruutu). Näytteet ja säännöt ennallaan (keskus + 8 suuntaa 0,65 × kiekon säde). */
+const RPK={pbo:null,sync:null,buf:null,cap:0,w:0,h:0,x0:0,y0:0,px:0,py:0,oo:0,on:false};
+function raysEval(R,buf,w,h,x0,y0,px,py,oo){const off=(x,y)=>{x=Math.round(x)-x0;y=Math.round(y)-y0;return x<0||y<0||x>=w||y>=h?-1:(y*w+x)*4;};
+  let hit=0,zero=0,n=0;const rd=(x,y)=>{const o=off(x,y);if(o<0)return -1;n++;const r=buf[o],g=buf[o+1],b=buf[o+2],a=buf[o+3];if(!r&&!g&&!b&&!a)zero++;
+    const v=r>=_rsc.r*255*.82&&g>=_rsc.g*255*.82&&b>=_rsc.b*255*.7&&b<r*.95?1:0;hit+=v;return v;};   /* lämmin sävy: valkoinen pilvi ei käy auringosta */
+  const c0=rd(px,py),dv=[];for(let b=0;b<8;b++){const an=b*Math.PI/4;dv.push(rd(px+Math.cos(an)*oo,py-Math.sin(an)*oo));}
   if(n&&zero===n){R.pix=1;R.dir.fill(1);return;}   /* tyhjä luku (puskuri jo tyhjennetty) = ei tietoa → ei piiloteta */
   for(let b=0;b<8;b++){const v=dv[b]<0?(c0<0?1:c0):dv[b];R.dir[b]=v;}   /* kokonaan peitettynä kaikki suunnat 0 → kaikki säteet pois; osittain vain peitetyn puolen säteet */
   R.pix=n?hit/n:1;}
+function raysPeek(){const R=RAYS,gl=renderer.getContext(),gl2=typeof WebGL2RenderingContext!=='undefined'&&gl instanceof WebGL2RenderingContext;
+  /* valmistunut taustaluku → arvioi */
+  if(RPK.sync){if(gl.getSyncParameter(RPK.sync,gl.SYNC_STATUS)!==gl.SIGNALED)return;gl.deleteSync(RPK.sync);RPK.sync=null;
+    gl.bindBuffer(gl.PIXEL_PACK_BUFFER,RPK.pbo);gl.getBufferSubData(gl.PIXEL_PACK_BUFFER,0,RPK.buf,0,RPK.w*RPK.h*4);gl.bindBuffer(gl.PIXEL_PACK_BUFFER,null);
+    if(RPK.on)raysEval(R,RPK.buf,RPK.w,RPK.h,RPK.x0,RPK.y0,RPK.px,RPK.py,RPK.oo);}
+  if(!(R.k>.01)||!sunDisc.visible||P.inDun||(SET.shafts===false&&SET.flare!==true)){R.pix=1;R.dir.fill(1);RPK.on=false;return;}
+  if((R.pixN=(R.pixN+1)%(gl2?2:4))!==0)return;_rp.copy(sunDisc.position).project(camera);if(_rp.z>1||Math.abs(_rp.x)>.98||Math.abs(_rp.y)>.98){R.pix=1;R.dir.fill(1);RPK.on=false;return;}
+  const bw=gl.drawingBufferWidth,bh=gl.drawingBufferHeight,px=(_rp.x*.5+.5)*bw,py=(_rp.y*.5+.5)*bh;
+  const rad=Math.atan(9/380)/Math.tan(camera.fov*Math.PI/360)*bh/2,oo=Math.max(1,rad*.65);_rsc.copy(sunDisc.material.color);
+  const e=Math.ceil(oo)+2,x0=Math.max(0,Math.round(px)-e),y0=Math.max(0,Math.round(py)-e),x1=Math.min(bw,Math.round(px)+e+1),y1=Math.min(bh,Math.round(py)+e+1),w=x1-x0,h=y1-y0;if(w<=0||h<=0)return;
+  if(!RPK.buf||RPK.cap<w*h*4){RPK.cap=w*h*4;RPK.buf=new Uint8Array(RPK.cap);if(gl2){if(!RPK.pbo)RPK.pbo=gl.createBuffer();gl.bindBuffer(gl.PIXEL_PACK_BUFFER,RPK.pbo);gl.bufferData(gl.PIXEL_PACK_BUFFER,RPK.cap,gl.STREAM_READ);gl.bindBuffer(gl.PIXEL_PACK_BUFFER,null);}}
+  Object.assign(RPK,{w,h,x0,y0,px,py,oo,on:true});
+  if(gl2){gl.bindBuffer(gl.PIXEL_PACK_BUFFER,RPK.pbo);gl.readPixels(x0,y0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,0);gl.bindBuffer(gl.PIXEL_PACK_BUFFER,null);RPK.sync=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);gl.flush();}
+  else{gl.readPixels(x0,y0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,RPK.buf);raysEval(R,RPK.buf,w,h,x0,y0,px,py,oo);}}
 /* v2.40: säteen oman suunnan peitto: kulma a (näytöllä) → lähin 8 suunnasta → q.d liukuu kohti R.dir (alas 22/s ≈ lähes heti, ylös 6/s) */
 function rayOcc(q,a,ddt){const an=((a%TAU)+TAU)%TAU,bi=Math.round(an/(Math.PI/4))%8,dd=RAYS.dir[bi];q.d=lerp(q.d,dd,Math.min(1,ddt*(dd<q.d?22:6)));return q.d;}
 function raysResize(){const R=RAYS,W=Math.max(2,innerWidth>>1),H=Math.max(2,innerHeight>>1);if(R.W!==W||R.H!==H){R.W=R.c.width=W;R.H=R.c.height=H;}}
