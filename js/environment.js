@@ -67,8 +67,9 @@ function updateSky(light,sd0,el,sunK){const sd=_skyS.copy(sd0);skyDome.position.
   SKY_U.uSun.value.set(sd.x,sd.y,sd.z);SKY_U.uSunC.value.copy(cSun);SKY_U.uGlow.value=sunK*(1-Math.min(1,wDark*1.4))*(1-aarniK*.7);
   const clear=(1-sstep(.35,.7,wCloud))*(1-Math.min(1,wDark*3))*sstep(.05,.25,el)*sstep(.85,.45,el)*sunK*(1-indoorK)*(1-aarniK);
   /* v2.35 näytön säteet (render.js RAYS/drawRays): voimakkuus säästä ja auringosta, maaston peitto marssilla kohti aurinkoa */
-  /* v2.36: vahvimmat aamulla ja illalla (matala aurinko), keskipäivää kohti hiipuvat lähes pois; päiväkohtainen vahvuus raysDay() */
-  RAYS.k=(1-sstep(.35,.75,wCloud))*(1-Math.min(1,wDark*3))*sstep(-.04,.14,el)*sunK*(1-indoorK)*(1-aarniK*.7)*lerp(RAYS_NOON,1,sstep(1.05,.4,el))*raysDay();
+  /* v2.37: vahvat koko päivän (aamusta iltaan), hiipuvat auringon laskiessa kohti horisonttia ja yöksi pois (v2.36 hiipui väärin keskipäivällä);
+     päiväkohtainen vahvuus raysDay() */
+  RAYS.k=(1-sstep(.35,.75,wCloud))*(1-Math.min(1,wDark*3))*sstep(-.04,.35,el)*sunK*(1-indoorK)*(1-aarniK*.7)*raysDay();
   {let o=1;if(RAYS.k>.01){const s=_skyS.copy(sd0).normalize(),cp=camera.position;for(let d=6;d<=300;d*=1.32){const x=cp.x+s.x*d,z=cp.z+s.z*d;if(terrainH(x,z)>cp.y+s.y*d){o=0;break;}}}
    RAYS.occ=lerp(RAYS.occ,o*RAYS.pix,Math.min(1,(RAYS.dt||.016)*(o*RAYS.pix<RAYS.occ?9:3)));}   /* v2.36: este auringon edessä (RAYS.pix) → nopea häivytys */
   sunGlow.visible=!P.inDun&&el>-.08;if(sunGlow.visible){sunGlow.position.copy(sunDisc.position);sunGlow.material.opacity=(.55+.25*sstep(.3,0,el))*sunK*(1-Math.min(1,wDark*1.6))*(1-sstep(.4,.9,wCloud)*.6);}}

@@ -315,8 +315,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Pilvet** isoina kerroksina sään mukaan, kaukana häipyvät; pilvikansi rankassa säässä; salaman välähdys kevyt.
 - **Aurinko:** pyöreä hehku (`sunGlow`). **v2.35 säteet** selkeällä säällä: pehmeät kiilat auringosta näytöllä; kääntyvät kameran mukana eri
   nopeuksilla, osa piiloutuu ja ilmestyy katsesuunnan mukaan, mäki auringon edessä peittää. Asetus "Auringon valonsäteet" (pois Low–Medium-).
-  **v2.36:** säteet ja heijastus vahvimmillaan aamulla ja illalla, keskipäivällä lähes poissa; vahvuus vaihtelee päivittäin (osa päivistä ilman);
-  piiloutuvat, kun puu, rakennus, hahmo tai pilvi on auringon edessä; yksittäisiä säteitä näkyy harvemmin.
+  **v2.37:** säteet ja heijastus vahvoja koko päivän (aamusta iltaan) ja hiipuvat auringon laskiessa; vahvuus vaihtelee päivittäin (30–100 %);
+  piiloutuvat, kun puu, rakennus, hahmo tai pilvi on auringon edessä; yksittäisiä säteitä näkyy hieman harvemmin kuin v2.35.
   **Linssiheijastus** (asetus, vain Ultra-esiasetuksessa): haaleat renkaat auringosta ruudun keskipisteen kautta, kun katsoo aurinkoa kohti.
 - **Aarnimetsässä** tiheä sumu ja pimeämpi valo.
 
