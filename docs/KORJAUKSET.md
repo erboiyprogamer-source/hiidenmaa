@@ -424,4 +424,7 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   ja kohdistusskenaariot (kehitysmuistio v0.65).
 - **Varjot** (`ai.js` updateStations, `render.js` setQuality, `settings.js` applyGfx): autoUpdate=false-valot.
 - **Latausjärjestys** (CLAUDE.md): ylimmän tason koodi vain aiemmin ladattuihin muuttujiin.
+- **Osumaäänet** (`ai.js` `mobHurtP` → `tgHit(TG_HIT[tyyppi])`): uusi hyökkäys pelaajaan kulkekoon `mobHurtP`:n kautta, muuten osumaääntä
+  ei tule (pomojen slam/nova kutsuvat `hurtPlayer`:ia suoraan). Uusi olento → lisää `TG_HIT`-kategoria ja tarkista, että kategorialla on ääni.
+- **Maahan sijoittaminen** (`landmarks.js` `stoneCol`/`gmin`): mittaa maa nurkista, ei yhdestä pisteestä (KORJAUKSET 58).
 - **Tallennus** (`save.js`): uudet liput `flags`-olioon (tallentuvat automaattisesti); muotomuutoksessa nosta `v`.

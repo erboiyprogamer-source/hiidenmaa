@@ -15,6 +15,7 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
 
 ## Nykytila (päivitetty v2.49)
 
+- **PR #35 (v2.28–v2.49) on yhdistetty → `main` = v2.49.** Seuraava työ alkaa haaralla uudelleen mainista.
 - **Versio 2.49**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) ja v2.24 (äänitasot, juominen, pää alas, pelaajan toimintoäänet) ja v2.25 (sudet hiljemmaksi, Aarnipuun törmäys, karhun syöksy, pelaajan äänet osat 1–3) ja v2.26 (pensasäänet, askeleet −20 %, terveyspalkkien näkyvyys) ja v2.27 (Aarnimetsän askel, oksat) – **PR #34 (v2.23–v2.27) on yhdistetty.** v2.28 (pelaajan äänierä osa 2: 22 ääntä, puun tömähdys, reppu kiinni, arkun sulkeminen) ja v2.29 (narinan ajoitus, siirto- ja puolitusäänet, Shift-siirtoslider) ja v2.30 (sliderin korjaukset, poimintaääni) ja v2.31 (poimintaäänen sävy) ja v2.32 (valitse + oikea klikkaus puolittaa myös hiiren lukituksessa) ja v2.33 (valinta säilyy pienessä liikkeessä, avointen biomien vaaleammat varjot) ja v2.34 (metsien varjot 20 % vaaleammat, vuorokauden vaihtelu ±15 %) ja v2.35 (näytön auringonsäteet, linssiheijastus) ja v2.36 (säteiden ajoitus, päiväkohtaisuus, peitto) ja v2.37 (säteet takaisin koko päiväksi) ja v2.38 (pyöreä auringon hehku, pilvien syvyys, kovat/pehmeät säteet) ja v2.39 (pienempi auringon hehku) ja v2.40 (elävät säteet, peitto suunnittain) ja v2.41 (suorituskykyoptimoinnit: puiden LOD, varjomallit, rakennusten yhdistäminen) ja v2.42 (low poly -sävytys säilyy varjojen vaalennuksessa) ja v2.43 (hautakummun kieleke, savujen optimointi, liekit pystyyn) ja v2.44 (satunnainen pilvimatto) ja v2.45 (terävät soihtuvarjot Extra-grafiikkaan) ja v2.46 (repun vilkkuminen/puolitus, pilvet, hukkumisen tarkistus) ja v2.47 (pilvipäivät, pilvimatto 50 %, heijastuksen päivävaihtelu, pilvet ylemmäs) PR #35:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
@@ -30,6 +31,48 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   pelin skriptejä), ulottuvuuden rakennus kestää testikoneella sekunteja (`waitForFunction`), suorituskykytesti ja aloitusjakso
   ohitetaan automaatiossa (`navigator.webdriver`; `?perf=1` ja `?splash=1` pakottavat; testinäkymän kuva: `preserveDrawingBuffer` + toDataURL, ruutukaappaus on liian hidas). Uusi maailma alkaa tilassa `intro`. Jousen
   narua mitatessa katso pätkien päätepisteet (KORJAUKSET 30). Testipalvelin: käynnistä taustakomentona pitkällä aikarajalla.
+
+### Osumaäänien tarkistus (v2.49, main – ei koodimuutoksia)
+Testattu ajossa: jokainen hyökkäävä olento (hostile + neutral) lyö pelaajaa, `tgHit`-kutsu kirjataan ja kategorian ääni haetaan
+`tgRes('osumat','osuma_'+kat)`:lla. Yöolennot ja kalmot palavat päivällä (`sunBurnAI`) → testaa lähitaistelu yöllä (`dayT=.9`).
+
+| Olennot | Kategoria (`TG_HIT`) | Ääni |
+| --- | --- | --- |
+| hiisi, kalmo, ylimys, Kalmaherra | isku | ✓ |
+| susi, routasusi, kalmasusi, ahma, emakko | purema | ✓ |
+| ilves, karhu, hiidenkarhu, suonäkki | raapaisu | ✓ |
+| kivivartija, Kalmanvartija, Jäätär, Aarnihirviö | murskaus | ✓ (Jäätären kivi myös) |
+| **karju, hirvi, hiidenhirvi** (peura/poro eivät hyökkää) | **sarvet** | **✗ puuttuu** – `raw/osumat/osuma_sarvet_1.mp3` 0 t, `_2` 288 t (paikkamerkit) |
+
+- **Ilman osumaääntä myös:** pomojen alueiskut, jotka kutsuvat `hurtPlayer`:ia suoraan (ei `mobHurtP` → ei `tgHit`): Kalmanvartijan
+  maaisku `slam` (ai.js `vartija`-AI), ulottuvuuspomojen `slam` ja `nova` (dungeons.js `realmBossAI`) – niissä vain hiljainen `sfx('slam')`.
+  Tulilinja (dungeons.js) ja palaminen ovat tulivahinkoa (ei osumaääntä tarkoituksella?). Huitaisu/ryntäys menevät `mobHurtP`:n kautta ✓.
+- Osumaääni soi vain, jos `P.hp` laski (`mobHurtP`) → DEV-kuolemattomuus vaimentaa sen (ei vika).
+- Korjausvaihtoehdot (käyttäjä päättää): käyttäjä tuo `osuma_sarvet`-äänet (→ `process_sounds.py`), tai varakategoria
+  (`sarvet` → `murskaus`/`isku`, jos `tgRes` tyhjä) + `tgHit('murskaus',…)` slam/nova-osumiin.
+
+### Koodausmuistiinpanot (opittua v2.41–v2.49 – lue ennen vastaavia muutoksia)
+- **Maahan sijoittaminen:** `terrainH` on 2 m ruudukon kolmiointerpolaatio – yksi näytepiste rakenteen alla voi poiketa metrin
+  (kummut, rinteet). Käytä `stoneCol`/`gmin` (landmarks.js) tai mittaa nurkat (KORJAUKSET 58).
+- **"Ikkuna" syvyyteen (stencil):** näkymätön taso (colorWrite pois, stencil Replace, syvyystesti päällä) + sisältö stencil Equal ilman
+  syvyystestiä, `transparent:true` ja `renderOrder` ≥ 40 (piirtyy kaiken läpinäkymättömän jälkeen). Toimii vain kuperalle sisätilalle
+  (Hautakummun `barrowCave`). Renderöijän stencil on oletuksena päällä (r128), muuta stencil-käyttöä pelissä ei ole.
+- **Staattisten yhdistäminen:** läpinäkyvät materiaalit eivät yhdisty; yhdistetyt verkot ovat `statics`:ssa `userData.merged` – testit,
+  jotka käyvät `statics.children` läpi, ohittakoot ne. Ryhmälle `userData.noMerge`.
+- **Ultra-tunnistus:** `presetIdx()===7` (tai Custom + `renderDist`≥520, malli `bloodUltra`). `presetIdx` vertaa kaikkia asetuksia → älä
+  kutsu joka ruutu; laske `applyGfx`:ssa (kuten `deckSoftSet`).
+- **Sumu Ultralla:** `RDK` (piirtoetäisyys) venyttää sumua → prosenttikertoimet eivät näy. Käytä kiinteitä tavoite-etäisyyksiä (`MOOR_FAR`).
+- **Kankaan CSS-suodin** (`moorSatSet`): aseta vain arvon muuttuessa ja nollaa luolastossa (paluu `updateEnvironment`:sta ennen).
+- **Vanha pilvimatto** (ei-Ultra): tekstuuri on RepeatWrapping ja reunan häivytys on tekstuurissa → `offset`-ajelehtiminen siirtää rajan
+  taivaalle. Ultra-matossa häivytys varjostimessa (`deckSoftMat`). Sama tekniikka sopii muihinkin tasoihin.
+- **Päiväkohtainen satunnaisuus:** `mulberry32(Math.imul(n+C,K)^X); r();` (`raysDay`, `flareDay`, `deckDay`, `cloudDay`, `moorDay`) –
+  testeissä nollaa välimuisti (`deckDayN=-1`, `moorDayN=-1`) ja palauta `dayN`.
+- **Testiajot:** `full157` kestää ~15 min → aja taustalla ja odota `pgrep`-silmukalla. Uudessa säiliössä testipalvelin (`python3 -m
+  http.server 8977` repon juuresta) ei ole käynnissä → ERR_CONNECTION_REFUSED. Headless (swiftshader) piirtää muutaman fps:n:
+  kuvakaappauksissa pidä tila (`dayT`, kamera) setIntervalilla ja odota 1,5 s. `tarkistus.mjs`:n rivit v1.90 ja v2.08 käyttävät
+  satunnaissijoittelua ja voivat harvoin epäonnistua – aja uudelleen ennen kuin epäilet koodia.
+- **KORJAUKSET 49 toistuu** (`//` rivin keskellä, viimeksi v2.47 ja v2.49) – tarkistusrivi v2.23 huomaa sen; kirjoita `/* */`.
+- **PR-kuvaus:** päivitettäessä kuvaus korvautuu kokonaan → pidä mukana koko PR:n versioväli, ei vain uusin versio.
 
 ## PR #25 – yhteenveto (v1.38–v1.83, valmis yhdistettäväksi)
 
@@ -3020,6 +3063,11 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 - Ensimmäinen pelattava versio yhtenä HTML-tiedostona.
 
 ## Ideajono
+
+### Avoimet havainnot (v2.49-tarkistus)
+- Sarvi-osumien ääni puuttuu (karju, hirvi, hiidenhirvi) – käyttäjän äänitiedostot tai varakategoria (ks. "Osumaäänien tarkistus").
+- Pomojen alueiskuista (slam, nova) puuttuu osumaääni.
+- Pehmeä pilvimatto myös muille tasoille kuin Ultralle (vanhan maton raja liikkuu taivaalla).
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
 
