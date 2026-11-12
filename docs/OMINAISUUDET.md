@@ -447,6 +447,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## Lista 4, erä F (v1.44)
 - Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
   Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+- **v2.48:** sumuinen sää on sakeampi (näkyvyys noin 22 % lyhyempi); pilvimatto noin 60 %:na päivistä, ja muina päivinä se on usein (70 %)
+  taivaalla aamulla ja väistyy aamupäivällä.
 - **v2.47:** pilvimatto noin joka toinen päivä; linssiheijastuksen voimakkuus vaihtelee päivittäin ±10 %; 3D-pilviä noin 70 %:na päivistä (muulloin
   selkeällä taivas tyhjä, ellei tuuli, myrsky tai sade tuo pilviä); pilvet ovat korkeammalla (3 omaa korkeuttaan) ja selkeällä 10 % läpinäkyvämpiä.
 - **v2.46:** repun ruudut eivät enää vilku soihtu kädessä, ja puolitus klikkaamalla toimii aina. Pilvet ovat pehmeämpiä ja vaihtelevampia (isoja ja korkeita kumpupilviä). Hukkuessa soi hukkumiskuoleman ääni.

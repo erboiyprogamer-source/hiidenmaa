@@ -278,7 +278,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
   t('v2.47 linssiheijastus vaihtelee päivittäin vain ±10 % (oma kerroin, ei säteiden 0,3–1); pilvimatto noin joka toinen päivä; 3D-pilviä noin 70 % päivistä (tuuli/myrsky/sade tuo muulloinkin); pilvet 3 omaa korkeuttaan ylempänä, selkeällä 10 % läpinäkyvämmät',()=>{
     const pv=dayN,v=[];for(let n=1;n<=200;n++){dayN=n;v.push(flareDay());}dayN=pv;flareDayN=-1;
-    const a=v.every(x=>x>=.9&&x<=1.1)&&Math.max(...v)-Math.min(...v)>.15&&/RAYS\.kf=kb\*flareDay\(\)\*dk/.test(updateSky.toString())&&/fk=KF\*R\.occP/.test(drawRays.toString())&&DECK_P===.5&&CLOUD_P===.7&&/cover\*=cloudDayTick\(dt\)/.test(updateClouds.toString())&&CLOUD_LIFT===3&&CLOUD_CLR_T===.1&&/op=\.95\*k\*\(1-far\)\*clrOp/.test(updateClouds.toString())&&CLOUDS.every(c=>c.userData.h>140)&&(()=>{const pv=dayN;let c=0;for(let n=1;n<=300;n++){dayN=n;cloudDayN=-1;if(cloudDay())c++;}dayN=pv;cloudDayN=-1;return c>180&&c<240;})();
+    const a=v.every(x=>x>=.9&&x<=1.1)&&Math.max(...v)-Math.min(...v)>.15&&/RAYS\.kf=kb\*flareDay\(\)\*dk/.test(updateSky.toString())&&/fk=KF\*R\.occP/.test(drawRays.toString())&&DECK_P===.6&&CLOUD_P===.7&&/cover\*=cloudDayTick\(dt\)/.test(updateClouds.toString())&&CLOUD_LIFT===3&&CLOUD_CLR_T===.1&&/op=\.95\*k\*\(1-far\)\*clrOp/.test(updateClouds.toString())&&CLOUDS.every(c=>c.userData.h>140)&&(()=>{const pv=dayN;let c=0;for(let n=1;n<=300;n++){dayN=n;cloudDayN=-1;if(cloudDay())c++;}dayN=pv;cloudDayN=-1;return c>180&&c<240;})();
     return a||'virhe heijastuksen päiväkerroin tai matto';});
   t('v2.46 reppu ei piirry uudelleen sekunnin välein (soihdun/kilven palkki paikallaan), painalluksen aikana ei täyttä piirtoa',()=>{
     const a=/invBarDirty=true/.test(updatePlayer.toString())&&!/torchBarT=1;invDirty=true/.test(updatePlayer.toString())&&typeof invBarsTick==='function'&&typeof slotBar==='function';
@@ -301,9 +301,16 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
     const c=SET_DEF.torchSharp===false&&SET_PAGES.xgfx.includes('torchSharp')&&/torchSharpOn\(\)\?6\.7:2\.1/.test(updatePlayer.toString())&&/torchSharpOn\(\)\|\|shFrame%fT===0/.test(updateStations.toString());
     return a&&b&&c||`virhe terävä ${a} oletus ${b} koodi ${c}`;});
-  t('v2.44 satunnainen pilvimatto: noin 50 % päivistä (v2.47), peitto 0,3–0,65 (läpinäkyvämpi kuin myrskyllä), tulee ja menee päivän aikana, himmentää säteet',()=>{
+  t('v2.48 sakeampi sumu ja aamumatto: sumun näkyvyys lyhyempi, aamumatto usein muina päivinä ja väistyy aamupäivällä',()=>{
     const pv=dayN,v=[];for(let n=1;n<=300;n++){dayN=n;v.push(deckDay());}dayN=pv;deckDayN=-1;
-    const on=v.filter(Boolean),share=on.length/300,a=share>.38&&share<.62&&on.every(d=>d.op>=.3&&d.op<=.65&&d.w>=.25&&d.w<=.6);
+    const m=v.filter(d=>d&&d.m),off=v.filter(d=>!d||d.m).length,k=m.length/Math.max(1,off);
+    const a=WEATHERS.sumu.fog===.15&&DECK_MORN_P===.7&&k>.55&&k<.85&&m.every(d=>Math.abs(d.c-d.w/2-.03)<1e-9&&d.c+d.w/2>=.269&&d.c+d.w/2<=.361&&d.op>=.35&&d.op<=.65);
+    const d=m[0],pd=dayT;deckDayP=d;deckDayN=dayN;dayT=.15;deckTick();const morn=deckRnd;dayT=.45;deckTick();const noon=deckRnd;dayT=pd;deckDayN=-1;deckTick();
+    const b=Math.abs(morn-d.op)<.01&&noon===0;
+    return a&&b||`virhe arvot ${a} (${k.toFixed(2)}) ajoitus ${b} ${morn} ${noon}`;});
+  t('v2.44 satunnainen pilvimatto: noin 60 % päivistä (v2.48), peitto 0,3–0,65 (läpinäkyvämpi kuin myrskyllä), tulee ja menee päivän aikana, himmentää säteet',()=>{
+    const pv=dayN,v=[];for(let n=1;n<=300;n++){dayN=n;v.push(deckDay());}dayN=pv;deckDayN=-1;
+    const on=v.filter(d=>d&&!d.m),share=on.length/300,a=share>.48&&share<.72&&on.every(d=>d.op>=.3&&d.op<=.65&&d.w>=.25&&d.w<=.6);
     const d=on[0],pd=dayT;deckDayP=d;deckDayN=dayN;dayT=d.c;deckTick();const mid=deckRnd;dayT=d.c-d.w/2-.1;deckTick();const out=deckRnd;dayT=pd;deckDayN=-1;deckTick();
     const b=Math.abs(mid-d.op)<.01&&out===0&&/dop=Math\.max\(deck\*\.92,deckRnd\)/.test(updateClouds.toString())&&/dk=1-deckRnd\*\.9/.test(updateSky.toString());
     return a&&b||`virhe jakauma ${a} (${share.toFixed(2)}) ajoitus ${b}`;});

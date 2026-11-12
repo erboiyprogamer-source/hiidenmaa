@@ -21,7 +21,7 @@ const WEATHERS={
   sade:{n:'Sadetta',fog:.6,dark:.45,rain:1,cloud:1},
   myrsky:{n:'Myrsky',fog:.45,dark:.65,rain:1.4,wind:1.6,storm:1,cloud:1},
   lumi:{n:'Lumisadetta',fog:.5,dark:.35,rain:0,snow:1,cloud:.92},
-  sumu:{n:'Sumua',fog:.3,dark:.2,rain:0,cloud:.55},
+  sumu:{n:'Sumua',fog:.15,dark:.2,rain:0,cloud:.55},
 };
 const WMSG={sade:'Alkaa sataa.',tihku:'Alkaa tihuttaa.',myrsky:'Myrsky nousee!',lumi:'Alkaa sataa lunta.',sumu:'Sumu nousee.',tuuli:'Tuuli yltyy.'};
 function highGround(){return !P.inDun&&(P.pos.y>20||biomeHere(P.pos.x,P.pos.z)==='mountain');}
@@ -45,9 +45,10 @@ const cCloudDay=new THREE.Color(0xe4e9ef),cCloudNight=new THREE.Color(0x232a3a),
 /* v2.44 SATUNNAINEN PILVIMATTO (pilvikansi myös muulla säällä): päivän numerosta arvottu, sama koko päivän. DECK_P = 28 % päivistä;
    peitto 0,30–0,65 (myrskyllä 0,92), näkyy jonakin päivän aikana (keskikohta aamusta iltaan, kesto 25–60 % vuorokaudesta), tulee ja menee pehmeästi.
    Himmentää auringonsäteitä, -hehkua ja auringon valoa hieman (deckRnd). */
-const DECK_P=.5;   /* v2.47: noin joka toinen päivä (ennen 28 %) */let deckDayN=-1,deckDayP=null,deckRnd=0;
+const DECK_P=.6,DECK_MORN_P=.7;   /* v2.48: 60 % päivistä; muina päivinä usein aamumatto (m:1), joka väistyy aamupäivällä */let deckDayN=-1,deckDayP=null,deckRnd=0;
 function deckDay(){const n=typeof dayN==='number'?dayN:0;if(n!==deckDayN){deckDayN=n;const r=mulberry32(Math.imul(n+313,2246822519)^0x3c6ef372);r();
-    deckDayP=r()<DECK_P?{op:.3+.35*r(),c:.3+.45*r(),w:.25+.35*r()}:null;}return deckDayP;}
+    deckDayP=r()<DECK_P?{op:.3+.35*r(),c:.3+.45*r(),w:.25+.35*r()}:null;
+    if(!deckDayP&&r()<DECK_MORN_P){const e=.27+.09*r(),a=.03;deckDayP={op:.35+.3*r(),c:(a+e)/2,w:e-a,m:1};}}return deckDayP;}
 /* v2.47 PILVIPÄIVÄT: 3D-pilviä noin CLOUD_P = 70 % päivistä (päivän numerosta). Muina päivinä selkeällä/sumuisella säällä pilvet häipyvät, ellei
    kova tuuli (7 → 11 m/s), myrsky (wDark) tai sade tuo niitä; pilvisellä ja sateisella säällä pilvet kuten ennen. Pehmeä siirtymä (cloudDayK, ~20 s). */
 const CLOUD_P=.7,CLOUD_CLR_T=.1;let cloudDayN=-1,cloudDayOn=true,cloudDayK=1,cloudClrK=0;
