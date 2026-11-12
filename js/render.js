@@ -291,6 +291,20 @@ const cloudDeck=(function(){const t=canvasTex((g,s)=>{const r=mulberry32(91);con
     const n=.55+.45*Math.sin(x*.21+Math.sin(y*.13)*2)*Math.cos(y*.17+Math.sin(x*.09)*2)+(r()-.5)*.25,al=Math.max(0,1-d*d)*clamp(n,0,1);const i=(y*s+x)*4;im.data[i]=im.data[i+1]=im.data[i+2]=225;im.data[i+3]=al*255|0;}g.putImageData(im,0,0);},128);
   t.magFilter=THREE.LinearFilter;const m=new THREE.Mesh(new THREE.PlaneGeometry(1100,1100),new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:0,depthWrite:false,fog:false,side:THREE.DoubleSide}));
   m.rotation.x=-Math.PI/2;m.renderOrder=-6;m.frustumCulled=false;m.visible=false;scene.add(m);return m;})();
+/* v2.49 PEHMEÄ PILVIMATTO (Ultra): saumaton kohinatekstuuri (kokonaisluvutaajuudet → ei rajaa toistossa) ja reunan häivytys varjostimessa
+   maailman mukaan (ei siirry tekstuurin mukana) 200 m → 940 m, neliöity → matto ohenee tasaisesti horisonttia kohti eikä pääty selvään rajaan.
+   Muut tasot: vanha matto (deckSoftSet vaihtaa materiaalin ja geometrian). */
+const DECK_SOFT_R=940;let deckSoft=false;
+const deckSoftMat=(function(){const s=128,T=Math.PI*2/s,t=canvasTex((g)=>{const r=mulberry32(91),im=g.createImageData(s,s);for(let y=0;y<s;y++)for(let x=0;x<s;x++){
+    const n=.55+.45*Math.sin(x*T*4+Math.sin(y*T*3)*2)*Math.cos(y*T*4+Math.sin(x*T*2)*2)+(r()-.5)*.25,i=(y*s+x)*4;im.data[i]=im.data[i+1]=im.data[i+2]=225;im.data[i+3]=clamp(n,0,1)*255|0;}g.putImageData(im,0,0);},s);
+  t.magFilter=THREE.LinearFilter;t.repeat.set(1.7,1.7);
+  const m=new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:0,depthWrite:false,fog:false,side:THREE.DoubleSide});
+  m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('void main() {','varying vec2 vDk;\nvoid main() {\nvDk=position.xy;');
+    sh.fragmentShader=sh.fragmentShader.replace('void main() {','varying vec2 vDk;\nvoid main() {').replace('#include <alphamap_fragment>','#include <alphamap_fragment>\nfloat dkF=smoothstep('+DECK_SOFT_R.toFixed(1)+',200.0,length(vDk));diffuseColor.a*=dkF*dkF;');};
+  return m;})();
+const deckOld={mat:cloudDeck.material,geo:cloudDeck.geometry},deckSoftGeo=new THREE.PlaneGeometry(DECK_SOFT_R*2,DECK_SOFT_R*2);
+function deckSoftSet(on){on=!!on;if(on===deckSoft)return;deckSoft=on;const o=on?deckSoftMat:deckOld.mat;o.opacity=cloudDeck.material.opacity;o.color.copy(cloudDeck.material.color);
+  o.map.offset.copy(cloudDeck.material.map.offset);cloudDeck.material=o;cloudDeck.geometry=on?deckSoftGeo:deckOld.geo;}
 /* v2.37: yksittäinen säde näkyy hieman harvemmin kuin v2.35 (kynnys .42–.85; v2.35 .25–.75, v2.36 .55–.92 oli liian harva) */
 /* v2.35 AURINGONSÄTEET näytöllä (korvaa 3D-tasot, joiden päät näkyivät neliönä auringon ympärillä). Puolikkaan resoluution 2D-kangas
    pelinäkymän päällä (mix-blend-mode: screen). Kiilat lähtevät auringon kohdasta; kukin kääntyy kameran käännöksen mukana omalla

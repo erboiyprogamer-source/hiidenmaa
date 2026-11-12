@@ -47,21 +47,54 @@ for(const k of ['ruinF','ruinM','ruinC']){const L=LOC[k],{chest,y}=buildRuin(L,k
     openFound('ruin:'+k,'Aarrearkku',first?Object.entries(RUIN_LOOT[k]):null);openLid(chest);if(first){flags.ruins[k]=1;msg('Arkussa on tarvikkeita!','loot');}}});}
 function syncChests(){for(const k in RUIN_CH)openLid(RUIN_CH[k],flags.ruins&&flags.ruins[k]?1:0);}
 // Barrow entrance: luolamainen kivinen portti kummun kyljessä, ympärillä rosoisia lohkareita, soihtuja, kalloja ja riimulaattoja
+/* v2.49 HAUTAKUMPU: jokainen osa seisoo omalla maanpinnallaan ja ulottuu sen alle (gmin) – ennen portti/portaat/maljat leijuivat kartoilla,
+   joilla maasto portin edessä on alempana. Portin takana kivimassa (kumpuun lovi barrowMound:ssa), joten aukosta ei näe läpi eikä takaa näy mustaa.
+   Aukko on "ikkuna" (stencil): siihen piirretään kapeneva, laskeva luolakäytävä ja läpikuultavat mustat levyt (barrowCave), jotka syventävät pimeyttä. */
+function gmin(x,z,hw,hd){let m=terrainH(x,z);for(const [a,b] of [[-1,-1],[1,-1],[-1,1],[1,1]])m=Math.min(m,terrainH(x+a*hw,z+b*hd));return m;}
+function stoneCol(w,top,d,x,z,ry,m,bot){const yb=Math.min(bot,gmin(x,z,w/2,d/2)-.3),h=top-yb,o=stoneBox(w,h,d,x,yb+h/2,z,ry,m);o.userData.h=h;return o;}   // kivi maahan asti
+const CAVE={D:9,N:7,op:.3,mat:null,ticks:0};   // luolakäytävän syvyys (m), mustien levyjen määrä ja peitto
+function barrowCave(x0,y0,z0){   /* aukko x0:ssa, käytävä −x-suuntaan, kapenee 3,2 → 2,1 m ja laskee (pohja −1,3 m) */
+  const D=CAVE.D,sec=t=>({w:lerp(1.6,1.05,t),y0:y0+lerp(-.02,-1.3,t),y1:y0+lerp(4.15,2.5,t)}),S0=sec(0),S1=sec(1);
+  const tex=canvasTex((g,s)=>{const rr=mulberry32(77);g.fillStyle='#4e4a44';g.fillRect(0,0,s,s);
+    for(let i=0;i<70;i++){const v=58+rr()*40|0;g.fillStyle=`rgb(${v},${v-4|0},${v-9|0})`;const w=6+rr()*18,h=5+rr()*12;g.fillRect(rr()*s,rr()*s,w,h);}
+    g.strokeStyle='rgba(20,18,16,.75)';g.lineWidth=1.2;for(let i=0;i<18;i++){g.beginPath();let px=rr()*s,py=rr()*s;g.moveTo(px,py);for(let k=0;k<4;k++){px+=(rr()-.5)*22;py+=(rr()-.5)*22;g.lineTo(px,py);}g.stroke();}},64);
+  tex.magFilter=THREE.LinearFilter;
+  const P=[],U=[],C=[],q=(a,b,c,d,ua,ub,uc,ud,ta,tb,tc,td)=>{for(const [v,u,t] of [[a,ua,ta],[b,ub,tb],[c,uc,tc],[a,ua,ta],[c,uc,tc],[d,ud,td]]){P.push(...v);U.push(...u);
+      const k=Math.exp(-t*1.4),wm=.55*Math.exp(-t*3.2);C.push(k*.85+wm,k*.82+wm*.72,k*.8+wm*.45);}};   // sisääntulon lähellä soihtujen lämmin hehku
+  const xa=x0,xb=x0-D,Lw=[xa,S0.y0,z0-S0.w],Lr=[xa,S0.y0,z0+S0.w],Uw=[xa,S0.y1,z0-S0.w],Ur=[xa,S0.y1,z0+S0.w],
+    lw=[xb,S1.y0,z0-S1.w],lr=[xb,S1.y0,z0+S1.w],uw=[xb,S1.y1,z0-S1.w],ur=[xb,S1.y1,z0+S1.w],u=D/2;
+  q(Lw,lw,lr,Lr,[0,0],[u,0],[u,1.6],[0,1.6],0,1,1,0);   // lattia
+  q(Uw,Ur,ur,uw,[0,0],[0,1.6],[u,1.6],[u,0],0,0,1,1);   // katto
+  q(Lw,Uw,uw,lw,[0,0],[0,2],[u,2],[u,0],0,0,1,1);q(Lr,lr,ur,Ur,[0,0],[u,0],[u,2],[0,2],0,1,1,0);   // seinät
+  q(lw,uw,ur,lr,[0,0],[0,2],[1.6,2],[1.6,0],1,1,1,1);   // perä
+  const G=new THREE.BufferGeometry();G.setAttribute('position',new THREE.Float32BufferAttribute(P,3));G.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));G.setAttribute('color',new THREE.Float32BufferAttribute(C,3));
+  const st={stencilWrite:true,stencilRef:1,stencilFunc:THREE.EqualStencilFunc,stencilZPass:THREE.KeepStencilOp,depthTest:false,depthWrite:false,side:THREE.DoubleSide,transparent:true};
+  const grp=new THREE.Group();grp.userData.noMerge=true;
+  const win=new THREE.Mesh(new THREE.PlaneGeometry(S0.w*2,S0.y1-S0.y0),new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:true,transparent:true,side:THREE.DoubleSide,
+    stencilWrite:true,stencilRef:1,stencilFunc:THREE.AlwaysStencilFunc,stencilZPass:THREE.ReplaceStencilOp}));
+  win.rotation.y=Math.PI/2;win.position.set(xa,(S0.y0+S0.y1)/2,z0);win.renderOrder=40;grp.add(win);
+  CAVE.mat=new THREE.MeshBasicMaterial(Object.assign({map:tex,vertexColors:true},st));const cave=new THREE.Mesh(G,CAVE.mat);cave.renderOrder=41;cave.frustumCulled=false;grp.add(cave);
+  const vm=new THREE.MeshBasicMaterial(Object.assign({color:0,opacity:CAVE.op},st));   // läpikuultavat mustat levyt (järjestys ei vaikuta: musta × peitto)
+  for(let i=1;i<=CAVE.N;i++){const t=i/(CAVE.N+1),S=sec(t),v=new THREE.Mesh(new THREE.PlaneGeometry(S.w*2,S.y1-S.y0),vm);v.rotation.y=Math.PI/2;v.position.set(x0-D*t,(S.y0+S.y1)/2,z0);v.renderOrder=42;grp.add(v);}
+  for(const o of grp.children){o.castShadow=false;o.receiveShadow=false;}
+  CAVE.grp=grp;statics.add(grp);}
+function barrowCaveTick(light){if(!CAVE.mat)return;const k=lerp(.2,1,light)*(1-wDark*.3);CAVE.mat.color.setRGB(k,k,k);}
 (function(){const L=LOC.barrow,dx=10.5,ex=L.x+dx,ez=L.z,y=terrainH(ex,ez),r=mulberry32(4242),dk=mat(0x6a665e),mos=mat(0x4d6a3a);
-  stoneBox(1.2,4.4,1.2,ex,y+2,ez-2.2,0,dk);stoneBox(1.2,4.4,1.2,ex,y+2,ez+2.2,0,dk);stoneBox(1.6,.9,6.2,ex,y+4.6,ez,0,dk);
+  stoneCol(1.2,y+4.2,1.2,ex,ez-2.2,0,dk,y-.4);stoneCol(1.2,y+4.2,1.2,ex,ez+2.2,0,dk,y-.4);stoneBox(1.6,.9,6.2,ex,y+4.6,ez,0,dk);
   for(let i=0;i<16;i++){const side=i%2?1:-1,k=(i>>1),zz=ez+side*(3.2+k*.55+r()*.8),h=1.6+r()*2.8+(k<3?1.5:0),w=1.4+r()*1.6,xx=ex-.2-k*.5-r()*.8;
-    const m=stoneBox(w,h,w*(.8+r()*.4),xx,y+h/2-.3,zz,r()*3,mat(rockC(0x6a675f,r())));if(r()<.6)m.add(bx(w*.9,.25,w*.8,mos,0,h/2,0,false));}
+    const d=w*(.8+r()*.4),ry=r()*3,m=stoneCol(w,y+h-.3,d,xx,zz,ry,mat(rockC(0x6a675f,r())),y-.5);if(r()<.6)m.add(bx(w*.9,.25,w*.8,mos,0,m.userData.h/2,0,false));}
   for(let i=0;i<5;i++){const w=1.5+r()*1.2,h=1.2+r()*1.4;stoneBox(w,h,w,ex-.5-r()*1.2,y+5.4+h/2-.3+r()*.4,ez+(r()-.5)*5,r()*3,mat(0x56534e));}
-  statics.add(bx(.2,3.4,2.6,new THREE.MeshBasicMaterial({color:0x050404}),ex-.3,y+1.7,ez,false));
-  for(let i=1;i<=3;i++)statics.add(bx(.1,3.4-i*.25,2.6-i*.3,new THREE.MeshBasicMaterial({color:0x0a0807-i*0x020201}),ex-.3-i*.6,y+1.7,ez,false));
+  {const cm=mat(0x5d5953);stoneBox(3.4,6.6,7.4,ex-2.45,y+2.9,ez,0,cm);   // kivimassa portin takana (luolan katto ja selkä)
+    for(let i=0;i<6;i++){const w=1.6+r()*1.4,h=1+r()*1.2;stoneBox(w,h,w*(.8+r()*.4),ex-1.4-r()*2.4,y+6+h/2-.4,ez+(r()-.5)*6,r()*3,mat(rockC(0x5f5c57,r())));}}
+  barrowCave(ex-.25,y,ez);
   addBox(ex-.5,y,ez-1.3,ex-.2,y+3.6,ez+1.3,'static');
-  for(let i=0;i<3;i++)stoneBox(1.4,.3*(3-i)+.15,5.2-i*.5,ex+1.2+i*1.1,y+(.3*(3-i)+.15)/2-.1,ez,0,mat(0x6a675f));
+  for(let i=0;i<3;i++){const sx=ex+1.2+i*1.1,top=y+.3*(3-i)+.05;stoneCol(1.4,top,5.2-i*.5,sx,ez,0,mat(0x6a675f),y-.2);}
   interactables.push({x:ex+.4,y:y+1,z:ez,r:3.2,label:()=>'Astu Hautakumpuun',use:()=>enterDungeon()});
-  for(const s of [-1,1]){const bz=ez+s*3.4;stoneBox(.7,1.1,.7,ex+3.2,y+.5,bz,0,dk);statics.add(bx(.3,.45,.3,MAT.flame,ex+3.2,y+1.3,bz,false));
-    lightSources.push({x:ex+3.2,y:y+1.8,z:bz,c:0xff9a40,i:1.5,on:()=>true});
-    const sl=stoneBox(.35,2.6,1.1,ex+2,y+1.2,ez+s*5,s*.35,mat(0x6a6c70));sl.add(bx(.04,1.5,.5,MAT.glow,.2,0,0,false));
+  for(const s of [-1,1]){const bz=ez+s*3.4,yb=terrainH(ex+3.2,bz);stoneCol(.7,yb+1.05,.7,ex+3.2,bz,0,dk,yb-.2);statics.add(bx(.3,.45,.3,MAT.flame,ex+3.2,yb+1.3,bz,false));
+    lightSources.push({x:ex+3.2,y:yb+1.8,z:bz,c:0xff9a40,i:1.5,on:()=>true});
+    const ys=terrainH(ex+2,ez+s*5),sl=stoneCol(.35,ys+2.5,1.1,ex+2,ez+s*5,s*.35,mat(0x6a6c70),ys-.2);sl.add(bx(.04,1.5,.5,MAT.glow,.2,0,0,false));
     for(let k=0;k<4;k++){const kx=ex+4+r()*1.2,kz=ez+s*(1.2+r()*.8),sk=bx(.22,.2,.24,mat(0xe7e1cf),kx,terrainH(kx,kz)+.1,kz,false);sk.rotation.y=r()*3;statics.add(sk);}}
-  for(let i=0;i<6;i++){const a=i/6*TAU+.3,rx=L.x+Math.cos(a)*6.4,rz=L.z+Math.sin(a)*6.4,h=2+r()*1.4;if(Math.hypot(rx-ex,rz-ez)<5)continue;stoneBox(.9,h,.6,rx,terrainH(rx,rz)+h/2-.2,rz,-a+Math.PI/2,mat(0x5f5c57));}
+  for(let i=0;i<6;i++){const a=i/6*TAU+.3,rx=L.x+Math.cos(a)*6.4,rz=L.z+Math.sin(a)*6.4,h=2+r()*1.4;if(Math.hypot(rx-ex,rz-ez)<5)continue;const tg=terrainH(rx,rz);stoneCol(.9,tg+h-.2,.6,rx,rz,-a+Math.PI/2,mat(0x5f5c57),tg-.2);}
   stoneBox(1.6,1.1,1.6,L.x,terrainH(L.x,L.z)+.4,L.z,.5,dk);statics.add(bx(.35,.55,.35,MAT.glow,L.x,terrainH(L.x,L.z)+1.2,L.z,false));
 })();
 // Stone circle + altar

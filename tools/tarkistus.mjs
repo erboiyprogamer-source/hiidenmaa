@@ -301,6 +301,19 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
     const c=SET_DEF.torchSharp===false&&SET_PAGES.xgfx.includes('torchSharp')&&/torchSharpOn\(\)\?6\.7:2\.1/.test(updatePlayer.toString())&&/torchSharpOn\(\)\|\|shFrame%fT===0/.test(updateStations.toString());
     return a&&b&&c||`virhe terävä ${a} oletus ${b} koodi ${c}`;});
+  t('v2.49 Hautakumpu maassa + luolakäytävä, nummen usva päiväkohtaisesti, pehmeä pilvimatto Ultralla',()=>{
+    const L=LOC.barrow,ex=L.x+10.5,ez=L.z,y=terrainH(ex,ez),bb=new THREE.Box3();statics.updateMatrixWorld(true);let bad=[];
+    for(const o of statics.children){if(!o.isMesh||o.userData.merged)continue;bb.setFromObject(o);const cx=(bb.min.x+bb.max.x)/2,cz=(bb.min.z+bb.max.z)/2;if(Math.hypot(cx-ex,cz-ez)>9||bb.min.y>y+1)continue;
+      for(const [x,z] of [[bb.min.x,bb.min.z],[bb.max.x,bb.min.z],[bb.min.x,bb.max.z],[bb.max.x,bb.max.z],[cx,cz]])if(bb.min.y-terrainH(x,z)>.05){bad.push((cx-ex).toFixed(1)+','+(cz-ez).toFixed(1)+' '+o.geometry.type+' '+(bb.max.y-bb.min.y).toFixed(1)+' '+(bb.min.y-y).toFixed(1)+' '+(o.name||o.material.type));break;}}
+    const g=CAVE.grp,a=bad.length===0&&!!g&&g.children.length===2+CAVE.N&&g.children[0].material.stencilFunc===THREE.AlwaysStencilFunc&&!g.children[0].material.colorWrite&&
+      g.children[1].material.depthTest===false&&g.children[1].material.stencilFunc===THREE.EqualStencilFunc&&Math.abs(terrainH(ex-.25,ez)-y)<.01&&barrowMound(ex-1,ez)===0;
+    const pv=dayN,v=[];for(let n=1;n<=300;n++){dayN=n;moorDayN=-1;v.push(moorDay());}dayN=pv;moorDayN=-1;const full=v.filter(x=>x===1).length/300;
+    const pk=moorK;moorK=1;moorSatSet();const f1=renderer.domElement.style.filter;moorK=0;moorSatSet();const f0=renderer.domElement.style.filter;moorK=pk;moorSatSet();
+    const b=MOOR_P===.5&&full>.38&&full<.62&&v.every(x=>x===1||x>=.3&&x<=.55)&&/saturate\(0\.68\)/.test(f1)&&f0===''&&/moorK=lerp\(moorK,bh==='moor'\?moorDay\(\):0/.test(updateEnvironment.toString())&&MOOR_FAR===80&&/lerp\(fr,MOOR_FAR,moorK\)/.test(updateEnvironment.toString());
+    const sv=Object.assign({},SET);Object.assign(SET,PRESETS[7]);applyGfx();const u=cloudDeck.material===deckSoftMat&&cloudDeck.geometry===deckSoftGeo;
+    Object.assign(SET,PRESETS[3]);applyGfx();const lo=cloudDeck.material===deckOld.mat;Object.assign(SET,sv);applyGfx();
+    const c=u&&lo&&deckSoftMat.map.wrapS===THREE.RepeatWrapping&&DECK_SOFT_R<1000;
+    return a&&b&&c||`virhe kumpu ${a} [${bad.join(' ')}] usva ${b} (${full.toFixed(2)}) matto ${c}`;});
   t('v2.48 sakeampi sumu ja aamumatto: sumun näkyvyys lyhyempi, aamumatto usein muina päivinä ja väistyy aamupäivällä',()=>{
     const pv=dayN,v=[];for(let n=1;n<=300;n++){dayN=n;v.push(deckDay());}dayN=pv;deckDayN=-1;
     const m=v.filter(d=>d&&d.m),off=v.filter(d=>!d||d.m).length,k=m.length/Math.max(1,off);
@@ -314,9 +327,9 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const d=on[0],pd=dayT;deckDayP=d;deckDayN=dayN;dayT=d.c;deckTick();const mid=deckRnd;dayT=d.c-d.w/2-.1;deckTick();const out=deckRnd;dayT=pd;deckDayN=-1;deckTick();
     const b=Math.abs(mid-d.op)<.01&&out===0&&/dop=Math\.max\(deck\*\.92,deckRnd\)/.test(updateClouds.toString())&&/dk=1-deckRnd\*\.9/.test(updateSky.toString());
     return a&&b||`virhe jakauma ${a} (${share.toFixed(2)}) ajoitus ${b}`;});
-  t('v2.43 Hautakumpu: kumpu jatkuu portin taakse (väli umpeen), portin kohta ja edusta ennallaan, kieleke nurmen värinen',()=>{
+  t('v2.43 Hautakumpu: kumpu jatkuu portin taakse (v2.49: lovi kivimassalle), portin kohta ja edusta ennallaan, kieleke nurmen värinen',()=>{
     const L=LOC.barrow,ex=L.x+10.5,ez=L.z,base=x=>terrainH(x,ez);
-    const a=barrowMound(ex-2.5,ez)>=BARROW_EXT*.95&&barrowMound(ex-1,ez)>1&&barrowMound(ex,ez)===0&&barrowMound(ex+2,ez)===0&&barrowMound(ex-2.5,ez+8)===0;
+    const a=barrowMound(ex-4.5,ez)>=BARROW_EXT*.95&&barrowMound(ex-1,ez)===0&&barrowMound(ex,ez)===0&&barrowMound(ex+2,ez)===0&&barrowMound(ex-2.5,ez+8)===0;
     const b=typeof heightFn==='function'&&/barrowMound\(x,z\)/.test(heightFn.toString());
     return a&&b||`virhe kieleke ${a} korkeus ${b} (${barrowMound(ex-2.5,ez).toFixed(2)}/${barrowMound(ex,ez).toFixed(2)})`;});
   t('v2.43 savut: yksi instanssipiirto (ei spritejä), porteilla ja arkkukivillä ilmestyvät vasta lähellä (28 m → täysi 18 m, 80 %); Extra-grafiikan Ultra-savut palauttaa vanhan',()=>{

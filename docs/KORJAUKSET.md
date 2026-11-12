@@ -410,6 +410,14 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   **Älä merkitse `invDirty`:ä ajastetusti** – vain kun repun sisältö oikeasti muuttuu.
 - Samassa erässä: kuoleman jälkeinen tieto (`P.deathCause`, `P.waterDeath`) nollautuu `playerDie`/`startPlayerDeath`:ssa → myöhemmin lukevat käyttävät `pDeath`-tilaa.
 
+## 58. Hautakummun portti leijui ja aukosta näkyi läpi (v2.49)
+- Oire: portti, portaat ja tulimaljat ilmassa (kartat 2 ja 5); mustan levyn yläpuolelta näkyi taivas; takaa näkyi musta levy.
+- Syy: koko portti sijoitettiin yhteen korkeuteen `terrainH(ex,ez)`. Korkeusruudukko on 2 m (`GS`), ja kummun kärki nostaa portin kohdan
+  kolmiota → portin edessä maa oli jopa 1 m alempana. Musta levy oli ohut ja matalampi kuin aukko.
+- Ratkaisu: jokainen maahan kuuluva osa `stoneCol(w,top,d,x,z,…)` = yläpää paikallaan, pohja `gmin` (5 pisteen minimi) − 0,3 m. Kumpuun lovi
+  portin taakse (`barrowMound`, bdx 6,4–8) → maa aukon kohdalla tasainen, kivimassa täyttää loven. Aukko on stencil-ikkuna (`barrowCave`).
+  **Uudet kiinteät rakenteet rinteessä: käytä `stoneCol`:ia tai mittaa maa nurkista, älä yhdestä pisteestä.** Tarkistusrivi v2.49 mittaa nurkat.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

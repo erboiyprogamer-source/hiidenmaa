@@ -87,6 +87,7 @@ function shUltraOn(){return !!SHU[SET.shUltra];}
 function autoOn(k){if(k==='q'&&shUltraOn())return false;return !!SET.autoAll&&!!SET[{res:'autoRes',fx:'autoFx',dist:'autoDist',q:'autoQ'}[k]];}
 // Ottaa asetukset käyttöön (kutsutaan käynnistyksessä ja kun asetusta muutetaan)
 function applyGfx(){
+  {const pi=presetIdx();deckSoftSet(pi===7||(pi<0&&(+SET.renderDist||0)>=520));}   // v2.49 pehmeä pilvimatto Ultralla
   if(typeof grassDirty!=='undefined')grassDirty=true;   // v1.00 ruohon tiheys vaihtui
   for(const k of ['res','fx','dist'])if(!autoOn(k))AUTO[k]=0;if(!autoOn('q')&&typeof QUAL!=='undefined')QUAL.lvl=0;
   const dpr=devicePixelRatio||1,pr=(SET.res==='native'?Math.min(dpr,2):Math.min(dpr,1.5)*(+SET.res||1))*AUTO_K.res[AUTO.res];

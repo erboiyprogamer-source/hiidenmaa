@@ -288,6 +288,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## 11. Hautakumpu ja ulottuvuudet (landmarks.js, dungeons.js)
 
+- **Hautakummun suu (v2.49):** portin aukosta näkyy kapeneva ja laskeva kivikäytävä, jonka läpikuultavat mustat levyt (7 × 30 %) syventävät
+  pimeyttä (stencil-ikkuna: näkyy vain aukon läpi, maasto ei peitä). Portin takana kivimassa; kaikki osat ulottuvat maahan asti.
 - **Hautakumpu:** kiinteä luolasto (`DMAP`), 3 hautakirstua (hiidenkivet), kalmot ja ylimys, seinäsoihdut, luut, tippukivet, tynnyrit.
 - **Ulottuvuudet:** Routaluola (sokkelo), Kalmankammio (huoneet), Aarnihauta (luola, kivimöhkäleseinät, epätasainen lattia 0–0,45 m).
   Pohja arvotaan ensimmäisellä käynnillä (`flags.rs`), rakennetaan vasta sisään astuessa ja piirretään vain siellä ollessa.
@@ -447,6 +449,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## Lista 4, erä F (v1.44)
 - Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
   Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+- **v2.49:** Kalmanummella usva sakenee ja maailma harmaantuu hitaasti (puolena päivistä voimakkaasti, muulloin lievemmin); Hautakummun
+  suusta näkyy syvenevä luolakäytävä, ja portti on maassa kaikilla kartoilla; Ultralla pilvimaton reuna häipyy pehmeästi.
 - **v2.48:** sumuinen sää on sakeampi (näkyvyys noin 22 % lyhyempi); pilvimatto noin 60 %:na päivistä, ja muina päivinä se on usein (70 %)
   taivaalla aamulla ja väistyy aamupäivällä.
 - **v2.47:** pilvimatto noin joka toinen päivä; linssiheijastuksen voimakkuus vaihtelee päivittäin ±10 %; 3D-pilviä noin 70 %:na päivistä (muulloin
