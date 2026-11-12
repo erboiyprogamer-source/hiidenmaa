@@ -447,6 +447,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## Lista 4, erä F (v1.44)
 - Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
   Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+- **v2.44:** joinakin päivinä (noin joka neljäs) taivaalla on läpikuultava pilvimatto millä säällä tahansa; se tulee ja menee päivän aikana ja himmentää aurinkoa hieman.
 - **v2.43:** Hautakummun kumpu jatkuu portin taakse (ei rakoa). Porttien, arkkukivien, raunioiden ja kummun usva ja höyry ilmestyvät vasta
   lähestyttäessä (28 m → täysi 18 m, 80 % entisestä) ja piirretään kevyesti; Extra-grafiikka › Ultra-savut palauttaa entisen (60 m, täysi määrä).
   Soihtujen ja tulinuolten liekit osoittavat aina ylöspäin.

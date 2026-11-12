@@ -276,6 +276,12 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.44 satunnainen pilvimatto: noin 28 % päivistä, peitto 0,3–0,65 (läpinäkyvämpi kuin myrskyllä), tulee ja menee päivän aikana, himmentää säteet',()=>{
+    const pv=dayN,v=[];for(let n=1;n<=300;n++){dayN=n;v.push(deckDay());}dayN=pv;deckDayN=-1;
+    const on=v.filter(Boolean),share=on.length/300,a=share>.18&&share<.4&&on.every(d=>d.op>=.3&&d.op<=.65&&d.w>=.25&&d.w<=.6);
+    const d=on[0],pd=dayT;deckDayP=d;deckDayN=dayN;dayT=d.c;deckTick();const mid=deckRnd;dayT=d.c-d.w/2-.1;deckTick();const out=deckRnd;dayT=pd;deckDayN=-1;deckTick();
+    const b=Math.abs(mid-d.op)<.01&&out===0&&/dop=Math\.max\(deck\*\.92,deckRnd\)/.test(updateClouds.toString())&&/raysDay\(\)\*\(1-deckRnd\*\.9\)/.test(updateSky.toString());
+    return a&&b||`virhe jakauma ${a} (${share.toFixed(2)}) ajoitus ${b}`;});
   t('v2.43 Hautakumpu: kumpu jatkuu portin taakse (väli umpeen), portin kohta ja edusta ennallaan, kieleke nurmen värinen',()=>{
     const L=LOC.barrow,ex=L.x+10.5,ez=L.z,base=x=>terrainH(x,ez);
     const a=barrowMound(ex-2.5,ez)>=BARROW_EXT*.95&&barrowMound(ex-1,ez)>1&&barrowMound(ex,ez)===0&&barrowMound(ex+2,ez)===0&&barrowMound(ex-2.5,ez+8)===0;
