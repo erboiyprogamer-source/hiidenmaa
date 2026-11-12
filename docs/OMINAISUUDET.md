@@ -550,6 +550,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Veren fysiikka (pisarat lentävät ja jäävät maahan) on päällä Medium-esiasetuksesta ylöspäin.
 
 ## Äänet (v1.84–v1.86, äänierä A: olennot)
+- **Osumaäänet (tila v2.49):** olennon isku pelaajaan soittaa kategoriansa äänen (isku, purema, raapaisu, murskaus ✓; **sarvet puuttuu** –
+  karju, hirvi, hiidenhirvi lyövät hiljaa). Pomojen maaisku ja nova eivät soita osumaääntä.
 - **v2.14 kuuluvuus:** kutsuäänet kuuluvat noin 150 m, muut 64 m, rauhallinen ääntely 36 m. Kaukana suora ääni hiljenee 30 %, tummuu
   (puolimatkassa alle 1,5 kHz), kaikuu (jopa ~1,9 × suora) ja huojuu hieman. Sudet ulvovat päivällä 3× harvemmin, yöllä 20 % harvemmin; yön
   kaukainen ulvonta 100–145 m.

@@ -134,6 +134,8 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
   Pilvisessiossa cdnjs on estetty: asenna `three@0.128.0` npm:stä testikansioon ja ohjaa
   `**/three.min.js`-pyyntö siihen `page.route`:lla (vain testiä varten, ei peliin).
 - Tarkista aina, ettei konsoliin tule virheitä, ja että tallennus + lataus toimii.
+- **Ennen koodausta lue kehitysmuistion "Koodausmuistiinpanot"** (maahan sijoittaminen, stencil, yhdistäminen, Ultra-tunnistus, testiajojen vinkit)
+  ja "Osumaäänien tarkistus" (uusi hyökkäys pelaajaan aina `mobHurtP`:n kautta).
 - **Ominaisuustarkistus jokaisen erän jälkeen:** `tools/tarkistus.mjs` (pitää tulostaa `KAIKKI OK`; rivi palauttaa `true` tai virhetekstin – teksti = virhe, KORJAUKSET 48). Lisää uudelle ominaisuudelle
   oma tarkistusrivi, jotta sen katoaminen huomataan. Ennen haaran nollausta tarkista, ettei yhdistämättömiä committeja katoa.
 
