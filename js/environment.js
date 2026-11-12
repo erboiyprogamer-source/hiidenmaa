@@ -45,12 +45,19 @@ const cCloudDay=new THREE.Color(0xe4e9ef),cCloudNight=new THREE.Color(0x232a3a),
 /* v2.44 SATUNNAINEN PILVIMATTO (pilvikansi myös muulla säällä): päivän numerosta arvottu, sama koko päivän. DECK_P = 28 % päivistä;
    peitto 0,30–0,65 (myrskyllä 0,92), näkyy jonakin päivän aikana (keskikohta aamusta iltaan, kesto 25–60 % vuorokaudesta), tulee ja menee pehmeästi.
    Himmentää auringonsäteitä, -hehkua ja auringon valoa hieman (deckRnd). */
-const DECK_P=.28;let deckDayN=-1,deckDayP=null,deckRnd=0;
+const DECK_P=.5;   /* v2.47: noin joka toinen päivä (ennen 28 %) */let deckDayN=-1,deckDayP=null,deckRnd=0;
 function deckDay(){const n=typeof dayN==='number'?dayN:0;if(n!==deckDayN){deckDayN=n;const r=mulberry32(Math.imul(n+313,2246822519)^0x3c6ef372);r();
     deckDayP=r()<DECK_P?{op:.3+.35*r(),c:.3+.45*r(),w:.25+.35*r()}:null;}return deckDayP;}
+/* v2.47 PILVIPÄIVÄT: 3D-pilviä noin CLOUD_P = 70 % päivistä (päivän numerosta). Muina päivinä selkeällä/sumuisella säällä pilvet häipyvät, ellei
+   kova tuuli (7 → 11 m/s), myrsky (wDark) tai sade tuo niitä; pilvisellä ja sateisella säällä pilvet kuten ennen. Pehmeä siirtymä (cloudDayK, ~20 s). */
+const CLOUD_P=.7,CLOUD_CLR_T=.1;let cloudDayN=-1,cloudDayOn=true,cloudDayK=1,cloudClrK=0;
+function cloudDay(){const n=typeof dayN==='number'?dayN:0;if(n!==cloudDayN){cloudDayN=n;const r=mulberry32(Math.imul(n+7717,3266489917)^0x165667b1);r();cloudDayOn=r()<CLOUD_P;}return cloudDayOn;}
+function cloudDayTick(dt){const clear=weather.cur==='selkea'||weather.cur==='sumu',tg=cloudDay()||!clear?1:Math.max(sstep(7,11,WIND.spd),Math.min(1,wDark/.35),wRain);
+  cloudDayK=lerp(cloudDayK,tg,Math.min(1,dt*.05));return cloudDayK;}
 function deckTick(){const d=deckDay();if(!d){deckRnd=0;return;}const a=d.c-d.w/2,b=d.c+d.w/2,f=.05;deckRnd=d.op*sstep(a-f,a,dayT)*sstep(b+f,b,dayT);}
 // Pilvien liike, peitto, väri (valo, sää, ilta) ja salamoiden välke. cover 0–1.
-function updateClouds(dt,cover,light,el){deckTick();const vis=!P.inDun;let cx=camera.position.x,cz=camera.position.z;
+function updateClouds(dt,cover,light,el){deckTick();cover*=cloudDayTick(dt);   /* v2.47 pilvipäivät */
+  cloudClrK=lerp(cloudClrK,weather.cur==='selkea'?1:0,Math.min(1,dt*.05));const clrOp=1-CLOUD_CLR_T*cloudClrK;   /* v2.47: selkeällä 10 % läpinäkyvämmät */const vis=!P.inDun;let cx=camera.position.x,cz=camera.position.z;
   _cc.copy(cCloudNight).lerp(cCloudDay,light).lerp(cCloudGrey,Math.min(1,wDark/.6)*.85);
   const dusk=sstep(.5,.0,el)*sstep(-.3,0,el);_cc.lerp(cSunLow,dusk*.45);
   const drift=dt*(1.2+WIND.spd*.55),R=CLOUD_R,grow=.75+.55*cover,hor=scene.background;
@@ -60,7 +67,7 @@ function updateClouds(dt,cover,light,el){deckTick();const vis=!P.inDun;let cx=ca
     const dx=mod(u.ox-cx+R)-R,dz=mod(u.oz-cz+R)-R,d=Math.hypot(dx,dz);
     c.position.set(cx+dx,u.h,cz+dz);
     // ilmestyminen peiton mukaan; kaukana häipyy (opasiteetti + väri kohti horisonttia) eikä piirry R:n takana
-    const k=sstep(u.th,u.th+.12,cover),far=sstep(R*.5,R*.97,d),op=.95*k*(1-far);c.visible=op>.03;if(!c.visible)continue;
+    const k=sstep(u.th,u.th+.12,cover),far=sstep(R*.5,R*.97,d),op=.95*k*(1-far)*clrOp;c.visible=op>.03;if(!c.visible)continue;
     c.scale.set(u.sc*grow,u.sc*(.8+.4*cover),u.sc*grow);
     const m=c.material;m.opacity=op;m.color.copy(_cc).lerp(hor,far*.75);m.emissive.copy(m.color).multiplyScalar(.26*light+.1);   /* v2.38: pienempi itsevalaisu → auringon puoli kirkas, varjopuoli harmaampi (syvyys) */
     if(flash>0){const near=sstep(240,60,d);m.emissive.lerp(cFlash,Math.min(1,flash*(.5+.5*near)));}}
@@ -77,7 +84,8 @@ function updateSky(light,sd0,el,sunK){const sd=_skyS.copy(sd0);skyDome.position.
   /* v2.35 näytön säteet (render.js RAYS/drawRays): voimakkuus säästä ja auringosta, maaston peitto marssilla kohti aurinkoa */
   /* v2.37: vahvat koko päivän (aamusta iltaan), hiipuvat auringon laskiessa kohti horisonttia ja yöksi pois (v2.36 hiipui väärin keskipäivällä);
      päiväkohtainen vahvuus raysDay() */
-  RAYS.k=(1-sstep(.35,.75,wCloud))*(1-Math.min(1,wDark*3))*sstep(-.04,.35,el)*sunK*(1-indoorK)*(1-aarniK*.7)*raysDay()*(1-deckRnd*.9);   /* v2.44 pilvimatto himmentää säteet */
+  /* v2.44 pilvimatto himmentää; v2.47 linssiheijastus omalla päiväkertoimella flareDay (0,9–1,1) – ei säteiden 0,3–1 vaihtelua */
+  {const kb=(1-sstep(.35,.75,wCloud))*(1-Math.min(1,wDark*3))*sstep(-.04,.35,el)*sunK*(1-indoorK)*(1-aarniK*.7),dk=1-deckRnd*.9;RAYS.k=kb*raysDay()*dk;RAYS.kf=kb*flareDay()*dk;}
   {let o=1;if(RAYS.k>.01){const s=_skyS.copy(sd0).normalize(),cp=camera.position;for(let d=6;d<=300;d*=1.32){const x=cp.x+s.x*d,z=cp.z+s.z*d;if(terrainH(x,z)>cp.y+s.y*d){o=0;break;}}}
    const rdt=RAYS.dt||.016;RAYS.occ=lerp(RAYS.occ,o,Math.min(1,rdt*3));RAYS.occP=lerp(RAYS.occP,RAYS.pix,Math.min(1,rdt*(RAYS.pix<RAYS.occP?22:6)));}   /* v2.38: maasto rauhallisesti, este kiekon edessä lähes heti (22/s) */
   sunGlow.visible=!P.inDun&&el>-.08;if(sunGlow.visible){sunGlow.position.copy(sunDisc.position);sunGlow.material.opacity=(1-deckRnd*.8)*SUN_GLOW_K*(.55+.25*sstep(.3,0,el))*sunK*(1-Math.min(1,wDark*1.6))*(1-sstep(.4,.9,wCloud)*.6);}}
