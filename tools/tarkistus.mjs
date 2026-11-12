@@ -276,6 +276,11 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.45 terävät soihtuvarjot (Extra-grafiikka): 1024 px, joka ruutu, kantama 7 m, vähemmän täytevaloa; pois = ennallaan (40 px, 2,4 m)',()=>{
+    const pv=SET.torchSharp;SET.torchSharp=true;applyGfx();const a=torchLight.castShadow&&torchLight.shadow.mapSize.x===1024&&torchSharpOn();
+    SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
+    const c=SET_DEF.torchSharp===false&&SET_PAGES.xgfx.includes('torchSharp')&&/torchSharpOn\(\)\?6\.7:2\.1/.test(updatePlayer.toString())&&/torchSharpOn\(\)\|\|shFrame%fT===0/.test(updateStations.toString());
+    return a&&b&&c||`virhe terävä ${a} oletus ${b} koodi ${c}`;});
   t('v2.44 satunnainen pilvimatto: noin 28 % päivistä, peitto 0,3–0,65 (läpinäkyvämpi kuin myrskyllä), tulee ja menee päivän aikana, himmentää säteet',()=>{
     const pv=dayN,v=[];for(let n=1;n<=300;n++){dayN=n;v.push(deckDay());}dayN=pv;deckDayN=-1;
     const on=v.filter(Boolean),share=on.length/300,a=share>.18&&share<.4&&on.every(d=>d.op>=.3&&d.op<=.65&&d.w>=.25&&d.w<=.6);
