@@ -245,7 +245,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     for(const u of (window.__GJS||[])){const x=new XMLHttpRequest();x.open('GET',u,false);x.send();const L=x.responseText.split('\n');
       L.forEach((s,i)=>{let q=null,bl=false;for(let j=0;j<s.length-1;j++){const c=s[j];if(q){if(c==='\\'){j++;continue;}if(c===q)q=null;continue;}if(bl){if(s[j]==='*'&&s[j+1]==='/'){bl=false;j++;}continue;}
         if(c==="'"||c==='"'||c==='`'){q=c;continue;}if(c==='/'&&s[j+1]==='*'){bl=true;j++;continue;}if(c==='/'&&s[j+1]==='/'&&s[j-1]!==':'){const r=s.slice(j+2);
-          if(/[;{}]\s*(if|const|let|for|return|[A-Za-z_$][\w$.]*\s*\(|[A-Za-z_$][\w$.]*\s*=[^=])/.test(r)&&!/^\s*v\d\.\d\d juomat|DEV seinien|Terveyspalkit|Haku ohittaa|täyden vedon|Matala usva/.test(r))bad.push(u.split('?')[0]+':'+(i+1));break;}}});}
+          if((/[;{}]\s*(if|const|let|for|return|[A-Za-z_$][\w$.]*\s*\(|[A-Za-z_$][\w$.]*\s*=[^=])/.test(r)||/\)\s*(if|for|while|return)\s*\(/.test(r))&&!/^\s*v\d\.\d\d juomat|DEV seinien|Terveyspalkit|Haku ohittaa|täyden vedon|Matala usva/.test(r))bad.push(u.split('?')[0]+':'+(i+1));break;}}});}
     return !bad.length||'koodia kommentin perässä: '+bad.join(', ');});
   t('v2.24 olentojen äänet −20 %, toimintoäänten kuuluvuus −20 % ja jyrkempi vaimeneminen, askeleet harvemmin (kävely ×1,2, juoksu ×1,375)',()=>{
     const a=CRE_VK===.8&&/\*CRE_VK/.test(creSnd.toString()),b=TG_RK===.8&&tgDistK(TG_R)===1&&tgDistK(5)===0&&/rolloffFactor=step\?1\.8:1\.45/.test(tgPlay.toString())&&/\*TG_RK/.test(tgPlay.toString());
@@ -276,6 +276,219 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.47 linssiheijastus vaihtelee päivittäin vain ±10 % (oma kerroin, ei säteiden 0,3–1); pilvimatto noin joka toinen päivä; 3D-pilviä noin 70 % päivistä (tuuli/myrsky/sade tuo muulloinkin); pilvet 3 omaa korkeuttaan ylempänä, selkeällä 10 % läpinäkyvämmät',()=>{
+    const pv=dayN,v=[];for(let n=1;n<=200;n++){dayN=n;v.push(flareDay());}dayN=pv;flareDayN=-1;
+    const a=v.every(x=>x>=.9&&x<=1.1)&&Math.max(...v)-Math.min(...v)>.15&&/RAYS\.kf=kb\*flareDay\(\)\*dk/.test(updateSky.toString())&&/fk=KF\*R\.occP/.test(drawRays.toString())&&DECK_P===.6&&CLOUD_P===.7&&/cover\*=cloudDayTick\(dt\)/.test(updateClouds.toString())&&CLOUD_LIFT===3&&CLOUD_CLR_T===.1&&/op=\.95\*k\*\(1-far\)\*clrOp/.test(updateClouds.toString())&&CLOUDS.every(c=>c.userData.h>140)&&(()=>{const pv=dayN;let c=0;for(let n=1;n<=300;n++){dayN=n;cloudDayN=-1;if(cloudDay())c++;}dayN=pv;cloudDayN=-1;return c>180&&c<240;})();
+    return a||'virhe heijastuksen päiväkerroin tai matto';});
+  t('v2.46 reppu ei piirry uudelleen sekunnin välein (soihdun/kilven palkki paikallaan), painalluksen aikana ei täyttä piirtoa',()=>{
+    const a=/invBarDirty=true/.test(updatePlayer.toString())&&!/torchBarT=1;invDirty=true/.test(updatePlayer.toString())&&typeof invBarsTick==='function'&&typeof slotBar==='function';
+    const pv=[inv.slice(),openPanel];inv.fill(null);inv[0]={id:'soihtu',n:1,q:1,fuel:30,lit:true};if(openPanel!=='inv')togglePanel('inv');renderInv();$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1)).join('');
+    const el=document.querySelectorAll('#invGrid .slot')[0];inv[0].fuel=torchMax(inv[0])*.2;invDirty=false;invBarsTick();
+    const b=document.querySelectorAll('#invGrid .slot')[0]===el&&Math.abs(parseFloat(el.querySelector('.fu i').style.width)-20)<.5&&!invDirty;
+    const c=/invDirty&&!\(openPanel&&uiBtnHeld\(\)\)/.test(updateHUD.toString());
+    closePanels();inv.length=0;for(const x of pv[0])inv.push(x);invDirty=true;
+    return a&&b&&c||`virhe ${a} ${b} ${c}`;});
+  t('v2.46 pilvet: 1,25× leveämmät, osa isoja ja osa kohoaa korkeammalle, pehmeä pohja; edelleen 26 pilveä (yksi mesh kukin)',()=>{
+    const big=CLOUDS.filter(c=>c.userData.big).length,tall=CLOUDS.filter(c=>c.userData.tall).length;
+    return CLOUDS.length===26&&big>=4&&big<=12&&tall>=3&&tall<=12&&CLOUDS.every(c=>c.isMesh)||`virhe ${CLOUDS.length} iso ${big} korkea ${tall}`;});
+  t('v2.18/v2.46 hukkuminen suunnitelman mukaan: syvä 1,5/1,35 m, kellunta −1,3 m, painallus −1 ja −5/s, vajoaminen 0,42 m/s, 1 s → 10 HP/s; hukkumiskuoleman ääni',()=>{
+    const src=updatePlayer.toString();
+    const a=/wy-\(P\.swim\?1\.35:1\.5\)/.test(src)&&/P\.stam-=1;P\.swCd=playTime\+1/.test(src)&&/P\.stam-=5\*dt/.test(src)&&/waveAt\(P\.pos\.x,P\.pos\.z\)-1\.3/.test(src)&&/lerp\(P\.vy,-\.42/.test(src)&&/P\.underT>1/.test(src)&&/P\.hp-=10\*dt/.test(src)&&/P\.pos\.y\+1\.62/.test(src);
+    const b=/pDeath\.water\)\?'kuolema_hukkuminen'/.test(plBody.toString());
+    return a&&b||`virhe fysiikka ${a} ääni ${b}`;});
+  t('v2.45 terävät soihtuvarjot (Extra-grafiikka): 1024 px, joka ruutu, kantama 7 m, vähemmän täytevaloa; pois = ennallaan (40 px, 2,4 m)',()=>{
+    const pv=SET.torchSharp;SET.torchSharp=true;applyGfx();const a=torchLight.castShadow&&torchLight.shadow.mapSize.x===1024&&torchSharpOn();
+    SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
+    const c=SET_DEF.torchSharp===false&&SET_PAGES.xgfx.includes('torchSharp')&&/torchSharpOn\(\)\?6\.7:2\.1/.test(updatePlayer.toString())&&/torchSharpOn\(\)\|\|shFrame%fT===0/.test(updateStations.toString());
+    return a&&b&&c||`virhe terävä ${a} oletus ${b} koodi ${c}`;});
+  t('v2.49 Hautakumpu maassa + luolakäytävä, nummen usva päiväkohtaisesti, pehmeä pilvimatto Ultralla',()=>{
+    const L=LOC.barrow,ex=L.x+10.5,ez=L.z,y=terrainH(ex,ez),bb=new THREE.Box3();statics.updateMatrixWorld(true);let bad=[];
+    for(const o of statics.children){if(!o.isMesh||o.userData.merged)continue;bb.setFromObject(o);const cx=(bb.min.x+bb.max.x)/2,cz=(bb.min.z+bb.max.z)/2;if(Math.hypot(cx-ex,cz-ez)>9||bb.min.y>y+1)continue;
+      for(const [x,z] of [[bb.min.x,bb.min.z],[bb.max.x,bb.min.z],[bb.min.x,bb.max.z],[bb.max.x,bb.max.z],[cx,cz]])if(bb.min.y-terrainH(x,z)>.05){bad.push((cx-ex).toFixed(1)+','+(cz-ez).toFixed(1)+' '+o.geometry.type+' '+(bb.max.y-bb.min.y).toFixed(1)+' '+(bb.min.y-y).toFixed(1)+' '+(o.name||o.material.type));break;}}
+    const g=CAVE.grp,a=bad.length===0&&!!g&&g.children.length===2+CAVE.N&&g.children[0].material.stencilFunc===THREE.AlwaysStencilFunc&&!g.children[0].material.colorWrite&&
+      g.children[1].material.depthTest===false&&g.children[1].material.stencilFunc===THREE.EqualStencilFunc&&Math.abs(terrainH(ex-.25,ez)-y)<.01&&barrowMound(ex-1,ez)===0;
+    const pv=dayN,v=[];for(let n=1;n<=300;n++){dayN=n;moorDayN=-1;v.push(moorDay());}dayN=pv;moorDayN=-1;const full=v.filter(x=>x===1).length/300;
+    const pk=moorK;moorK=1;moorSatSet();const f1=renderer.domElement.style.filter;moorK=0;moorSatSet();const f0=renderer.domElement.style.filter;moorK=pk;moorSatSet();
+    const b=MOOR_P===.5&&full>.38&&full<.62&&v.every(x=>x===1||x>=.3&&x<=.55)&&/saturate\(0\.68\)/.test(f1)&&f0===''&&/moorK=lerp\(moorK,bh==='moor'\?moorDay\(\):0/.test(updateEnvironment.toString())&&MOOR_FAR===80&&/lerp\(fr,MOOR_FAR,moorK\)/.test(updateEnvironment.toString());
+    const sv=Object.assign({},SET);Object.assign(SET,PRESETS[7]);applyGfx();const u=cloudDeck.material===deckSoftMat&&cloudDeck.geometry===deckSoftGeo;
+    Object.assign(SET,PRESETS[3]);applyGfx();const lo=cloudDeck.material===deckOld.mat;Object.assign(SET,sv);applyGfx();
+    const c=u&&lo&&deckSoftMat.map.wrapS===THREE.RepeatWrapping&&DECK_SOFT_R<1000;
+    return a&&b&&c||`virhe kumpu ${a} [${bad.join(' ')}] usva ${b} (${full.toFixed(2)}) matto ${c}`;});
+  t('v2.48 sakeampi sumu ja aamumatto: sumun näkyvyys lyhyempi, aamumatto usein muina päivinä ja väistyy aamupäivällä',()=>{
+    const pv=dayN,v=[];for(let n=1;n<=300;n++){dayN=n;v.push(deckDay());}dayN=pv;deckDayN=-1;
+    const m=v.filter(d=>d&&d.m),off=v.filter(d=>!d||d.m).length,k=m.length/Math.max(1,off);
+    const a=WEATHERS.sumu.fog===.15&&DECK_MORN_P===.7&&k>.55&&k<.85&&m.every(d=>Math.abs(d.c-d.w/2-.03)<1e-9&&d.c+d.w/2>=.269&&d.c+d.w/2<=.361&&d.op>=.35&&d.op<=.65);
+    const d=m[0],pd=dayT;deckDayP=d;deckDayN=dayN;dayT=.15;deckTick();const morn=deckRnd;dayT=.45;deckTick();const noon=deckRnd;dayT=pd;deckDayN=-1;deckTick();
+    const b=Math.abs(morn-d.op)<.01&&noon===0;
+    return a&&b||`virhe arvot ${a} (${k.toFixed(2)}) ajoitus ${b} ${morn} ${noon}`;});
+  t('v2.44 satunnainen pilvimatto: noin 60 % päivistä (v2.48), peitto 0,3–0,65 (läpinäkyvämpi kuin myrskyllä), tulee ja menee päivän aikana, himmentää säteet',()=>{
+    const pv=dayN,v=[];for(let n=1;n<=300;n++){dayN=n;v.push(deckDay());}dayN=pv;deckDayN=-1;
+    const on=v.filter(d=>d&&!d.m),share=on.length/300,a=share>.48&&share<.72&&on.every(d=>d.op>=.3&&d.op<=.65&&d.w>=.25&&d.w<=.6);
+    const d=on[0],pd=dayT;deckDayP=d;deckDayN=dayN;dayT=d.c;deckTick();const mid=deckRnd;dayT=d.c-d.w/2-.1;deckTick();const out=deckRnd;dayT=pd;deckDayN=-1;deckTick();
+    const b=Math.abs(mid-d.op)<.01&&out===0&&/dop=Math\.max\(deck\*\.92,deckRnd\)/.test(updateClouds.toString())&&/dk=1-deckRnd\*\.9/.test(updateSky.toString());
+    return a&&b||`virhe jakauma ${a} (${share.toFixed(2)}) ajoitus ${b}`;});
+  t('v2.43 Hautakumpu: kumpu jatkuu portin taakse (v2.49: lovi kivimassalle), portin kohta ja edusta ennallaan, kieleke nurmen värinen',()=>{
+    const L=LOC.barrow,ex=L.x+10.5,ez=L.z,base=x=>terrainH(x,ez);
+    const a=barrowMound(ex-4.5,ez)>=BARROW_EXT*.95&&barrowMound(ex-1,ez)===0&&barrowMound(ex,ez)===0&&barrowMound(ex+2,ez)===0&&barrowMound(ex-2.5,ez+8)===0;
+    const b=typeof heightFn==='function'&&/barrowMound\(x,z\)/.test(heightFn.toString());
+    return a&&b||`virhe kieleke ${a} korkeus ${b} (${barrowMound(ex-2.5,ez).toFixed(2)}/${barrowMound(ex,ez).toFixed(2)})`;});
+  t('v2.43 savut: yksi instanssipiirto (ei spritejä), porteilla ja arkkukivillä ilmestyvät vasta lähellä (28 m → täysi 18 m, 80 %); Extra-grafiikan Ultra-savut palauttaa vanhan',()=>{
+    const a=SMK_R0<=30&&SMK_R1<SMK_R0&&SMK_K===.8&&SMK.m.material.isShaderMaterial&&SMK.N===MIST.length+STEAM.length&&typeof smkDraw==='function';
+    const b=SET_DEF.smokeUltra===false&&SET_PAGES.xgfx.includes('smokeUltra')&&!PRESETS.some(p=>'smokeUltra' in p);
+    const src=updateMist.toString(),c=/R0=ult\?60:SMK_R0/.test(src)&&/if\(!ult\)smkDraw\(\)/.test(src)&&/SMK_K\*sstep\(SMK_R0,SMK_R1/.test(src);
+    return a&&b&&c||`virhe ${a} ${b} ${c}`;});
+  t('v2.43 liekit aina ylöspäin: käsisoihtu ja tulinuoli kallistettuina → liekin akseli pystyssä',()=>{
+    const g=makeHeld('soihtu'),par=new THREE.Group();par.add(g);scene.add(par);par.rotation.set(.9,.4,-.7);par.position.set(P.pos.x,P.pos.y+1,P.pos.z);flameUpTick();
+    const up=f=>{const q=new THREE.Quaternion();f.getWorldQuaternion(q);return new THREE.Vector3(0,1,0).applyQuaternion(q).y;};
+    const tipW=g.localToWorld(new THREE.Vector3(0,0,.62)),f0=g.userData.flame[0],fp=new THREE.Vector3();f0.getWorldPosition(fp);
+    const a=FLAME_UP.has(g)&&g.userData.flame.slice(0,3).every(f=>up(f)>.999)&&Math.abs(fp.x-tipW.x)<.02&&Math.abs(fp.z-tipW.z)<.02&&fp.y>tipW.y;
+    scene.remove(par);FLAME_UP.delete(g);
+    const b=/FLAME_UP\.add\(m\)/.test(shootArrow.toString());
+    return a&&b||`virhe soihtu ${a} nuoli ${b}`;});
+  t('v2.42 varjon vaalennus pääosin varjostimessa (low poly -kolmioiden sävytys säilyy): 30 % tasaisena valona, loput mix(s,1,L), perussäde säilyy',()=>{
+    const g=window.__game,pv=[dayT,openK];dayT=.5;openK=1;g.update(1/30);
+    const L=Math.floor(sun.shadow.radius/1000)/100,base=sun.shadow.radius-Math.floor(sun.shadow.radius/1000)*1000,k=1-shDepth,f=SH_FILL,Le=k*(1-f)/(1-k*f);
+    const a=HM_OK&&Math.abs(L-Le)<.011&&Math.abs(base-SUN_SH_BASE)<1e-6&&L>.2&&f>0&&f<=.4;
+    /* tasainen osuus vain SH_FILL (ennen koko k) */
+    const b=/sun\.intensity\*=1-k\*f/.test(updateEnvironment.toString())&&shAmb.intensity>0;
+    dayT=pv[0];openK=pv[1];g.update(1/30);return a&&b||`virhe ${a} ${b} L ${L} perus ${base}`;});
+  t('v2.41 kaukaiset puut kevyemmin: kaukomalli jakaa instanssipuskurin, sama muoto (vähemmän kolmioita), täysi malli ennallaan; esiasetukset',()=>{
+    const tri=g=>g.attributes.position.count/3,a=tri(NGEO.koivu)===388&&tri(NGEO_LOW.koivu)<tri(NGEO.koivu)*.6&&tri(NGEO.manty)===224&&tri(NGEO_LOW.manty)<150&&tri(NGEO_LOW.aarnipuu)<tri(NGEO.aarnipuu);
+    const im=nodeIM.koivu.find(m=>m.userData.low),b=!!im&&im.userData.low.instanceMatrix===im.instanceMatrix&&im.userData.low.material===im.material;
+    const c=SET_DEF.treeLod===80&&PRESETS[0].treeLod===60&&PRESETS[PRESETS.length-1].treeLod===140&&SET_PAGES.gfx.includes('treeLod');
+    /* kaukana oleva ruutu kaukomalliin, lähellä täysi */
+    const pv=SET.treeLod;SET.treeLod=80;updateChunkVis();let d=true;for(const m of CHUNK_IMS){const L=m.userData.low;if(!L||!m.userData.on)continue;const h=CHS/2,ex=Math.max(0,Math.abs(camera.position.x-m.userData.cx)-h),ez=Math.max(0,Math.abs(camera.position.z-m.userData.cz)-h),far=ex*ex+ez*ez>80*80;
+      if(far!==L.visible||far===m.visible||L.count!==m.count)d=`ruutu ${m.userData.k} far ${far} low ${L.visible} full ${m.visible}`;}SET.treeLod=pv;updateChunkVis();
+    return a&&b&&c&&d===true||`virhe mallit ${a} puskuri ${b} asetukset ${c} vaihto ${d}`;});
+  t('v2.41 varjojen optimointi: ruudut eivät heitä varjoa, varjomallit vain varjopassissa (ei pääpiirrossa), tulille omat; yksinkertaiset varjot; maaston taakse jäävät pois',()=>{
+    const pv=[SET.shOpt,SET.shLod];SET.shOpt=true;SHP.t=-1e9;updateChunkVis();
+    const a=CHUNK_IMS.filter(m=>SHP.near[m.userData.type]).every(m=>!m.castShadow&&(!m.userData.low||!m.userData.low.castShadow))&&CHUNK_IMS.filter(m=>!SHP.near[m.userData.type]).every(m=>m.castShadow===m.userData.cs0);
+    const all=SH_TYPES.flatMap(t=>[SHP.near[t],SHP.far[t],SHP.fire[t]]),b=all.every(m=>m.visible===false&&m.castShadow&&!m.frustumCulled);
+    /* varjopassin kääre näyttää auringon mallit vain sen ajan */
+    let seen=null;const o=renderer.renderBufferDirect;renderer.renderBufferDirect=function(c,s,g,m,obj,gr){if(obj.userData.shp)seen=seen||obj;return o.apply(this,arguments);};
+    try{renderer.render(scene,camera);}finally{renderer.renderBufferDirect=o;}const c=all.every(m=>m.visible===false);
+    const sh=renderer.shadowMap.enabled&&sun.castShadow,d=!sh||SHP.n>0;
+    const e=SH_TYPES.includes('kuusi')&&!!NGEO_SHF.koivu&&NGEO_SHF.koivu.attributes.position.count<NGEO.koivu.attributes.position.count/2&&typeof shpSeen==='function'&&SH_OCC>=25&&SH_EYE>0;
+    const f=SET_DEF.shOpt===true&&SET_DEF.shLod===40&&PRESETS[PRESETS.length-1].shLod===90&&SET_PAGES.gfx.includes('shOpt')&&SET_PAGES.gfx.includes('shLod');
+    /* pois kytkettynä alkuperäiset varjoasetukset */
+    SET.shOpt=false;updateChunkVis();const g2=CHUNK_IMS.every(m=>m.castShadow===m.userData.cs0);[SET.shOpt,SET.shLod]=pv;updateChunkVis();
+    return a&&b&&c&&d&&e&&f&&g2||`virhe ruudut ${a} mallit ${b} piilossa ${c} varjoja ${d}(${SHP.n}) yksinkertaiset ${e} asetukset ${f} pois ${g2}`;});
+  t('v2.41 kaukaiset rakennukset yhdistetään (ulkoasu sama), lähellä puretaan; tulet, säiliöt, ovet ja lasit ennallaan; säteiden pikseliluku taustalla',()=>{
+    const pv=P.pos.clone(),bx0=P.pos.x+300,bz0=P.pos.z,y=terrainH(bx0,bz0),ps=[];for(let i=0;i<3;i++){ps.push(addPiece('lattia',bx0+i*G,y,bz0,0));ps.push(addPiece('seina',bx0+i*G,y,bz0-G/2,0));}
+    ps.push(addPiece('ovi',bx0-G/2,y,bz0,2));ps.push(addPiece('arkku',bx0+G,y,bz0,0));
+    let ok=true;try{for(let i=0;i<6;i++)bmTick();const k=Math.floor(bx0/BM_CELL)+','+Math.floor(bz0/BM_CELL),c=[...BMC.entries()].find(([kk,cc])=>cc.pcs.includes(ps[0]));
+      if(!c)ok='ei yhdistetty';else{const pc=c[1].pcs;if(pc.some(q=>q.t==='ovi'||q.t==='arkku'))ok='ovi/arkku yhdistetty';const hidMesh=c[1].hid.every(o=>o.visible===false);if(!hidMesh)ok='piilotus';
+        const ray=new THREE.Raycaster(new THREE.Vector3(bx0,y+6,bz0),new THREE.Vector3(0,-1,0));if(!ray.intersectObjects(pieceRoots,true).length)ok='säde ei osu';
+        P.pos.set(bx0,y,bz0);bmTick();if(BMC.has(c[0]))ok='lähellä ei purettu';if(c[1].hid.some(o=>o.visible===false))ok='näkyvyys ei palannut';}}catch(e){ok=e.message;}
+    for(const q of ps)if(q)removePiece(q);P.pos.copy(pv);bmTick();
+    const r=/fenceSync/.test(raysPeek.toString())&&/getSyncParameter/.test(raysPeek.toString())&&typeof raysEval==='function';
+    const al=/_camDir\.set\(/.test(updateCamera.toString());
+    return ok===true&&r&&al||`virhe yhdistys ${ok} säteet ${r} kamera ${al}`;});
+  t('v2.40 säteet: 15 % läpinäkyvämmät, 18 epäsäännöllistä elävää sädettä, harvemmin; peitto suunnittain – kokonaan peitettynä kaikki pois',()=>{
+    const a=RAYS_A===.136&&RAYS.list.length===18&&RAYS.list.every(q=>q.ws>0&&q.as>0&&q.ls>0&&q.fs>0&&q.w1>0&&q.w2>0);
+    const src=drawRays.toString(),b=/RAYS_A\*K\*q\.v\*q\.d\*fl/.test(src)&&!/softP/.test(src)&&/sstep\(\.5,\.9,/.test(src);
+    /* peitto: kaikki suunnat 0 → säteiden q.d → 0; puolet → vain sen puolen säteet */
+    const pv=[...RAYS.dir],qs=RAYS.list.map((q,i)=>({d:1,a:i/18*TAU+.1}));let c=true;
+    try{RAYS.dir.fill(0);for(let i=0;i<20;i++)for(const q of qs)rayOcc(q,q.a,1/30);const all0=qs.every(q=>q.d<.01);RAYS.dir.fill(1);for(const q of qs)q.d=1;
+      for(let b=0;b<4;b++)RAYS.dir[b]=0;for(let i=0;i<20;i++)for(const q of qs)rayOcc(q,q.a,1/30);const lo=qs.filter(q=>q.d<.05).length,hi=qs.filter(q=>q.d>.95).length;
+      const fast=(()=>{const q={d:1};RAYS.dir.fill(0);for(let i=0;i<6;i++)rayOcc(q,0,1/60);return q.d<.15;})();
+      c=all0&&lo>0&&hi>0&&lo+hi===18&&fast||`kaikki ${all0} osa ${lo}/${hi} nopea ${fast}`;}catch(e){c=e.message;}
+    RAYS.dir.set(pv);
+    return a&&b&&c===true||`virhe ${a} ${b} ${c}`;});
+  t('v2.39 auringon hehku pienempi ja läpinäkyvämpi (sprite 90, voimakkuus ×0,45, taivaan hehku kapeampi)',()=>{
+    const a=SUN_GLOW_S===90&&SUN_GLOW_K===.45&&sunGlow.scale.x===90&&/pow\(s,160\.\)\*\.3\+pow\(s,24\.\)\*\.07/.test(skyDome.material.fragmentShader)&&/SUN_GLOW_K\*\(/.test(updateSky.toString());
+    return a||'virhe hehkun arvot';});
+  t('v2.38 taivaan hehku pyöreä (suunta normalisoidaan pikselissä), pilvissä syvyys (pohja tummempi, ei puhtaan valkoinen), kovat säteet katoavat esteen takana heti, pehmeät jäävät',()=>{
+    const a=/vec3 d=normalize\(vD\)/.test(skyDome.material.fragmentShader)&&/dot\(d,normalize\(uSun\)\)/.test(skyDome.material.fragmentShader);
+    const cg=CLOUDS[0].geometry,p=cg.attributes.position.array,c=cg.attributes.color.array;let lo=1e9,hi=-1e9,il=0,ih=0;for(let i=1;i<p.length;i+=3){if(p[i]<lo){lo=p[i];il=i-1;}if(p[i]>hi){hi=p[i];ih=i-1;}}
+    const b=c[il]<c[ih]*.85&&cCloudDay.r<.95&&/multiplyScalar\(\.26\*light\+\.1\)/.test(updateClouds.toString());
+    const cc=/R\.occP\*sstep/.test(drawRays.toString());   /* v2.40: kovat/pehmeät säteet korvattu suunnittaisella peitolla (oma rivi) */
+    return a&&b&&cc||`virhe hehku ${a} pilvet ${b} säteet ${cc}`;});
+  t('v2.37 säteet vahvat koko päivän (ei keskipäivän hiipumista), hiipuvat laskiessa; päivävahvuus 0,3–1 ilman tyhjiä päiviä; este piilottaa; tyhjä pikseliluku ei piilota',()=>{
+    const pv=dayN,v=[];for(let n=1;n<=200;n++){dayN=n;v.push(raysDay());}dayN=pv;raysDayN=-1;
+    const a=v.every(x=>x>=.3&&x<=1)&&new Set(v.map(x=>x.toFixed(2))).size>40;
+    const env=updateSky.toString(),b=/sstep\(-\.04,\.35,el\)\*sunK\*\(1-indoorK\)\*\(1-aarniK\*\.7\)/.test(env)&&/RAYS\.k=kb\*raysDay\(\)\*dk/.test(env)&&!/RAYS_NOON/.test(env)&&/RAYS\.pix/.test(env);
+    const c=/sstep\(\.5,\.9,/.test(drawRays.toString())&&/readPixels/.test(raysPeek.toString())&&/zero===n/.test(raysEval.toString());   /* v2.38: tasoitus siirtyi occP:hen; v2.41 arvio raysEval */
+    let d=true;try{raysPeek();}catch(e){d=e.message;}
+    return a&&b&&c&&d===true||`virhe päivät ${a} aika ${b} harvinaisuus/peitto ${c} ${d}`;});
+  t('v2.35 auringonsäteet näytöllä (ei 3D-tasoja → ei neliötä), kääntyvät kameran mukana; linssiheijastus vain Ultra; Low ilman säteitä',()=>{
+    const a=typeof sunShafts==='undefined'&&!!document.getElementById('raysC')&&RAYS.list.length===18&&new Set(RAYS.list.map(q=>q.k.toFixed(3))).size>=15&&RAYS.list.some(q=>q.k<0)&&RAYS.list.some(q=>q.k>0);   /* eri kääntymisnopeudet */
+    const b=SET_DEF.flare===false&&PRESETS[0].shafts===false&&PRESETS[PRESETS.length-1].flare===true&&PRESETS.slice(0,-1).every(p=>p.flare===false)&&SET_PAGES.gfx.includes('flare');
+    let c=true;try{const pv=[SET.shafts,SET.flare,RAYS.k];SET.shafts=true;SET.flare=true;RAYS.k=1;drawRays(1/30);[SET.shafts,SET.flare,RAYS.k]=pv;}catch(e){c=e.message;}
+    return a&&b&&c===true||`virhe ${a} ${b} ${c}`;});
+  t('v2.34 varjot: metsissä 20 % ja avoimilla 40 % vaaleammat, keskipäivällä syvyys ×0,85 ja pimeällä ×1,15',()=>{
+    const g=window.__game,pv=[dayT,openK,P.pos.clone()],r={};
+    const run=(t,ok)=>{dayT=t;openK=ok;g.update(1/30);return shDepth;};   /* openK liukuu vain vähän yhdessä ruudussa */
+    const noonO=run(.5,1),nightF=run(0,0),noonF=run(.5,0);dayT=pv[0];openK=pv[1];P.pos.copy(pv[2]);g.update(1/30);
+    const near=(a,b)=>Math.abs(a-b)<.02,a=near(noonO,.6*.85),b=near(nightF,.8*1.15),c=near(noonF,.8*.85);
+    return FOREST_SH===.2&&SH_TOD===.15&&a&&b&&c||`virhe avoin keskipäivä ${noonO.toFixed(3)} metsä yö ${nightF.toFixed(3)} metsä keskipäivä ${noonF.toFixed(3)}`;});
+  t('v2.33 raahaus omaan ruutuun (pieni liike napsautuksessa) säilyttää valinnan → oikea klikkaus toiseen ruutuun puolittaa',()=>{
+    const hid=['menuBg','loadScr'].map(id=>document.getElementById(id)).filter(Boolean).map(e=>[e,e.style.display]);for(const [e] of hid)e.style.display='none';
+    inv.fill(null);inv[0]={id:'puu',n:40,q:1};if(openPanel!=='inv')togglePanel('inv');selSlot=-1;selHalf=false;renderInv();
+    const sl=i=>document.querySelectorAll('#invGrid .slot')[i],c=i=>{const r=sl(i).getBoundingClientRect();return{clientX:r.left+r.width/2,clientY:r.top+r.height/2};};
+    slotDrag={g:'i',i:0,x:0,y:0,on:true,half:false};selectFor('i',0,false);window.dispatchEvent(new MouseEvent('mouseup',{bubbles:true,button:0,...c(0)}));
+    const a=selSlot===0;dragEat=false;sl(5).dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true,button:2,...c(5)}));
+    const b=inv[0]&&inv[0].n===20&&inv[5]&&inv[5].n===20;selSlot=-1;selHalf=false;closePanels();for(const [e,d] of hid)e.style.display=d;return a&&b||`virhe valinta ${a} puolitus ${b}`;});
+  t('v2.33 avoimissa biomeissa varjot 40 % vaaleammat (osa auringosta tasaiseksi valoksi, hidas häivytys), metsissä ennallaan',()=>{
+    const a=OPEN_SH===.4&&OPEN_BIOMES.has('meadow')&&OPEN_BIOMES.has('beach')&&!OPEN_BIOMES.has('forest')&&!OPEN_BIOMES.has('koivu')&&!OPEN_BIOMES.has('aarni')&&!OPEN_BIOMES.has('kangas');
+    const b=typeof shAmb!=='undefined'&&shAmb.isAmbientLight&&scene.children.includes(shAmb);
+    const src=updateEnvironment.toString(),c=/openK=lerp\(openK,OPEN_BIOMES\.has\(zoneAt\(P\.pos\.x,P\.pos\.z\)\)\?1:0,Math\.min\(1,dt\*OPEN_RATE\)\)/.test(src)&&/sun\.shadow\.radius=SUN_SH_BASE\+1000\*Math\.round\(L\*100\)/.test(src)&&OPEN_RATE<1;   /* v2.42: vaalennus varjostimessa */
+    return a&&b&&c||`virhe ${a} ${b} ${c}`;});
+  t('v2.32 lukituksessa oikea vapautus tekee contextmenun itse (valitse + oikea klikkaus ruutuun = puolitus, Shift = slider)',()=>{
+    const x=new XMLHttpRequest();x.open('GET','js/input.js?'+Date.now(),false);x.send();const src=x.responseText;
+    const s1=/if\(e\.button===2\)vcFire\('contextmenu',e,null,vcAt\(\)\)/.test(src),s2=/if\(ty==='contextmenu'\)return;/.test(src);
+    const hid=['menuBg','loadScr'].map(id=>document.getElementById(id)).filter(Boolean).map(e=>[e,e.style.display]);for(const [e] of hid)e.style.display='none';   /* peittävät paneelin (KORJAUKSET 52) */
+    const pv=locked;inv.fill(null);inv[0]={id:'puu',n:40,q:1};if(openPanel!=='inv')togglePanel('inv');locked=true;vcSync();
+    const sl=i=>document.querySelectorAll('#invGrid .slot')[i],at=i=>{const r=sl(i).getBoundingClientRect();VC.x=r.left+r.width/2;VC.y=r.top+r.height/2;vcMove(0,0,true);};
+    const pick=i=>{selSlot=-1;renderInv();at(i);vcFire('click',{button:0,buttons:0,isTrusted:true});};
+    const rup=(i,sh)=>{at(i);const e={button:2,buttons:0,shiftKey:!!sh,isTrusted:true};vcFire('mouseup',e);vcFire('contextmenu',e,null,vcAt());};   /* = VC:n mouseup-polku */
+    pick(0);rup(5,false);const a=!!(inv[0]&&inv[0].n===20&&inv[5]&&inv[5].n===20);
+    pick(0);rup(6,true);const b=SPL.on;splitClose();selSlot=-1;selHalf=false;
+    locked=pv;vcSync();closePanels();for(const [e,d] of hid)e.style.display=d;return s1&&s2&&a&&b||`virhe lähde ${s1} ${s2} puolitus ${a} slider ${b}`;});
+  t('v2.31 poimintaääni: hieman kimeämpi (×1,1), sävel ±20 %, tumma alipäästö 2,4 kHz',()=>{let lo=9,hi=0;for(let i=0;i<400;i++){const q=PL_PICK();lo=Math.min(lo,q.p);hi=Math.max(hi,q.p);}
+    const q=PL_PICK(),a=q.lp===2400&&q.v===.55&&lo<.92&&lo>=.88-1e-9&&hi>1.28&&hi<=1.32+1e-9,b=/o\.lp\)\{const lf=a\.createBiquadFilter\(\);lf\.type='lowpass'/.test(plSnd.toString());
+    return a&&b||`virhe ${a} ${b} sävel ${lo.toFixed(3)}…${hi.toFixed(3)}`;});
+  t('v2.30 Shift ratkaistaan vapautus-/klikkaushetkellä (oikea raahaus myös Shift pohjassa), jumiin jäänyt näppäintila ei estä puolitusta, Siirrä ei sulje reppua, poiminta lyhyempi ja hiljaisempi',()=>{
+    const a=/e\.shiftKey&&e\.button===0/.test(slotUX.toString())&&/shiftKey:e&&e\.isTrusted\?!!e\.shiftKey/.test(vcInit.toString());
+    keys.ShiftLeft=true;window.dispatchEvent(new Event('blur'));const b=!keys.ShiftLeft;
+    const mb=document.getElementById('menuBg'),md=mb&&mb.style.display,ls=document.getElementById('loadScr'),ld=ls&&ls.style.display;if(mb)mb.style.display='none';if(ls)ls.style.display='none';
+    const sv=inv.slice(),op=openPanel;let c=false,d=false;
+    try{inv.fill(null);inv[0]={id:'puu',n:10,q:1};if(openPanel!=='inv')togglePanel('inv');const slot=i=>document.querySelectorAll('#invGrid .slot')[i];
+      const ME=(t,type,o)=>{const r=t.getBoundingClientRect();t.dispatchEvent(new MouseEvent(type,Object.assign({bubbles:true,cancelable:true,view:window,clientX:r.left+r.width/2,clientY:r.top+r.height/2},o||{})));};
+      keys.ShiftLeft=true;ME(slot(0),'contextmenu',{button:2});ME(slot(4),'contextmenu',{button:2});c=!SPL.on&&inv[4]&&inv[4].n===5;keys.ShiftLeft=false;selSlot=-1;selHalf=false;renderInv();
+      ME(slot(0),'contextmenu',{button:2,shiftKey:true});ME(slot(5),'contextmenu',{button:2,shiftKey:true});const o=SPL.on,bt=document.querySelector('#splitDlg .spOk');if(!bt)throw new Error('slider ei auennut');
+      ME(bt,'mousedown');ME(bt,'mouseup');ME(bt,'click');d=o&&openPanel==='inv'&&!SPL.on&&inv[5]&&inv[5].n>0;}
+    finally{splitClose();closePanels();inv.splice(0,inv.length,...sv);if(op)togglePanel(op);if(mb)mb.style.display=md;if(ls)ls.style.display=ld;keys.ShiftLeft=false;}
+    const M=manJ(),e=M['p/kaytto/poiminta_0'],f=!!e&&e.dur<=.31&&PL_PICK().v===.55&&/PL_PICK\(\)/.test(doMeleeHit.toString()+interact.toString()+updateDrops.toString());
+    return a&&b&&c&&d&&f||`virhe koodi ${a} blur ${b} puolitus ${c} siirrä ${d} poiminta ${f}`;});
+  t('v2.29 puun narina täyspitkä (~8 s), loppuu maahan osuessa (until = fallDur), harvoin aloitus keskeltä 0–4 s',()=>{const M=manJ(),e=M['p/osumat/puu_kaatuu_0'];
+    const a=!!e&&e.dur>6,src=plSnd.toString(),b=/o\.until&&o\.fit&&Math\.random\(\)<\.25/.test(src)&&/Math\.min\(4,room\)/.test(src)&&/src\.stop\(e\+\.02\)/.test(src);
+    const c=/until:fallDur\(n\),fit:1/.test(doMeleeHit.toString())&&/dur=fallDur\(n\)/.test(fallTree.toString())&&Math.abs(fallDur({s:1,type:'kuusi'})-1.3)<1e-9&&Math.abs(fallDur({s:1,type:'aarnipuu'})-2.6)<1e-9;
+    return a&&b&&c||`virhe ääni ${a} (${e&&e.dur}) toisto ${b} kytkentä ${c}`;});
+  t('v2.29 Shift + oikea → siirtoslider (0…pino, 1–9 heti, rata + Siirrä, napsautus ohi puolittaa), siirto- ja puolitusäänet',()=>{
+    const mb=document.getElementById('menuBg'),md=mb&&mb.style.display,ls=document.getElementById('loadScr'),ld=ls&&ls.style.display;if(mb)mb.style.display='none';if(ls)ls.style.display='none';   /* testiympäristön peitot pois (pelissä piilossa) */const sv=inv.slice(),op=openPanel,sounds=[],o0=plSnd;plSnd=(g,ev)=>{sounds.push(ev);return 1;};
+    const ME=(t,type,o)=>{const r=t.getBoundingClientRect(),x=o&&o.x!=null?o.x:r.left+r.width/2,y=o&&o.y!=null?o.y:r.top+r.height/2;t.dispatchEvent(new MouseEvent(type,Object.assign({bubbles:true,cancelable:true,view:window,clientX:x,clientY:y},o||{})));};
+    const r=[];let dbg='';try{inv.fill(null);inv[0]={id:'puu',n:40,q:1};if(openPanel!=='inv')togglePanel('inv');const slot=i=>document.querySelectorAll('#invGrid .slot')[i];
+      {const q=slot(5).getBoundingClientRect(),el=document.elementFromPoint(q.left+q.width/2,q.top+q.height/2);const c=[];for(let x=el;x&&c.length<3;x=x.parentElement)c.push(x.tagName+'#'+x.id+'.'+x.className);dbg=`${state} ${openPanel} [${c.join(' < ')}]`;}
+      ME(slot(0),'mousedown',{button:2,buttons:2});ME(slot(5),'mousemove',{buttons:2});ME(slot(5),'mouseup',{button:2,shiftKey:true});r.push(SPL.on&&SPL.v===20&&SPL.n===40);dragEat=false;
+      document.dispatchEvent(new KeyboardEvent('keydown',{code:'Digit7',key:'7',bubbles:true}));r.push(!SPL.on&&inv[0].n===33&&inv[5].n===7);
+      ME(slot(0),'mousedown',{button:2,buttons:2});ME(slot(6),'mousemove',{buttons:2});ME(slot(6),'mouseup',{button:2,shiftKey:true});dragEat=false;const o2=SPL.on;
+      ME(document.querySelector('#invGrid'),'mousedown',{x:3,y:3});ME(document.body,'click',{x:3,y:3});r.push(o2&&!SPL.on&&inv[0].n===17&&inv[6].n===16);
+      ME(slot(0),'contextmenu',{button:2});ME(slot(7),'contextmenu',{button:2,shiftKey:true});const o3=SPL.on,tr=document.querySelector('#splitDlg .spTrack'),rr=tr.getBoundingClientRect();
+      ME(tr,'mousedown',{button:0,x:rr.left+rr.width*.25});ME(tr,'mouseup',{x:rr.left+rr.width*.25});ME(document.querySelector('#splitDlg .spOk'),'click');r.push(o3&&inv[7]&&inv[7].n===4&&inv[0].n===13);
+      ME(slot(0),'mousedown',{button:2,buttons:2});ME(slot(9),'mousemove',{buttons:2});ME(slot(9),'mouseup',{button:2});dragEat=false;r.push(!SPL.on&&inv[9]&&inv[9].n===6);
+      r.push(sounds.includes('siirto')&&sounds.includes('puolitus'));}
+    finally{plSnd=o0;splitClose();closePanels();inv.splice(0,inv.length,...sv);if(op)togglePanel(op);if(mb)mb.style.display=md;if(ls)ls.style.display=ld;dragEat=false;}
+    return r.every(Boolean)||'virhe '+r.map(v=>v?1:0).join('')+' '+dbg;});
+  t('v2.28 äänierä osa 2 (22 ääntä) + puun tömähdys maahan, reppu kiinni = sama ääni, oman arkun sulkemisääni',()=>{
+    const M=manJ(),need=['p/jousi/laukaus_0','p/jousi/veto_0','p/kaytto/arkku_auki_2','p/kaytto/syominen_1','p/lyonnit/huitaisu_2','p/lyonnit/torjunta_0','p/osumat/puu_kaatuu_0','p/osumat/kivi_hajoaa_0'];
+    const miss=need.filter(n=>!M[n]||!M[n].f.startsWith('pelaaja_2_toiminnot/valmiit/'));if(miss.length)return 'manifestista puuttuu '+miss.join(', ');
+    const a=/'puu_tomahdys'/.test(fallTree.toString())&&/'arkku_kiinni'/.test(closePanels.toString());
+    const calls=[],orig=plSnd,cc=curChest,op=openPanel;plSnd=(g,ev)=>{calls.push(g+'/'+ev);return 1;};
+    try{openPanel='inv';closePanels();openPanel='chest';curChest={t:'arkku',data:{items:[]}};closePanels();openPanel='chest';curChest={found:true,data:{items:[]}};plSnd=(g,ev)=>{calls.push(g+'/'+ev);return ev==='sulje'?1:0;};closePanels();}
+    finally{plSnd=orig;curChest=cc;openPanel=op;}
+    const b=calls[0]==='valikot/reppu'&&calls[1]==='kaytto/arkku_kiinni'&&calls[2]==='valikot/sulje'&&calls.length===3;
+    return a&&b||`virhe koukut ${a} kutsut ${calls.join(',')}`;});
   t('v2.27 Aarnimetsän askel ±10 % ja sävel ±9 %; oksa: astuessa oksan päälle normaali ääni, Aarnimetsässä satunnaisesti tosi hiljaa, 2 s tauko',()=>{
     const O=nodes.find(n=>n.type==='oksa'&&n.alive!==false);if(!O)return 'ei oksia';const a=plNodeAt('oksa',O.x,O.z,.3)&&!plNodeAt('oksa',O.x+3,O.z+3,.3);
     const calls=[],orig=plSnd,ok0=CRE.ok,sv=[P.pos.clone(),P.onGround,P.vel.clone(),P.swim,P.inDun,P.walkPh];plSnd=(g,ev,o)=>{calls.push([g+'/'+ev,o&&o.v]);return 1;};CRE.ok=true;

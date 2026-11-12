@@ -13,9 +13,9 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.27)
+## Nykytila (päivitetty v2.49)
 
-- **Versio 2.27**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) ja v2.24 (äänitasot, juominen, pää alas, pelaajan toimintoäänet) ja v2.25 (sudet hiljemmaksi, Aarnipuun törmäys, karhun syöksy, pelaajan äänet osat 1–3) ja v2.26 (pensasäänet, askeleet −20 %, terveyspalkkien näkyvyys) ja v2.27 (Aarnimetsän askel, oksat) PR #34:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
+- **Versio 2.49**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) ja v2.24 (äänitasot, juominen, pää alas, pelaajan toimintoäänet) ja v2.25 (sudet hiljemmaksi, Aarnipuun törmäys, karhun syöksy, pelaajan äänet osat 1–3) ja v2.26 (pensasäänet, askeleet −20 %, terveyspalkkien näkyvyys) ja v2.27 (Aarnimetsän askel, oksat) – **PR #34 (v2.23–v2.27) on yhdistetty.** v2.28 (pelaajan äänierä osa 2: 22 ääntä, puun tömähdys, reppu kiinni, arkun sulkeminen) ja v2.29 (narinan ajoitus, siirto- ja puolitusäänet, Shift-siirtoslider) ja v2.30 (sliderin korjaukset, poimintaääni) ja v2.31 (poimintaäänen sävy) ja v2.32 (valitse + oikea klikkaus puolittaa myös hiiren lukituksessa) ja v2.33 (valinta säilyy pienessä liikkeessä, avointen biomien vaaleammat varjot) ja v2.34 (metsien varjot 20 % vaaleammat, vuorokauden vaihtelu ±15 %) ja v2.35 (näytön auringonsäteet, linssiheijastus) ja v2.36 (säteiden ajoitus, päiväkohtaisuus, peitto) ja v2.37 (säteet takaisin koko päiväksi) ja v2.38 (pyöreä auringon hehku, pilvien syvyys, kovat/pehmeät säteet) ja v2.39 (pienempi auringon hehku) ja v2.40 (elävät säteet, peitto suunnittain) ja v2.41 (suorituskykyoptimoinnit: puiden LOD, varjomallit, rakennusten yhdistäminen) ja v2.42 (low poly -sävytys säilyy varjojen vaalennuksessa) ja v2.43 (hautakummun kieleke, savujen optimointi, liekit pystyyn) ja v2.44 (satunnainen pilvimatto) ja v2.45 (terävät soihtuvarjot Extra-grafiikkaan) ja v2.46 (repun vilkkuminen/puolitus, pilvet, hukkumisen tarkistus) ja v2.47 (pilvipäivät, pilvimatto 50 %, heijastuksen päivävaihtelu, pilvet ylemmäs) PR #35:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -244,6 +244,259 @@ koukku tiedostoääneen – älä koskaan tee ääntä itse. Puuttuva ääni = h
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.49 (Hautakummun suu, nummen usva, pehmeä pilvimatto – käyttäjän pyynnöt)
+- **Hautakumpu maahan (KORJAUKSET 58):** `stoneCol`/`gmin` (landmarks.js) – portin pylväät, sivukivet, portaat, tulimaljat, riimulaatat ja
+  kummun pystykivet ulottuvat matalimman nurkan alle. Kumpuun lovi portin taakse (`barrowMound`: × (1 − sstep(6,4, 8, bdx)·sstep(4,6, 3,2, |bdz|))),
+  lovessa kivimassa 3,4 × 6,6 × 7,4 m + 6 kiveä päällä → aukosta ei näe läpi eikä takaa näy mustaa.
+- **Luolakäytävä `barrowCave`:** aukko = näkymätön ikkunataso (colorWrite pois, stencil 1, syvyystesti päällä → pelaaja/maasto edessä peittää).
+  Sen läpi piirretään (stencil = 1, ei syvyystestiä) 9 m käytävä, joka kapenee 3,2 → 2,1 m ja laskee 1,3 m (kivitekstuuri, lämmin hehku
+  suulla verteksiväreinä), ja `CAVE.N` = 7 mustaa levyä peitolla 0,3 poikkileikkauksen kokoisina → pimeys syvenee. Kupera käytävä → levyt
+  ovat oikein ilman syvyyttä. Valoisuus `barrowCaveTick(light)` (environment). Ryhmä `noMerge`, läpinäkyvät eivät yhdisty.
+- **Kalmanummen usva:** `moorK` → `moorDay()` (päivän numerosta: `MOOR_P` = 50 % täysi 1, muuten 0,3–0,55), nousu hitaasti (dt × 0,13 ≈ 8 s).
+  Sumu: near → 4 m ja far → `MOOR_FAR` 80 m (lerp moorK:lla, vain lyhentää; Ultran pitkällä piirtoetäisyydellä prosenttikerroin ei näkynyt); taivas/sumun väri kohti `cMoor` 0x8b9094 (× 0,55); värikylläisyys kankaalle
+  `saturate(1 − 0,32·moorK)` (`moorSatSet`, vain muuttuessa; luolastossa nollataan).
+- **Pehmeä pilvimatto Ultralla:** `deckSoftSet` (render.js, kutsu `applyGfx`): saumaton kohinatekstuuri (kokonaislukutaajuudet, toisto 1,7)
+  ja reunan häivytys varjostimessa paikallisista koordinaateista: smoothstep(940 → 200 m)², taso 1 880 m. Muilla tasoilla vanha matto.
+  Huom. vanhassa matossa tekstuurin siirtymä (RepeatWrapping) siirtää myös reunan häivytystä → raja liikkuu taivaalla; Ultrassa korjattu.
+- Tarkistusrivi v2.49 (+ v2.43-rivi: lovi).
+
+### v2.48 (sakeampi sumu ja aamumatto – käyttäjän pyyntö)
+- **Sumu** (`WEATHERS.sumu.fog`) 0,3 → **0,15**: sumun alku noin 16 → 11 m ja loppu 81 → 63 m (päivällä, noin 22 % lyhyempi näkyvyys).
+- **Pilvimatto** `DECK_P` 0,5 → **0,6**.
+- **Aamumatto:** päivinä, joille mattoa ei ole arvottu, `DECK_MORN_P` = 70 %:lla matto on taivaalla yöstä aamuun (`m:1`, ikkuna dayT 0,03 → 0,27–0,36,
+  peitto 0,35–0,65) ja väistyy aamupäivällä (häivytys 0,05 ≈ 1,2 h). Sama `deckTick`-ikkuna, joten säteet/aurinko himmenevät samoin.
+- Tarkistusrivi v2.48 (+ v2.44/v2.47-rivit päivitetty).
+
+### v2.47 (taivaan päiväkohtaisuus – käyttäjän pyynnöt)
+- **Pilvimatto** `DECK_P` 0,28 → **0,5** (noin joka toinen päivä).
+- **Linssiheijastus** oma päiväkerroin `flareDay()` 0,9–1,1 (±10 %); ennen heijastus seurasi säteiden päivävahvuutta 0,3–1. `RAYS.kf` (environment.js),
+  `drawRays`: säteet `K` ja heijastus `KF` erikseen; `raysPeek`/piirto käynnissä, jos jompikumpi on päällä.
+- **3D-pilvipäivät** `CLOUD_P` = 70 % päivistä (`cloudDay`, päivän numerosta). Muina päivinä selkeällä/sumuisella säällä pilvet häipyvät (~20 s), ellei
+  kova tuuli (7 → 11 m/s), myrsky (wDark) tai sade tuo niitä; pilvisellä ja sateisella säällä kuten ennen (`cloudDayTick` × peitto).
+- **Pilvet ylemmäs:** jokainen pilvi nousee `CLOUD_LIFT` = 3 × oma korkeutensa (geometrian korkeus × koko) → 171–334 m (ennen 96–156 m).
+  Pilvikansi pysyy 128 m:ssä (piirtyy pilvien alle → myrskyllä pilvet näyttävät roikkuvan kannen alla; nostettuna 1 000 m piirtoraja leikkaisi reunat).
+- **Selkeällä 3D-pilvet 10 % läpinäkyvämmät** (`CLOUD_CLR_T`, pehmeä siirtymä `cloudClrK`); muilla säillä ennallaan.
+- Huom. tässä erässä toistui KORJAUKSET 49 (`//` rivin keskellä kommentoi `deckRnd`:n pois) – huomattiin testissä ennen committia.
+- Tarkistusrivi v2.47 (+ v2.37/v2.44-rivit päivitetty).
+
+### v2.46 (repun vilkkuminen ja puolitus, pehmeämmät pilvet, hukkumisen tarkistus – käyttäjän palaute)
+- **Repun sininen ruutu vilkkui sekunnin välein ja puolitus epäonnistui välillä:** soihtu kädessä `player.js` merkitsi repun likaiseksi joka sekunti
+  (polttoainepalkki) → koko reppu/arkku piirrettiin uudelleen → hiiren alla oleva korostus katosi ja kesken osunut piirto saattoi hukata valintaklikkauksen
+  (painallus ja vapautus eri elementeissä). Korjaus (ui.js): palkit päivitetään paikallaan (`slotBar`, `invBarsTick`, lippu `invBarDirty`; myös kilven
+  korjautumispalkki), ja painalluksen aikana (enintään 1,5 s, `uiBtnHeld`) taustalta tuleva täysi piirto odottaa vapautukseen. Testi: 20/20 puolitusta
+  satunnaisilla painalluksen kestoilla, ruutuelementti pysyy samana 3,5 s (KORJAUKSET 57).
+- **Pilvet** (render.js): 1,25× leveämmät/pidemmät; noin 30 % isoja (× 1,4–1,75 lisää, + 8 palloa), noin 25 % kohoaa (pystykasvu × 1,5–2,1, korkeus + 10–30 m).
+  Pohjakerros pehmeä (0,42 × säde, ennen 0,22; pallojen alla 1,2 × säde) → ei terävää reunaa pohjan ja kyljen välissä. Edelleen 26 pilveä, kukin yksi mesh.
+- **Hukkumisen tarkistus (v2.18 suunnitelma):** kaikki arvot ennallaan ja testattu (kellunta −1,31…−1,24 m, kestävyys 100 → 84 / 3 s, vahinko alkaa 1,00 s
+  pään jäätyä pinnan alle, ~9,7 HP/s ≈ 10, veltto vajoaminen `pDeath.water`). **Vika korjattu:** hukkumiskuoleman ääni ei soinut, koska kuolinsyy ja
+  vesilippu nollautuvat ennen äänen tarkistusta → audio.js lukee myös `pDeath.water`. Tarkistusrivi lukitsee suunnitellut arvot.
+- Tarkistusrivit v2.46 (3 kpl).
+
+### v2.45 (terävät soihtuvarjot – käyttäjän pyyntö)
+- **Extra-grafiikka › Varjot › Terävät soihtuvarjot** (`SET.torchSharp`, oletus pois, ei esiasetuksissa; render.js `TORCH_SH`/`torchSharpOn`/`torchShadowApply`):
+  käsisoihdun varjokartta 1024 px (oletus 40 px), päivitys joka ruutu (ai.js; myös hitaalla päivitystiheydellä), kantama 7 m (oletus 2,4 m, player.js),
+  bias −0,0035, täytevalo 25 % (oletus 45 %) → selvärajaiset varjot. Laatu heikkenee matkan kasvaessa luonnostaan (kuutiokartan pikseli levenee).
+  Päällä myös, vaikka tulien varjot olisivat pois (ei, jos varjot kokonaan pois). Tulinuolet eivät heitä varjoa (ennallaan).
+- Extra-grafiikan otsikot: Varjot (+ terävät soihtuvarjot), Vesi, **Efektit** (Ultra-savut siirretty tänne).
+- Tarkistusrivi v2.45.
+
+### v2.44 (satunnainen pilvimatto – käyttäjän pyyntö)
+- Myrskyn pilvikansi (`cloudDeck`) myös satunnaisina päivinä millä säällä tahansa (environment.js `deckDay`/`deckTick`/`deckRnd`): päivän numerosta
+  arvottu, `DECK_P`=28 % päivistä (testi 31 % / 200), peitto 0,30–0,65 (myrsky 0,92), keskikohta aamusta iltaan (0,3–0,75), kesto 25–60 % vuorokaudesta,
+  pehmeä tulo/meno (0,05). Pilvikannen peitto = max(myrsky, matto).
+- Matto himmentää: auringonsäteet × (1 − 0,9·matto), auringon hehku × (1 − 0,8·matto), auringon valo × (1 − 0,35·matto).
+- Tarkistusrivi v2.44.
+
+### v2.43 (hautakumpu, savut, liekit – käyttäjän pyynnöt)
+- **Hautakummun ja portin väli umpeen** (world.js `barrowMound`, `BARROW_EXT`=5,2): kumpu (r 10, h 6,5) jatkuu portin taakse kielekkeenä, joka laskee
+  nollaan juuri ennen porttia (8,5 → 10,2 m keskeltä), leveys ±4,2 m → ±6,5 m. Portin kohta ja portaat ennallaan (kieleke 0 portilla ja edessä).
+  Maaston väri nurmi myös kielekkeellä (render.js: `barrowMound > 0,2`).
+- **Savujen optimointi** (dungeons.js `SMK`, `smkDraw`): usva (72) ja höyry (48) piirretään yhdellä instanssimeshillä (kamerapäin kääntyvät tasot,
+  sama väri/tekstuuri/alfa kuin SpriteMaterial; instanssit lajitellaan kaukaa lähelle) → ennen jopa 120 piirtokutsua, nyt 1. Normaalissa maailmassa
+  (portit, arkkukivet, rauniot, kumpu) savut ilmestyvät vasta `SMK_R0`=28 m:ssä ja ovat täydet `SMK_R1`=18 m:ssä (ennen 60 m), määrä `SMK_K`=80 %.
+  Höyrypuhurit 24 m:stä (ennen 30 m). Luolastoissa määrä ennallaan (vain yksi piirtokutsu). Samassa ruudussa piirto vs. spritet: 0,012 % pikseleitä
+  (max 12/255). **Extra-grafiikka › Ultra-savut** (`smokeUltra`, ei esiasetuksissa) = v2.42:n savut (60 m, täysi määrä, spritet).
+- **Liekit aina ylöspäin** (models.js `FLAME_UP`/`flameUp`/`flameUpTick`, main.js ennen piirtoa): käsisoihdun (myös selässä/maassa) ja tulinuolen liekit pysyvät
+  kärjessään, asento maailman pystyyn (ankkuri `f.userData.fa`). Kiinteät liekit (nuotiot, telineet, seinäsoihdut) olivat jo pystyssä.
+- Tarkistusrivit v2.43 (3 kpl).
+
+### v2.42 (low poly -kolmioiden sävytys takaisin – käyttäjän palaute)
+- **Ongelma:** v2.33–2.41 vaalensi varjoja siirtämällä osan auringosta tasaiseksi valoksi (`shAmb`) → kolmioiden kirkkauserot (NdotL) latistuivat,
+  esim. illalla vuorten muodot eivät erottuneet kuten ennen.
+- **Nyt:** vaalennus k = 1 − `shDepth` jaetaan: `SH_FILL`=30 % tasaisena valona (vastavalon pinnat eivät mustu) ja loput suoraan varjoon varjostimessa:
+  varjo `mix(s, 1, L)`, L = k(1−f)/(1−kf) → valaistu tasainen maa ja varjot yhtä kirkkaat kuin v2.41, mutta kolmioiden sävyerot ~70 % vahvemmat.
+- **Tekniikka** (render.js): ShaderChunk-paikkaus (`lights_fragment_begin`, `shadowmask_pars_fragment`, apufunktiot `hmRad`/`hmLift` `shadowmap_pars_fragment`:iin).
+  three r128:ssa ei ole varjon voimakkuutta → L koodataan auringon varjon säteeseen: `radius = SUN_SH_BASE + 1000·round(L·100)`; perussäde (1 / pehmeä 3,5)
+  puretaan ennen PCF:ää. Koskee vain suuntavaloa. `HM_OK` = paikkaus onnistui (tarkistus).
+- Tarkistusrivi v2.42; v2.33-rivi päivitetty.
+
+### v2.41 (suorituskykyoptimoinnit – käyttäjän pyyntö: FPS paremmaksi ilman näkyviä muutoksia, Ultra lähes ennallaan)
+- **Mittaus ennen** (headless, Medium): pelilogiikka ~0,5 ms/ruutu → FPS:n ratkaisee piirto. Pääpiirto ~790k kolmiota / ~390 kutsua; varjopassi piirsi
+  kokonaiset 70 m puuruudut, jotka leikkasivat varjokameran: 150–350k kolmiota, joista vain 43–95k varjoalueella; tulen varjokuutio (6 sivua) jopa ~6 M.
+- **1. Kaukaiset puut kevyemmin** (`SET.treeLod`, resources.js `NGEO_LOW`, `updateChunkVis`): koivu/mänty/aarnipuu-ruuduille kaukomalli (oma
+  InstancedMesh, joka **jakaa saman instanceMatrix-puskurin** → kaadot, kasvu ja siirrot näkyvät molemmissa). Koko ruutu vaihtuu, kun sen lähin reuna on
+  yli `treeLod` m kamerasta. Kaukomallista pois vain rungon huojuntajaot ja ohuet oksalaatikot (koivu 388 → 216, mänty 224 → 128), aarnipuun
+  kärkikartiot 5 → 3 sivua. Täydet mallit ennallaan (`koivuBase(seg,spots)`, `brParts(type,mode)`, `mantyGeo(seg,oct)`, `aarniGeo(tipSeg)`).
+- **2. Varjojen optimointi** (`SET.shOpt`, `SHP`, `shpTick`/`shpFire`): varjomallityyppien ruudut (puut, kivet) eivät heitä varjoa (`userData.cs0` =
+  alkuperäinen, palautuu pois kytkettäessä). Varjon heittävät erilliset InstancedMeshit, joihin kopioidaan vain ne instanssit, joiden pallo leikkaa auringon
+  varjokameran frustumin (+10 m) ja joiden ruutu on näkyvissä (sama joukko kuin ennen, mutta puu kerrallaan). Haku: ruudukko (`nodesNear`), laajalla
+  alueella (yli 160 m, Ultra 220 m varjot) kaikki solmut. Uudelleen, kun varjon keskus tai kamera liikkuu 5 m, puiden matriisit muuttuvat (`shpVer` =
+  ruutujen instanceMatrix-versioiden summa), `shLod` vaihtuu tai 1,5 s kuluu (aurinko liikkuu); vähintään 0,12 s välein.
+  - **Yksinkertaiset varjot** (`SET.shLod`, `NGEO_SHF`): yli `shLod` m päässä varjon keskuksesta (koivu 108, mänty 80, kuusi 42 kolmiota; 5-sivuiset kartiot, oktaedrit).
+  - **Maaston taakse jäävät pois**: yli 30 m (`SH_OCC`) päässä olevat, joiden latva (tai 60 % korkeus) ei näy silmästä 4 m (`SH_EYE`) kameran yläpuolelta
+    (`shpSeen`, 10 maastonäytettä) → varjo latautuu ennen kuin harjanteen yli näkee.
+  - **Tulien ja soihdun varjot** (`SHP.fire`): täydet mallit valojen varjokameran kantamalta (päivitys valon liikkuessa 1 m).
+  - **Tekniikka:** three r128 testaa varjopassissa kerrokset **pääkameraa** vasten (KORJAUKSET 55), joten varjomallit ovat aina `visible=false` ja
+    `renderer.shadowMap.render`-kääre näyttää auringon mallit auringon varjon ajan ja tulien mallit pistevalojen ajan (kaksi kutsua, `needsUpdate` palautetaan).
+- **3. Säteiden pikseliluku taustalla** (render.js `raysPeek`/`raysEval`/`RPK`): WebGL2: yksi suorakulmio PIXEL_PACK_BUFFERiin + `fenceSync`, tulos
+  haetaan valmistuttua (`getSyncParameter`) → ei näytönohjaimen odotusta. WebGL1: yksi suorakulmioluku joka 4. ruutu (ennen 9 erillistä lukua).
+- **4. Kaukaisten rakennusten yhdistäminen** (pieces.js `bmTick`/`bmMerge`/`BMC`, asetus `mergeSt`): 24 m solut yli 70 m päässä yhdistetään materiaaleittain
+  (sama geometria/materiaali/varjot), alle 60 m puretaan. Alkuperäiset meshit vain piilotetaan (säteen osumat toimivat). Ei: tulet, säiliöt, ovet, lasit,
+  hehkuvat, renkaat (`bmOk`). Vaurio/lisäys/poisto solussa → purku (`bmDirty` markShadowDirty:stä). Yksi uusi solu per tarkistus (ei nykäisyä).
+  `applyGfx` purkaa kaikki ennen yksityiskohtien vaihtoa.
+- **5. Muistivaraukset**: kamera (`_camDir`), hakkuuasento (copy eikä clone joka ruutu), `indoorScore` (`_inO`), tähtäysviiva (`_prV`).
+- **DEV-mittari** (Ä › Suorituskykymittari, `perfTick` main.js): ruutuaika, FPS, piirtokutsut ja kolmiot (pääpiirto), varjomallit (+ tuli, piilossa), yhdistetyt solut.
+- **Asetukset ja esiasetukset** (Grafiikka › Suorituskyky): `treeLod` Low 60 / Low+ 60 / Medium- 70 / Medium 80 (oletus) / Medium+ 100 / High 100 / High+ 120 / Ultra 140 m
+  (0 = pois); `shLod` 25/25/30/40/45/55/70/90 m (0 = kaikki tarkat); `shOpt` päällä (ei esiasetuksissa). Vanhoille tallenteille `treeLod`/`shLod` esiasetuksen mukaan (`nk`).
+- **Tulokset** (sama ruutu ilman/kanssa, olennot piilossa, 800×500):
+  - Varjomallit yksinään: **0 eroavaa pikseliä** 6 paikassa (Ultra ja Medium). Nuotio yöllä: 0,000 %.
+  - Kaikki päällä: Ultra ≤ 0,017 % pikseleistä (alipikselin oksat horisontissa), Medium ≤ 0,07 %, Low+ ≤ 0,05 %.
+  - Varjopassin puu/kivikolmiot: alku 6,1 M → 31k, koivulehto 338k → 67k, korpi 296k → 67k, aarni 1,75 M → 97k; kutsut alku 1131 → 10.
+  - Pääpiirron puuruudut −11…16 % kolmioita. Rakennusten yhdistäminen: sama kuva (0 eroa), testitukikohdassa −65 kutsua.
+- Tarkistusrivit v2.41 (3 kpl), v2.37-rivi päivitetty (`raysEval`). Huom. tarkistuksen rivit v1.90 ja v2.08 epäonnistuvat satunnaisesti (arvottu paikka) – uusinta OK.
+
+### v2.40 (säteet elävämmiksi, peitto suunnittain – käyttäjän pyyntö)
+- **15 % läpinäkyvämmät:** säteen voimakkuus `RAYS_A`=0,136 (ennen 0,16).
+- **Epäsäännölliset ja elävät:** 18 sädettä (ennen 14), jokaisella omat rytmit: paksuus (`ws`, kaksi siniaaltoa), suunnan huojunta (`as`/`aa`),
+  pituus (`ls`), kirkkaus (`fs`), epäsymmetrinen kiila (`w1`/`w2`). **Harvemmin:** näkymiskynnys `sstep(,5; ,9)` (ennen ,42–,85).
+- **Peitto korjattu – kaikki säteet katoavat:** v2.38:n "pehmeät säteet jäävät 45 %:iin" oli väärä tulkinta (`RAYS_SOFT` poistettu).
+  Nyt `raysPeek` lukee 9 pistettä (keskus + 8 suuntaa 0,65 × kiekon säde) → `RAYS.dir[8]`; säde katoaa, kun sen oman suunnan puoli kiekosta
+  peittyy (`rayOcc`: alas 22/s ≈ lähes heti, ylös 6/s). Osittain peitettynä vain peitetyn puolen säteet, kokonaan peitettynä kaikki.
+  Heijastus × `RAYS.occP` (koko kiekon näkyvyys). Testattu laatikolla: puolikas → `00111100`, koko → `00000000`.
+- Tarkistusrivi v2.40 (+ v2.35/2.37/2.38-rivit päivitetty).
+
+### v2.39 (auringon hehku pienemmäksi – käyttäjän pyyntö)
+- Hehkusprite `sunGlow` 150 → `SUN_GLOW_S`=90, voimakkuus × `SUN_GLOW_K`=0,45 (environment.js updateSky).
+- Taivaskupolin hehku kapeampi ja himmeämpi: `pow(s,160)*.3+pow(s,24)*.07+pow(s,4)*.03` (ennen `pow(s,90)*.55+pow(s,10)*.16+pow(s,3)*.05`).
+- Auringon kiekko ennallaan (pikselipeitto `raysPeek` lukee sen väriä). Tarkistusrivi v2.39.
+
+### v2.38 (auringon suorakulmio, pilvien syvyys, säteiden peitto – käyttäjän pyyntö)
+- **Suorakulmio auringon ympärillä (todellinen syy):** taivaskupolin varjostin käytti interpoloitua suuntaa `vD` normalisoimatta → kolmion sisällä
+  lyhyempi vektori, jolloin jyrkkä hehku `pow(s,90)` seurasi kupolin (24×14) nelikulmioita. Korjaus: `vec3 d=normalize(vD)` pikselissä (KORJAUKSET 54).
+  (v2.35 poisti 3D-säteet, mutta neliö tuli myös tästä.)
+- **Pilvet:** ei puhtaan valkoiset (`cCloudDay` 0xe4e9ef, pallot 0xeef1f5 × 0,93–1, pohjakerros 0xb6bcc6), itsevalaisu `.26*light+.1` (ennen `.55*light+.12`)
+  → auringon puoli kirkas, varjopuoli harmaampi. `cloudShade()` (render.js): kärkivärit tummuvat alaspäin (pohja ×0,72) ja alaspäin osoittavat pinnat hieman.
+- **Säteiden peitto:** `RAYS.occ` = maasto (3/s, kaikki), `RAYS.occP` = este kiekon edessä (alas 22/s ≈ lähes heti, ylös 6/s). Kovat säteet (`q.h`, 60 %)
+  ja linssiheijastus × `occP`; pehmeät jäävät `RAYS_SOFT`=45 %:iin. Pikseliluku joka 2. ruutu.
+- Tarkistusrivi v2.38.
+
+### v2.37 (säteet takaisin – käyttäjän palaute "minne säteet katosivat")
+- **Väärä tulkinta v2.36:ssa:** pyyntö "aamu–ilta välillä vahvana ja sitten alkaa mennä pois" = vahvat koko päivän (aamusta iltaan) ja hiipuvat
+  vasta illan jälkeen. v2.36 teki päinvastoin (keskipäivä 6 %), lisäksi 35 % päivistä ilman säteitä ja tiukka sädekynnys → käytännössä ei mitään.
+- **Nyt:** `RAYS.k` = sää × `sstep(-0,04; 0,35; el)` (hiipuu auringon laskiessa, yöllä pois) × päivävahvuus; keskipäivän hiipuminen poistettu.
+  `raysDay()` 0,3–1 (`RAYS_MIN`), ei tyhjiä päiviä. Sädekynnys `sstep(,42; ,85)` (v2.35 ,25–,75; v2.36 ,55–,92).
+- **Peitto varmemmaksi:** tyhjä pikseliluku (kaikki 0) = ei tietoa → ei piiloteta; `RAYS.pix` tasoitetaan (puolet uutta lukua kerrallaan).
+- Huom. tarkistuksen rivi v1.90 (pomon osat putoavat) epäonnistuu satunnaisesti (arvonta) – uusinta-ajo OK; ei liity tähän.
+- Tarkistusrivi v2.37 (korvaa v2.36-rivin).
+
+### v2.36 (säteiden ja linssiheijastuksen ajoitus, peitto – käyttäjän pyyntö)
+- **Vuorokausi:** vahvimmat aamulla ja illalla (matala aurinko); keskipäivää kohti hiipuvat jäännökseen `RAYS_NOON`=0,06
+  (`lerp(RAYS_NOON,1,sstep(1,05; 0,4; el))`). Koskee säteitä ja linssiheijastusta.
+- **Päiväkohtainen vahvuus** `raysDay()` (render.js): päivän numerosta `dayN` arvottu, sama koko päivän: `RAYS_NONE`=35 % päivistä ei säteitä,
+  muuten 0,3–1 × aiempi vahvuus (aiempaa kevyemmäksi, ei vahvemmaksi).
+- **Peitto:** `raysPeek()` lukee piirron jälkeen (main.js) auringon kiekon kohdalta 5 pikseliä (`readPixels`, joka 3. ruutu, vain kun säteitä on).
+  Kiekon väri (lämmin, sininen < 0,95 × punainen) = näkyy; puu, rakennus, hahmo tai valkoinen pilvi edessä → `RAYS.pix` laskee → säteet ja
+  heijastus häipyvät nopeasti (×9/s), palaavat rauhallisemmin (×3/s). Maaston marssi säilyy (myös ruudun ulkopuolinen aurinko).
+- **Harvemmin näkyvät säteet:** yksittäisen säteen näkymiskynnys `sstep(,55; ,92)` (ennen ,25–,75) → kerralla vähemmän säteitä.
+- Tarkistusrivi v2.36.
+
+### v2.35 (auringonsäteet uusiksi, linssiheijastus – käyttäjän pyyntö)
+- **Vika:** auringon ympärillä näkyi vaalea neliö: vanhat 3D-säteet (`sunShafts`, pitkät additiiviset tasot) näkyivät päistään, kun katsoi aurinkoa kohti.
+  Poistettu kokonaan (render.js, environment.js, camera.js).
+- **Uudet säteet näytöllä** (render.js `RAYS`, `drawRays`; piirto main.js ennen 3D-piirtoa): puolikkaan resoluution 2D-kangas `#raysC`
+  (`mix-blend-mode: screen`). 14 pehmeää kiilaa (3 kerrosta, säteittäinen liukuväri) auringon näyttöpisteestä; jokaisella oma kääntymisnopeus
+  kameran käännöksestä `k` ja kallistuksesta `j`, joten säteet liikkuvat toisiinsa nähden; näkyvyys `sin(camYaw·f + camPitch·fp + …)` → osa piiloutuu ja
+  ilmestyy kääntyessä (pehmeä siirtymä). Voimakkuus `RAYS.k` (environment.js updateSky): selkeä sää, aurinko taivaalla, ei sisällä, Aarnimetsässä −70 %,
+  matalalla auringolla vahvemmat. Maaston peitto `RAYS.occ`: marssi kameralta kohti aurinkoa (6–300 m). Häipyvät, kun aurinko on ruudun ulkopuolella.
+- **Linssiheijastus** (`SET.flare`, asetus "Linssiheijastus", oletus pois, vain Ultra-esiasetuksessa): 6 haaleaa värirengasta (`RAYS_FL`) linjalla
+  auringosta ruudun keskipisteen kautta; voimakkain, kun aurinko on keskellä, ja liikkuu/häviää katseen kääntyessä pois.
+- Asetus "Auringon valonsäteet" (`shafts`) ennallaan: pois Low/Low+/Medium-. Vanhoille tallennuksille `flare` esiasetuksen mukaan (`nk`).
+- Tarkistusrivi v2.35.
+
+### v2.34 (varjot kaikkialla vaaleammat + vuorokausivaihtelu – käyttäjän pyyntö)
+- **Metsissä** (koivulehto, korpi, jäkäläkangas, aarnimetsä) varjot 20 % vaaleammat (`FOREST_SH`=0,2); avoimilla 40 % ennallaan.
+- **Vuorokausi (`SH_TOD`=0,15):** varjon syvyys × 1,15…0,85 auringon korkeuden mukaan (`sstep(-0,12; 1,3; el)`): keskipäivällä 15 % vaaleampi,
+  hämärässä ja yöllä (kuun varjot) 15 % tummempi kuin perustaso. Syvyys `shDepth` = (1 − biomin vaalennus) × vuorokausikerroin, rajattu 0…1.
+  Esim. avoin keskipäivä 0,6 × 0,85 = 0,51; metsä yöllä 0,8 × 1,15 = 0,92 (1 = alkuperäinen v2.32:n varjo).
+- Tarkistusrivi v2.34.
+
+### v2.33 (valinnan säilyminen, avointen biomien varjot – käyttäjän palaute ja pyyntö)
+- **Vika:** valinta (vasen) + oikea klikkaus kohteeseen ei puolittanut, vaikka Shift-slider toimi. Syy: jos osoitin liikkui napsautuksen aikana
+  yli 6 px, alkoi raahaus, joka pudotti omaan ruutuun ja tyhjensi valinnan (Shift + vasen ei aloita raahausta, siksi Shift-tapa toimi).
+  Korjaus (ui.js mouseup): raahaus omaan ruutuun = valinta (`selectFor`, oikealla puolikas). KORJAUKSET 53.
+- **Varjot avoimissa biomeissa 40 % vaaleammat** (environment.js `OPEN_BIOMES`, `OPEN_SH`=0,4, `OPEN_RATE`=0,35/s → n. 5–8 s häivytys, `openK`):
+  40 % auringosta siirtyy aurinkoväriseksi tasaiseksi valoksi `shAmb` (render.js; voimakkuus × auringon korkeus, väh. 0,15) → valaistu maa
+  pysyy yhtä kirkkaana, varjot ja varjopuolet vaalenevat. Avoimet: niitty, ranta, meri, nummi, tunturi, rakka, vuori, huiput, suo.
+  Metsät ennallaan: koivulehto, korpi, jäkäläkangas, aarnimetsä. Veden varjostin saa saman valon (`uAmbC`).
+- Tarkistusrivit v2.33 (2 kpl).
+
+### v2.32 (valitse–klikkaa-puolitus pelin osoittimella – käyttäjän palaute)
+- **Vika:** repussa/arkussa valinta (vasen klikkaus) + oikea klikkaus kohderuutuun ei puolittanut eikä Shift avannut slideria, vaikka oikea raahaus toimi.
+  Syy: hiiren lukituksen aikana Chrome ei lähetä `contextmenu`-tapahtumaa lainkaan, ja tämä tapa nojasi siihen (raahaus käyttää `mouseup`:ia).
+  Headless-testissä lukitus on korvattu, joten `contextmenu` tuli ja testi meni läpi (KORJAUKSET 53).
+- **Korjaus (input.js):** VC:n `mouseup`-polku lähettää oikean napin vapautuksesta itse `contextmenu`-tapahtuman osoittimen kohtaan
+  (Shift vapautushetkeltä); selaimen oma `contextmenu` ohitetaan VC:n ollessa päällä, joten mitään ei tapahdu kahdesti.
+  Oikean raahauksen jälkeinen `contextmenu` syödään entiseen tapaan (`dragEat`).
+- Tarkistusrivi v2.32 (lähde + toiminto pelin osoittimella).
+
+### v2.31 (poimintaäänen sävy – käyttäjän pyyntö)
+- **Poiminta (`PL_PICK`):** hieman kimeämpi (sävel ×1,1), enemmän vaihtelua (±20 %, ennen ±12 %; + yleinen ±5 %) ja tumma alipäästö 2,4 kHz
+  (pehmentää kirkkaimman kärjen, vaikka sävel nousee). Voimakkuus 0,55 ennallaan.
+- **Uusi `plSnd`-valinta `o.lp`** (alipäästö, Hz) – käytettävissä muillekin pelaajan äänille.
+- Tarkistusrivi v2.31.
+
+### v2.30 (siirtosliderin korjaukset, poimintaääni – käyttäjän palaute)
+- **Siirrä-nappi sulki repun:** napin painallus valui ikkunan "napsautus paneelin ohi → sulje" -käsittelijään (`#splitDlg` ei ole `.panel`).
+  Korjattu: käsittelijä ohittaa `#splitDlg`:n ja ruutu pysäyttää omat painalluksensa. (v2.29:n testi lähetti vain click-tapahtuman → ei huomattu.)
+- **Shift ratkaistaan vapautus- tai klikkaushetkellä (käyttäjä):** oikea raahaus alkaa myös Shift pohjassa (ennen Shift esti raahauksen), ja slider-päätös
+  käyttää vain itse tapahtuman `shiftKey`:tä (ei näppäintaulukkoa `keys`). Pelin osoitin (`vcInit`) välittää oikean tapahtuman Shift/Ctrl-tilan
+  (näppäintaulukko vain liikkeelle). Ikkunan kohdistuksen menetys (`blur`, piilotus) nollaa `keys`:n – ennen Alt+Tab saattoi jättää Shiftin pohjaan,
+  jolloin tavallinen oikean napin puolitus avasi sliderin (todennäköinen syy "puolitus ei toimi" -havaintoon; testissä puolitus toimii nyt jumissakin).
+- **Poimintaääni:** lyhyemmäksi 0,57 → 0,28 s (`T_PROF['poiminta']` 0,3 s, −24 LUFS, `PV_T` 9 – vain poiminta muuttui) ja pelissä hiljempaa 0,55 ja sävel
+  ±12 % (`PL_PICK`, + yleinen ±5 %).
+- Tarkistusrivi v2.30. Testattu oikeilla hiiritapahtumilla pelin osoittimella (Siirrä, +, puolitus jumissa olevalla Shiftillä, Shift ennen raahausta).
+
+### v2.29 (puun narina loppuu maahan osuessa, siirto- ja puolitusäänet, Shift-siirtoslider – käyttäjän pyyntö ja vastaukset)
+- **Narina (`puu_kaatuu`, 8,1 s raaka):** työkalu oli katkaissut sen 3,0 s:iin → oma profiili `T_PROF['puu_kaatuu']` (8,5 s) → 7,86 s, `PV_T` 8 (vain tämä
+  tiedosto muuttui). Pelissä `plSnd(..., {until: fallDur(n), fit: 1})`: soi alusta ja häivytetään 0,1 s maahan osuessa (`fallDur` = kaatumisen kesto,
+  sama kuin `fallTree`: 1 + 0,3 × koko, Aarnipuu ×2); harvoin (25 %) aloitus keskeltä 0–4 s, jos ääntä riittää koko kaatumiseen + 0,3 s (käyttäjän toive).
+  Tömähdys (`puu_tomahdys`, v2.28) alkaa samalla hetkellä.
+- **Siirto- ja puolitusäänet (`valikot/siirto`, `valikot/puolitus`, paikkamerkit):** siirto soi noston (valinta, raahauksen alku, arkun valinta,
+  Shift-pikasiirto) ja laskun (`moveSlot`, `moveCount`) hetkellä – käyttäjän valinta "nosto ja lasku sama ääni"; puolitus, kun oikea nappi ottaa puolet,
+  oikealla raahaus alkaa tai slider aukeaa.
+- **Siirtoslider (`splitOpen`/`splitSet`/`splitDo`/`splitCancel`, ui.js, `#splitDlg`):** oikealla raahatun pinon vapautus Shift pohjassa kohderuudussa (myös
+  pikapalkki) tai valitun pinon Shift + oikea klikkaus kohderuutuun → oma ruutu: rata 0 … pinon koko (alku puolet), −/+, rulla, ←/→, Siirrä-nappi / Enter
+  siirtää valitun määrän (`moveCount`), **numerot 1–9 siirtävät heti** (enintään koko pino). Hiiren paikka ei haittaa; **napsautus ruudun ohi (tai Esc) peruu
+  → pino puolittuu kohteeseen** kuten ilman Shiftiä (käyttäjän päätös); painalluksen loput (click/contextmenu 0,6 s) niellään. Kohteessa toinen esine → ei
+  slideria. Paneelin sulkeminen sulkee sliderin. **Pelin oma osoitin (VC) lähettää keinotekoisia tapahtumia, joihin `<input type=range>` ei reagoi → oma
+  rata, joka laskee arvon hiiren x:stä.** Shift = `e.shiftKey` tai Shift-näppäin (ei juoksun sidontaa). Numeronäppäimet kaapataan ennen pikapaikan vaihtoa.
+  Ruutu kohteen yläpuolelle, ellei tilaa → alle. Ohjeet: repun Tiedot-teksti, arkun vihje, Kaikki toiminnot -ikkuna.
+- Tarkistusrivit v2.29 (2 kpl). Testissä latausnäyttö ja valikkotausta piilotetaan (testiympäristön peitot, pelissä piilossa).
+
+### v2.28 (pelaajan äänierä osa 2, puun tömähdys, reppu kiinni, oman arkun sulkemisääni – käyttäjän pyyntö)
+- **Äänierä (`pelaaja_2_toiminnot/`, 22 raakaa):** jousi (veto, laukaus), käyttö (arkku auki ×3, juominen, poiminta ×2, syöminen ×2), lyönnit
+  (huitaisu ×3, lataus, torjunta ×2), osumat (ei tehoa, kivi hajoaa, osuma kiveen, osuma puuhun, puu kaatuu, tukki hajoaa). Numerottomat raa'at
+  → manifestiin `_0`. Ei samoja tiedostoja kahdessa paikassa, vahvistukset alle ±10 dB. **Huom:** `huitaisu.mp3` on vain 0,07 s ja `juominen.mp3`
+  0,15 s (raaka on noin lyhyt) – voi kuulostaa naksahdukselta; pitkä `syominen_1` (5,2 s) leikattiin 2,5 s:iin, `puu_kaatuu` 3,3 → 3,0 s.
+- **Korjaus ennen käsittelyä:** pelaajan `juominen` olisi käsitelty eläinten juomisen tapaan 20 s:n silmukaksi (sama nimi `ACT_EV`:ssä) → projektikohtainen
+  silmukkalista `C['act']` (pelaajalla vain `sydan`). `t_prof` käyttää koko äänen nimeä, jos se on `T_PROF`:ssa (`puu_tomahdys`).
+- **Uudet äänipaikat:** `osumat/puu_tomahdys` (puu iskeytyy maahan: `fallTree`, myös karhun kaatama; ääni puun keskikohdasta, sävel matalampi isolla
+  puulla `1,12 − 0,15 × koko`, voimakkuus 1,5 – 3D-etäisyys hiljentää) ja `kaytto/arkku_kiinni` (oma arkku tai tynnyri suljetaan; löydetyt arkut ja
+  hautakasat → `sulje`). **Reppu kiinni** soittaa saman `reppu`-äänen kuin auki. Puuttuva ääni → `sulje` (`closePanels`).
+- **Tarkistuksessa löytyi ja korjattiin (KORJAUKSET 49):** tömähdyksen koukun `//`-kommentti rivin keskellä mitätöi puun kaatumisen maan tärähdyksen;
+  korjattu ennen julkaisua `/* */`:ksi ja kommenttiskanneri tunnistaa nyt myös `)if(`-muodon.
+- Tarkistusrivi v2.28. full157-skripti kirjoitettiin uudelleen (väliaikaiskansio tyhjeni): 6 karttaa, päivä/yö, 26 olentotyyppiä, 3 ulottuvuutta, Hautakumpu, tallennus.
 
 ### v2.27 (Aarnimetsän askel vähemmän toistuvaksi, oksat – käyttäjän pyyntö)
 - **Pusikkoaskel käsitelty uudelleen:** raaka on yksi kahina (~0,2 s) + 0,3 s hiljainen häntä, joka kuulosti venyvältä → oma profiili
@@ -2327,7 +2580,7 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 - **Taivaskupoli** (`skyDome`, ShaderMaterial, `SKY_U`): liukuväri horisontista (= sumun väri) tummempaan zeniittiin + auringon hehku (heikkenee pilvisellä). `updateSky()` environment.js.
 - **Pilvet uusiksi:** 26 isoa, leveää ja litteäpohjaista pilvilauttaa (70–170 m, 26–40 palloa, korkeus 96–126 m eli aiempaa matalammalla, `CLOUD_R` 420). Peitto säästä (kynnys `th`), koko kasvaa peiton mukana (×.75–1.3). Kaukana pilvet häipyvät horisontin väriin (opasiteetti + väri, `far`) eivätkä piirry `CLOUD_R`:n takana.
 - **Pilvikansi** (`cloudDeck`): rankassa sateessa ja myrskyssä koko taivaan peittävä harmaa kerros (128 m), salama valaisee sen.
-- **Auringonsäteet** (`sunShafts`): selkeällä/puolipilvisellä säällä matalalla paistavasta auringosta läpikuultavia valokeiloja (additiivinen, opasiteetti ≤ .07), ei sisällä eikä Aarnimetsässä.
+- **Auringonsäteet** (`sunShafts`, korvattu v2.35 näytön säteillä `RAYS`): selkeällä/puolipilvisellä säällä matalalla paistavasta auringosta läpikuultavia valokeiloja (additiivinen, opasiteetti ≤ .07), ei sisällä eikä Aarnimetsässä.
 
 ### v0.38 (erä 25: eläimet, viholliset ja terveyspalkit)
 - **Eläinten säikähdys:** kävellessä 7 m, juostessa 16 m, vahinkoa tekevä ase/jousi kädessä ×1.4, kyykyssä 3.5 m (näköyhteys tai < 4 m). Vahingoitettu eläin pelkää 10 s; pakosuunta pois pelaajasta satunnaisella poikkeamalla (±.4….8 rad), vaihtuu 1.2–3 s välein; rauhoittuu > 28 m päässä.
@@ -2769,6 +3022,13 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 ## Ideajono
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.
+
+### GUI-äänet ja ilmoitusten lukuaika (idea, v2.33 – tulevaisuuteen, EI vielä tehty)
+- [ ] **Idea (käyttäjä):** kun käyttäjä tekee GUI- ja valikkoäänet, kylttien ja riimukivien tekstit sekä pitkät ohjeet saavat oman äänen
+  (esim. "chat-ilmoitus"-tyylinen). Ei generoida itse – käyttäjä tuo äänen (paikkamerkki esim. `valikot/ilmoitus`).
+- [ ] **Lukuaika tekstin pituuden mukaan:** varmista, että ilmoitukset (kyltti, riimukivi, ohje, `msg`) näkyvät tarpeeksi kauan luettaviksi:
+  mitä pidempi teksti, sitä kauemmin. Käyttäjän esimerkki: kahden sanan ilmoitus ~2,5 s, siitä lasketaan pidemmille (aika on vain ehdotus).
+  Nykytila: `msg()` (ui.js) = clamp(3 + merkit × 0,07, 4, 13) s; riimukivi-/kylttiruudun kesto tarkistetaan samalla (pitkä riimukiviteksti ~50 sanaa).
 
 ### Vesi (v2.18)
 - [x] Low poly -vesi oletukseksi, realistinen vesi + Mega + rantaroiskeet Extra-grafiikkaan (v2.20).

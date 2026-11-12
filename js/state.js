@@ -214,7 +214,7 @@ function updateDrops(dt){
     if(d.light){d.light.x=m.position.x;d.light.y=m.position.y+.4;d.light.z=m.position.z;d.light.i=.75+Math.sin(d.t*3.2)*.25;}
     if(d.halo){d.halo.material.opacity=.2+Math.sin(d.t*3.2)*.1;if(Math.random()<dt*5&&typeof emitEmber==='function')emitEmber(m.position.x+(Math.random()-.5)*.5,m.position.y+.1,m.position.z+(Math.random()-.5)*.5,'spark');}
     if(d.noPick&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))>2.5*2.5)d.noPick=false;   // v1.31: itse pudotettu poimitaan vasta, kun on käyty kauempana
-    if(d.t>.5&&!(d.hold>0)&&!d.noPick&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');plSnd('kaytto','poiminta');}else if(dropFullT<=0){dropFullT=4;msg('Reppu on täynnä – et voi poimia.','warn');}d.n=left;if(left<=0){removeDrop(d);continue;}}
+    if(d.t>.5&&!(d.hold>0)&&!d.noPick&&!P.dead&&m.position.distanceToSquared(_tmpV.set(P.pos.x,P.pos.y+.6,P.pos.z))<2.2){const left=invAdd(d.id,d.n,d.q);if(left<d.n){msg(`+${d.n-left} ${ITEMS[d.id].n}`,'loot');sfx('pickup');plSnd('kaytto','poiminta',PL_PICK());}else if(dropFullT<=0){dropFullT=4;msg('Reppu on täynnä – et voi poimia.','warn');}d.n=left;if(left<=0){removeDrop(d);continue;}}
     if(m.position.y<-20)removeDrop(d);
   }
 }
@@ -244,8 +244,9 @@ function updateFx(dt){updateEmbers(dt);
 // maahan osuessa; irronneet oksat putoavat ja vajoavat hitaasti maan alle. Pieni puu (koko < SMALL_TREE) ei jätä tukkeja, vaan
 // muuttuu suoraan tavaroiksi (puu ym.) maahan osuessaan. Lähellä kaatuva puu tärähdyttää ruutua.
 const SMALL_TREE=.8,BRANCH_C={koivu:0x4f4237};
+function fallDur(n){return (1+.3*n.s)*(n.type==='aarnipuu'?2:1);}   // v2.29: kaatumisen kesto (s) – narina loppuu tähän
 function fallTree(n,dir,crush,src){const g=new THREE.Group();const m=new THREE.Mesh(NGEO_FALL[n.type]||NGEO[n.type],vcMat);m.scale.setScalar(n.s);m.rotation.y=n.rot||0;g.add(m);g.position.set(n.x,n.y,n.z);scene.add(g);
-  const a=dir??Math.atan2(n.x-P.pos.x,n.z-P.pos.z),H=(TREE_H[n.type]||5)*n.s,dur=(1+.3*n.s)*(n.type==='aarnipuu'?2:1),brs=[],big=n.type==='aarnipuu',small=!big&&n.s<SMALL_TREE;
+  const a=dir??Math.atan2(n.x-P.pos.x,n.z-P.pos.z),H=(TREE_H[n.type]||5)*n.s,dur=fallDur(n),brs=[],big=n.type==='aarnipuu',small=!big&&n.s<SMALL_TREE;
   const bm=mat(BRANCH_C[n.type]||TRUNK_C[n.type]||0x5a3a22),lc=LEAF_C[n.type],lm=lc?mat(lc):null,nb=big?7:n.type==='koivu'?6:5;
   const lay=TREE_BR[n.type];
   for(let i=0;i<(lay?lay.length:nb);i++){let phi=i/nb*TAU+rng()*.8,h=H*(.28+.55*i/nb),L=(.6+rng()*.5)*n.s*(big?2.5:1),th=.07*n.s*(big?2:1),tilt=.35+rng()*.3;
@@ -259,7 +260,7 @@ function fallTree(n,dir,crush,src){const g=new THREE.Group();const m=new THREE.M
   fx.push({obj:g,t:0,update:(f,dt)=>{const k=Math.min(1,f.t/dur);g.rotation.set(0,0,0);g.rotateOnWorldAxis(_tmpV.set(Math.cos(a),0,-Math.sin(a)),Math.pow(k,2.6)*Math.PI/2);
     for(const b of brs)if(!b.userData.off&&k>=b.userData.det&&k<1){b.userData.off=1;g.updateMatrixWorld(true);dropBranch(b,Math.sin(a)*k*4,Math.cos(a)*k*4);}
     if(f.t>dur&&!f.dropped){f.dropped=1;{const dd=Math.hypot(P.pos.x-n.x,P.pos.z-n.z);sfx('thud',1/clamp(n.s,.7,1.6),clamp(1.15-dd/90,.12,1));}if(crush)crushPlayer(n,a,src);
-      const mx=n.x+Math.sin(a)*H*.5,mz=n.z+Math.cos(a)*H*.5,dd=Math.hypot(P.pos.x-mx,P.pos.z-mz);if(!P.inDun&&dd<H+8)shake(Math.min(.5,.12+.35*(1-dd/(H+8))*Math.min(1.5,n.s)));
+      const mx=n.x+Math.sin(a)*H*.5,mz=n.z+Math.cos(a)*H*.5,dd=Math.hypot(P.pos.x-mx,P.pos.z-mz);plSnd('osumat','puu_tomahdys',{pos:{x:mx,y:n.y+.4,z:mz},v:1.5,p:clamp(1.12-.15*n.s,.8,1.05)});   /* v2.28 puu iskeytyy maahan (myös karhun kaatama) */if(!P.inDun&&dd<H+8)shake(Math.min(.5,.12+.35*(1-dd/(H+8))*Math.min(1.5,n.s)));
       burst(n.x+Math.sin(a)*3,n.y+.5,n.z+Math.cos(a)*3,0x6b4527,10,4);
       for(const [id,lo,hi] of n.def.drops){if(id==='puu'&&!small)continue;const c=Math.max(id==='puu'?1:0,Math.round(rint(rng,lo,hi)*n.s));for(let j=0;j<c;j++){const t=.8+j*H/(c+1);spawnDrop(id,1,n.x+Math.sin(a)*t,n.y+1,n.z+Math.cos(a)*t);}}
       g.updateMatrixWorld(true);for(const b of brs)if(!b.userData.off)dropBranch(b);
@@ -285,7 +286,7 @@ function shockwave(x,y,z,r,color=0x8ffff0){const m=new THREE.Mesh(new THREE.Ring
 /* ---------------- PROJECTILES ---------------- */
 const projs=[];
 function shootArrow(from,dir,speed,dmg,owner,grav,fire,wood){if(owner!=='player')dmg*=HURT_K;const m=new THREE.Group();m.add(bx(.04,.04,.8,mat(0xc9b48a),0,0,0,false),wood?bx(.05,.05,.1,mat(0x8a5a32),0,0,.42,false):bx(.07,.07,.12,mat(0x4d535c),0,0,.42,false));   /* v2.06: puunuolessa teroitettu puukärki */
-  if(fire){const fl=new THREE.Mesh(new THREE.ConeGeometry(.06,.2,6),MAT.flame);fl.rotation.x=-Math.PI/2;fl.position.z=.36;m.add(fl);m.add(bx(.08,.08,.06,mat(0x3a2a1c),0,0,.34,false));}
+  if(fire){const fl=new THREE.Mesh(new THREE.ConeGeometry(.06,.2,6),MAT.flame);fl.rotation.x=-Math.PI/2;fl.position.z=.36;m.add(fl);fl.userData.fa={x:0,y:0,z:.34,up:.08};m.userData.flameUp=[fl];FLAME_UP.add(m);   /* v2.43 liekki pystyyn */m.add(bx(.08,.08,.06,mat(0x3a2a1c),0,0,.34,false));}
   let glow=null;if(fire){glow=new THREE.Sprite(new THREE.SpriteMaterial({map:arrowGlowTex(),color:0xffa040,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));glow.position.z=.38;glow.renderOrder=6;m.add(glow);}m.position.copy(from);scene.add(m);const pr={m,v:dir.clone().multiplyScalar(speed),dmg,owner,t:0,g:grav||7,kind:'arrow',fire:!!fire};if(fire){pr.flame=m.children[m.children.length-3];pr.glow=glow;}projs.push(pr);
   if(fire&&SET.arrowLight){pr.light={x:from.x,y:from.y,z:from.z,c:0xff8a3a,i:1.5,on:()=>true,move:true};lightSources.push(pr.light);updateLights();}}   // v1.23 asetus: tulinuolen valo
 function throwRock(from,target,dmg){dmg*=HURT_K;const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,0),mat(0x5d5a54));m.castShadow=true;m.position.copy(from);scene.add(m);const d=_tmpV.subVectors(target,from);const T=1.1/.7;   // v0.89: kivi lentää 30 % hitaammin (ennen 1,1 s)

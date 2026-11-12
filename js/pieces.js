@@ -267,3 +267,40 @@ const STORE_UP=[null,{tervaspuu:6},{kupari:6,nahka:4}];
 function storeSlots(p){return PIECES[p.t].store+8*(p.data.lv||0);}
 function setDoor(p,open,dir){markShadowDirty();if(dir)p.data.dir=dir;p.data.open=open;p.mesh.userData.leaf.rotation.y=open?(p.data.dir||1)*Math.PI/2*.95:0;for(const c of p.cols)if(c.door)c.off=open;}
 function nearPiece(t,x,z,r){for(const p of pieces)if(p.t===t&&dist2(p.x,p.z,x,z)<r*r)return p;return null;}
+
+/* ---------------- v2.41 KAUKAISTEN RAKENNUSTEN YHDISTÄMINEN (SET.mergeSt) ----------------
+   Rakennusosat ovat kukin monta meshiä (piirtokutsua). Kun 24 m solu on yli BM_FAR m päässä pelaajasta, sen tavalliset osat yhdistetään
+   materiaaleittain muutamaksi meshiksi (sama geometria, materiaali ja varjot → ulkoasu sama). Alle BM_NEAR m päässä yhdistäminen puretaan,
+   joten lähellä kaikki toimii kuten ennen (osumat, purku, korjaus, ovet). Alkuperäiset meshit vain piilotetaan (säteen osumat toimivat
+   piilotettuihinkin). Ei yhdistetä: tulet, säiliöt, ovet, lasit, hehkuvat ja renkaalliset osat. Vaurio tai osien muutos solussa → purku. */
+const BM_CELL=24,BM_FAR=70,BM_NEAR=60,BMC=new Map();
+function bmOk(p){if(p._bmOk!==undefined)return p._bmOk;let ok=!isFirePiece(p.t)&&!PIECES[p.t].store&&!p.ring;
+  if(ok)p.mesh.traverse(o=>{const u=o.userData;if(u.flame||u.food||u.leaf||u.glass||u.glow||u.lid)ok=false;if(o.isMesh&&(Array.isArray(o.material)||o.material.transparent))ok=false;});return p._bmOk=ok;}
+const _bmN3=new THREE.Matrix3(),_bmV=new THREE.Vector3();
+function bmBuild(e){let n=0;const gs=e.list.map(o=>{const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry;n+=g.attributes.position.count;return g;});
+  const P3=new Float32Array(n*3),N3=new Float32Array(n*3),U2=e.uv?new Float32Array(n*2):null,C3=e.col?new Float32Array(n*3):null;let off=0;
+  e.list.forEach((o,i)=>{const g=gs[i],pa=g.attributes.position,na=g.attributes.normal,ua=g.attributes.uv,ca=g.attributes.color;_bmN3.getNormalMatrix(o.matrixWorld);
+    for(let j=0;j<pa.count;j++){const k=(off+j)*3;_bmV.fromBufferAttribute(pa,j).applyMatrix4(o.matrixWorld);P3[k]=_bmV.x;P3[k+1]=_bmV.y;P3[k+2]=_bmV.z;
+      if(na){_bmV.fromBufferAttribute(na,j).applyMatrix3(_bmN3).normalize();N3[k]=_bmV.x;N3[k+1]=_bmV.y;N3[k+2]=_bmV.z;}
+      if(U2&&ua){U2[(off+j)*2]=ua.getX(j);U2[(off+j)*2+1]=ua.getY(j);}if(C3&&ca){C3[k]=ca.getX(j);C3[k+1]=ca.getY(j);C3[k+2]=ca.getZ(j);}}
+    off+=pa.count;if(g!==o.geometry)g.dispose();});
+  const bg=new THREE.BufferGeometry();bg.setAttribute('position',new THREE.BufferAttribute(P3,3));bg.setAttribute('normal',new THREE.BufferAttribute(N3,3));
+  if(U2)bg.setAttribute('uv',new THREE.BufferAttribute(U2,2));if(C3)bg.setAttribute('color',new THREE.BufferAttribute(C3,3));bg.computeBoundingSphere();
+  const m=new THREE.Mesh(bg,e.m);m.castShadow=e.cast;m.receiveShadow=e.recv;m.matrixAutoUpdate=false;m.userData.bmerged=1;return m;}
+function bmMerge(key,list,cx,cz){const G=new Map(),hid=[];
+  for(const p of list){p.mesh.updateMatrixWorld(true);p.mesh.traverse(o=>{if(!o.isMesh||!o.geometry.attributes.position)return;for(let q=o;q&&q!==p.mesh;q=q.parent)if(!q.visible)return;
+    const m=o.material,uv=!!(m.map&&o.geometry.attributes.uv),col=!!(m.vertexColors&&o.geometry.attributes.color),k=m.uuid+'|'+(o.castShadow?1:0)+(o.receiveShadow?1:0)+(uv?1:0)+(col?1:0);
+    let e=G.get(k);if(!e){e={m,cast:o.castShadow,recv:o.receiveShadow,uv,col,list:[]};G.set(k,e);}e.list.push(o);});}
+  const meshes=[];for(const e of G.values()){if(e.list.length<2)continue;const m=bmBuild(e);scene.add(m);meshes.push(m);for(const o of e.list){o.visible=false;hid.push(o);}}
+  BMC.set(key,{x:cx,z:cz,meshes,hid,pcs:list.slice(),dmg:list.map(p=>p.dmgLv)});}
+function bmUnmerge(key){const c=BMC.get(key);if(!c)return;for(const m of c.meshes){scene.remove(m);m.geometry.dispose();}for(const o of c.hid)o.visible=true;BMC.delete(key);}
+function bmUnmergeAll(){for(const k of [...BMC.keys()])bmUnmerge(k);}
+const _bmCells=new Map();
+function bmTick(){bmDirty=false;if(!SET.mergeSt||typeof pieces==='undefined'){if(BMC.size)bmUnmergeAll();return;}
+  _bmCells.clear();for(const p of pieces){if(!p.mesh||!bmOk(p))continue;const k=Math.floor(p.x/BM_CELL)+','+Math.floor(p.z/BM_CELL);let a=_bmCells.get(k);if(!a)_bmCells.set(k,a=[]);a.push(p);}
+  const px=P.pos.x,pz=P.pos.z,fv=scene.fog.far+25+BM_CELL;
+  for(const [k,c] of [...BMC]){const cur=_bmCells.get(k)||[],same=cur.length===c.pcs.length&&cur.every((p,i)=>p===c.pcs[i]&&p.dmgLv===c.dmg[i]&&p.mesh.parent);
+    if(!same||dist2(px,pz,c.x,c.z)<BM_NEAR*BM_NEAR){bmUnmerge(k);continue;}const v=!P.inDun&&dist2(px,pz,c.x,c.z)<fv*fv;for(const m of c.meshes)m.visible=v;}
+  /* yksi uusi solu kerrallaan (ei nykäisyä isoista tukikohdista) */
+  for(const [k,list] of _bmCells){if(BMC.has(k)||list.length<2)continue;const [ix,iz]=k.split(',').map(Number),cx=(ix+.5)*BM_CELL,cz=(iz+.5)*BM_CELL;
+    if(dist2(px,pz,cx,cz)>BM_FAR*BM_FAR){bmMerge(k,list,cx,cz);const c=BMC.get(k),v=!P.inDun&&dist2(px,pz,cx,cz)<fv*fv;for(const m of c.meshes)m.visible=v;break;}}}

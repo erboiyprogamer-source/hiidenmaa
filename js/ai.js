@@ -595,7 +595,8 @@ function updateStations(dt){
    if(SET.shRate==='slow'&&shFrame%3===0)sun.shadow.needsUpdate=true;
    // v1.44 (lista 4, kohta 30) shFar: paikallaan (ei liikettä, hyökkäystä eikä kameran kääntöä) auringon varjot joka 4. kuva, muuten joka kuva
    else if(SET.shFar&&SET.shRate!=='slow'){const mv=Math.hypot(P.vel.x,P.vel.z)>.2||P.atk||Math.abs(camYaw-(shYaw0??camYaw))>.002;shYaw0=camYaw;if(mv||shFrame%4===0)sun.shadow.needsUpdate=true;}
-   if(QUAL.pointShadow){if(torchLight.intensity>0&&shFrame%fT===0)torchLight.shadow.needsUpdate=true;if(LIGHTS[0].intensity>0){if(shFrame%fF===0||shDirty||left)LIGHTS[0].shadow.needsUpdate=true;shDirty=false;}}}
+   if((QUAL.pointShadow||torchSharpOn())&&torchLight.castShadow&&torchLight.intensity>0&&(torchSharpOn()||shFrame%fT===0))torchLight.shadow.needsUpdate=true;   /* v2.45 terävät: joka ruutu */
+   if(QUAL.pointShadow){if(LIGHTS[0].intensity>0){if(shFrame%fF===0||shDirty||left)LIGHTS[0].shadow.needsUpdate=true;shDirty=false;}}}
   // Valokatto: pelaajan kohdalle osuva yhteisvalo (summa etäisyyden mukaan vaimennettuna) ei ylitä LIGHT_CAP:ia – päällekkäiset valot eivät kirkastu loputtomiin.
   {let W=0;const ls=ALL_LIGHTS;for(const l of ls)if(l.intensity>0){const d=Math.hypot(l.position.x-P.pos.x,l.position.y-(P.pos.y+1),l.position.z-P.pos.z);W+=l.intensity*Math.pow(Math.max(0,1-d/l.distance),1.5);}
    if(W>LIGHT_CAP){const k=LIGHT_CAP/W;for(const l of ls)l.intensity*=k;}}

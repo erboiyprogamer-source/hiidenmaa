@@ -352,6 +352,9 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   askelääni (v2.23, ennen julkaisua), DEV "ei nälkää" (v2.09), jousella ammunnan jälkeen kääntyminen (v2.06), Kalmanpesän murskausefektit (v0.93).
 - Korjaus: `/* */`-kommentit. **Rivin keskellä vain `/* */`, `//` vain rivin loppuun.** Tarkistusrivi v2.23 skannaa kaikki `__GJS`-tiedostot.
 - v2.24 huomio: skanneri pitää kommentin tekstiä `; nimi = …` koodina (väärä hälytys). Kirjoita kommentteihin "–" tai "on" puolipisteen ja `=`:n sijaan.
+- **v2.28 uusiutui:** puun tömähdyksen koukku lisättiin `// v2.28 …`-kommentilla rivin keskelle → perässä ollut `if(!P.inDun…)shake(…)` (maan tärähdys puun kaatuessa)
+  muuttui kommentiksi. Skanneri ei huomannut, koska kommentin ja koodin välissä oli `)` eikä `;`. Korjattu `/* */`:ksi; skanneri tunnistaa nyt myös `)if(`, `)for(`, `)while(`, `)return(`.
+  **Kun lisäät koodia olemassa olevan rivin keskelle, kirjoita kommentti AINA `/* */`.**
 
 ## 50. Aarnipuun läpi pääsi osittain (v2.25)
 - Syy: törmäysympyrä `NODE.r × koko` (0,66) oli pienempi kuin näkyvä runko (1,3 m laatikko → kulmat 0,92) ja juuret (1,1). Pelaaja (säde 0,38)
@@ -362,6 +365,58 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 ## 51. Äänityökalu kaatui uuteen ääneen ilman käsittelyprofiilia (v2.26)
 - Syy: `t_prof` haki `T_PROF[ev.split('_')[0]]` suoraan → uusi äänen nimi (esim. `puska`, `kipu`) antoi KeyError ja koko ajo keskeytyi.
 - Korjaus: `T_PROF.get(k, T_DEF)` + profiilit kaikille pelaajan osien äänille. Uutta ääntä lisätessä lisää sille profiili `T_PROF`:iin (muuten käytetään `T_DEF`).
+
+## 52. Selaimen omat säätimet eivät toimi pelin osoittimella (v2.29, ennaltaehkäisy)
+- Syy: hiiren lukituksen aikana pelin oma osoitin (`VC`, input.js) lähettää keinotekoisia hiiritapahtumia (`dispatchEvent`). Selain ei liikuta niillä
+  `<input type="range">`-säädintä eikä valitse tekstiä tms. – vain omat JS-kuuntelijat reagoivat.
+- Ratkaisu: tee säädin itse (rata + kahva, arvo `clientX`:stä, kuten `#splitDlg`/`splitAt`). Testaa keinotekoisilla `MouseEvent`-tapahtumilla.
+  Kaappausvaiheen kuuntelijassa ohita `VC.on && e.isTrusted` (oikea tapahtuma pysäytetään ja korvataan keinotekoisella).
+- Testiympäristössä latausnäyttö `#loadScr` ja valikkotausta `#menuBg` voivat peittää paneelin (`elementFromPoint`) – piilota ne testin ajaksi.
+- **v2.30:** uusi kelluva ruutu (kuten `#splitDlg`) on lisättävä ikkunan "napsautus paneelin ohi → sulje / pudota" -poikkeuksiin (ui.js `t.closest(...)`),
+  muuten sen napit sulkevat repun. Testaa painalluksella (mousedown + mouseup + click), ei pelkällä click-tapahtumalla.
+- **v2.30:** näppäintaulukko `keys` voi jäädä "pohjaan" (Alt+Tab) – `blur`/`visibilitychange` nollaa sen. Hiiritapahtumien muokkausnäppäimet luetaan tapahtumasta.
+
+## 53. Oikea klikkaus ei toiminut pelin osoittimella (v2.32)
+- Oire: valinta + oikea klikkaus kohderuutuun ei puolittanut (eikä Shift avannut slideria); oikea raahaus toimi.
+- Syy: hiiren ollessa lukittuna Chrome ei lähetä `contextmenu`-tapahtumaa. Headless-testissä `requestPointerLock` on korvattu, joten tapahtuma tuli ja testi meni läpi.
+- Ratkaisu (input.js): VC:n `mouseup`-käsittelijä lähettää oikeasta vapautuksesta itse `contextmenu`:n (`if(e.button===2)vcFire('contextmenu',…)`),
+  ja oikea `contextmenu` ohitetaan VC:n ollessa päällä. Älä nojaa lukituksen aikana selaimen omiin oikean napin tapahtumiin.
+- **v2.33 jatko:** sama oire jäi, kun osoitin liikkui napsautuksen aikana yli 6 px: raahaus alkoi, pudotti omaan ruutuunsa ja tyhjensi valinnan.
+  Ratkaisu: ui.js:n mouseup – pudotus omaan ruutuun palauttaa valinnan (`selectFor`). Testaa todellisella hiirellä/VC:llä niin, että painalluksen aikana liikutaan.
+- Testaa estämällä oikea `contextmenu` (`addInitScript`: kaappaava kuuntelija `e.isTrusted → stopImmediatePropagation`).
+
+## 54. Suorakulmio auringon ympärillä (v2.38)
+- Oire: auringon ympärillä vaalea suorakulmio/neliö (näkyi myös ilman 3D-säteitä).
+- Syy: taivaskupolin (`skyDome`, render.js) varjostin käytti verteksistä interpoloitua suuntaa `vD` sellaisenaan. Interpoloitu vektori on kolmion
+  sisällä lyhyempi kuin 1, ja jyrkkä hehku `pow(dot(vD,sun),90)` korostaa eron → hehku seuraa kupolin nelikulmioita.
+- Ratkaisu: normalisoi suunta pikselivarjostimessa (`vec3 d=normalize(vD)`). Sama sääntö kaikkiin suuntaa käyttäviin varjostimiin (taivas, vesi).
+
+## 55. Varjopassin kerrokset ja varjoasetusten palautus (v2.41, ennaltaehkäisy)
+- three r128 `WebGLShadowMap.renderObject` testaa `object.layers.test(camera.layers)` **pääkameraa** vasten, ei varjokameraa → kerroksilla ei voi tehdä
+  "vain varjossa näkyvää" meshiä. Ratkaisu: mesh `visible=false` ja `renderer.shadowMap.render`-kääre näyttää sen vain varjopassin ajan (resources.js `SHP`).
+- Kun optimoinnin kytkee pois, palauta **alkuperäinen** `castShadow` (`userData.cs0`) – kaikille `true` antoi varjon marjamättäille ja kasveille.
+- Instanssimeshin varjohaun säde ei saa olla kiinteä: Ultran varjoalue on 440 m leveä (220 m), 260 m raja jätti kaukaisia kuusia pois.
+- Testaa optimoinnit vertaamalla **samaa ruutua** ilman ja kanssa (ei kahta eri ajoa: huojunta ja pilvet liikkuvat ajan mukana).
+
+## 56. Varjojen vaalennus latisti low poly -sävytyksen (v2.42)
+- Syy: auringon valon siirtäminen tasaiseksi yleisvaloksi vähentää kolmioiden NdotL-eroja (tyylin tärkein osa).
+- Ratkaisu: vaalenna itse varjoa (render.js `hmLift`, säde-koodaus `SUN_SH_BASE`), tasaista valoa korkeintaan pieni osa (`SH_FILL`).
+  Jos three.js päivitetään, tarkista että ShaderChunk-korvaukset osuvat (`HM_OK` true).
+
+## 57. Reppu vilkkui ja klikkaukset katosivat jaksollisen uudelleenpiirron takia (v2.46)
+- Oire: hiiren alla oleva ruutu vilkkui sekunnin välein (soihtu kädessä), puolitus/valinta epäonnistui satunnaisesti.
+- Syy: `invDirty=true` joka sekunti (soihdun palkki) → `renderInv` korvaa ruutuelementit; painallus ja vapautus eri elementeissä → click katoaa.
+- Ratkaisu: jaksolliset muutokset (palkit) päivitetään paikallaan (`invBarDirty`/`invBarsTick`); täysi piirto ei taustalta painalluksen aikana (`uiBtnHeld`).
+  **Älä merkitse `invDirty`:ä ajastetusti** – vain kun repun sisältö oikeasti muuttuu.
+- Samassa erässä: kuoleman jälkeinen tieto (`P.deathCause`, `P.waterDeath`) nollautuu `playerDie`/`startPlayerDeath`:ssa → myöhemmin lukevat käyttävät `pDeath`-tilaa.
+
+## 58. Hautakummun portti leijui ja aukosta näkyi läpi (v2.49)
+- Oire: portti, portaat ja tulimaljat ilmassa (kartat 2 ja 5); mustan levyn yläpuolelta näkyi taivas; takaa näkyi musta levy.
+- Syy: koko portti sijoitettiin yhteen korkeuteen `terrainH(ex,ez)`. Korkeusruudukko on 2 m (`GS`), ja kummun kärki nostaa portin kohdan
+  kolmiota → portin edessä maa oli jopa 1 m alempana. Musta levy oli ohut ja matalampi kuin aukko.
+- Ratkaisu: jokainen maahan kuuluva osa `stoneCol(w,top,d,x,z,…)` = yläpää paikallaan, pohja `gmin` (5 pisteen minimi) − 0,3 m. Kumpuun lovi
+  portin taakse (`barrowMound`, bdx 6,4–8) → maa aukon kohdalla tasainen, kivimassa täyttää loven. Aukko on stencil-ikkuna (`barrowCave`).
+  **Uudet kiinteät rakenteet rinteessä: käytä `stoneCol`:ia tai mittaa maa nurkista, älä yhdestä pisteestä.** Tarkistusrivi v2.49 mittaa nurkat.
 
 ## Herkät kohdat (lue ennen muokkausta)
 

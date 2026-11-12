@@ -11,7 +11,8 @@ let shelterCache=false,fireCache=false,envTick=0,indoorT=0,indoorK=0;
 const cIndoor=new THREE.Color(0x6a5a48);
 // Yksinkertainen valofysiikka: suojassa ja seinien ympäröimänä taivaanvalo himmenee ja sininen sävy poistuu.
 const _dirs=[];for(let i=0;i<8;i++){const a=i/8*TAU;_dirs.push(new THREE.Vector3(Math.cos(a),0,Math.sin(a)));}
-function indoorScore(){if(P.inDun||!shelterCache)return 0;let h=0;const o=new THREE.Vector3(P.pos.x,P.pos.y+1.1,P.pos.z);for(const d of _dirs){raycaster.set(o,d);raycaster.far=6;if(raycaster.intersectObjects(pieceRoots,true).length)h++;}return h>=5?1:h>=3?.5:0;}
+const _inO=new THREE.Vector3();   // v2.41
+function indoorScore(){if(P.inDun||!shelterCache)return 0;let h=0;const o=_inO.set(P.pos.x,P.pos.y+1.1,P.pos.z);for(const d of _dirs){raycaster.set(o,d);raycaster.far=6;if(raycaster.intersectObjects(pieceRoots,true).length)h++;}return h>=5?1:h>=3?.5:0;}
 const WEATHERS={
   selkea:{n:'Selkeää',fog:1,dark:0,rain:0,cloud:.2},
   pilvi:{n:'Pilvistä',fog:.85,dark:.25,rain:0,cloud:.8},
@@ -20,7 +21,7 @@ const WEATHERS={
   sade:{n:'Sadetta',fog:.6,dark:.45,rain:1,cloud:1},
   myrsky:{n:'Myrsky',fog:.45,dark:.65,rain:1.4,wind:1.6,storm:1,cloud:1},
   lumi:{n:'Lumisadetta',fog:.5,dark:.35,rain:0,snow:1,cloud:.92},
-  sumu:{n:'Sumua',fog:.3,dark:.2,rain:0,cloud:.55},
+  sumu:{n:'Sumua',fog:.15,dark:.2,rain:0,cloud:.55},
 };
 const WMSG={sade:'Alkaa sataa.',tihku:'Alkaa tihuttaa.',myrsky:'Myrsky nousee!',lumi:'Alkaa sataa lunta.',sumu:'Sumu nousee.',tuuli:'Tuuli yltyy.'};
 function highGround(){return !P.inDun&&(P.pos.y>20||biomeHere(P.pos.x,P.pos.z)==='mountain');}
@@ -30,13 +31,39 @@ function updateWeather(){if(playTime<weather.until)return;const r=Math.random(),
   weather.cur=w;weather.until=playTime+(w==='myrsky'?90+Math.random()*90:150+Math.random()*180);
   if(w!==prev&&!P.inDun&&WMSG[w])msg(WMSG[w]);}
 const cSkyDay=new THREE.Color(0x87a9c2),cSkyDusk=new THREE.Color(0xc98a64),cSkyNight=new THREE.Color(0x070b14),cGrey=new THREE.Color(0x7d858c),cFlash=new THREE.Color(0xe8f0ff),cTmp=new THREE.Color(),cSun=new THREE.Color(),cSunLow=new THREE.Color(0xffa060);
+/* v2.42: toteutus vaihtui – ks. hmLift (render.js); alla alkuperäinen kuvaus. v2.33: avoimet biomit (niitty, ranta, nummi, tunturi, rakka, vuori, huiput, suo, meri): varjot 40 % vaaleammat. Osa auringosta siirtyy
+   aurinkoväriseksi tasaiseksi valoksi (shAmb), joten valaistu maa pysyy yhtä kirkkaana. Metsissä (koivu, korpi, kangas, aarni) ennallaan. Häivytys hidas. */
+const OPEN_BIOMES=new Set(['meadow','beach','sea','moor','tunturi','rakka','mountain','peak','suo']),OPEN_SH=.4,OPEN_RATE=.35;let openK=0;
+/* v2.34: muualla (metsät) varjot 20 % vaaleammat. Vuorokausi: kirkkaimpaan aikaan varjot vielä 15 % vaaleammat, pimeimpään 15 % tummemmat
+   (varjon syvyys × 0,85…1,15 auringon korkeuden mukaan). Syvyys 1 = alkuperäinen varjo; k = 1 − syvyys siirtyy auringosta tasaiseksi valoksi. */
+const FOREST_SH=.2,SH_TOD=.15,SH_FILL=.3;let shDepth=1;const cShA=new THREE.Color();
 let lightK=1,wCloud=.2,wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0,aarniK=0,stormT=5,stormMsgT=0;
 const cAarni=new THREE.Color(0x26302a);
+/* v2.49 KALMANUMMEN USVA: nummelle astuessa usva sakenee ja maailma harmaantuu hitaasti (~8 s). Voimakkuus päivän numerosta: MOOR_P = 50 %
+   päivistä täysi (1), muina 0,3–0,55. Harmaus = sumun/taivaan väri kohti cMoor + kankaan värikylläisyys (CSS saturate, vain muuttuessa). */
+const MOOR_FAR=80,cMoor=new THREE.Color(0x8b9094),_cMoor=new THREE.Color(),MOOR_P=.5;let moorK=0,moorDayN=-1,moorDayV=1,moorSat=-1;
+function moorDay(){const n=typeof dayN==='number'?dayN:0;if(n!==moorDayN){moorDayN=n;const r=mulberry32(Math.imul(n+577,2654435761)^0x5bd1e995);r();moorDayV=r()<MOOR_P?1:.3+.25*r();}return moorDayV;}
+function moorSatSet(){const v=Math.round((1-.32*moorK)*100)/100;if(v!==moorSat){moorSat=v;renderer.domElement.style.filter=v<.995?`saturate(${v})`:'';}}
 // Kuun kirkkaus vaihtelee 8 päivän kierrossa (uusikuu .2 … täysikuu 1).
 function moonPhase(){return .2+.8*(.5-.5*Math.cos((dayN%8)/8*TAU));}
-const cCloudDay=new THREE.Color(0xffffff),cCloudNight=new THREE.Color(0x232a3a),cCloudGrey=new THREE.Color(0x4b5058),_cc=new THREE.Color();
+const cCloudDay=new THREE.Color(0xe4e9ef),cCloudNight=new THREE.Color(0x232a3a),cCloudGrey=new THREE.Color(0x4b5058),_cc=new THREE.Color();
+/* v2.44 SATUNNAINEN PILVIMATTO (pilvikansi myös muulla säällä): päivän numerosta arvottu, sama koko päivän. DECK_P = 28 % päivistä;
+   peitto 0,30–0,65 (myrskyllä 0,92), näkyy jonakin päivän aikana (keskikohta aamusta iltaan, kesto 25–60 % vuorokaudesta), tulee ja menee pehmeästi.
+   Himmentää auringonsäteitä, -hehkua ja auringon valoa hieman (deckRnd). */
+const DECK_P=.6,DECK_MORN_P=.7;   /* v2.48: 60 % päivistä; muina päivinä usein aamumatto (m:1), joka väistyy aamupäivällä */let deckDayN=-1,deckDayP=null,deckRnd=0;
+function deckDay(){const n=typeof dayN==='number'?dayN:0;if(n!==deckDayN){deckDayN=n;const r=mulberry32(Math.imul(n+313,2246822519)^0x3c6ef372);r();
+    deckDayP=r()<DECK_P?{op:.3+.35*r(),c:.3+.45*r(),w:.25+.35*r()}:null;
+    if(!deckDayP&&r()<DECK_MORN_P){const e=.27+.09*r(),a=.03;deckDayP={op:.35+.3*r(),c:(a+e)/2,w:e-a,m:1};}}return deckDayP;}
+/* v2.47 PILVIPÄIVÄT: 3D-pilviä noin CLOUD_P = 70 % päivistä (päivän numerosta). Muina päivinä selkeällä/sumuisella säällä pilvet häipyvät, ellei
+   kova tuuli (7 → 11 m/s), myrsky (wDark) tai sade tuo niitä; pilvisellä ja sateisella säällä pilvet kuten ennen. Pehmeä siirtymä (cloudDayK, ~20 s). */
+const CLOUD_P=.7,CLOUD_CLR_T=.1;let cloudDayN=-1,cloudDayOn=true,cloudDayK=1,cloudClrK=0;
+function cloudDay(){const n=typeof dayN==='number'?dayN:0;if(n!==cloudDayN){cloudDayN=n;const r=mulberry32(Math.imul(n+7717,3266489917)^0x165667b1);r();cloudDayOn=r()<CLOUD_P;}return cloudDayOn;}
+function cloudDayTick(dt){const clear=weather.cur==='selkea'||weather.cur==='sumu',tg=cloudDay()||!clear?1:Math.max(sstep(7,11,WIND.spd),Math.min(1,wDark/.35),wRain);
+  cloudDayK=lerp(cloudDayK,tg,Math.min(1,dt*.05));return cloudDayK;}
+function deckTick(){const d=deckDay();if(!d){deckRnd=0;return;}const a=d.c-d.w/2,b=d.c+d.w/2,f=.05;deckRnd=d.op*sstep(a-f,a,dayT)*sstep(b+f,b,dayT);}
 // Pilvien liike, peitto, väri (valo, sää, ilta) ja salamoiden välke. cover 0–1.
-function updateClouds(dt,cover,light,el){const vis=!P.inDun;let cx=camera.position.x,cz=camera.position.z;
+function updateClouds(dt,cover,light,el){deckTick();cover*=cloudDayTick(dt);   /* v2.47 pilvipäivät */
+  cloudClrK=lerp(cloudClrK,weather.cur==='selkea'?1:0,Math.min(1,dt*.05));const clrOp=1-CLOUD_CLR_T*cloudClrK;   /* v2.47: selkeällä 10 % läpinäkyvämmät */const vis=!P.inDun;let cx=camera.position.x,cz=camera.position.z;
   _cc.copy(cCloudNight).lerp(cCloudDay,light).lerp(cCloudGrey,Math.min(1,wDark/.6)*.85);
   const dusk=sstep(.5,.0,el)*sstep(-.3,0,el);_cc.lerp(cSunLow,dusk*.45);
   const drift=dt*(1.2+WIND.spd*.55),R=CLOUD_R,grow=.75+.55*cover,hor=scene.background;
@@ -46,12 +73,12 @@ function updateClouds(dt,cover,light,el){const vis=!P.inDun;let cx=camera.positi
     const dx=mod(u.ox-cx+R)-R,dz=mod(u.oz-cz+R)-R,d=Math.hypot(dx,dz);
     c.position.set(cx+dx,u.h,cz+dz);
     // ilmestyminen peiton mukaan; kaukana häipyy (opasiteetti + väri kohti horisonttia) eikä piirry R:n takana
-    const k=sstep(u.th,u.th+.12,cover),far=sstep(R*.5,R*.97,d),op=.95*k*(1-far);c.visible=op>.03;if(!c.visible)continue;
+    const k=sstep(u.th,u.th+.12,cover),far=sstep(R*.5,R*.97,d),op=.95*k*(1-far)*clrOp;c.visible=op>.03;if(!c.visible)continue;
     c.scale.set(u.sc*grow,u.sc*(.8+.4*cover),u.sc*grow);
-    const m=c.material;m.opacity=op;m.color.copy(_cc).lerp(hor,far*.75);m.emissive.copy(m.color).multiplyScalar(.55*light+.12);
+    const m=c.material;m.opacity=op;m.color.copy(_cc).lerp(hor,far*.75);m.emissive.copy(m.color).multiplyScalar(.26*light+.1);   /* v2.38: pienempi itsevalaisu → auringon puoli kirkas, varjopuoli harmaampi (syvyys) */
     if(flash>0){const near=sstep(240,60,d);m.emissive.lerp(cFlash,Math.min(1,flash*(.5+.5*near)));}}
   // pilvikansi rankassa säässä
-  const deck=sstep(.82,1,cover)*Math.min(1,wDark/.4);cloudDeck.visible=vis&&deck>.02;if(cloudDeck.visible){cloudDeck.position.set(cx,128,cz);cloudDeck.material.opacity=deck*.92;cloudDeck.material.color.copy(_cc);if(flash>0)cloudDeck.material.color.lerp(cFlash,flash*.6);
+  const deck=sstep(.82,1,cover)*Math.min(1,wDark/.4),dop=Math.max(deck*.92,deckRnd);cloudDeck.visible=vis&&dop>.02;if(cloudDeck.visible){cloudDeck.position.set(cx,128,cz);cloudDeck.material.opacity=dop;   /* v2.44: myös satunnaisina päivinä (deckRnd) */cloudDeck.material.color.copy(_cc);if(flash>0)cloudDeck.material.color.lerp(cFlash,flash*.6);
     cloudDeck.material.map.offset.x+=drift*.0004;}
   if(boltGrp){boltT-=dt;boltGrp.visible=boltT>0&&((boltT*40|0)%3!==0);if(boltT<=0){scene.remove(boltGrp);boltGrp=null;}}}
 // Taivaskupoli ja auringonsäteet (vain selkeällä/puolipilvisellä säällä päivällä, ei sisällä).
@@ -60,11 +87,14 @@ function updateSky(light,sd0,el,sunK){const sd=_skyS.copy(sd0);skyDome.position.
   SKY_U.uHor.value.copy(scene.background);_sky.copy(scene.background).multiplyScalar(.62);_sky.b=Math.min(1,_sky.b*1.25+.03*light);SKY_U.uTop.value.copy(_sky);
   SKY_U.uSun.value.set(sd.x,sd.y,sd.z);SKY_U.uSunC.value.copy(cSun);SKY_U.uGlow.value=sunK*(1-Math.min(1,wDark*1.4))*(1-aarniK*.7);
   const clear=(1-sstep(.35,.7,wCloud))*(1-Math.min(1,wDark*3))*sstep(.05,.25,el)*sstep(.85,.45,el)*sunK*(1-indoorK)*(1-aarniK);
-  sunShafts.visible=!P.inDun&&clear>.02&&SET.shafts!==false;if(sunShafts.visible){const hx=sd.x,hz=sd.z,hl=Math.hypot(hx,hz)||1;
-    sunShafts.position.set(camera.position.x+hx/hl*70,Math.max(0,camera.position.y-25),camera.position.z+hz/hl*70);
-    sunShafts.rotation.set(0,0,0);sunShafts.quaternion.setFromUnitVectors(_up,sd.normalize());
-    camera.getWorldDirection(_camD);const look=Math.max(0,_camD.dot(sd));sunShafts.userData.mat.opacity=.07*clear*(.85+.15*Math.sin(playTime*.3))*(1-sstep(.45,.85,look));}
-  sunGlow.visible=!P.inDun&&el>-.08;if(sunGlow.visible){sunGlow.position.copy(sunDisc.position);sunGlow.material.opacity=(.55+.25*sstep(.3,0,el))*sunK*(1-Math.min(1,wDark*1.6))*(1-sstep(.4,.9,wCloud)*.6);}}
+  /* v2.35 näytön säteet (render.js RAYS/drawRays): voimakkuus säästä ja auringosta, maaston peitto marssilla kohti aurinkoa */
+  /* v2.37: vahvat koko päivän (aamusta iltaan), hiipuvat auringon laskiessa kohti horisonttia ja yöksi pois (v2.36 hiipui väärin keskipäivällä);
+     päiväkohtainen vahvuus raysDay() */
+  /* v2.44 pilvimatto himmentää; v2.47 linssiheijastus omalla päiväkertoimella flareDay (0,9–1,1) – ei säteiden 0,3–1 vaihtelua */
+  {const kb=(1-sstep(.35,.75,wCloud))*(1-Math.min(1,wDark*3))*sstep(-.04,.35,el)*sunK*(1-indoorK)*(1-aarniK*.7),dk=1-deckRnd*.9;RAYS.k=kb*raysDay()*dk;RAYS.kf=kb*flareDay()*dk;}
+  {let o=1;if(RAYS.k>.01){const s=_skyS.copy(sd0).normalize(),cp=camera.position;for(let d=6;d<=300;d*=1.32){const x=cp.x+s.x*d,z=cp.z+s.z*d;if(terrainH(x,z)>cp.y+s.y*d){o=0;break;}}}
+   const rdt=RAYS.dt||.016;RAYS.occ=lerp(RAYS.occ,o,Math.min(1,rdt*3));RAYS.occP=lerp(RAYS.occP,RAYS.pix,Math.min(1,rdt*(RAYS.pix<RAYS.occP?22:6)));}   /* v2.38: maasto rauhallisesti, este kiekon edessä lähes heti (22/s) */
+  sunGlow.visible=!P.inDun&&el>-.08;if(sunGlow.visible){sunGlow.position.copy(sunDisc.position);sunGlow.material.opacity=(1-deckRnd*.8)*SUN_GLOW_K*(.55+.25*sstep(.3,0,el))*sunK*(1-Math.min(1,wDark*1.6))*(1-sstep(.4,.9,wCloud)*.6);}}
 // v0.84 TUULI (päivityslista kohta 4). WIND.a = suunta johon tuuli puhaltaa (rad, atan2(x,z)), WIND.x/z = yksikkövektori, WIND.spd m/s.
 // Suunta pysyy 2–6 min, sitten kääntyy 40–90 s:ssa uuteen arvottuun suuntaan (enintään ±120°), lisäksi ±8° hidas huojunta.
 // Nopeus säätyypin mukaan (WIND_RANGE) hitaasti vaihtuvalla tavoitteella + puuskat. Tila tallentuu (flags.wind).
@@ -100,21 +130,29 @@ function updateEnvironment(dt){
   // joten valon suunta vaihtuu vasta kun voimakkuus on nolla.
   const light=sstep(-.4,.45,el);lightK=light;const sunK=sstep(-.12,.08,el),moonK=sstep(-.12,-.32,el);
   const sd=_tmpV.set(Math.sin(ang)*.9,el,.35).normalize();
-  if(P.inDun){const rf=P.realm?REALMS[P.realm].fog:0x050403;scene.background.setHex(rf);scene.fog.color.setHex(rf);scene.fog.near=3;scene.fog.far=28;hemi.intensity=.06+BOSS_GLOW*1.2;sun.intensity=0;amb.intensity=.05+BOSS_GLOW*.5;stars.visible=false;sunDisc.visible=false;moon.visible=false;rain.visible=false;snow.visible=false;water.visible=false;return;}
+  if(P.inDun){moorK=0;moorSatSet();const rf=P.realm?REALMS[P.realm].fog:0x050403;scene.background.setHex(rf);scene.fog.color.setHex(rf);scene.fog.near=3;scene.fog.far=28;hemi.intensity=.06+BOSS_GLOW*1.2;sun.intensity=0;shAmb.intensity=0;amb.intensity=.05+BOSS_GLOW*.5;stars.visible=false;sunDisc.visible=false;moon.visible=false;rain.visible=false;snow.visible=false;water.visible=false;return;}
   water.visible=true;stars.visible=true;
   // Aarnimetsässä tiheä sumu ja hämärä valo.
-  aarniK=lerp(aarniK,biomeHere(P.pos.x,P.pos.z)==='aarni'?1:0,Math.min(1,dt*.8));
+  {const bh=biomeHere(P.pos.x,P.pos.z);aarniK=lerp(aarniK,bh==='aarni'?1:0,Math.min(1,dt*.8));moorK=lerp(moorK,bh==='moor'?moorDay():0,Math.min(1,dt*.13));moorSatSet();}
   if(light>.5)cTmp.copy(cSkyDusk).lerp(cSkyDay,(light-.5)*2);else cTmp.copy(cSkyNight).lerp(cSkyDusk,light*2);
   cTmp.lerp(cGrey,wDark*light*.8);cTmp.multiplyScalar(1-wDark*.35);cTmp.lerp(cFlash,flash*.35);
+  cTmp.lerp(_cMoor.copy(cMoor).multiplyScalar(Math.max(.12,light)),moorK*.55);   /* v2.49 nummen harmaa usva */
   cTmp.lerp(cAarni,aarniK*.75*Math.max(.3,light));
-  scene.background.copy(cTmp);scene.fog.color.copy(cTmp);
+  scene.background.copy(cTmp);scene.fog.color.copy(cTmp);barrowCaveTick(light);
   // Usvainen ja hämärä maailma; Aarnimetsässä sumu on sakeaa.
-  scene.fog.near=lerp(lerp(6,40,wFog)*lerp(.4,1,light)*RDK,3,aarniK);scene.fog.far=lerp(lerp(45,165,wFog)*lerp(.5,1,light)*RDK,38,aarniK);
+  {const nr=lerp(6,40,wFog)*lerp(.4,1,light)*RDK,fr=lerp(45,165,wFog)*lerp(.5,1,light)*RDK;   /* v2.49 nummen usva: kohti 4 / 80 m (moorK) */
+   scene.fog.near=lerp(Math.min(nr,lerp(nr,4,moorK)),3,aarniK);scene.fog.far=lerp(Math.min(fr,lerp(fr,MOOR_FAR,moorK)),38,aarniK);}
   const ph=moonPhase();
-  if(sunK>0){cSun.setHex(0xfff1d6).lerp(cSunLow,1-sstep(.1,.6,el));sun.color.copy(cSun);sun.intensity=1.4*sunK*sstep(-.12,.45,el)*(1-wDark*.7);sun.position.set(P.pos.x+sd.x*120,P.pos.y+sd.y*120,P.pos.z+sd.z*120);}
+  if(sunK>0){cSun.setHex(0xfff1d6).lerp(cSunLow,1-sstep(.1,.6,el));sun.color.copy(cSun);sun.intensity=1.4*sunK*sstep(-.12,.45,el)*(1-wDark*.7)*(1-deckRnd*.35);sun.position.set(P.pos.x+sd.x*120,P.pos.y+sd.y*120,P.pos.z+sd.z*120);}
   else{sun.color.setHex(0x8aa2d8);sun.intensity=.2*moonK*ph*(1-wDark*.6);sun.position.set(P.pos.x-sd.x*120,P.pos.y+Math.abs(sd.y)*120+40,P.pos.z-sd.z*120);}
   indoorK=lerp(indoorK,indoorT,Math.min(1,dt*2));
   sun.intensity=sun.intensity*(1-.45*aarniK)*(1-.7*indoorK)+flash*.45*(1-indoorK);
+  openK=lerp(openK,OPEN_BIOMES.has(zoneAt(P.pos.x,P.pos.z))?1:0,Math.min(1,dt*OPEN_RATE));
+  /* v2.42: vaalennus k = 1 − shDepth jaetaan: SH_FILL (30 %) tasaisena aurinkovärisenä valona (vastavalon pinnat eivät mustu) ja loput suoraan
+     varjoon varjostimessa (render.js hmLift, L = k(1−f)/(1−kf)) → valaistu maa ja varjot yhtä kirkkaat kuin ennen, mutta low poly -kolmioiden
+     kirkkauserot säilyvät (ennen koko k tasaisena valona latisti ne). */
+  {const base=1-lerp(FOREST_SH,OPEN_SH,openK),tod=lerp(1+SH_TOD,1-SH_TOD,sstep(-.12,1.3,el));shDepth=clamp(base*tod,0,1);const k=1-shDepth,f=SH_FILL,L=k*(1-f)/Math.max(.01,1-k*f);
+   shAmb.color.copy(sun.color);shAmb.intensity=sun.intensity*k*f*Math.max(.15,sd.y);sun.intensity*=1-k*f;sun.shadow.radius=SUN_SH_BASE+1000*Math.round(L*100);}
   sun.target.position.copy(P.pos);
   if(SET.shUltra==='wide'){const o=160*.45,fx=-Math.sin(camYaw)*o,fz=-Math.cos(camYaw)*o;sun.target.position.x+=fx;sun.target.position.z+=fz;sun.position.x+=fx;sun.position.z+=fz;}   // v1.76: laaja alue sovitetaan näkymän suuntaan
   hemi.intensity=((.07+.2*light*(1-wDark*.4))*(1-.45*aarniK)+flash*.55)*(1-.6*indoorK)+BOSS_GLOW*.8;amb.intensity=(.03+.025*light+flash*.22)*(1-.5*indoorK)+BOSS_GLOW*.3;
@@ -134,7 +172,7 @@ function updateWater(dt,sd){const U=WATER_U,ta=.05+.0025*WIND.spd*WIND.spd;WV.a=
   for(let i=0;i<3;i++)WV.ph[i]=(WV.ph[i]+dt*WV.S[i])%TAU;U.uPh.value.set(WV.ph[0],WV.ph[1],WV.ph[2]);U.uAmp.value=WV.a;U.uT.value=playTime%600;
   const st=water.geometry.userData.st||1.25;water.position.x=Math.round(camera.position.x/st)*st;water.position.z=Math.round(camera.position.z/st)*st;
   U.uFar.value=clamp(scene.fog.far*1.1,60,200);U.uSun.value.copy(sd);U.uSunC.value.copy(sun.color).multiplyScalar(sun.intensity);
-  U.uAmbC.value.copy(hemi.color).multiplyScalar(hemi.intensity*1.1).addScalar(amb.intensity);U.uSkyTop.value.copy(SKY_U.uTop.value);U.uSkyHor.value.copy(SKY_U.uHor.value);
+  U.uAmbC.value.copy(hemi.color).multiplyScalar(hemi.intensity*1.1).addScalar(amb.intensity).add(cShA.copy(shAmb.color).multiplyScalar(shAmb.intensity));U.uSkyTop.value.copy(SKY_U.uTop.value);U.uSkyHor.value.copy(SKY_U.uHor.value);
   const fx=!!SET.waterFx;U.uFoam.value=fx?1:0;U.uCap.value=fx?sstep(10,18,WIND.spd):0;}
 // Myrsky kaataa harvoin puun pelaajan lähellä (3–40 m). Puun alle jäävä menettää 80 % terveydestä.
 const _sl=[];

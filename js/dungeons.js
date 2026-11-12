@@ -501,6 +501,26 @@ function nearSite(x,z,r){for(const k in LOC){const L=LOC[k];if((L.kind==='portal
 const MIST_TEX=(function(){const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d'),gr=g.createRadialGradient(32,32,2,32,32,32);gr.addColorStop(0,'rgba(255,255,255,.9)');gr.addColorStop(.5,'rgba(255,255,255,.35)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);})();
 const mkSprite=()=>{const m=new THREE.Sprite(new THREE.SpriteMaterial({map:MIST_TEX,transparent:true,depthWrite:false,opacity:0,fog:false}));m.visible=false;scene.add(m);return{m,life:0,max:1,x:0,y:0,z:0,vx:0,vy:0,vz:0,size:4,op:.1};};
 const MIST=Array.from({length:72},mkSprite), STEAM=Array.from({length:48},mkSprite), WISP=Array.from({length:48},mkSprite);
+/* v2.43 SAVUJEN OPTIMOINTI (oletus; Extra-grafiikka › Ultra-savut = SET.smokeUltra palauttaa v2.42:n): usva ja höyry piirretään yhdellä
+   instanssimeshillä (kamerapäin kääntyvät tasot, sama varjostin kuin SpriteMaterial: väri × tekstuuri, alfa × peitto, ei sumua) – ennen jopa
+   120 erillistä spriteä (kutsua). Simulaatio on sama; vain piirto vaihtuu. Normaalissa maailmassa savut alkavat ilmestyä vasta SMK_R0 m
+   päässä löytöpaikasta (ennen 60 m) ja ovat täysimääräisiä SMK_R1 m:ssä; määrä SMK_K (80 %) entisestä. Instanssit lajitellaan kaukaa lähelle. */
+const SMK_R0=28,SMK_R1=18,SMK_K=.8;
+const SMK=(function(){const N=MIST.length+STEAM.length,pl=new THREE.PlaneGeometry(1,1),g=new THREE.InstancedBufferGeometry();g.index=pl.index;g.setAttribute('position',pl.attributes.position);g.setAttribute('uv',pl.attributes.uv);
+  const A=(n,k)=>{const a=new THREE.InstancedBufferAttribute(new Float32Array(n*k),k);a.setUsage(THREE.DynamicDrawUsage);return a;};
+  const ip=A(N,3),is=A(N,1),ia=A(N,1),ic=A(N,3);g.setAttribute('iPos',ip);g.setAttribute('iSc',is);g.setAttribute('iA',ia);g.setAttribute('iCol',ic);g.instanceCount=0;
+  const mt=new THREE.ShaderMaterial({uniforms:{map:{value:MIST_TEX}},transparent:true,depthWrite:false,
+    vertexShader:'attribute vec3 iPos;attribute float iSc;attribute float iA;attribute vec3 iCol;varying vec2 vUv;varying float vA;varying vec3 vC;void main(){vUv=uv;vA=iA;vC=iCol;vec4 mv=modelViewMatrix*vec4(iPos,1.0);mv.xy+=position.xy*iSc;gl_Position=projectionMatrix*mv;}',
+    fragmentShader:'uniform sampler2D map;varying vec2 vUv;varying float vA;varying vec3 vC;void main(){vec4 t=texture2D(map,vUv);gl_FragColor=vec4(vC*t.rgb,t.a*vA);}'});
+  const m=new THREE.Mesh(g,mt);m.frustumCulled=false;m.visible=false;scene.add(m);return{m,g,ip,is,ia,ic,N,list:[]};})();
+const _smV=new THREE.Vector3();
+function smkDraw(){const L=SMK.list;L.length=0;for(const pool of [MIST,STEAM])for(const s of pool)if(s.m.visible){s.m.visible=false;L.push(s);}
+  if(!L.length){SMK.m.visible=false;SMK.g.instanceCount=0;return;}
+  let cx=0,cy=0,cz=0;for(const s of L){const p=s.m.position;cx+=p.x;cy+=p.y;cz+=p.z;s._d=_smV.copy(p).applyMatrix4(camera.matrixWorldInverse).z;}cx/=L.length;cy/=L.length;cz/=L.length;
+  L.sort((a,b)=>a._d-b._d);   /* kaukaa lähelle (näkymän z negatiivinen) */
+  const P3=SMK.ip.array,S1=SMK.is.array,A1=SMK.ia.array,C3=SMK.ic.array;
+  L.forEach((s,i)=>{const p=s.m.position,c=s.m.material.color;P3[i*3]=p.x-cx;P3[i*3+1]=p.y-cy;P3[i*3+2]=p.z-cz;S1[i]=s.m.scale.x;A1[i]=s.m.material.opacity;C3[i*3]=c.r;C3[i*3+1]=c.g;C3[i*3+2]=c.b;});
+  for(const a of [SMK.ip,SMK.is,SMK.ia,SMK.ic])a.needsUpdate=true;SMK.g.instanceCount=L.length;SMK.m.position.set(cx,cy,cz);SMK.m.updateMatrixWorld();SMK.m.visible=true;}
 // Ulkona höyryävät paikat: kummun portti, arkkukivet ja portaalien juuret
 for(const k in LOC){const L=LOC[k];if(L.kind==='rock')VENTS.push({x:L.x+1.5,y:terrainH(L.x,L.z)+.1,z:L.z+2.5,col:0xdfe8ea,rate:1.2,acc:0});if(L.kind==='portal'){const y=terrainH(L.x,L.z);for(const s of [-1,1])VENTS.push({x:L.x+(L.ax==='x'?s*4.4:.6),y:y+.1,z:L.z+(L.ax==='x'?.6:s*4.4),col:0xdfe8ea,rate:1.4,acc:0});}}
 VENTS.push({x:LOC.barrow.x+9.6,y:terrainH(LOC.barrow.x+10.5,LOC.barrow.z)+.1,z:LOC.barrow.z-1,col:0xcfd4d0,rate:2.5,acc:0},{x:LOC.barrow.x+9.6,y:terrainH(LOC.barrow.x+10.5,LOC.barrow.z)+.1,z:LOC.barrow.z+1,col:0xcfd4d0,rate:2.5,acc:0});
@@ -510,15 +530,16 @@ function updateMist(dt){
      Normaalilla höyryä ja sisäkiehkuroita on puolet vähemmän, mutta haituvat ovat 1,2× isompia ja 1,39× tiheämpiä
      (määrä × koko² × peitto ≈ sama), joten ne näyttävät yhtä paksuilta. Maanpinnan usva pysyy täysimääräisenä Normaalilla. */
   const dun=P.inDun,D=dun&&P.realm?REALMS[P.realm]:null,ML=SET.mist??1,hi=ML>=2,q0=AUTO_K.fx[AUTO.fx],q=q0*Math.min(1,ML),fxN=q0*(hi?1:ML>=1?.5:ML*.5),szK=hi?1:1.2,opK=hi?1:1.39;
-  let ax=P.pos.x,az=P.pos.z,on=dun,col=D?D.mist:0xa8a49a;
-  if(!dun){let bd=60*60;for(const k in LOC){const L=LOC[k];if(L.kind!=='portal'&&L.kind!=='rock'&&L.kind!=='ruin'&&k!=='barrow')continue;const d2=dist2(L.x,L.z,P.pos.x,P.pos.z);if(d2<bd){bd=d2;ax=L.x;az=L.z;on=true;}}col=0xc9d6da;}
-  const n=MIST.length*q;
+  let ax=P.pos.x,az=P.pos.z,on=dun,col=D?D.mist:0xa8a49a;const ult=!!SET.smokeUltra;let near=1;
+  if(!dun){const R0=ult?60:SMK_R0;let bd=R0*R0;for(const k in LOC){const L=LOC[k];if(L.kind!=='portal'&&L.kind!=='rock'&&L.kind!=='ruin'&&k!=='barrow')continue;const d2=dist2(L.x,L.z,P.pos.x,P.pos.z);if(d2<bd){bd=d2;ax=L.x;az=L.z;on=true;}}col=0xc9d6da;
+    if(!ult)near=on?SMK_K*sstep(SMK_R0,SMK_R1,Math.sqrt(bd)):0;}   /* v2.43: ilmestyy lähestyttäessä, 80 % */
+  const n=MIST.length*q*near;
   MIST.forEach((s,i)=>{
     if(i>=n||(!on&&s.life<=0)){s.m.visible=false;return;}
     if(s.life<=0){if(!on)return;const a=Math.random()*TAU,rr=Math.random()*(dun?15:10);s.x=ax+Math.cos(a)*rr;s.z=az+Math.sin(a)*rr;s.y=(dun?DUN.y:terrainH(s.x,s.z))+.3+Math.random()*1.1;const sp=dun?.9:.5;s.vx=(Math.random()-.5)*sp;s.vz=(Math.random()-.5)*sp;s.max=s.life=6+Math.random()*6;s.size=dun?4+Math.random()*3.5:5+Math.random()*4;s.op=dun?.17:.11;s.ph=Math.random()*6;}
     s.life-=dt;const k=s.life/s.max,f=Math.sin(Math.PI*(1-k));s.x+=(s.vx+Math.sin(playTime*.7+s.ph)*.25)*dt;s.z+=(s.vz+Math.cos(playTime*.6+s.ph)*.25)*dt;s.y+=Math.sin(playTime*.9+s.ph)*.05*dt;
     s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar(s.size*(1+.25*(1-k)));s.m.material.opacity=s.op*f;s.m.material.color.setHex(col);s.m.visible=true;});
-  for(const v of VENTS){if(!!v.dun!==dun||dist2(v.x,v.z,P.pos.x,P.pos.z)>30*30)continue;v.acc+=dt*v.rate*fxN;
+  for(const v of VENTS){const vd2=dist2(v.x,v.z,P.pos.x,P.pos.z),vr=ult||dun?30:SMK_R0-4;if(!!v.dun!==dun||vd2>vr*vr)continue;v.acc+=dt*v.rate*fxN*(ult||dun?1:SMK_K*sstep(vr,SMK_R1-6,Math.sqrt(vd2)));
     while(v.acc>=1){v.acc--;const s=STEAM.find(o=>o.life<=0);if(!s)break;s.x=v.x+(Math.random()-.5)*.5;s.y=v.y;s.z=v.z+(Math.random()-.5)*.5;s.vx=(Math.random()-.5)*.3;s.vz=(Math.random()-.5)*.3;s.vy=.9+Math.random()*.7;s.max=s.life=2.4+Math.random()*1.2;s.col=v.col;s.szK=szK;s.opK=opK;}}
   // Usvakiehkurat: pienet, nopeammin kiertelevät hattarat sisätiloissa (lattiasta noin 3,5 m korkeuteen)
   WISP.forEach((s,i)=>{if(!dun||i>=WISP.length*fxN){if(s.life>0)s.life-=dt*3;s.m.visible=s.life>0&&dun;return;}
@@ -528,6 +549,7 @@ function updateMist(dt){
   for(const s of STEAM){if(s.life<=0){s.m.visible=false;continue;}
     s.life-=dt;const k=s.life/s.max;s.x+=s.vx*dt;s.y+=s.vy*dt;s.z+=s.vz*dt;
     s.m.position.set(s.x,s.y,s.z);s.m.scale.setScalar((.7+(1-k)*2.8)*(s.szK||1));s.m.material.opacity=.3*(s.opK||1)*Math.sin(Math.PI*(1-k));s.m.material.color.setHex(s.col);s.m.visible=true;}
+  if(!ult)smkDraw();else if(SMK.m.visible){SMK.m.visible=false;SMK.g.instanceCount=0;}   /* v2.43: yksi piirtokutsu */
 }
 
 /* ---------------- TIPPUVAT PISARAT ---------------- */

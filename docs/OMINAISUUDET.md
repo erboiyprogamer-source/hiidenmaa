@@ -209,6 +209,10 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Valot:** enintään 6 lähintä valonlähdettä kerralla (asetus), yhteisvalon katto (`LIGHT_CAP`), elävä välke.
 - **Varjot:** aurinko/kuu (varjokartta 2048, alue 55 m); lähimmän tulen varjot pimeällä (päivitys tiheä pelaajan ollessa 17 m sisällä, kerran
   poistuttaessa); käsisoihdun pieni varjo pimeällä.
+  **v2.42:** vaalennus tehdään pääosin itse varjoon (30 % tasaisena valona) → low poly -kolmioiden kirkkauserot (esim. illalla vuorten muodot) säilyvät.
+  **v2.34:** metsissä varjot 20 % vaaleammat; kaikki varjot keskipäivällä vielä 15 % vaaleammat ja hämärässä/yöllä 15 % tummemmat (liukuu auringon mukaan).
+  **v2.33:** avoimissa biomeissa (niitty, ranta, meri, nummi, tunturi, rakka, vuori, huiput, suo) varjot ovat 40 % vaaleammat; metsissä
+  (koivulehto, korpi, jäkäläkangas, aarnimetsä) ennallaan. Vaihto häivyttyy hitaasti (n. 5–8 s) biomin rajalla.
 
 ## 8. Taistelu (actions.js)
 
@@ -284,6 +288,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 
 ## 11. Hautakumpu ja ulottuvuudet (landmarks.js, dungeons.js)
 
+- **Hautakummun suu (v2.49):** portin aukosta näkyy kapeneva ja laskeva kivikäytävä, jonka läpikuultavat mustat levyt (7 × 30 %) syventävät
+  pimeyttä (stencil-ikkuna: näkyy vain aukon läpi, maasto ei peitä). Portin takana kivimassa; kaikki osat ulottuvat maahan asti.
 - **Hautakumpu:** kiinteä luolasto (`DMAP`), 3 hautakirstua (hiidenkivet), kalmot ja ylimys, seinäsoihdut, luut, tippukivet, tynnyrit.
 - **Ulottuvuudet:** Routaluola (sokkelo), Kalmankammio (huoneet), Aarnihauta (luola, kivimöhkäleseinät, epätasainen lattia 0–0,45 m).
   Pohja arvotaan ensimmäisellä käynnillä (`flags.rs`), rakennetaan vasta sisään astuessa ja piirretään vain siellä ollessa.
@@ -310,7 +316,16 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   Pilvet (myös kartalla) liikkuvat tuulen suuntaan, puut kallistuvat ja heiluvat, sade viistää, savu ja kipinät ajautuvat, nuolet kallistuvat
   (13 m/s ≈ 0,5 m / 30 m). Ison kartan oikeassa yläkulmassa iso kompassi, "Tuuli suunnasta / X m/s" ja voimakkuuspalkki – läpikuultava, häipyy kun hiiri viedään sen päälle, ja kartan merkit + pelaajan nuoli näkyvät sen päällä (v1.07); kartan päällä liukuvat tuuliviirut (v1.04); minikartan reunalla tuulinuoli + m/s.
 - **Pilvet** isoina kerroksina sään mukaan, kaukana häipyvät; pilvikansi rankassa säässä; salaman välähdys kevyt.
-- **Aurinko:** pyöreä hehku (`sunGlow`), säteet selkeällä säällä (häipyvät aurinkoon katsottaessa).
+- **Aurinko:** pyöreä hehku (`sunGlow`). **v2.35 säteet** selkeällä säällä: pehmeät kiilat auringosta näytöllä; kääntyvät kameran mukana eri
+  nopeuksilla, osa piiloutuu ja ilmestyy katsesuunnan mukaan, mäki auringon edessä peittää. Asetus "Auringon valonsäteet" (pois Low–Medium-).
+  **v2.40:** säteet 15 % läpinäkyvämmät, epäsäännölliset ja elävät (paksuus, suunta, pituus ja kirkkaus vaihtelevat), näkyvät harvemmin.
+  Este auringon edessä: säteet katoavat lähes heti sen puolen mukaan, joka peittyy; kokonaan peitettynä kaikki säteet ja heijastus pois.
+  **v2.39:** auringon hehku pienempi ja selvästi läpinäkyvämpi.
+  **v2.38:** auringon hehku on pyöreä (ei suorakulmiota); kun este menee auringon eteen, osa säteistä (60 %) ja heijastus katoavat lähes heti,
+  loput jäävät himmeämmiksi. Pilvet harmaanvalkoisia ja varjostettuja (kirkas yläosa, harmaampi pohja).
+  **v2.37:** säteet ja heijastus vahvoja koko päivän (aamusta iltaan) ja hiipuvat auringon laskiessa; vahvuus vaihtelee päivittäin (30–100 %);
+  piiloutuvat, kun puu, rakennus, hahmo tai pilvi on auringon edessä; yksittäisiä säteitä näkyy hieman harvemmin kuin v2.35.
+  **Linssiheijastus** (asetus, vain Ultra-esiasetuksessa): haaleat renkaat auringosta ruudun keskipisteen kautta, kun katsoo aurinkoa kohti.
 - **Aarnimetsässä** tiheä sumu ja pimeämpi valo.
 
 ## 14. Kartta (ui.js)
@@ -434,6 +449,26 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## Lista 4, erä F (v1.44)
 - Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
   Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+- **v2.49:** Kalmanummella usva sakenee ja maailma harmaantuu hitaasti (puolena päivistä voimakkaasti, muulloin lievemmin); Hautakummun
+  suusta näkyy syvenevä luolakäytävä, ja portti on maassa kaikilla kartoilla; Ultralla pilvimaton reuna häipyy pehmeästi.
+- **v2.48:** sumuinen sää on sakeampi (näkyvyys noin 22 % lyhyempi); pilvimatto noin 60 %:na päivistä, ja muina päivinä se on usein (70 %)
+  taivaalla aamulla ja väistyy aamupäivällä.
+- **v2.47:** pilvimatto noin joka toinen päivä; linssiheijastuksen voimakkuus vaihtelee päivittäin ±10 %; 3D-pilviä noin 70 %:na päivistä (muulloin
+  selkeällä taivas tyhjä, ellei tuuli, myrsky tai sade tuo pilviä); pilvet ovat korkeammalla (3 omaa korkeuttaan) ja selkeällä 10 % läpinäkyvämpiä.
+- **v2.46:** repun ruudut eivät enää vilku soihtu kädessä, ja puolitus klikkaamalla toimii aina. Pilvet ovat pehmeämpiä ja vaihtelevampia (isoja ja korkeita kumpupilviä). Hukkuessa soi hukkumiskuoleman ääni.
+- **v2.45:** Extra-grafiikka › Terävät soihtuvarjot: käsisoihdun varjot selvärajaiset (1024 px), päivittyvät joka kuva ja ulottuvat 7 m; laatu heikkenee matkan kasvaessa.
+- **v2.44:** joinakin päivinä (noin joka neljäs) taivaalla on läpikuultava pilvimatto millä säällä tahansa; se tulee ja menee päivän aikana ja himmentää aurinkoa hieman.
+- **v2.43:** Hautakummun kumpu jatkuu portin taakse (ei rakoa). Porttien, arkkukivien, raunioiden ja kummun usva ja höyry ilmestyvät vasta
+  lähestyttäessä (28 m → täysi 18 m, 80 % entisestä) ja piirretään kevyesti; Extra-grafiikka › Ultra-savut palauttaa entisen (60 m, täysi määrä).
+  Soihtujen ja tulinuolten liekit osoittavat aina ylöspäin.
+- **v2.41 optimoinnit** (Grafiikka › Suorituskyky; ulkoasu ennallaan, Ultra lähes täysin):
+  - **Kaukaiset puut kevyemmin** (`treeLod`): koivut, männyt ja aarnipuut kaukana ilman ohuita oksia ja rungon taivutusjakoja (muoto ja värit samat).
+    Etäisyys esiasetuksen mukaan: Low/Low+ 60 m, Medium- 70, Medium 80, Medium+/High 100, High+ 120, Ultra 140 m; Pois = aina täysi malli.
+  - **Varjojen optimointi** (`shOpt`, oletus päällä): varjoon piirretään vain varjoalueella olevat puut ja kivet (ennen kokonaiset 70 m ruudut);
+    maaston taakse jäävien varjot pois (ladataan ennen kuin harjanteen yli näkee). Tulien ja soihdun varjoille omat mallit.
+  - **Yksinkertaiset varjot alkaen** (`shLod`): kauempana puiden varjot yksinkertaisemmista malleista. Low 25 m … Medium 40 m … Ultra 90 m; Pois = kaikki tarkat.
+  - **Staattisten kohteiden yhdistäminen** koskee nyt myös kaukaisia rakennuksia (yli 70 m; lähellä puretaan, joten rakentaminen, purku, ovet ja tulet toimivat ennallaan).
+  - Auringonsäteiden peittotarkistus ei enää pysäytä peliä (luku taustalla). DEV › Suorituskykymittari näyttää kutsut, kolmiot ja ruutuajan.
 
 ## Latausnäyttö (v1.45)
 - Latauksen valmistuttua riimut leimahtavat 0,8 s lähes valkoisiksi ja kirkkaiksi, sitten näyttö häipyy. Reunoilla nousee hiilloshiukkasia ja tuhkaa.
@@ -527,6 +562,18 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
   kovassa vauhdissa, isku ja osuma, palaminen (rätinä), lentoonlähtö (metso), nousu syntyessä, luiden kalina, nuuhkiminen, loiskahdus,
   ravistus vedestä noustessa (myös animaatio), kahina juostessa metsässä. Eläimet syövät rauhassa 20–50 s välein (pää alhaalla, 3–6 s).
   Puuttuva ääni = hiljaisuus. Tila: `sounds/olennot_toiminnot/AANILISTA_TOIMINNOT.md`.
+- **v2.33:** pieni hiiren liike napsautuksen aikana ei enää tyhjennä valintaa (raahaus takaisin omaan ruutuun = valinta).
+- **v2.32:** valitse pino klikkaamalla ja klikkaa kohderuutua oikealla → puolet siirtyy (Shift pohjassa → slider); toimii nyt myös pelin
+  omalla osoittimella (hiiri lukittuna), samoin arkussa.
+- **v2.31 poimintaääni:** hieman kimeämpi, sävel vaihtelee ±20 % ja tumma suodin (alipäästö 2,4 kHz) pehmentää sitä.
+- **v2.30:** Shift voi olla pohjassa jo ennen valintaa tai raahausta – ratkaisevaa on Shift oikean napin vapautuksen/klikkauksen hetkellä.
+  Sliderin napit eivät sulje reppua. Poimintaääni lyhyempi, hiljaisempi ja sävel vaihtelee enemmän.
+- **v2.29 repun siirtoslider:** raahaa pinoa oikealla napilla ja vapauta Shift pohjassa kohderuudussa (tai valitse pino ja Shift + oikea klikkaus
+  kohteeseen) → slider 0 … pinon koko. Siirrä-nappi tai Enter siirtää valitun määrän, numerot 1–9 siirtävät heti, napsautus ruudun ohi peruu ja puolittaa.
+  Toimii repussa ja arkussa. Esineen nosto/lasku ja kasan puolitus saavat omat äänet (`siirto`, `puolitus`). Puun kaatumisnarina loppuu, kun puu osuu maahan.
+- **v2.28 pelaajan äänet osa 2:** jousi, lyönnit, osumat (myös puuhun ja kiveen), poiminta, syöminen, juominen ja arkun avaus soivat omilla äänillä.
+  Kaatuvan puun tömähdys kuuluu, kun puu osuu maahan (myös karhun kaatamat). Reppu soittaa saman äänen auetessa ja sulkeutuessa; oma arkku
+  (ja tynnyri) oman sulkemisäänen (`arkku_kiinni`, kun käyttäjä tuo sen).
 - **v2.27 Aarnimetsän askel ja oksat:** pusikkoaskel lyhyempi (0,28 s), voimakkuus ±10 % ja sävel ±9 % joka askeleella. Kun astut maassa olevan
   oksan päälle, kuuluu oksan rasahdus normaalisti; Aarnimetsässä oksa rasahtaa välillä tosi hiljaa. 2 s tauko (myös olennoilla).
 - **v2.26 pensaat ja askeleet:** pelaaja kävelee pensaan läpi → heti pusikkoaskel ja puska-ääni (täysi voimakkuus), enintään 2 s välein;

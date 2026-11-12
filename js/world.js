@@ -48,6 +48,14 @@ Object.assign(LOC.barrow,{name:'Hautakumpu'});Object.assign(LOC.circle,{name:'Ka
 Object.assign(LOC.ruinF,{name:'Metsäraunio'});Object.assign(LOC.ruinM,{name:'Vuoriraunio'});Object.assign(LOC.ruinC,{name:'Rantaraunio'});
 // Aarnimetsät (yksikkökoordinaatit): korkeat, tuuheat ja synkät metsät.
 const AARNI=MAP.aarni.map(([x,z,r])=>({x,z,r}));
+/* Hautakummun kohouma (lisätään litistetyn maan päälle). v2.43: kumpu jatkuu portin taakse (portti x + 10,5 m, landmarks.js): 5,2 m korkea
+   kieleke, joka laskee nollaan juuri ennen porttia (bdx 8,5 → 10,2) → portin ja kummun väli umpeen; portin edusta ja portaat ennallaan.
+   Leveys ±4,2 m, häivytys ±6,5 m:iin (portin kiviseinien takana). Väri (render.js) nurmi, kun kohouma > 0,2 m. */
+const BARROW_EXT=5.2;
+function barrowMound(x,z){const bdx=x-LOC.barrow.x,bdz=z-LOC.barrow.z,bd=Math.hypot(bdx,bdz);let mh=bd<10?6.5*(1-(bd/10)**2):0;
+  if(bdx>0&&bdx<10.2){const ext=BARROW_EXT*sstep(10.2,8.5,bdx)*sstep(6.5,4.2,Math.abs(bdz));if(ext>mh)mh=ext;}
+  if(bdx>6.4)mh*=1-sstep(6.4,8,bdx)*sstep(4.6,3.2,Math.abs(bdz));   // v2.49 lovi portin taakse (kivimassa täyttää) → maa aukon edessä tasainen
+  return mh;}
 const FLATS=[
   {x:LOC.barrow.x,z:LOC.barrow.z,r:18,h:4},
   {x:LOC.circle.x,z:LOC.circle.z,r:15,h:6},
@@ -79,7 +87,7 @@ for(const k of ['ruinF','ruinM','ruinC']){const L=LOC[k];FLATS.push({x:L.x,z:L.z
 function heightFn(x,z){
   let h=baseHeight(x,z);
   for(const f of FLATS){const t=sstep(f.r+12,f.r,Math.hypot(x-f.x,z-f.z));if(t>0)h=lerp(h,f.h,t);}
-  const bd=Math.hypot(x-LOC.barrow.x,z-LOC.barrow.z); if(bd<10)h+=6.5*(1-(bd/10)**2);
+  h+=barrowMound(x,z);
   if(h<-.6)h*=1+1.6*sstep(-.6,-6,h);   // v2.18: pohja syvenee jyrkästi rannan jälkeen (−9 → −23 m, −14 → −36 m); ranta ja maa ennallaan
   return h;
 }
