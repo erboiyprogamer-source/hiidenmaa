@@ -1,7 +1,7 @@
 /* Hiidenmaa – main.js
    Valikko, pääsilmukka ja testirajapinta window.__game */
 'use strict';
-window.__JSV2='2.42';   // v1.58: versiotarkistus (viimeinen skripti)
+window.__JSV2='2.43';   // v1.58: versiotarkistus (viimeinen skripti)
 // v1.24 KORJAUS (KORJAUKSET 22): valikkokameran tila esitellään ennen kuin startPlay voidaan kutsua (karttavaihdon jälkeinen automaattinen
 // aloitus tapahtuu jo tiedoston alussa; ennen let-muuttujat olivat vielä alustamatta → ReferenceError → peli jäi mustaksi).
 let frameErrShown=false;
@@ -272,7 +272,8 @@ function frame(now){
    menuVis=mv;if(mv||(SET.menuAnimKeep&&started)){try{mfxFrame(now);}catch(err){console.error(err);}}}
   if(state==='ui'&&typeof VC!=='undefined'&&VC.on){uiAlt=!uiAlt;if(uiAlt)skip3d=true;}   // v1.76: paneelin ollessa auki 3D joka toinen ruutu → osoitin päivittyy useammin
   if(skip3d&&state!=='ui'&&RAYS.clr){RAYS.g.clearRect(0,0,RAYS.W,RAYS.H);RAYS.clr=false;}   // v2.35 valikon kuvissa ei vanhoja säteitä
-  if(!skip3d){RAYS.dt=dt;try{drawRays(dt);}catch(err){if(!RAYS.err){RAYS.err=1;console.error(err);}}try{renderer.render(scene,camera);try{raysPeek();}catch(e2){}}catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe piirrossa: '+(err&&err.message||err));}}}
+  if(!skip3d){try{flameUpTick();}catch(err){}   // v2.43 liekit pystyyn ennen piirtoa
+    RAYS.dt=dt;try{drawRays(dt);}catch(err){if(!RAYS.err){RAYS.err=1;console.error(err);}}try{renderer.render(scene,camera);try{raysPeek();}catch(e2){}}catch(err){console.error(err);if(!frameErrShown&&window.__bootBox){frameErrShown=true;window.__bootBox('Virhe piirrossa: '+(err&&err.message||err));}}}
 }
 updateLights();applyGfx();refreshKeyHints();
 perfApply();if(window.__ldDone)window.__ldDone();   // v1.60: testi tehty jo ennen latausta (boot.js)

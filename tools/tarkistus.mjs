@@ -276,6 +276,24 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.43 Hautakumpu: kumpu jatkuu portin taakse (väli umpeen), portin kohta ja edusta ennallaan, kieleke nurmen värinen',()=>{
+    const L=LOC.barrow,ex=L.x+10.5,ez=L.z,base=x=>terrainH(x,ez);
+    const a=barrowMound(ex-2.5,ez)>=BARROW_EXT*.95&&barrowMound(ex-1,ez)>1&&barrowMound(ex,ez)===0&&barrowMound(ex+2,ez)===0&&barrowMound(ex-2.5,ez+8)===0;
+    const b=typeof heightFn==='function'&&/barrowMound\(x,z\)/.test(heightFn.toString());
+    return a&&b||`virhe kieleke ${a} korkeus ${b} (${barrowMound(ex-2.5,ez).toFixed(2)}/${barrowMound(ex,ez).toFixed(2)})`;});
+  t('v2.43 savut: yksi instanssipiirto (ei spritejä), porteilla ja arkkukivillä ilmestyvät vasta lähellä (28 m → täysi 18 m, 80 %); Extra-grafiikan Ultra-savut palauttaa vanhan',()=>{
+    const a=SMK_R0<=30&&SMK_R1<SMK_R0&&SMK_K===.8&&SMK.m.material.isShaderMaterial&&SMK.N===MIST.length+STEAM.length&&typeof smkDraw==='function';
+    const b=SET_DEF.smokeUltra===false&&SET_PAGES.xgfx.includes('smokeUltra')&&!PRESETS.some(p=>'smokeUltra' in p);
+    const src=updateMist.toString(),c=/R0=ult\?60:SMK_R0/.test(src)&&/if\(!ult\)smkDraw\(\)/.test(src)&&/SMK_K\*sstep\(SMK_R0,SMK_R1/.test(src);
+    return a&&b&&c||`virhe ${a} ${b} ${c}`;});
+  t('v2.43 liekit aina ylöspäin: käsisoihtu ja tulinuoli kallistettuina → liekin akseli pystyssä',()=>{
+    const g=makeHeld('soihtu'),par=new THREE.Group();par.add(g);scene.add(par);par.rotation.set(.9,.4,-.7);par.position.set(P.pos.x,P.pos.y+1,P.pos.z);flameUpTick();
+    const up=f=>{const q=new THREE.Quaternion();f.getWorldQuaternion(q);return new THREE.Vector3(0,1,0).applyQuaternion(q).y;};
+    const tipW=g.localToWorld(new THREE.Vector3(0,0,.62)),f0=g.userData.flame[0],fp=new THREE.Vector3();f0.getWorldPosition(fp);
+    const a=FLAME_UP.has(g)&&g.userData.flame.slice(0,3).every(f=>up(f)>.999)&&Math.abs(fp.x-tipW.x)<.02&&Math.abs(fp.z-tipW.z)<.02&&fp.y>tipW.y;
+    scene.remove(par);FLAME_UP.delete(g);
+    const b=/FLAME_UP\.add\(m\)/.test(shootArrow.toString());
+    return a&&b||`virhe soihtu ${a} nuoli ${b}`;});
   t('v2.42 varjon vaalennus pääosin varjostimessa (low poly -kolmioiden sävytys säilyy): 30 % tasaisena valona, loput mix(s,1,L), perussäde säilyy',()=>{
     const g=window.__game,pv=[dayT,openK];dayT=.5;openK=1;g.update(1/30);
     const L=Math.floor(sun.shadow.radius/1000)/100,base=sun.shadow.radius-Math.floor(sun.shadow.radius/1000)*1000,k=1-shDepth,f=SH_FILL,Le=k*(1-f)/(1-k*f);

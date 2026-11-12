@@ -38,10 +38,10 @@ function validateKey(action,code){
 // shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
 const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,grass:1,particles:1,detail:'high',bldDetail:true,
   renderDist:165,lights:6,lightDist:60,lightRange:17,mist:.6,clouds:1,drop3d:true,blood:1,bloodFx:true,keyHints:true,shafts:true,flare:false,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
-  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,treeLod:80,shOpt:true,shLod:40,sens:1,curSens:1,hudMode:0,creVol:.8,plVol:.8,arrowLight:false,menuBg:'img',shUltra:'off',menuAnimKeep:false,waterFx:false,waterOpt:true,uwFx:false,waterMega:false,waterHQ:false,shoreSpray:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
+  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,treeLod:80,shOpt:true,shLod:40,sens:1,curSens:1,hudMode:0,creVol:.8,plVol:.8,arrowLight:false,menuBg:'img',shUltra:'off',menuAnimKeep:false,waterFx:false,waterOpt:true,uwFx:false,waterMega:false,smokeUltra:false,waterHQ:false,shoreSpray:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
 // Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
 // v1.35 (lista 3, kohta 16): varjot ovat Grafiikka-sivun väliotsikko (ei omaa sivua).
-const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','lightDist','lightRange','shafts','flare','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','waterFx','uwFx','waterOpt','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar','treeLod','shOpt','shLod'],xgfx:['shUltra','waterHQ','waterMega','shoreSpray'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep','creVol','plVol']};
+const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','lightDist','lightRange','shafts','flare','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','waterFx','uwFx','waterOpt','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar','treeLod','shOpt','shLod'],xgfx:['shUltra','waterHQ','waterMega','shoreSpray','smokeUltra'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep','creVol','plVol']};
 /* v1.35 (lista 3, kohta 17): esiasetukset Low … Ultra (8 tasoa, oletus Medium = SET_DEF:n grafiikka). Esiasetus muuttaa kaikki alla
    luetellut asetukset; Low–Medium kytkee automaattisäädön päälle, High–Ultra pois. Ultra ylittää aiemmat maksimit (piirtoetäisyys 520 m,
    ruoho Ultra, varjoalue 140 m, tulien varjot 1024). Jos jotain säädetään käsin, nimi on "Custom".
@@ -224,7 +224,8 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       `<h4 class="setSub">Vesi</h4>`+
       xRow('Realistinen vesi','waterHQ',[['false','Pois (low poly)'],['true','Realistinen','']],'heijastukset, väreily, läpinäkyvyys ja vaahto – oletuksena kevyt low poly -vesi')+
       xRow('Mega-aallot','waterMega',[['false','Pois'],['true','Tiheä vesiverkko','red']],'noin 26 000 kärkeä – tarkimmat aallot lähellä')+
-      xRow('Aallot iskevät rantaan','shoreSpray',[['false','Pois'],['true','Roiskeet','']],'isot aallot heittävät vesipisaroita korkealle rannassa (painovoima tuo ne alas)')
+      xRow('Aallot iskevät rantaan','shoreSpray',[['false','Pois'],['true','Roiskeet','']],'isot aallot heittävät vesipisaroita korkealle rannassa (painovoima tuo ne alas)')+
+      xRow('Ultra-savut','smokeUltra',[['false','Pois (kevennetty)'],['true','Ultra','red']],'porttien, arkkukivien, raunioiden ja kummun usva ja höyry ilman v2.43:n kevennystä: näkyy jo 60 m päästä, täysi määrä, erilliset spritet')
     }</div>`+resetBtn;
     $('#bPageReset').onclick=()=>resetPage('xgfx');
     body.querySelectorAll('[data-ush]').forEach(b=>b.onclick=()=>{SET.shUltra=b.dataset.ush;saveSet();applyGfx();renderSettings();});

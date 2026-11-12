@@ -136,7 +136,7 @@ const terrainMesh=(function buildTerrain(){
     if(h>33){const t=sstep(33,38,h);c=[lerp(c[0],.92,t),lerp(c[1],.94,t),lerp(c[2],.96,t)];}
     if(slope>.75&&b!=='sea'&&b!=='beach'){const t=sstep(.75,1.3,slope);c=[lerp(c[0],.45,t),lerp(c[1],.44,t),lerp(c[2],.41,t)];}
     if(Math.hypot(x-LOC.circle.x,z-LOC.circle.z)<13){c=[c[0]*.75,c[1]*.75,c[2]*.8];}
-    if(Math.hypot(x-LOC.barrow.x,z-LOC.barrow.z)<10.5){c=[.33+n,.36+n,.22];}
+    if(Math.hypot(x-LOC.barrow.x,z-LOC.barrow.z)<10.5||barrowMound(x,z)>.2){c=[.33+n,.36+n,.22];}   // v2.43: myös kieleke portin takana
     terrainColors[i*3]=c[0];terrainColors[i*3+1]=c[1];terrainColors[i*3+2]=c[2];
   }
   const idx=new Uint32Array(GN*GN*6);let k=0;

@@ -1,6 +1,15 @@
 /* Hiidenmaa – models.js
    Hahmomallit laatikoista: kaksijalkaiset, nelijalkaiset, aseet, kilvet */
 'use strict';
+/* v2.43 LIEKIT AINA YLÖSPÄIN: liikkuviin esineisiin kiinnitetyt liekit (käsisoihtu, selässä/maassa oleva soihtu, tulinuoli) pysyvät kiinni
+   kärjessään, mutta niiden asento lasketaan joka ruutu maailman pystyyn (main.js flameUpTick ennen piirtoa). Rekisteri FLAME_UP: ryhmä, jonka
+   userData.flameUp (tai .flame) on liekkilista. Liekin ankkuri f.userData.fa = {x,y,z (kärki ryhmän koordinaatistossa), up (m ylöspäin)}. */
+const FLAME_UP=new Set(),_fuQ=new THREE.Quaternion(),_fuP=new THREE.Vector3(),_fuS=new THREE.Vector3(),_fuV=new THREE.Vector3();
+function flameUp(g,list){g.updateWorldMatrix(true,false);g.matrixWorld.decompose(_fuP,_fuQ,_fuS);_fuQ.invert();
+  for(const f of list){if(!f.visible)continue;let a=f.userData.fa;if(!a)a=f.userData.fa={x:f.position.x,y:0,z:f.position.z,up:f.position.y};
+    _fuV.set(a.x,a.y,a.z);g.localToWorld(_fuV);_fuV.y+=a.up*_fuS.y;g.worldToLocal(_fuV);f.position.copy(_fuV);f.quaternion.copy(_fuQ);}}
+function flameUpTick(){if(FLAME_UP.size>400)for(const g of FLAME_UP)if(!g.parent)FLAME_UP.delete(g);
+  for(const g of FLAME_UP){let v=!!g.parent;for(let o=g;o&&v;o=o.parent)if(!o.visible)v=false;if(!v)continue;flameUp(g,g.userData.flameUp||g.userData.flame);}}
 
 /* ---------------- FIGURES ---------------- */
 function makeBiped(o){
@@ -322,7 +331,7 @@ function makeHeld(id){
       const fa=new THREE.Mesh(new THREE.ConeGeometry(.095,.3,7),MAT.flame),fb=new THREE.Mesh(new THREE.ConeGeometry(.06,.22,7),MAT.flame2),fc=new THREE.Mesh(new THREE.ConeGeometry(.032,.14,6),new THREE.MeshBasicMaterial({color:0xfffbe0}));
       const glow=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),new THREE.MeshBasicMaterial({color:0xff9a3a,transparent:true,opacity:.22,depthWrite:false,fog:false}));
       // Liekit osoittavat aina ylös (kämmenen koordinaatistossa +y), sauva kärjestä eteen
-      for(const [m,y] of[[fa,.2],[fb,.16],[fc,.12]]){m.position.set(0,y,.62);g.add(m);}glow.position.set(0,.18,.62);g.add(glow);g.userData.flame=[fa,fb,fc,glow];break;}
+      for(const [m,y] of[[fa,.2],[fb,.16],[fc,.12]]){m.position.set(0,y,.62);g.add(m);}glow.position.set(0,.18,.62);g.add(glow);g.userData.flame=[fa,fb,fc,glow];FLAME_UP.add(g);break;}   // v2.43 liekit lukittu pystyyn
     case 'vasara':{shaft(g,.6,W);g.add(bx(.34,.14,.16,mat(0x7c6a52),0,0,.54));for(const sx of[-1,1])g.add(bx(.04,.16,.18,mat(0x4b4338),sx*.15,0,.54));g.add(bx(.07,.16,.07,mat(0x4b4338),0,0,.4));break;}
     // Jousi: runko kaareva (selkä +z eli ampumasuuntaan, kärjet ampujaa kohti), jänne kärkien välillä ja nuoli, joka vedetään taakse ampujaa kohti (updateBowMesh).
     // v0.68: poistettu aiempi 180° kääntö, joka käänsi kaaren ampujaan päin ja jänteen venymään eteenpäin.
