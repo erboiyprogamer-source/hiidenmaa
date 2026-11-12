@@ -209,6 +209,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Valot:** enintään 6 lähintä valonlähdettä kerralla (asetus), yhteisvalon katto (`LIGHT_CAP`), elävä välke.
 - **Varjot:** aurinko/kuu (varjokartta 2048, alue 55 m); lähimmän tulen varjot pimeällä (päivitys tiheä pelaajan ollessa 17 m sisällä, kerran
   poistuttaessa); käsisoihdun pieni varjo pimeällä.
+  **v2.42:** vaalennus tehdään pääosin itse varjoon (30 % tasaisena valona) → low poly -kolmioiden kirkkauserot (esim. illalla vuorten muodot) säilyvät.
   **v2.34:** metsissä varjot 20 % vaaleammat; kaikki varjot keskipäivällä vielä 15 % vaaleammat ja hämärässä/yöllä 15 % tummemmat (liukuu auringon mukaan).
   **v2.33:** avoimissa biomeissa (niitty, ranta, meri, nummi, tunturi, rakka, vuori, huiput, suo) varjot ovat 40 % vaaleammat; metsissä
   (koivulehto, korpi, jäkäläkangas, aarnimetsä) ennallaan. Vaihto häivyttyy hitaasti (n. 5–8 s) biomin rajalla.

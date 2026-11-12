@@ -398,6 +398,11 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Instanssimeshin varjohaun säde ei saa olla kiinteä: Ultran varjoalue on 440 m leveä (220 m), 260 m raja jätti kaukaisia kuusia pois.
 - Testaa optimoinnit vertaamalla **samaa ruutua** ilman ja kanssa (ei kahta eri ajoa: huojunta ja pilvet liikkuvat ajan mukana).
 
+## 56. Varjojen vaalennus latisti low poly -sävytyksen (v2.42)
+- Syy: auringon valon siirtäminen tasaiseksi yleisvaloksi vähentää kolmioiden NdotL-eroja (tyylin tärkein osa).
+- Ratkaisu: vaalenna itse varjoa (render.js `hmLift`, säde-koodaus `SUN_SH_BASE`), tasaista valoa korkeintaan pieni osa (`SH_FILL`).
+  Jos three.js päivitetään, tarkista että ShaderChunk-korvaukset osuvat (`HM_OK` true).
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

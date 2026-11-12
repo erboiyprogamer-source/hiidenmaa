@@ -276,6 +276,13 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.42 varjon vaalennus pääosin varjostimessa (low poly -kolmioiden sävytys säilyy): 30 % tasaisena valona, loput mix(s,1,L), perussäde säilyy',()=>{
+    const g=window.__game,pv=[dayT,openK];dayT=.5;openK=1;g.update(1/30);
+    const L=Math.floor(sun.shadow.radius/1000)/100,base=sun.shadow.radius-Math.floor(sun.shadow.radius/1000)*1000,k=1-shDepth,f=SH_FILL,Le=k*(1-f)/(1-k*f);
+    const a=HM_OK&&Math.abs(L-Le)<.011&&Math.abs(base-SUN_SH_BASE)<1e-6&&L>.2&&f>0&&f<=.4;
+    /* tasainen osuus vain SH_FILL (ennen koko k) */
+    const b=/sun\.intensity\*=1-k\*f/.test(updateEnvironment.toString())&&shAmb.intensity>0;
+    dayT=pv[0];openK=pv[1];g.update(1/30);return a&&b||`virhe ${a} ${b} L ${L} perus ${base}`;});
   t('v2.41 kaukaiset puut kevyemmin: kaukomalli jakaa instanssipuskurin, sama muoto (vähemmän kolmioita), täysi malli ennallaan; esiasetukset',()=>{
     const tri=g=>g.attributes.position.count/3,a=tri(NGEO.koivu)===388&&tri(NGEO_LOW.koivu)<tri(NGEO.koivu)*.6&&tri(NGEO.manty)===224&&tri(NGEO_LOW.manty)<150&&tri(NGEO_LOW.aarnipuu)<tri(NGEO.aarnipuu);
     const im=nodeIM.koivu.find(m=>m.userData.low),b=!!im&&im.userData.low.instanceMatrix===im.instanceMatrix&&im.userData.low.material===im.material;
@@ -356,7 +363,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v2.33 avoimissa biomeissa varjot 40 % vaaleammat (osa auringosta tasaiseksi valoksi, hidas häivytys), metsissä ennallaan',()=>{
     const a=OPEN_SH===.4&&OPEN_BIOMES.has('meadow')&&OPEN_BIOMES.has('beach')&&!OPEN_BIOMES.has('forest')&&!OPEN_BIOMES.has('koivu')&&!OPEN_BIOMES.has('aarni')&&!OPEN_BIOMES.has('kangas');
     const b=typeof shAmb!=='undefined'&&shAmb.isAmbientLight&&scene.children.includes(shAmb);
-    const src=updateEnvironment.toString(),c=/openK=lerp\(openK,OPEN_BIOMES\.has\(zoneAt\(P\.pos\.x,P\.pos\.z\)\)\?1:0,Math\.min\(1,dt\*OPEN_RATE\)\)/.test(src)&&/sun\.intensity\*=1-k/.test(src)&&OPEN_RATE<1;
+    const src=updateEnvironment.toString(),c=/openK=lerp\(openK,OPEN_BIOMES\.has\(zoneAt\(P\.pos\.x,P\.pos\.z\)\)\?1:0,Math\.min\(1,dt\*OPEN_RATE\)\)/.test(src)&&/sun\.shadow\.radius=SUN_SH_BASE\+1000\*Math\.round\(L\*100\)/.test(src)&&OPEN_RATE<1;   /* v2.42: vaalennus varjostimessa */
     return a&&b&&c||`virhe ${a} ${b} ${c}`;});
   t('v2.32 lukituksessa oikea vapautus tekee contextmenun itse (valitse + oikea klikkaus ruutuun = puolitus, Shift = slider)',()=>{
     const x=new XMLHttpRequest();x.open('GET','js/input.js?'+Date.now(),false);x.send();const src=x.responseText;

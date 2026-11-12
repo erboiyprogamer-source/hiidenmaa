@@ -96,7 +96,7 @@ function applyGfx(){
   /* v1.76: erittäin tarkat varjot (shUltra, ei esiasetuksissa): sharp = 8192 kartta, soft = 8192 + pehmeät reunat (PCF, säde 3,5),
      wide = 8192 + 1,6× alue näkymän suuntaan sovitettuna + päivitys joka ruutu (raskain, punainen). Kartan koko render.js setQuality. */
   {const u=SET.shUltra||'off',want=u==='soft'?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;if(renderer.shadowMap.type!==want){renderer.shadowMap.type=want;lastShadowOn=null;}
-   sun.shadow.radius=u==='soft'?3.5:1;const d=SHU[u]?SHU[u].d:(+SET.shDist||55),sc=sun.shadow.camera;if(sc.right!==d){sc.left=-d;sc.right=d;sc.top=d;sc.bottom=-d;sc.updateProjectionMatrix();}
+   SUN_SH_BASE=u==='soft'?3.5:1;sun.shadow.radius=SUN_SH_BASE;   /* v2.42: environment.js lisää varjon vaalennuksen (×1000) */const d=SHU[u]?SHU[u].d:(+SET.shDist||55),sc=sun.shadow.camera;if(sc.right!==d){sc.left=-d;sc.right=d;sc.top=d;sc.bottom=-d;sc.updateProjectionMatrix();}
    sun.shadow.bias=SHU[u]?-.00035:-.0006;sc.far=Math.max(SHU[u]?420:260,d*2+120);sc.updateProjectionMatrix();}
   {const R=+SET.lightRange||17;for(const l of LIGHTS)l.distance=R;torchFill.distance=R+1;const sc2=LIGHTS[0].shadow.camera,fr=Math.min(30,R-2);if(sc2.far!==fr){sc2.far=fr;sc2.updateProjectionMatrix();LIGHTS[0].shadow.needsUpdate=true;}if(typeof updateLights==='function'&&typeof lightSources!=='undefined')updateLights();}   // v2.03 valon kantama
   const on=SET.shadow!=='off'||shUltraOn();renderer.shadowMap.enabled=on;

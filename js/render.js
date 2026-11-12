@@ -22,6 +22,16 @@ function webglFail(lost){const d=document.createElement('div');d.id='webglErr';d
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
 renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+/* v2.42 VARJON VAALENNUS VARJOSTIMESSA (low poly -sävytys säilyy): auringon valoa ei enää siirretä tasaiseksi yleisvaloksi (se latisti
+   kolmioiden kirkkauserot, joista esim. illalla vuorten muodot erottuvat). Sen sijaan varjoa vaalennetaan suoraan: varjon arvo s → mix(s, 1, L).
+   Valaistut pinnat saavat täyden kolmiokohtaisen sävytyksen kuten ennen, ja varjossakin muodot erottuvat (1 − L) × aurinko. Kolmessa r128 ei ole
+   varjon voimakkuutta, joten L koodataan auringon varjon säteeseen: radius = perussäde + 1000 · round(L · 100) (environment.js SUN_SH_BASE).
+   Purku: hmRad = perussäde (pehmeä PCF-tila käyttää sitä), hmLift = L. Koskee vain suuntavaloa (aurinko/kuu). */
+THREE.ShaderChunk.shadowmap_pars_fragment=THREE.ShaderChunk.shadowmap_pars_fragment.replace('#ifdef USE_SHADOWMAP','#ifdef USE_SHADOWMAP\n\tfloat hmRad( float r ) { return r - floor( r / 1000.0 ) * 1000.0; }\n\tfloat hmLift( float s, float r ) { return mix( s, 1.0, floor( r / 1000.0 ) / 100.0 ); }');
+THREE.ShaderChunk.lights_fragment_begin=THREE.ShaderChunk.lights_fragment_begin.replace('? getShadow( directionalShadowMap[ i ], directionalLightShadow.shadowMapSize, directionalLightShadow.shadowBias, directionalLightShadow.shadowRadius, vDirectionalShadowCoord[ i ] ) : 1.0;','? hmLift( getShadow( directionalShadowMap[ i ], directionalLightShadow.shadowMapSize, directionalLightShadow.shadowBias, hmRad( directionalLightShadow.shadowRadius ), vDirectionalShadowCoord[ i ] ), directionalLightShadow.shadowRadius ) : 1.0;');
+THREE.ShaderChunk.shadowmask_pars_fragment=THREE.ShaderChunk.shadowmask_pars_fragment.replace('? getShadow( directionalShadowMap[ i ], directionalLight.shadowMapSize, directionalLight.shadowBias, directionalLight.shadowRadius, vDirectionalShadowCoord[ i ] ) : 1.0;','? hmLift( getShadow( directionalShadowMap[ i ], directionalLight.shadowMapSize, directionalLight.shadowBias, hmRad( directionalLight.shadowRadius ), vDirectionalShadowCoord[ i ] ), directionalLight.shadowRadius ) : 1.0;');
+let SUN_SH_BASE=1;   // auringon varjon perussäde (settings.js applyGfx; pehmeä tila 3,5)
+const HM_OK=/hmLift\( getShadow/.test(THREE.ShaderChunk.lights_fragment_begin)&&/hmLift\( getShadow/.test(THREE.ShaderChunk.shadowmask_pars_fragment)&&/float hmLift/.test(THREE.ShaderChunk.shadowmap_pars_fragment);   // tarkistus
 $('#game').appendChild(renderer.domElement);
 renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();if(!document.getElementById('webglErr'))webglFail(true);});   // v1.28
 const scene=new THREE.Scene();

@@ -31,12 +31,12 @@ function updateWeather(){if(playTime<weather.until)return;const r=Math.random(),
   weather.cur=w;weather.until=playTime+(w==='myrsky'?90+Math.random()*90:150+Math.random()*180);
   if(w!==prev&&!P.inDun&&WMSG[w])msg(WMSG[w]);}
 const cSkyDay=new THREE.Color(0x87a9c2),cSkyDusk=new THREE.Color(0xc98a64),cSkyNight=new THREE.Color(0x070b14),cGrey=new THREE.Color(0x7d858c),cFlash=new THREE.Color(0xe8f0ff),cTmp=new THREE.Color(),cSun=new THREE.Color(),cSunLow=new THREE.Color(0xffa060);
-/* v2.33: avoimet biomit (niitty, ranta, nummi, tunturi, rakka, vuori, huiput, suo, meri): varjot 40 % vaaleammat. Osa auringosta siirtyy
+/* v2.42: toteutus vaihtui – ks. hmLift (render.js); alla alkuperäinen kuvaus. v2.33: avoimet biomit (niitty, ranta, nummi, tunturi, rakka, vuori, huiput, suo, meri): varjot 40 % vaaleammat. Osa auringosta siirtyy
    aurinkoväriseksi tasaiseksi valoksi (shAmb), joten valaistu maa pysyy yhtä kirkkaana. Metsissä (koivu, korpi, kangas, aarni) ennallaan. Häivytys hidas. */
 const OPEN_BIOMES=new Set(['meadow','beach','sea','moor','tunturi','rakka','mountain','peak','suo']),OPEN_SH=.4,OPEN_RATE=.35;let openK=0;
 /* v2.34: muualla (metsät) varjot 20 % vaaleammat. Vuorokausi: kirkkaimpaan aikaan varjot vielä 15 % vaaleammat, pimeimpään 15 % tummemmat
    (varjon syvyys × 0,85…1,15 auringon korkeuden mukaan). Syvyys 1 = alkuperäinen varjo; k = 1 − syvyys siirtyy auringosta tasaiseksi valoksi. */
-const FOREST_SH=.2,SH_TOD=.15;let shDepth=1;const cShA=new THREE.Color();
+const FOREST_SH=.2,SH_TOD=.15,SH_FILL=.3;let shDepth=1;const cShA=new THREE.Color();
 let lightK=1,wCloud=.2,wDark=0,wFog=1,wRain=0,wSnow=0,wWind=0,flash=0,nextBolt=0,aarniK=0,stormT=5,stormMsgT=0;
 const cAarni=new THREE.Color(0x26302a);
 // Kuun kirkkaus vaihtelee 8 päivän kierrossa (uusikuu .2 … täysikuu 1).
@@ -125,7 +125,11 @@ function updateEnvironment(dt){
   indoorK=lerp(indoorK,indoorT,Math.min(1,dt*2));
   sun.intensity=sun.intensity*(1-.45*aarniK)*(1-.7*indoorK)+flash*.45*(1-indoorK);
   openK=lerp(openK,OPEN_BIOMES.has(zoneAt(P.pos.x,P.pos.z))?1:0,Math.min(1,dt*OPEN_RATE));
-  {const base=1-lerp(FOREST_SH,OPEN_SH,openK),tod=lerp(1+SH_TOD,1-SH_TOD,sstep(-.12,1.3,el));shDepth=clamp(base*tod,0,1);const k=1-shDepth;shAmb.color.copy(sun.color);shAmb.intensity=sun.intensity*k*Math.max(.15,sd.y);sun.intensity*=1-k;}
+  /* v2.42: vaalennus k = 1 − shDepth jaetaan: SH_FILL (30 %) tasaisena aurinkovärisenä valona (vastavalon pinnat eivät mustu) ja loput suoraan
+     varjoon varjostimessa (render.js hmLift, L = k(1−f)/(1−kf)) → valaistu maa ja varjot yhtä kirkkaat kuin ennen, mutta low poly -kolmioiden
+     kirkkauserot säilyvät (ennen koko k tasaisena valona latisti ne). */
+  {const base=1-lerp(FOREST_SH,OPEN_SH,openK),tod=lerp(1+SH_TOD,1-SH_TOD,sstep(-.12,1.3,el));shDepth=clamp(base*tod,0,1);const k=1-shDepth,f=SH_FILL,L=k*(1-f)/Math.max(.01,1-k*f);
+   shAmb.color.copy(sun.color);shAmb.intensity=sun.intensity*k*f*Math.max(.15,sd.y);sun.intensity*=1-k*f;sun.shadow.radius=SUN_SH_BASE+1000*Math.round(L*100);}
   sun.target.position.copy(P.pos);
   if(SET.shUltra==='wide'){const o=160*.45,fx=-Math.sin(camYaw)*o,fz=-Math.cos(camYaw)*o;sun.target.position.x+=fx;sun.target.position.z+=fz;sun.position.x+=fx;sun.position.z+=fz;}   // v1.76: laaja alue sovitetaan näkymän suuntaan
   hemi.intensity=((.07+.2*light*(1-wDark*.4))*(1-.45*aarniK)+flash*.55)*(1-.6*indoorK)+BOSS_GLOW*.8;amb.intensity=(.03+.025*light+flash*.22)*(1-.5*indoorK)+BOSS_GLOW*.3;
