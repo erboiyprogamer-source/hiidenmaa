@@ -403,6 +403,13 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Ratkaisu: vaalenna itse varjoa (render.js `hmLift`, säde-koodaus `SUN_SH_BASE`), tasaista valoa korkeintaan pieni osa (`SH_FILL`).
   Jos three.js päivitetään, tarkista että ShaderChunk-korvaukset osuvat (`HM_OK` true).
 
+## 57. Reppu vilkkui ja klikkaukset katosivat jaksollisen uudelleenpiirron takia (v2.46)
+- Oire: hiiren alla oleva ruutu vilkkui sekunnin välein (soihtu kädessä), puolitus/valinta epäonnistui satunnaisesti.
+- Syy: `invDirty=true` joka sekunti (soihdun palkki) → `renderInv` korvaa ruutuelementit; painallus ja vapautus eri elementeissä → click katoaa.
+- Ratkaisu: jaksolliset muutokset (palkit) päivitetään paikallaan (`invBarDirty`/`invBarsTick`); täysi piirto ei taustalta painalluksen aikana (`uiBtnHeld`).
+  **Älä merkitse `invDirty`:ä ajastetusti** – vain kun repun sisältö oikeasti muuttuu.
+- Samassa erässä: kuoleman jälkeinen tieto (`P.deathCause`, `P.waterDeath`) nollautuu `playerDie`/`startPlayerDeath`:ssa → myöhemmin lukevat käyttävät `pDeath`-tilaa.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`

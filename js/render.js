@@ -274,13 +274,17 @@ function cloudShade(geo){const p=geo.attributes.position.array,c=geo.attributes.
   for(let i=0;i<p.length;i+=3){const t=(p[i+1]-lo)/H,up=n[i+1],k=(.72+.28*Math.pow(t,.7))*(.92+.08*Math.max(0,up));c[i]*=k;c[i+1]*=k;c[i+2]*=k*1.02;}
   geo.attributes.color.needsUpdate=true;}
 (function(){const r=mulberry32(77),sg=new THREE.SphereGeometry(1,10,7);
-  for(let i=0;i<26;i++){const parts=[],w=70+r()*100,dpt=w*(.4+r()*.3),n=26+(r()*14|0);
+  /* v2.46: pilvet 1,25× leveämpiä/pidempiä; noin 30 % isoja (× 1,4–1,75 lisää, + 8 palloa), noin 25 % kohoaa korkeammalle (pystykasvu × 1,5–2,1,
+     korkeus + 10–30 m). Pohjakerros pehmeä: vähemmän litteä (0,42 × säde, ennen 0,22) ja pallojen alla (1,2 × säde) → ei terävää reunaa
+     pohjan ja kyljen välissä. Sama 26 pilveä, kukin yksi mesh (ei lisää piirtokutsuja). */
+  for(let i=0;i<26;i++){const kind=r(),big=kind<.3,tall=kind>.75,sK=1.25*(big?1.4+r()*.35:1),vK=tall?1.5+r()*.6:1;
+    const parts=[],w=(70+r()*100)*sK,dpt=w*(.4+r()*.3),n=26+(r()*14|0)+(big?8:0);
     for(let k=0;k<n;k++){const a=r()*TAU,rr=Math.sqrt(r()),px=Math.cos(a)*rr*w*.5,pz=Math.sin(a)*rr*dpt*.5,core=1-rr*.6,pr=w*(.055+r()*.05)*core;
-      const tn=.93+r()*.07;parts.push(part(sg,new THREE.Color(0xeef1f5).multiplyScalar(tn),px,pr*.35+core*w*.05*r(),pz,0,0,0,pr*1.5,pr*.75*(.8+core*.7),pr*1.3));
-      parts.push(part(sg,0xb6bcc6,px*.95,-pr*.05,pz*.95,0,0,0,pr*1.45,pr*.22,pr*1.25));}
+      const tn=.93+r()*.07;parts.push(part(sg,new THREE.Color(0xeef1f5).multiplyScalar(tn),px,pr*.35+core*w*.05*r()*vK,pz,0,0,0,pr*1.5,pr*.75*(.8+core*.7)*(tall?1+.5*core:1),pr*1.3));
+      parts.push(part(sg,0xc0c6cf,px*.9,pr*.08,pz*.9,0,0,0,pr*1.2,pr*.42,pr*1.05));}
     const geo=mergeParts(parts);cloudShade(geo);
     const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,fog:false,transparent:true,opacity:.95,depthWrite:false}));
-    m.frustumCulled=false;m.renderOrder=-5;m.userData={th:i/26,ox:(r()*2-1)*CLOUD_R,oz:(r()*2-1)*CLOUD_R,h:96+r()*30,sp:.7+r()*.6,sc:.85+r()*.4};scene.add(m);CLOUDS.push(m);}
+    m.frustumCulled=false;m.renderOrder=-5;m.userData={th:i/26,ox:(r()*2-1)*CLOUD_R,oz:(r()*2-1)*CLOUD_R,h:96+r()*30+(tall?10+r()*20:0),sp:.7+r()*.6,sc:.85+r()*.4,big,tall};scene.add(m);CLOUDS.push(m);}
 })();
 // Pilvikansi: tasainen harmaa kerros koko taivaalla rankassa sateessa ja myrskyssä (läpikuultava, reunat häivytetty).
 const cloudDeck=(function(){const t=canvasTex((g,s)=>{const r=mulberry32(91);const im=g.createImageData(s,s);for(let y=0;y<s;y++)for(let x=0;x<s;x++){const dx=x/s-.5,dy=y/s-.5,d=Math.hypot(dx,dy)*2;

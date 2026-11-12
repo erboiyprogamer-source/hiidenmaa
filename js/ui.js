@@ -48,7 +48,21 @@ function updateMobBars(){let k=0;camera.getWorldDirection(_cd);
       r.children[0].style.width=clamp((hp-j*HP_ROW)/c*100,0,100)+'%';r.children[1].style.width=c2>0?clamp((hp-cap-j*HP_ROW)/HP_ROW*100,0,100)+'%':'0%';}
     b.children[1].textContent=`${m.def.n} ${Math.ceil(m.hp)}/${m.maxHp}`;b.children[2].textContent='☠'.repeat(sk);}
   for(;k<mobBars.length;k++)mobBars[k].hidden=true;}
-function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq||(AMMO.includes(s.id)&&ammoId()===s.id)?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}" data-it="${s.id}" data-q="${s.q||1}" data-n="${s.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${d.cat==='shield'&&(s.shHit||s.shBrk!=null)?`<span class="fu${s.shBrk!=null?' off':''}"><i style="width:${s.shBrk!=null?Math.min(100,(playTime-s.shBrk)/SHIELD_FIX*100):100-(s.shHit||0)/(SHIELD_HITS[s.id]||15)*100}%"></i></span>`:''}${s.id==='soihtu'?`<span class="fu${s.lit===false?' off':''}"><i style="width:${Math.max(0,(s.fuel??torchMax(s))/torchMax(s)*100)}%"></i></span>`:''}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
+/* v2.46: ruudun palkki (soihdun polttoaine, kilven kunto) – sama arvo HTML:ään ja paikallaan päivitykseen (invBarsTick) */
+function slotBar(s){if(!s)return null;const d=ITEMS[s.id];if(d.cat==='shield'&&(s.shHit||s.shBrk!=null))return{off:s.shBrk!=null,w:s.shBrk!=null?Math.min(100,(playTime-s.shBrk)/SHIELD_FIX*100):100-(s.shHit||0)/(SHIELD_HITS[s.id]||15)*100};
+  if(s.id==='soihtu')return{off:s.lit===false,w:Math.max(0,(s.fuel??torchMax(s))/torchMax(s)*100)};return null;}
+/* v2.46: palkit päivitetään paikallaan – ennen koko reppu/arkku piirrettiin uudelleen sekunnin välein (soihtu kädessä), jolloin hiiren alla oleva
+   korostus vilkkui ja kesken osunut uudelleenpiirto saattoi hukata valintaklikkauksen (painallus ja vapautus eri elementeissä). Jos palkki puuttuu
+   tai on turha, tehdään täysi piirto. */
+let invBarDirty=false,uiBtn=0,uiBtnT=0;
+/* painallus kesken → taustalta tuleva täysi uudelleenpiirto odottaa vapautukseen (enintään 1,5 s), jotta klikkaus osuu samaan elementtiin */
+addEventListener('mousedown',e=>{uiBtn|=1<<e.button;uiBtnT=performance.now();},true);addEventListener('mouseup',e=>{uiBtn&=~(1<<e.button);},true);addEventListener('blur',()=>{uiBtn=0;});
+function uiBtnHeld(){return uiBtn!==0&&performance.now()-uiBtnT<1500;}
+function invBarsTick(){const els=[...document.querySelectorAll('#hotbar .slot')].map((el,i)=>[el,inv[i]]);
+  for(const el of document.querySelectorAll('.panel:not([hidden]) .slot[data-g]')){const arr=typeof uxArr==='function'?uxArr(el.dataset.g):inv;els.push([el,arr&&arr[+el.dataset.i]]);}
+  for(const [el,s] of els){const b=slotBar(s),f=el.querySelector('.fu');if(!b&&!f)continue;if(!b||!f||el.dataset.it!==(s&&s.id)){invDirty=true;return;}
+    f.classList.toggle('off',!!b.off);const i=f.firstElementChild;if(i)i.style.width=b.w+'%';}}
+function slotHTML(s,key){if(!s)return `<div class="slot">${key?`<span class="k">${key}</span>`:''}</div>`;const d=ITEMS[s.id];return `<div class="slot${s.eq||(AMMO.includes(s.id)&&ammoId()===s.id)?' eq':''}" style="background-image:url(${icon(s.id)})" title="${d.n}" data-it="${s.id}" data-q="${s.q||1}" data-n="${s.n}">${key?`<span class="k">${key}</span>`:''}${(s.q||1)>1?`<span class="q">★${s.q}</span>`:''}${(b=>b?`<span class="fu${b.off?' off':''}"><i style="width:${b.w}%"></i></span>`:'')(slotBar(s))}${s.n>1?`<span class="n">${s.n}</span>`:''}</div>`;}
 let hudT=0,msgHidden=false;
 /* v1.77: jousen nuoliteksti hotbarin yläpuolella: jousi käteen → 2,5 s, latauksen alku → 2 s pienempänä (häivytys). */
 let ammoHeld=null,ammoTm=0;
@@ -83,7 +97,7 @@ function updateHUD(dt){
   {const hide=!!openPanel||state!=='play';if(hide!==msgHidden){msgHidden=hide;$('#msgs').style.visibility=hide?'hidden':'';}}
   bossBarTick(dt);peaceTick();   // v1.94 eeppinen pomopalkki (joka ruudunpäivitys: sulava viivepalkki); rauhan ilmoitus 2 s voittoruudun sulkemisesta
   if(hudT>0)return;hudT=.1;
-  if(((playTime*10)|0)%10===0)for(const x of inv)if(x&&x.shBrk!=null){shieldOk(x);invDirty=true;}   // v1.33: rikkinäisen kilven korjautuminen ja palkki
+  if(((playTime*10)|0)%10===0)for(const x of inv)if(x&&x.shBrk!=null){if(shieldOk(x)===true)invDirty=true;else invBarDirty=true;}   /* v2.46: palkki paikallaan */   // v1.33: rikkinäisen kilven korjautuminen ja palkki
   const w=curWeapon();
   if(w.cat==='hammer'){const bh=$('#buildhint');bh.hidden=false;const h=buildSel?`<b>${PIECES[buildSel].n}</b> · ${reqText(PIECES[buildSel].req)} · <span class="kb">Hiiri V</span>rakenna <span class="kb">R</span>käännä 45° <span class="kb">Shift+R</span>asento <span class="kb">G</span>kohdistus: ${SNAP_NAMES[snapMode]}${JK.tgt&&ghost&&ghost.visible?` · <b style="color:var(--frost)">Jatko</b>: ${JK.desc}`:''} <span class="kb">X</span>pura <span class="kb">F</span>korjaa <span class="kb">B</span>valikko`+(ghost&&ghost.visible&&!ghostOk&&lastInvalid?` · <span style="color:var(--bad)">${lastInvalid}</span>`:''):`<span class="kb">B</span> tai hiiren oikea: valitse rakennus`;if(bh._h!==h){bh._h=h;bh.innerHTML=h;}}else $('#buildhint').hidden=true;
   $('#lockhint').hidden=!(state==='play'&&!locked&&!lockFailed&&!P.dead);
@@ -100,7 +114,8 @@ function updateHUD(dt){
   if(openPanel==='inv'&&performance.now()-fxAt>400){fxAt=performance.now();renderEffects(fxs);}
   // clock
   const hh=Math.floor(dayT*24),mm=Math.floor((dayT*24-hh)*60/10)*10;$('#clock').innerHTML=`Päivä ${dayN} · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')} <span>· ${P.inDun?(P.realm?REALMS[P.realm].n:'Hautakumpu'):WEATHERS[weather.cur].n}${!P.inDun&&P.zone&&BIOMES[P.zone]?' · '+BIOMES[P.zone].n:''}</span>`;
-  if(invDirty){invDirty=false;updateBack();$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1).replace('class="slot','class="slot'+(i===hotSel?' hsel':''))).join('');if(openPanel==='inv')renderInv();if(openPanel==='chest')renderChest();if(openPanel==='build')renderBuild();}
+  if(invBarDirty&&!invDirty){invBarDirty=false;invBarsTick();}   // v2.46
+  if(invDirty&&!(openPanel&&uiBtnHeld())){invDirty=false;invBarDirty=false;updateBack();$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1).replace('class="slot','class="slot'+(i===hotSel?' hsel':''))).join('');if(openPanel==='inv')renderInv();if(openPanel==='chest')renderChest();if(openPanel==='build')renderBuild();}
   drawMinimap();
 }
 let openPanel=null,selSlot=-1,curChest=null;

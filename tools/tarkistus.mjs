@@ -276,6 +276,22 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
     const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
+  t('v2.46 reppu ei piirry uudelleen sekunnin välein (soihdun/kilven palkki paikallaan), painalluksen aikana ei täyttä piirtoa',()=>{
+    const a=/invBarDirty=true/.test(updatePlayer.toString())&&!/torchBarT=1;invDirty=true/.test(updatePlayer.toString())&&typeof invBarsTick==='function'&&typeof slotBar==='function';
+    const pv=[inv.slice(),openPanel];inv.fill(null);inv[0]={id:'soihtu',n:1,q:1,fuel:30,lit:true};if(openPanel!=='inv')togglePanel('inv');renderInv();$('#hotbar').innerHTML=inv.slice(0,8).map((s,i)=>slotHTML(s,i+1)).join('');
+    const el=document.querySelectorAll('#invGrid .slot')[0];inv[0].fuel=torchMax(inv[0])*.2;invDirty=false;invBarsTick();
+    const b=document.querySelectorAll('#invGrid .slot')[0]===el&&Math.abs(parseFloat(el.querySelector('.fu i').style.width)-20)<.5&&!invDirty;
+    const c=/invDirty&&!\(openPanel&&uiBtnHeld\(\)\)/.test(updateHUD.toString());
+    closePanels();inv.length=0;for(const x of pv[0])inv.push(x);invDirty=true;
+    return a&&b&&c||`virhe ${a} ${b} ${c}`;});
+  t('v2.46 pilvet: 1,25× leveämmät, osa isoja ja osa kohoaa korkeammalle, pehmeä pohja; edelleen 26 pilveä (yksi mesh kukin)',()=>{
+    const big=CLOUDS.filter(c=>c.userData.big).length,tall=CLOUDS.filter(c=>c.userData.tall).length;
+    return CLOUDS.length===26&&big>=4&&big<=12&&tall>=3&&tall<=12&&CLOUDS.every(c=>c.isMesh)||`virhe ${CLOUDS.length} iso ${big} korkea ${tall}`;});
+  t('v2.18/v2.46 hukkuminen suunnitelman mukaan: syvä 1,5/1,35 m, kellunta −1,3 m, painallus −1 ja −5/s, vajoaminen 0,42 m/s, 1 s → 10 HP/s; hukkumiskuoleman ääni',()=>{
+    const src=updatePlayer.toString();
+    const a=/wy-\(P\.swim\?1\.35:1\.5\)/.test(src)&&/P\.stam-=1;P\.swCd=playTime\+1/.test(src)&&/P\.stam-=5\*dt/.test(src)&&/waveAt\(P\.pos\.x,P\.pos\.z\)-1\.3/.test(src)&&/lerp\(P\.vy,-\.42/.test(src)&&/P\.underT>1/.test(src)&&/P\.hp-=10\*dt/.test(src)&&/P\.pos\.y\+1\.62/.test(src);
+    const b=/pDeath\.water\)\?'kuolema_hukkuminen'/.test(plBody.toString());
+    return a&&b||`virhe fysiikka ${a} ääni ${b}`;});
   t('v2.45 terävät soihtuvarjot (Extra-grafiikka): 1024 px, joka ruutu, kantama 7 m, vähemmän täytevaloa; pois = ennallaan (40 px, 2,4 m)',()=>{
     const pv=SET.torchSharp;SET.torchSharp=true;applyGfx();const a=torchLight.castShadow&&torchLight.shadow.mapSize.x===1024&&torchSharpOn();
     SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
