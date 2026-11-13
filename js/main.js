@@ -1,7 +1,7 @@
 /* Hiidenmaa – main.js
    Valikko, pääsilmukka ja testirajapinta window.__game */
 'use strict';
-window.__JSV2='2.51';   // v1.58: versiotarkistus (viimeinen skripti)
+window.__JSV2='2.52';   // v1.58: versiotarkistus (viimeinen skripti)
 // v1.24 KORJAUS (KORJAUKSET 22): valikkokameran tila esitellään ennen kuin startPlay voidaan kutsua (karttavaihdon jälkeinen automaattinen
 // aloitus tapahtuu jo tiedoston alussa; ennen let-muuttujat olivat vielä alustamatta → ReferenceError → peli jäi mustaksi).
 let frameErrShown=false;
@@ -107,8 +107,13 @@ refreshMenu();scrollHints($("#menu"));
    "Hiidenmaa" ja kartan nimi animoituna; sitten 2 s nopea syöksy (easeInOut) tavalliseen kameraan. Ohitus millä tahansa näppäimellä tai napsautuksella. */
 const _iP=new THREE.Vector3(),_iQ=new THREE.Quaternion(),_iH=new THREE.Vector3(),_iHQ=new THREE.Quaternion();
 function startIntro(hold){if(P.inDun)return;intro={t:0,a0:Math.random()*TAU,hold:!!hold};state='intro';$('#hud').hidden=true;const el=$('#introT');if(!el)return;$('#introMap').textContent='Kartta · '+MAP.name;
-  el.hidden=false;el.classList.remove('on','out');if(hold){el.classList.add('out');return;}void el.offsetWidth;el.classList.add('on');}
-function endIntro(){if(!intro)return;intro=null;introCloudsClear();const el=$('#introT');if(el){el.classList.add('out');el.classList.remove('on');setTimeout(()=>{if(!intro)el.hidden=true;},900);}
+  el.hidden=false;el.classList.remove('on','out');if(hold){el.classList.add('out');return;}introSndStart();void el.offsetWidth;el.classList.add('on');}
+/* v2.52 INTRON ÄÄNET (menu_2_efektit/uusi_maailma): tuuli + linnut silmukoina ja pilvien wuush intron alkaessa (pilvet aukeavat), kameran
+   syöksyn ääni t = 4 s. Luonnollinen loppu → silmukat hiipuvat INTRO_FADE s; ohitus → kaikki hiipuu INTRO_SKIP_FADE s. */
+const INTRO_FADE=2.5,INTRO_SKIP_FADE=.3,ISND={L:[],one:[]};
+function introSndStart(){introSndStop(.05);for(const ev of ['tuuli','linnut']){const h=mSnd('uusi_maailma',ev,{loop:true});if(h)ISND.L.push(h);}const w=mSnd('uusi_maailma','pilvet_wuush');if(w)ISND.one.push(w);}
+function introSndStop(f){for(const h of ISND.L)mStop(h,f);ISND.L.length=0;if(f<=INTRO_SKIP_FADE)for(const h of ISND.one)mStop(h,Math.min(f,.15));ISND.one.length=0;}
+function endIntro(nat){if(!intro)return;introSndStop(nat?INTRO_FADE:INTRO_SKIP_FADE);intro=null;introCloudsClear();const el=$('#introT');if(el){el.classList.add('out');el.classList.remove('on');setTimeout(()=>{if(!intro)el.hidden=true;},900);}
   if(state==='intro'){state='play';$('#hud').hidden=false;}}
 function introCam(dt){if(!intro)return;if(!intro.hold)intro.t+=Math.min(dt,.05);const t=intro.t,px=P.pos.x,py=P.pos.y,pz=P.pos.z;
   _iP.copy(camera.position);_iQ.copy(camera.quaternion);   // tavallinen kolmannen persoonan kamera (updateCamera juuri laski)
@@ -117,7 +122,8 @@ function introCam(dt){if(!intro)return;if(!intro.hold)intro.t+=Math.min(dt,.05);
   camera.position.lerpVectors(_iH,_iP,k);camera.quaternion.copy(_iHQ).slerp(_iQ,k);
   if(k<1){const nf=scene.fog.near,ff=scene.fog.far;scene.fog.near=lerp(260,nf,k);scene.fog.far=lerp(700,ff,k);updateChunkVis();}
   if(t>=4.3&&$('#introT').classList.contains('on')){$('#introT').classList.remove('on');$('#introT').classList.add('out');}
-  introCloudsTick(dt);if(t>=6)endIntro();}
+  if(t>=4&&!intro.dsc){intro.dsc=1;const h=mSnd('uusi_maailma','kamera_laskeutuu');if(h)ISND.one.push(h);}   // v2.52 syöksyn ääni
+  introCloudsTick(dt);if(t>=6)endIntro(true);}
 /* v1.52 (lista 5, kohta 4): uusi maailma latausnäytön takana. Riimukivi näytetään (__ldShow), maailma rakennetaan, intron korkea
    kamera piirretään muutama kuva valmiiksi (varjostimet, ruudut) intro pidossa (hold). Kun latausnäyttö leimahtaa ja alkaa häipyä
    (__ldAfter), pilvet aukeavat sivuille: Medium ja yli → 3D-lisäpilvet kameran edessä (poistetaan animaation jälkeen), alle Medium
@@ -127,7 +133,7 @@ function worldLoad(build){if(window.__ldShow)window.__ldShow('Saari nousee meres
   introVeil(true);
   setTimeout(()=>{if(window.__ldSet)window.__ldSet(.45);build();let n=0;const tick=()=>{if(window.__ldSet)window.__ldSet(.45+n/24*.55);if(++n<24)requestAnimationFrame(tick);else introReady();};requestAnimationFrame(tick);},90);}
 function introReady(){window.__ldAfter=introRelease;if(window.__ldDone)window.__ldDone();else introRelease();}
-function introRelease(){if(!intro){introVeil(false);return;}intro.hold=false;intro.t=0;const el=$('#introT');if(el){el.classList.remove('out');void el.offsetWidth;el.classList.add('on');}
+function introRelease(){if(!intro){introVeil(false);return;}intro.hold=false;intro.t=0;introSndStart();const el=$('#introT');if(el){el.classList.remove('out');void el.offsetWidth;el.classList.add('on');}
   if(introHiQ()){introVeil(false,true);introCloudsMake();}else introVeil(false);}
 // CSS-pilviverho (alle Medium). v1.62: kolme kerrosta kummallakin puolella (taka/keski/etu), maalattu kerran canvasiin pehmeistä
 // varjostetuista pilvipalloista (alta sinertävä varjo, päältä valo), sävy vuorokaudenajan mukaan (lightK). Aukeaminen: kerrokset liukuvat

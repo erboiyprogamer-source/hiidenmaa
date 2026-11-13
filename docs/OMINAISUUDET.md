@@ -449,6 +449,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## Lista 4, erä F (v1.44)
 - Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
   Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+- **v2.52:** jos selain estää äänet, alareunassa näkyy kaiutinmerkki ja "Napauta näyttöä kuullaksesi äänet" (jakso alkaa 2 s
+  myöhemmin; napautus ei ohita jaksoa); äänet aloitusjaksoon, latausnäytön loppuun, uuden maailman introon (tuuli, linnut, pilvien
+  wuush, syöksy) ja varmistusikkunoihin (kun äänet on lisätty).
 - **v2.51:** valikkoäänet (kun äänet on lisätty): napin päälle vienti ja painallus, liukusäätimen naputus liikutettaessa, Ultra-merkkiääni,
   Extra-grafiikan päälle/pois-äänet; uusi asetus Valikkoäänet (Ohjaus ja ääni, oletus 70 %).
 - **v2.50:** puun tömähdys riippuu puun koosta (isot puut pitkä hiipuva tömähdys, pienet lyhyt); repun sulkemisääni on sama kuin

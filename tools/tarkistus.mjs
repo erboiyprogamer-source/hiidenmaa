@@ -172,7 +172,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     return a&&a.names[0]==='susi_aggro_1'&&Math.abs(a.p-.88)<1e-9&&b&&b.names.join()==='kalmo_idle_1,kalmo_idle_3'&&c===null&&d&&d.names[0]==='susi_chase_2'&&/creSnd\(m,'death'\)/.test(killMob.toString())&&/creSnd\(m,'hurt'\)/.test(damageMob.toString())&&/creLoad/.test(spawnMob.toString())&&/creTick/.test(update.toString())&&/angerDone/.test(creTick.toString())&&'creVol' in SET_DEF||'virhe';});
   t('v2.11 äänten lisäversiot: _4, _5 … _10 käytössä ilman koodimuutosta (numerojärjestys), manifestin äänet löytyvät',()=>{
     const o=CRE.man;CRE.man={susi_idle_1:{h:'a'},susi_idle_10:{h:'b'},susi_idle_4:{h:'c'},susi_idle_2:{h:'d'},aarnihirvio_echo_3:{h:'e'}};const a=creRes('susi','idle'),b=creRes('kalmasusi','idle'),c=creRes('jaajattari','echo');CRE.man=o;
-    const d=o&&Object.keys(o).length?Object.keys(o).every(n=>{const m=/^(.+)_(idle|hurt|death|aggro|chase|echo)_\d+$/.exec(n);return m&&creRes(m[1],m[2])&&creRes(m[1],m[2]).names.includes(n);}):true;
+    const d=o&&Object.keys(o).length?Object.keys(o).filter(n=>!n.includes('/')).every(n=>{   /* v2.52: manifesti ladataan nyt heti → vain olentojen avaimet (ei t/ p/ m/) */const m=/^(.+)_(idle|hurt|death|aggro|chase|echo)_\d+$/.exec(n);return m&&creRes(m[1],m[2])&&creRes(m[1],m[2]).names.includes(n);}):true;
     return a&&a.names.join()==='susi_idle_1,susi_idle_2,susi_idle_4,susi_idle_10'&&b&&b.names.length===4&&c&&c.names[0]==='aarnihirvio_echo_3'&&d||`virhe ${a&&a.names} ${b&&b.names} ${c&&c.names} manifest ${d}`;});
   t('v2.12 emakko suuttuu kun porsas säikähtää; pitkät kutsuäänet (far) kuuluvat kauas, etäisyys tummentaa ja kaiuttaa, kaukainen ulvonta',()=>{
     const x=P.pos.x+20,z=P.pos.z+20,sow=spawnMob('emakko',x,z),pg=spawnMob('porsas',x+2,z);pg.mom=sow;const oc=P.crouch,om=msg;P.crouch=false;msg=()=>{};let a;
@@ -301,6 +301,15 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
     const c=SET_DEF.torchSharp===false&&SET_PAGES.xgfx.includes('torchSharp')&&/torchSharpOn\(\)\?6\.7:2\.1/.test(updatePlayer.toString())&&/torchSharpOn\(\)\|\|shFrame%fT===0/.test(updateStations.toString());
     return a&&b&&c||`virhe terävä ${a} oletus ${b} koodi ${c}`;});
+  t('v2.52 menu 2: äänten avaus (kaiutinmerkki, 2 s viive), aloitusjakson ja latauksen äänet, intron tuuli/linnut/wuush/syöksy + hiipuminen, varmistus',()=>{
+    const B=window.__boot0,a=!!B&&B.SND_DELAY===2000&&B.SND_HINT_MIN===2000&&typeof window.__bootSnd==='function'&&/window\.__AC/.test(audio.toString())&&
+      /lataus_valmis/.test(window.__ldDone.toString())&&(B.sndLocked||!document.getElementById('sndHint'));
+    const om=window.mSnd,os=window.mStop,L=[],ps=state,run=skip=>{L.length=0;startIntro(true);introRelease();for(let i=0;i<260&&intro;i++){if(skip&&intro.t>=skip){endIntro();break;}introCam(1/30);}if(intro)endIntro();return L.join();};
+    let r1='',r2='',c=false;try{window.mSnd=(g,e,o)=>{L.push(e+(o&&o.loop?'~':''));return {ev:e};};window.mStop=(h,f)=>L.push('-'+h.ev+f);
+      r1=run(0);r2=run(1);const K=[];window.mSnd=(g,e)=>{K.push(e);return {};};keyDialog('x',[['Vahvista',null],['Peruuta',null]]);keyDialog('y',[['Peruuta',null]]);$('#keyDlg').hidden=true;c=K.join()==='varmistus';}
+    finally{window.mSnd=om;window.mStop=os;state=ps;$('#hud').hidden=false;}
+    const b=r1==='tuuli~,linnut~,pilvet_wuush,kamera_laskeutuu,-tuuli2.5,-linnut2.5'&&r2==='tuuli~,linnut~,pilvet_wuush,-tuuli0.3,-linnut0.3,-pilvet_wuush0.15';
+    return a&&b&&c||`virhe boot ${a} intro ${b} [${r1}] [${r2}] varmistus ${c}`;});
   t('v2.51 valikkoäänet: hover/klikkaus vain valikoissa, Extra päälle/pois, liukusäätimen naputus vain liikkuessa, Ultra, Valikkoäänet-säädin',()=>{
     const L=[],om=window.mSnd,orf=window.requestAnimationFrame;let T=5000,cb=null;window.mSnd=(g,e)=>{L.push(g+'/'+e);return true;};
     const mk=(par,cls,xk,xv)=>{const b=document.createElement('button');if(cls)b.className=cls;if(xk){b.dataset.xk=xk;b.dataset.xv=xv;}par.appendChild(b);return b;};

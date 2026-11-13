@@ -3,7 +3,7 @@
    vasta sitten latausnäyttö ja pelin skriptit. Ennen jakso pyöri pelin latauksen päällä, jolloin häivytykset pätkivät. Pelin skriptit
    esiladataan taustalla (<link rel=preload>) ja ajetaan yksi kerrallaan pienellä tauolla, jotta riimut ehtivät syttyä näkyvästi.
    Välilyönti, Enter tai napsautus ohittaa koko jakson (ja testin) ja vie suoraan latausnäyttöön. */
-window.__BJV='2.51';
+window.__BJV='2.52';
 (function(){
   var Q=location.search,wd=!!navigator.webdriver;
   function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
@@ -33,6 +33,30 @@ window.__BJV='2.51';
     var i=1;loadThree(function(){if(window.__ldSet)window.__ldSet(1/JS.length);nx();});
     function nx(){if(i>=JS.length){if(window.__verCheck)window.__verCheck();return;}addScript(JS[i++],function(){setTimeout(nx,16);});}}   // tauko = riimu ehtii piirtyä
 
+  /* v2.52 ÄÄNET ENNEN PELIN SKRIPTEJÄ (projekti sounds/menu_2_efektit, avaimet m/<ryhmä>/<ääni>): yksi AudioContext koko sivulle
+     (window.__AC, audio.js käyttää samaa). Selain sallii äänen vasta käyttäjän eleestä → jos konteksti on lukossa, alareunaan kaiutinmerkki
+     (yliviivattu) ja "Napauta näyttöä kuullaksesi äänet"; painallus avaa äänet, merkki vaihtuu "äänet päällä" ja häipyy (aikaisintaan
+     SND_HINT_MIN ms näyttämisestä). Avaava painallus ei ohita aloitusjaksoa eikä maailman introa. Jakso alkaa SND_DELAY ms myöhemmin. */
+  var SND_DELAY=2000,SND_HINT_MIN=2000,BS={ac:null,man:null,buf:{},hint:null,shown:0,unlocked:false};
+  try{BS.ac=window.__AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
+  var sndLocked=!wd&&!!BS.ac&&BS.ac.state!=='running';
+  function bsSet(){try{return JSON.parse(localStorage.getItem('hiidenmaa_set')||'{}')||{};}catch(e){return {};}}
+  try{fetch('sounds/manifest.json?v='+(window.HV||'')).then(function(r){return r.ok?r.json():null;}).then(function(j){BS.man=(j&&j.sounds)||{};
+    for(var k in BS.man)if(/^m\/(aloitus|lataus)\//.test(k))(function(k){var e=BS.man[k];fetch('sounds/'+e.f+'?h='+e.h).then(function(r){if(!r.ok)throw 0;return r.arrayBuffer();})
+      .then(function(b){return BS.ac.decodeAudioData(b);}).then(function(B){BS.buf[k]=B;}).catch(function(){});})(k);}).catch(function(){});}catch(e){}
+  window.__bootSnd=function(g,ev){var ac=BS.ac,st=bsSet();if(!ac||ac.state!=='running'||st.sound===false)return false;var v=st.uiVol!=null?+st.uiVol:.7;if(!(v>0))return false;
+    var L=[];for(var k in BS.buf)if(k.indexOf('m/'+g+'/'+ev+'_')===0)L.push(k);if(!L.length)return false;
+    var src=ac.createBufferSource(),gn=ac.createGain();src.buffer=BS.buf[L[Math.random()*L.length|0]];gn.gain.value=v;src.connect(gn);gn.connect(ac.destination);src.start();return true;};
+  function hintIco(on){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z" fill="currentColor"/>'+(on?'<path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>':'<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>')+'</svg>';}
+  function hintShow(){var h=document.createElement('div');h.id='sndHint';h.innerHTML=hintIco(false)+'<span>Napauta näyttöä kuullaksesi äänet</span>';document.body.appendChild(h);BS.hint=h;BS.shown=performance.now();
+    requestAnimationFrame(function(){h.classList.add('in');});}
+  function unlock(e){if(BS.unlocked||!BS.ac)return;BS.ac.resume().then(function(){if(BS.ac.state!=='running')return;BS.unlocked=true;
+      removeEventListener('mousedown',unlock,true);removeEventListener('keydown',unlock,true);removeEventListener('touchstart',unlock,true);var h=BS.hint;if(!h)return;
+      h.innerHTML=hintIco(true)+'<span>Äänet päällä</span>';h.classList.add('onS');setTimeout(function(){h.classList.add('out');setTimeout(function(){if(h.parentNode)h.parentNode.removeChild(h);},900);},Math.max(1100,SND_HINT_MIN-(performance.now()-BS.shown)));}).catch(function(){});
+    if(window.__splashOn||(typeof state!=='undefined'&&state==='intro')){e.stopImmediatePropagation();e.stopPropagation();}}   // avaava painallus ei ohita jaksoa/introa
+  if(sndLocked){addEventListener('mousedown',unlock,true);addEventListener('keydown',unlock,true);addEventListener('touchstart',unlock,{capture:true,passive:true});
+    if(document.body)hintShow();else document.addEventListener('DOMContentLoaded',hintShow);}
+  window.__boot0={sndLocked:sndLocked,BS:BS,SND_DELAY:SND_DELAY,SND_HINT_MIN:SND_HINT_MIN};
   var S=document.getElementById('splash');
   if(!needSplash&&!needPerf&&!needTitle){startGame();window.__boot={needSplash:false,needPerf:false,needTitle:false,PERF_T:PERF_T,perfLevel:perfLevel};return;}
   loadThree(function(){});
@@ -127,6 +151,7 @@ window.__BJV='2.51';
   var i=-1,tm=0,st=performance.now(),over=false;
   function show(n){var all=S.querySelectorAll('.spStage');for(var j=0;j<all.length;j++)all[j].classList.remove('on');var el=S.querySelector('.'+n);if(n==='spTitle'){el.style.setProperty('--td',ST[i][1]+'ms');el.style.setProperty('--tw',(needSplash?1500:500)+'ms');}void el.offsetWidth;el.classList.add('on');S.classList.toggle('trans',n==='spTrans');}
   function next(){clearTimeout(tm);if(over)return;i++;if(i>=ST.length){end();return;}var n=ST[i][0];show(n);
+    if(n==='spStudio')window.__bootSnd('aloitus','studio');else if(n==='spTitle'&&needSplash)window.__bootSnd('aloitus','otsikko');else if(n==='spTrans')window.__bootSnd('aloitus','riimusiirtyma');   // v2.52
     if(n==='spPerf')setTimeout(function(){if(!over)perfRun(function(){next();});},700);else tm=setTimeout(next,ST[i][1]);}
   function end(){if(over)return;over=true;clearTimeout(tm);S.classList.add('out');if(needSplash)lsSet('hiidenmaa_intro','1');
     removeEventListener('keydown',skip,true);removeEventListener('mousedown',skip,true);removeEventListener('touchstart',skip,true);
@@ -143,6 +168,6 @@ window.__BJV='2.51';
     else if(pf&&pf.g&&pf.end){/* tulos jo tallennettu */}
     end();}
   addEventListener('keydown',skip,true);addEventListener('mousedown',skip,true);addEventListener('touchstart',skip,{capture:true,passive:false});
-  setTimeout(next,700);
+  setTimeout(next,700+(sndLocked?SND_DELAY:0));   // v2.52: 2 s aikaa avata äänet ennen jaksoa
   window.__boot={needSplash:needSplash,needPerf:needPerf,needTitle:needTitle,PERF_T:PERF_T,RES_T:RES_T,perfLevel:perfLevel,perfRun:perfRun,skip:function(){skip({type:'mousedown',stopPropagation:function(){}});}};
 })();

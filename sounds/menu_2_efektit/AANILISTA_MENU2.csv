@@ -1,0 +1,10 @@
+﻿Nro,Ryhmä,Ääni (tiedostonimi),Tila,Tiedostot nyt,Milloin soi,Hakusanat (englanniksi)
+1,🎬 Aloitusjakso (ensikäynti),studio,⬜ puuttuu,lisää: studio.mp3,studiologo (EricStudios & KSPK-tech) ilmestyy – vain ensimmäisellä käynnillä,"cinematic logo reveal, deep soft impact"
+2,🎬 Aloitusjakso (ensikäynti),otsikko,⬜ puuttuu,lisää: otsikko.mp3,"HIIDENMAA-kivilogo ilmestyy – vain ensimmäisellä käynnillä (musiikki alkaa samalla, kohta 5)","stone title reveal, epic rumble"
+3,🎬 Aloitusjakso (ensikäynti),riimusiirtyma,⬜ puuttuu,lisää: riimusiirtyma.mp3,"riimukehä piirtyy, riimut tavaavat HIIDENMAA, sinetti, leimahdus ja paineaalto","magic rune circle, glowing seal, shockwave whoosh"
+4,⏳ Latausnäyttö,lataus_valmis,⬜ puuttuu,lisää: lataus_valmis.mp3,riimut leimahtavat valkoisiksi juuri ennen latausnäytön sulkeutumista (aina),"rune glow chime, magic flare short"
+5,🌍 Uuden maailman intro,tuuli,⬜ puuttuu,lisää: tuuli.mp3,"tuuli korkealla pilvien yllä (silmukka intron ajan, hiipuu lopussa; ohitus = nopea hiipuminen)","high altitude wind loop, airy"
+6,🌍 Uuden maailman intro,linnut,⬜ puuttuu,lisää: linnut.mp3,"linnut (silmukka intron ajan, hiipuu lopussa)","birds ambience loop, distant birdsong"
+7,🌍 Uuden maailman intro,pilvet_wuush,⬜ puuttuu,lisää: pilvet_wuush.mp3,pilvet aukeavat sivuille (latausnäytön jälkeen),"whoosh through clouds, soft air swoosh"
+8,🌍 Uuden maailman intro,kamera_laskeutuu,⬜ puuttuu,lisää: kamera_laskeutuu.mp3,kamera syöksyy alas pelaajan luo (intron viimeiset 2 s),"dive down whoosh, descending swoosh"
+9,❓ Varmistusikkunat,varmistus,⬜ puuttuu,lisää: varmistus.mp3,"varmistuskysymys avautuu (oletko varma: maailman poisto/vaihto, DEV-työkalut, palautukset, näppäinvaihto …)","ui confirm prompt, attention chime soft"

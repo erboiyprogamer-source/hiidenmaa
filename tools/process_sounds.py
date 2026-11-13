@@ -776,6 +776,16 @@ M_PARTS = [
         ('esiasetus', 'Esiasetus', '⭐', [('ultra', 'Ultra-esiasetus asetetaan (säädin vapautetaan Ultran kohdalle)', 'magic shimmer, power up chime, epic confirm')]),
         ('extra', 'Extra-grafiikka', '💜', [('extra_paalle', 'valitset Extra-grafiikassa violetin tai punaisen vaihtoehdon (päälle)', 'magic enable, arcane click, energy on'),
                                             ('extra_pois', 'valitset puisen vaihtoehdon (Pois)', 'wooden click, wood knock off')])]),
+    (2, 'menu_2_efektit', 'Menu 2 – intro, lataus ja varmistus', [   # v2.52
+        ('aloitus', 'Aloitusjakso (ensikäynti)', '🎬', [('studio', 'studiologo (EricStudios & KSPK-tech) ilmestyy – vain ensimmäisellä käynnillä', 'cinematic logo reveal, deep soft impact'),
+                                                     ('otsikko', 'HIIDENMAA-kivilogo ilmestyy – vain ensimmäisellä käynnillä (musiikki alkaa samalla, kohta 5)', 'stone title reveal, epic rumble'),
+                                                     ('riimusiirtyma', 'riimukehä piirtyy, riimut tavaavat HIIDENMAA, sinetti, leimahdus ja paineaalto', 'magic rune circle, glowing seal, shockwave whoosh')]),
+        ('lataus', 'Latausnäyttö', '⏳', [('lataus_valmis', 'riimut leimahtavat valkoisiksi juuri ennen latausnäytön sulkeutumista (aina)', 'rune glow chime, magic flare short')]),
+        ('uusi_maailma', 'Uuden maailman intro', '🌍', [('tuuli', 'tuuli korkealla pilvien yllä (silmukka intron ajan, hiipuu lopussa; ohitus = nopea hiipuminen)', 'high altitude wind loop, airy'),
+                                                        ('linnut', 'linnut (silmukka intron ajan, hiipuu lopussa)', 'birds ambience loop, distant birdsong'),
+                                                        ('pilvet_wuush', 'pilvet aukeavat sivuille (latausnäytön jälkeen)', 'whoosh through clouds, soft air swoosh'),
+                                                        ('kamera_laskeutuu', 'kamera syöksyy alas pelaajan luo (intron viimeiset 2 s)', 'dive down whoosh, descending swoosh')]),
+        ('varmistus', 'Varmistusikkunat', '❓', [('varmistus', 'varmistuskysymys avautuu (oletko varma: maailman poisto/vaihto, DEV-työkalut, palautukset, näppäinvaihto …)', 'ui confirm prompt, attention chime soft')])]),
 ]
 for _n, _proj, _tit, _grs in M_PARTS:
     _g = [(gid, gn, emo, ['valikko'], [e[0] for e in evs], False) for gid, gn, emo, evs in _grs]
@@ -784,8 +794,11 @@ for _n, _proj, _tit, _grs in M_PARTS:
             P_EV[(gid, e[0])] = (e[1], e[2])
     _by = {x[0]: x for x in _g}
     P_CFGS.append({'part': _n, 'title': _tit, 'groups': _g, 'by': _by, 'raw': os.path.join(SND, _proj, 'raw'), 'out': os.path.join(SND, _proj, 'valmiit'),
-                   'pre': 'm', 'proj': _proj, 'single': True, 'act': set(), 'list': os.path.join(SND, _proj, f'AANILISTA_MENU{_n}.csv'),
+                   'pre': 'm', 'proj': _proj, 'single': True, 'act': {'tuuli', 'linnut'}, 'list': os.path.join(SND, _proj, f'AANILISTA_MENU{_n}.csv'),
                    'allowed': (lambda by: (lambda g: list(by[g][4])))(_by), 'xlsx': 'menu'})
+T_PROF.update({'studio': (4.0, 4.0, .6, -20), 'otsikko': (4.5, 4.5, .7, -19), 'riimusiirtyma': (5.0, 5.0, .8, -19), 'lataus_valmis': (2.5, 2.5, .5, -21),
+               'tuuli': (20.0, 20.0, .3, -25), 'linnut': (20.0, 20.0, .3, -27), 'pilvet_wuush': (3.0, 3.0, .5, -21), 'kamera_laskeutuu': (3.0, 3.0, .5, -21),
+               'varmistus': (1.2, 1.2, .2, -22)})   # v2.52 menu 2
 T_PROF.update({'hover': (.3, .3, .05, -29), 'klikkaus': (.4, .4, .06, -24), 'naputus': (.12, .12, .02, -27), 'ultra': (3.0, 3.0, .5, -20),
                'extra_paalle': (1.5, 1.5, .25, -22), 'extra_pois': (.8, .8, .12, -24)})
 T_CFG = {'groups': TG_GROUPS, 'by': TG_BY, 'raw': RAW_T, 'out': OUT_T, 'pre': 't', 'proj': PROJ_T, 'allowed': lambda g: t_allowed(g)}
