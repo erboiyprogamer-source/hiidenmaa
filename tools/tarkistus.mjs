@@ -301,6 +301,17 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
     const c=SET_DEF.torchSharp===false&&SET_PAGES.xgfx.includes('torchSharp')&&/torchSharpOn\(\)\?6\.7:2\.1/.test(updatePlayer.toString())&&/torchSharpOn\(\)\|\|shFrame%fT===0/.test(updateStations.toString());
     return a&&b&&c||`virhe terävä ${a} oletus ${b} koodi ${c}`;});
+  t('v2.56 puolitus klikkaamalla: valittu pino + oikea kohteeseen = puolet, valinta poistuu, kohderuutu ei aloita raahausta, puolitusääni vasta siirrossa, siirtoäänet −30 %, sulkemisäänet',()=>{
+    const L=[],o=window.plSnd,pi=inv.slice(),pp=openPanel;let r='';
+    try{window.plSnd=(g,e,x)=>{L.push(e+(x&&x.v?'@'+x.v:''));return true;};for(let i=0;i<inv.length;i++)inv[i]=null;inv[9]={id:'puu',n:10};inv[13]={id:'puu',n:2};
+      if(openPanel)closePanels(true);togglePanel('inv');renderInv();L.length=0;const S=()=>document.querySelectorAll('#invGrid .slot');
+      S()[9].click();const a1=selSlot===9&&L.join()==='siirto@0.7',d1=selSlot+'/'+L.join(';');L.length=0;
+      S()[13].dispatchEvent(new MouseEvent('mousedown',{bubbles:true,button:0}));const a2=!slotDrag;   /* kohde ei aloita raahausta */slotDrag=null;
+      S()[14].dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true,button:2}));const a3=inv[14]&&inv[14].n===5&&inv[9].n===5&&selSlot===-1&&L.join()==='puolitus@0.7';
+      r=a1&&a2&&a3?'':`valinta ${a1} (${d1}) kohde ${a2} puolitus ${a3} [${L}]`;}
+    finally{window.plSnd=o;for(let i=0;i<inv.length;i++)inv[i]=pi[i]||null;closePanels(true);if(pp)togglePanel(pp);invDirty=true;}
+    const c=DRAG_PX===10&&INV_SND_V===.7&&INV_SND_PJ===.12&&REPPU_CLOSE_P===1.3&&ARKKU_CLOSE_P===1.15&&ARKKU_CLOSE_V===.8&&/'arkku_auki',\{p:ARKKU_CLOSE_P/.test(closePanels.toString())&&/moveCount\(sa,si,da,di,k,'puolitus'\)/.test(splitDo.toString());
+    return !r&&c||`virhe ${r} vakiot ${c}`;});
   t('v2.55 Kalmanvartija vaikeus 10: iskut +30 %, raivo alle 50 % (punaiset silmät ja mittari, kivisade, maapiikit, kolmen kiven viuhka), paraneminen 30 s, täysi HP noustessa, armo 5 kuolemasta',()=>{
     const a=VT.swipe===29&&VT.slam===36&&VT.charge===34&&VT.rock===26&&VARTIJA_REGEN_T===30&&bossMercyN('vartija')===5&&bossMercyN('kalmaherra')===3;
     const src=bossAI.toString(),b=/vartijaRage\(m\)/.test(src)&&/k:'rain'/.test(src)&&/k:'spikes'/.test(src)&&/three:1/.test(src)&&/rockRain\(m\)/.test(src)&&/spikeLine\(m\)/.test(src)&&/toggle\('rage'/.test(bossBarTick.toString());
@@ -346,7 +357,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     return a&&b&&c||`virhe napit ${a} säädin ${b} (${L.length}) asetus ${c}`;});
   t('v2.50 äänierä: puun tömähdys koon mukaan (_2 iso, _1 pieni, muut _0/_1), repun sulkeminen korkeammalta, plSnd v_ix',()=>{
     const a=/v_ix:tomahdysIx\(H\)/.test(fallTree.toString())&&JSON.stringify(tomahdysIx(20))==='[2]'&&JSON.stringify(tomahdysIx(3))==='[1]'&&JSON.stringify(tomahdysIx(6))==='[0,1]'&&TOM_BIG===9.5&&TOM_SMALL===4.5;
-    const c=REPPU_CLOSE_P===1.08&&/plSnd\('valikot','reppu',\{p:REPPU_CLOSE_P\}\)/.test(closePanels.toString())&&/o\.v_ix/.test(plSnd.toString());
+    const c=REPPU_CLOSE_P===1.3&&/plSnd\('valikot','reppu',\{p:REPPU_CLOSE_P\}\)/.test(closePanels.toString())&&/o\.v_ix/.test(plSnd.toString());
     const o=CRE.man;CRE.man={'p/osumat/puu_tomahdys_0':{h:'a'},'p/osumat/puu_tomahdys_1':{h:'b'},'p/osumat/puu_tomahdys_2':{h:'c'}};const L=plRes('osumat','puu_tomahdys');CRE.man=o;if(o)creIndex();
     const d=!!L&&L.length===3&&L[2]==='p/osumat/puu_tomahdys_2';
     return a&&c&&d||`virhe koko ${a} reppu ${c} versiot ${d}`;});
@@ -532,11 +543,11 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v2.28 äänierä osa 2 (22 ääntä) + puun tömähdys maahan, reppu kiinni = sama ääni, oman arkun sulkemisääni',()=>{
     const M=manJ(),need=['p/jousi/laukaus_0','p/jousi/veto_0','p/kaytto/arkku_auki_2','p/kaytto/syominen_1','p/lyonnit/huitaisu_2','p/lyonnit/torjunta_0','p/osumat/puu_kaatuu_0','p/osumat/kivi_hajoaa_0'];
     const miss=need.filter(n=>!M[n]||!M[n].f.startsWith('pelaaja_2_toiminnot/valmiit/'));if(miss.length)return 'manifestista puuttuu '+miss.join(', ');
-    const a=/'puu_tomahdys'/.test(fallTree.toString())&&/'arkku_kiinni'/.test(closePanels.toString());
+    const a=/'puu_tomahdys'/.test(fallTree.toString())&&/'arkku_auki',\{p:ARKKU_CLOSE_P/.test(closePanels.toString());   /* v2.56: kaikki arkut sulkeutuvat avausäänellä */
     const calls=[],orig=plSnd,cc=curChest,op=openPanel;plSnd=(g,ev)=>{calls.push(g+'/'+ev);return 1;};
     try{openPanel='inv';closePanels();openPanel='chest';curChest={t:'arkku',data:{items:[]}};closePanels();openPanel='chest';curChest={found:true,data:{items:[]}};plSnd=(g,ev)=>{calls.push(g+'/'+ev);return ev==='sulje'?1:0;};closePanels();}
     finally{plSnd=orig;curChest=cc;openPanel=op;}
-    const b=calls[0]==='valikot/reppu'&&calls[1]==='kaytto/arkku_kiinni'&&calls[2]==='valikot/sulje'&&calls.length===3;
+    const b=calls[0]==='valikot/reppu'&&calls[1]==='kaytto/arkku_auki'&&calls[2]==='kaytto/arkku_auki'&&calls[3]==='valikot/sulje'&&calls.length===4;
     return a&&b||`virhe koukut ${a} kutsut ${calls.join(',')}`;});
   t('v2.27 Aarnimetsän askel ±10 % ja sävel ±9 %; oksa: astuessa oksan päälle normaali ääni, Aarnimetsässä satunnaisesti tosi hiljaa, 2 s tauko',()=>{
     const O=nodes.find(n=>n.type==='oksa'&&n.alive!==false);if(!O)return 'ei oksia';const a=plNodeAt('oksa',O.x,O.z,.3)&&!plNodeAt('oksa',O.x+3,O.z+3,.3);
@@ -553,7 +564,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     try{P.pos.set(B.x,terrainH(B.x,B.z),B.z);P.onGround=true;P.swim=false;P.inDun=false;P.vel.set(3,0,0);PLV.bushT=-9;PLV.ph=null;plTick(1/30);const n1=calls.filter(c=>c==='askeleet/puska').length;plTick(1/30);
       var n2=calls.filter(c=>c==='askeleet/puska').length,b=n1===1&&n2===1&&calls.includes('askeleet/askel_pusikko');}
     finally{plSnd=orig;CRE.ok=ok0;P.pos.copy(sv[0]);P.onGround=sv[1];P.vel.copy(sv[2]);P.swim=sv[3];P.inDun=sv[4];}
-    const c=PL_STEP_V===.8&&/\*\.05\)/.test(plSnd.toString())&&/plBush\(m\.pos\.x/.test(tgStep.toString())&&/'puska',\{v:\.9\}/.test(plTick.toString());
+    const c=PL_STEP_V===.8&&/o\.pj\?\?\.05/.test(plSnd.toString())&&/plBush\(m\.pos\.x/.test(tgStep.toString())&&/'puska',\{v:\.9\}/.test(plTick.toString());
     return a&&b&&c||`virhe pensas ${a} ääni ${b} (${calls.join(',')}) muut ${c}`;});
   t('v2.26 terveyspalkit: vain suora katse; vahingoittunut myös 10 % ympärillä; vahingon jälkeen 5 s; ei jos tosi kaukana ja piilossa',()=>{
     for(const q of [...mobs])mobRemove(q);const cp=camera.position.clone(),cq=camera.quaternion.clone(),pp=P.pos.clone(),bs=barSeen,L=LOC.spawn,x=L.x+30,z=L.z+30;

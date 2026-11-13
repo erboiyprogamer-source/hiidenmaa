@@ -424,12 +424,30 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
 - Ratkaisu: kuvaava, tiedostokohtainen nimi (`VT_SPK_GEO`). **Ennen uutta ylimmän tason nimeä: `grep -n "\bnimi\b" js/*.js`.** Testaa aina
   sivun lataus selaimessa (tarkistus.mjs tai Playwright `pageerror`), ei pelkkä `node --check`.
 
+## 60. Puolitus klikkaamalla ei toiminut luotettavasti (v2.56; aiemmin v2.32, v2.33, v2.46)
+- Käyttäjän malli: **pino valittuna (vasen tai oikea) → OIKEA napsautus kohderuutuun = puolet siirtyy** (Shift + oikea = määrä sliderilla);
+  vasen kohteeseen = koko pino. Ratkaiseva on oikea napsautus kohdetta valittaessa.
+- Oireet ja syyt:
+  1. Oikealla siirron jälkeen **valinta jäi päälle** (`oncontextmenu`/arkku: ei `selSlot=-1`/`chestSel=null`) → seuraava napsautus siirsi
+     taas alkuperäisestä pinosta → näytti rikkinäiseltä.
+  2. **Hiiren pieni liikahdus (> 6 px) kohderuudussa, jossa on esine** (pinoaminen), aloitti raahauksen KOHTEESTA ja vei valinnan
+     siihen → siirtoa ei tullut.
+  3. Puolitusääni soi oikean napin valinnassa eikä vasta siirrossa (hämäsi: kuulosti onnistuneelta).
+- Ratkaisu: valinta pois siirron jälkeen (reppu ja arkku); `slotUX.onmousedown` ei aloita raahausta, jos JOKIN MUU ruutu on valittuna
+  (ruutu on kohde); raahausraja `DRAG_PX` 10 px; ääni `invSnd`: valinta = siirto, puolitus vasta `moveCount(…,'puolitus')` onnistuessa
+  (myös sliderin Siirrä-nappi).
+- **Testaus (tärkeä, muuten testi näyttää väärin):** oikea hiiri Playwrightilla (`page.mouse` down/up `button:'right'`), peli käyntiin
+  `newGame(); startPlay()` (pelkkä setState jättää `#menuBg`-kanvaksen ruutujen päälle → mikään klikkaus ei osu). VC-tila: `locked=true;
+  state='ui'; vcSync()`, ja **liikuta oikeaa hiirtä ensin, aseta sitten `VC.x/VC.y`** (hiiren liike siirtää virtuaaliosoitinta).
+  Kokeile: oikea+vasen, vasen+oikea, oikea+oikea, liikahdus 8–9 px pinoon, nopea toisto, arkku. Tarkistusrivi v2.56.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`
   ja kohdistusskenaariot (kehitysmuistio v0.65).
 - **Varjot** (`ai.js` updateStations, `render.js` setQuality, `settings.js` applyGfx): autoUpdate=false-valot.
 - **Latausjärjestys** (CLAUDE.md): ylimmän tason koodi vain aiemmin ladattuihin muuttujiin.
+- **Repun/arkun siirrot** (`ui.js` `slotUX`, `oncontextmenu`, `moveHalf`/`moveCount`, `chestClick`): lue KORJAUKSET 60 ja aja sen testit.
 - **Osumaäänet** (`ai.js` `mobHurtP` → `tgHit(TG_HIT[tyyppi])`): uusi hyökkäys pelaajaan kulkekoon `mobHurtP`:n kautta, muuten osumaääntä
   ei tule (pomojen slam/nova kutsuvat `hurtPlayer`:ia suoraan). Uusi olento → lisää `TG_HIT`-kategoria ja tarkista, että kategorialla on ääni.
 - **Maahan sijoittaminen** (`landmarks.js` `stoneCol`/`gmin`): mittaa maa nurkista, ei yhdestä pisteestä (KORJAUKSET 58).

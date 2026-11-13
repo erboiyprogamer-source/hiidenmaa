@@ -449,6 +449,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## Lista 4, erä F (v1.44)
 - Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
   Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+- **v2.56:** puolitus: valitse pino ja napsauta kohderuutua hiiren oikealla → puolet siirtyy (Shift + oikea: valitse määrä); valinta
+  poistuu siirron jälkeen, eikä hiiren pieni liikahdus sotke. Puolitusääni soi vasta siirrossa; siirtoäänet hiljaisemmat ja vaihtelevammat;
+  repun sulkemisääni korkeampi; arkut sulkeutuvat avausäänellä hiljempaa ja korkeammalta.
 - **v2.55:** Kalmanvartija on vaikeampi (vaikeus 10): iskut +30 %; alle puolikkaalla terveydellä se raivostuu (punaiset silmät ja
   mittari) ja käyttää kivisadetta (punaiset varoitusrenkaat), maapiikkirivejä ja kolmen kiven heittoa; paranee 30 s ilman osumaa; nousee
   alttarilta täysin voimin; lakkaa paranemasta vasta 5. kuolemasta (ilmoitus).
