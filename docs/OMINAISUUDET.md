@@ -449,6 +449,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## Lista 4, erä F (v1.44)
 - Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
   Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+- **v2.51:** valikkoäänet (kun äänet on lisätty): napin päälle vienti ja painallus, liukusäätimen naputus liikutettaessa, Ultra-merkkiääni,
+  Extra-grafiikan päälle/pois-äänet; uusi asetus Valikkoäänet (Ohjaus ja ääni, oletus 70 %).
 - **v2.50:** puun tömähdys riippuu puun koosta (isot puut pitkä hiipuva tömähdys, pienet lyhyt); repun sulkemisääni on sama kuin
   avaamisen mutta hieman korkeampi; uudet rakentamisen ja valikoiden äänet (asetus, korjaus, purku, valmistus, kartta, sulje …).
 - **v2.49:** Kalmanummella usva sakenee ja maailma harmaantuu hitaasti (puolena päivistä voimakkaasti, muulloin lievemmin); Hautakummun

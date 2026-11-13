@@ -294,6 +294,32 @@ function tgTick(dt){if(!CRE.ok||state!=='play')return;
    osumat/: pelaajan isku osuu olentoon (nuija = murskaus, muut = isku) ja pelaajan nuoli osuu (nuoli). Soi pelaajan kohdalta ilman
    kaukoefektiä (luolastossa pieni kaiku), voimakkuus SET.plVol (Asetukset › Ohjaus ja ääni › Pelaajan äänet). Oma budjetti 6 ääntä. */
 const PLV={v:[],last:{},loaded:0,gain:null,ph:null,wet:0,og:1,vy0:0,loops:{},lpRetry:{},cd:{},hp0:null,st:{},bushT:-9,oksaT:-9};
+/* v2.51 VALIKKOÄÄNET (projekti sounds/menu_1_valikko, avaimet m/<ryhmä>/<ääni>): soivat vain pelin ulkopuolisissa valikoissa (MENU_SEL:
+   päävalikko, taukovalikko, asetukset, maailmat, varmistusikkuna, kuolema- ja voittoruutu). Ääni 2D (ei sijaintia), taso SET.uiVol.
+   hover = uusi nappi/valinta hiiren alle, klikkaus = painallus, Extra-grafiikan valinta (.uo) = extra_paalle / extra_pois (oletusarvo = puinen),
+   naputus = liukusäädintä liikutetaan (toistuu MSND.tickDt välein hiljaa, MSND.tickV), ultra = Ultra-esiasetus asetetaan (settings.js). */
+const MENU_SEL='#menu,#settings,#keyDlg,#deadS,#winS',MENU_BTN='button,select,.tgl,input[type=checkbox],.world';
+const MSND={gain:null,last:{},hov:null,loaded:0,clickT:-1e9,moveT:-1,tickT:0,tickDt:.055,tickV:.35,raf:0};
+function mRes(g,ev){if(!CRE.man)return null;if(CRE.idxOf!==CRE.man)creIndex();return CRE.idx[`m/${g}/${ev}`]||null;}
+function mLoad(){if(MSND.loaded||!CRE.ok)return;MSND.loaded=1;for(const n in CRE.man)if(n.startsWith('m/'))creBuf(n);}
+function mSnd(g,ev,o){o=o||{};creInit();if(!CRE.ok)return false;mLoad();const L0=mRes(g,ev);if(!L0)return false;const L=L0.filter(n=>CRE.buf[n]);if(!L.length)return false;
+  const a=actx;if(!a||a.state!=='running'||!soundOn)return false;const vol=typeof SET!=='undefined'?+(SET.uiVol??.7):.7;if(!(vol>0))return false;
+  const key=g+'/'+ev;let pick=L;if(pick.length>1&&MSND.last[key])pick=pick.filter(x=>x!==MSND.last[key]);const name=pick[Math.random()*pick.length|0];MSND.last[key]=name;
+  if(!MSND.gain){MSND.gain=a.createGain();MSND.gain.connect(a.destination);}MSND.gain.gain.value=vol;
+  const src=a.createBufferSource();src.buffer=CRE.buf[name];src.playbackRate.value=(o.p||1)*(1+(Math.random()*2-1)*(o.pj??.03));
+  const gn=a.createGain();gn.gain.value=o.v??1;src.connect(gn);gn.connect(MSND.gain);src.onended=()=>{try{gn.disconnect();}catch(e){}};src.start();return true;}
+function mInMenu(el){return !!(el&&el.closest&&el.closest(MENU_SEL));}
+function mWake(){audio();if(actx&&actx.state!=='running')actx.resume();creInit();mLoad();}
+// liukusäädin: kutsutaan hiiren liikkuessa vedon aikana → naputus toistuu tiheästi niin kauan kuin liike jatkuu (80 ms tauko = hiljaa)
+function mSliderMove(){MSND.moveT=performance.now();if(!MSND.raf)MSND.raf=requestAnimationFrame(mSliderTick);}
+function mSliderTick(){const t=performance.now();if(t-MSND.moveT>80||typeof sldDrag==='undefined'||!sldDrag){MSND.raf=0;return;}
+  if(t-MSND.tickT>=MSND.tickDt*1000){MSND.tickT=t;mSnd('liukusaatimet','naputus',{v:MSND.tickV,pj:.06});}MSND.raf=requestAnimationFrame(mSliderTick);}
+document.addEventListener('mouseover',e=>{const b=e.target&&e.target.closest&&e.target.closest(MENU_BTN);if(!b||b===MSND.hov)return;MSND.hov=b;if(b.disabled||!mInMenu(b)||performance.now()-MSND.clickT<350)return;mSnd('napit','hover');},true);   /* klikkauksen jälkeen sivu piirtyy uudelleen → ei tuplaääntä */
+/* VC (virtuaalinen osoitin) lähettää mouse-tapahtumia, ei pointer-tapahtumia → kuunnellaan mouse* */document.addEventListener('mouseout',e=>{const b=MSND.hov;if(b&&!(e.relatedTarget&&b.contains(e.relatedTarget)))MSND.hov=null;},true);
+document.addEventListener('mousedown',()=>mWake(),true);document.addEventListener('keydown',()=>mWake(),true);
+document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest(MENU_BTN);if(!b||b.disabled||!mInMenu(b))return;MSND.clickT=performance.now();
+  if(b.classList.contains('uo')){const k=b.dataset.xk,v=b.dataset.xv,def=k?String(SET_DEF[k])===v:b.dataset.ush==='off';mSnd('extra',def?'extra_pois':'extra_paalle');return;}
+  mSnd('napit','klikkaus');},true);
 function plRes(g,ev){if(!CRE.man)return null;if(CRE.idxOf!==CRE.man)creIndex();return CRE.idx[`p/${g}/${ev}`]||null;}
 function plLoad(){if(PLV.loaded||!CRE.ok)return;PLV.loaded=1;for(const n in CRE.man)if(n.startsWith('p/'))creBuf(n);}
 function plSnd(g,ev,o){o=o||{};creInit();if(!CRE.ok)return false;plLoad();const L0=plRes(g,ev);if(!L0)return false;const L=L0.filter(n=>CRE.buf[n]);if(!L.length)return false;

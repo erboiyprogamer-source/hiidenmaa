@@ -301,6 +301,18 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
     const c=SET_DEF.torchSharp===false&&SET_PAGES.xgfx.includes('torchSharp')&&/torchSharpOn\(\)\?6\.7:2\.1/.test(updatePlayer.toString())&&/torchSharpOn\(\)\|\|shFrame%fT===0/.test(updateStations.toString());
     return a&&b&&c||`virhe terävä ${a} oletus ${b} koodi ${c}`;});
+  t('v2.51 valikkoäänet: hover/klikkaus vain valikoissa, Extra päälle/pois, liukusäätimen naputus vain liikkuessa, Ultra, Valikkoäänet-säädin',()=>{
+    const L=[],om=window.mSnd,orf=window.requestAnimationFrame;let T=5000,cb=null;window.mSnd=(g,e)=>{L.push(g+'/'+e);return true;};
+    const mk=(par,cls,xk,xv)=>{const b=document.createElement('button');if(cls)b.className=cls;if(xk){b.dataset.xk=xk;b.dataset.xv=xv;}par.appendChild(b);return b;};
+    const M=document.getElementById('menu'),H=document.getElementById('hud'),bs=[mk(M),mk(M,'uo','torchSharp','false'),mk(M,'uo','torchSharp','true'),mk(H)];
+    MSND.clickT=-1e9;for(const b of bs){b.dispatchEvent(new MouseEvent('click',{bubbles:true}));MSND.clickT=-1e9;}bs.forEach(b=>b.remove());
+    const a=L.join()==='napit/klikkaus,extra/extra_pois,extra/extra_paalle';L.length=0;
+    let b=false;const sd=sldDrag;try{window.requestAnimationFrame=f=>{cb=f;return 1;};performance.now=()=>T;sldDrag={};MSND.raf=0;MSND.tickT=0;
+      mSliderMove();for(let i=0;i<8;i++){T+=30;mSliderMove();const f=cb;cb=null;f&&f();}const mv=L.length;
+      for(let i=0;i<10;i++){T+=30;const f=cb;cb=null;f&&f();}b=mv>=3&&mv<=6&&L.length-mv<=1&&L.every(x=>x==='liukusaatimet/naputus');}
+    finally{sldDrag=sd;delete performance.now;window.requestAnimationFrame=orf;window.mSnd=om;MSND.raf=0;}
+    const c=SET_DEF.uiVol===.7&&SET_PAGES.ctl.includes('uiVol')&&/mSnd\('esiasetus','ultra'\)/.test(renderSettings.toString())&&/#menu/.test(MENU_SEL)&&typeof mRes==='function';
+    return a&&b&&c||`virhe napit ${a} säädin ${b} (${L.length}) asetus ${c}`;});
   t('v2.50 äänierä: puun tömähdys koon mukaan (_2 iso, _1 pieni, muut _0/_1), repun sulkeminen korkeammalta, plSnd v_ix',()=>{
     const a=/v_ix:tomahdysIx\(H\)/.test(fallTree.toString())&&JSON.stringify(tomahdysIx(20))==='[2]'&&JSON.stringify(tomahdysIx(3))==='[1]'&&JSON.stringify(tomahdysIx(6))==='[0,1]'&&TOM_BIG===9.5&&TOM_SMALL===4.5;
     const c=REPPU_CLOSE_P===1.08&&/plSnd\('valikot','reppu',\{p:REPPU_CLOSE_P\}\)/.test(closePanels.toString())&&/o\.v_ix/.test(plSnd.toString());

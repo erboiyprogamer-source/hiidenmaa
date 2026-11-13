@@ -38,10 +38,10 @@ function validateKey(action,code){
 // shRate = varjojen päivitystiheys, ptRes = tulien/soihtujen varjokartta (px). res = 3D-resoluution kerroin ('native' = näytön tarkkuus).
 const SET_DEF={res:1,shadow:'high',sunRes:2048,shDist:55,shRate:'normal',ptShadow:true,ptRes:384,autoQ:true,sway:true,grass:1,particles:1,detail:'high',bldDetail:true,
   renderDist:165,lights:6,lightDist:60,lightRange:17,mist:.6,clouds:1,drop3d:true,blood:1,bloodFx:true,keyHints:true,shafts:true,flare:false,wheelHotbar:false,zoom:5.5,sound:true,invY:false,
-  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,treeLod:80,shOpt:true,shLod:40,sens:1,curSens:1,hudMode:0,creVol:.8,plVol:.8,arrowLight:false,menuBg:'img',shUltra:'off',menuAnimKeep:false,waterFx:false,waterOpt:true,uwFx:false,waterMega:false,smokeUltra:false,torchSharp:false,waterHQ:false,shoreSpray:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
+  autoAll:true,autoRes:true,autoFx:true,autoDist:true,fps:'off',terrLod:false,mergeSt:true,shFar:false,treeLod:80,shOpt:true,shLod:40,sens:1,curSens:1,hudMode:0,creVol:.8,plVol:.8,uiVol:.7,arrowLight:false,menuBg:'img',shUltra:'off',menuAnimKeep:false,waterFx:false,waterOpt:true,uwFx:false,waterMega:false,smokeUltra:false,torchSharp:false,waterHQ:false,shoreSpray:false};   // hudMode v1.18: 0 molemmat, 1 vain tehtävä, 2 vain tavoite, 3 piilossa   // v1.12 yleinen automaattisäätö (+ osa-alueet) ja FPS-näyttö
 // Asetussivujen avaimet (sivun "Palauta oletukset" palauttaa vain nämä)
 // v1.35 (lista 3, kohta 16): varjot ovat Grafiikka-sivun väliotsikko (ei omaa sivua).
-const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','lightDist','lightRange','shafts','flare','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','waterFx','uwFx','waterOpt','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar','treeLod','shOpt','shLod'],xgfx:['shUltra','waterHQ','waterMega','shoreSpray','smokeUltra','torchSharp'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep','creVol','plVol']};
+const SET_PAGES={gfx:['menuBg','res','autoAll','autoRes','renderDist','autoDist','fps','detail','grass','sway','clouds','lights','lightDist','lightRange','shafts','flare','arrowLight','particles','mist','autoFx','bldDetail','drop3d','blood','bloodFx','waterFx','uwFx','waterOpt','shadow','sunRes','shDist','shRate','autoQ','ptShadow','ptRes','terrLod','mergeSt','shFar','treeLod','shOpt','shLod'],xgfx:['shUltra','waterHQ','waterMega','shoreSpray','smokeUltra','torchSharp'],ctl:['wheelHotbar','zoom','sens','curSens','sound','invY','keyHints','menuAnimKeep','creVol','plVol','uiVol']};
 /* v1.35 (lista 3, kohta 17): esiasetukset Low … Ultra (8 tasoa, oletus Medium = SET_DEF:n grafiikka). Esiasetus muuttaa kaikki alla
    luetellut asetukset; Low–Medium kytkee automaattisäädön päälle, High–Ultra pois. Ultra ylittää aiemmat maksimit (piirtoetäisyys 520 m,
    ruoho Ultra, varjoalue 140 m, tulien varjot 1024). Jos jotain säädetään käsin, nimi on "Custom".
@@ -122,7 +122,7 @@ let sldDrag=null;
 function sldSet(el,v){const mn=+el.dataset.min,mx=+el.dataset.max,st=+el.dataset.step||1;v=clamp(Math.round((v-mn)/st)*st+mn,mn,mx);el.dataset.v=v;const k=(v-mn)/(mx-mn)*100;el.querySelector('b').style.width=k+'%';el.querySelector('s').style.left=k+'%';return v;}
 function sldFromX(el,x){const r=el.getBoundingClientRect(),mn=+el.dataset.min,mx=+el.dataset.max;return sldSet(el,mn+clamp((x-r.left)/r.width,0,1)*(mx-mn));}
 function bindSld(id,onInput,onChange){const el=document.getElementById(id);if(!el)return;el.onmousedown=e=>{e.preventDefault();e.stopPropagation();sldDrag={el,onInput,onChange};onInput&&onInput(sldFromX(el,e.clientX));};}
-addEventListener('mousemove',e=>{if(sldDrag){const v=sldFromX(sldDrag.el,e.clientX);sldDrag.onInput&&sldDrag.onInput(v);}});
+addEventListener('mousemove',e=>{if(sldDrag){const v=sldFromX(sldDrag.el,e.clientX);sldDrag.onInput&&sldDrag.onInput(v);if(e.movementX||sldDrag.lx!==undefined&&e.clientX!==sldDrag.lx)mSliderMove();sldDrag.lx=e.clientX;}});   // v2.51 naputus vain liikkuessa
 addEventListener('mouseup',()=>{if(sldDrag){const d=sldDrag;sldDrag=null;d.onChange&&d.onChange(+d.el.dataset.v);}});
 const tglHTML=(id,on,extra='')=>`<button type="button" class="tgl${on?' on':''}" id="${id}" ${extra}><i></i><span>${on?'Päällä':'Pois'}</span></button>`;
 // Napsautuksen jälkeen nappi tai valikko ei jää fokukseen (näppäimet menevät peliin); tekstikenttään palatessa vanha teksti valitaan.
@@ -216,7 +216,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
     }</div><p class="note">Vaaleana näkyvä valinta on oletus. Asetukset tulevat voimaan heti ja tallentuvat selaimeen.</p>`+resetBtn;
     bindSet(SET_PAGES.gfx);$('#bPageReset').onclick=()=>resetPage('gfx');
     if(shUltraOn())for(const k of SHU_OVR){const el=$('#s_'+k),r=el&&el.closest('.setRow');if(!r)continue;r.classList.add('ovr');if(el.tagName==='SELECT')el.disabled=true;const n=r.querySelector('.note');if(n)n.textContent='ohitettu: erittäin tarkat varjot päällä';}   // v1.80
-    bindSld('sPreset',i=>{$('#presetName').textContent=PRESET_N[i];$('#presetName').className='';pvTheme(i);},i=>{applyPreset(i);renderSettings();});pvFxStart();
+    bindSld('sPreset',i=>{$('#presetName').textContent=PRESET_N[i];$('#presetName').className='';pvTheme(i);},i=>{applyPreset(i);renderSettings();if(+i===7)mSnd('esiasetus','ultra');});pvFxStart();
   }else if(setTab==='xgfx'){
     /* v2.20: Extra-grafiikka – asetukset, jotka ovat oletuksena pois kaikissa esiasetuksissa (eivät kuulu esiasetuksiin, laitetaan käsin).
        Violetti = vaativa, punainen = raskain. */
@@ -252,6 +252,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
       setRow('Äänet','sound')+
       row('Olentojen äänet'+(isDef('creVol')?' <span class="defTag">oletus</span>':''),sldHTML('sCreVol',0,1,.05,+SET.creVol),`<span id="sCreVolV">${Math.round(SET.creVol*100)} %</span>`)+   /* v1.84 */
       row('Pelaajan äänet'+(isDef('plVol')?' <span class="defTag">oletus</span>':''),sldHTML('sPlVol',0,1,.05,+SET.plVol),`<span id="sPlVolV">${Math.round(SET.plVol*100)} %</span>`)+   /* v2.24 askeleet, vesi, osumat */
+      row('Valikkoäänet'+(isDef('uiVol')?' <span class="defTag">oletus</span>':''),sldHTML('sUiVol',0,1,.05,+SET.uiVol),`<span id="sUiVolV">${Math.round(SET.uiVol*100)} %</span>`)+   /* v2.51 napit, liukusäätimet, Ultra, Extra */
       setRow('Käännä pystyhiiri','invY')+
       setRow('Näppäinopasteet','keyHints',null,'pienet vihjeet paneeleissa ja ruudun nurkassa (esim. Päävalikko: P)')+
       setRow('Älä pysäytä valikon animaatioita pelin aikana','menuAnimKeep',null,'oletus: valikon partikkelit ja animaatiot pysähtyvät pelissä ja häivyttyvät esiin valikkoon palatessa (kevyempi)')
@@ -261,6 +262,7 @@ function renderSettings(){const t=$('#setTabs');t.innerHTML='';
     $('#s_devOn').onclick=()=>keyDialog(DEV?'Poistetaanko kehittäjätyökalut käytöstä?':'Otetaanko kehittäjätyökalut käyttöön?',[[DEV?'Poista käytöstä':'Ota käyttöön',()=>{try{if(started&&!P.dead)saveGame(true);localStorage.setItem('hiidenmaa_devon',DEV?'0':'1');}catch(e){}location.reload();}],['Peruuta',null]],'Sivu ladataan uudelleen.');
     bindSld('sCreVol',v=>{SET.creVol=+v;$('#sCreVolV').textContent=Math.round(SET.creVol*100)+' %';},()=>saveSet());
     bindSld('sPlVol',v=>{SET.plVol=+v;$('#sPlVolV').textContent=Math.round(SET.plVol*100)+' %';},()=>saveSet());
+    bindSld('sUiVol',v=>{SET.uiVol=+v;$('#sUiVolV').textContent=Math.round(SET.uiVol*100)+' %';},()=>saveSet());
     bindSld('sZoom',v=>{SET.zoom=+v;$('#sZoomV').textContent=SET.zoom.toFixed(1)+' m';camDist=SET.zoom;},()=>saveSet());
     bindSld('sSens',v=>{SET.sens=+v;$('#sSensV').textContent=SET.sens.toFixed(2)+'×';},()=>saveSet());bindSld('sCur',v=>{SET.curSens=+v;$('#sCurV').textContent=SET.curSens.toFixed(2)+'×';},()=>saveSet());
   }else{

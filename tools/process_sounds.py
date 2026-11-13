@@ -499,15 +499,17 @@ def main():
     t_sounds, t_stat, t_warn, t_err = process_toiminnot(ff, init, old)
     warn += t_warn
     errors += t_err
-    p_sounds, p_stat, xs = {}, [0, 0, 0], []   # v2.24/v2.25 pelaajan äänet (osat 1–3)
+    p_sounds, p_stat, xs, xm = {}, [0, 0, 0], [], []   # v2.24/v2.25 pelaajan äänet (osat 1–3); v2.51 valikot (xm)
     for C in P_CFGS:
         ps, st, pw, pe = process_toiminnot(ff, init, old, C)
-        xs.append((C['title'], write_list_p(ps, C)))
+        (xm if C.get('xlsx') == 'menu' else xs).append((C['title'], write_list_p(ps, C)))
         p_sounds.update(ps)
         p_stat = [a + b for a, b in zip(p_stat, st)]
         warn += pw
         errors += pe
     write_xlsx(P_XLSX, xs)
+    if xm:
+        write_xlsx(M_XLSX, xm)
     allsnd = dict(sounds)
     allsnd.update(t_sounds)
     allsnd.update(p_sounds)
@@ -764,6 +766,28 @@ for _n, _proj, _tit, _grs in P_PARTS:
     P_CFGS.append({'part': _n, 'title': _tit, 'groups': _g, 'by': _by, 'raw': os.path.join(SND, _proj, 'raw'), 'out': os.path.join(SND, _proj, 'valmiit'),
                    'pre': 'p', 'proj': _proj, 'single': True, 'act': {'sydan'}, 'list': os.path.join(SND, _proj, f'AANILISTA_OSA{_n}.csv'),
                    'allowed': (lambda by: (lambda g: list(by[g][4])))(_by)})
+# v2.51 VALIKKOJEN ÄÄNIPROJEKTIT (pelin ulkopuoliset valikot): avaimet m/<ryhmä>/<ääni>, sama käsittely kuin pelaajan osilla
+# (yksi numeroton paikkamerkki per ääni, lisäversiot _1, _2 …). Lista sounds/<kansio>/AANILISTA_MENU<n>.csv + sounds/AANILISTA_MENU.xlsx.
+M_PARTS = [
+    (1, 'menu_1_valikko', 'Menu 1 – napit ja säätimet', [
+        ('napit', 'Napit ja valinnat', '🖱️', [('hover', 'viet hiiren napin, välilehden tai valinnan päälle (päävalikko, taukovalikko, asetukset, maailmat, ikkunat)', 'ui hover tick, soft menu blip'),
+                                            ('klikkaus', 'painat nappia, välilehteä tai valintaa', 'ui click, menu button press')]),
+        ('liukusaatimet', 'Liukusäätimet', '🎚️', [('naputus', 'liikutat liukusäädintä (kaikki säätimet): peli toistaa tätä tiheästi ja hiljaa niin kauan kuin säädin liikkuu – ei kun pidät paikallaan', 'ui slider tick, small tap, ratchet click')]),
+        ('esiasetus', 'Esiasetus', '⭐', [('ultra', 'Ultra-esiasetus asetetaan (säädin vapautetaan Ultran kohdalle)', 'magic shimmer, power up chime, epic confirm')]),
+        ('extra', 'Extra-grafiikka', '💜', [('extra_paalle', 'valitset Extra-grafiikassa violetin tai punaisen vaihtoehdon (päälle)', 'magic enable, arcane click, energy on'),
+                                            ('extra_pois', 'valitset puisen vaihtoehdon (Pois)', 'wooden click, wood knock off')])]),
+]
+for _n, _proj, _tit, _grs in M_PARTS:
+    _g = [(gid, gn, emo, ['valikko'], [e[0] for e in evs], False) for gid, gn, emo, evs in _grs]
+    for gid, _, _, evs in _grs:
+        for e in evs:
+            P_EV[(gid, e[0])] = (e[1], e[2])
+    _by = {x[0]: x for x in _g}
+    P_CFGS.append({'part': _n, 'title': _tit, 'groups': _g, 'by': _by, 'raw': os.path.join(SND, _proj, 'raw'), 'out': os.path.join(SND, _proj, 'valmiit'),
+                   'pre': 'm', 'proj': _proj, 'single': True, 'act': set(), 'list': os.path.join(SND, _proj, f'AANILISTA_MENU{_n}.csv'),
+                   'allowed': (lambda by: (lambda g: list(by[g][4])))(_by), 'xlsx': 'menu'})
+T_PROF.update({'hover': (.3, .3, .05, -29), 'klikkaus': (.4, .4, .06, -24), 'naputus': (.12, .12, .02, -27), 'ultra': (3.0, 3.0, .5, -20),
+               'extra_paalle': (1.5, 1.5, .25, -22), 'extra_pois': (.8, .8, .12, -24)})
 T_CFG = {'groups': TG_GROUPS, 'by': TG_BY, 'raw': RAW_T, 'out': OUT_T, 'pre': 't', 'proj': PROJ_T, 'allowed': lambda g: t_allowed(g)}
 
 def write_list_p(sounds, C):
@@ -773,7 +797,7 @@ def write_list_p(sounds, C):
     for gid, gn, emo, _, evs, _ in C['groups']:
         for ev in evs:
             i += 1
-            pre = f'p/{gid}/{ev}_'
+            pre = f'{C["pre"]}/{gid}/{ev}_'
             nums = sorted(int(n[len(pre):]) for n in sounds if n.startswith(pre) and n[len(pre):].isdigit())
             parts = [x for x in nums if x >= 100]
             nums = [x for x in nums if x < 100]
@@ -790,6 +814,7 @@ def write_list_p(sounds, C):
     return rows
 
 P_XLSX = os.path.join(SND, 'AANILISTA_PELAAJA.xlsx')
+M_XLSX = os.path.join(SND, 'AANILISTA_MENU.xlsx')   # v2.51
 def write_xlsx(path, sheets):
     """v2.25: kevyt .xlsx ilman lisäkirjastoja (Excel, LibreOffice, Google Sheets): jokainen osa omalla välilehdellään, otsikkorivi
     lukittu ja tumma, ✅-rivit vihreät, ⬜-rivit harmaat, sarakeleveydet ja suodatin. sheets = [(nimi, rivit)]."""

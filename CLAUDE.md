@@ -95,6 +95,7 @@ fysiikan arvot ovat viiteoppaassa `docs/OMINAISUUDET.md`. Toistuvat viat ja niid
 - Työtapa ja säännöt: `docs/KEHITYSMUISTIO.md` → "Äänisuunnitelma". Projektit omissa kansioissaan `sounds/<projekti>/` (`raw/`, `valmiit/`, oma lista):
   `olennot_aanet/` (AANILISTA.md), `pelaaja_1_liike/`, `pelaaja_2_toiminnot/`, `pelaaja_3_aanet/` (v2.25; avaimet `p/<ryhmä>/…`, työkalun `P_PARTS`; **yksi numeroton paikkamerkki per ääni**, lisäversiot `_1` …; listat `AANILISTA_OSA<n>.csv` + `sounds/AANILISTA_PELAAJA.xlsx`) ja `olennot_toiminnot/` (ryhmäkansiot `raw/<ryhmä>/` → `valmiit/<ryhmä>_valmis/`, AANILISTA_TOIMINNOT.md; kerrostuvissa ryhmissä vain
   kerrokset kuten tömistys/kalina – pohjaääni kaksi- tai nelijalkaisilta); `sounds/manifest.json` yhteinen (`f`-polku).
+  Valikot (v2.51): `menu_1_valikko/` (avaimet `m/<ryhmä>/…`, työkalun `M_PARTS`, lista `AANILISTA_MENU1.csv` + `AANILISTA_MENU.xlsx`), peli `mSnd` (audio.js, `SET.uiVol`).
 - Käyttäjä korvaa paikkamerkin projektin `raw/`-kansiossa samalla nimellä (lisäversiot `_4`, `_5` … ilman rajaa) → aja `python3 tools/process_sounds.py` (uudet nimet: `--init`).
   Peli lukee vain `sounds/manifest.json`:n käsitellyt äänet. Uusi olento → aja `--init` (tekee sen paikkamerkit).
 - **Äänierä (uudet äänet):** noudata kehitysmuistion "Äänierän rutiini" (pull → `process_sounds.py` → lue HUOM-rivit → muistio, versio, `tarkistus.mjs` → PR). Pelkkä äänidata ei vaadi
