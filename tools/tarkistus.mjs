@@ -163,7 +163,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.78 herätessä läheiset viholliset katoavat',()=>/respawnCleared/.test(respawn.toString())&&/35\*35/.test(respawn.toString())||'puuttuu');
   t('v1.79 High–Ultra kytkevät automaattisäädön alavalinnat pois (myös varjojen laatu), muut päälle',()=>{const o=Object.assign({},SET);applyPreset(7);const a=!SET.autoQ&&!SET.autoRes&&!SET.autoFx&&!SET.autoDist&&presetIdx()===7;applyPreset(3);const b=SET.autoQ&&presetIdx()===3;Object.assign(SET,o);applyGfx();return a&&b||'virhe';});
   t('v1.80 erittäin tarkat varjot ohittavat varjoasetukset (8192, oma etäisyys, joka ruutu, aina päällä) ja harmaannuttavat ne',()=>{const o=Object.assign({},SET);SET.shadow='off';SET.shRate='slow';SET.shUltra='soft';applyGfx();const a=renderer.shadowMap.enabled&&sun.shadow.autoUpdate&&sun.shadow.camera.right===110&&!autoOn('q');Object.assign(SET,o);applyGfx();return a&&SHU_OVR.length===6||'virhe';});
-  t('v1.81 kolme kuolemaa samalle pomolle → pomo ei enää palauta terveyttään (tallentuu)',()=>{const o=flags.bossDeaths;flags.bossDeaths={vartija:2};const a=!bossTired('vartija');flags.bossDeaths.vartija=3;const b=bossTired('vartija')&&/bossTired/.test(updateMobs.toString());flags.bossDeaths=o;return a&&b||'virhe';});
+  t('v1.81 kolme kuolemaa samalle pomolle → pomo ei enää palauta terveyttään (tallentuu)',()=>{const o=flags.bossDeaths;flags.bossDeaths={kalmaherra:2};const a=!bossTired('kalmaherra');flags.bossDeaths.kalmaherra=3;const b=bossTired('kalmaherra')&&/bossTired/.test(updateMobs.toString());   /* v2.55: Kalmanvartijalla 5 (rivi v2.55) */flags.bossDeaths=o;return a&&b||'virhe';});
   t('v1.82 DEV-työkalut oletuksena pois, kytkin Asetukset › Ohjaus ja ääni -sivun alareunassa',()=>{const o=setTab;setTab='ctl';renderSettings();const ok=DEV===false&&!!$('#s_devOn')&&!devOn('lvl');setTab=o;renderSettings();return ok||'virhe';});
   t('v1.82 Early Access 1.0 -merkintä version perässä, DEV-viitteet piilossa kun DEV pois',()=>/Early Access 1\.0/.test($('.mTitle small .eaTag').textContent)&&(DEV||!/10× nopeus|DEV-valikko/.test(document.body.innerText))||'puuttuu');
   t('v1.83 veren fysiikka päällä Mediumista ylöspäin',()=>{const o=Object.assign({},SET);applyPreset(3);const a=SET.bloodFx;applyPreset(2);const b=!SET.bloodFx;Object.assign(SET,o);applyGfx();return a&&b&&SET_DEF.bloodFx||'virhe';});
@@ -301,6 +301,12 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
     const c=SET_DEF.torchSharp===false&&SET_PAGES.xgfx.includes('torchSharp')&&/torchSharpOn\(\)\?6\.7:2\.1/.test(updatePlayer.toString())&&/torchSharpOn\(\)\|\|shFrame%fT===0/.test(updateStations.toString());
     return a&&b&&c||`virhe terävä ${a} oletus ${b} koodi ${c}`;});
+  t('v2.55 Kalmanvartija vaikeus 10: iskut +30 %, raivo alle 50 % (punaiset silmät ja mittari, kivisade, maapiikit, kolmen kiven viuhka), paraneminen 30 s, täysi HP noustessa, armo 5 kuolemasta',()=>{
+    const a=VT.swipe===29&&VT.slam===36&&VT.charge===34&&VT.rock===26&&VARTIJA_REGEN_T===30&&bossMercyN('vartija')===5&&bossMercyN('kalmaherra')===3;
+    const src=bossAI.toString(),b=/vartijaRage\(m\)/.test(src)&&/k:'rain'/.test(src)&&/k:'spikes'/.test(src)&&/three:1/.test(src)&&/rockRain\(m\)/.test(src)&&/spikeLine\(m\)/.test(src)&&/toggle\('rage'/.test(bossBarTick.toString());
+    const c=/if\(bossTired\('vartija'\)\)boss\.hp=/.test(useAltar.toString())&&/VARTIJA_REGEN_T/.test(updateMobs.toString());
+    const pd=flags.bossDeaths;flags.bossDeaths={vartija:4};const d1=!bossTired('vartija');flags.bossDeaths={vartija:5};const d2=bossTired('vartija');flags.bossDeaths=pd;
+    return a&&b&&c&&d1&&d2||`virhe arvot ${a} raivo ${b} nousu/paraneminen ${c} armo ${d1} ${d2}`;});
   t('v2.54 osumaäänen varakategoria: sarvet → isku, kunnes osuma_sarvet-äänet on lisätty (karju, hirvi, hiidenhirvi)',()=>{
     const o=CRE.man;let a,b,c;try{CRE.man={'t/osumat/osuma_isku_1':{h:'a'}};creIndex();a=tgHitCat('sarvet');c=tgHitCat('isku');CRE.man={'t/osumat/osuma_isku_1':{h:'a'},'t/osumat/osuma_sarvet_1':{h:'b'}};creIndex();b=tgHitCat('sarvet');}
     finally{CRE.man=o;if(o)creIndex();}

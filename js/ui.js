@@ -202,7 +202,7 @@ function bossBarTick(dt){const bar=$('#bossbar'),vig=$('#bbVig');if(!bar)return;
   bar.querySelector('.bbLag').style.width=(BB.lag*100)+'%';
   bar.querySelectorAll('.bbMarks .mk').forEach(e=>e.classList.toggle('past',k<+e.dataset.k));
   const ph=bbPhaseOf(best);if(ph>BB.ph){BB.ph=ph;bbHit(bar,BB_PH[ph]);}
-  bar.classList.toggle('ph2',ph===2);bar.classList.toggle('ph3',ph===3);bar.classList.toggle('fin',ph===4);
+  bar.classList.toggle('ph2',ph===2);bar.classList.toggle('ph3',ph===3);bar.classList.toggle('fin',ph===4);{const rg=!!best.rage;bar.classList.toggle('rage',rg);if(vig)vig.classList.toggle('rage',rg);}   // v2.55 Kalmanvartijan raivo: punainen mittari
   bar.querySelector('.bbSub').textContent=T.sub+(ph>1?` · vaihe ${BB_ROM[Math.min(ph,4)]}`:'')+(best.sinking?' · herää':'');
   const low=k<.25;if(vig&&low!==BB.lowOn){BB.lowOn=low;vig.classList.toggle('low',low);}}
 /* v1.91 DEV-valikko Ö: olennon luonti 3 m eteen (katsesuuntaan), pomojen pikasiirrot (pomohuone, portin eteen, elvytys) ja pomohuoneen

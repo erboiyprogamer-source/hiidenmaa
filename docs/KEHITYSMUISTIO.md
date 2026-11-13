@@ -13,11 +13,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.54)
+## Nykytila (päivitetty v2.55)
 
-- **PR #35 (v2.28–v2.49) ja #36 (muistiinpanot) on yhdistetty. PR #37 (v2.50–v2.54, lista 7 kokonaan + sarvien varaääni) odottaa yhdistämistä.**
+- **PR #35 (v2.28–v2.49) ja #36 (muistiinpanot) on yhdistetty. PR #37 (v2.50–v2.55, lista 7 kokonaan + sarvien varaääni + Kalmanvartija 10) odottaa yhdistämistä.**
   Lista 7: ks. Ideajono › "Lista 7" (kaikki kohdat tehty; uudet äänet paikkamerkkeinä). Avoimet: Ideajono › "Avoimet havainnot".
-- **Versio 2.54**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) ja v2.24 (äänitasot, juominen, pää alas, pelaajan toimintoäänet) ja v2.25 (sudet hiljemmaksi, Aarnipuun törmäys, karhun syöksy, pelaajan äänet osat 1–3) ja v2.26 (pensasäänet, askeleet −20 %, terveyspalkkien näkyvyys) ja v2.27 (Aarnimetsän askel, oksat) – **PR #34 (v2.23–v2.27) on yhdistetty.** v2.28 (pelaajan äänierä osa 2: 22 ääntä, puun tömähdys, reppu kiinni, arkun sulkeminen) ja v2.29 (narinan ajoitus, siirto- ja puolitusäänet, Shift-siirtoslider) ja v2.30 (sliderin korjaukset, poimintaääni) ja v2.31 (poimintaäänen sävy) ja v2.32 (valitse + oikea klikkaus puolittaa myös hiiren lukituksessa) ja v2.33 (valinta säilyy pienessä liikkeessä, avointen biomien vaaleammat varjot) ja v2.34 (metsien varjot 20 % vaaleammat, vuorokauden vaihtelu ±15 %) ja v2.35 (näytön auringonsäteet, linssiheijastus) ja v2.36 (säteiden ajoitus, päiväkohtaisuus, peitto) ja v2.37 (säteet takaisin koko päiväksi) ja v2.38 (pyöreä auringon hehku, pilvien syvyys, kovat/pehmeät säteet) ja v2.39 (pienempi auringon hehku) ja v2.40 (elävät säteet, peitto suunnittain) ja v2.41 (suorituskykyoptimoinnit: puiden LOD, varjomallit, rakennusten yhdistäminen) ja v2.42 (low poly -sävytys säilyy varjojen vaalennuksessa) ja v2.43 (hautakummun kieleke, savujen optimointi, liekit pystyyn) ja v2.44 (satunnainen pilvimatto) ja v2.45 (terävät soihtuvarjot Extra-grafiikkaan) ja v2.46 (repun vilkkuminen/puolitus, pilvet, hukkumisen tarkistus) ja v2.47 (pilvipäivät, pilvimatto 50 %, heijastuksen päivävaihtelu, pilvet ylemmäs) PR #35:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
+- **Versio 2.55**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) ja v2.24 (äänitasot, juominen, pää alas, pelaajan toimintoäänet) ja v2.25 (sudet hiljemmaksi, Aarnipuun törmäys, karhun syöksy, pelaajan äänet osat 1–3) ja v2.26 (pensasäänet, askeleet −20 %, terveyspalkkien näkyvyys) ja v2.27 (Aarnimetsän askel, oksat) – **PR #34 (v2.23–v2.27) on yhdistetty.** v2.28 (pelaajan äänierä osa 2: 22 ääntä, puun tömähdys, reppu kiinni, arkun sulkeminen) ja v2.29 (narinan ajoitus, siirto- ja puolitusäänet, Shift-siirtoslider) ja v2.30 (sliderin korjaukset, poimintaääni) ja v2.31 (poimintaäänen sävy) ja v2.32 (valitse + oikea klikkaus puolittaa myös hiiren lukituksessa) ja v2.33 (valinta säilyy pienessä liikkeessä, avointen biomien vaaleammat varjot) ja v2.34 (metsien varjot 20 % vaaleammat, vuorokauden vaihtelu ±15 %) ja v2.35 (näytön auringonsäteet, linssiheijastus) ja v2.36 (säteiden ajoitus, päiväkohtaisuus, peitto) ja v2.37 (säteet takaisin koko päiväksi) ja v2.38 (pyöreä auringon hehku, pilvien syvyys, kovat/pehmeät säteet) ja v2.39 (pienempi auringon hehku) ja v2.40 (elävät säteet, peitto suunnittain) ja v2.41 (suorituskykyoptimoinnit: puiden LOD, varjomallit, rakennusten yhdistäminen) ja v2.42 (low poly -sävytys säilyy varjojen vaalennuksessa) ja v2.43 (hautakummun kieleke, savujen optimointi, liekit pystyyn) ja v2.44 (satunnainen pilvimatto) ja v2.45 (terävät soihtuvarjot Extra-grafiikkaan) ja v2.46 (repun vilkkuminen/puolitus, pilvet, hukkumisen tarkistus) ja v2.47 (pilvipäivät, pilvimatto 50 %, heijastuksen päivävaihtelu, pilvet ylemmäs) PR #35:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -261,16 +261,18 @@ koukku tiedostoääneen – älä koskaan tee ääntä itse. Puuttuva ääni = h
 
 ## Tasapainoarvot (päivitä kun muutat)
 
-**Pomot (v2.54, koodista; vahinko ennen haarniskaa – pomojen iskut × `HURT_K` 1,2; nopeus = `run` × `MOB_SPD` 0,85 × vaihe):**
+**Pomot (v2.55, koodista; HP = perus × `BOSS_HP_K` (mobs.js), ulottuvuuspomojen `dmg` × 1,15; pomojen iskut lisäksi × `HURT_K` 1,2 ennen
+haarniskaa; nopeus = `run` × `MOB_SPD` 0,85 × vaihe). Huom: v2.54:n taulukossa oli virheellisesti kertomattomat perusarvot.**
 
-| Pomo (paikka) | HP | Iskut (perus → ×1,2) | Nopeus m/s (vaiheet) | Vaiheet | Paraneminen |
+| Pomo (paikka) | HP | Iskut (ennen ×1,2) | Nopeus m/s (vaiheet) | Vaiheet | Paraneminen |
 | --- | --- | --- | --- | --- | --- |
-| Jäätär (Routaluola, 1.) | 560 | huitaisu 22, maaisku 26,4 (7 m), kivi 22, nova 24,2 (11 m) | 3,1 / 3,4 / 3,8 | 66 % ja 33 %: +10 % / +25 % nopeus, iskuväli 1,9 → 1,4 → 1,0 s (×1,1 heittäjä) | 60 s ilman osumaa → 10 %/s |
-| Kalmaherra (Kalmankammio, 2.) | 640 | huitaisu 24, ryntäys 26,4 (11,9–14,9 m/s), nova 26,4, tulilinja 20 + palaminen | 3,4 / 3,7 / 4,3 | ph2 2 kalmoa, ph3 3; alle 50 % tulilinjat; alle 30 % viimeinen raivo (ryntäys 3,1 s välein, 5 kalmoa / 20 s, enint. 12) | 60 s → 10 %/s |
-| Aarnihirviö (Aarnihauta, 3.) | 720 | huitaisu 26, ryntäys 28,6, maaisku 31,2 (7 m) | 3,4 / 3,7 / 4,3 | ph3 3 kätyriä | 102 s → 1 %/s (hidas) |
-| Kalmanvartija (Kalmankehä, alttari 3 hiidenkiveä) | 900 | huitaisu 22, maaisku 28 (7 m), ryntäys 26 (12,8 m/s), kivi 20 | 3,1 / 3,7 (alle 50 %) | alle 50 %: 3 kalmoa, +20 % nopeus, iskuväli 2,1 → 1,45 s | 60 s → 10 %/s; vajoaa yli 90 m:ssä (HP säilyy) |
+| Jäätär (Routaluola, 1.) | 840 (560 × 1,5) | huitaisu 25, maaisku 30 (7 m), kivi 22, nova 28 (11 m) | 3,1 / 3,4 / 3,8 | 66 % ja 33 %: +10 % / +25 % nopeus, iskuväli 1,9 → 1,4 → 1,0 s (×1,1 heittäjä) | 60 s ilman osumaa → 10 %/s |
+| Kalmaherra (Kalmankammio, 2.) | 1 280 (640 × 2) | huitaisu 28, ryntäys 30 (11,9–14,9 m/s), nova 30, tulilinja 20 + palaminen | 3,4 / 3,7 / 4,3 | ph2 2 kalmoa, ph3 3; alle 50 % tulilinjat; alle 30 % viimeinen raivo (ryntäys 3,1 s välein, 5 kalmoa / 20 s, enint. 12) | 60 s → 10 %/s |
+| Aarnihirviö (Aarnihauta, 3.) | 1 872 (720 × 2,6) | huitaisu 30, ryntäys 33, maaisku 36 (7 m) | 3,4 / 3,7 / 4,3 | ph3 3 kätyriä | 102 s → 1 %/s (hidas) |
+| Kalmanvartija (Kalmankehä, alttari 3 hiidenkiveä) | 2 250 (900 × 2,5) | v2.55: huitaisu 29, maaisku 36 (7 m), ryntäys 34 (12,8 m/s), kivi 26; raivo: kivisade 6–8 × 22, maapiikit 30, 3 kiveä × 26 | 3,1 / 3,7 (alle 50 %) | alle 50 %: raivo (punaiset silmät ja mittari), 3 kalmoa, +20 % nopeus, iskuväli 2,1 → 1,45 s, uudet hyökkäykset | 30 s → 10 %/s; vajoaa yli 90 m:ssä, nousee täysin HP:in |
 
-Kaikki: pelaajan 3. kuolema samalle pomolle → ei enää parane (`bossTired`). Heikkoudet (`weak`): ks. `MOBDEF`. Pelaaja: kävely 4,6, juoksu 8 m/s.
+Armo: pelaajan 3. kuolema samalle pomolle (Kalmanvartija 5., `BOSS_MERCY`) → ei enää parane (`bossTired`); Kalmanvartija säilyttää silloin HP:n
+myös vajotessaan. Heikkoudet (`weak`): ks. `MOBDEF`. Pelaaja: kävely 4,6, juoksu 8 m/s.
 
 
 | Asia | Arvo |
@@ -318,6 +320,24 @@ Kaikki: pelaajan 3. kuolema samalle pomolle → ei enää parane (`bossTired`). 
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.55 (Kalmanvartija: täysi HP noustessa, paraneminen 30 s, vaikeus 10 – käyttäjän pyyntö)
+- **Käyttäjän vastaukset:** iskut +30 % (HP ennallaan 2 250); uudet hyökkäykset vasta raivossa (alle 50 % HP): silmät ja mittari punaisiksi,
+  kivisade, maapiikit, kolmen kiven heitto; armo vasta 5. kuolemasta ja siitä ilmoitus.
+- **Nousu:** `useAltar` antaa täyden HP:n (ennen `flags.bossHp` säilyi); uupuneena (armo) HP säilyy. Vajoamisviesti kertoo kumman.
+- **Paraneminen:** `VARTIJA_REGEN_T` 30 s ilman osumaa → 10 %/s (muut pomot 60 s, Aarnihirviö 102 s).
+- **Vahinko** `VT` (ai.js): huitaisu 22 → 29, maaisku 28 → 36, ryntäys 26 → 34, kivi 20 → 26 (+ HURT_K 1,2).
+- **Raivo** (`m.phase2` → `vartijaRage`): silmien perusväri 0xff2a14 + jatkuva hehku `bossEyes(m,.5)`, pomomittari ja reunahehku `.rage`
+  (css: punaiset `--bc/--bd/--bl`). Hyökkäykset: lähellä (< 5 m) 25 % maapiikit; 5–30 m: ryntäys 20 % (> 9 m, väli 10 s), kivisade 30 %,
+  maapiikit 25 %, kolmen kiven viuhka (±0,24 rad) loput; väli 2,1 s.
+  - `rockRain`: 6–8 kiveä (2 ennakoiden pelaajan liikkeen, muut 2–7,5 m säteellä), punainen sykkivä varoitusrengas `warnRing` 1,57 s
+    (= kiven lentoaika `throwRock`, 19 m korkeudelta), 22 / kivi.
+  - `spikeLine`: 14 kivipiikkiä 1,4 m välein pelaajan suuntaan, 0,07 s porrastus, osuma kerran (1,15 m), 30 + heitto ylös.
+- **Armo:** `BOSS_MERCY` {vartija: 5}, `bossMercyN`; kuolemaruudun teksti käyttää rajaa (x/5), 5. kuolemasta ilmoitus heräämisen jälkeen.
+- Testattu: raivo (silmät #7ffff0 → punainen, mittarin luokka rage), 60 s raivotaistelussa kaikki hyökkäykset (kivisade 14×, piikit 7×,
+  3 kiveä 4×), enint. 8 kiveä ja 14 piikkiä, paraneminen 29 s ei / 31 s kyllä, nousu 2250/2250, armo 5 → 200/2250.
+- KORJAUKSET 59: ylimmän tason nimi `_spGeo` oli jo effects.js:ssä → ai.js ei latautunut (`updateMobs is not defined`).
+- Tarkistusrivi v2.55 (+ v1.81 käyttää nyt ulottuvuuspomoa).
 
 ### v2.54 (sarvi-osumien varaääni, muistion tarkistus, pomotaulukko)
 - **Sarvi-osumat** (karju, hirvi, hiidenhirvi): `TG_HIT_ALT` = {sarvet: 'isku'}, `tgHitCat(kat)` (audio.js) – kategoria, jolla ei ole yhtään

@@ -1,5 +1,5 @@
 /* Layout: full-screen WebGL world; HUD pinned to corners; panels float centered like carved boards. Single deliberate dark look. */
-:root{--css-v:'2.54';
+:root{--css-v:'2.55';
   --peat:#13110e; --bark:#221d18; --panel:rgba(22,19,15,.9); --line:#4b4034; --line2:#6b5a46;
   --bone:#eee5d3; --dim:#a99d89; --ember:#e8893b; --frost:#8fd8cf; --blood:#c8463b; --stam:#e3bf50; --hunger:#c08a4d; --moss:#86a457; --bad:#d0584a;
   --font-d:'Uncial Antiqua', 'Palatino Linotype', Georgia, serif;
@@ -857,3 +857,6 @@ button:focus,select:focus{outline:none}
 #sndHint svg{width:24px;height:24px;flex:none}
 #sndHint.onS{color:#ffd59a;border-color:rgba(255,190,110,.65)}
 #sndHint.in.out{opacity:0;transition:opacity .9s ease}
+/* v2.55 Kalmanvartijan raivo (alle 50 %): mittari ja reunahehku punaisiksi */
+#bossbar.rage,#bbVig.rage{--bc:255,52,30;--bd:46,6,6;--bl:255,196,160}
+#bossbar.rage .name{animation:bbName 1.6s infinite}

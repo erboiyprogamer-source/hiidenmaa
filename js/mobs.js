@@ -128,7 +128,7 @@ const MOBDEF={
   susi:{n:'Harmaasusi',hp:44,r:.5,ai:'hostile',walk:2,run:4.6,aggro:18,dmg:11,range:1.7,cd:1.15,wind:.3,drops:[['nahka',1,2]],fig:()=>makeAnimal({kind:'wolf',s:.9,body:0x6e6e70,dark:0x3e3e40,legs:0x5e5e60,belly:0xa9a49a,ruff:0x8a8a88,headC:0x7c7c7e,tailTip:0x2a2a2c,legH:.6,len:1.05,eyes:0xffcc55})},
   kalmo:{n:'Kalmo',hp:50,r:.45,ai:'hostile',walk:1.4,run:4.6,aggro:14,dmg:13,range:1.8,cd:1.5,wind:.5,weak:{blunt:1.6,pierce:.6,fire:1.3},drops:[['luu',1,3],['kivi',0,1]],fig:figKalmo},
   ylimys:{n:'Kalmon ylimys',hp:150,r:.6,ai:'hostile',walk:1.3,run:4.2,aggro:12,dmg:20,range:2.2,cd:1.8,wind:.65,weak:{blunt:1.5,pierce:.6,fire:1.3},drops:[['luu',3,5],['kupari',2,3]],fig:figYlimys},
-  vartija:{n:'Kalmanvartija',hp:900,r:1.6,ai:'boss',walk:2.2,run:3.6,aggro:60,dmg:24,range:4.2,cd:2,wind:.8,weak:{blunt:1.3,pierce:.75,fire:1},drops:[['sydan',1,1],['kupari',6,8],['hiidenkivi',0,0]],fig:figVartija},   /* v1.93: korkealaatuinen malli (bossmodels.js); figGolem jää kivivartijalle */
+  vartija:{n:'Kalmanvartija',hp:900,r:1.6,ai:'boss',walk:2.2,run:3.6,aggro:60,dmg:31,range:4.2,cd:2,wind:.8,weak:{blunt:1.3,pierce:.75,fire:1},drops:[['sydan',1,1],['kupari',6,8],['hiidenkivi',0,0]],fig:figVartija},   /* v1.93: korkealaatuinen malli (bossmodels.js); figGolem jää kivivartijalle */
   kivivartija:{n:'Kivivartija',hp:220,r:.6,ai:'hostile',walk:1.2,run:3.8,aggro:13,dmg:17,range:2.55,   /* v1.31: × stride 1,1 = 2,8 m */cd:1.9,wind:.7,weak:{blunt:1.7,pierce:.5,fire:.8},drops:[['kivi',2,4],['piikivi',1,3],['kupari',0,2]],fig:()=>figGolem(1.3,false)},
   routasusi:{n:'Routasusi',hp:68,r:.5,ai:'hostile',walk:2,run:5,aggro:18,dmg:14,range:1.7,cd:1.1,wind:.28,weak:{fire:1.4},drops:[['nahka',1,2],['luu',0,1]],fig:()=>makeAnimal({kind:'wolf',ice:1,s:.95,body:0xc9dce8,dark:0x8aa6ba,legs:0xa8bfce,belly:0xeef6fb,ruff:0xe4f0f7,headC:0xd8e8f2,tailTip:0x7f9db5,legH:.62,len:1.1,eyes:0x7fe0ff})},
   jaajattari:{n:'Jäätär',hp:560,r:1.2,ai:'rboss',walk:2,run:3.6,aggro:17,dmg:22,range:3.6,cd:1.8,wind:.8,fh:4.6,eye:3.2,weak:{blunt:1.2,pierce:.8,fire:1.5},kit:['swipe','slam','throw','nova'],sum:[],drops:[['rauta',3,5],['hiidenkivi',1,1],['kupari',4,6]],fig:figJaatar},
@@ -159,5 +159,7 @@ function spawnMob(type,x,z,opts={}){
   mobs.push(m);if(!opts.noBorn&&!def.rise&&def.ai!=='boss'&&def.ai!=='rboss'&&typeof bornStart==='function')bornStart(m);   // v2.14 syntyanimaatio
   return m;
 }
-function bossTired(type){return ((flags.bossDeaths||{})[type]||0)>=3;}   // v1.81
+const BOSS_MERCY={vartija:5};   // v2.55: Kalmanvartija lakkaa paranemasta vasta 5. kuolemasta (muut 3)
+function bossMercyN(type){return BOSS_MERCY[type]||3;}
+function bossTired(type){return ((flags.bossDeaths||{})[type]||0)>=bossMercyN(type);}   // v1.81
 function mobRemove(m){scene.remove(m.f.g);if(m.da){if(m.da.flames)scene.remove(m.da.flames);if(m.da.pile)scene.remove(m.da.pile);if(m.da.boss)bossDeathEnd(m);}if(m.rz)bossRiseFxEnd(m);   /* v1.89–90: pomon irronneet osat, valot, kummut ja herätyksen halkeama pois */mobs.splice(mobs.indexOf(m),1);if(m===boss)boss=null;}

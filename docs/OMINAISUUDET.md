@@ -449,6 +449,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## Lista 4, erä F (v1.44)
 - Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
   Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+- **v2.55:** Kalmanvartija on vaikeampi (vaikeus 10): iskut +30 %; alle puolikkaalla terveydellä se raivostuu (punaiset silmät ja
+  mittari) ja käyttää kivisadetta (punaiset varoitusrenkaat), maapiikkirivejä ja kolmen kiven heittoa; paranee 30 s ilman osumaa; nousee
+  alttarilta täysin voimin; lakkaa paranemasta vasta 5. kuolemasta (ilmoitus).
 - **v2.54:** karju, hirvi ja hiidenhirvi soittavat osuessaan iskuäänen, kunnes omat sarviosumaäänet lisätään.
 - **v2.53:** valikkomusiikki (aloitusjakson logosta päävalikkoon, häipyy peliin liityttäessä; taukovalikossa 15 s jälkeen); uusi
   asetussivu **Äänet ja musiikki** (master, mykistykset, 6 säädintä 0–150 %, ilmoitus-/alue-/ulottuvuusäänten valinnat); ilmoitus-,

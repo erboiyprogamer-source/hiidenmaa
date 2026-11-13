@@ -418,6 +418,12 @@ Testeissä three.js-reitille tarvitaan nyt otsake `Access-Control-Allow-Origin: 
   portin taakse (`barrowMound`, bdx 6,4–8) → maa aukon kohdalla tasainen, kivimassa täyttää loven. Aukko on stencil-ikkuna (`barrowCave`).
   **Uudet kiinteät rakenteet rinteessä: käytä `stoneCol`:ia tai mittaa maa nurkista, älä yhdestä pisteestä.** Tarkistusrivi v2.49 mittaa nurkat.
 
+## 59. Uusi ylimmän tason nimi törmäsi toisen tiedoston nimeen → koko tiedosto ei latautunut (v2.55)
+- Oire: peli ei käynnisty, konsolissa `Identifier '_spGeo' has already been declared` ja myöhemmin `updateMobs is not defined` (ai.js jäi lataamatta).
+- Syy: tiedostot jakavat yhden globaalin näkyvyysalueen; `node --check` ei huomaa törmäystä, koska se tarkistaa vain yhden tiedoston.
+- Ratkaisu: kuvaava, tiedostokohtainen nimi (`VT_SPK_GEO`). **Ennen uutta ylimmän tason nimeä: `grep -n "\bnimi\b" js/*.js`.** Testaa aina
+  sivun lataus selaimessa (tarkistus.mjs tai Playwright `pageerror`), ei pelkkä `node --check`.
+
 ## Herkät kohdat (lue ennen muokkausta)
 
 - **Rakennuskohdistus** (`building.js`): `SNAP_NAMES` (6 tilaa), `VNAMES` (H), `smartSnap`, `updateGrid`. Testit: `tools/tarkistus.mjs`
