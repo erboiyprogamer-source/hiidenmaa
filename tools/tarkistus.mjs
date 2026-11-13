@@ -301,6 +301,11 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
     const c=SET_DEF.torchSharp===false&&SET_PAGES.xgfx.includes('torchSharp')&&/torchSharpOn\(\)\?6\.7:2\.1/.test(updatePlayer.toString())&&/torchSharpOn\(\)\|\|shFrame%fT===0/.test(updateStations.toString());
     return a&&b&&c||`virhe terävä ${a} oletus ${b} koodi ${c}`;});
+  t('v2.54 osumaäänen varakategoria: sarvet → isku, kunnes osuma_sarvet-äänet on lisätty (karju, hirvi, hiidenhirvi)',()=>{
+    const o=CRE.man;let a,b,c;try{CRE.man={'t/osumat/osuma_isku_1':{h:'a'}};creIndex();a=tgHitCat('sarvet');c=tgHitCat('isku');CRE.man={'t/osumat/osuma_isku_1':{h:'a'},'t/osumat/osuma_sarvet_1':{h:'b'}};creIndex();b=tgHitCat('sarvet');}
+    finally{CRE.man=o;if(o)creIndex();}
+    const d=['karju','hirvi','hiidenhirvi'].every(t=>TG_HIT[t]==='sarvet')&&TG_HIT_ALT.sarvet==='isku'&&/tgHitCat\(cat\)/.test(tgHit.toString());
+    return a==='isku'&&b==='sarvet'&&c==='isku'&&d||`virhe ${a} ${b} ${c} ${d}`;});
   t('v2.53 musiikki (valikko logosta peliin, tauko 15 s), Äänet ja musiikki -sivu (master, mykistykset, 6 säädintä 0–150 %), ilmoitus-/biomi-/ulottuvuusäänet, taustakuvien äänet',()=>{
     const o={...SET};let a=false,b=false,c=false,d=false;const M=window.__mus,om=window.mSnd,L=[];
     try{a=SET_DEF.volMaster===1&&['musicVol','creVol','plVol','uiVol','ambVol','notifVol'].every(k=>SET_DEF[k]===1&&SET_PAGES.snd.includes(k))&&!SET_PAGES.ctl.includes('sound')&&

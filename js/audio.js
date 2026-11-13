@@ -227,7 +227,11 @@ const TG_BASEP={raskaat_nelijalkaiset:[.8,1],kevyet_nelijalkaiset:[1.3,.55],kevy
 const TG_HIT={hiisi:'isku',suonakki:'raapaisu',kalmo:'isku',ylimys:'isku',peura:'sarvet',poro:'sarvet',hirvi:'sarvet',hiidenhirvi:'sarvet',karju:'sarvet',
   emakko:'purema',porsas:'purema',susi:'purema',routasusi:'purema',kalmasusi:'purema',ahma:'purema',kettu:'purema',janis:'purema',ilves:'raapaisu',
   karhu:'raapaisu',hiidenkarhu:'raapaisu',metso:'isku',kivivartija:'murskaus',vartija:'murskaus',jaajattari:'murskaus',kalmaherra:'isku',aarnihirvio:'murskaus'};
-function tgHit(cat,x,y,z,p){const q={x,y,z};return tgPlay({pos:q,dun:P.inDun,type:'_osuma'},'osuma_'+cat,'osumat',{pos:q,p:p||1},false);}
+/* v2.54 varakategoria: kategoria, jolla ei ole vielä yhtään ääntä manifestissa, soittaa toisen (sarvet → isku: karju, hirvi, hiidenhirvi).
+   Kun käyttäjä lisää omat äänet (osuma_sarvet_1 …), ne ovat manifestissa ja soivat automaattisesti. */
+const TG_HIT_ALT={sarvet:'isku'};
+function tgHitCat(cat){const L=tgRes('osumat','osuma_'+cat);return L&&L.length||!TG_HIT_ALT[cat]?cat:TG_HIT_ALT[cat];}
+function tgHit(cat,x,y,z,p){const q={x,y,z};return tgPlay({pos:q,dun:P.inDun,type:'_osuma'},'osuma_'+tgHitCat(cat),'osumat',{pos:q,p:p||1},false);}
 function tgHeavy(m){return TG_BIG.has(TG[m.type])||m.def.ai==='boss'||m.def.ai==='rboss';}
 const TG_STEP_LAYER={raskaat_nelijalkaiset:'tomistys',kivivartija:'tomistys',luurangot:'kalina',kalmanvartija:'tomistys',jaatar:'tomistys',kalmaherra:'tomistys',aarnihirvio:'tomistys'};
 function tgRes(g,ev){if(!CRE.man)return null;if(CRE.idxOf!==CRE.man)creIndex();return CRE.idx[`t/${g}/${ev}`]||null;}
