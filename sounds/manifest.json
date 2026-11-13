@@ -1140,6 +1140,33 @@
    "raw": 7.89,
    "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/puu_kaatuu_0.mp3"
   },
+  "p/osumat/puu_tomahdys_0": {
+   "h": "9504874642",
+   "src": "3379ec9fa322",
+   "dur": 2.35,
+   "pv": 9,
+   "gain": 5.1,
+   "raw": 2.36,
+   "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/puu_tomahdys_0.mp3"
+  },
+  "p/osumat/puu_tomahdys_1": {
+   "h": "b603bbd982",
+   "src": "97bfa8655663",
+   "dur": 0.44,
+   "pv": 9,
+   "gain": -3.1,
+   "raw": 0.46,
+   "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/puu_tomahdys_1.mp3"
+  },
+  "p/osumat/puu_tomahdys_2": {
+   "h": "f39d4c9dc6",
+   "src": "6d50f5421976",
+   "dur": 4.62,
+   "pv": 9,
+   "gain": 5.2,
+   "raw": 4.64,
+   "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/puu_tomahdys_2.mp3"
+  },
   "p/osumat/tukki_hajoaa_0": {
    "h": "1b6e8a6c0b",
    "src": "fa6dd76c9471",
@@ -1148,6 +1175,105 @@
    "gain": -0.1,
    "raw": 1.71,
    "f": "pelaaja_2_toiminnot/valmiit/osumat_valmis/tukki_hajoaa_0.mp3"
+  },
+  "p/rakentaminen/asetus_0": {
+   "h": "fc64ae5470",
+   "src": "50568e2075c6",
+   "dur": 0.99,
+   "pv": 9,
+   "gain": 3.7,
+   "raw": 1.48,
+   "f": "pelaaja_2_toiminnot/valmiit/rakentaminen_valmis/asetus_0.mp3"
+  },
+  "p/rakentaminen/korjaus_0": {
+   "h": "67075cb824",
+   "src": "ef2403659657",
+   "dur": 0.21,
+   "pv": 9,
+   "gain": 3.3,
+   "raw": 0.23,
+   "f": "pelaaja_2_toiminnot/valmiit/rakentaminen_valmis/korjaus_0.mp3"
+  },
+  "p/rakentaminen/purku_0": {
+   "h": "77cabfcee4",
+   "src": "0ec471e8708b",
+   "dur": 0.57,
+   "pv": 9,
+   "gain": 1.6,
+   "raw": 0.6,
+   "f": "pelaaja_2_toiminnot/valmiit/rakentaminen_valmis/purku_0.mp3"
+  },
+  "p/rakentaminen/valmistus_0": {
+   "h": "b94898f9c0",
+   "src": "c6cc5fe139e4",
+   "dur": 1.22,
+   "pv": 9,
+   "gain": -2.9,
+   "raw": 1.25,
+   "f": "pelaaja_2_toiminnot/valmiit/rakentaminen_valmis/valmistus_0.mp3"
+  },
+  "p/valikot/kartta_0": {
+   "h": "d6f601f2ad",
+   "src": "47164539d5b3",
+   "dur": 0.31,
+   "pv": 9,
+   "gain": 1.2,
+   "raw": 0.32,
+   "f": "pelaaja_2_toiminnot/valmiit/valikot_valmis/kartta_0.mp3"
+  },
+  "p/valikot/kartta_1": {
+   "h": "865561e315",
+   "src": "b75b8ff9d5b8",
+   "dur": 0.36,
+   "pv": 9,
+   "gain": -1.0,
+   "raw": 0.37,
+   "f": "pelaaja_2_toiminnot/valmiit/valikot_valmis/kartta_1.mp3"
+  },
+  "p/valikot/puolitus_0": {
+   "h": "5dfdb61c08",
+   "src": "3dbfb0c4c3b8",
+   "dur": 0.07,
+   "pv": 9,
+   "gain": -7.5,
+   "raw": 0.09,
+   "f": "pelaaja_2_toiminnot/valmiit/valikot_valmis/puolitus_0.mp3"
+  },
+  "p/valikot/rakennusvalikko_0": {
+   "h": "3f5d4022b5",
+   "src": "62f672b46873",
+   "dur": 0.31,
+   "pv": 9,
+   "gain": -0.5,
+   "raw": 0.32,
+   "f": "pelaaja_2_toiminnot/valmiit/valikot_valmis/rakennusvalikko_0.mp3"
+  },
+  "p/valikot/reppu_0": {
+   "h": "be0fc7164a",
+   "src": "b22dd3ca30d2",
+   "dur": 0.31,
+   "pv": 9,
+   "gain": -3.3,
+   "raw": 0.32,
+   "f": "pelaaja_2_toiminnot/valmiit/valikot_valmis/reppu_0.mp3"
+  },
+  "p/valikot/siirto_0": {
+   "h": "9163f3caee",
+   "src": "ccbda443ca7a",
+   "dur": 0.57,
+   "pv": 9,
+   "gain": -4.7,
+   "raw": 1.2,
+   "f": "pelaaja_2_toiminnot/valmiit/valikot_valmis/siirto_0.mp3"
+  },
+  "p/valikot/sulje_0": {
+   "h": "958d50bcff",
+   "src": "5eb29e7d248c",
+   "dur": 0.15,
+   "pv": 9,
+   "gain": 1.8,
+   "raw": 0.18,
+   "f": "pelaaja_2_toiminnot/valmiit/valikot_valmis/sulje_0.mp3"
   },
   "p/vesi/askel_kahlaus_1": {
    "h": "7240ada756",

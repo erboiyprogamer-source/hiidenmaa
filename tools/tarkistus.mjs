@@ -301,6 +301,12 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
     const c=SET_DEF.torchSharp===false&&SET_PAGES.xgfx.includes('torchSharp')&&/torchSharpOn\(\)\?6\.7:2\.1/.test(updatePlayer.toString())&&/torchSharpOn\(\)\|\|shFrame%fT===0/.test(updateStations.toString());
     return a&&b&&c||`virhe terävä ${a} oletus ${b} koodi ${c}`;});
+  t('v2.50 äänierä: puun tömähdys koon mukaan (_2 iso, _1 pieni, muut _0/_1), repun sulkeminen korkeammalta, plSnd v_ix',()=>{
+    const a=/v_ix:tomahdysIx\(H\)/.test(fallTree.toString())&&JSON.stringify(tomahdysIx(20))==='[2]'&&JSON.stringify(tomahdysIx(3))==='[1]'&&JSON.stringify(tomahdysIx(6))==='[0,1]'&&TOM_BIG===9.5&&TOM_SMALL===4.5;
+    const c=REPPU_CLOSE_P===1.08&&/plSnd\('valikot','reppu',\{p:REPPU_CLOSE_P\}\)/.test(closePanels.toString())&&/o\.v_ix/.test(plSnd.toString());
+    const o=CRE.man;CRE.man={'p/osumat/puu_tomahdys_0':{h:'a'},'p/osumat/puu_tomahdys_1':{h:'b'},'p/osumat/puu_tomahdys_2':{h:'c'}};const L=plRes('osumat','puu_tomahdys');CRE.man=o;if(o)creIndex();
+    const d=!!L&&L.length===3&&L[2]==='p/osumat/puu_tomahdys_2';
+    return a&&c&&d||`virhe koko ${a} reppu ${c} versiot ${d}`;});
   t('v2.49 Hautakumpu maassa + luolakäytävä, nummen usva päiväkohtaisesti, pehmeä pilvimatto Ultralla',()=>{
     const L=LOC.barrow,ex=L.x+10.5,ez=L.z,y=terrainH(ex,ez),bb=new THREE.Box3();statics.updateMatrixWorld(true);let bad=[];
     for(const o of statics.children){if(!o.isMesh||o.userData.merged)continue;bb.setFromObject(o);const cx=(bb.min.x+bb.max.x)/2,cz=(bb.min.z+bb.max.z)/2;if(Math.hypot(cx-ex,cz-ez)>9||bb.min.y>y+1)continue;

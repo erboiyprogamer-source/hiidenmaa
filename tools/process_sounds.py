@@ -333,7 +333,13 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, 
         if r.returncode != 0 or not os.path.exists(w1):
             return r.stderr.strip()[-300:] or 'tuntematon virhe', None
         d = duration(ff, w1)
-        if d < 0.05:
+        if d < 0.12 and mode != 'step' and not loop:   # v2.50: hyvin lyhyt naksahdus → lempeämpi leikkaus (−66 dB), ettei hiljainen häntä katoa
+            tr2 = trim.replace('-48dB', '-66dB')
+            r2 = run([ff, '-hide_banner', '-loglevel', 'error', '-y'] + inp + ['-af', pre + f'highpass=f=40,{tr2},areverse,{tr2},areverse',
+                      '-ac', '1', '-ar', '44100', '-c:a', 'pcm_s16le', w1])
+            if r2.returncode == 0:
+                d = duration(ff, w1)
+        if d < 0.015:   # v2.50: 0,05 → 0,015 s (lyhyt käyttöliittymän naksahdus, esim. sulje.mp3 ~0,04 s, hylättiin hiljaisena)
             return 'ääni on käytännössä hiljaa', None
         # 2b) v2.22 silmukka: ei häivytyksiä; loppu ristihäivytetään alkuun (pituus enintään 6 s, sauma xf), jolloin silmukka on saumaton
         # v2.23: pitkästä kertaäänestä (huitaisu, lentoonlähtö …) voimakkain kohta eikä alku
@@ -613,6 +619,9 @@ T_PROF.update({'alastulo': (.6, .8, .08, -24), 'puska': (1.2, 1.2, .15, -24), 'l
                'pahoinvointi': (2.5, 2.5, .3, -21), 'kylla': (2.0, 2.0, .2, -23), 'lammin': (2.5, 2.5, .3, -23), 'levannyt': (2.5, 2.5, .3, -23)})
 T_PROF['pusikko'] = (.3, .42, .07, -27)   # v2.27 Aarnimetsän askel lyhyemmäksi: raa'an 0,3 s hiljainen häntä pois (kuulosti venyvältä)
 T_DEF = (1.5, 1.5, .15, -22)
+# v2.50: tiedostokohtainen profiili (käsitellyn nimen mukaan, ohittaa t_prof:n) – puun tömähdykset: _2 pitkä (iso puu) selvällä pitkällä
+# häivytyksellä, perus ja _1 lyhyellä häivytyksellä
+F_PROF = {'puu_tomahdys_0': (2.4, 2.4, .35, -17), 'puu_tomahdys_1': (.8, .8, .12, -17), 'puu_tomahdys_2': (5.2, 5.2, 2.6, -17)}
 def t_prof(ev, big):
     k = 'kahlaus' if ev == 'askel_kahlaus' else 'uinti' if ev == 'askel_uinti' else 'pusikko' if ev == 'askel_pusikko' else ev if ev in T_PROF else ev.split('_')[0]
     a, b, f, t = T_PROF.get(k, T_DEF)
@@ -932,7 +941,7 @@ def process_toiminnot(ff, init, old, C=None):
                 sounds[nk] = old[nk]
                 skipped += 1
             else:
-                err, res = process(ff, p, dk, sniff(p), 'hostile', ev, prof=t_prof(ev, big_ev), big=big_ev, loop=ev in LOOP_EV, mode=mode,
+                err, res = process(ff, p, dk, sniff(p), 'hostile', ev, prof=F_PROF.get(kb) or t_prof(ev, big_ev), big=big_ev, loop=ev in LOOP_EV, mode=mode,
                                    seg=tuple(sg) if sg else None)
                 if err:
                     errors.append(f'{nk}: {err}')

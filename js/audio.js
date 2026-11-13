@@ -299,7 +299,8 @@ function plLoad(){if(PLV.loaded||!CRE.ok)return;PLV.loaded=1;for(const n in CRE.
 function plSnd(g,ev,o){o=o||{};creInit();if(!CRE.ok)return false;plLoad();const L0=plRes(g,ev);if(!L0)return false;const L=L0.filter(n=>CRE.buf[n]);if(!L.length)return false;
   const a=actx;if(!a||a.state!=='running'||!soundOn)return false;const vol=typeof SET!=='undefined'?+(SET.plVol??.8):.8;if(!(vol>0))return false;
   PLV.v=PLV.v.filter(v=>!v.done);if(!o.loop&&PLV.v.length>=6)return false;
-  const key=g+'/'+ev;let pick=L;if(L.length>1&&PLV.last[key])pick=L.filter(x=>x!==PLV.last[key]);const name=pick[Math.random()*pick.length|0];PLV.last[key]=name;
+  const key=g+'/'+ev;let pick=L;if(o.v_ix){const w=L.filter(n=>o.v_ix.includes(+n.slice(n.lastIndexOf('_')+1)));if(w.length)pick=w;}   /* v2.50 o.v_ix: sallitut versionumerot (puuttuessa kaikki) */
+  if(pick.length>1&&PLV.last[key])pick=pick.filter(x=>x!==PLV.last[key]);const name=pick[Math.random()*pick.length|0];PLV.last[key]=name;
   if(!PLV.gain){PLV.gain=a.createGain();PLV.gain.connect(a.destination);}PLV.gain.gain.value=vol;
   const B=CRE.buf[name],q=o.pos||P.pos,src=a.createBufferSource();src.buffer=B;src.playbackRate.value=(o.p||1)*(o.loop?1:1+(Math.random()*2-1)*.05);
   if(o.loop){src.loop=true;const lp=tgLoopPts(B);src.loopStart=lp[0];src.loopEnd=lp[1];}

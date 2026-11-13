@@ -449,6 +449,8 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## Lista 4, erä F (v1.44)
 - Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
   Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+- **v2.50:** puun tömähdys riippuu puun koosta (isot puut pitkä hiipuva tömähdys, pienet lyhyt); repun sulkemisääni on sama kuin
+  avaamisen mutta hieman korkeampi; uudet rakentamisen ja valikoiden äänet (asetus, korjaus, purku, valmistus, kartta, sulje …).
 - **v2.49:** Kalmanummella usva sakenee ja maailma harmaantuu hitaasti (puolena päivistä voimakkaasti, muulloin lievemmin); Hautakummun
   suusta näkyy syvenevä luolakäytävä, ja portti on maassa kaikilla kartoilla; Ultralla pilvimaton reuna häipyy pehmeästi.
 - **v2.48:** sumuinen sää on sakeampi (näkyvyys noin 22 % lyhyempi); pilvimatto noin 60 %:na päivistä, ja muina päivinä se on usein (70 %)

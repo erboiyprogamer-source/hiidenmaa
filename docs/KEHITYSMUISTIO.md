@@ -13,10 +13,10 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.49)
+## Nykytila (päivitetty v2.50)
 
-- **PR #35 (v2.28–v2.49) on yhdistetty → `main` = v2.49.** Seuraava työ alkaa haaralla uudelleen mainista.
-- **Versio 2.49**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) ja v2.24 (äänitasot, juominen, pää alas, pelaajan toimintoäänet) ja v2.25 (sudet hiljemmaksi, Aarnipuun törmäys, karhun syöksy, pelaajan äänet osat 1–3) ja v2.26 (pensasäänet, askeleet −20 %, terveyspalkkien näkyvyys) ja v2.27 (Aarnimetsän askel, oksat) – **PR #34 (v2.23–v2.27) on yhdistetty.** v2.28 (pelaajan äänierä osa 2: 22 ääntä, puun tömähdys, reppu kiinni, arkun sulkeminen) ja v2.29 (narinan ajoitus, siirto- ja puolitusäänet, Shift-siirtoslider) ja v2.30 (sliderin korjaukset, poimintaääni) ja v2.31 (poimintaäänen sävy) ja v2.32 (valitse + oikea klikkaus puolittaa myös hiiren lukituksessa) ja v2.33 (valinta säilyy pienessä liikkeessä, avointen biomien vaaleammat varjot) ja v2.34 (metsien varjot 20 % vaaleammat, vuorokauden vaihtelu ±15 %) ja v2.35 (näytön auringonsäteet, linssiheijastus) ja v2.36 (säteiden ajoitus, päiväkohtaisuus, peitto) ja v2.37 (säteet takaisin koko päiväksi) ja v2.38 (pyöreä auringon hehku, pilvien syvyys, kovat/pehmeät säteet) ja v2.39 (pienempi auringon hehku) ja v2.40 (elävät säteet, peitto suunnittain) ja v2.41 (suorituskykyoptimoinnit: puiden LOD, varjomallit, rakennusten yhdistäminen) ja v2.42 (low poly -sävytys säilyy varjojen vaalennuksessa) ja v2.43 (hautakummun kieleke, savujen optimointi, liekit pystyyn) ja v2.44 (satunnainen pilvimatto) ja v2.45 (terävät soihtuvarjot Extra-grafiikkaan) ja v2.46 (repun vilkkuminen/puolitus, pilvet, hukkumisen tarkistus) ja v2.47 (pilvipäivät, pilvimatto 50 %, heijastuksen päivävaihtelu, pilvet ylemmäs) PR #35:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
+- **PR #35 (v2.28–v2.49) ja #36 (muistiinpanot) on yhdistetty.** v2.50 = äänierä 13.12 (käyttäjän uusi lista: ks. Ideajono › "Lista 7").
+- **Versio 2.50**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) ja v2.24 (äänitasot, juominen, pää alas, pelaajan toimintoäänet) ja v2.25 (sudet hiljemmaksi, Aarnipuun törmäys, karhun syöksy, pelaajan äänet osat 1–3) ja v2.26 (pensasäänet, askeleet −20 %, terveyspalkkien näkyvyys) ja v2.27 (Aarnimetsän askel, oksat) – **PR #34 (v2.23–v2.27) on yhdistetty.** v2.28 (pelaajan äänierä osa 2: 22 ääntä, puun tömähdys, reppu kiinni, arkun sulkeminen) ja v2.29 (narinan ajoitus, siirto- ja puolitusäänet, Shift-siirtoslider) ja v2.30 (sliderin korjaukset, poimintaääni) ja v2.31 (poimintaäänen sävy) ja v2.32 (valitse + oikea klikkaus puolittaa myös hiiren lukituksessa) ja v2.33 (valinta säilyy pienessä liikkeessä, avointen biomien vaaleammat varjot) ja v2.34 (metsien varjot 20 % vaaleammat, vuorokauden vaihtelu ±15 %) ja v2.35 (näytön auringonsäteet, linssiheijastus) ja v2.36 (säteiden ajoitus, päiväkohtaisuus, peitto) ja v2.37 (säteet takaisin koko päiväksi) ja v2.38 (pyöreä auringon hehku, pilvien syvyys, kovat/pehmeät säteet) ja v2.39 (pienempi auringon hehku) ja v2.40 (elävät säteet, peitto suunnittain) ja v2.41 (suorituskykyoptimoinnit: puiden LOD, varjomallit, rakennusten yhdistäminen) ja v2.42 (low poly -sävytys säilyy varjojen vaalennuksessa) ja v2.43 (hautakummun kieleke, savujen optimointi, liekit pystyyn) ja v2.44 (satunnainen pilvimatto) ja v2.45 (terävät soihtuvarjot Extra-grafiikkaan) ja v2.46 (repun vilkkuminen/puolitus, pilvet, hukkumisen tarkistus) ja v2.47 (pilvipäivät, pilvimatto 50 %, heijastuksen päivävaihtelu, pilvet ylemmäs) PR #35:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -287,6 +287,20 @@ koukku tiedostoääneen – älä koskaan tee ääntä itse. Puuttuva ääni = h
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.50 (äänierä: tömähdykset, rakentaminen, valikot – käyttäjän lista 7, kohdat 0–2)
+- **Uudet äänet** (käyttäjän commit "ääniä lisää 1213"): puun tömähdys `_0` (2,35 s), `_1` (0,44 s), `_2` (4,62 s); rakentaminen: asetus,
+  korjaus, purku, valmistus; valikot: kartta (+ `_1`), puolitus, rakennusvalikko, reppu, siirto, sulje.
+- **process_sounds.py:** tiedostokohtainen profiili `F_PROF` (käsitellyn nimen mukaan, ohittaa `t_prof`:n): `puu_tomahdys_2` 5,2 s, häivytys
+  2,6 s (selvä pitkä hiipuminen ~2,0 → 4,6 s); `_0` 2,4 s / 0,35 s; `_1` 0,8 s / 0,12 s. Hyvin lyhyt ääni: jos leikattu alle 0,12 s, uusi
+  leikkaus −66 dB:llä (ei askel/silmukka), ja hylkäysraja 0,05 → 0,015 s – `sulje.mp3` (~0,04 s naksahdus + häntä) hylättiin ennen
+  "käytännössä hiljaa" → nyt 0,15 s.
+- **Tömähdys koon mukaan** `tomahdysIx(H)` (state.js, `fallTree`): H = `TREE_H` × koko; ≥ `TOM_BIG` 9,5 m → `_2` (aarnipuut 17–24 m ja
+  suurimmat kuuset/koivut/männyt), < `TOM_SMALL` 4,5 m → `_1`, muut `_0`/`_1` satunnaisesti. `plSnd` uusi `o.v_ix` = sallitut versionumerot
+  (jos yhtään ei ole, kaikki). Puiden H-jakauma (kartta 0): kuusi 3–11,6 (mediaani 5,7), koivu 2,1–12,4 (6,2), kelo 3–5,7, mänty 5,9–10,9
+  (8,2), aarnipuu 16,8–24,1.
+- **Repun sulkeminen** soittaa saman `reppu`-äänen 8 % korkeammalta (`REPPU_CLOSE_P` 1,08, ui.js `closePanels`; plSnd:n ±5 % vaihtelu päälle).
+- Tarkistusrivi v2.50.
 
 ### v2.49 (Hautakummun suu, nummen usva, pehmeä pilvimatto – käyttäjän pyynnöt)
 - **Hautakumpu maahan (KORJAUKSET 58):** `stoneCol`/`gmin` (landmarks.js) – portin pylväät, sivukivet, portaat, tulimaljat, riimulaatat ja
@@ -3063,6 +3077,18 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 - Ensimmäinen pelattava versio yhtenä HTML-tiedostona.
 
 ## Ideajono
+
+### Lista 7 (v2.50–, käyttäjän päivitysideat 13.11.) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
+0. Äsken lisätyt äänet peliin → **tehty v2.50**.
+1. Puun tömähdykset: `_2` pitkä selvä fade out, muihin pieni fade; `_2` isoille puille, `_1` pienille, perus/`_1` normaaleille → **tehty v2.50**.
+2. Repun sulkeminen = sama `reppu`-ääni hieman korkeammalta → **tehty v2.50**.
+3. Ääniprojekti "MENU" (kansiot, paikkamerkit, lista): napin/toiminnon päälle vienti (hover), klikkaus, esiasetusliukusäätimen
+   napsutus, Ultra-esiasetuksen merkkiääni, Extra-grafiikan violetti/puinen valinta.
+4. Ääniprojekti "menun ääniefektit": alkuintron äänet kohdittain, latausnäytön ääni (kirjaimet valaistuvat ennen sulkeutumista), uuden
+   maailman intro (tuuli, linnut, wuush pilvien siirtyessä, eri ääni kameran laskeutuessa; katkeaa, jos intro ohitetaan),
+   varmistusikkunoiden oma ääni (oletko varma, maailman poisto, DEV:n avaus …).
+5. Musiikkikansio (ensin valikkomusiikit): soi intron "Hiidenmaa"-tekstistä päävalikkoon, häivytys ulos peliin liittyessä; taukovalikossa
+   alkaa 15 s jälkeen; aina pieni fade out, fade in vain pyydettäessä. Extra: 3 animoitua taustakuvaa, joihin satunnaisia hiljaisia ääniä.
 
 ### Avoimet havainnot (v2.49-tarkistus)
 - Sarvi-osumien ääni puuttuu (karju, hirvi, hiidenhirvi) – käyttäjän äänitiedostot tai varakategoria (ks. "Osumaäänien tarkistus").
