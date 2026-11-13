@@ -1,0 +1,7 @@
+﻿Nro,Ryhmä,Ääni (tiedostonimi),Tila,Tiedostot nyt,Milloin soi,Hakusanat (englanniksi)
+1,🖱️ Napit ja valinnat,hover,⬜ puuttuu,lisää: hover.mp3,"viet hiiren napin, välilehden tai valinnan päälle (päävalikko, taukovalikko, asetukset, maailmat, ikkunat)","ui hover tick, soft menu blip"
+2,🖱️ Napit ja valinnat,klikkaus,⬜ puuttuu,lisää: klikkaus.mp3,"painat nappia, välilehteä tai valintaa","ui click, menu button press"
+3,🎚️ Liukusäätimet,naputus,⬜ puuttuu,lisää: naputus.mp3,liikutat liukusäädintä (kaikki säätimet): peli toistaa tätä tiheästi ja hiljaa niin kauan kuin säädin liikkuu – ei kun pidät paikallaan,"ui slider tick, small tap, ratchet click"
+4,⭐ Esiasetus,ultra,⬜ puuttuu,lisää: ultra.mp3,Ultra-esiasetus asetetaan (säädin vapautetaan Ultran kohdalle),"magic shimmer, power up chime, epic confirm"
+5,💜 Extra-grafiikka,extra_paalle,⬜ puuttuu,lisää: extra_paalle.mp3,valitset Extra-grafiikassa violetin tai punaisen vaihtoehdon (päälle),"magic enable, arcane click, energy on"
+6,💜 Extra-grafiikka,extra_pois,⬜ puuttuu,lisää: extra_pois.mp3,valitset puisen vaihtoehdon (Pois),"wooden click, wood knock off"

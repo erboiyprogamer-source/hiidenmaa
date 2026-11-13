@@ -317,13 +317,13 @@ function playerDie(){if(state==='paused'||state==='intro'){P.hp=Math.max(P.hp,1)
   /* v1.81: pomokuolemat. Tappaja = lähin elossa oleva pomo ≤ 45 m (sama tila: maailma/ulottuvuus). flags.bossDeaths[tyyppi] tallentuu pelin
      mukana; 3. kuolemasta alkaen se pomo ei enää palauta terveyttään (bossTired, ai.js). */
   {let kb=null,bd=45*45;for(const m of mobs){if(m.dead||!(m.def.ai==='boss'||m.def.ai==='rboss')||!!m.dun!==!!P.inDun)continue;const d=dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z);if(d<bd){bd=d;kb=m;}}
-   if(kb){const B=flags.bossDeaths||(flags.bossDeaths={});B[kb.type]=(B[kb.type]||0)+1;P.bossKill={n:kb.def.n,c:B[kb.type]};}else P.bossKill=null;}
+   if(kb){const B=flags.bossDeaths||(flags.bossDeaths={});B[kb.type]=(B[kb.type]||0)+1;P.bossKill={n:kb.def.n,c:B[kb.type],t:kb.type,mn:bossMercyN(kb.type)};}else P.bossKill=null;}
   const items=inv.filter(Boolean).map(s=>({id:s.id,n:s.n,q:s.q}));inv=new Array(invN()).fill(null);invDirty=true;updateGear();setBuildSel(null);
   const wd=!P.inDun&&(P.swim||P.pos.y+1.62<water.position.y);P.waterDeath=wd;   // v2.18: hukkuminen / kuolema vedessä
   if(items.length){let gx=P.pos.x,gz=P.pos.z,y=P.inDun?DUN.y:terrainH(gx,gz);if(!P.inDun&&y<.2){const sp=shorePoint(gx,gz);if(sp){gx=sp.x;gz=sp.z;y=sp.y;}}makeGrave({x:gx,y,z:gz,items});}
   startPlayerDeath();   // v1.37: kaatumis-/tuhka-animaatio (effects.js)
   /* v1.70: kuolinsyyn vihje kuolinruudussa (nyt: kaatuva puu) */
-  const bk=P.bossKill,bTip=bk?(bk.c>=3?`<b>${bk.n} on voittanut sinut ${bk.c} kertaa.</b> Se ei enää palauta terveyttään – jatka siitä, mihin jäit!`:`<b>${bk.n} kaatoi sinut (${bk.c}/3).</b> Jos kaadut sille kolme kertaa, se ei enää palauta terveyttään.`):'';
+  const bk=P.bossKill,bTip=bk?(bk.c>=bk.mn?`<b>${bk.n} on voittanut sinut ${bk.c} kertaa.</b> Se ei enää palauta terveyttään – jatka siitä, mihin jäit!`:`<b>${bk.n} kaatoi sinut (${bk.c}/${bk.mn}).</b> Jos kaadut sille ${bk.mn} kertaa, se ei enää palauta terveyttään.`):'';
   const tip=bTip||{drown:'<b>Hukuit.</b> Syvässä vedessä pidä välilyönti pohjassa – se pitää sinut pinnalla, mutta kuluttaa kestävyyttä. Ilman sitä vajoat, ja veden alla terveys alkaa laskea sekunnin kuluttua. Tavarasi ovat hautakasassa lähimmällä rannalla.',tree:'<b>Puu kaatui päällesi.</b> Ole ensi kerralla varovainen: kun puu alkaa narista ja kallistua, astu nopeasti sivuun – älä jää sen kaatumissuuntaan. Myös myrskytuuli ja pedot voivat kaataa puita.'}[P.deathCause];P.bossKill=null;P.deathCause=null;
   closeAllForDeath();setTimeout(()=>{closeAllForDeath();if(!P.dead)return;state='dead';releaseLock();const dt=$('#deadTip');if(dt){dt.hidden=!tip;dt.innerHTML=tip||'';}$('#deadS').hidden=false;$('#hud').hidden=true;},wd?3800:1400);   // v2.18: vedessä veltto vajoaminen ja ruudun tummuminen ennen kuolinruutua
 }
@@ -351,7 +351,7 @@ function respawn(){if(!P.dead||state!=='dead')return;endPlayerDeath();
   {let n=0;for(const m of [...mobs]){if(m.dead||m.dun||m.guard||m===boss)continue;const ai=m.def.ai;if(ai==='boss'||ai==='rboss'||ai==='flee'||(ai==='neutral'&&!m.angry))continue;   // suuttunut neutraali (esim. karhu) katoaa myös
     if(dist2(m.pos.x,m.pos.z,P.pos.x,P.pos.z)<35*35){if(typeof smokePuff==='function')for(let k=0;k<3;k++)smokePuff(m.pos.x,m.pos.y+.6+k*.4,m.pos.z,1.2,.35);mobRemove(m);n++;}}
    if(n)P.respawnCleared=n;}
-  fig.g.rotation.x=0;P.vy=0;state='play';requestLock();msg('Heräät uudelleen. Hae tavarasi hautakasasta.');
+  fig.g.rotation.x=0;P.vy=0;state='play';requestLock();msg('Heräät uudelleen. Hae tavarasi hautakasasta.');{const bk=P.bossKill;if(bk&&bk.c===bk.mn)setTimeout(()=>msg(`${bk.n} on uupunut: olet kaatunut sille ${bk.c} kertaa, eikä se enää palauta terveyttään.`,'warn'),1200);}   // v2.55 armon ilmoitus
 }
 function sleepAt(p){
   P.spawn={x:p.x,z:p.z};msg('Herätyspaikka asetettu.','loot');

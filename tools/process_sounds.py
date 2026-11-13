@@ -311,6 +311,7 @@ def step_segments(ff, src, k=5, win=0.01, gap=0.35, seg_max=1.2):
 def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, loop=False, mode=None, seg=None):
     """prof (toiminnot): (yläraja, iso yläraja, häivytys, LUFS) – isojen +2 dB on jo mukana; big valitsee ison ylärajan."""
     cap_n, cap_b, fade, target = prof or PROFIILI.get(kind, PROFIILI['idle'])
+    AC, BR = ('2', '160k') if kind in MUSIC_EV else ('1', '96k')   # v2.53 musiikki stereona ja paremmalla laadulla
     boss = ai in BOSS_DB or big
     cap = cap_b if boss else cap_n
     target += 0 if prof else BOSS_DB.get(ai, 0)
@@ -329,11 +330,17 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, 
         if mode == 'step':   # v2.23: taustakohina (suhina, kahina) pois askelista – FFT-kohinanpoisto seuraa kohinatasoa
             pre += 'afftdn=nr=12:nf=-50:tn=1,'
         r = run([ff, '-hide_banner', '-loglevel', 'error', '-y'] + inp + ['-af', pre + ('highpass=f=40' if loop and mode != 'act' else f'highpass=f=40,{trim},areverse,{trim},areverse'),
-                '-ac', '1', '-ar', '44100', '-c:a', 'pcm_s16le', w1])
+                '-ac', AC, '-ar', '44100', '-c:a', 'pcm_s16le', w1])
         if r.returncode != 0 or not os.path.exists(w1):
             return r.stderr.strip()[-300:] or 'tuntematon virhe', None
         d = duration(ff, w1)
-        if d < 0.05:
+        if d < 0.12 and mode != 'step' and not loop:   # v2.50: hyvin lyhyt naksahdus → lempeämpi leikkaus (−66 dB), ettei hiljainen häntä katoa
+            tr2 = trim.replace('-48dB', '-66dB')
+            r2 = run([ff, '-hide_banner', '-loglevel', 'error', '-y'] + inp + ['-af', pre + f'highpass=f=40,{tr2},areverse,{tr2},areverse',
+                      '-ac', AC, '-ar', '44100', '-c:a', 'pcm_s16le', w1])
+            if r2.returncode == 0:
+                d = duration(ff, w1)
+        if d < 0.015:   # v2.50: 0,05 → 0,015 s (lyhyt käyttöliittymän naksahdus, esim. sulje.mp3 ~0,04 s, hylättiin hiljaisena)
             return 'ääni on käytännössä hiljaa', None
         # 2b) v2.22 silmukka: ei häivytyksiä; loppu ristihäivytetään alkuun (pituus enintään 6 s, sauma xf), jolloin silmukka on saumaton
         # v2.23: pitkästä kertaäänestä (huitaisu, lentoonlähtö …) voimakkain kohta eikä alku
@@ -377,7 +384,7 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, 
         lu = loudness(ff, w2)
         gain = 0.0 if lu is None else max(-24.0, min(24.0, target - lu))
         r = run([ff, '-hide_banner', '-loglevel', 'error', '-y', '-i', w2, '-af', f'volume={gain:.2f}dB,alimiter=limit=0.89:attack=2:release=60:level=disabled',
-                 '-ac', '1', '-ar', '44100', '-c:a', 'libmp3lame', '-b:a', '96k', '-id3v2_version', '0', tmp])
+                 '-ac', AC, '-ar', '44100', '-c:a', 'libmp3lame', '-b:a', BR, '-id3v2_version', '0', tmp])
         if r.returncode != 0 or not os.path.exists(tmp) or os.path.getsize(tmp) < 200:
             return r.stderr.strip()[-300:] or 'tuntematon virhe', None
         shutil.copyfile(tmp, dst + '.tmp.mp3')
@@ -493,15 +500,17 @@ def main():
     t_sounds, t_stat, t_warn, t_err = process_toiminnot(ff, init, old)
     warn += t_warn
     errors += t_err
-    p_sounds, p_stat, xs = {}, [0, 0, 0], []   # v2.24/v2.25 pelaajan äänet (osat 1–3)
+    p_sounds, p_stat, xs, xm = {}, [0, 0, 0], [], []   # v2.24/v2.25 pelaajan äänet (osat 1–3); v2.51 valikot (xm)
     for C in P_CFGS:
         ps, st, pw, pe = process_toiminnot(ff, init, old, C)
-        xs.append((C['title'], write_list_p(ps, C)))
+        (xm if C.get('xlsx') == 'menu' else xs).append((C['title'], write_list_p(ps, C)))
         p_sounds.update(ps)
         p_stat = [a + b for a, b in zip(p_stat, st)]
         warn += pw
         errors += pe
     write_xlsx(P_XLSX, xs)
+    if xm:
+        write_xlsx(M_XLSX, xm)
     allsnd = dict(sounds)
     allsnd.update(t_sounds)
     allsnd.update(p_sounds)
@@ -613,6 +622,9 @@ T_PROF.update({'alastulo': (.6, .8, .08, -24), 'puska': (1.2, 1.2, .15, -24), 'l
                'pahoinvointi': (2.5, 2.5, .3, -21), 'kylla': (2.0, 2.0, .2, -23), 'lammin': (2.5, 2.5, .3, -23), 'levannyt': (2.5, 2.5, .3, -23)})
 T_PROF['pusikko'] = (.3, .42, .07, -27)   # v2.27 Aarnimetsän askel lyhyemmäksi: raa'an 0,3 s hiljainen häntä pois (kuulosti venyvältä)
 T_DEF = (1.5, 1.5, .15, -22)
+# v2.50: tiedostokohtainen profiili (käsitellyn nimen mukaan, ohittaa t_prof:n) – puun tömähdykset: _2 pitkä (iso puu) selvällä pitkällä
+# häivytyksellä, perus ja _1 lyhyellä häivytyksellä
+F_PROF = {'puu_tomahdys_0': (2.4, 2.4, .35, -17), 'puu_tomahdys_1': (.8, .8, .12, -17), 'puu_tomahdys_2': (5.2, 5.2, 2.6, -17)}
 def t_prof(ev, big):
     k = 'kahlaus' if ev == 'askel_kahlaus' else 'uinti' if ev == 'askel_uinti' else 'pusikko' if ev == 'askel_pusikko' else ev if ev in T_PROF else ev.split('_')[0]
     a, b, f, t = T_PROF.get(k, T_DEF)
@@ -755,6 +767,74 @@ for _n, _proj, _tit, _grs in P_PARTS:
     P_CFGS.append({'part': _n, 'title': _tit, 'groups': _g, 'by': _by, 'raw': os.path.join(SND, _proj, 'raw'), 'out': os.path.join(SND, _proj, 'valmiit'),
                    'pre': 'p', 'proj': _proj, 'single': True, 'act': {'sydan'}, 'list': os.path.join(SND, _proj, f'AANILISTA_OSA{_n}.csv'),
                    'allowed': (lambda by: (lambda g: list(by[g][4])))(_by)})
+# v2.51 VALIKKOJEN ÄÄNIPROJEKTIT (pelin ulkopuoliset valikot): avaimet m/<ryhmä>/<ääni>, sama käsittely kuin pelaajan osilla
+# (yksi numeroton paikkamerkki per ääni, lisäversiot _1, _2 …). Lista sounds/<kansio>/AANILISTA_MENU<n>.csv + sounds/AANILISTA_MENU.xlsx.
+M_PARTS = [
+    (1, 'menu_1_valikko', 'Menu 1 – napit ja säätimet', [
+        ('napit', 'Napit ja valinnat', '🖱️', [('hover', 'viet hiiren napin, välilehden tai valinnan päälle (päävalikko, taukovalikko, asetukset, maailmat, ikkunat)', 'ui hover tick, soft menu blip'),
+                                            ('klikkaus', 'painat nappia, välilehteä tai valintaa', 'ui click, menu button press')]),
+        ('liukusaatimet', 'Liukusäätimet', '🎚️', [('naputus', 'liikutat liukusäädintä (kaikki säätimet): peli toistaa tätä tiheästi ja hiljaa niin kauan kuin säädin liikkuu – ei kun pidät paikallaan', 'ui slider tick, small tap, ratchet click')]),
+        ('esiasetus', 'Esiasetus', '⭐', [('ultra', 'Ultra-esiasetus asetetaan (säädin vapautetaan Ultran kohdalle)', 'magic shimmer, power up chime, epic confirm')]),
+        ('extra', 'Extra-grafiikka', '💜', [('extra_paalle', 'valitset Extra-grafiikassa violetin tai punaisen vaihtoehdon (päälle)', 'magic enable, arcane click, energy on'),
+                                            ('extra_pois', 'valitset puisen vaihtoehdon (Pois)', 'wooden click, wood knock off')])]),
+    (2, 'menu_2_efektit', 'Menu 2 – intro, lataus ja varmistus', [   # v2.52
+        ('aloitus', 'Aloitusjakso (ensikäynti)', '🎬', [('studio', 'studiologo (EricStudios & KSPK-tech) ilmestyy – vain ensimmäisellä käynnillä', 'cinematic logo reveal, deep soft impact'),
+                                                     ('otsikko', 'HIIDENMAA-kivilogo ilmestyy – vain ensimmäisellä käynnillä (musiikki alkaa samalla, kohta 5)', 'stone title reveal, epic rumble'),
+                                                     ('riimusiirtyma', 'riimukehä piirtyy, riimut tavaavat HIIDENMAA, sinetti, leimahdus ja paineaalto', 'magic rune circle, glowing seal, shockwave whoosh')]),
+        ('lataus', 'Latausnäyttö', '⏳', [('lataus_valmis', 'riimut leimahtavat valkoisiksi juuri ennen latausnäytön sulkeutumista (aina)', 'rune glow chime, magic flare short')]),
+        ('uusi_maailma', 'Uuden maailman intro', '🌍', [('tuuli', 'tuuli korkealla pilvien yllä (silmukka intron ajan, hiipuu lopussa; ohitus = nopea hiipuminen)', 'high altitude wind loop, airy'),
+                                                        ('linnut', 'linnut (silmukka intron ajan, hiipuu lopussa)', 'birds ambience loop, distant birdsong'),
+                                                        ('pilvet_wuush', 'pilvet aukeavat sivuille (latausnäytön jälkeen)', 'whoosh through clouds, soft air swoosh'),
+                                                        ('kamera_laskeutuu', 'kamera syöksyy alas pelaajan luo (intron viimeiset 2 s)', 'dive down whoosh, descending swoosh')]),
+        ('taustat', 'Valikon taustakuvat', '🖼️', [('tausta_leiri', 'Öinen leiri -taustakuva: satunnaisesti hiljaa (nuotion rätinä, pöllö …) 5–14 s välein; versiot _1, _2 … arvotaan', 'campfire crackle, owl hoot distant'),
+                                                ('tausta_myrsky', 'Myrsky-taustakuva: satunnaisesti hiljaa (ukkonen, sade, tuuli)', 'distant thunder rumble, rain gust'),
+                                                ('tausta_ahjo', 'Ahjo yöllä -taustakuva: satunnaisesti hiljaa (vasaran kalahdus, kipinät, palkeet)', 'blacksmith hammer anvil distant, forge bellows')]),
+        ('varmistus', 'Varmistusikkunat', '❓', [('varmistus', 'varmistuskysymys avautuu (oletko varma: maailman poisto/vaihto, DEV-työkalut, palautukset, näppäinvaihto …)', 'ui confirm prompt, attention chime soft')])]),
+]
+for _n, _proj, _tit, _grs in M_PARTS:
+    _g = [(gid, gn, emo, ['valikko'], [e[0] for e in evs], False) for gid, gn, emo, evs in _grs]
+    for gid, _, _, evs in _grs:
+        for e in evs:
+            P_EV[(gid, e[0])] = (e[1], e[2])
+    _by = {x[0]: x for x in _g}
+    P_CFGS.append({'part': _n, 'title': _tit, 'groups': _g, 'by': _by, 'raw': os.path.join(SND, _proj, 'raw'), 'out': os.path.join(SND, _proj, 'valmiit'),
+                   'pre': 'm', 'proj': _proj, 'single': True, 'act': {'tuuli', 'linnut'}, 'list': os.path.join(SND, _proj, f'AANILISTA_MENU{_n}.csv'),
+                   'allowed': (lambda by: (lambda g: list(by[g][4])))(_by), 'xlsx': 'menu'})
+# v2.53 MUSIIKKI (avaimet mu/<ryhmä>/<kappale>_<n>) ja ILMOITUKSET (avaimet i/<ryhmä>/<ääni>_<n>): sama käsittely, omat kansiot ja listat.
+MUSIC_EV = {'valikkomusiikki', 'taukomusiikki'}
+BIO_FI = [('meadow', 'rantaniitty', 'Rantaniitty'), ('koivu', 'koivulehto', 'Koivulehto'), ('forest', 'korpimetsa', 'Korpimetsä'), ('suo', 'upposuo', 'Upposuo'),
+          ('kangas', 'jakalakangas', 'Jäkäläkangas'), ('aarni', 'aarnimetsa', 'Aarnimetsä'), ('moor', 'kalmanummi', 'Kalmanummi'), ('tunturi', 'tunturikangas', 'Tunturikangas'),
+          ('rakka', 'rakka', 'Rakka'), ('mountain', 'kivivuori', 'Kivivuori'), ('peak', 'routahuiput', 'Routahuiput'), ('beach', 'hietaranta', 'Hietaranta'), ('sea', 'meri', 'Meri')]
+REALM_FI = [('portal1', 'routaluola', 'Routaluola'), ('portal2', 'kalmankammio', 'Kalmankammio'), ('portal3', 'aarnihauta', 'Aarnihauta')]
+X_PARTS = [   # (kansio, etuliite, listan nimi, otsikko, ryhmät)
+    ('musiikki', 'mu', 'AANILISTA_MUSIIKKI.csv', 'Musiikki – valikot', [
+        ('valikko', 'Valikkomusiikki', '🎵', [('valikkomusiikki', 'soi HIIDENMAA-logosta (aloitusjakso) päävalikon ajan, kunnes liityt peliin (häivytys ulos); loppuessa 20–40 s tauko ja uudelleen (versio arvotaan)', 'nordic folk ambient menu music, calm epic')]),
+        ('tauko', 'Taukomusiikki', '⏸️', [('taukomusiikki', 'alkaa, kun taukovalikko on ollut auki 15 s; häivytys ulos peliin palatessa', 'calm ambient pause music, soft nordic')])]),
+    ('ilmoitukset', 'i', 'AANILISTA_ILMOITUKSET.csv', 'Ilmoitukset ja löydöt', [
+        ('ilmoitukset', 'Ilmoitukset', '💬', [('ilmoitus', 'viesti tai ilmoitus ruudulle (vasen reuna); enintään 0,35 s välein', 'ui notification soft, message pop')]),
+        ('biomit', 'Uusi alue löydetty', '🗺️', [('biomi_yhteinen', 'uusi alue löydetty (aluebanneri) – soi, jos alueella ei ole omaa ääntä', 'discovery chime, new area found, mystical reveal')]
+         + [(f'biomi_{fi}', f'uusi alue löydetty: {nm} (oma ääni; puuttuessa biomi_yhteinen)', 'discovery chime, ' + nm.lower()) for _, fi, nm in BIO_FI]),
+        ('ulottuvuudet', 'Ulottuvuuteen saapuminen', '🌀', [('ulottuvuus_yhteinen', 'saavut ulottuvuuteen ensimmäistä kertaa (ulottuvuuden banneri) – soi, jos ulottuvuudella ei ole omaa ääntä', 'dark realm reveal, ominous magic boom')]
+         + [(f'ulottuvuus_{fi}', f'saavut ulottuvuuteen {nm} (oma ääni; puuttuessa ulottuvuus_yhteinen)', 'realm reveal, ' + nm.lower()) for _, fi, nm in REALM_FI])]),
+]
+for _proj, _pre, _list, _tit, _grs in X_PARTS:
+    _g = [(gid, gn, emo, ['peli'], [e[0] for e in evs], False) for gid, gn, emo, evs in _grs]
+    for gid, _, _, evs in _grs:
+        for e in evs:
+            P_EV[(gid, e[0])] = (e[1], e[2])
+    _by = {x[0]: x for x in _g}
+    P_CFGS.append({'part': 0, 'title': _tit, 'groups': _g, 'by': _by, 'raw': os.path.join(SND, _proj, 'raw'), 'out': os.path.join(SND, _proj, 'valmiit'),
+                   'pre': _pre, 'proj': _proj, 'single': True, 'act': set(), 'list': os.path.join(SND, _proj, _list),
+                   'allowed': (lambda by: (lambda g: list(by[g][4])))(_by), 'xlsx': 'menu'})
+T_PROF.update({'valikkomusiikki': (900.0, 900.0, 1.5, -20), 'taukomusiikki': (900.0, 900.0, 1.5, -21), 'ilmoitus': (.8, .8, .1, -25),
+               'tausta_leiri': (4.0, 4.0, .5, -28), 'tausta_myrsky': (5.0, 5.0, .8, -26), 'tausta_ahjo': (3.0, 3.0, .4, -28)})
+T_PROF.update({e: (3.0, 3.0, .5, -21) for e in ['biomi_yhteinen'] + [f'biomi_{fi}' for _, fi, _ in BIO_FI]})
+T_PROF.update({e: (4.0, 4.0, .6, -20) for e in ['ulottuvuus_yhteinen'] + [f'ulottuvuus_{fi}' for _, fi, _ in REALM_FI]})
+T_PROF.update({'studio': (4.0, 4.0, .6, -20), 'otsikko': (4.5, 4.5, .7, -19), 'riimusiirtyma': (5.0, 5.0, .8, -19), 'lataus_valmis': (2.5, 2.5, .5, -21),
+               'tuuli': (20.0, 20.0, .3, -25), 'linnut': (20.0, 20.0, .3, -27), 'pilvet_wuush': (3.0, 3.0, .5, -21), 'kamera_laskeutuu': (3.0, 3.0, .5, -21),
+               'varmistus': (1.2, 1.2, .2, -22)})   # v2.52 menu 2
+T_PROF.update({'hover': (.3, .3, .05, -29), 'klikkaus': (.4, .4, .06, -24), 'naputus': (.12, .12, .02, -27), 'ultra': (3.0, 3.0, .5, -20),
+               'extra_paalle': (1.5, 1.5, .25, -22), 'extra_pois': (.8, .8, .12, -24)})
 T_CFG = {'groups': TG_GROUPS, 'by': TG_BY, 'raw': RAW_T, 'out': OUT_T, 'pre': 't', 'proj': PROJ_T, 'allowed': lambda g: t_allowed(g)}
 
 def write_list_p(sounds, C):
@@ -764,7 +844,7 @@ def write_list_p(sounds, C):
     for gid, gn, emo, _, evs, _ in C['groups']:
         for ev in evs:
             i += 1
-            pre = f'p/{gid}/{ev}_'
+            pre = f'{C["pre"]}/{gid}/{ev}_'
             nums = sorted(int(n[len(pre):]) for n in sounds if n.startswith(pre) and n[len(pre):].isdigit())
             parts = [x for x in nums if x >= 100]
             nums = [x for x in nums if x < 100]
@@ -781,6 +861,7 @@ def write_list_p(sounds, C):
     return rows
 
 P_XLSX = os.path.join(SND, 'AANILISTA_PELAAJA.xlsx')
+M_XLSX = os.path.join(SND, 'AANILISTA_MENU.xlsx')   # v2.51
 def write_xlsx(path, sheets):
     """v2.25: kevyt .xlsx ilman lisäkirjastoja (Excel, LibreOffice, Google Sheets): jokainen osa omalla välilehdellään, otsikkorivi
     lukittu ja tumma, ✅-rivit vihreät, ⬜-rivit harmaat, sarakeleveydet ja suodatin. sheets = [(nimi, rivit)]."""
@@ -932,7 +1013,7 @@ def process_toiminnot(ff, init, old, C=None):
                 sounds[nk] = old[nk]
                 skipped += 1
             else:
-                err, res = process(ff, p, dk, sniff(p), 'hostile', ev, prof=t_prof(ev, big_ev), big=big_ev, loop=ev in LOOP_EV, mode=mode,
+                err, res = process(ff, p, dk, sniff(p), 'hostile', ev, prof=F_PROF.get(kb) or t_prof(ev, big_ev), big=big_ev, loop=ev in LOOP_EV, mode=mode,
                                    seg=tuple(sg) if sg else None)
                 if err:
                     errors.append(f'{nk}: {err}')

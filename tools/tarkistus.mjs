@@ -163,7 +163,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v1.78 herätessä läheiset viholliset katoavat',()=>/respawnCleared/.test(respawn.toString())&&/35\*35/.test(respawn.toString())||'puuttuu');
   t('v1.79 High–Ultra kytkevät automaattisäädön alavalinnat pois (myös varjojen laatu), muut päälle',()=>{const o=Object.assign({},SET);applyPreset(7);const a=!SET.autoQ&&!SET.autoRes&&!SET.autoFx&&!SET.autoDist&&presetIdx()===7;applyPreset(3);const b=SET.autoQ&&presetIdx()===3;Object.assign(SET,o);applyGfx();return a&&b||'virhe';});
   t('v1.80 erittäin tarkat varjot ohittavat varjoasetukset (8192, oma etäisyys, joka ruutu, aina päällä) ja harmaannuttavat ne',()=>{const o=Object.assign({},SET);SET.shadow='off';SET.shRate='slow';SET.shUltra='soft';applyGfx();const a=renderer.shadowMap.enabled&&sun.shadow.autoUpdate&&sun.shadow.camera.right===110&&!autoOn('q');Object.assign(SET,o);applyGfx();return a&&SHU_OVR.length===6||'virhe';});
-  t('v1.81 kolme kuolemaa samalle pomolle → pomo ei enää palauta terveyttään (tallentuu)',()=>{const o=flags.bossDeaths;flags.bossDeaths={vartija:2};const a=!bossTired('vartija');flags.bossDeaths.vartija=3;const b=bossTired('vartija')&&/bossTired/.test(updateMobs.toString());flags.bossDeaths=o;return a&&b||'virhe';});
+  t('v1.81 kolme kuolemaa samalle pomolle → pomo ei enää palauta terveyttään (tallentuu)',()=>{const o=flags.bossDeaths;flags.bossDeaths={kalmaherra:2};const a=!bossTired('kalmaherra');flags.bossDeaths.kalmaherra=3;const b=bossTired('kalmaherra')&&/bossTired/.test(updateMobs.toString());   /* v2.55: Kalmanvartijalla 5 (rivi v2.55) */flags.bossDeaths=o;return a&&b||'virhe';});
   t('v1.82 DEV-työkalut oletuksena pois, kytkin Asetukset › Ohjaus ja ääni -sivun alareunassa',()=>{const o=setTab;setTab='ctl';renderSettings();const ok=DEV===false&&!!$('#s_devOn')&&!devOn('lvl');setTab=o;renderSettings();return ok||'virhe';});
   t('v1.82 Early Access 1.0 -merkintä version perässä, DEV-viitteet piilossa kun DEV pois',()=>/Early Access 1\.0/.test($('.mTitle small .eaTag').textContent)&&(DEV||!/10× nopeus|DEV-valikko/.test(document.body.innerText))||'puuttuu');
   t('v1.83 veren fysiikka päällä Mediumista ylöspäin',()=>{const o=Object.assign({},SET);applyPreset(3);const a=SET.bloodFx;applyPreset(2);const b=!SET.bloodFx;Object.assign(SET,o);applyGfx();return a&&b&&SET_DEF.bloodFx||'virhe';});
@@ -172,7 +172,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     return a&&a.names[0]==='susi_aggro_1'&&Math.abs(a.p-.88)<1e-9&&b&&b.names.join()==='kalmo_idle_1,kalmo_idle_3'&&c===null&&d&&d.names[0]==='susi_chase_2'&&/creSnd\(m,'death'\)/.test(killMob.toString())&&/creSnd\(m,'hurt'\)/.test(damageMob.toString())&&/creLoad/.test(spawnMob.toString())&&/creTick/.test(update.toString())&&/angerDone/.test(creTick.toString())&&'creVol' in SET_DEF||'virhe';});
   t('v2.11 äänten lisäversiot: _4, _5 … _10 käytössä ilman koodimuutosta (numerojärjestys), manifestin äänet löytyvät',()=>{
     const o=CRE.man;CRE.man={susi_idle_1:{h:'a'},susi_idle_10:{h:'b'},susi_idle_4:{h:'c'},susi_idle_2:{h:'d'},aarnihirvio_echo_3:{h:'e'}};const a=creRes('susi','idle'),b=creRes('kalmasusi','idle'),c=creRes('jaajattari','echo');CRE.man=o;
-    const d=o&&Object.keys(o).length?Object.keys(o).every(n=>{const m=/^(.+)_(idle|hurt|death|aggro|chase|echo)_\d+$/.exec(n);return m&&creRes(m[1],m[2])&&creRes(m[1],m[2]).names.includes(n);}):true;
+    const d=o&&Object.keys(o).length?Object.keys(o).filter(n=>!n.includes('/')).every(n=>{   /* v2.52: manifesti ladataan nyt heti → vain olentojen avaimet (ei t/ p/ m/) */const m=/^(.+)_(idle|hurt|death|aggro|chase|echo)_\d+$/.exec(n);return m&&creRes(m[1],m[2])&&creRes(m[1],m[2]).names.includes(n);}):true;
     return a&&a.names.join()==='susi_idle_1,susi_idle_2,susi_idle_4,susi_idle_10'&&b&&b.names.length===4&&c&&c.names[0]==='aarnihirvio_echo_3'&&d||`virhe ${a&&a.names} ${b&&b.names} ${c&&c.names} manifest ${d}`;});
   t('v2.12 emakko suuttuu kun porsas säikähtää; pitkät kutsuäänet (far) kuuluvat kauas, etäisyys tummentaa ja kaiuttaa, kaukainen ulvonta',()=>{
     const x=P.pos.x+20,z=P.pos.z+20,sow=spawnMob('emakko',x,z),pg=spawnMob('porsas',x+2,z);pg.mom=sow;const oc=P.crouch,om=msg;P.crouch=false;msg=()=>{};let a;
@@ -274,7 +274,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     finally{plSnd=orig;CRE.ok=ok0;[P.walkPh,P.onGround,,P.swim,P.crouch]=sv;P.vel.copy(sv[2]);}
     const s0=plSurface(),a=calls.length===1&&(calls[0]==='askeleet/askel_'+s0||calls[0]==='vesi/askel_kahlaus')&&['ruoho','kivi','hiekka','lumi','suo','puu','jaa','pusikko'].includes(s0);
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
-    const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
+    const c=SET_DEF.plVol===1&&SET_PAGES.snd.includes('plVol')&&VOL_BASE.pl===.8&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
   t('v2.47 linssiheijastus vaihtelee päivittäin vain ±10 % (oma kerroin, ei säteiden 0,3–1); pilvimatto noin joka toinen päivä; 3D-pilviä noin 70 % päivistä (tuuli/myrsky/sade tuo muulloinkin); pilvet 3 omaa korkeuttaan ylempänä, selkeällä 10 % läpinäkyvämmät',()=>{
     const pv=dayN,v=[];for(let n=1;n<=200;n++){dayN=n;v.push(flareDay());}dayN=pv;flareDayN=-1;
@@ -301,6 +301,66 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
     const c=SET_DEF.torchSharp===false&&SET_PAGES.xgfx.includes('torchSharp')&&/torchSharpOn\(\)\?6\.7:2\.1/.test(updatePlayer.toString())&&/torchSharpOn\(\)\|\|shFrame%fT===0/.test(updateStations.toString());
     return a&&b&&c||`virhe terävä ${a} oletus ${b} koodi ${c}`;});
+  t('v2.56 puolitus klikkaamalla: valittu pino + oikea kohteeseen = puolet, valinta poistuu, kohderuutu ei aloita raahausta, puolitusääni vasta siirrossa, siirtoäänet −30 %, sulkemisäänet',()=>{
+    const L=[],o=window.plSnd,pi=inv.slice(),pp=openPanel;let r='';
+    try{window.plSnd=(g,e,x)=>{L.push(e+(x&&x.v?'@'+x.v:''));return true;};for(let i=0;i<inv.length;i++)inv[i]=null;inv[9]={id:'puu',n:10};inv[13]={id:'puu',n:2};
+      if(openPanel)closePanels(true);togglePanel('inv');renderInv();L.length=0;const S=()=>document.querySelectorAll('#invGrid .slot');
+      S()[9].click();const a1=selSlot===9&&L.join()==='siirto@0.7',d1=selSlot+'/'+L.join(';');L.length=0;
+      S()[13].dispatchEvent(new MouseEvent('mousedown',{bubbles:true,button:0}));const a2=!slotDrag;   /* kohde ei aloita raahausta */slotDrag=null;
+      S()[14].dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true,button:2}));const a3=inv[14]&&inv[14].n===5&&inv[9].n===5&&selSlot===-1&&L.join()==='puolitus@0.7';
+      r=a1&&a2&&a3?'':`valinta ${a1} (${d1}) kohde ${a2} puolitus ${a3} [${L}]`;}
+    finally{window.plSnd=o;for(let i=0;i<inv.length;i++)inv[i]=pi[i]||null;closePanels(true);if(pp)togglePanel(pp);invDirty=true;}
+    const c=DRAG_PX===10&&INV_SND_V===.7&&INV_SND_PJ===.12&&REPPU_CLOSE_P===1.3&&ARKKU_CLOSE_P===1.15&&ARKKU_CLOSE_V===.8&&/'arkku_auki',\{p:ARKKU_CLOSE_P/.test(closePanels.toString())&&/moveCount\(sa,si,da,di,k,'puolitus'\)/.test(splitDo.toString());
+    return !r&&c||`virhe ${r} vakiot ${c}`;});
+  t('v2.55 Kalmanvartija vaikeus 10: iskut +30 %, raivo alle 50 % (punaiset silmät ja mittari, kivisade, maapiikit, kolmen kiven viuhka), paraneminen 30 s, täysi HP noustessa, armo 5 kuolemasta',()=>{
+    const a=VT.swipe===29&&VT.slam===36&&VT.charge===34&&VT.rock===26&&VARTIJA_REGEN_T===30&&bossMercyN('vartija')===5&&bossMercyN('kalmaherra')===3;
+    const src=bossAI.toString(),b=/vartijaRage\(m\)/.test(src)&&/k:'rain'/.test(src)&&/k:'spikes'/.test(src)&&/three:1/.test(src)&&/rockRain\(m\)/.test(src)&&/spikeLine\(m\)/.test(src)&&/toggle\('rage'/.test(bossBarTick.toString());
+    const c=/if\(bossTired\('vartija'\)\)boss\.hp=/.test(useAltar.toString())&&/VARTIJA_REGEN_T/.test(updateMobs.toString());
+    const pd=flags.bossDeaths;flags.bossDeaths={vartija:4};const d1=!bossTired('vartija');flags.bossDeaths={vartija:5};const d2=bossTired('vartija');flags.bossDeaths=pd;
+    return a&&b&&c&&d1&&d2||`virhe arvot ${a} raivo ${b} nousu/paraneminen ${c} armo ${d1} ${d2}`;});
+  t('v2.54 osumaäänen varakategoria: sarvet → isku, kunnes osuma_sarvet-äänet on lisätty (karju, hirvi, hiidenhirvi)',()=>{
+    const o=CRE.man;let a,b,c;try{CRE.man={'t/osumat/osuma_isku_1':{h:'a'}};creIndex();a=tgHitCat('sarvet');c=tgHitCat('isku');CRE.man={'t/osumat/osuma_isku_1':{h:'a'},'t/osumat/osuma_sarvet_1':{h:'b'}};creIndex();b=tgHitCat('sarvet');}
+    finally{CRE.man=o;if(o)creIndex();}
+    const d=['karju','hirvi','hiidenhirvi'].every(t=>TG_HIT[t]==='sarvet')&&TG_HIT_ALT.sarvet==='isku'&&/tgHitCat\(cat\)/.test(tgHit.toString());
+    return a==='isku'&&b==='sarvet'&&c==='isku'&&d||`virhe ${a} ${b} ${c} ${d}`;});
+  t('v2.53 musiikki (valikko logosta peliin, tauko 15 s), Äänet ja musiikki -sivu (master, mykistykset, 6 säädintä 0–150 %), ilmoitus-/biomi-/ulottuvuusäänet, taustakuvien äänet',()=>{
+    const o={...SET};let a=false,b=false,c=false,d=false;const M=window.__mus,om=window.mSnd,L=[];
+    try{a=SET_DEF.volMaster===1&&['musicVol','creVol','plVol','uiVol','ambVol','notifVol'].every(k=>SET_DEF[k]===1&&SET_PAGES.snd.includes(k))&&!SET_PAGES.ctl.includes('sound')&&
+        SET_TABS.some(t=>t[0]==='snd'&&t[1]==='Äänet ja musiikki')&&Math.abs(volK('cre')-.8)<1e-9&&(SET.volMaster=1.5,SET.uiVol=1.5,Math.abs(volK('ui')-1.575)<1e-9)&&(SET.sfxOn=false,volK('pl')===0&&volK('music')>0);
+      Object.assign(SET,o);
+      b=!!M&&M.MU_FADE===2&&M.MU_GAP_MIN===20&&M.MU_GAP_MAX===40&&PAUSE_MUSIC_T===15&&/__mus\.stop\(\)/.test(startPlay.toString())&&/want\('tauko'\)/.test(musicTick.toString());
+      window.mSnd=(g,e,x)=>{L.push(e+':'+(x&&x.cat));return e==='ilmoitus'||e.endsWith('_yhteinen');};msgSndT=-9;msgQuietT=-9;msgSnd();msgSnd();biomeSnd('aarni');msgSnd();realmSnd('portal1');
+      c=L.join()==='ilmoitus:notif,biomi_aarnimetsa:notif,biomi_yhteinen:notif,ulottuvuus_routaluola:notif,ulottuvuus_yhteinen:notif';L.length=0;
+      const pi=MBG.i;MBG.i=MBG_SCENES.findIndex(x=>x.n==='Ahjo yöllä');mbgSndTick(.1);mbgSndTick(20);MBG.i=MBG_SCENES.findIndex(x=>x.n==='Lumisade');mbgSndTick(.1);mbgSndTick(30);MBG.i=pi;d=L.join()==='tausta_ahjo:amb';}
+    finally{Object.assign(SET,o);window.mSnd=om;msgSndT=-9;msgQuietT=-9;}
+    return a&&b&&c&&d||`virhe asetukset ${a} musiikki ${b} ilmoitukset ${c} taustat ${d} [${L}]`;});
+  t('v2.52 menu 2: äänten avaus (kaiutinmerkki, 2 s viive), aloitusjakson ja latauksen äänet, intron tuuli/linnut/wuush/syöksy + hiipuminen, varmistus',()=>{
+    const B=window.__boot0,a=!!B&&B.SND_DELAY===2000&&B.SND_HINT_MIN===2000&&typeof window.__bootSnd==='function'&&/window\.__AC/.test(audio.toString())&&
+      /lataus_valmis/.test(window.__ldDone.toString())&&(B.sndLocked||!document.getElementById('sndHint'));
+    const om=window.mSnd,os=window.mStop,L=[],ps=state,run=skip=>{L.length=0;startIntro(true);introRelease();for(let i=0;i<260&&intro;i++){if(skip&&intro.t>=skip){endIntro();break;}introCam(1/30);}if(intro)endIntro();return L.join();};
+    let r1='',r2='',c=false;try{window.mSnd=(g,e,o)=>{L.push(e+(o&&o.loop?'~':''));return {ev:e};};window.mStop=(h,f)=>L.push('-'+h.ev+f);
+      r1=run(0);r2=run(1);const K=[];window.mSnd=(g,e)=>{K.push(e);return {};};keyDialog('x',[['Vahvista',null],['Peruuta',null]]);keyDialog('y',[['Peruuta',null]]);$('#keyDlg').hidden=true;c=K.join()==='varmistus';}
+    finally{window.mSnd=om;window.mStop=os;state=ps;$('#hud').hidden=false;}
+    const b=r1==='tuuli~,linnut~,pilvet_wuush,kamera_laskeutuu,-tuuli2.5,-linnut2.5'&&r2==='tuuli~,linnut~,pilvet_wuush,-tuuli0.3,-linnut0.3,-pilvet_wuush0.15';
+    return a&&b&&c||`virhe boot ${a} intro ${b} [${r1}] [${r2}] varmistus ${c}`;});
+  t('v2.51 valikkoäänet: hover/klikkaus vain valikoissa, Extra päälle/pois, liukusäätimen naputus vain liikkuessa, Ultra, Valikkoäänet-säädin',()=>{
+    const L=[],om=window.mSnd,orf=window.requestAnimationFrame;let T=5000,cb=null;window.mSnd=(g,e)=>{L.push(g+'/'+e);return true;};
+    const mk=(par,cls,xk,xv)=>{const b=document.createElement('button');if(cls)b.className=cls;if(xk){b.dataset.xk=xk;b.dataset.xv=xv;}par.appendChild(b);return b;};
+    const M=document.getElementById('menu'),H=document.getElementById('hud'),bs=[mk(M),mk(M,'uo','torchSharp','false'),mk(M,'uo','torchSharp','true'),mk(H)];
+    MSND.clickT=-1e9;for(const b of bs){b.dispatchEvent(new MouseEvent('click',{bubbles:true}));MSND.clickT=-1e9;}bs.forEach(b=>b.remove());
+    const a=L.join()==='napit/klikkaus,extra/extra_pois,extra/extra_paalle';L.length=0;
+    let b=false;const sd=sldDrag;try{window.requestAnimationFrame=f=>{cb=f;return 1;};performance.now=()=>T;sldDrag={};MSND.raf=0;MSND.tickT=0;
+      mSliderMove();for(let i=0;i<8;i++){T+=30;mSliderMove();const f=cb;cb=null;f&&f();}const mv=L.length;
+      for(let i=0;i<10;i++){T+=30;const f=cb;cb=null;f&&f();}b=mv>=3&&mv<=6&&L.length-mv<=1&&L.every(x=>x==='liukusaatimet/naputus');}
+    finally{sldDrag=sd;delete performance.now;window.requestAnimationFrame=orf;window.mSnd=om;MSND.raf=0;}
+    const c=SET_DEF.uiVol===1&&SET_PAGES.snd.includes('uiVol')&&/mSnd\('esiasetus','ultra'\)/.test(renderSettings.toString())&&/#menu/.test(MENU_SEL)&&typeof mRes==='function';
+    return a&&b&&c||`virhe napit ${a} säädin ${b} (${L.length}) asetus ${c}`;});
+  t('v2.50 äänierä: puun tömähdys koon mukaan (_2 iso, _1 pieni, muut _0/_1), repun sulkeminen korkeammalta, plSnd v_ix',()=>{
+    const a=/v_ix:tomahdysIx\(H\)/.test(fallTree.toString())&&JSON.stringify(tomahdysIx(20))==='[2]'&&JSON.stringify(tomahdysIx(3))==='[1]'&&JSON.stringify(tomahdysIx(6))==='[0,1]'&&TOM_BIG===9.5&&TOM_SMALL===4.5;
+    const c=REPPU_CLOSE_P===1.3&&/plSnd\('valikot','reppu',\{p:REPPU_CLOSE_P\}\)/.test(closePanels.toString())&&/o\.v_ix/.test(plSnd.toString());
+    const o=CRE.man;CRE.man={'p/osumat/puu_tomahdys_0':{h:'a'},'p/osumat/puu_tomahdys_1':{h:'b'},'p/osumat/puu_tomahdys_2':{h:'c'}};const L=plRes('osumat','puu_tomahdys');CRE.man=o;if(o)creIndex();
+    const d=!!L&&L.length===3&&L[2]==='p/osumat/puu_tomahdys_2';
+    return a&&c&&d||`virhe koko ${a} reppu ${c} versiot ${d}`;});
   t('v2.49 Hautakumpu maassa + luolakäytävä, nummen usva päiväkohtaisesti, pehmeä pilvimatto Ultralla',()=>{
     const L=LOC.barrow,ex=L.x+10.5,ez=L.z,y=terrainH(ex,ez),bb=new THREE.Box3();statics.updateMatrixWorld(true);let bad=[];
     for(const o of statics.children){if(!o.isMesh||o.userData.merged)continue;bb.setFromObject(o);const cx=(bb.min.x+bb.max.x)/2,cz=(bb.min.z+bb.max.z)/2;if(Math.hypot(cx-ex,cz-ez)>9||bb.min.y>y+1)continue;
@@ -483,11 +543,11 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
   t('v2.28 äänierä osa 2 (22 ääntä) + puun tömähdys maahan, reppu kiinni = sama ääni, oman arkun sulkemisääni',()=>{
     const M=manJ(),need=['p/jousi/laukaus_0','p/jousi/veto_0','p/kaytto/arkku_auki_2','p/kaytto/syominen_1','p/lyonnit/huitaisu_2','p/lyonnit/torjunta_0','p/osumat/puu_kaatuu_0','p/osumat/kivi_hajoaa_0'];
     const miss=need.filter(n=>!M[n]||!M[n].f.startsWith('pelaaja_2_toiminnot/valmiit/'));if(miss.length)return 'manifestista puuttuu '+miss.join(', ');
-    const a=/'puu_tomahdys'/.test(fallTree.toString())&&/'arkku_kiinni'/.test(closePanels.toString());
+    const a=/'puu_tomahdys'/.test(fallTree.toString())&&/'arkku_auki',\{p:ARKKU_CLOSE_P/.test(closePanels.toString());   /* v2.56: kaikki arkut sulkeutuvat avausäänellä */
     const calls=[],orig=plSnd,cc=curChest,op=openPanel;plSnd=(g,ev)=>{calls.push(g+'/'+ev);return 1;};
     try{openPanel='inv';closePanels();openPanel='chest';curChest={t:'arkku',data:{items:[]}};closePanels();openPanel='chest';curChest={found:true,data:{items:[]}};plSnd=(g,ev)=>{calls.push(g+'/'+ev);return ev==='sulje'?1:0;};closePanels();}
     finally{plSnd=orig;curChest=cc;openPanel=op;}
-    const b=calls[0]==='valikot/reppu'&&calls[1]==='kaytto/arkku_kiinni'&&calls[2]==='valikot/sulje'&&calls.length===3;
+    const b=calls[0]==='valikot/reppu'&&calls[1]==='kaytto/arkku_auki'&&calls[2]==='kaytto/arkku_auki'&&calls[3]==='valikot/sulje'&&calls.length===4;
     return a&&b||`virhe koukut ${a} kutsut ${calls.join(',')}`;});
   t('v2.27 Aarnimetsän askel ±10 % ja sävel ±9 %; oksa: astuessa oksan päälle normaali ääni, Aarnimetsässä satunnaisesti tosi hiljaa, 2 s tauko',()=>{
     const O=nodes.find(n=>n.type==='oksa'&&n.alive!==false);if(!O)return 'ei oksia';const a=plNodeAt('oksa',O.x,O.z,.3)&&!plNodeAt('oksa',O.x+3,O.z+3,.3);
@@ -504,7 +564,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     try{P.pos.set(B.x,terrainH(B.x,B.z),B.z);P.onGround=true;P.swim=false;P.inDun=false;P.vel.set(3,0,0);PLV.bushT=-9;PLV.ph=null;plTick(1/30);const n1=calls.filter(c=>c==='askeleet/puska').length;plTick(1/30);
       var n2=calls.filter(c=>c==='askeleet/puska').length,b=n1===1&&n2===1&&calls.includes('askeleet/askel_pusikko');}
     finally{plSnd=orig;CRE.ok=ok0;P.pos.copy(sv[0]);P.onGround=sv[1];P.vel.copy(sv[2]);P.swim=sv[3];P.inDun=sv[4];}
-    const c=PL_STEP_V===.8&&/\*\.05\)/.test(plSnd.toString())&&/plBush\(m\.pos\.x/.test(tgStep.toString())&&/'puska',\{v:\.9\}/.test(plTick.toString());
+    const c=PL_STEP_V===.8&&/o\.pj\?\?\.05/.test(plSnd.toString())&&/plBush\(m\.pos\.x/.test(tgStep.toString())&&/'puska',\{v:\.9\}/.test(plTick.toString());
     return a&&b&&c||`virhe pensas ${a} ääni ${b} (${calls.join(',')}) muut ${c}`;});
   t('v2.26 terveyspalkit: vain suora katse; vahingoittunut myös 10 % ympärillä; vahingon jälkeen 5 s; ei jos tosi kaukana ja piilossa',()=>{
     for(const q of [...mobs])mobRemove(q);const cp=camera.position.clone(),cq=camera.quaternion.clone(),pp=P.pos.clone(),bs=barSeen,L=LOC.spawn,x=L.x+30,z=L.z+30;

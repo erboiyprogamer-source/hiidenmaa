@@ -13,10 +13,11 @@ uudet päätökset ja ideajono. Lyhyesti ja asiallisesti, ei keskustelulokia.
   Kivivuori, Routahuiput, Hietaranta, järvi, meri (`BIOMES`, world.js).
 - **Kaikki ominaisuudet, säännöt ja fysiikan arvot: `docs/OMINAISUUDET.md`** (päivitä se, kun ominaisuus tai arvo muuttuu).
 
-## Nykytila (päivitetty v2.49)
+## Nykytila (päivitetty v2.56)
 
-- **PR #35 (v2.28–v2.49) on yhdistetty → `main` = v2.49.** Seuraava työ alkaa haaralla uudelleen mainista.
-- **Versio 2.49**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) ja v2.24 (äänitasot, juominen, pää alas, pelaajan toimintoäänet) ja v2.25 (sudet hiljemmaksi, Aarnipuun törmäys, karhun syöksy, pelaajan äänet osat 1–3) ja v2.26 (pensasäänet, askeleet −20 %, terveyspalkkien näkyvyys) ja v2.27 (Aarnimetsän askel, oksat) – **PR #34 (v2.23–v2.27) on yhdistetty.** v2.28 (pelaajan äänierä osa 2: 22 ääntä, puun tömähdys, reppu kiinni, arkun sulkeminen) ja v2.29 (narinan ajoitus, siirto- ja puolitusäänet, Shift-siirtoslider) ja v2.30 (sliderin korjaukset, poimintaääni) ja v2.31 (poimintaäänen sävy) ja v2.32 (valitse + oikea klikkaus puolittaa myös hiiren lukituksessa) ja v2.33 (valinta säilyy pienessä liikkeessä, avointen biomien vaaleammat varjot) ja v2.34 (metsien varjot 20 % vaaleammat, vuorokauden vaihtelu ±15 %) ja v2.35 (näytön auringonsäteet, linssiheijastus) ja v2.36 (säteiden ajoitus, päiväkohtaisuus, peitto) ja v2.37 (säteet takaisin koko päiväksi) ja v2.38 (pyöreä auringon hehku, pilvien syvyys, kovat/pehmeät säteet) ja v2.39 (pienempi auringon hehku) ja v2.40 (elävät säteet, peitto suunnittain) ja v2.41 (suorituskykyoptimoinnit: puiden LOD, varjomallit, rakennusten yhdistäminen) ja v2.42 (low poly -sävytys säilyy varjojen vaalennuksessa) ja v2.43 (hautakummun kieleke, savujen optimointi, liekit pystyyn) ja v2.44 (satunnainen pilvimatto) ja v2.45 (terävät soihtuvarjot Extra-grafiikkaan) ja v2.46 (repun vilkkuminen/puolitus, pilvet, hukkumisen tarkistus) ja v2.47 (pilvipäivät, pilvimatto 50 %, heijastuksen päivävaihtelu, pilvet ylemmäs) PR #35:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
+- **PR #35 (v2.28–v2.49) ja #36 (muistiinpanot) on yhdistetty. PR #37 (v2.50–v2.56, lista 7 kokonaan + sarvien varaääni + Kalmanvartija 10 + puolituksen korjaus) odottaa yhdistämistä.**
+  Lista 7: ks. Ideajono › "Lista 7" (kaikki kohdat tehty; uudet äänet paikkamerkkeinä). Avoimet: Ideajono › "Avoimet havainnot".
+- **Versio 2.56**, haara `claude/hiidenmaa-survival-game-fmxt0m` (jatkettu mainista). **PR #25** (v1.38–v1.83), **#27** (v1.84–v1.95) ja **#28** (v1.96–v2.10) on **yhdistetty**. **#29** (v2.11–v2.15) on **yhdistetty**. **#30** (v2.16: kivivartija, ääniprojektien kansiot, toimintoäänet B1) on **yhdistetty**. v2.17 (pomojen toimintokansio, ryntäysäänet, vesi sammuttaa, sade sammuttaa nuotion) ja v2.18 (vesiuudistus: uinti, hukkuminen, vesivarjostin, vedenalaiset efektit, K pois) PR #31:ssä; v2.19 korjaa valikon 3D-piirron (KORJAUKSET 47); v2.20 Extra-grafiikka, low poly -vesi, rantaroiskeet, ylämäen hidastus, kohteet rinteen mukaan. **PR #31 (v2.17–v2.20) on yhdistetty.** **PR #32 (v2.21) on yhdistetty.** **PR #33 (v2.22) on yhdistetty.** v2.23 (toimintoäänierä 2, kivivartijan äänet, toimintosilmukat, tarkistustyökalun korjaus) ja v2.24 (äänitasot, juominen, pää alas, pelaajan toimintoäänet) ja v2.25 (sudet hiljemmaksi, Aarnipuun törmäys, karhun syöksy, pelaajan äänet osat 1–3) ja v2.26 (pensasäänet, askeleet −20 %, terveyspalkkien näkyvyys) ja v2.27 (Aarnimetsän askel, oksat) – **PR #34 (v2.23–v2.27) on yhdistetty.** v2.28 (pelaajan äänierä osa 2: 22 ääntä, puun tömähdys, reppu kiinni, arkun sulkeminen) ja v2.29 (narinan ajoitus, siirto- ja puolitusäänet, Shift-siirtoslider) ja v2.30 (sliderin korjaukset, poimintaääni) ja v2.31 (poimintaäänen sävy) ja v2.32 (valitse + oikea klikkaus puolittaa myös hiiren lukituksessa) ja v2.33 (valinta säilyy pienessä liikkeessä, avointen biomien vaaleammat varjot) ja v2.34 (metsien varjot 20 % vaaleammat, vuorokauden vaihtelu ±15 %) ja v2.35 (näytön auringonsäteet, linssiheijastus) ja v2.36 (säteiden ajoitus, päiväkohtaisuus, peitto) ja v2.37 (säteet takaisin koko päiväksi) ja v2.38 (pyöreä auringon hehku, pilvien syvyys, kovat/pehmeät säteet) ja v2.39 (pienempi auringon hehku) ja v2.40 (elävät säteet, peitto suunnittain) ja v2.41 (suorituskykyoptimoinnit: puiden LOD, varjomallit, rakennusten yhdistäminen) ja v2.42 (low poly -sävytys säilyy varjojen vaalennuksessa) ja v2.43 (hautakummun kieleke, savujen optimointi, liekit pystyyn) ja v2.44 (satunnainen pilvimatto) ja v2.45 (terävät soihtuvarjot Extra-grafiikkaan) ja v2.46 (repun vilkkuminen/puolitus, pilvet, hukkumisen tarkistus) ja v2.47 (pilvipäivät, pilvimatto 50 %, heijastuksen päivävaihtelu, pilvet ylemmäs) PR #35:ssä. Käyttäjä tekee seuraavaksi ehkä ketulle omat äänet. Aiemmin #27: äänierä A (v1.84–v1.86: äänet, Aarnihirviön äänet pääääneksi, kaiku ulottuvuuksiin). **JATKA TÄSTÄ (äänet):** käyttäjä lisää olentojen ääniä erissä → noudata "Äänierän rutiini"; v2.11 HUOM: `aarnihirvio_chase_2` ja `karhu_hurt_1` ovat sama tiedosto; isot vahvistukset (raaka hiljainen): `kalmo_chase_1` +24, `susi_hurt_2` +23,7 (raaka 7,5 s ulvonta osumapaikassa → 0,18 s, väärä paikka?), `metso_hurt_1/2`, `hiisi_death_1` (+12…14 dB). Puuttuvat ketjun alut (🎯): `hiidenkarhu_chase`, `hiidenhirvi_chase`. Aiempi:
   `main` = v1.37. Kaikki käyttäjän pyynnöt tehty: päivityslistat 4 (v1.39–v1.44), 5 (v1.49–v1.52) ja 6 (v1.53–v1.57) sekä valikon ja
   logon uudistukset (v1.45–v1.48). Seuraava työ: uusi lista käyttäjältä.
 - **Koko pelin tarkistus v1.57** (6 karttaa, päivä/yö, kaikki 22 vihollistyyppiä, 3 ulottuvuutta + pomot, Hautakumpu, tallennus/lataus,
@@ -42,14 +43,14 @@ Testattu ajossa: jokainen hyökkäävä olento (hostile + neutral) lyö pelaajaa
 | susi, routasusi, kalmasusi, ahma, emakko | purema | ✓ |
 | ilves, karhu, hiidenkarhu, suonäkki | raapaisu | ✓ |
 | kivivartija, Kalmanvartija, Jäätär, Aarnihirviö | murskaus | ✓ (Jäätären kivi myös) |
-| **karju, hirvi, hiidenhirvi** (peura/poro eivät hyökkää) | **sarvet** | **✗ puuttuu** – `raw/osumat/osuma_sarvet_1.mp3` 0 t, `_2` 288 t (paikkamerkit) |
+| **karju, hirvi, hiidenhirvi** (peura/poro eivät hyökkää) | **sarvet** | v2.54: soi **isku** (varakategoria `TG_HIT_ALT`), kunnes `osuma_sarvet_1/_2` lisätään |
 
 - **Ilman osumaääntä myös:** pomojen alueiskut, jotka kutsuvat `hurtPlayer`:ia suoraan (ei `mobHurtP` → ei `tgHit`): Kalmanvartijan
   maaisku `slam` (ai.js `vartija`-AI), ulottuvuuspomojen `slam` ja `nova` (dungeons.js `realmBossAI`) – niissä vain hiljainen `sfx('slam')`.
   Tulilinja (dungeons.js) ja palaminen ovat tulivahinkoa (ei osumaääntä tarkoituksella?). Huitaisu/ryntäys menevät `mobHurtP`:n kautta ✓.
 - Osumaääni soi vain, jos `P.hp` laski (`mobHurtP`) → DEV-kuolemattomuus vaimentaa sen (ei vika).
-- Korjausvaihtoehdot (käyttäjä päättää): käyttäjä tuo `osuma_sarvet`-äänet (→ `process_sounds.py`), tai varakategoria
-  (`sarvet` → `murskaus`/`isku`, jos `tgRes` tyhjä) + `tgHit('murskaus',…)` slam/nova-osumiin.
+- **Käyttäjän päätös v2.54:** sarvet → varakategoria `isku` (`tgHitCat`), oma ääni myöhemmin; pomojen alueiskut (slam, nova) ja
+  Kalmaherran tulilinja jäävät **tarkoituksella ilman osumaääntä**.
 
 ### Koodausmuistiinpanot (opittua v2.41–v2.49 – lue ennen vastaavia muutoksia)
 - **Maahan sijoittaminen:** `terrainH` on 2 m ruudukon kolmiointerpolaatio – yksi näytepiste rakenteen alla voi poiketa metrin
@@ -73,6 +74,24 @@ Testattu ajossa: jokainen hyökkäävä olento (hostile + neutral) lyö pelaajaa
   satunnaissijoittelua ja voivat harvoin epäonnistua – aja uudelleen ennen kuin epäilet koodia.
 - **KORJAUKSET 49 toistuu** (`//` rivin keskellä, viimeksi v2.47 ja v2.49) – tarkistusrivi v2.23 huomaa sen; kirjoita `/* */`.
 - **PR-kuvaus:** päivitettäessä kuvaus korvautuu kokonaan → pidä mukana koko PR:n versioväli, ei vain uusin versio.
+
+### Koodausmuistiinpanot (opittua v2.50–v2.53: äänet, musiikki, valikot)
+- **Uusi ääniprojekti:** lisää osa työkaluun (`P_PARTS` pelaaja `p/`, `M_PARTS` valikot `m/`, `X_PARTS` muut: musiikki `mu/`, ilmoitukset `i/`)
+  → `python3 tools/process_sounds.py --init` tekee kansiot, numerottomat paikkamerkit ja listat. Ryhmä-id:t ovat yhteisessä `P_EV`:ssä
+  → ei samaa ryhmän nimeä kahteen projektiin. Tiedostokohtainen profiili `F_PROF` (käsitelty nimi, esim. `puu_tomahdys_2`).
+  Huom: `import process_sounds` (testi) kirjoittaa `tools/__pycache__`:n → `git checkout tools/__pycache__` ennen committia.
+- **Äänen soitto:** pelaaja `plSnd` (3D, `o.v_ix` = sallitut versiot), valikot/ilmoitukset `mSnd(ryhmä, ääni, {pre, cat, v, loop})`
+  palauttaa kahvan → `mStop(kahva, s)`. Ennen pelin skriptejä vain boot.js `__bootSnd`/`__mus` (samassa `window.__AC`:ssa).
+  Voimakkuus aina `volK(kategoria)` (audio.js) / `bsVolK` (boot.js) – älä lue `SET.xxxVol`:ia suoraan.
+- **Autoplay:** AudioContext on lukossa ennen käyttäjän elettä. Testaa lukko: Playwright `--autoplay-policy=document-user-activation-required`
+  + `Object.defineProperty(navigator,'webdriver',{get:()=>false})` (muuten automaatio ohittaa aloitusjakson ja merkin). Ilman lukkoa
+  `--autoplay-policy=no-user-gesture-required`. Uusi ääni, joka voi soida ennen ensimmäistä elettä → odota (`muTry`-malli).
+- **Valikkojen tapahtumat:** virtuaalinen osoitin (VC) lähettää MouseEventejä → kuuntele `mouseover`/`click`/`mousedown`, ei pointer-*.
+  Asetussivu piirtyy uudelleen klikkauksesta → hover-ääni estetty 350 ms (`MSND.clickT`).
+- **Intro:** `update()` ei aja maailman introa – `introCam(dt)` kutsutaan piirtosilmukassa (testissä suoraan). `endIntro(true)` = luonnollinen loppu.
+- **Testiajoitus:** latausnäyttö peittää valikon ensimmäiset sekunnit → odota `!document.getElementById('loadScr')` ennen hiiritestiä.
+- **Asetusten uusi asteikko:** vanha tallenne muunnetaan kertaalleen lippujen avulla (`_v`, `_sv`); muunnos käyttää tallennettua `sv`:tä
+  (oletusarvoja ei saa muuntaa).
 
 ## PR #25 – yhteenveto (v1.38–v1.83, valmis yhdistettäväksi)
 
@@ -209,7 +228,7 @@ discover, block, chop, chopFinal, chopLog, logBreak, rockBreak, woodBreak. Uutta
 koukku tiedostoääneen – älä koskaan tee ääntä itse. Puuttuva ääni = hiljaisuus.
 
 **Äänierän rutiini (kun käyttäjä lisää uusia ääniä; v1.86, jotta isotkin erät sujuvat nopeasti):**
-1. `git pull`/fetch: katso mitä uusia tiedostoja `sounds/olennot_aanet/raw/`, `sounds/olennot_toiminnot/raw/` ja `sounds/pelaaja_*/raw/` saivat (`git diff --stat HEAD origin/main`). Älä lue ääniä itse – työkalu mittaa.
+1. `git pull`/fetch (v2.53: myös `sounds/menu_*/raw/`, `sounds/musiikki/raw/`, `sounds/ilmoitukset/raw/`): katso mitä uusia tiedostoja `sounds/olennot_aanet/raw/`, `sounds/olennot_toiminnot/raw/` ja `sounds/pelaaja_*/raw/` saivat (`git diff --stat HEAD origin/main`). Älä lue ääniä itse – työkalu mittaa.
 2. `python3 tools/process_sounds.py` (tarvittaessa `--init` uusille olennoille). Lue **HUOM**-rivit: sama tiedosto kahdessa paikassa, vahvistus yli ±12 dB
    (raaka hyvin hiljainen/kova → kerro käyttäjälle), ylimääräiset paikat. Tuplatiedosto tai kova vahvistus ei estä erää; ilmoita ne ja jatka.
 3. Tarkista AANILISTA.md:n tilarivit ja VARAANI: jos olento sai omat äänet, varaääniketju voi jäädä; uusi 💎/⭐-rooli päivittyy itse.
@@ -241,6 +260,20 @@ koukku tiedostoääneen – älä koskaan tee ääntä itse. Puuttuva ääni = h
   alttari tarvitsee 3.
 
 ## Tasapainoarvot (päivitä kun muutat)
+
+**Pomot (v2.55, koodista; HP = perus × `BOSS_HP_K` (mobs.js), ulottuvuuspomojen `dmg` × 1,15; pomojen iskut lisäksi × `HURT_K` 1,2 ennen
+haarniskaa; nopeus = `run` × `MOB_SPD` 0,85 × vaihe). Huom: v2.54:n taulukossa oli virheellisesti kertomattomat perusarvot.**
+
+| Pomo (paikka) | HP | Iskut (ennen ×1,2) | Nopeus m/s (vaiheet) | Vaiheet | Paraneminen |
+| --- | --- | --- | --- | --- | --- |
+| Jäätär (Routaluola, 1.) | 840 (560 × 1,5) | huitaisu 25, maaisku 30 (7 m), kivi 22, nova 28 (11 m) | 3,1 / 3,4 / 3,8 | 66 % ja 33 %: +10 % / +25 % nopeus, iskuväli 1,9 → 1,4 → 1,0 s (×1,1 heittäjä) | 60 s ilman osumaa → 10 %/s |
+| Kalmaherra (Kalmankammio, 2.) | 1 280 (640 × 2) | huitaisu 28, ryntäys 30 (11,9–14,9 m/s), nova 30, tulilinja 20 + palaminen | 3,4 / 3,7 / 4,3 | ph2 2 kalmoa, ph3 3; alle 50 % tulilinjat; alle 30 % viimeinen raivo (ryntäys 3,1 s välein, 5 kalmoa / 20 s, enint. 12) | 60 s → 10 %/s |
+| Aarnihirviö (Aarnihauta, 3.) | 1 872 (720 × 2,6) | huitaisu 30, ryntäys 33, maaisku 36 (7 m) | 3,4 / 3,7 / 4,3 | ph3 3 kätyriä | 102 s → 1 %/s (hidas) |
+| Kalmanvartija (Kalmankehä, alttari 3 hiidenkiveä) | 2 250 (900 × 2,5) | v2.55: huitaisu 29, maaisku 36 (7 m), ryntäys 34 (12,8 m/s), kivi 26; raivo: kivisade 6–8 × 22, maapiikit 30, 3 kiveä × 26 | 3,1 / 3,7 (alle 50 %) | alle 50 %: raivo (punaiset silmät ja mittari), 3 kalmoa, +20 % nopeus, iskuväli 2,1 → 1,45 s, uudet hyökkäykset | 30 s → 10 %/s; vajoaa yli 90 m:ssä, nousee täysin HP:in |
+
+Armo: pelaajan 3. kuolema samalle pomolle (Kalmanvartija 5., `BOSS_MERCY`) → ei enää parane (`bossTired`); Kalmanvartija säilyttää silloin HP:n
+myös vajotessaan. Heikkoudet (`weak`): ks. `MOBDEF`. Pelaaja: kävely 4,6, juoksu 8 m/s.
+
 
 | Asia | Arvo |
 | --- | --- |
@@ -287,6 +320,130 @@ koukku tiedostoääneen – älä koskaan tee ääntä itse. Puuttuva ääni = h
   sarakkeen rivi `lainaavat: …` (suorat ensin, ketjun kautta tulevat "via X"). Selite taulukoiden alussa. Nykyiset (v1.95): 💎 susi (6), aarnihirviö (4),
   hirvi (3), karju (2), kalmo (1), karhu (1), sammalhiisi (1); ⭐ peura, kettu, ilves, kalmanvartija (1 kukin); kalmon ylimys ja hiidenhirvi vain lainaavat.
   Metsolla ei ole varaääntä (ei merkkiä, ei lainaa).
+
+### v2.56 (puolitus klikkaamalla korjattu, repun/arkun äänet – käyttäjän pyyntö, KORJAUKSET 60)
+- **Puolitus:** valittu pino + oikea kohteeseen = puolet; valinta poistuu siirron jälkeen (reppu, arkku); kohderuutu ei aloita raahausta,
+  kun toinen ruutu on valittuna; raahausraja `DRAG_PX` 6 → 10 px. Testattu oikealla hiirellä tavallisessa ja lukitussa (VC) tilassa.
+- **Äänet:** `invSnd(ääni)` = repun/arkun siirtoäänet `INV_SND_V` 0,7 (−30 %, säätimet ennallaan) ja sävelvaihtelu ±`INV_SND_PJ` 12 %
+  (`plSnd` uusi `o.pj`, oletus ±5 %); valinta (vasen tai oikea) = siirto; puolitus vain kun puolet siirtyy (myös sliderin Siirrä);
+  sliderin avaus = siirto.
+- **Sulkemisäänet:** reppu `REPPU_CLOSE_P` 1,08 → 1,3; kaikki arkut (omat ja maailman, myös hautakasa) = `arkku_auki` hiljempaa
+  `ARKKU_CLOSE_V` 0,8 ja korkeammalta `ARKKU_CLOSE_P` 1,15 (ennen oma arkku `arkku_kiinni`, muut `sulje`).
+- Tarkistusrivi v2.56 (+ v2.26, v2.28, v2.50 päivitetty uusiin arvoihin).
+
+### v2.55 (Kalmanvartija: täysi HP noustessa, paraneminen 30 s, vaikeus 10 – käyttäjän pyyntö)
+- **Käyttäjän vastaukset:** iskut +30 % (HP ennallaan 2 250); uudet hyökkäykset vasta raivossa (alle 50 % HP): silmät ja mittari punaisiksi,
+  kivisade, maapiikit, kolmen kiven heitto; armo vasta 5. kuolemasta ja siitä ilmoitus.
+- **Nousu:** `useAltar` antaa täyden HP:n (ennen `flags.bossHp` säilyi); uupuneena (armo) HP säilyy. Vajoamisviesti kertoo kumman.
+- **Paraneminen:** `VARTIJA_REGEN_T` 30 s ilman osumaa → 10 %/s (muut pomot 60 s, Aarnihirviö 102 s).
+- **Vahinko** `VT` (ai.js): huitaisu 22 → 29, maaisku 28 → 36, ryntäys 26 → 34, kivi 20 → 26 (+ HURT_K 1,2).
+- **Raivo** (`m.phase2` → `vartijaRage`): silmien perusväri 0xff2a14 + jatkuva hehku `bossEyes(m,.5)`, pomomittari ja reunahehku `.rage`
+  (css: punaiset `--bc/--bd/--bl`). Hyökkäykset: lähellä (< 5 m) 25 % maapiikit; 5–30 m: ryntäys 20 % (> 9 m, väli 10 s), kivisade 30 %,
+  maapiikit 25 %, kolmen kiven viuhka (±0,24 rad) loput; väli 2,1 s.
+  - `rockRain`: 6–8 kiveä (2 ennakoiden pelaajan liikkeen, muut 2–7,5 m säteellä), punainen sykkivä varoitusrengas `warnRing` 1,57 s
+    (= kiven lentoaika `throwRock`, 19 m korkeudelta), 22 / kivi.
+  - `spikeLine`: 14 kivipiikkiä 1,4 m välein pelaajan suuntaan, 0,07 s porrastus, osuma kerran (1,15 m), 30 + heitto ylös.
+- **Armo:** `BOSS_MERCY` {vartija: 5}, `bossMercyN`; kuolemaruudun teksti käyttää rajaa (x/5), 5. kuolemasta ilmoitus heräämisen jälkeen.
+- Testattu: raivo (silmät #7ffff0 → punainen, mittarin luokka rage), 60 s raivotaistelussa kaikki hyökkäykset (kivisade 14×, piikit 7×,
+  3 kiveä 4×), enint. 8 kiveä ja 14 piikkiä, paraneminen 29 s ei / 31 s kyllä, nousu 2250/2250, armo 5 → 200/2250.
+- KORJAUKSET 59: ylimmän tason nimi `_spGeo` oli jo effects.js:ssä → ai.js ei latautunut (`updateMobs is not defined`).
+- Tarkistusrivi v2.55 (+ v1.81 käyttää nyt ulottuvuuspomoa).
+
+### v2.54 (sarvi-osumien varaääni, muistion tarkistus, pomotaulukko)
+- **Sarvi-osumat** (karju, hirvi, hiidenhirvi): `TG_HIT_ALT` = {sarvet: 'isku'}, `tgHitCat(kat)` (audio.js) – kategoria, jolla ei ole yhtään
+  ääntä manifestissa, soittaa varakategorian. Kun `osuma_sarvet`-äänet lisätään, ne soivat automaattisesti. Testattu oikeassa taistelussa.
+- Käyttäjän päätös: pomojen alueiskut (slam, nova) ja Kalmaherran tulilinja ilman osumaääntä.
+- Muistio tarkistettu: koodausmuistiinpanot v2.50–v2.53 lisätty, äänierän rutiini kattaa uudet kansiot, pomotaulukko (Tasapainoarvot).
+- Tarkistusrivi v2.54.
+
+### v2.53 (valikkomusiikki, Äänet ja musiikki -sivu, ilmoitus-/löytöäänet, taustakuvien äänet – lista 7, kohta 5)
+- **Käyttäjän vastaukset:** kaksi kappaletta (valikko + tauko), paikkamerkit ilman numeroa (`valikkomusiikki.mp3`, lisää `_1`, `_2` …);
+  kappaleen loputtua hiljainen tauko ja uudelleen; uusi sivu **Äänet ja musiikki**: master ylimpänä, mykistykset (kaikki, musiikki,
+  ääniefektit), 6 säädintä 0–150 % (oletus 100 % = entinen taso), ilmoitus-, alue- ja ulottuvuusäänten valinnat; vanhat äänisäätimet
+  siirretty pois Ohjaus-sivulta (ent. "Ohjaus ja ääni"). Ilmoitusäänet omaan kansioon: yhteinen ääni + biomeille ja ulottuvuuksille omat
+  (puuttuva → yhteinen). Taustakuvat: Öinen leiri, Myrsky, Ahjo yöllä.
+- **Kansiot:** `sounds/musiikki/` (valikko/`valikkomusiikki`, tauko/`taukomusiikki`; avaimet `mu/…`, lista `AANILISTA_MUSIIKKI.csv`;
+  käsittely STEREO 160 kbps `MUSIC_EV`, enintään 900 s, loppuhäivytys 1,5 s, −20/−21 LUFS) ja `sounds/ilmoitukset/` (ilmoitukset/`ilmoitus`;
+  biomit/`biomi_yhteinen` + 13 `biomi_<alue>` (`BIO_FI`); ulottuvuudet/`ulottuvuus_yhteinen` + 3 (`REALM_FI`); avaimet `i/…`, lista
+  `AANILISTA_ILMOITUKSET.csv`). `menu_2_efektit/taustat`: `tausta_leiri`, `tausta_myrsky`, `tausta_ahjo`. Työkalu `X_PARTS`; kaikki
+  välilehtinä `AANILISTA_MENU.xlsx`:ssä. Yhteensä 26 uutta paikkamerkkiä.
+- **Musiikki (boot.js `__mus`)**: `want('valikko'|'tauko')`, `stop(f)`, `apply()`, `state`. Ei fade in (0,05 s naksahduksen esto);
+  ulos `MU_FADE` 2 s; kappaleen loputtua `MU_GAP_MIN–MAX` 20–40 s ja uusi versio (eri kuin edellinen, jos on). Valikkomusiikki alkaa
+  aloitusjakson spTitle-vaiheesta (ensi- ja palaava käynti); lukossa odottaa avausta (`muTry` avauksessa ja puskurin valmistuessa).
+  main.js: `startPlay` → `stop()`; `musicTick` (frame): taukovalikko auki `PAUSE_MUSIC_T` 15 s → `want('tauko')`, pois tauolta → stop.
+  Karttavaihdon sivulataus odottaa 0,55 s, jos musiikki soi (häivytys 0,5 s).
+- **Voimakkuus** `volK(kategoria)` (audio.js) = master × säädin × `VOL_BASE` (cre .8, pl .8, ui .7, amb .7, notif .7, music 1) –
+  100 % = entinen oletus. Mykistys: `sound` (kaikki), `musicOn`, `sfxOn` (kaikki muu). boot.js `bsVolK` sama kaava (pelin SET tai
+  tallenne). Kertasiirto `_sv`: vanhat creVol/plVol (/0,8) ja uiVol (/0,7) uudelle asteikolle. `mSnd` uusi `o.cat` (ui/amb/notif) ja
+  `o.pre` (m/i); intron tuuli ja linnut = amb.
+- **Ilmoitukset (ui.js):** `msg` → `msgSnd` (enintään `MSG_SND_GAP` 0,35 s välein, ei 0,4 s löytöäänen jälkeen); `nextZoneBanner` →
+  `biomeSnd(z)`; `realmIntro` (dungeons.js) → `realmSnd(id)`; `iSnd` kokeilee omaa ja sitten yhteistä ääntä. Valinnat `notifSnd`,
+  `biomeSnd`, `realmSnd`.
+- **Taustakuvat (menubg.js):** `mbgSndTick` (mbgFrame): `MBG_SND` kolmelle kuvalle, ensimmäinen 2–6 s kuvan vaihdosta, sitten
+  5–14 s välein, `mSnd('taustat',…,{cat:'amb',v:.7})`.
+- Testattu: muunto (.8/.4/.7 → 1/.5/1), kaava (150 % × 150 %), sivu ja veto (150 % tallentuu), kytkimet, musiikki (soitto, tauko
+  kappaleiden välissä, stop, taukomusiikki 14 s ei / 15 s kyllä, jatko pysäyttää), aloitusjakso lukossa → napautus → soi → päävalikko
+  → peliin = stop; ilmoitusten raja, yhteinen ääni, valinnat; taustat vain kolmessa kuvassa. Tarkistusrivi v2.53 (+ v2.24/v2.51 päivitetty).
+
+### v2.52 (ääniprojekti MENU 2: äänten avaus, aloitusjakso, lataus, maailman intro, varmistus – lista 7, kohta 4)
+- **Käyttäjän vastaukset:** selain estää äänen ennen ensimmäistä elettä → alareunaan yliviivattu kaiutin + "Napauta näyttöä kuullaksesi
+  äänet"; napautus → kaiutin äänet päällä + "Äänet päällä", sitten häivytys (aikaisintaan 2 s näyttämisestä); koko jakso alkaa 2 s myöhemmin.
+  Ensikäynti: studiologo, HIIDENMAA-otsikko ja riimusiirtymä soivat. Palaava kävijä: (musiikki alkaa logosta – kohta 5) + latauksen loppuääni.
+  Latausnäytön ääni vain lopussa. Intron tuuli ja linnut hiipuvat pois lopussa (ohitus = nopea hiipuminen).
+- **Kansio `sounds/menu_2_efektit/`** (lista `AANILISTA_MENU2.csv`, sama `AANILISTA_MENU.xlsx` toisena välilehtenä): aloitus/`studio`,
+  `otsikko`, `riimusiirtyma`; lataus/`lataus_valmis`; uusi_maailma/`tuuli`, `linnut` (silmukat, työkalun act-tila ≤ 20 s + saumaton
+  ristihäivytys), `pilvet_wuush`, `kamera_laskeutuu`; varmistus/`varmistus` (9 paikkamerkkiä). `M_PARTS` osa 2, profiilit `T_PROF`.
+- **boot.js:** yksi AudioContext koko sivulle `window.__AC` (audio.js `audio()` käyttää samaa). `__bootSnd(ryhmä, ääni)` soittaa ennen
+  pelin skriptejä (lataa manifestista vain `m/aloitus` ja `m/lataus`; taso `hiidenmaa_set.uiVol`, `sound:false` mykistää).
+  Lukossa (`sndLocked`, ei automaatiossa) → `#sndHint` (css) ja kuuntelijat mousedown/keydown/touchstart (window capture, rekisteröity
+  ennen ohitusta): avaava painallus EI ohita aloitusjaksoa eikä maailman introa (`stopImmediatePropagation`, kun `__splashOn` tai
+  `state==='intro'`). Jakso alkaa `700 + SND_DELAY` (2 000) ms. Toimii myös maailman käynnistyksen sivulatauksen jälkeen (pend), koska
+  uusi sivu on taas lukossa – merkki näkyy silloinkin.
+- **Aloitusjakso:** `next()` → spStudio = studio, spTitle (vain ensikäynti) = otsikko, spTrans = riimusiirtyma. Latausnäyttö
+  (`__ldDone`, index.html) → `lataus_valmis` leimahduksen hetkellä (kaikki latausnäytöt).
+- **Maailman intro (main.js):** `introSndStart` (introRelease tai startIntro ilman pitoa) → tuuli + linnut `mSnd(…,{loop:true})`
+  (0,15 s naksahduksen esto, ei fade in) + `pilvet_wuush`; t = 4 s `kamera_laskeutuu`. `endIntro(true)` (luonnollinen, t = 6 s) →
+  silmukat hiipuvat `INTRO_FADE` 2,5 s; ohitus `endIntro()` → kaikki hiipuu `INTRO_SKIP_FADE` 0,3 s (kertaäänet 0,15 s). Huom:
+  `update()` ei aja introa – `introCam(dt)` kutsutaan piirtosilmukassa (testeissä kutsu suoraan).
+- **audio.js:** `mSnd` palauttaa kahvan `{src,g,done}` (ennen true), `o.loop`; `mStop(kahva, s)` häivyttää ja pysäyttää. Manifesti
+  ladataan heti (`creInit()` tiedoston lopussa, `mLoad` manifestin tultua) → intron äänet valmiina sivulatauksen jälkeen.
+- **Varmistus:** `keyDialog` soittaa `varmistus`, kun nappeja ≥ 2 (kysymys + peruutus); näppäimen odotus (1 nappi) ei soita.
+- Tarkistusrivi v2.52. Rivi v2.11 korjattu: manifesti ladataan nyt heti, joten rivi tarkistaa vain olentojen avaimet (ei `t/ p/ m/`).
+- Testattu: lukittu autoplay (`--autoplay-policy=document-user-activation-required`, `navigator.webdriver` false): merkki, 2 s viive,
+  napautus → running, otsikko ei ohitu, merkki häipyy; ensikäynnin studio 2,8 s ja otsikko 6,3 s; intro luonnollinen/ohitus 1 s/4,5 s.
+
+### v2.51 (ääniprojekti MENU 1: valikkojen napit ja säätimet – lista 7, kohta 3)
+- **Käyttäjän vastaukset:** äänet kaikissa pelin ulkopuolisissa valikoissa; kaikki liukusäätimet napsuvat (yksi naputusääni, jota peli
+  toistaa tiheästi ja hiljaa vain säädintä liikutettaessa, ei paikallaan pidettäessä); Ultra-ääni kun Ultra asetetaan (säädin vapautetaan);
+  Extra-grafiikassa sama ääni violetille ja punaiselle, oma ääni puiselle (Pois).
+- **Kansio `sounds/menu_1_valikko/`** (raw/<ryhmä>/ → valmiit/<ryhmä>_valmis/, lista `AANILISTA_MENU1.csv` + `sounds/AANILISTA_MENU.xlsx`):
+  napit/`hover`, napit/`klikkaus`, liukusaatimet/`naputus`, esiasetus/`ultra`, extra/`extra_paalle`, extra/`extra_pois` (6 paikkamerkkiä).
+  Työkalu: `M_PARTS` (process_sounds.py) = sama käsittely kuin pelaajan osilla, avaimet `m/<ryhmä>/<ääni>_<n>` (numeroton = `_0`),
+  profiilit `T_PROF` (hover 0,3 s −29 LUFS, klikkaus 0,4 s −24, naputus 0,12 s −27, ultra 3 s −20, extra_paalle 1,5 s −22, extra_pois 0,8 s −24).
+- **Peli (audio.js):** `mSnd(ryhmä, ääni, {v,p,pj})` 2D-toisto, taso uusi asetus **Valikkoäänet** `SET.uiVol` (oletus 70 %, Ohjaus ja ääni);
+  `mLoad` hakee kaikki `m/`-äänet heti. Delegoidut kuuntelijat (capture): `mouseover` → hover (uusi nappi, ei 350 ms klikkauksen jälkeen –
+  sivu piirtyy uudelleen), `click` → klikkaus tai Extra (`.uo`: arvo = `SET_DEF` tai `shUltra` off → extra_pois, muuten extra_paalle),
+  `mousedown`/`keydown` → `mWake` (AudioContext käyntiin). Rajaus `MENU_SEL` = #menu, #settings, #keyDlg, #deadS, #winS; napit `MENU_BTN`.
+  Mouse-tapahtumat (ei pointer), koska virtuaalinen osoitin VC lähettää MouseEventejä.
+- **Liukusäädin** (settings.js mousemove vedon aikana) → `mSliderMove` → `mSliderTick` (rAF): naputus `MSND.tickDt` 55 ms välein, voimakkuus
+  `MSND.tickV` 0,35, loppuu 80 ms liikkeen pysähtymisestä. **Ultra:** `sPreset`-säätimen vapautus tasolle 7 → `mSnd('esiasetus','ultra')`.
+- Huom: ennen ensimmäistä klikkausta/näppäintä selain ei salli ääntä (AudioContext odottaa käyttäjän elettä) → ensimmäiset hoverit hiljaa.
+- Testattu oikealla hiirellä (Playwright): hover, klikkaus, Extra päälle/pois, säätimen veto (10 naputusta / 0,35 s), paikallaan 0 naputusta,
+  Ultra vapautuksessa, pelin reppu-nappi hiljaa; oikea puskuri soi ja 0 % mykistää. Tarkistusrivi v2.51.
+
+### v2.50 (äänierä: tömähdykset, rakentaminen, valikot – käyttäjän lista 7, kohdat 0–2)
+- **Uudet äänet** (käyttäjän commit "ääniä lisää 1213"): puun tömähdys `_0` (2,35 s), `_1` (0,44 s), `_2` (4,62 s); rakentaminen: asetus,
+  korjaus, purku, valmistus; valikot: kartta (+ `_1`), puolitus, rakennusvalikko, reppu, siirto, sulje.
+- **process_sounds.py:** tiedostokohtainen profiili `F_PROF` (käsitellyn nimen mukaan, ohittaa `t_prof`:n): `puu_tomahdys_2` 5,2 s, häivytys
+  2,6 s (selvä pitkä hiipuminen ~2,0 → 4,6 s); `_0` 2,4 s / 0,35 s; `_1` 0,8 s / 0,12 s. Hyvin lyhyt ääni: jos leikattu alle 0,12 s, uusi
+  leikkaus −66 dB:llä (ei askel/silmukka), ja hylkäysraja 0,05 → 0,015 s – `sulje.mp3` (~0,04 s naksahdus + häntä) hylättiin ennen
+  "käytännössä hiljaa" → nyt 0,15 s.
+- **Tömähdys koon mukaan** `tomahdysIx(H)` (state.js, `fallTree`): H = `TREE_H` × koko; ≥ `TOM_BIG` 9,5 m → `_2` (aarnipuut 17–24 m ja
+  suurimmat kuuset/koivut/männyt), < `TOM_SMALL` 4,5 m → `_1`, muut `_0`/`_1` satunnaisesti. `plSnd` uusi `o.v_ix` = sallitut versionumerot
+  (jos yhtään ei ole, kaikki). Puiden H-jakauma (kartta 0): kuusi 3–11,6 (mediaani 5,7), koivu 2,1–12,4 (6,2), kelo 3–5,7, mänty 5,9–10,9
+  (8,2), aarnipuu 16,8–24,1.
+- **Repun sulkeminen** soittaa saman `reppu`-äänen 8 % korkeammalta (`REPPU_CLOSE_P` 1,08, ui.js `closePanels`; plSnd:n ±5 % vaihtelu päälle).
+- Tarkistusrivi v2.50.
 
 ### v2.49 (Hautakummun suu, nummen usva, pehmeä pilvimatto – käyttäjän pyynnöt)
 - **Hautakumpu maahan (KORJAUKSET 58):** `stoneCol`/`gmin` (landmarks.js) – portin pylväät, sivukivet, portaat, tulimaljat, riimulaatat ja
@@ -3064,9 +3221,21 @@ kanssa; (3) Ultra-asetuksella jopa ~830 piirtokutsua.
 
 ## Ideajono
 
+### Lista 7 (v2.50–, käyttäjän päivitysideat 13.11.) – yksi kohta kerrallaan, 1–5 tarkentavaa kysymystä per kohta
+0. Äsken lisätyt äänet peliin → **tehty v2.50**.
+1. Puun tömähdykset: `_2` pitkä selvä fade out, muihin pieni fade; `_2` isoille puille, `_1` pienille, perus/`_1` normaaleille → **tehty v2.50**.
+2. Repun sulkeminen = sama `reppu`-ääni hieman korkeammalta → **tehty v2.50**.
+3. → **tehty v2.51** (paikkamerkit; käyttäjä tuo äänet). Ääniprojekti "MENU" (kansiot, paikkamerkit, lista): napin/toiminnon päälle vienti (hover), klikkaus, esiasetusliukusäätimen
+   napsutus, Ultra-esiasetuksen merkkiääni, Extra-grafiikan violetti/puinen valinta.
+4. → **tehty v2.52** (paikkamerkit). Ääniprojekti "menun ääniefektit": alkuintron äänet kohdittain, latausnäytön ääni (kirjaimet valaistuvat ennen sulkeutumista), uuden
+   maailman intro (tuuli, linnut, wuush pilvien siirtyessä, eri ääni kameran laskeutuessa; katkeaa, jos intro ohitetaan),
+   varmistusikkunoiden oma ääni (oletko varma, maailman poisto, DEV:n avaus …).
+5. → **tehty v2.53** (paikkamerkit; käyttäjä tuo musiikin ja äänet). Musiikkikansio (ensin valikkomusiikit): soi intron "Hiidenmaa"-tekstistä päävalikkoon, häivytys ulos peliin liittyessä; taukovalikossa
+   alkaa 15 s jälkeen; aina pieni fade out, fade in vain pyydettäessä. Extra: 3 animoitua taustakuvaa, joihin satunnaisia hiljaisia ääniä.
+
 ### Avoimet havainnot (v2.49-tarkistus)
-- Sarvi-osumien ääni puuttuu (karju, hirvi, hiidenhirvi) – käyttäjän äänitiedostot tai varakategoria (ks. "Osumaäänien tarkistus").
-- Pomojen alueiskuista (slam, nova) puuttuu osumaääni.
+- ~~Sarvi-osumien ääni puuttuu~~ → v2.54 varakategoria isku; omat `osuma_sarvet`-äänet käyttäjältä.
+- ~~Pomojen alueiskuista puuttuu osumaääni~~ → käyttäjän päätös v2.54: ei ääntä.
 - Pehmeä pilvimatto myös muille tasoille kuin Ultralle (vanhan maton raja liikkuu taivaalla).
 
 Lisää käyttäjän ehdotukset tähän ja merkitse tehdyt versiolokiin.

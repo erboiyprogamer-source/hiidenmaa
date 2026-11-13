@@ -313,7 +313,7 @@ function useAltar(){
   if(!flags.altarSt){if(invCount('kruunusirpale')<3){msg('Alttarin kolme koloa ovat tyhjiä. Tarvitset kolme Kalmankruunun sirpaletta – ne ovat Aarnihaudan syvyyksissä.','warn');return;}invRemove('kruunusirpale',3);}   // v1.34 (kohta 8)
   flags.altarSt=0;syncAltar();msg('Sirpaleet hehkuvat… maa vapisee!','warn');sfx('roar');shake(.6);
   circleStones.forEach(r=>r.material=MAT.glow);
-  const L=LOC.circle;setTimeout(()=>{boss=spawnMob('vartija',L.x,L.z-4);if(flags.bossHp){boss.hp=Math.min(boss.maxHp,flags.bossHp);delete flags.bossHp;}boss.state='rise';boss.t=0;boss.sinking=1;boss.pos.y-=7.5;shockwave(L.x,6,L.z-4,10);},1600);
+  const L=LOC.circle;setTimeout(()=>{boss=spawnMob('vartija',L.x,L.z-4);if(flags.bossHp){if(bossTired('vartija'))boss.hp=Math.min(boss.maxHp,flags.bossHp);delete flags.bossHp;}   /* v2.55: noustessaan täysi terveys (armon jälkeen säilyy) */boss.state='rise';boss.t=0;boss.sinking=1;boss.pos.y-=7.5;shockwave(L.x,6,L.z-4,10);},1600);
 }
 function openSarc(i){
   const first=!flags.sarc[i],s=sarcs[i];

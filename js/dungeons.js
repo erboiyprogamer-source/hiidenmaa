@@ -274,7 +274,7 @@ function realmIntro(id){const t=realmGoalText(id);
   if(fo('ri')[id]){setTimeout(()=>msg(t),900);return;}fo('ri')[id]=1;
   const el=$('#realmBan');if(!el){msg(t);return;}const c='#'+REALMS[id].glow.toString(16).padStart(6,'0');el.style.setProperty('--rc',c);
   const rr=()=>Array.from({length:13},()=>RUNE_ROW[Math.random()*RUNE_ROW.length|0]).join('');$('#realmBanR1').textContent=rr();$('#realmBanR2').textContent=rr();
-  $('#realmBanN').textContent=REALMS[id].n;$('#realmBanT').textContent=t;el.classList.remove('on');void el.offsetWidth;el.classList.add('on');sfx('roar');shake(.35);
+  $('#realmBanN').textContent=REALMS[id].n;$('#realmBanT').textContent=t;el.classList.remove('on');void el.offsetWidth;el.classList.add('on');sfx('roar');realmSnd(id);shake(.35);
   clearTimeout(realmBanT);realmBanT=setTimeout(()=>el.classList.remove('on'),6500);msg(t,'warn');}
 function exitRealm(){fadeTo(()=>{for(const f of FIRELINES)f.t=0;
   const id=P.realm,F=portalFront(id);P.inDun=false;P.realm=null;P.pos.set(F.x,terrainH(F.x,F.z),F.z);P.vy=0;P.vel.set(0,0,0);camYaw=Math.atan2(-F.fx,-F.fz);P.spawnProt=3.2;

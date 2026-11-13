@@ -260,7 +260,7 @@ function fallTree(n,dir,crush,src){const g=new THREE.Group();const m=new THREE.M
   fx.push({obj:g,t:0,update:(f,dt)=>{const k=Math.min(1,f.t/dur);g.rotation.set(0,0,0);g.rotateOnWorldAxis(_tmpV.set(Math.cos(a),0,-Math.sin(a)),Math.pow(k,2.6)*Math.PI/2);
     for(const b of brs)if(!b.userData.off&&k>=b.userData.det&&k<1){b.userData.off=1;g.updateMatrixWorld(true);dropBranch(b,Math.sin(a)*k*4,Math.cos(a)*k*4);}
     if(f.t>dur&&!f.dropped){f.dropped=1;{const dd=Math.hypot(P.pos.x-n.x,P.pos.z-n.z);sfx('thud',1/clamp(n.s,.7,1.6),clamp(1.15-dd/90,.12,1));}if(crush)crushPlayer(n,a,src);
-      const mx=n.x+Math.sin(a)*H*.5,mz=n.z+Math.cos(a)*H*.5,dd=Math.hypot(P.pos.x-mx,P.pos.z-mz);plSnd('osumat','puu_tomahdys',{pos:{x:mx,y:n.y+.4,z:mz},v:1.5,p:clamp(1.12-.15*n.s,.8,1.05)});   /* v2.28 puu iskeytyy maahan (myös karhun kaatama) */if(!P.inDun&&dd<H+8)shake(Math.min(.5,.12+.35*(1-dd/(H+8))*Math.min(1.5,n.s)));
+      const mx=n.x+Math.sin(a)*H*.5,mz=n.z+Math.cos(a)*H*.5,dd=Math.hypot(P.pos.x-mx,P.pos.z-mz);plSnd('osumat','puu_tomahdys',{pos:{x:mx,y:n.y+.4,z:mz},v:1.5,p:clamp(1.12-.15*n.s,.8,1.05),v_ix:tomahdysIx(H)});   /* v2.28 puu iskeytyy maahan (myös karhun kaatama) */if(!P.inDun&&dd<H+8)shake(Math.min(.5,.12+.35*(1-dd/(H+8))*Math.min(1.5,n.s)));
       burst(n.x+Math.sin(a)*3,n.y+.5,n.z+Math.cos(a)*3,0x6b4527,10,4);
       for(const [id,lo,hi] of n.def.drops){if(id==='puu'&&!small)continue;const c=Math.max(id==='puu'?1:0,Math.round(rint(rng,lo,hi)*n.s));for(let j=0;j<c;j++){const t=.8+j*H/(c+1);spawnDrop(id,1,n.x+Math.sin(a)*t,n.y+1,n.z+Math.cos(a)*t);}}
       g.updateMatrixWorld(true);for(const b of brs)if(!b.userData.off)dropBranch(b);
@@ -275,6 +275,9 @@ function dropBranch(b,ivx=0,ivz=0){scene.attach(b);const vx=(Math.random()-.5)*1
     if(f.t>10){b.traverse(o=>{if(o.geometry)o.geometry.dispose();});return true;}return false;}});}
 /* v1.19 (lista 2, kohta 9): kaatuva puu (myrsky, pelaajan kaatama, karhun kaatama) osuu kaikkeen rungon alla: pelaaja ja mobit
    menettävät 80 % suurimmasta terveydestään; haarniska ja kilpi eivät suojaa. Puun kaatanut mob (karhu, src) ei vahingoitu. */
+/* v2.50 puun tömähdys koon mukaan: iso (H ≥ 9,5 m: aarnipuut ja suurimmat kuuset/koivut/männyt) → _2 (pitkä, hiipuva), pieni (H < 4,5 m) → _1,
+   muut → perus (_0) tai _1 satunnaisesti. Puuttuva versio → kaikki (plSnd v_ix). */
+const TOM_BIG=9.5,TOM_SMALL=4.5;function tomahdysIx(H){return H>=TOM_BIG?[2]:H<TOM_SMALL?[1]:[0,1];}
 function treeHit(n,a,x,z,y){const H=(TREE_H[n.type]||5)*n.s,dx=x-n.x,dz=z-n.z,along=dx*Math.sin(a)+dz*Math.cos(a),lat=Math.abs(dx*Math.cos(a)-dz*Math.sin(a));
   return along>0&&along<H&&lat<1.4*Math.max(1,n.s)&&y-terrainH(x,z)<3;}   // kohde lähellä maata (ei esim. katolla)
 function crushPlayer(n,a,src){
