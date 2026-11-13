@@ -7,4 +7,7 @@
 6,🌍 Uuden maailman intro,linnut,⬜ puuttuu,lisää: linnut.mp3,"linnut (silmukka intron ajan, hiipuu lopussa)","birds ambience loop, distant birdsong"
 7,🌍 Uuden maailman intro,pilvet_wuush,⬜ puuttuu,lisää: pilvet_wuush.mp3,pilvet aukeavat sivuille (latausnäytön jälkeen),"whoosh through clouds, soft air swoosh"
 8,🌍 Uuden maailman intro,kamera_laskeutuu,⬜ puuttuu,lisää: kamera_laskeutuu.mp3,kamera syöksyy alas pelaajan luo (intron viimeiset 2 s),"dive down whoosh, descending swoosh"
-9,❓ Varmistusikkunat,varmistus,⬜ puuttuu,lisää: varmistus.mp3,"varmistuskysymys avautuu (oletko varma: maailman poisto/vaihto, DEV-työkalut, palautukset, näppäinvaihto …)","ui confirm prompt, attention chime soft"
+9,🖼️ Valikon taustakuvat,tausta_leiri,⬜ puuttuu,lisää: tausta_leiri.mp3,"Öinen leiri -taustakuva: satunnaisesti hiljaa (nuotion rätinä, pöllö …) 5–14 s välein; versiot _1, _2 … arvotaan","campfire crackle, owl hoot distant"
+10,🖼️ Valikon taustakuvat,tausta_myrsky,⬜ puuttuu,lisää: tausta_myrsky.mp3,"Myrsky-taustakuva: satunnaisesti hiljaa (ukkonen, sade, tuuli)","distant thunder rumble, rain gust"
+11,🖼️ Valikon taustakuvat,tausta_ahjo,⬜ puuttuu,lisää: tausta_ahjo.mp3,"Ahjo yöllä -taustakuva: satunnaisesti hiljaa (vasaran kalahdus, kipinät, palkeet)","blacksmith hammer anvil distant, forge bellows"
+12,❓ Varmistusikkunat,varmistus,⬜ puuttuu,lisää: varmistus.mp3,"varmistuskysymys avautuu (oletko varma: maailman poisto/vaihto, DEV-työkalut, palautukset, näppäinvaihto …)","ui confirm prompt, attention chime soft"

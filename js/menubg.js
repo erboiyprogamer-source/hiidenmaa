@@ -290,8 +290,13 @@ function mbgSet(i,keepT){mbgSize();MBG.i=i;const S=MBG_SCENES[i],u=Math.min(MBG.
   S.bg(MBG.sg,MBG.W,MBG.H,mulberry32(1000+i*77),u);if(!keepT){MBG.t=0;MBG.s={};}}
 // v1.31: aina arvottu kuva (myös sivun avauksessa), ei sama kahdesti peräkkäin.
 function mbgNext(){let j=MBG.i;while(j===MBG.i)j=(Math.random()*MBG_SCENES.length)|0;return j;}
+/* v2.53 TAUSTAKUVIEN ÄÄNET (menu_2_efektit/taustat): kolmessa eloisassa kuvassa satunnainen hiljainen ääni MBG_SND_MIN–MAX s välein
+   (ensimmäinen 2–6 s kuvan vaihtumisesta), taso Taustaäänet (cat 'amb') × MBG_SND_V. Versiot _1, _2 … arvotaan. */
+const MBG_SND={'Öinen leiri':'tausta_leiri','Myrsky':'tausta_myrsky','Ahjo yöllä':'tausta_ahjo'},MBG_SND_MIN=5,MBG_SND_MAX=14,MBG_SND_V=.7;
+function mbgSndTick(dt){const S=MBG_SCENES[MBG.i],ev=S&&MBG_SND[S.n];if(!ev||MBG.sndI!==MBG.i){MBG.sndI=MBG.i;MBG.sndT=2+Math.random()*4;if(!ev)return;}
+  MBG.sndT-=dt;if(MBG.sndT>0)return;MBG.sndT=MBG_SND_MIN+Math.random()*(MBG_SND_MAX-MBG_SND_MIN);if(typeof mSnd==='function')mSnd('taustat',ev,{cat:'amb',v:MBG_SND_V});}
 function mbgShow(on){mbgInit();if(on===MBG.shown)return;MBG.shown=on;MBG.cv.style.display=on?'block':'none';if(on&&MBG.i<0)mbgSet((Math.random()*MBG_SCENES.length)|0);   /* v1.31: aina arvottu (ennen avauksessa Öinen leiri) */MBG.last=performance.now();}
-function mbgFrame(now){mbgShow(true);const raw=Math.min(.25,(now-MBG.last)/1000);MBG.acc+=raw;MBG.last=now;if(MBG.acc<1/MBG_FPS)return;const dt=MBG.acc;MBG.acc=0;
+function mbgFrame(now){mbgShow(true);const raw=Math.min(.25,(now-MBG.last)/1000);MBG.acc+=raw;MBG.last=now;if(MBG.acc<1/MBG_FPS)return;const dt=MBG.acc;MBG.acc=0;mbgSndTick(dt);
   MBG.t+=dt;if(MBG.t>MBG_T)mbgSet(mbgNext());
   const g=MBG.g,W=MBG.W,H=MBG.H,S=MBG_SCENES[MBG.i];g.globalAlpha=1;g.globalCompositeOperation='source-over';g.drawImage(MBG.st,0,0);
   try{S.fx(g,W,H,MBG.t,dt,MBG.s,MBG.u);}catch(e){console.error(e);}

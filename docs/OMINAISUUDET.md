@@ -352,7 +352,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **Äänet:** proseduraaliset (`sfx`), sävelkorkeus vaihtelee ±3,5 % joka soitolla. Puun ja tukin iskut ovat sama kirveenisku; viimeinen isku
   lähes sama (pystypuu: hiljainen ritinä, tukki: pehmeä tumma tömähdys), kaatunut puu tömähtää tummasti. Tömähdyksen sävel puun koon ja
   voimakkuus etäisyyden mukaan; omat äänet kiven hajoamiselle ja rakenteiden murtumiselle.
-- **Ohjaus ja ääni:** rulla pikapaikoille, kameran etäisyys, äänet, käänteinen pystyhiiri. Oletukset merkitty, sivukohtainen palautus.
+- **Ohjaus (v2.53, ent. Ohjaus ja ääni):** rulla pikapaikoille, kameran etäisyys, käänteinen pystyhiiri; äänet omalla sivullaan Äänet ja musiikki. Oletukset merkitty, sivukohtainen palautus.
 - **Piirtoetäisyys karsii:** maisema sumuun, puut ruuduittain, rakennukset, viholliset (ei animointia), staattiset kohteet, ulottuvuudet.
 
 ## 16. Tallennus (save.js)
@@ -449,6 +449,9 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 ## Lista 4, erä F (v1.44)
 - Grafiikka › Suorituskyky: kaukainen maasto kevennetty (yli 100 m), staattisten kohteiden yhdistäminen, auringon varjot harvemmin paikallaan.
   Esiasetukset: Low–Medium- kaikki päällä, Medium–Ultra vain yhdistäminen.
+- **v2.53:** valikkomusiikki (aloitusjakson logosta päävalikkoon, häipyy peliin liityttäessä; taukovalikossa 15 s jälkeen); uusi
+  asetussivu **Äänet ja musiikki** (master, mykistykset, 6 säädintä 0–150 %, ilmoitus-/alue-/ulottuvuusäänten valinnat); ilmoitus-,
+  alueen löytö- ja ulottuvuusäänet; kolmen valikkotaustan satunnaiset hiljaiset äänet (kun äänet on lisätty).
 - **v2.52:** jos selain estää äänet, alareunassa näkyy kaiutinmerkki ja "Napauta näyttöä kuullaksesi äänet" (jakso alkaa 2 s
   myöhemmin; napautus ei ohita jaksoa); äänet aloitusjaksoon, latausnäytön loppuun, uuden maailman introon (tuuli, linnut, pilvien
   wuush, syöksy) ja varmistusikkunoihin (kun äänet on lisätty).
@@ -552,7 +555,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - Esiasetukset Low–Medium+ kytkevät automaattisäädöt (myös osa-alueet ja varjojen laadun) päälle, High–Ultra pois.
 - Erittäin tarkat varjot ohittavat tavalliset varjoasetukset (näkyvät harmaina): 8192 px, päivitys joka ruutu, etäisyys 90 / 110 / 160 m.
 - Jos kuolet samalle pomolle 3 kertaa (sama maailma), se pomo ei enää koskaan palauta terveyttään. Kuolinruutu näyttää laskurin (1/3, 2/3).
-- Kehittäjätyökalut (DEV) ovat oletuksena pois; päälle Asetukset › Ohjaus ja ääni › alin rivi (sivu latautuu uudelleen).
+- Kehittäjätyökalut (DEV) ovat oletuksena pois; päälle Asetukset › Ohjaus › alin rivi (sivu latautuu uudelleen).
 - Päävalikossa versionumeron perässä "Early Access 1.0". DEV-viitteet näkyvät vain DEV-tilassa.
 - Veren fysiikka (pisarat lentävät ja jäävät maahan) on päällä Medium-esiasetuksesta ylöspäin.
 
@@ -607,7 +610,7 @@ kun ominaisuus tai arvo muuttuu (tiedosto ja funktio suluissa, jotta kohta löyt
 - **v2.24 pelaajan toimintoäänet** (v2.25 alkaen osat 1 ja 2, ks. yllä): askel jalan osuessa maahan (kävellen ~2,6/s, juosten ~3,3/s,
   kyykyssä hiljaa) alustan mukaan (ruoho, kivi, hiekka, lumi, suo, puu, jää, pusikko; rakennuksissa puu/kivi), hypyn alastulo, kahlaus, uintiveto,
   loiskahdus veteen mennessä (kova pudotus kovempi), pelaajan iskun osuma (nuija = murskaus, muut = isku) ja pelaajan nuolen osuma. Aloitusäänet
-  kopioitu olentojen kansiosta. Asetukset › Ohjaus ja ääni › Pelaajan äänet (oletus 80 %).
+  kopioitu olentojen kansiosta. Asetukset › Äänet ja musiikki › Pelaaja (v2.53: 100 % = entinen 80 %).
 - **Toimintosilmukat (v2.23):** syöminen, tonkiminen ja nuuhkiminen soivat koko toiminnon ajan ja hiljenevät pehmeästi, kun eläin lopettaa.
   Askeleet: kohinanpoisto, yksi askel per ääni, voimakkuus vaihtelee hieman askeleittain. Kivivartijalla omat äänet.
 - **Osumat ja törmäykset (v2.22):** osumaäänet 6 kategoriassa (raapaisu, purema, murskaus, sarvet, isku, nuoli) – soivat kun olento osuu

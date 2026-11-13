@@ -9,7 +9,16 @@ if(DEV){const d=document.createElement('div');d.textContent='DEV-tila · V = 10�
 /* ---------------- UI ---------------- */
 // Viestin näkyvyysaika riippuu pituudesta: 3 s + 70 ms / merkki, rajattuna 4–13 s.
 const msgEls=[],msgLog=[];
-function msg(t,cls=''){msgLog.push({t,cls,at:playTime});if(msgLog.length>10)msgLog.shift();const el=$('#msgs');const d=document.createElement('div');d.textContent=t;if(cls)d.className=cls;el.appendChild(d);d._life=clamp(3+t.length*.07,4,13);msgEls.push(d);while(msgEls.length>7){const o=msgEls.shift();o.remove();}}
+/* v2.53 ILMOITUSÄÄNET (sounds/ilmoitukset, avaimet i/<ryhmä>/<ääni>): viesti → ilmoitus (enintään MSG_SND_GAP s välein, ei löytöbannerin
+   kanssa); uusi alue → biomi_<alue> tai biomi_yhteinen; ulottuvuus → ulottuvuus_<nimi> tai ulottuvuus_yhteinen. Valinnat ja taso: Äänet ja musiikki. */
+const MSG_SND_GAP=.35,BIO_SND={meadow:'rantaniitty',koivu:'koivulehto',forest:'korpimetsa',suo:'upposuo',kangas:'jakalakangas',aarni:'aarnimetsa',moor:'kalmanummi',
+  tunturi:'tunturikangas',rakka:'rakka',mountain:'kivivuori',peak:'routahuiput',beach:'hietaranta',sea:'meri'},REALM_SND={portal1:'routaluola',portal2:'kalmankammio',portal3:'aarnihauta'};
+let msgSndT=-9,msgQuietT=-9;
+function iSnd(g,ev,common){const o={pre:'i',cat:'notif'};return mSnd(g,ev,o)||(common?mSnd(g,common,o):false);}
+function msgSnd(){const t=performance.now()/1000;if(SET.notifSnd===false||t-msgSndT<MSG_SND_GAP||t<msgQuietT)return;msgSndT=t;iSnd('ilmoitukset','ilmoitus');}
+function biomeSnd(z){msgQuietT=performance.now()/1000+.4;if(SET.biomeSnd===false)return;iSnd('biomit','biomi_'+(BIO_SND[z]||z),'biomi_yhteinen');}
+function realmSnd(id){msgQuietT=performance.now()/1000+.4;if(SET.realmSnd===false)return;iSnd('ulottuvuudet','ulottuvuus_'+(REALM_SND[id]||id),'ulottuvuus_yhteinen');}
+function msg(t,cls=''){msgLog.push({t,cls,at:playTime});msgSnd();if(msgLog.length>10)msgLog.shift();const el=$('#msgs');const d=document.createElement('div');d.textContent=t;if(cls)d.className=cls;el.appendChild(d);d._life=clamp(3+t.length*.07,4,13);msgEls.push(d);while(msgEls.length>7){const o=msgEls.shift();o.remove();}}
 function updateMsgs(dt){for(let i=msgEls.length-1;i>=0;i--){const d=msgEls[i];d._life-=dt;if(d._life<1)d.style.opacity=Math.max(0,d._life);if(d._life<=0){d.remove();msgEls.splice(i,1);}}}
 const floaters=[];
 function floatText(t,x,y,z,color){const el=document.createElement('div');el.className='floater';el.textContent=t;el.style.color=color||'#eee';$('#floaters').appendChild(el);floaters.push({el,p:new V3(x,y,z),t:0});if(floaters.length>24){const o=floaters.shift();o.el.remove();}}
@@ -239,7 +248,7 @@ function zoneDeep(z){let n=0;for(let i=0;i<6;i++){const a=i/6*TAU;if(zoneAt(P.po
 const ZONE_IN=2200,ZONE_HOLD=3000,ZONE_OUT=3000,ZONE_GAP=1000,zoneQ=[];let zoneBusy=false;
 function showZoneBanner(name){zoneQ.push(name);if(!zoneBusy)nextZoneBanner();}
 function nextZoneBanner(){const name=zoneQ.shift();if(!name){zoneBusy=false;return;}zoneBusy=true;const el=$('#zoneBan');$('#zoneBanN').textContent=name;
-  el.classList.add('on');sfx('discover');msg(`Uusi alue löydetty: ${name}`,'loot');
+  el.classList.add('on');sfx('discover');biomeSnd(Object.keys(BIOMES).find(k=>BIOMES[k].n===name));msg(`Uusi alue löydetty: ${name}`,'loot');
   clearTimeout(zoneBanT);zoneBanT=setTimeout(()=>{el.classList.remove('on');zoneBanT=setTimeout(nextZoneBanner,ZONE_OUT+ZONE_GAP);},ZONE_IN+ZONE_HOLD);}
 function renderBiome(){const B=$('#biomeBox');if(!B)return;if(P.inDun||!P.zone||!BIOMES[P.zone]){B.innerHTML='';return;}const b=BIOMES[P.zone],dg=['','Rauhallinen','Kohtalainen','Vaarallinen'][b.danger]||'';
   B.innerHTML=`<h3>Alue: ${b.n}</h3><div class="bRow"><span>Sää ja lämpö</span><span>${b.temp}</span></div><div class="bRow"><span>Vaarallisuus</span><span>${dg}</span></div>

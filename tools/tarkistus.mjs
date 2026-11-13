@@ -274,7 +274,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     finally{plSnd=orig;CRE.ok=ok0;[P.walkPh,P.onGround,,P.swim,P.crouch]=sv;P.vel.copy(sv[2]);}
     const s0=plSurface(),a=calls.length===1&&(calls[0]==='askeleet/askel_'+s0||calls[0]==='vesi/askel_kahlaus')&&['ruoho','kivi','hiekka','lumi','suo','puu','jaa','pusikko'].includes(s0);
     const b=/plSnd\('osumat',w\.dt==='blunt'\?'osuma_murskaus':'osuma_isku'/.test(doMeleeHit.toString())&&/plSnd\('osumat','osuma_nuoli'/.test(updateProjs.toString());
-    const c=SET_DEF.plVol===.8&&SET_PAGES.ctl.includes('plVol')&&/plTick\(dt\)/.test(creTick.toString());
+    const c=SET_DEF.plVol===1&&SET_PAGES.snd.includes('plVol')&&VOL_BASE.pl===.8&&/plTick\(dt\)/.test(creTick.toString());
     return a&&b&&c||`virhe ${a}${b}${c} ${calls.join(',')} ${s0}`;});
   t('v2.47 linssiheijastus vaihtelee päivittäin vain ±10 % (oma kerroin, ei säteiden 0,3–1); pilvimatto noin joka toinen päivä; 3D-pilviä noin 70 % päivistä (tuuli/myrsky/sade tuo muulloinkin); pilvet 3 omaa korkeuttaan ylempänä, selkeällä 10 % läpinäkyvämmät',()=>{
     const pv=dayN,v=[];for(let n=1;n<=200;n++){dayN=n;v.push(flareDay());}dayN=pv;flareDayN=-1;
@@ -301,6 +301,17 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
     SET.torchSharp=false;applyGfx();const b=torchLight.shadow.mapSize.x===40&&!torchSharpOn();SET.torchSharp=pv;applyGfx();
     const c=SET_DEF.torchSharp===false&&SET_PAGES.xgfx.includes('torchSharp')&&/torchSharpOn\(\)\?6\.7:2\.1/.test(updatePlayer.toString())&&/torchSharpOn\(\)\|\|shFrame%fT===0/.test(updateStations.toString());
     return a&&b&&c||`virhe terävä ${a} oletus ${b} koodi ${c}`;});
+  t('v2.53 musiikki (valikko logosta peliin, tauko 15 s), Äänet ja musiikki -sivu (master, mykistykset, 6 säädintä 0–150 %), ilmoitus-/biomi-/ulottuvuusäänet, taustakuvien äänet',()=>{
+    const o={...SET};let a=false,b=false,c=false,d=false;const M=window.__mus,om=window.mSnd,L=[];
+    try{a=SET_DEF.volMaster===1&&['musicVol','creVol','plVol','uiVol','ambVol','notifVol'].every(k=>SET_DEF[k]===1&&SET_PAGES.snd.includes(k))&&!SET_PAGES.ctl.includes('sound')&&
+        SET_TABS.some(t=>t[0]==='snd'&&t[1]==='Äänet ja musiikki')&&Math.abs(volK('cre')-.8)<1e-9&&(SET.volMaster=1.5,SET.uiVol=1.5,Math.abs(volK('ui')-1.575)<1e-9)&&(SET.sfxOn=false,volK('pl')===0&&volK('music')>0);
+      Object.assign(SET,o);
+      b=!!M&&M.MU_FADE===2&&M.MU_GAP_MIN===20&&M.MU_GAP_MAX===40&&PAUSE_MUSIC_T===15&&/__mus\.stop\(\)/.test(startPlay.toString())&&/want\('tauko'\)/.test(musicTick.toString());
+      window.mSnd=(g,e,x)=>{L.push(e+':'+(x&&x.cat));return e==='ilmoitus'||e.endsWith('_yhteinen');};msgSndT=-9;msgQuietT=-9;msgSnd();msgSnd();biomeSnd('aarni');msgSnd();realmSnd('portal1');
+      c=L.join()==='ilmoitus:notif,biomi_aarnimetsa:notif,biomi_yhteinen:notif,ulottuvuus_routaluola:notif,ulottuvuus_yhteinen:notif';L.length=0;
+      const pi=MBG.i;MBG.i=MBG_SCENES.findIndex(x=>x.n==='Ahjo yöllä');mbgSndTick(.1);mbgSndTick(20);MBG.i=MBG_SCENES.findIndex(x=>x.n==='Lumisade');mbgSndTick(.1);mbgSndTick(30);MBG.i=pi;d=L.join()==='tausta_ahjo:amb';}
+    finally{Object.assign(SET,o);window.mSnd=om;msgSndT=-9;msgQuietT=-9;}
+    return a&&b&&c&&d||`virhe asetukset ${a} musiikki ${b} ilmoitukset ${c} taustat ${d} [${L}]`;});
   t('v2.52 menu 2: äänten avaus (kaiutinmerkki, 2 s viive), aloitusjakson ja latauksen äänet, intron tuuli/linnut/wuush/syöksy + hiipuminen, varmistus',()=>{
     const B=window.__boot0,a=!!B&&B.SND_DELAY===2000&&B.SND_HINT_MIN===2000&&typeof window.__bootSnd==='function'&&/window\.__AC/.test(audio.toString())&&
       /lataus_valmis/.test(window.__ldDone.toString())&&(B.sndLocked||!document.getElementById('sndHint'));
@@ -320,7 +331,7 @@ const r=await p.evaluate(()=>{const g=window.__game;g.newGame();g.setState('play
       mSliderMove();for(let i=0;i<8;i++){T+=30;mSliderMove();const f=cb;cb=null;f&&f();}const mv=L.length;
       for(let i=0;i<10;i++){T+=30;const f=cb;cb=null;f&&f();}b=mv>=3&&mv<=6&&L.length-mv<=1&&L.every(x=>x==='liukusaatimet/naputus');}
     finally{sldDrag=sd;delete performance.now;window.requestAnimationFrame=orf;window.mSnd=om;MSND.raf=0;}
-    const c=SET_DEF.uiVol===.7&&SET_PAGES.ctl.includes('uiVol')&&/mSnd\('esiasetus','ultra'\)/.test(renderSettings.toString())&&/#menu/.test(MENU_SEL)&&typeof mRes==='function';
+    const c=SET_DEF.uiVol===1&&SET_PAGES.snd.includes('uiVol')&&/mSnd\('esiasetus','ultra'\)/.test(renderSettings.toString())&&/#menu/.test(MENU_SEL)&&typeof mRes==='function';
     return a&&b&&c||`virhe napit ${a} säädin ${b} (${L.length}) asetus ${c}`;});
   t('v2.50 äänierä: puun tömähdys koon mukaan (_2 iso, _1 pieni, muut _0/_1), repun sulkeminen korkeammalta, plSnd v_ix',()=>{
     const a=/v_ix:tomahdysIx\(H\)/.test(fallTree.toString())&&JSON.stringify(tomahdysIx(20))==='[2]'&&JSON.stringify(tomahdysIx(3))==='[1]'&&JSON.stringify(tomahdysIx(6))==='[0,1]'&&TOM_BIG===9.5&&TOM_SMALL===4.5;

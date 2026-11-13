@@ -311,6 +311,7 @@ def step_segments(ff, src, k=5, win=0.01, gap=0.35, seg_max=1.2):
 def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, loop=False, mode=None, seg=None):
     """prof (toiminnot): (yläraja, iso yläraja, häivytys, LUFS) – isojen +2 dB on jo mukana; big valitsee ison ylärajan."""
     cap_n, cap_b, fade, target = prof or PROFIILI.get(kind, PROFIILI['idle'])
+    AC, BR = ('2', '160k') if kind in MUSIC_EV else ('1', '96k')   # v2.53 musiikki stereona ja paremmalla laadulla
     boss = ai in BOSS_DB or big
     cap = cap_b if boss else cap_n
     target += 0 if prof else BOSS_DB.get(ai, 0)
@@ -329,14 +330,14 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, 
         if mode == 'step':   # v2.23: taustakohina (suhina, kahina) pois askelista – FFT-kohinanpoisto seuraa kohinatasoa
             pre += 'afftdn=nr=12:nf=-50:tn=1,'
         r = run([ff, '-hide_banner', '-loglevel', 'error', '-y'] + inp + ['-af', pre + ('highpass=f=40' if loop and mode != 'act' else f'highpass=f=40,{trim},areverse,{trim},areverse'),
-                '-ac', '1', '-ar', '44100', '-c:a', 'pcm_s16le', w1])
+                '-ac', AC, '-ar', '44100', '-c:a', 'pcm_s16le', w1])
         if r.returncode != 0 or not os.path.exists(w1):
             return r.stderr.strip()[-300:] or 'tuntematon virhe', None
         d = duration(ff, w1)
         if d < 0.12 and mode != 'step' and not loop:   # v2.50: hyvin lyhyt naksahdus → lempeämpi leikkaus (−66 dB), ettei hiljainen häntä katoa
             tr2 = trim.replace('-48dB', '-66dB')
             r2 = run([ff, '-hide_banner', '-loglevel', 'error', '-y'] + inp + ['-af', pre + f'highpass=f=40,{tr2},areverse,{tr2},areverse',
-                      '-ac', '1', '-ar', '44100', '-c:a', 'pcm_s16le', w1])
+                      '-ac', AC, '-ar', '44100', '-c:a', 'pcm_s16le', w1])
             if r2.returncode == 0:
                 d = duration(ff, w1)
         if d < 0.015:   # v2.50: 0,05 → 0,015 s (lyhyt käyttöliittymän naksahdus, esim. sulje.mp3 ~0,04 s, hylättiin hiljaisena)
@@ -383,7 +384,7 @@ def process(ff, src, dst, fmt, ai='hostile', kind='idle', prof=None, big=False, 
         lu = loudness(ff, w2)
         gain = 0.0 if lu is None else max(-24.0, min(24.0, target - lu))
         r = run([ff, '-hide_banner', '-loglevel', 'error', '-y', '-i', w2, '-af', f'volume={gain:.2f}dB,alimiter=limit=0.89:attack=2:release=60:level=disabled',
-                 '-ac', '1', '-ar', '44100', '-c:a', 'libmp3lame', '-b:a', '96k', '-id3v2_version', '0', tmp])
+                 '-ac', AC, '-ar', '44100', '-c:a', 'libmp3lame', '-b:a', BR, '-id3v2_version', '0', tmp])
         if r.returncode != 0 or not os.path.exists(tmp) or os.path.getsize(tmp) < 200:
             return r.stderr.strip()[-300:] or 'tuntematon virhe', None
         shutil.copyfile(tmp, dst + '.tmp.mp3')
@@ -785,6 +786,9 @@ M_PARTS = [
                                                         ('linnut', 'linnut (silmukka intron ajan, hiipuu lopussa)', 'birds ambience loop, distant birdsong'),
                                                         ('pilvet_wuush', 'pilvet aukeavat sivuille (latausnäytön jälkeen)', 'whoosh through clouds, soft air swoosh'),
                                                         ('kamera_laskeutuu', 'kamera syöksyy alas pelaajan luo (intron viimeiset 2 s)', 'dive down whoosh, descending swoosh')]),
+        ('taustat', 'Valikon taustakuvat', '🖼️', [('tausta_leiri', 'Öinen leiri -taustakuva: satunnaisesti hiljaa (nuotion rätinä, pöllö …) 5–14 s välein; versiot _1, _2 … arvotaan', 'campfire crackle, owl hoot distant'),
+                                                ('tausta_myrsky', 'Myrsky-taustakuva: satunnaisesti hiljaa (ukkonen, sade, tuuli)', 'distant thunder rumble, rain gust'),
+                                                ('tausta_ahjo', 'Ahjo yöllä -taustakuva: satunnaisesti hiljaa (vasaran kalahdus, kipinät, palkeet)', 'blacksmith hammer anvil distant, forge bellows')]),
         ('varmistus', 'Varmistusikkunat', '❓', [('varmistus', 'varmistuskysymys avautuu (oletko varma: maailman poisto/vaihto, DEV-työkalut, palautukset, näppäinvaihto …)', 'ui confirm prompt, attention chime soft')])]),
 ]
 for _n, _proj, _tit, _grs in M_PARTS:
@@ -796,6 +800,36 @@ for _n, _proj, _tit, _grs in M_PARTS:
     P_CFGS.append({'part': _n, 'title': _tit, 'groups': _g, 'by': _by, 'raw': os.path.join(SND, _proj, 'raw'), 'out': os.path.join(SND, _proj, 'valmiit'),
                    'pre': 'm', 'proj': _proj, 'single': True, 'act': {'tuuli', 'linnut'}, 'list': os.path.join(SND, _proj, f'AANILISTA_MENU{_n}.csv'),
                    'allowed': (lambda by: (lambda g: list(by[g][4])))(_by), 'xlsx': 'menu'})
+# v2.53 MUSIIKKI (avaimet mu/<ryhmä>/<kappale>_<n>) ja ILMOITUKSET (avaimet i/<ryhmä>/<ääni>_<n>): sama käsittely, omat kansiot ja listat.
+MUSIC_EV = {'valikkomusiikki', 'taukomusiikki'}
+BIO_FI = [('meadow', 'rantaniitty', 'Rantaniitty'), ('koivu', 'koivulehto', 'Koivulehto'), ('forest', 'korpimetsa', 'Korpimetsä'), ('suo', 'upposuo', 'Upposuo'),
+          ('kangas', 'jakalakangas', 'Jäkäläkangas'), ('aarni', 'aarnimetsa', 'Aarnimetsä'), ('moor', 'kalmanummi', 'Kalmanummi'), ('tunturi', 'tunturikangas', 'Tunturikangas'),
+          ('rakka', 'rakka', 'Rakka'), ('mountain', 'kivivuori', 'Kivivuori'), ('peak', 'routahuiput', 'Routahuiput'), ('beach', 'hietaranta', 'Hietaranta'), ('sea', 'meri', 'Meri')]
+REALM_FI = [('portal1', 'routaluola', 'Routaluola'), ('portal2', 'kalmankammio', 'Kalmankammio'), ('portal3', 'aarnihauta', 'Aarnihauta')]
+X_PARTS = [   # (kansio, etuliite, listan nimi, otsikko, ryhmät)
+    ('musiikki', 'mu', 'AANILISTA_MUSIIKKI.csv', 'Musiikki – valikot', [
+        ('valikko', 'Valikkomusiikki', '🎵', [('valikkomusiikki', 'soi HIIDENMAA-logosta (aloitusjakso) päävalikon ajan, kunnes liityt peliin (häivytys ulos); loppuessa 20–40 s tauko ja uudelleen (versio arvotaan)', 'nordic folk ambient menu music, calm epic')]),
+        ('tauko', 'Taukomusiikki', '⏸️', [('taukomusiikki', 'alkaa, kun taukovalikko on ollut auki 15 s; häivytys ulos peliin palatessa', 'calm ambient pause music, soft nordic')])]),
+    ('ilmoitukset', 'i', 'AANILISTA_ILMOITUKSET.csv', 'Ilmoitukset ja löydöt', [
+        ('ilmoitukset', 'Ilmoitukset', '💬', [('ilmoitus', 'viesti tai ilmoitus ruudulle (vasen reuna); enintään 0,35 s välein', 'ui notification soft, message pop')]),
+        ('biomit', 'Uusi alue löydetty', '🗺️', [('biomi_yhteinen', 'uusi alue löydetty (aluebanneri) – soi, jos alueella ei ole omaa ääntä', 'discovery chime, new area found, mystical reveal')]
+         + [(f'biomi_{fi}', f'uusi alue löydetty: {nm} (oma ääni; puuttuessa biomi_yhteinen)', 'discovery chime, ' + nm.lower()) for _, fi, nm in BIO_FI]),
+        ('ulottuvuudet', 'Ulottuvuuteen saapuminen', '🌀', [('ulottuvuus_yhteinen', 'saavut ulottuvuuteen ensimmäistä kertaa (ulottuvuuden banneri) – soi, jos ulottuvuudella ei ole omaa ääntä', 'dark realm reveal, ominous magic boom')]
+         + [(f'ulottuvuus_{fi}', f'saavut ulottuvuuteen {nm} (oma ääni; puuttuessa ulottuvuus_yhteinen)', 'realm reveal, ' + nm.lower()) for _, fi, nm in REALM_FI])]),
+]
+for _proj, _pre, _list, _tit, _grs in X_PARTS:
+    _g = [(gid, gn, emo, ['peli'], [e[0] for e in evs], False) for gid, gn, emo, evs in _grs]
+    for gid, _, _, evs in _grs:
+        for e in evs:
+            P_EV[(gid, e[0])] = (e[1], e[2])
+    _by = {x[0]: x for x in _g}
+    P_CFGS.append({'part': 0, 'title': _tit, 'groups': _g, 'by': _by, 'raw': os.path.join(SND, _proj, 'raw'), 'out': os.path.join(SND, _proj, 'valmiit'),
+                   'pre': _pre, 'proj': _proj, 'single': True, 'act': set(), 'list': os.path.join(SND, _proj, _list),
+                   'allowed': (lambda by: (lambda g: list(by[g][4])))(_by), 'xlsx': 'menu'})
+T_PROF.update({'valikkomusiikki': (900.0, 900.0, 1.5, -20), 'taukomusiikki': (900.0, 900.0, 1.5, -21), 'ilmoitus': (.8, .8, .1, -25),
+               'tausta_leiri': (4.0, 4.0, .5, -28), 'tausta_myrsky': (5.0, 5.0, .8, -26), 'tausta_ahjo': (3.0, 3.0, .4, -28)})
+T_PROF.update({e: (3.0, 3.0, .5, -21) for e in ['biomi_yhteinen'] + [f'biomi_{fi}' for _, fi, _ in BIO_FI]})
+T_PROF.update({e: (4.0, 4.0, .6, -20) for e in ['ulottuvuus_yhteinen'] + [f'ulottuvuus_{fi}' for _, fi, _ in REALM_FI]})
 T_PROF.update({'studio': (4.0, 4.0, .6, -20), 'otsikko': (4.5, 4.5, .7, -19), 'riimusiirtyma': (5.0, 5.0, .8, -19), 'lataus_valmis': (2.5, 2.5, .5, -21),
                'tuuli': (20.0, 20.0, .3, -25), 'linnut': (20.0, 20.0, .3, -27), 'pilvet_wuush': (3.0, 3.0, .5, -21), 'kamera_laskeutuu': (3.0, 3.0, .5, -21),
                'varmistus': (1.2, 1.2, .2, -22)})   # v2.52 menu 2
